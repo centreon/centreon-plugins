@@ -33,52 +33,52 @@ sub set_system {
     $self->{thresholds} = {
         battery => [
             ['^(Not Ready|Testing|Unknown)$', 'WARNING'],
-            ['^(?!(Present|Valid)$)', 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         psu => [
-            ['^(?!(Present|Valid)$)', 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         sp => [
-            ['^(?!(Present|Valid)$)', 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         cable => [
             ['^(.*Unknown.*)$' => 'WARNING'],
-            ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         cpu => [
-            ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         fan => [
-            ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         io => [
-            ['^(?!(Present|Valid|Empty)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         lcc => [
-            ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
         ],
         dimm => [
-            ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-            ['.*', 'OK'],
-        ],
+            ['^(Present|Valid|Empty)$', 'OK'],
+            ['.*', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'centreon::common::emc::navisphere::mode::spcomponents';
     $self->{components_module} = ['fan', 'lcc', 'psu', 'battery', 'memory', 'cpu', 'iomodule', 'cable'];
 }
 
 sub navisphere_execute {
     my ($self, %options) = @_;
-    
-    $self->{response} = $options{custom}->execute_command(cmd => 'getcrus ' . $self->{option_results}->{getcrus_options});
+
+    ($self->{response}) = $options{custom}->execute_command(cmd => 'getcrus ' . $self->{option_results}->{getcrus_options});
     chomp $self->{response};
 }
 
@@ -86,11 +86,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'getcrus-options:s' => { name => 'getcrus_options', default => '-all' }
     });
-    
+
     return $self;
 }
 

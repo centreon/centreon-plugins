@@ -30,14 +30,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-                "filter-lunnumber:s"        => { name => 'filter_lunnumber', },
-                "filter-lunstate:s"         => { name => 'filter_lunstate', },
-                "filter-drivetype:s"        => { name => 'filter_drivetype', },
-                "filter-raidtype:s"         => { name => 'filter_raidtype', },
-                "filter-raidgroupid:s"      => { name => 'filter_raidgroupid', },
-            });
+    $options{options}->add_options(arguments => {
+        "filter-lunnumber:s"        => { name => 'filter_lunnumber' },
+        "filter-lunstate:s"         => { name => 'filter_lunstate' },
+        "filter-drivetype:s"        => { name => 'filter_drivetype' },
+        "filter-raidtype:s"         => { name => 'filter_raidtype' },
+        "filter-raidgroupid:s"      => { name => 'filter_raidgroupid' }
+    });
 
     $self->{result} = {};
     return $self;
@@ -51,7 +50,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $self->{clariion}->execute_command(cmd => 'getlun -uid -state -rg -type -drivetype -capacity');
+    my ($response) = $self->{clariion}->execute_command(cmd => 'getlun -uid -state -rg -type -drivetype -capacity');
     
     $| = 1;
     while ($response =~ /^(LOGICAL UNIT NUMBER.*?\n\n)/imsg) {
@@ -117,15 +116,19 @@ sub run {
     
     $self->manage_selection();
     foreach my $num (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $num . "' [state = " . $self->{result}->{$num}->{state} .
-                                                '] [drive type = ' . $self->{result}->{$num}->{drive_type} .
-                                                '] [raid type = ' . $self->{result}->{$num}->{raid_type} .
-                                                '] [raid groupid = ' . $self->{result}->{$num}->{raid_groupid} .
-                                                ']');
+        $self->{output}->output_add(
+            long_msg => "'" . $num . "' [state = " . $self->{result}->{$num}->{state} .
+                '] [drive type = ' . $self->{result}->{$num}->{drive_type} .
+                '] [raid type = ' . $self->{result}->{$num}->{raid_type} .
+                '] [raid groupid = ' . $self->{result}->{$num}->{raid_groupid} .
+                ']'
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List LUNs:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List LUNs:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -142,12 +145,13 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $num (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(number => $num,
-                                         state => $self->{result}->{$num}->{state},
-                                         drive_type => $self->{result}->{$num}->{drive_type},
-                                         raid_type => $self->{result}->{$num}->{raid_type},
-                                         raid_groupid => $self->{result}->{$num}->{raid_groupid},
-                                         );
+        $self->{output}->add_disco_entry(
+            number => $num,
+            state => $self->{result}->{$num}->{state},
+            drive_type => $self->{result}->{$num}->{drive_type},
+            raid_type => $self->{result}->{$num}->{raid_type},
+            raid_groupid => $self->{result}->{$num}->{raid_groupid}
+        );
     }
 }
 

@@ -44,7 +44,7 @@ my @states = (
     ['^failed$'      , 'CRITICAL'],
     ['^off$'         , 'CRITICAL'],
     ['^unsupported$' , 'CRITICAL'],
-    ['^.*$'          , 'CRITICAL'], 
+    ['^.*$'          , 'CRITICAL']
 );
 
 sub custom_threshold_check {
@@ -93,7 +93,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are OK',  skipped_code => { -10 => 1 } },
+        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are OK',  skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{disk} = [
@@ -102,7 +102,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_check'),
+                closure_custom_threshold_check => $self->can('custom_threshold_check')
             }
         },
         { label => 'hard-read-errors', set => {
@@ -110,8 +110,8 @@ sub set_counters {
                 output_template => 'Hard Read Errors : %d',
                 perfdatas => [
                     { label => 'hard_read_errors', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'hard-write-errors', set => {
@@ -119,8 +119,8 @@ sub set_counters {
                 output_template => 'Hard Write Errors : %d',
                 perfdatas => [
                     { label => 'hard_write_errors', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-io', set => {
@@ -129,8 +129,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'read_io', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-io', set => {
@@ -139,8 +139,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'write_io', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'utils', set => {
@@ -149,10 +149,10 @@ sub set_counters {
                 output_template => 'Utils : %.2f %%', output_use => 'utils',
                 perfdatas => [
                     { label => 'utils', value => 'utils', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -168,8 +168,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-raidgroupid:s' => { name => 'filter_raidgroupid', },
-        'filter-disk:s'        => { name => 'filter_disk', },
+        'filter-raidgroupid:s' => { name => 'filter_raidgroupid' },
+        'filter-disk:s'        => { name => 'filter_disk' }
     });
 
     return $self;
@@ -182,7 +182,7 @@ sub manage_selection {
     $self->{cache_name} = "cache_clariion_" . $options{custom}->{hostname}  . '_' . $options{custom}->{mode} . '_' .
         (defined($self->{option_results}->{filter_disk}) ? md5_hex($self->{option_results}->{filter_disk}) : md5_hex('all'));
     
-    my $response = $options{custom}->execute_command(cmd => 'getdisk -state -bytrd -bytwrt -hw -hr -busyticks -idleticks -rg');
+    my ($response) = $options{custom}->execute_command(cmd => 'getdisk -state -bytrd -bytwrt -hw -hr -busyticks -idleticks -rg');
 
     #Bus 1 Enclosure 7  Disk 13
     #State:                   Enabled
@@ -211,12 +211,12 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping disk '" . $disk_instance . "': no matching filter raid group id", debug => 1);
             next;
         }
-        
+
         my $datas = {};
         while ($values =~ /^([^\n]*?):(.*?)\n/msgi) {
             $datas->{centreon::plugins::misc::trim(lc($1))} = centreon::plugins::misc::trim($2);
         }
-        
+
         $self->{disk}->{$disk_instance} = {
             display => $disk_instance,
             state => $datas->{state},
