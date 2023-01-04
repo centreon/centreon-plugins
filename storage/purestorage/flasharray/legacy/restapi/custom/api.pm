@@ -18,12 +18,12 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::custom::api;
+package storage::purestorage::flasharray::legacy::restapi::custom::api;
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -70,25 +70,25 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}   = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
-    $self->{username}   = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password}   = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
+    $self->{hostname}   = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{username}   = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
+    $self->{password}   = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_path}   = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/1.11';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
  
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{username})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify username option.");
+    if ($self->{username} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{password})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify password option.");
+    if ($self->{password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
         $self->{output}->option_exit();
     }
 

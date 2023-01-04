@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::mode::hardware;
+package storage::purestorage::flasharray::legacy::restapi::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -40,17 +40,17 @@ sub set_system {
             ['device_off', 'WARNING'],
             ['identifying', 'OK'],
             ['not_installed', 'OK'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
     
-    $self->{components_path} = 'storage::purestorage::restapi::mode::components';
+    $self->{components_path} = 'storage::purestorage::flasharray::legacy::restapi::mode::components';
     $self->{components_module} = ['entity'];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { });
@@ -107,7 +107,7 @@ Example: --critical='temperature,.*,50'
 
 =cut
 
-package storage::purestorage::restapi::mode::components::entity;
+package storage::purestorage::flasharray::legacy::restapi::mode::components::entity;
 
 use strict;
 use warnings;
@@ -132,23 +132,32 @@ sub check {
         next if ($self->check_filter(section => 'entity', instance => $instance));
 
         $self->{components}->{entity}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("entity '%s' status is '%s' [instance = %s]",
-                                                        $entry->{name}, $entry->{status}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "entity '%s' status is '%s' [instance = %s]",
+                $entry->{name}, $entry->{status}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'entity', value => $entry->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("entity '%s' status is '%s'", $entry->{name}, $entry->{status}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("entity '%s' status is '%s'", $entry->{name}, $entry->{status})
+            );
         }
         
         if (defined($entry->{temperature}) && $entry->{temperature} =~ /[0-9]/) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $entry->{temperature});            
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("entity '%s' temperature is %s C", $entry->{name}, $entry->{temperature}));
+                $self->{output}->output_add(
+                    severity => $exit2,
+                    short_msg => sprintf("entity '%s' temperature is %s C", $entry->{name}, $entry->{temperature})
+                );
             }
+
             $self->{output}->perfdata_add(
-                label => 'temperature', unit => 'C',
                 nlabel => 'hardware.entity.temperature.celsius',
+                unit => 'C',
                 instances => $entry->{name},
                 value => $entry->{temperature},
                 warning => $warn,
