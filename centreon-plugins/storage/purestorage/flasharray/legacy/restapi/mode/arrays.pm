@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::mode::arrays;
+package storage::purestorage::flasharray::legacy::restapi::mode::arrays;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -116,7 +116,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $entry->{hostname} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{arrays}->{ $entry->{hostname} } = {
             display => $entry->{hostname},
             data_reduction => $entry->{data_reduction},

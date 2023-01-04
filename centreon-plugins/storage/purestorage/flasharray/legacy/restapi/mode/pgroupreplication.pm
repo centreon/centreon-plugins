@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::mode::pgroupreplication;
+package storage::purestorage::flasharray::legacy::restapi::mode::pgroupreplication;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
+
+sub prefix_pgroup_output {
+    my ($self, %options) = @_;
+    
+    return "Protection group '" . $options{instance_value}->{display} . "' replication ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -35,75 +41,66 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{pgroup} = [
-        { label => 'progress', set => {
+        { label => 'progress', nlabel => 'protection_group.progress.percentage', set => {
                 key_values => [ { name => 'progress' }, { name => 'display' } ],
-                output_template => 'Progress : %s %%',
+                output_template => 'progress: %s %%',
                 perfdatas => [
-                    { label => 'progress', value => 'progress', template => '%s', unit => '%',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'creation', set => {
+        { label => 'creation', nlabel => 'protection_group.creation.seconds', set => {
                 key_values => [ { name => 'creation_human' }, { name => 'creation_seconds' }, { name => 'display' } ],
                 threshold_use => 'creation_seconds',
-                output_template => 'Creation Time : %s',
+                output_template => 'creation time: %s',
                 perfdatas => [
-                    { label => 'creation', value => 'creation_seconds', template => '%d', 
-                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { value => 'creation_seconds', template => '%d', 
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'duration', set => {
+        { label => 'duration', nlabel => 'protection_group.duration.seconds', set => {
                 key_values => [ { name => 'duration_human' }, { name => 'duration_seconds' }, { name => 'display' } ],
+                output_template => 'duration: %s',
                 threshold_use => 'duration_seconds',
-                output_template => 'Duration : %s',
                 perfdatas => [
-                    { label => 'duration', value => 'duration_seconds', template => '%d', 
-                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { value => 'duration_seconds', template => '%d', 
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'physical-bytes-written', set => {
+        { label => 'physical-bytes-written', nlabel => 'protection_group.physical.written.bytes', set => {
                 key_values => [ { name => 'physical_bytes_written' }, { name => 'display' } ],
-                output_template => 'Physical Bytes Written : %s %s',
+                output_template => 'physical bytes written: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'physical_bytes_written', value => 'physical_bytes_written', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'data-transferred', set => {
+        { label => 'data-transferred', nlabel => 'protection_group.transferred.data.bytes',set => {
                 key_values => [ { name => 'data_transferred' }, { name => 'display' } ],
-                output_template => 'Data Transferred : %s %s',
+                output_template => 'data transferred: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'data_transferred', value => 'data_transferred', template => '%s', 
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
-        'timezone:s'    => { name => 'timezone', default => 'GMT' },
+        'timezone:s'    => { name => 'timezone', default => 'GMT' }
     });
     
     return $self;
-}
-
-sub prefix_pgroup_output {
-    my ($self, %options) = @_;
-    
-    return "Protection group '" . $options{instance_value}->{display} . "' replication ";
 }
 
 sub manage_selection {

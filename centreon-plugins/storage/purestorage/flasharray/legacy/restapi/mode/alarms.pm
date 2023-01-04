@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::mode::alarms;
+package storage::purestorage::flasharray::legacy::restapi::mode::alarms;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -56,11 +56,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'alerts.detected.count', min => 0 },
           group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
         }
     ];
-    
+
     $self->{maps_counters}->{alarm} = [
         {
             label => 'status',
@@ -80,7 +80,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {

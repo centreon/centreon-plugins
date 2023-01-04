@@ -18,29 +18,27 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::plugin;
+package storage::purestorage::flasharray::v2::restapi::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'alarms'             => 'storage::purestorage::restapi::mode::alarms',
-        'arrays'             => 'storage::purestorage::restapi::mode::arrays',
-        'hardware'           => 'storage::purestorage::restapi::mode::hardware',
-        'list-pgroups'       => 'storage::purestorage::restapi::mode::listpgroups',
-        'list-volumes'       => 'storage::purestorage::restapi::mode::listvolumes',
-        'pgroup-replication' => 'storage::purestorage::restapi::mode::pgroupreplication',
-        'volume-usage'       => 'storage::purestorage::restapi::mode::volumeusage'
+        'alerts'       => 'storage::purestorage::flasharray::v2::restapi::mode::alerts',
+        'arrays'       => 'storage::purestorage::flasharray::v2::restapi::mode::arrays',
+        'hardware'     => 'storage::purestorage::flasharray::v2::restapi::mode::hardware',
+        'list-arrays'  => 'storage::purestorage::flasharray::v2::restapi::mode::listarrays',
+        'list-volumes' => 'storage::purestorage::flasharray::v2::restapi::mode::listvolumes',
+        'volumes'      => 'storage::purestorage::flasharray::v2::restapi::mode::volumes'
     };
 
-    $self->{custom_modes}->{api} = 'storage::purestorage::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::purestorage::flasharray::v2::restapi::custom::api';
     return $self;
 }
 
@@ -50,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Pure Storage through HTTP/REST API.
+Check Pure Storage FlashArray through HTTP/REST API v2.
 
 =cut
