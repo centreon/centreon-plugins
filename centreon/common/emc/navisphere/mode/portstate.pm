@@ -30,11 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "filter-id:s"       => { name => 'filter_id' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-id:s'   => { name => 'filter_id' }
+    });
+
     $self->{total_port} = 0;
     $self->{total_port_noskip} = 0;
     return $self;
@@ -86,10 +86,13 @@ sub check_port {
                 $error .= $error_append . "link status is '" . $link_status . "'";
             }
             if ($error ne '') {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("SP %s port %s: %s.", 
-                                                                 $port_name, $port_id, $error)
-                                            );
+                $self->{output}->output_add(
+                    severity => 'CRITICAL',
+                    short_msg => sprintf(
+                        "SP %s port %s: %s.", 
+                        $port_name, $port_id, $error
+                    )
+                );
             }
         }
     }
@@ -104,10 +107,13 @@ sub run {
 
     $self->check_port();
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All ports (%s/%s) are ok.", 
-                                                     $self->{total_port_noskip}, $self->{total_port})
-                                );
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf(
+            "All ports (%s/%s) are ok.", 
+            $self->{total_port_noskip}, $self->{total_port}
+        )
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

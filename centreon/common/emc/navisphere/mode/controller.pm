@@ -31,7 +31,7 @@ sub custom_busy_calc {
     my $diff_busy = ($options{new_datas}->{$self->{instance} . '_busy_ticks'} - $options{old_datas}->{$self->{instance} . '_busy_ticks'});
     my $total = $diff_busy
                 + ($options{new_datas}->{$self->{instance} . '_idle_ticks'} - $options{old_datas}->{$self->{instance} . '_idle_ticks'});
-    
+
     if ($total == 0) {
         $self->{error_msg} = "skipped";
         return -2;
@@ -89,8 +89,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -98,7 +97,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->execute_command(cmd => 'getcontrol -cbt -busy -write -read -idle');
+    my ($response) = $options{custom}->execute_command(cmd => 'getcontrol -cbt -busy -write -read -idle');
 
     $self->{global} = {};
     $self->{global}->{read} = $response =~ /^Total Reads:\s*(\d+)/msi ? $1 : undef;

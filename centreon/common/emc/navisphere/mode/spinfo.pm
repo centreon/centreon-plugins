@@ -30,9 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -46,7 +44,7 @@ sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
     
-    my $response = $clariion->execute_command(cmd => 'getagent -ver -rev -prom -model -type -mem -serial -spid');
+    my ($response) = $clariion->execute_command(cmd => 'getagent -ver -rev -prom -model -type -mem -serial -spid');
     
     my $sp_id = 'unknown';
     my $sp_agent_rev = 'unknown';
@@ -68,11 +66,15 @@ sub run {
     
     my ($memory_value, $memory_unit) = $self->{perfdata}->change_bytes(value => $sp_memory_total);
     
-    $self->{output}->output_add(severity => 'ok',
-                                short_msg => sprintf('[SP ID: %s] [Agent Revision: %s] [FLARE Revision: %s] [PROM Revision: %s] [Model: %s, %s] [Memory: %s %s] [Serial Number: %s]',
-                                                    $sp_id, $sp_agent_rev, $sp_flare_rev, $sp_prom_rev, 
-                                                    $sp_model, $sp_model_type, $memory_value, $memory_unit, $sp_serial_number));
-    
+    $self->{output}->output_add(
+        severity => 'ok',
+        short_msg => sprintf(
+            '[SP ID: %s] [Agent Revision: %s] [FLARE Revision: %s] [PROM Revision: %s] [Model: %s, %s] [Memory: %s %s] [Serial Number: %s]',
+            $sp_id, $sp_agent_rev, $sp_flare_rev, $sp_prom_rev, 
+            $sp_model, $sp_model_type, $memory_value, $memory_unit, $sp_serial_number
+        )
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }

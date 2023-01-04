@@ -30,7 +30,7 @@ my %states = (
         ['^enabled$'   , 'OK'],
         ['^disabling$' , 'CRITICAL'], 
         ['^disabled$'  , 'CRITICAL'], 
-        ['^.*$'        , 'CRITICAL'], 
+        ['^.*$'        , 'CRITICAL']
     ],
     write_cache => [
         ['^enabled$'    , 'OK'],
@@ -39,11 +39,11 @@ my %states = (
         ['^initializing$' , 'WARNING'],
         ['^dumping$'      , 'CRITICAL'],
         ['^frozen$'       , 'CRITICAL'],
-        ['^.*$'           , 'CRITICAL'],
+        ['^.*$'           , 'CRITICAL']
     ],
     write_mirror => [
         ['^yes$'    , 'OK'],
-        ['^.*$'     , 'CRITICAL'],
+        ['^.*$'     , 'CRITICAL']
     ],
 );
 
@@ -52,14 +52,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "cache-command:s"         => { name => 'cache_command', default => 'getcache' },
-                                "cache-options:s"         => { name => 'cache_options', default => '-pdp -state -mirror' },
-                                "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                "warning:s"               => { name => 'warning', },
-                                "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {
+        'cache-command:s'         => { name => 'cache_command', default => 'getcache' },
+        'cache-options:s'         => { name => 'cache_options', default => '-pdp -state -mirror' },
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+        'warning:s'               => { name => 'warning' },
+        'critical:s'              => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -116,18 +115,20 @@ sub get_severity {
 sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
-    
+
     #Prct Dirty Cache Pages =            0
     #SP Read Cache State                 Enabled
     #SP Write Cache State                Enabled
     #Write Cache Mirrored:               YES
-    my $response = $clariion->execute_command(cmd => $self->{option_results}->{cache_command} . ' ' . $self->{option_results}->{cache_options});
+    my ($response) = $clariion->execute_command(cmd => $self->{option_results}->{cache_command} . ' ' . $self->{option_results}->{cache_options});
     chomp $response;
-    
+
     my ($read_cache_state, $write_cache_state);
     if ($response !~ /^SP Read Cache State(\s+|:\s+)(.*)/im) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                short_msg => 'Cannot find cache informations.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find cache informations.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -145,32 +146,37 @@ sub run {
         $dirty_prct = $1;
     }
 
-    $self->{output}->output_add(severity => $self->get_severity(value => $read_cache_state,
-                                                                label => 'read_cache'),
-                                short_msg => sprintf("Read cache state is '%s'", 
-                                                    $read_cache_state));
-    $self->{output}->output_add(severity => $self->get_severity(value => $write_cache_state,
-                                                                label => 'write_cache'),
-                                short_msg => sprintf("Write cache state is '%s'", 
-                                                    $write_cache_state));
+    $self->{output}->output_add(
+        severity => $self->get_severity(value => $read_cache_state, label => 'read_cache'),
+        short_msg => sprintf("Read cache state is '%s'", $read_cache_state)
+    );
+    $self->{output}->output_add(
+        severity => $self->get_severity(value => $write_cache_state, label => 'write_cache'),
+        short_msg => sprintf("Write cache state is '%s'", $write_cache_state));
     if (defined($write_cache_mirror)) {
-        $self->{output}->output_add(severity => $self->get_severity(value => $write_cache_mirror,
-                                                                    label => 'write_mirror'),
-                                    short_msg => sprintf("Write cache mirror is '%s'", 
-                                                         $write_cache_mirror));
+        $self->{output}->output_add(
+            severity => $self->get_severity(value => $write_cache_mirror, label => 'write_mirror'),
+            short_msg => sprintf("Write cache mirror is '%s'", $write_cache_mirror)
+        );
     }
     if (defined($dirty_prct)) {
-        my $exit = $self->{perfdata}->threshold_check(value => $dirty_prct, 
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(
+            value => $dirty_prct, 
+            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Dirty Cache Pages is %s %%", $dirty_prct));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Dirty Cache Pages is %s %%", $dirty_prct)
+            );
         }
-        $self->{output}->perfdata_add(label => 'dirty_cache', unit => '%',
-                                      value => $dirty_prct,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => 'dirty_cache', unit => '%',
+            value => $dirty_prct,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0, max => 100
+        );
     }
 
     $self->{output}->display();
