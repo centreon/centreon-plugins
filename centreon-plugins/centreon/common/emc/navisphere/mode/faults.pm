@@ -30,9 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -45,17 +43,21 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
-    
-    my $response = $clariion->execute_command(cmd => 'faults -list', secure_only => 1);
+
+    my ($response) = $clariion->execute_command(cmd => 'faults -list', secure_only => 1);
     chomp $response;
-    
+
     if ($response =~ /The array is operating normally/msg) {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => 'The array is operating normally');
+        $self->{output}->output_add(
+            severity => 'ok',
+            short_msg => 'The array is operating normally'
+        );
     } else {
         $self->{output}->output_add(long_msg => $response);
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => 'Problem detected (see detailed output for more details');
+        $self->{output}->output_add(
+            severity => 'critical',
+            short_msg => 'Problem detected (see detailed output for more details'
+        );
     }
     
     $self->{output}->display();

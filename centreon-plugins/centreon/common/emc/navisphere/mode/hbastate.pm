@@ -30,12 +30,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-server:s"     => { name => 'filter_server' },
-                                  "filter-uid:s"        => { name => 'filter_uid' },
-                                  "path-status:s@"      => { name => 'path_status' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-server:s' => { name => 'filter_server' },
+        'filter-uid:s'    => { name => 'filter_uid' },
+        'path-status:s@'  => { name => 'path_status' }
+    });
+
     $self->{total_hba} = 0;
     $self->{total_hba_noskip} = 0;
     return $self;
@@ -121,18 +121,21 @@ sub check_hba {
         foreach (@{$self->{option_results}->{path_status}}) {
             my ($warning, $critical, $filter_uid, $filter_server) = split /,/;
             $i++;
-        
+
             next if (defined($filter_uid) && $filter_uid ne '' && $hba_uid !~ /$filter_uid/);
             next if (defined($filter_server) && $filter_server ne '' && $server_name !~ /$filter_server/);
-        
-        
-            my $exit = $self->{perfdata}->threshold_check(value => $logged,
-                                                          threshold => [ { label => 'critical-' . $i, 'exit_litteral' => 'critical' }, { label => 'warning-' . $i, exit_litteral => 'warning' } ]);
+
+            my $exit = $self->{perfdata}->threshold_check(
+                value => $logged,
+                threshold => [ { label => 'critical-' . $i, 'exit_litteral' => 'critical' }, { label => 'warning-' . $i, exit_litteral => 'warning' } ]
+            );
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                 $self->{output}->output_add(severity => $exit,
-                                             short_msg => "Path connection problem for hba '$hba_uid' server '$server_name'");
+                 $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => "Path connection problem for hba '$hba_uid' server '$server_name'"
+                );
             }
-        
+
             last;
         }
     }
@@ -142,15 +145,18 @@ sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
     
-    $self->{response} = $clariion->execute_command(cmd => 'getall -hba');
+    ($self->{response}) = $clariion->execute_command(cmd => 'getall -hba');
     chomp $self->{response};
 
     $self->check_hba();
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All hba states (%s/%s) are ok.", 
-                                                     $self->{total_hba_noskip}, $self->{total_hba})
-                                );
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf(
+            "All hba states (%s/%s) are ok.", 
+            $self->{total_hba_noskip}, $self->{total_hba}
+        )
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
