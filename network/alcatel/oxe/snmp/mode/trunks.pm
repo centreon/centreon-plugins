@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,6 +76,9 @@ sub custom_trunk_usage_calc {
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_freechan'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_busychan'};
     $self->{result_values}->{total} = $self->{result_values}->{free} + $self->{result_values}->{used};
+
+    return -10 if ($self->{result_values}->{total} <= 0);
+
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;

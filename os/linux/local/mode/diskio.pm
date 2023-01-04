@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,6 +35,19 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub custom_wait_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{wait} = 0;
+    my $tput = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ios'} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ios'});
+    if ($tput) {
+        $self->{result_values}->{wait} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ticks'}) / $tput;
+    }
+
+    return 0;
+}
+
 sub custom_utils_calc {
     my ($self, %options) = @_;
 
@@ -57,6 +70,33 @@ sub custom_utils_calc {
         $self->{result_values}->{utils} = 100 * ($options{new_datas}->{$self->{instance} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_ticks'}) / $delta_ms;
         $self->{result_values}->{utils} = 100 if ($self->{result_values}->{utils} > 100);
     }
+    return 0;
+}
+
+sub custom_svctm_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    my $nr_ios = ($options{new_datas}->{$self->{instance} . '_rd_ios'} - $options{old_datas}->{$self->{instance} . '_rd_ios'}) +
+        ($options{new_datas}->{$self->{instance} . '_wr_ios'} - $options{old_datas}->{$self->{instance} . '_wr_ios'});
+    my $itv = (
+        ($options{new_datas}->{$self->{instance} . '_cpu_idle'} - $options{old_datas}->{$self->{instance} . '_cpu_idle'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_user'} - $options{old_datas}->{$self->{instance} . '_cpu_user'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_iowait'} - $options{old_datas}->{$self->{instance} . '_cpu_iowait'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_system'} - $options{old_datas}->{$self->{instance} . '_cpu_system'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_hardirq'} - $options{old_datas}->{$self->{instance} . '_cpu_hardirq'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_softirq'} - $options{old_datas}->{$self->{instance} . '_cpu_softirq'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_nice'} - $options{old_datas}->{$self->{instance} . '_cpu_nice'}) +
+        ($options{new_datas}->{$self->{instance} . '_cpu_steal'} - $options{old_datas}->{$self->{instance} . '_cpu_steal'})
+        ) / $options{new_datas}->{$self->{instance} . '_cpu_total'} * 100;
+    $self->{result_values}->{svctm} = 0;
+    if ($itv > 0) {
+        my $tput = $nr_ios * $self->{instance_mode}->{option_results}->{interrupt_frequency} / $itv;
+        my $util = ($options{new_datas}->{$self->{instance} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_ticks'}) / $itv * $self->{instance_mode}->{option_results}->{interrupt_frequency};
+
+        $self->{result_values}->{svctm} = $tput > 0 ? $util / $tput : 0;
+    }
+
     return 0;
 }
 
@@ -98,21 +138,51 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'read-time', nlabel => 'device.io.read.time.milliseconds', set => {
-                key_values => [ { name => 'read_ms', diff => 1 }, { name => 'display' } ],
-                output_template => 'read time : %.2f ms',
+        { label => 'read-wait', nlabel => 'device.io.read.wait.milliseconds', set => {
+                key_values => [ { name => 'rd_ios', diff => 1 }, { name => 'rd_ticks', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_wait_calc'), closure_custom_calc_extra_options => { label_ref => 'rd' },
+                output_template => 'read wait: %.2f ms',
+                output_change_bytes => 1,
+                output_use => 'wait', threshold_use => 'wait',
                 perfdatas => [
-                    { label => 'readtime', template => '%.2f',
+                    { label => 'readwait', value => 'wait', template => '%.2f',
                       unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'write-time', nlabel => 'device.io.write.time.milliseconds', set => {
-                key_values => [ { name => 'write_ms', diff => 1 }, { name => 'display' } ],
-                output_template => 'write time : %.2f ms',
+        { label => 'write-wait', nlabel => 'device.io.write.wait.milliseconds', set => {
+                key_values => [ { name => 'wr_ios', diff => 1 }, { name => 'wr_ticks', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_wait_calc'), closure_custom_calc_extra_options => { label_ref => 'wr' },
+                output_template => 'write wait: %.2f ms',
+                output_change_bytes => 1,
+                output_use => 'wait', threshold_use => 'wait',
                 perfdatas => [
-                    { label => 'writetime', template => '%.2f',
+                    { label => 'writewait', value => 'wait', template => '%.2f',
                       unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'svctime', nlabel => 'device.io.servicetime.count', set => {
+                key_values => [
+                    { name => 'cpu_total', diff => 1 },
+                    { name => 'cpu_iowait', diff => 1 },
+                    { name => 'cpu_user', diff => 1 },
+                    { name => 'cpu_system', diff => 1 },
+                    { name => 'cpu_idle', diff => 1 },
+                    { name => 'cpu_hardirq', diff => 1 },
+                    { name => 'cpu_softirq', diff => 1 },
+                    { name => 'cpu_steal', diff => 1 },
+                    { name => 'cpu_nice', diff => 1 },
+                    { name => 'ticks', diff => 1 },
+                    { name => 'rd_ios', diff => 1 },
+                    { name => 'wr_ios', diff => 1 },
+                    { name => 'display' }
+                ],
+                closure_custom_calc => $self->can('custom_svctm_calc'),
+                output_template => 'svctm: %.2f',
+                output_use => 'svctm', threshold_use => 'svctm',
+                perfdatas => [
+                    { label => 'svctm', value => 'svctm', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -134,7 +204,7 @@ sub set_counters {
                 output_template => '%%utils: %.2f %%',
                 output_use => 'utils', threshold_use => 'utils',
                 perfdatas => [
-                    { label => 'utils', value => 'utils',  template => '%.2f',
+                    { label => 'utils', value => 'utils', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -186,8 +256,8 @@ sub manage_selection {
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+/mg) {
-        my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+(\d+)\s+\d+\s+(\d+)\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+/mg) {
+        my ($partition_name, $read_sector, $write_sector, $rd_ios, $rd_ticks, $wr_ios, $wr_ticks, $ms_ticks) = ($1, $3, $6, $2, $4, $5, $7, $8);
 
         next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
             $partition_name !~ /$self->{option_results}->{filter_partition_name}/);
@@ -203,8 +273,10 @@ sub manage_selection {
             display => $partition_name,
             read_sectors => $read_sector, 
             write_sectors => $write_sector,
-            read_ms => $read_ms, 
-            write_ms => $write_ms, 
+            rd_ios => $rd_ios,
+            rd_ticks => $rd_ticks,
+            wr_ios => $wr_ios,
+            wr_ticks => $wr_ticks,
             ticks => $ms_ticks,
             cpu_total => $cpu_total,
             cpu_system => $cpu_system,
@@ -248,8 +320,7 @@ Command used: tail -n +1 /proc/stat /proc/diskstats 2>&1
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'read-usage', 'write-usage', 'read-time', 'write-time',
-'utils'.
+Can be: 'read-usage', 'write-usage', 'read-wait', 'write-wait', 'svctime', 'utils'.
 
 =item B<--filter-partition-name>
 
