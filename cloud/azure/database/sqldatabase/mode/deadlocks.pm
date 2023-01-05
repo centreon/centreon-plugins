@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'deadlocks' => {
+        'deadlock' => {
             'output' => 'Deadlocks ',
             'label'  => 'deadlocks',
             'nlabel' => 'sqldatabase.deadlocks.count',
