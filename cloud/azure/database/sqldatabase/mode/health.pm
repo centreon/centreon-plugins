@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.Sql';
-    $self->{type} = 'servers/databases';
+    $self->{az_resource_namespace} = 'Microsoft.Sql';
+    $self->{az_resource_type} = 'servers/databases';
 }
 
 1;
