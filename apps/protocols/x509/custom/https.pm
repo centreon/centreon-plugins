@@ -48,6 +48,7 @@ sub new {
             'method:s'    => { name => 'method' },
             'urlpath:s'   => { name => 'url_path' },
             'timeout:s'   => { name => 'timeout' },
+            'no-follow'   => { name => 'no_follow' },
             'header:s@'   => { name => 'header' }
         });
     }
@@ -223,6 +224,10 @@ Threshold for HTTP timeout (Default: 5)
 =item B<--header>
 
 Set HTTP headers (Multiple option)
+
+=item B<--no-follow>
+
+Do not follow http redirect
 
 =back
 
