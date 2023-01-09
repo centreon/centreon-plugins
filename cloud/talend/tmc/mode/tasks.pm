@@ -24,8 +24,69 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5;
 use DateTime;
+use POSIX;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc;
+use centreon::plugins::statefile;
+
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_last_exec_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        instances => $self->{result_values}->{name},
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        value => $self->{result_values}->{lastExecSeconds} >= 0 ? floor($self->{result_values}->{lastExecSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }) : $self->{result_values}->{lastExecSeconds},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_last_exec_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{lastExecSeconds} >= 0 ? floor($self->{result_values}->{lastExecSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }) : $self->{result_values}->{lastExecSeconds},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
+
+sub custom_duration_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        instances => $self->{result_values}->{name},
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        value => floor($self->{result_values}->{durationSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_duration_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{durationSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
 
 sub task_long_output {
     my ($self, %options) = @_;
@@ -70,7 +131,7 @@ sub set_counters {
             name => 'tasks', type => 3, cb_prefix_output => 'prefix_task_output', cb_long_output => 'task_long_output', indent_long_output => '    ', message_multiple => 'All tasks are ok',
             group => [
                 { name => 'failed', type => 0 },
-                { name => 'timers', type => 0 },
+                { name => 'timers', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'executions', type => 1, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { -10 => 1 } },
             ]
         }
@@ -94,6 +155,25 @@ sub set_counters {
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{timers} = [
+         { label => 'task-execution-last', nlabel => 'task.execution.last', set => {
+                key_values  => [ { name => 'lastExecSeconds' }, { name => 'lastExecHuman' }, { name => 'name' } ],
+                output_template => 'last execution %s',
+                output_use => 'lastExecHuman',
+                closure_custom_perfdata => $self->can('custom_last_exec_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_last_exec_threshold')
+            }
+        },
+        { label => 'task-running-duration', nlabel => 'task.running.duration', set => {
+                key_values  => [ { name => 'durationSeconds' }, { name => 'durationHuman' }, { name => 'name' } ],
+                output_template => 'running duration %s',
+                output_use => 'durationHuman',
+                closure_custom_perfdata => $self->can('custom_duration_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_duration_threshold')
             }
         }
     ];
@@ -123,8 +203,11 @@ sub new {
     $options{options}->add_options(arguments => {
         'task-id:s'          => { name => 'task_id' },
         'environment-name:s' => { name => 'environment_name' },
-        'since-timeperiod:s' => { name => 'since_timeperiod' }
+        'since-timeperiod:s' => { name => 'since_timeperiod' },
+        'unit:s'             => { name => 'unit', default => 's' }
     });
+
+    $self->{cache_exec} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -133,9 +216,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 's';
+    }
+
     if (!defined($self->{option_results}->{since_timeperiod}) || $self->{option_results}->{since_timeperiod} eq '') {
         $self->{option_results}->{since_timeperiod} = 86400;
     }
+
+    $self->{cache_exec}->check_options(option_results => $self->{option_results}, default_format => 'json');
 }
 
 sub manage_selection {
@@ -166,6 +255,16 @@ sub manage_selection {
         environmentId => $environmentId,
         taskId => $self->{option_results}->{task_id}
     );
+
+    $self->{cache_exec}->read(statefile => 'talend_tmc_' . $self->{mode} . '_' . 
+        Digest::MD5::md5_hex(
+            (defined($self->{option_results}->{task_id}) ? $self->{option_results}->{task_id} : '') . '_' .
+            (defined($self->{option_results}->{environment_name}) ? $self->{option_results}->{environment_name} : '')
+        )
+    );
+    my $ctime = time();
+    my $last_exec_times = $self->{cache_exec}->get(name => 'tasks');
+    $last_exec_times = {} if (!defined($last_exec_times));    
 
     $self->{global} = { detected => 0 };
     $self->{tasks} = {};
@@ -207,8 +306,33 @@ sub manage_selection {
                 started => $last_exec->{startTimestamp},
                 status => $last_exec->{status}
             };
+
+            $last_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+            my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+            $last_exec_times->{ $task->{name} } = $dt->epoch();
+        }
+
+        $self->{tasks}->{ $task->{name} }->{timers} = {
+            name => $task->{name},
+            lastExecSeconds => defined($last_exec_times->{ $task->{name} }) ? $ctime - $last_exec_times->{ $task->{name} } : -1,
+            lastExecHuman => 'never'
+        };
+        if (defined($last_exec_times->{ $task->{name} })) {
+            $self->{tasks}->{ $task->{name} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime -  $last_exec_times->{ $task->{name} });
+        }
+
+        if (defined($older_running_exec)) {
+            $older_running_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+            my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+            my $duration = $ctime - $dt->epoch();
+            $self->{tasks}->{ $task->{name} }->{timers}->{durationSeconds} = $duration;
+            $self->{tasks}->{ $task->{name} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
         }
     }
+
+    $self->{cache_exec}->write(data => {
+        tasks => $last_exec_times
+    });
 }
 
 1;
@@ -233,6 +357,11 @@ Environment filter.
 
 Time period to get tasks and plans execution informations (in seconds. Default: 86400). 
 
+=item B<--unit>
+
+Select the unit for last execution time threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last task execution status.
@@ -251,7 +380,8 @@ Can used special variables like: %{status}, %{taskName}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tasks-executions-detected', 'task-executions-failed-prct'.
+Can be: 'tasks-executions-detected', 'task-executions-failed-prct',
+'task-execution-last', 'task-running-duration'.
 
 =back
 
