@@ -132,29 +132,37 @@ sub request_api {
     my $offset = 0;
     while (1) {
         my $body = {};
+        my $get_param = [];
         if (defined($options{paging})) {
             $body->{limit} = 100;
             $body->{offset} = $offset;
+            $get_param = ['limit=100', 'offset=' . $offset];
         }
         if (defined($options{body})) {
             foreach (keys %{$options{body}}) {
-                $body->{$_} = $options{body}->{$_} if (defined($options{body}->{$_}));
+                if (defined($options{body}->{$_})) {
+                    $body->{$_} = $options{body}->{$_};
+                    push @$get_param, $_ . '=' . $options{body}->{$_};
+                }
             }
         }
-        eval {
-            $body = encode_json($body);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
-            $self->{output}->option_exit();
+
+        if ($options{method} eq 'POST') {
+            eval {
+                $body = encode_json($body);
+            };
+            if ($@) {
+                $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+                $self->{output}->option_exit();
+            }
         }
 
         my ($content) = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},
-            get_param => $options{get_param},
+            get_param => $options{method} eq 'GET' ? $get_param : undef,
             header => ['Authorization: Bearer ' . $self->{api_token}],
-            query_form_post => $body,
+            query_form_post => $options{method} eq 'POST' ? $body : undef,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
@@ -200,12 +208,36 @@ sub cache_environments {
     return $datas;
 }
 
+sub cache_plans_execution {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_plans_execution(disable_cache => 1, from => $options{from}, to => $options{to});
+    $self->write_cache_file(
+        statefile => 'plans_execution',
+        response => $datas
+    );
+
+    return $datas;
+}
+
 sub cache_tasks_execution {
     my ($self, %options) = @_;
 
     my $datas = $self->get_tasks_execution(disable_cache => 1, from => $options{from}, to => $options{to});
     $self->write_cache_file(
         statefile => 'tasks_execution',
+        response => $datas
+    );
+
+    return $datas;
+}
+
+sub cache_plans_config {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_plans_config(disable_cache => 1);
+    $self->write_cache_file(
+        statefile => 'plans_config',
         response => $datas
     );
 
@@ -254,6 +286,25 @@ sub get_environments {
     return $self->request_api(method => 'GET', endpoint => '/orchestration/environments');
 }
 
+sub get_plans_execution {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'plans_execution')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache})
+            && !(defined($options{planId}) && $options{planId} ne ''));
+    return $self->request_api(
+        method => 'GET',
+        endpoint => (defined($options{planId}) && $options{planId} ne '') ? 
+            '/processing/executables/plans/' . $options{planId} . '/executions' : '/processing/executables/plans/executions',
+        body => {
+            from => $options{from},
+            to => $options{to},
+            environmentId => $options{environmentId}
+        },
+        paging => 1
+    );
+}
+
 sub get_tasks_execution {
     my ($self, %options) = @_;
 
@@ -269,6 +320,18 @@ sub get_tasks_execution {
             to => $options{to},
             environmentId => $options{environmentId}
         },
+        paging => 1
+    );
+}
+
+sub get_plans_config {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'plans_config')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+    return $self->request_api(
+        method => 'GET',
+        endpoint => '/orchestration/executables/plans',
         paging => 1
     );
 }

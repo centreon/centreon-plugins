@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-package cloud::talend::tmc::mode::cache;
+package cloud::talend::tmc::mode::listenvironments;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
@@ -30,44 +30,51 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'since-timeperiod:s' => { name => 'since_timeperiod' }
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{since_timeperiod}) || $self->{option_results}->{since_timeperiod} eq '') {
-        $self->{option_results}->{since_timeperiod} = 86400;
-    }
+    $self->SUPER::init(%options);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $to = time();
+    return $options{custom}->get_environments(disable_cache => 1);
+}
 
-    $options{custom}->cache_environments();
-    $options{custom}->cache_tasks_config();
-    $options{custom}->cache_tasks_execution(
-        from => ($to - $self->{option_results}->{since_timeperiod}) * 1000,
-        to => $to * 1000
-    );
+sub run {
+    my ($self, %options) = @_;
 
-    $options{custom}->cache_plans_config();
-    $options{custom}->cache_plans_execution(
-        from => ($to - $self->{option_results}->{since_timeperiod}) * 1000,
-        to => $to * 1000
-    );
-
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
+        $self->{output}->output_add(long_msg => sprintf('[id: %s][name: %s]', $_->{id}, $_->{name}));
+    }
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'Cache files created successfully'
+        short_msg => 'List environments:'
     );
+
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['id', 'name']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
+        $self->{output}->add_disco_entry(%$_);
+    }
 }
 
 1;
@@ -76,13 +83,9 @@ __END__
 
 =head1 MODE
 
-Create cache files (other modes could use it with --cache-use option).
+List environments.
 
 =over 8
-
-=item B<--since-timeperiod>
-
-Time period to get tasks and plans execution informations (in seconds. Default: 86400). 
 
 =back
 
