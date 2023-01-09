@@ -30,7 +30,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{az_resource_namespace} = 'Microsoft.Sql';
-    $self->{az_resource_type} = 'servers/databases';
+    $self->{az_resource_type} = 'servers';
 }
 
 1;
