@@ -23,6 +23,7 @@ if not common:
                 list_plugins_dir.add(found)
             except AttributeError:
                 pass
+    print(*list_plugins_dir)
     updated_packages = packages.split(' ')
 
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
@@ -39,13 +40,11 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
                 pkg_file_dir = pkg_file
                 try:
                     found = re.search('(.*)\/mode\/.*', pkg_file).group(1)
-                    print(found)
-                    pkg_file_dir = found
+                    pkg_file_dir = 'centreon-plugins/' + found
                 except AttributeError:
                     try:
                         found = re.search('(.*)\/plugin.pm', pkg_file).group(1)
-                        print(found)
-                        pkg_file_dir = found
+                        pkg_file_dir = 'centreon-plugins/' + found
                     except AttributeError:
                         pass
                 print('pkg_file_dir', pkg_file_dir)
