@@ -13,7 +13,7 @@ list_plugins_dir = set()
 list_packages = set()
 
 if not common:
-    print(plugin)
+    print(plugins)
     for plugin in plugins.split(' '):
         try:
             found = re.search('(.*)\/mode\/.*', plugin).group(1)
