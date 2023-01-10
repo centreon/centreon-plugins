@@ -29,7 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '0.2';
     %{$self->{modes}} = (
         'arp'              => 'snmp_standard::mode::arp',
         'cpu'              => 'snmp_standard::mode::cpu',
