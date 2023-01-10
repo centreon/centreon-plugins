@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'cache'             => 'cloud::talend::tmc::mode::cache',
         'list-environments' => 'cloud::talend::tmc::mode::listenvironments',
+        'list-plans'        => 'cloud::talend::tmc::mode::listplans',
         'list-tasks'        => 'cloud::talend::tmc::mode::listtasks',
         'plans'             => 'cloud::talend::tmc::mode::plans',
         'tasks'             => 'cloud::talend::tmc::mode::tasks'

@@ -355,7 +355,7 @@ Environment filter.
 
 =item B<--since-timeperiod>
 
-Time period to get tasks and plans execution informations (in seconds. Default: 86400). 
+Time period to get tasks execution informations (in seconds. Default: 86400). 
 
 =item B<--unit>
 

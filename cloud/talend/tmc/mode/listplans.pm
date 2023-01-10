@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::talend::tmc::mode::listtasks;
+package cloud::talend::tmc::mode::listplans;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->cache_tasks_config(disable_cache => 1);
+    return $options{custom}->cache_plans_config(disable_cache => 1);
 }
 
 sub run {
@@ -62,7 +62,7 @@ sub run {
     }
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List tasks:'
+        short_msg => 'List plans:'
     );
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -94,7 +94,7 @@ __END__
 
 =head1 MODE
 
-List tasks.
+List plans.
 
 =over 8
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::talend::tmc::mode::tasks;
+package cloud::talend::tmc::mode::plans;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -88,20 +88,20 @@ sub custom_duration_threshold {
     );
 }
 
-sub task_long_output {
+sub plan_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking task '%s'",
+        "checking plan '%s'",
         $options{instance_value}->{name}
     );
 }
 
-sub prefix_task_output {
+sub prefix_plan_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "task '%s' ",
+        "plan '%s' ",
         $options{instance_value}->{name}
     );
 }
@@ -109,7 +109,7 @@ sub prefix_task_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of tasks ';
+    return 'Number of plans ';
 }
 
 sub prefix_execution_output {
@@ -128,7 +128,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'tasks', type => 3, cb_prefix_output => 'prefix_task_output', cb_long_output => 'task_long_output', indent_long_output => '    ', message_multiple => 'All tasks are ok',
+            name => 'plans', type => 3, cb_prefix_output => 'prefix_plan_output', cb_long_output => 'plan_long_output', indent_long_output => '    ', message_multiple => 'All plans are ok',
             group => [
                 { name => 'failed', type => 0 },
                 { name => 'timers', type => 0, skipped_code => { -10 => 1 } },
@@ -138,7 +138,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'tasks-executions-detected', display_ok => 0, nlabel => 'tasks.executions.detected.count', set => {
+        { label => 'plans-executions-detected', display_ok => 0, nlabel => 'plans.executions.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'executions detected: %s',
                 perfdatas => [
@@ -149,7 +149,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{failed} = [
-        { label => 'task-executions-failed-prct', nlabel => 'task.executions.failed.percentage', set => {
+        { label => 'plan-executions-failed-prct', nlabel => 'plan.executions.failed.percentage', set => {
                 key_values => [ { name => 'failedPrct' } ],
                 output_template => 'number of failed executions: %.2f %%',
                 perfdatas => [
@@ -160,7 +160,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{timers} = [
-         { label => 'task-execution-last', nlabel => 'task.execution.last', set => {
+         { label => 'plan-execution-last', nlabel => 'plan.execution.last', set => {
                 key_values  => [ { name => 'lastExecSeconds' }, { name => 'lastExecHuman' }, { name => 'name' } ],
                 output_template => 'last execution %s',
                 output_use => 'lastExecHuman',
@@ -168,7 +168,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_last_exec_threshold')
             }
         },
-        { label => 'task-running-duration', nlabel => 'task.running.duration', set => {
+        { label => 'plan-running-duration', nlabel => 'plan.running.duration', set => {
                 key_values  => [ { name => 'durationSeconds' }, { name => 'durationHuman' }, { name => 'name' } ],
                 output_template => 'running duration %s',
                 output_use => 'durationHuman',
@@ -185,7 +185,7 @@ sub set_counters {
             critical_default => '%{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i',
             set => {
                 key_values => [
-                    { name => 'status' }, { name => 'taskName' }
+                    { name => 'status' }, { name => 'planName' }
                 ],
                 output_template => "status: %s",
                 closure_custom_perfdata => sub { return 0; },
@@ -201,7 +201,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'task-id:s'          => { name => 'task_id' },
+        'plan-id:s'          => { name => 'plan_id' },
         'environment-name:s' => { name => 'environment_name' },
         'since-timeperiod:s' => { name => 'since_timeperiod' },
         'unit:s'             => { name => 'unit', default => 's' }
@@ -246,92 +246,92 @@ sub manage_selection {
         }
     }
 
-    my $tasks_config = $options{custom}->get_tasks_config();
+    my $plans_config = $options{custom}->get_plans_config();
 
     my $to = time();
-    my $tasks_exec = $options{custom}->get_tasks_execution(
+    my $plans_exec = $options{custom}->get_plans_execution(
         from => ($to - $self->{option_results}->{since_timeperiod}) * 1000,
         to => $to * 1000,
         environmentId => $environmentId,
-        taskId => $self->{option_results}->{task_id}
+        planId => $self->{option_results}->{plan_id}
     );
 
     $self->{cache_exec}->read(statefile => 'talend_tmc_' . $self->{mode} . '_' . 
         Digest::MD5::md5_hex(
-            (defined($self->{option_results}->{task_id}) ? $self->{option_results}->{task_id} : '') . '_' .
+            (defined($self->{option_results}->{plan_id}) ? $self->{option_results}->{plan_id} : '') . '_' .
             (defined($self->{option_results}->{environment_name}) ? $self->{option_results}->{environment_name} : '')
         )
     );
     my $ctime = time();
-    my $last_exec_times = $self->{cache_exec}->get(name => 'tasks');
+    my $last_exec_times = $self->{cache_exec}->get(name => 'plans');
     $last_exec_times = {} if (!defined($last_exec_times));    
 
     $self->{global} = { detected => 0 };
-    $self->{tasks} = {};
-    foreach my $task (@$tasks_config) {
-        next if (defined($self->{option_results}->{task_id}) && $self->{option_results}->{task_id} ne '' && $task->{executable} ne $self->{option_results}->{task_id});
-        next if (defined($environmentId) && $task->{workspace}->{environment}->{id} ne $environmentId);
+    $self->{plans} = {};
+    foreach my $plan (@$plans_config) {
+        next if (defined($self->{option_results}->{plan_id}) && $self->{option_results}->{plan_id} ne '' && $plan->{executable} ne $self->{option_results}->{plan_id});
+        next if (defined($environmentId) && $plan->{workspace}->{environment}->{id} ne $environmentId);
 
-        $self->{tasks}->{ $task->{name} } = {
-            name => $task->{name},
+        $self->{plans}->{ $plan->{name} } = {
+            name => $plan->{name},
             timers => {},
             executions => {}
         };
 
         my ($last_exec, $older_running_exec);
         my ($failed, $total) = (0, 0);
-        foreach my $task_exec (@$tasks_exec) {
-            next if ($task_exec->{taskId} ne $task->{executable});
+        foreach my $plan_exec (@$plans_exec) {
+            next if ($plan_exec->{planId} ne $plan->{executable});
 
-            if (!defined($task_exec->{finishTimestamp})) {
-                $older_running_exec = $task_exec;
+            if (!defined($plan_exec->{finishTimestamp})) {
+                $older_running_exec = $plan_exec;
             }
             if (!defined($last_exec)) {
-                $last_exec = $task_exec;
+                $last_exec = $plan_exec;
             }
 
             $self->{global}->{detected}++;
-            $failed++ if ($task_exec->{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/);
+            $failed++ if ($plan_exec->{status} =~ /execution_failed/);
             $total++;
         }
 
-        $self->{tasks}->{ $task->{name} }->{failed} = {
+        $self->{plans}->{ $plan->{name} }->{failed} = {
             failedPrct => $total > 0 ? $failed * 100 / $total : 0
         };
 
         if (defined($last_exec)) {
-            $self->{tasks}->{ $task->{name} }->{executions}->{ $last_exec->{executionId} } = {
+            $self->{plans}->{ $plan->{name} }->{executions}->{ $last_exec->{executionId} } = {
                 executionId => $last_exec->{executionId},
-                taskName => $task->{name},
+                planName => $plan->{name},
                 started => $last_exec->{startTimestamp},
                 status => $last_exec->{status}
             };
 
             $last_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
-            $last_exec_times->{ $task->{name} } = $dt->epoch();
+            $last_exec_times->{ $plan->{name} } = $dt->epoch();
         }
 
-        $self->{tasks}->{ $task->{name} }->{timers} = {
-            name => $task->{name},
-            lastExecSeconds => defined($last_exec_times->{ $task->{name} }) ? $ctime - $last_exec_times->{ $task->{name} } : -1,
+        $self->{plans}->{ $plan->{name} }->{timers} = {
+            name => $plan->{name},
+            lastExecSeconds => defined($last_exec_times->{ $plan->{name} }) ? $ctime - $last_exec_times->{ $plan->{name} } : -1,
             lastExecHuman => 'never'
         };
-        if (defined($last_exec_times->{ $task->{name} })) {
-            $self->{tasks}->{ $task->{name} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime -  $last_exec_times->{ $task->{name} });
+        if (defined($last_exec_times->{ $plan->{name} })) {
+            $self->{plans}->{ $plan->{name} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime -  $last_exec_times->{ $plan->{name} });
         }
 
         if (defined($older_running_exec)) {
             $older_running_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
             my $duration = $ctime - $dt->epoch();
-            $self->{tasks}->{ $task->{name} }->{timers}->{durationSeconds} = $duration;
-            $self->{tasks}->{ $task->{name} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+            $self->{plans}->{ $plan->{name} }->{timers}->{durationSeconds} = $duration;
+            $self->{plans}->{ $plan->{name} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
         }
     }
 
     $self->{cache_exec}->write(data => {
-        tasks => $last_exec_times
+        plans => $last_exec_times
     });
 }
 
@@ -341,13 +341,13 @@ __END__
 
 =head1 MODE
 
-Check tasks.
+Check plans.
 
 =over 8
 
-=item B<--task-id>
+=item B<--plan-id>
 
-Task filter .
+Plan filter.
 
 =item B<--environment-name>
 
@@ -355,7 +355,7 @@ Environment filter.
 
 =item B<--since-timeperiod>
 
-Time period to get tasks and plans execution informations (in seconds. Default: 86400). 
+Time period to get plans execution informations (in seconds. Default: 86400). 
 
 =item B<--unit>
 
@@ -364,24 +364,24 @@ Select the unit for last execution time threshold. May be 's' for seconds, 'm' f
 
 =item B<--unknown-execution-status>
 
-Set unknown threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+Set unknown threshold for last plan execution status.
+Can used special variables like: %{status}, %{planName}
 
 =item B<--warning-execution-status>
 
-Set warning threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+Set warning threshold for last plan execution status.
+Can used special variables like: %{status}, %{planName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+Set critical threshold for last plan execution status.
+Can used special variables like: %{status}, %{planName}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tasks-executions-detected', 'task-executions-failed-prct',
-'task-execution-last', 'task-running-duration'.
+Can be: 'plans-executions-detected', 'plan-executions-failed-prct',
+'plan-execution-last', 'plan-running-duration'.
 
 =back
 
