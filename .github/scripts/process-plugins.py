@@ -13,6 +13,7 @@ list_plugins_dir = set()
 list_packages = set()
 
 if not common:
+    print(plugin)
     for plugin in plugins.split(' '):
         try:
             found = re.search('(.*)\/mode\/.*', plugin).group(1)
@@ -23,7 +24,6 @@ if not common:
                 list_plugins_dir.add(found)
             except AttributeError:
                 pass
-    print(*list_plugins_dir)
     updated_packages = packages.split(' ')
 
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
