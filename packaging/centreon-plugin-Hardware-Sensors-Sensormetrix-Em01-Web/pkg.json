@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Sensors-Sensormetrix-Em01-Web",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_sensormetrix.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "hardware/sensors/sensormetrix/em01/web/"
+    ]
+}

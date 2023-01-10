@@ -1,0 +1,36 @@
+name: run-in-docker
+description: Run step in docker container
+inputs:
+  script_name:
+    description: "script_name"
+    required: true
+  image_name:
+    description: "image_name"
+    required: true
+  image_version:
+    description: "image_version"
+    required: true
+  centreon_pat:
+    description: "Secret"
+    required: false
+  artifactory_username:
+    description: The artifactory username
+    required: true
+  artifactory_password:
+    description: The artifactory password
+    required: true
+  params:
+    description: "params for script"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Registry (via runner)
+      uses: docker/login-action@v2
+      with:
+        registry: docker.centreon.com
+        username: ${{ inputs.artifactory_username }}
+        password: ${{ inputs.artifactory_password }}
+
+    - run: docker run -i -e TOKEN=${{ inputs.centreon_pat }} --entrypoint /src/.github/scripts/${{ inputs.script_name }}.sh -v "$PWD:/src" docker.centreon.com/${{ inputs.image_name }}:${{ inputs.image_version }} ${{ inputs.params }}
+      shell: bash

@@ -1,0 +1,16 @@
+{
+    "pkg_name": "centreon-plugin-Network-Switchs-Juniper-Ex-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_juniper_ex_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/storage.pm",
+        "network/juniper/common/junos/",
+        "network/juniper/ex/"
+    ]
+}

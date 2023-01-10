@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(Net::FTP)",
+        "perl(Net::FTPSSL)",
+        "perl(Time::HiRes)",
+        "perl(File::Basename)"
+    ]
+}

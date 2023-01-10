@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Hp-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ups_hp_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+	"snmp_standard/mode/ntp.pm",
+        "hardware/ups/hp/snmp/"
+    ]
+}

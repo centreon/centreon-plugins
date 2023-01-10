@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Kadiska-Restapi",
+    "pkg_summary": "Centreon plugin Kadiska Rest API",
+    "plugin_name": "centreon_monitoring_kadiska_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/kadiska/"
+    ]
+}

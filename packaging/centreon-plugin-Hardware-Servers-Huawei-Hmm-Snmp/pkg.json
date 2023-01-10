@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Huawei-Hmm-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_huawei_hmm_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/server/huawei/hmm/snmp/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Rrdtool",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_rrdtool.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+	"centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+	"database/rrdtool/local/"
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(DateTime)",
+        "perl(Digest::SHA)",
+        "perl(DateTime-Format-Duration-ISO8601)",
+        "perl(DateTime::Duration)"
+    ]
+}

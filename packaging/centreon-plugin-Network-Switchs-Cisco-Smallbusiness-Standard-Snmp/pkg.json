@@ -1,0 +1,16 @@
+{
+    "pkg_name": "centreon-plugin-Network-Switchs-Cisco-Smallbusiness-Standard-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Cisco Small Business switches using SNMP",
+    "plugin_name": "centreon_cisco_smallbusiness.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/listspanningtrees.pm",
+        "snmp_standard/mode/spanningtree.pm",
+        "centreon/common/cisco/smallbusiness/snmp/",
+        "network/cisco/smallbusiness/standard/snmp/"
+    ]
+}

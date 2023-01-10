@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Fritzbox-Upnp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_fritzbox_upnp.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/fritzbox/upnp/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Kubernetes-Api",
+    "pkg_summary": "Centreon Plugin to monitor Kubernetes cluster using CLI (kubectl) or RestAPI",
+    "plugin_name": "centreon_kubernetes_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/kubernetes/"
+    ]
+}

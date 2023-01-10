@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Device-Safenet-Keysecure-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_safenet_keysecure.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "centreon/common/ingrian/snmp/",
+        "hardware/devices/safenet/keysecure/snmp/"
+    ]
+}

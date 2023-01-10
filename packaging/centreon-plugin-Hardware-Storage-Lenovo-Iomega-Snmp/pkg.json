@@ -1,0 +1,15 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Lenovo-Iomega-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_lenovo_iomega_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/resources/",
+        "storage/lenovo/iomega/snmp/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Nodeexporter-Linux",
+    "pkg_summary": "Centreon Plugin to monitor host through Linux node exporter",
+    "plugin_name": "centreon_monitoring_nodeexporter_linux.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/scrape.pm",
+        "centreon/common/monitoring/openmetrics/custom/web.pm",
+        "apps/monitoring/nodeexporter/linux/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Firebird",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_database_firebird.pl",
+    "files": [
+        "centreon/plugins/script_sql.pm",
+        "centreon/plugins/dbi.pm",
+        "centreon/common/protocols/sql/",
+        "database/firebird/"
+    ]
+}

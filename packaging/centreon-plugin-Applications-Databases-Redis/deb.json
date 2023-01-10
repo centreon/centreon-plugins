@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "libredis-perl",
+        "plink",
+        "libssh-session-perl"
+    ]
+}

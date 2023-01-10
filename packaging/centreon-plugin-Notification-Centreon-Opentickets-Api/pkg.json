@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Centreon-Opentickets-Api",
+    "pkg_summary": "Centreon Plugin to send notifications to Centreon Open Tickets",
+    "plugin_name": "centreon_notification_centreon_opentickets_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "notification/centreon/opentickets/api/"
+    ]
+}

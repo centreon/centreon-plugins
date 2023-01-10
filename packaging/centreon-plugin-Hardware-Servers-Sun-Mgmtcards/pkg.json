@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Sun-Mgmtcards",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_sun_mgmtcards.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "hardware/server/sun/mgmt_cards/"
+    ]
+}

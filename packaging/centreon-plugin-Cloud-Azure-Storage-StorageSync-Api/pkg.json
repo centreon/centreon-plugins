@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Storage-StorageSync-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure StorageSync service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_storage_storagesync_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/storage/storagesync/"
+    ]
+}

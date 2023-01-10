@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(Time::HiRes)",
+        "perl(Email::Send::SMTP::Gmail)"
+    ]
+}

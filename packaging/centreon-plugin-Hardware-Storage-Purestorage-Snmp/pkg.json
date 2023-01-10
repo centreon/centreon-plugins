@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Purestorage-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_purestorage_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/purestorage/snmp/"
+    ]
+}

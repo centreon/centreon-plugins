@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Pdu-Gude-Epc-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_pdu_gude_epc_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/pdu/gude/epc/snmp/"
+    ]
+}

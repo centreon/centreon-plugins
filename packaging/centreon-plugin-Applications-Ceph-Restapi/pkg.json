@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Ceph-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ceph_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/ceph/restapi/"
+    ]
+}

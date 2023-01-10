@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(Net::SSLeay)",
+        "perl(DateTime)"
+    ]
+}

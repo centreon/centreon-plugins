@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Firepower-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_firepower_fxos_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "network/cisco/firepower/fxos/snmp/"
+    ]
+}

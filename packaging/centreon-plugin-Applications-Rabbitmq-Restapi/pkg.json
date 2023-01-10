@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Rabbitmq-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor RabbitMQ using RestAPI",
+    "plugin_name": "centreon_rabbitmq_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/mq/rabbitmq/restapi/"
+    ]
+}

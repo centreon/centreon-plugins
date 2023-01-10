@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "plink",
+        "libssh-session-perl",
+        "libjson-perl",
+        "libxml-libxml-perl",
+        "libdbi-perl",
+        "libdbd-mysql-perl"
+    ]
+}

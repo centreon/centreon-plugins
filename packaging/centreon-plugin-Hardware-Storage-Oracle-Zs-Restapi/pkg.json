@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Oracle-Zs-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Oracle ZS storage using Rest API",
+    "plugin_name": "centreon_oracle_zs_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/oracle/zs/restapi/"
+    ]
+}

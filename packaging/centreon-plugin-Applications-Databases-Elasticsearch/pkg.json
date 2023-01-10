@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Elasticsearch",
+    "pkg_summary": "Centreon Plugin to monitor Elasticsearch databases using RestAPI",
+    "plugin_name": "centreon_elasticsearch.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "database/elasticsearch/restapi/"
+    ]
+}

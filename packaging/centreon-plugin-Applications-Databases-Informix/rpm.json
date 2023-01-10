@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "perl(DBI)",
+        "perl(Digest::MD5)",
+        "perl(Data::Dumper)",
+        "perl(Time::HiRes)",
+        "perl(POSIX)"
+    ]
+}

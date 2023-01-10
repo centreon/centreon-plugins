@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Vmware2-Connector-Plugin",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_vmware_connector_client.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/vmware/connector/"
+    ]
+}

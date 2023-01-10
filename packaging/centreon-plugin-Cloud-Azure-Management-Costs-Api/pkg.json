@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Management-Costs-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Consumptions using RestAPI",
+    "plugin_name": "centreon_azure_management_costs_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/management/costs/"
+    ]
+}

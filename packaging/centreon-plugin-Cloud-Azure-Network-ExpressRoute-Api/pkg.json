@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Network-ExpressRoute-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Network provider/ExpressRoute service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_network_expressroute_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/management/monitor/mode/health.pm",
+        "cloud/azure/network/expressroute/"
+    ]
+}

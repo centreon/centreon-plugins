@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-HashiCorp-Vault-Restapi",
+    "pkg_summary": "Centreon Plugin to check the status and health of a HashiCorp Vault environment",
+    "plugin_name": "centreon_hashicorp_vault_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/hashicorp/vault/restapi/"
+    ]
+}

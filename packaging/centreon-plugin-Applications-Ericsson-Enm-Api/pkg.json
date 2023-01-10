@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Ericsson-Enm-Api",
+    "pkg_summary": "Centreon Plugin to monitor Ericsson ENM throught API",
+    "plugin_name": "centreon_ericsson_enm_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/ericsson/enm/api/"
+    ]
+}

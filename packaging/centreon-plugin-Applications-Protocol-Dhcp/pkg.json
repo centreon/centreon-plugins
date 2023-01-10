@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Dhcp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_dhcp.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/protocols/dhcp/"
+    ]
+}

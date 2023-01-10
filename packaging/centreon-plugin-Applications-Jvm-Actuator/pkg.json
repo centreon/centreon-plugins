@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Jvm-Actuator",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_jvm_actuator.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/actuator/custom/",
+        "apps/java/jvm/actuator/"
+    ]
+}

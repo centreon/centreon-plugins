@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-AS400-Connector",
+    "pkg_summary": "Centreon Plugin to monitor AS400",
+    "plugin_name": "centreon_as400_connector_client.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "os/as400/connector/"
+    ]
+}
+

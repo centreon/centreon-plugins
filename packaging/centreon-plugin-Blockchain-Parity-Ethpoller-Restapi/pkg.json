@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Blockchain-Parity-Ethpoller-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Blockchain Parity Ethpoller using Restapi",
+    "plugin_name": "centreon_blockchain_parity_ethpoller_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "blockchain/parity/ethpoller/"
+    ]
+}

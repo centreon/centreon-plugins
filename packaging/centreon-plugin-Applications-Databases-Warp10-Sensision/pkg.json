@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Warp10-Sensision",
+    "pkg_summary": "Centreon Plugin to monitor Warp10 time series databases using Sensision",
+    "plugin_name": "centreon_warp10_sensision.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "centreon/common/monitoring/openmetrics/",
+        "database/warp10/sensision/"
+    ]
+}

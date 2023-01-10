@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Redis-Sentinel",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_redis_sentinel.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "apps/redis/sentinel/"
+    ]
+}

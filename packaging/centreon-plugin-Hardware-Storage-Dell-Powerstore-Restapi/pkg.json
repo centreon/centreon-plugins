@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Dell-Powerstore-Restapi",
+    "pkg_summary": "Centreon Plugin Dell PowerStore Rest API",
+    "plugin_name": "centreon_dell_powerstore_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/dell/powerstore/restapi/"
+    ]
+}

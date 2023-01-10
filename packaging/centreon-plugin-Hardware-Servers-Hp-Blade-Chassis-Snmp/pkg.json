@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Hp-Blade-Chassis-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_bladechassis.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/server/hp/bladechassis/snmp"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Wlc-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_wlc.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "network/cisco/wlc/snmp/",
+        "centreon/common/airespace/snmp/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Adic-Tape-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_adic_tape_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/adic/tape/snmp/",
+        "storage/adic/tape/snmp/"
+    ]
+}

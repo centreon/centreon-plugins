@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Lenovo-Rackswitch-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_lenovo_rackswitch_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "network/lenovo/rackswitch/snmp/"
+    ]
+}

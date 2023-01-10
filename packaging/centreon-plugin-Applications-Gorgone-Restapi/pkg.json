@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Gorgone-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_gorgone_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/gorgone/restapi/"
+    ]
+}

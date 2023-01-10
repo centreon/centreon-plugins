@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "perl(DateTime)",
+        "perl(JSON::WebToken)",
+        "perl(Crypt::OpenSSL::RSA)"
+    ]
+}

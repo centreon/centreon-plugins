@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Ibm-Softlayer-Api",
+    "pkg_summary": "Centreon Plugin to monitor IBM Cloud SoftLayer using API",
+    "plugin_name": "centreon_ibm_softlayer_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/ibm/softlayer/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "libtime-hires-perl",
+        "libdbi-perl",
+        "libdbd-sybase-perl",
+        "freetds-bin",
+        "unixodbc"
+    ]
+}

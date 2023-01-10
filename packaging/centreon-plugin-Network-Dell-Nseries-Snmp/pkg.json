@@ -1,0 +1,17 @@
+{
+    "pkg_name": "centreon-plugin-Network-Dell-Nseries-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_nseries_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/ntp.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "centreon/common/dell/powerconnect3000/",
+        "centreon/common/dell/fastpath/",
+        "network/dell/nseries/snmp/"
+    ]
+}

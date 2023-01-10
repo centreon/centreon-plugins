@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Gcp-Compute-ComputeEngine-Api",
+    "pkg_summary": "Centreon Plugin to monitor Google Cloud Platform Compute provider/Compute Engine service using RestAPI",
+    "plugin_name": "centreon_gcp_compute_computeengine_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/google/gcp/custom/",
+        "cloud/google/gcp/compute/computeengine/"
+    ]
+}

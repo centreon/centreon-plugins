@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Storage-StorageAccount-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Storage provider/Storage Account service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_storage_storageaccount_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/common/storageaccount/",
+        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/management/monitor/mode/health.pm",
+        "cloud/azure/storage/storageaccount/"
+    ]
+}

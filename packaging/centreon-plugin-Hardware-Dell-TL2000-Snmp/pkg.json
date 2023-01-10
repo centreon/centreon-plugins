@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Dell-TL2000-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_tl2000_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/dell/TL2000/"
+    ]
+}

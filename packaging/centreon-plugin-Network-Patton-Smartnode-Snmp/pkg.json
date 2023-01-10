@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Network-Patton-Smartnode-Snmp",
+    "pkg_summary": "Centreon Plugin Patton Smartnode SNMP",
+    "plugin_name": "centreon_patton_smartnode.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/patton/smartnode/snmp/"
+    ]
+}

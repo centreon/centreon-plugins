@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Billing-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS Billing service using Cloudwatch API",
+    "plugin_name": "centreon_aws_billing_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/billing/"
+    ]
+}

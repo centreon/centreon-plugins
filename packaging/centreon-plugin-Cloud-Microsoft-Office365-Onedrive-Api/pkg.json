@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Microsoft-Office365-Onedrive-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Office 365 OneDrive using RestAPI",
+    "plugin_name": "centreon_office365_onedrive_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/microsoft/office365/custom/graphapi.pm",
+        "cloud/microsoft/office365/onedrive/"
+    ]
+}

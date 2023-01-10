@@ -1,0 +1,121 @@
+name: plugins
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/plugins.yml'
+      - 'centreon-plugins/**'
+      - 'packaging/**'
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - '.github/workflows/plugins.yml'
+      - 'centreon-plugins/**'
+      - 'packaging/**'
+    tags:
+      - centreon-plugins-*
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  get-plugins:
+    runs-on: ubuntu-22.04
+    outputs:
+      plugins: ${{ steps.get_plugins.outputs.plugins }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            common:
+              - added|deleted|modified:
+                - 'centreon-plugins/centreon/**'
+                - 'packaging/rpm/**'
+                - 'packaging/debian/**'
+            packages:
+              - added|modified:
+                - 'packaging/centreon-**'
+            plugins:
+              - added|modified:
+                - 'centreon-plugins/**'
+
+      - name: transform to directories
+        id: transform
+        run: |
+          folders=()
+          for f in ${{ steps.filter.outputs.packages_files }}; \
+            do \
+              echo "Adding $(dirname $f) to folders"; \
+              folders+=($(dirname $f)); \
+          done
+          unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
+          echo "package_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+
+          folders=()
+          for f in ${{ steps.filter.outputs.plugins_files }}; \
+            do \
+              echo "Adding $(dirname $f) to folders"; \
+              folders+=($(dirname $f)); \
+          done
+          unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
+          echo "plugin_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+
+      - name: Get plugins for build
+        id: get_plugins
+        if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
+        run: |
+          PLUGINS="$(python3 .github/scripts/process-plugins.py \
+            '${{ steps.filter.outputs.common == 'true' }}' \
+            '${{ steps.transform.outputs.package_directories }}' \
+            '${{ steps.filter.outputs.plugin_directories }}' \
+          )"
+          echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
+          if [ "$PLUGINS" == '' ]; then
+            echo "::notice::There are no modifications to the plugins packages"
+          fi
+
+  package:
+    needs: [get-environment, get-plugins]
+    uses: ./.github/workflows/plugin-package.yml
+    with:
+      plugins: ${{ needs.get-plugins.outputs.plugins }}
+      version: ${{ needs.get-environment.outputs.version }}
+      release: ${{ needs.get-environment.outputs.release }}
+    secrets:
+      artifactory_username: ${{ secrets.REPOS_USERNAME }}
+      artifactory_password: ${{ secrets.REPOS_PASSWORD }}
+
+  deliver:
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    uses: ./.github/workflows/plugin-delivery.yml
+    with:
+      version: ${{ needs.get-environment.outputs.version }}
+      release: ${{ needs.get-environment.outputs.release }}
+      stability: ${{ needs.get-environment.outputs.stability }}
+    secrets:
+      artifactory_username: ${{ secrets.NEXUS_USER }}
+      artifactory_password: ${{ secrets.NEXUS_PASSWD }}
+      update_repo_path: ${{ secrets.UPDATE_REPO_PATH }}
+      cloudfront_id: ${{ secrets.CLOUDFRONT_ID }}
+      yum_repo_address: ${{ secrets.YUM_REPO_ADDRESS }}
+      yum_repo_key: ${{ secrets.YUM_REPO_KEY }}

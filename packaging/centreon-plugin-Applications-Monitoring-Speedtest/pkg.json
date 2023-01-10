@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Speedtest",
+    "pkg_summary": "Centreon Plugin to monitor internet bandwidth using speedtest.net",
+    "plugin_name": "centreon_monitoring_speedtest.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "apps/monitoring/speedtest/"
+    ]
+}

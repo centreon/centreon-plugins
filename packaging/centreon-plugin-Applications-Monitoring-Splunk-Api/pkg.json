@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Splunk-Api",
+    "pkg_summary": "Centreon Plugin Splunk API",
+    "plugin_name": "centreon_monitoring_splunk_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/splunk/"
+    ]
+}

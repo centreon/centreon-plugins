@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Cisco-Ise-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco ISE (Identity Services Engine) using RestAPI",
+    "plugin_name": "centreon_cisco_ise_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/cisco/ise/restapi/"
+    ]
+}

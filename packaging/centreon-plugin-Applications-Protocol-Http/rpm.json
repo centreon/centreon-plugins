@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(JSON)",
+        "perl(Time::HiRes)",
+        "perl(XML::XPath)",
+        "perl(XML::LibXML::Simple)"
+    ]
+}

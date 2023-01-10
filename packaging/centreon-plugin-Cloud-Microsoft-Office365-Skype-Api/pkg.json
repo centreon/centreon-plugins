@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Microsoft-Office365-Skype-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Office 365 Skype for Business using RestAPI",
+    "plugin_name": "centreon_office365_skype_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/microsoft/office365/custom/graphapi.pm",
+        "cloud/microsoft/office365/skype/"
+    ]
+}

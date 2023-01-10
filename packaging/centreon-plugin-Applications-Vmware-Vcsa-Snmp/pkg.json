@@ -1,0 +1,17 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Vmware-Vcsa-Snmp",
+    "pkg_summary": "Centreon Plugin VMWare vcsa snmp",
+    "plugin_name": "centreon_vmware_vcsa_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/uptime.pm",
+        "apps/vmware/vcsa/snmp/"
+    ]
+}

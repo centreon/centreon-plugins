@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Wallix-Bastion-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor WALLIX Bastion using SNMP",
+    "plugin_name": "centreon_wallix_bastion_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "apps/wallix/bastion/snmp/"
+    ]
+}

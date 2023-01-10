@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Aruba-Orchestrator-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_aruba_orchestrator_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/aruba/orchestrator/restapi/"
+    ]
+}

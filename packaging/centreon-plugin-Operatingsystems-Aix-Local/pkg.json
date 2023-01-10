@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Aix-Local",
+    "pkg_summary": "Centreon Plugin to monitor AIX localy",
+    "plugin_name": "centreon_aix_local.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "os/aix/local/"
+    ]
+}

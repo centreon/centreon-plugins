@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libdbi-perl",
+        "libdbd-mysql-perl"
+    ]
+}

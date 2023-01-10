@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Database-SqlServer-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Database provider/SQL Server service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_database_sqlserver_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/management/monitor/mode/health.pm",
+        "cloud/azure/database/sqlserver/"
+    ]
+}

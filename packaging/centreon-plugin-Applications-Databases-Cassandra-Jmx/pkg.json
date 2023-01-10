@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Database-Cassandra-Jmx",
+    "pkg_summary": "Centreon Plugin to monitor Database Cassandra using Jmx protocol",
+    "plugin_name": "centreon_cassandra_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "database/cassandra/jmx/"
+    ]
+}

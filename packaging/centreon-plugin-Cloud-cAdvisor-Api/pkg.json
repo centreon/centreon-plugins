@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-cAdvisor-Api",
+    "pkg_summary": "Centreon Plugin to check containers and nodes metrics through cAdvisor API",
+    "plugin_name": "centreon_cadvisor_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/cadvisor/restapi/"
+    ]
+}

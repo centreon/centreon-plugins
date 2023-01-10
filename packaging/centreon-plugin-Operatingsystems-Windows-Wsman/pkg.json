@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Windows-Wsman",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_windows_wsman.pl",
+    "files": [
+        "centreon/plugins/script_wsman.pm",
+        "centreon/plugins/wsman.pm",
+        "os/windows/wsman/",
+        "centreon/common/powershell/functions.pm",
+        "centreon/common/powershell/windows/pendingreboot.pm"
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Solaris-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_solaris_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpudetailed.pm",
+        "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+	"snmp_standard/mode/listprocesses.pm",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/processcount.pm",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/tcpcon.pm",
+        "snmp_standard/mode/uptime.pm",
+        "os/solaris/snmp"
+    ]
+}

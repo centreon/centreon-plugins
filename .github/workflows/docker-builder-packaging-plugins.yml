@@ -1,0 +1,55 @@
+name: docker-builder-packaging-plugins
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - develop
+#    paths:
+#      - ".github/workflows/docker-builder-packaging-plugins.yml"
+#      - ".github/docker/*"
+#  pull_request:
+#    paths:
+#      - ".github/workflows/docker-builder-packaging-plugins.yml"
+#      - ".github/docker/*"
+
+jobs:
+  create-and-push-docker:
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [centos7, alma8, bullseye]
+        include:
+          - project: plugins
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Login to Registry
+        uses: docker/login-action@v2
+        with:
+          registry: docker.centreon.com
+          username: ${{ secrets.REPOS_USERNAME }}
+          password: ${{ secrets.REPOS_PASSWORD }}
+
+      - name: Login to proxy registry
+        uses: docker/login-action@v2
+        with:
+          registry: docker-proxy.centreon.com
+          username: ${{ secrets.REPOS_USERNAME }}
+          password: ${{ secrets.REPOS_PASSWORD }}
+
+      - uses: docker/setup-buildx-action@v2
+
+      - uses: docker/build-push-action@v3
+        with:
+          file: .github/docker/Dockerfile.packaging-${{ matrix.project }}-${{ matrix.distrib }}
+          context: .
+          pull: true
+          push: true
+          tags: docker.centreon.com/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Nodeexporter-Windows",
+    "pkg_summary": "Centreon Plugin to monitor host through Windows node exporter",
+    "plugin_name": "centreon_monitoring_nodeexporter_windows.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/scrape.pm",
+        "centreon/common/monitoring/openmetrics/custom/web.pm",
+        "apps/monitoring/nodeexporter/windows/"
+    ]
+}

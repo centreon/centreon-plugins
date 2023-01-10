@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Gcp-CloudSQL-MySQL-Api",
+    "pkg_summary": "Centreon Plugin to monitor Google Cloud Platform CloudSQL MySQL service using RestAPI",
+    "plugin_name": "centreon_gcp_cloudsql_mysql_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/google/gcp/custom/",
+        "cloud/google/gcp/cloudsql/common/",
+        "cloud/google/gcp/cloudsql/mysql/"
+    ]
+}

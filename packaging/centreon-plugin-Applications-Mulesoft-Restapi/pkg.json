@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Mulesoft-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Mulesoft Anypoint resources using Restapi",
+    "plugin_name": "centreon_mulesoft_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/mulesoft/restapi/"
+    ]
+}

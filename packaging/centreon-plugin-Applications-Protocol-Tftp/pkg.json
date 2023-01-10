@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Tftp",
+    "pkg_summary": "Centreon Plugin Protocol TFTP",
+    "plugin_name": "centreon_protocol_tftp.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/protocols/tftp/"
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Ansible-Cli",
+    "pkg_summary": "Centreon Plugin to interact with Ansible using CLI",
+    "plugin_name": "centreon_ansible_cli.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "apps/automation/ansible/cli/"
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Compute-Aks-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Kubernetes Service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_compute_aks_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/management/monitor/mode/health.pm",
+        "cloud/azure/compute/aks/"
+    ]
+} 

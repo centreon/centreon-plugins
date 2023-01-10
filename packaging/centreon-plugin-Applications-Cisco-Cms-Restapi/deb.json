@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libxml-simple-perl",
+        "libdatetime-perl"
+    ]
+}

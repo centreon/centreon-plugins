@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Adva-Fsp150-Snmp",
+    "pkg_summary": "Centreon Plugin Adva FSP150 SNMP",
+    "plugin_name": "centreon_adva_fsp150_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "network/adva/fsp150/snmp/"
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libdigest-sha-perl",
+        "libjson-perl"
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(Digest::MD5)",
+        "perl(SNMP)"
+    ]
+}

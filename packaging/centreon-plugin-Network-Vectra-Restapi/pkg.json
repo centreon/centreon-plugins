@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Vectra-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Vectra using Rest API",
+    "plugin_name": "centreon_vectra_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/vectra/restapi/"
+    ]
+}

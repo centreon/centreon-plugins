@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Microsoft-Office365-Teams-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Office 365 Microsoft Teams using RestAPI",
+    "plugin_name": "centreon_office365_teams_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/microsoft/office365/custom/graphapi.pm",
+        "cloud/microsoft/office365/teams/"
+    ]
+}

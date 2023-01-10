@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Hpe-Simplivity-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor HPE Simplivity using RestAPI",
+    "plugin_name": "centreon_hpe_simplivity_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/virtualization/hpe/simplivity/restapi/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Hddtemp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hddtemp.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/hddtemp/"
+    ]
+}

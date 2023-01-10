@@ -1,0 +1,64 @@
+name: "deb-package"
+description: "Package DEB Centreon"
+inputs:
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  major_version:
+    description: "The major version"
+    required: true
+  artifactory_username:
+    description: The artifactory username
+    required: true
+  artifactory_password:
+    description: The artifactory password
+    required: true
+  version:
+    description: "Centreon packaged version"
+    required: true
+  release:
+    description: The release number
+    required: true
+  cache_key:
+    description: "The cached package key"
+    required: true
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Use cache DEB files
+      uses: actions/cache@v3
+      with:
+        path: ./*.deb
+        key: ${{ inputs.cache_key }}
+
+    - name: Publish DEBS to Nexus
+      run: |
+        set -e
+        FILES="centreon-plugin-operatingsystems-linux-*.deb"
+
+        VERSION="${{ inputs.version }}"
+        RELEASE="${{ inputs.release }}"
+        REPOTYPE="${{ inputs.stability }}"
+        PROJECT="plugins"
+        PROJECT_PATH="standard"
+
+        find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/${{ inputs.major_version }}-$REPOTYPE/
+
+        #for MAJOR in "22.04" "22.10"; do
+        #  echo "Delivering to $MAJOR $REPOTYPE"
+
+        #  find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR-$REPOTYPE/
+
+        #  for FILE in $FILES; do
+        #    echo "::group::Delivering $FILE"
+
+            #curl -v -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@./$FILE" https://apt.centreon.com/repository/$MAJOR-$REPOTYPE/
+
+        #    echo "::endgroup::"
+        #  done
+        #done
+      shell: bash

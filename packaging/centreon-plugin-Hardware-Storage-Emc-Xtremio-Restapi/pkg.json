@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Emc-Xtremio-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_emc_xtremio.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/emc/xtremio/restapi/"
+    ]
+}

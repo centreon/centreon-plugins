@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Jenkins",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_jenkins.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/jenkins/"
+    ]
+}

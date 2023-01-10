@@ -1,0 +1,27 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Cloudwatch-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS using Cloudwatch API",
+    "plugin_name": "centreon_aws_cloudwatch_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/cloudwatch/",
+        "cloud/aws/apigateway/mode/discovery.pm",
+        "cloud/aws/backup/mode/discovery.pm",
+        "cloud/aws/ebs/mode/discovery.pm",
+        "cloud/aws/ec2/mode/discovery.pm",
+        "cloud/aws/ec2/mode/discoveryspotfleetrequests.pm",
+        "cloud/aws/efs/mode/discovery.pm",
+        "cloud/aws/elb/application/mode/discovery.pm",
+        "cloud/aws/elb/classic/mode/discovery.pm",
+        "cloud/aws/elb/network/mode/discovery.pm",
+        "cloud/aws/fsx/mode/discovery.pm",
+        "cloud/aws/kinesis/mode/discovery.pm",
+        "cloud/aws/lambda/mode/discovery.pm",
+        "cloud/aws/rds/mode/discovery.pm",
+        "cloud/aws/s3/mode/discovery.pm",
+        "cloud/aws/sns/mode/discovery.pm",
+        "cloud/aws/sqs/mode/discovery.pm",
+        "cloud/aws/vpn/mode/discovery.pm"
+    ]
+}

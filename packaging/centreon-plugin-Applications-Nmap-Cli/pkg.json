@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Nmap-Cli",
+    "pkg_summary": "Centreon Plugin based on top of Nmap Binary",
+    "plugin_name": "centreon_nmap_cli.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "apps/nmap/cli/"
+    ]
+}

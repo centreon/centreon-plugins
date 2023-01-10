@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Polycom-Groupseries-Snmp",
+    "pkg_summary": "Centreon Plugin Polycom Groupseries",
+    "plugin_name": "centreon_polycom_groupseries_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/polycom/endpoint/snmp/",
+        "hardware/devices/polycom/groupseries/snmp/"
+    ]
+}

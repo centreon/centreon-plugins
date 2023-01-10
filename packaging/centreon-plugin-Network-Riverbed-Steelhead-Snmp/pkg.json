@@ -1,0 +1,20 @@
+{
+    "pkg_name": "centreon-plugin-Network-Riverbed-Steelhead-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Riverbed SteelHead (common and EX series) using SNMP",
+    "plugin_name": "centreon_riverbed-steelhead.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/cpudetailed.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/memory.pm",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/uptime.pm",
+        "centreon/common/riverbed/steelhead/snmp/",
+        "network/riverbed/steelhead/snmp/"
+    ]
+}

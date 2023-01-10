@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Network-LoadBalancer-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Load Balancers service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_network_loadbalancer_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/network/loadbalancer/"
+    ]
+}

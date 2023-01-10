@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Google-Workspace-Api",
+    "pkg_summary": "Centreon Plugin to monitor the status of Google workspace services using Api",
+    "plugin_name": "centreon_google_workspace_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/google/workspace/"
+    ]
+}

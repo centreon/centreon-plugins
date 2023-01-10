@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Picos-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_picos_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "os/picos/snmp/"
+    ]
+}

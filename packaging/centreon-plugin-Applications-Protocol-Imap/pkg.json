@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Imap",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_imap.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/protocols/imap/"
+    ]
+}

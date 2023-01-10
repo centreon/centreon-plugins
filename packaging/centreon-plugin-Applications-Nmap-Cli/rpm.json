@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "perl",
+        "nmap",
+        "plink",
+        "perl(Libssh::Session)",
+        "perl(XML::Simple)"
+    ]
+}

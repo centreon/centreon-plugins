@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "perl(openwsman)",
+        "perl(MIME::Base64)",
+        "perl(Digest::MD5)",
+        "perl(DateTime)",
+        "perl(POSIX)",
+        "perl(Time::HiRes)"
+    ]
+}

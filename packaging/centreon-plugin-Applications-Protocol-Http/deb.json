@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "libjson-perl",
+        "libxml-xpath-perl",
+        "libxml-libxml-simple-perl"
+    ]
+}

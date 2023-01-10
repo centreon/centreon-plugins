@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libnet-ldap-perl"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Vmware2-Esx-Wsman",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_vmware_esx_wsman.pl",
+    "files": [
+        "centreon/plugins/script_wsman.pm",
+        "centreon/plugins/wsman.pm",
+        "apps/vmware/wsman/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Cisco-Ces-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_ces_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "hardware/devices/cisco/ces/restapi/"
+    ]
+}

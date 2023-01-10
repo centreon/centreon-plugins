@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "libjson-perl",
+        "libconvert-binary-c-perl",
+        "libdigest-crc-perl",
+        "libio-socket-inet6-perl",
+        "libsocket-perl"
+    ]
+}

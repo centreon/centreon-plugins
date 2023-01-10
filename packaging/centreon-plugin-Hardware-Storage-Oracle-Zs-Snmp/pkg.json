@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Oracle-Zs-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_oracle_zs.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/interfaces.pm",
+        "storage/oracle/zs/snmp/"
+    ]
+}

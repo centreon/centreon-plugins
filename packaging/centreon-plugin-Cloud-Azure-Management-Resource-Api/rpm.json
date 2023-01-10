@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "perl(DateTime)",
+        "perl(Digest::SHA)",
+        "perl(DateTime-Format-Duration-ISO8601)",
+        "perl(DateTime::Duration)"
+    ],
+    "custom_pkg_data": "Obsoletes:    centreon-plugin-Cloud-Azure-Resources-Api"
+}

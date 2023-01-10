@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Ibm-Ts3500-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_ts3500.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/ibm/ts3500/snmp/",
+        "centreon/common/ibm/tapelibrary/snmp/mode/"
+    ]
+}

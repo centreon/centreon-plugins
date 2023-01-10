@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Sqs-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon SQS (Simple Queue Service) volumes using Cloudwatch API",
+    "plugin_name": "centreon_aws_sqs_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/sqs/"
+    ]
+}

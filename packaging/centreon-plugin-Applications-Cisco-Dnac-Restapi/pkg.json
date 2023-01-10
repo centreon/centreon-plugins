@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Cisco-Dnac-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco DNA Center using Rest API",
+    "plugin_name": "centreon_cisco_dnac_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/cisco/dnac/restapi/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Cyberpower-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ups_cyberpower_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/cps/ups/snmp/",
+        "hardware/ups/cyberpower/snmp/"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Ec2-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS EC2 (Elastic Compute Cloud) service using Cloudwatch API",
+    "plugin_name": "centreon_aws_ec2_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/ec2/"
+    ]
+}

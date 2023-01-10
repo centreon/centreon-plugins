@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(Device::Modbus::RTU::Client)",
+        "perl(Device::Modbus::TCP::Client)"
+    ]
+}

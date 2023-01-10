@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Hp-Ilo-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_ilo_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/redfish/restapi/",
+        "hardware/server/hp/ilo/restapi/"
+    ]
+}

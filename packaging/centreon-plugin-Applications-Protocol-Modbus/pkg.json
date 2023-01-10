@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Modbus",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_modbus.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/modbus/",
+        "apps/protocols/modbus/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Netdata-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor servers using the Netdata agent Rest API",
+    "plugin_name": "centreon_monitoring_netdata_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/netdata/restapi/"
+    ]
+}

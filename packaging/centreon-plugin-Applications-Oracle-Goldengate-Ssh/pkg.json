@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Oracle-Goldengate-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_oracle_gg_ssh.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+	"centreon/plugins/script_custom/cli.pm",
+	"centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "apps/oracle/gg/local/"
+    ]
+}

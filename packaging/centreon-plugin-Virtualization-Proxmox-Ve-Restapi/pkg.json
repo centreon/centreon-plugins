@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Proxmox-Ve-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Proxmox Virtual Environment using RestAPI",
+    "plugin_name": "centreon_proxmox_ve_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/proxmox/ve/restapi/"
+    ]
+}

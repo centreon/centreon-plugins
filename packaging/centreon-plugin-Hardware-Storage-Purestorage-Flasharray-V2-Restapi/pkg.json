@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Purestorage-Flasharray-V2-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_purestorage_flasharray_v2_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/purestorage/flasharray/v2/restapi/"
+    ]
+}

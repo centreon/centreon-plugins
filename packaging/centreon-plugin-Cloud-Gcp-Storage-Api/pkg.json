@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Gcp-Storage-Api",
+    "pkg_summary": "Centreon Plugin to monitor Google Cloud Platform Storage service using RestAPI",
+    "plugin_name": "centreon_gcp_storage_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/google/gcp/custom/",
+        "cloud/google/gcp/storage/"
+    ]
+}

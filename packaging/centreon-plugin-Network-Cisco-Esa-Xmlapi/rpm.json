@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(XML::Simple)",
+        "perl(Time::HiRes)"
+    ]
+}

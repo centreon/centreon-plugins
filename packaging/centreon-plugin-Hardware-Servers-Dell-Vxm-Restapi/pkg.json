@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Dell-Vxm-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor VxRail Manager using RestAPI",
+    "plugin_name": "centreon_dell_vxm_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "hardware/server/dell/vxm/restapi/"
+    ]
+}

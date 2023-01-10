@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Integration-EventGrid-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Event Grid service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_integration_eventgrid_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/integration/eventgrid/"
+    ]
+}

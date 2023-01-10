@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Esa-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco ESA using RestAPI",
+    "plugin_name": "centreon_cisco_esa_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/cisco/esa/restapi/"
+    ]
+}

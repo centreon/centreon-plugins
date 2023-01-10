@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Masterclock-Ntp100gps-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_masterclock_ntpserver_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/devices/masterclock/ntp100gps/snmp/"
+    ],
+    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-Devices-Masterclock-Ntpserver-Snmp"
+}

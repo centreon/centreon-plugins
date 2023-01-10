@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Proxmox-Mg-Api",
+    "pkg_summary": "Centreon Plugin to monitor Proxmox Mail Gateway throught Rest API",
+    "plugin_name": "centreon_proxmox_mg_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/proxmox/mg/restapi/"
+    ]
+}

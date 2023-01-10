@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "perl(IO::Socket)",
+        "perl(IO::Select)",
+        "perl(Net::DHCP::Packet)",
+        "perl(Net::DHCP::Constants)",
+        "perl(Net::Subnet)"
+    ]
+}

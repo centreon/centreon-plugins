@@ -1,0 +1,11 @@
+{
+    "dependencies": [
+        "perl(DBI)",
+        "perl(Digest::MD5)",
+        "perl(Time::HiRes)",
+        "perl(POSIX)",
+        "perl(DBD::Sybase)",
+        "freetds",
+        "unixODBC"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Timelinkmicro-Tms6001-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_timelinkmicro_tms6001_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/devices/timelinkmicro/tms6001/snmp/"
+    ]
+}

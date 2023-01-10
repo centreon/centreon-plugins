@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "net-tools",
+        "quota",
+        "perl(Data::Dumper)",
+        "perl(Pod::Parser)",
+        "perl(Digest::MD5)",
+        "perl(NetAddr::IP)"
+    ]
+}

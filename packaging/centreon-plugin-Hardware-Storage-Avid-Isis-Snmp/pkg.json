@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Avid-Isis-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Avid ISIS storage appliances using SNMP",
+    "plugin_name": "centreon_avid_isis_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/avid/isis/snmp/",
+        "centreon/common/broadcom/megaraid/snmp"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Thales-Mistral-Vs9-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_thales_mistral_vs9_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/thales/mistral/vs9/restapi/"
+    ]
+}

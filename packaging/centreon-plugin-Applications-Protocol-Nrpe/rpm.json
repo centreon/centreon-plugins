@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "perl(Convert::Binary::C)",
+        "perl(Digest::CRC)",
+        "perl(IO::Socket::INET6)",
+        "perl(IO::Socket)",
+        "perl(Socket)"
+    ]
+}

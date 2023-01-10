@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Network-Athonet-Epc-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_athonet_epc_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/athonet/epc/snmp/"
+    ]
+}

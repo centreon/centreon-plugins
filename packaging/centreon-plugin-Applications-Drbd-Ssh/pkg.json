@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Drbd-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_drbd_ssh.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+	"centreon/plugins/script_custom/cli.pm",
+	"centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "apps/drbd/local/"
+    ]
+}

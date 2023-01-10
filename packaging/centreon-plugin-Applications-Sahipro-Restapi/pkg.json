@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Sahipro-Restapi",
+    "pkg_summary": "Centreon Plugin SahiPro Rest API",
+    "plugin_name": "centreon_sahipro_restapi.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/sahipro/restapi/"
+    ]
+}

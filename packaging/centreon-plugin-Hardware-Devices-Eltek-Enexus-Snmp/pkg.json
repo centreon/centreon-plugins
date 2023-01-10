@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Eltek-Enexus-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Eltek Enexus measurements devices using SNMP",
+    "plugin_name": "centreon_eltek_enexus_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/devices/eltek/enexus/snmp/"
+    ]
+}

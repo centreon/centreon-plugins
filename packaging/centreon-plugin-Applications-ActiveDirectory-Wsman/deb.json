@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libopenwsman-perl",
+        "libxml-simple-perl"
+    ]
+}

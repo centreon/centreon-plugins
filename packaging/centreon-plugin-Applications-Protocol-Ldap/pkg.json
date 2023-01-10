@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Ldap",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_ldap.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/common/protocols/ldap/",
+        "apps/protocols/ldap/"
+    ]
+}

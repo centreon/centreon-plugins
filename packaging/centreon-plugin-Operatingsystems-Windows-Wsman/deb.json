@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "libopenwsman-perl",
+        "libmime-base64-perl",
+        "libdigest-md5-perl",
+        "libdatetime-perl",
+        "libtime-hires-perl"
+    ]
+}

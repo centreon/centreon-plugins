@@ -1,0 +1,11 @@
+{
+    "dependencies": [
+        "perl(DBI)",
+        "perl(DBD::mysql)",
+        "perl(Digest::MD5)",
+        "perl(Data::Dumper)",
+        "perl(Time::HiRes)",
+        "perl(POSIX)",
+        "perl(JSON)"
+    ]
+}

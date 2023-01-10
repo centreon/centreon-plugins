@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Php-Fpm-Web",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_php_fpm_web.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/php/fpm/web"
+    ]
+}

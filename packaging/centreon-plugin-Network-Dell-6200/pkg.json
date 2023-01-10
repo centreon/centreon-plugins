@@ -1,0 +1,15 @@
+{
+    "pkg_name": "centreon-plugin-Network-Dell-6200",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_6200.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "centreon/common/dell/fastpath/",
+        "centreon/common/dell/powerconnect3000/",
+        "network/dell/6200/snmp/"
+    ]
+}

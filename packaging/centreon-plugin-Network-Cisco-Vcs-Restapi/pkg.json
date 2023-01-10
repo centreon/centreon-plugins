@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Vcs-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco VCS (TelePresence Video Communication Server) using RestAPI",
+    "plugin_name": "centreon_cisco_vcs_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/cisco/vcs/restapi/"
+    ]
+}

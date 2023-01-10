@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Dynatrace-Restapi",
+    "pkg_summary": "Centreon Plugin Dynatrace Rest API",
+    "plugin_name": "centreon_monitoring_dynatrace_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/dynatrace/restapi/"
+    ]
+}

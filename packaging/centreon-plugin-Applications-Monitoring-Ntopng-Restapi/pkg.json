@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Ntopng-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor NtopNG",
+    "plugin_name": "centreon_monitoring_ntopng_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/ntopng/restapi/"
+    ]
+}

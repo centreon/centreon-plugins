@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "perl(Time::HiRes)",
+        "perl(DateTime)",
+        "perl(MongoDB)",
+        "perl(Hash::Ordered)",
+	"perl(URI::Encode)"
+    ]
+}

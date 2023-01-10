@@ -1,0 +1,19 @@
+{
+    "pkg_name": "centreon-plugin-Network-Denyall-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_denyall_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/liststorages.pm",
+        "snmp_standard/mode/memory.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/swap.pm",
+        "network/denyall/snmp/"
+    ]
+}

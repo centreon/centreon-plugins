@@ -1,0 +1,11 @@
+FROM docker-proxy.centreon.com/centos:7
+
+RUN <<EOF
+
+yum -y install git gettext rpm-build dos2unix python3 epel-release
+yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON
+yum clean all
+
+EOF
+
+WORKDIR /src

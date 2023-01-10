@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Bind9-Web",
+    "pkg_summary": "Centreon Plugin Bind9",
+    "plugin_name": "centreon_bind9_web.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/bind9/web/"
+    ]
+}

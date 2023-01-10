@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Smartermail-Api",
+    "pkg_summary": "Centreon Plugin to monitor Smartermail throught Rest API",
+    "plugin_name": "centreon_smartermail_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/smartermail/restapi/"
+    ]
+}

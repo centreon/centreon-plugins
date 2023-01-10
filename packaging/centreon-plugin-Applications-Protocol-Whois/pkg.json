@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Whois",
+    "pkg_summary": "Centreon Plugin to monitor domain validity",
+    "plugin_name": "centreon_protocol_whois.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "apps/protocols/whois/"
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(DBI)",
+        "perl(DBD::ODBC)",
+        "perl(Time::HiRes)",
+        "perl(POSIX)"
+    ]
+}

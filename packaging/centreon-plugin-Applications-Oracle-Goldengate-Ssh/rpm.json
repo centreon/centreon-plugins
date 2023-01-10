@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+	"perl(DateTime)",
+	"perl(Libssh::Session)",
+        "plink"
+    ]
+}

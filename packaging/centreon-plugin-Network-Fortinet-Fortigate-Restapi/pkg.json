@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Fortinet-Fortigate-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_fortinet_fortigate_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/fortinet/fortigate/restapi/"
+    ]
+}

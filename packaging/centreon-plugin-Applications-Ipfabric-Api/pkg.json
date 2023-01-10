@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Ipfabric-Api",
+    "pkg_summary": "Centreon Plugin to monitor network devices through IP Fabric API",
+    "plugin_name": "centreon_ipfabric_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/ipfabric/"
+    ]
+}

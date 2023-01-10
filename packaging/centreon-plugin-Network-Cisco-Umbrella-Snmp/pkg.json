@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Umbrella-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Cisco Umbrella using SNMP.",
+    "plugin_name": "centreon_cisco_umbrella_snmp.pl",
+    "files": [
+        "network/cisco/umbrella/snmp/",
+        "snmp_standard/mode/cpudetailed.pm",
+        "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/memory.pm",
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm"
+    ]
+}

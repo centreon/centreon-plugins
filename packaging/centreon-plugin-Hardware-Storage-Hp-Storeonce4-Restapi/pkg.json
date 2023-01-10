@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hp-Storeonce4-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_storeonce4_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/hp/storeonce/4/restapi/"
+    ]
+}

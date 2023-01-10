@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Huawei-Oceanstor-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_huawei_oceanstor_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/huawei/oceanstor/snmp/"
+    ]
+}

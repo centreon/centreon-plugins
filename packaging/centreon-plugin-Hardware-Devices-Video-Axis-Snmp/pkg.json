@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Video-Axis-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_axis_video_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/devices/video/axis/snmp/"
+    ]
+}

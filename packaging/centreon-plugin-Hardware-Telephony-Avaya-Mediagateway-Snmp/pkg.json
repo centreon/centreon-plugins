@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Telephony-Avaya-Mediagateway-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_avaya_mediagateway_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/avaya/snmp/",
+        "hardware/telephony/avaya/mediagateway/snmp/"
+    ]
+}

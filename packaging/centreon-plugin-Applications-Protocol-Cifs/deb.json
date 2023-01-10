@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libfilesys-smbclient-perl",
+        "libdatetime-perl"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Iis-Wsman",
+    "pkg_summary": "Centreon Plugin to monitor IIS using WSMAN",
+    "plugin_name": "centreon_iis_wsman.pl",
+    "files": [
+        "centreon/plugins/script_wsman.pm",
+        "centreon/plugins/wsman.pm",
+        "apps/microsoft/iis/wsman/"
+    ]
+}

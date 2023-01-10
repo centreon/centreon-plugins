@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Ibm-Storwize-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_storwize_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "storage/ibm/storwize/ssh/"
+    ]
+}

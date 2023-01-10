@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+    ],
+    "custom_pkg_data": "Obsoletes:    centreon-plugin-Applications-Elasticsearch"
+}

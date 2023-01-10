@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Kaminario-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_kaminario_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/kaminario/restapi/"
+    ]
+}

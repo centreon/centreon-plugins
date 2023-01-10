@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Dell-Omem-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_omem_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/server/dell/omem/snmp/"
+    ]
+}

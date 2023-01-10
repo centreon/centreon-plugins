@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Netapp-Ontap-Oncommandapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_netapp_ontap_oncommandapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/netapp/ontap/oncommandapi/"
+    ]
+}

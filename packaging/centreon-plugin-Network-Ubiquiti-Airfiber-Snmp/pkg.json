@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Ubiquiti-Airfiber-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ubiquiti_airfiber_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+	"centreon/common/frogfoot/snmp/",
+        "network/ubiquiti/airfiber/snmp/"
+    ]
+}

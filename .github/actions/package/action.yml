@@ -1,0 +1,70 @@
+name: package
+description: Package module
+inputs:
+  package_extension:
+    description: The package extension (deb or rpm)
+    required: true
+  image_name:
+    description: The action matrix
+    required: true
+  script_name:
+    description: The packaging script name
+  plugins:
+    description: List of plugins to package
+    required: true
+  version:
+    description: The plugins version
+    required: true
+  release:
+    description: The release number
+    required: true
+  cache_key:
+    description: The package files cache key
+    required: true
+  sign:
+    description: Wether to sign the package or not
+    default: ""
+  artifactory_username:
+    description: The artifactory username
+    required: true
+  artifactory_password:
+    description: The artifactory password
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Login to Registry
+      uses: docker/login-action@v2
+      with:
+        registry: docker.centreon.com
+        username: ${{ inputs.artifactory_username }}
+        password: ${{ inputs.artifactory_password }}
+
+    - name: Package
+      uses: ./.github/actions/runner-docker
+      with:
+        script_name: ${{ inputs.script_name }}
+        image_name: ${{ inputs.image_name }}
+        image_version: latest
+        artifactory_username: ${{ inputs.artifactory_username }}
+        artifactory_password: ${{ inputs.artifactory_password }}
+        params: ${{ inputs.version }} ${{ inputs.release }} "${{ inputs.plugins }}"
+
+    - name: Sign
+      if: ${{ inputs.sign != '' && inputs.package_extension == 'rpm' }}
+      uses: ./.github/actions/runner-docker
+      with:
+        script_name: rpm-signing
+        image_name: rpm-signing
+        image_version: ubuntu
+        artifactory_username: ${{ inputs.artifactory_username }}
+        artifactory_password: ${{ inputs.artifactory_password }}
+
+    - name: Cache packaged files
+      uses: actions/cache@v3
+      with:
+        path: ./*.${{ inputs.package_extension }}
+        key: ${{ inputs.cache_key }}

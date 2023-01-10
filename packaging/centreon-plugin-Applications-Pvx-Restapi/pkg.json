@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Pvx-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor PVX (Performance Vision) monitoring system using RestAPI",
+    "plugin_name": "centreon_pvx_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/pvx/restapi/"
+    ]
+}

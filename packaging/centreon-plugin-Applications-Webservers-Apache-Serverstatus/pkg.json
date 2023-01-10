@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Webservers-Apache-Serverstatus",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_apache_serverstatus.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/apache/serverstatus/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Prime-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_prime_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/cisco/prime/restapi/"
+    ]
+}

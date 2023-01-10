@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(openwsman)",
+        "perl(POSIX)",
+        "perl(Time::HiRes)",
+        "perl(XML::Simple)"
+    ]
+}

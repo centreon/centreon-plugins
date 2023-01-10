@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+	"perl(DateTime)",
+        "perl(SNMP)"
+    ]
+}

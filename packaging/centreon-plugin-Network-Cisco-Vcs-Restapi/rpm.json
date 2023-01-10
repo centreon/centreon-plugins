@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "perl(XML::LibXML::Simple)",
+        "perl(Date::Parse)",
+        "perl(Digest::SHA)"
+    ]
+}

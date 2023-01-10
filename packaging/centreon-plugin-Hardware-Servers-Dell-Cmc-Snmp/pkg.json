@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Dell-Cmc-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_cmc.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/server/dell/cmc/snmp/"
+    ]
+}

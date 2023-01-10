@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(XML::Simple)"
+    ],
+    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-Servers-Hp-Ilo-Xmlapii"
+}

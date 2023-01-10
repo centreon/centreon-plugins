@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Pfsense-Fauxapi",
+    "pkg_summary": "Centreon Plugin to monitor Pfsense resources using Fauxapi",
+    "plugin_name": "centreon_pfsense_fauxapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/pfsense/fauxapi/"
+    ]
+}

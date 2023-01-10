@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "perl(IO::Select)",
+        "perl(IO::Socket::INET)"
+    ]
+}

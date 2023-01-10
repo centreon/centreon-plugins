@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Blockchain-Parity-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Blockchain Parity using Restapi",
+    "plugin_name": "centreon_blockchain_parity_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "blockchain/parity/restapi/"
+    ]
+}

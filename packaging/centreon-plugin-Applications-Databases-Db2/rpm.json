@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(DBI)",
+        "perl(Time::HiRes)",
+        "perl(DateTime)",
+        "perl(POSIX)"
+    ]
+}

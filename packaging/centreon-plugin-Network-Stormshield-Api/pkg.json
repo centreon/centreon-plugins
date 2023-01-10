@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Stormshield-Api",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_stormshield_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/stormshield/api/"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Ibm-Bladecenter-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_bladecenter.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/server/ibm/bladecenter/snmp/"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Grafana-Api",
+    "pkg_summary": "Centreon Plugin to monitor Grafana using API",
+    "plugin_name": "centreon_grafana_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/grafana/api/"
+    ]
+}
+

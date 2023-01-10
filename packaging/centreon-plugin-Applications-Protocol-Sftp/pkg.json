@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Sftp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_sftp.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/protocols/sftp/"
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Symbol-Wing-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor SYMBOL WiNG switches using SNMP",
+    "plugin_name": "centreon_symbol_wing_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/listinterfaces.pm",
+        "network/symbol/wing/snmp/"
+    ]
+}

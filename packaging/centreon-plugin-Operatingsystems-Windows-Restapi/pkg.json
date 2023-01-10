@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Windows-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_nsclient_restapi.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/nsclient/restapi/"
+    ]
+}

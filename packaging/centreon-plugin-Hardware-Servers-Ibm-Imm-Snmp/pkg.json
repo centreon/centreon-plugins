@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Ibm-Imm-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_imm.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/server/ibm/mgmt_cards/imm/snmp/",
+        "snmp_standard/mode/ntp.pm"
+    ],
+    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-servers-ibm-imm-snmp"
+}

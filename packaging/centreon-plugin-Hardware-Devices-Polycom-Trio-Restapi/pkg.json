@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Polycom-Trio-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_polycom_trio_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "hardware/devices/polycom/trio/restapi/"
+    ]
+}

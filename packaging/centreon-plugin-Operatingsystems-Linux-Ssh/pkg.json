@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Linux-Ssh",
+    "pkg_summary": "Centreon Plugin to monitor Linux server/equipment using local commands",
+    "plugin_name": "centreon_linux_ssh.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "centreon/plugins/snmp.pm",
+        "os/linux/local/"
+    ]
+}

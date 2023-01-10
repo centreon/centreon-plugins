@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(XML::LibXML::Simple)",
+        "perl(DateTime)",
+        "perl(Digest::SHA)"
+    ],
+    "custom_pkg_data": "Obsoletes: centreon-plugin-Network-Fritzbox"
+}

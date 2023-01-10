@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Transitgateway-Api",
+    "pkg_summary": "Centreon Plugin to monitor AWS Transit Gateways using Cloudwatch API",
+    "plugin_name": "centreon_aws_transitgateway_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/transitgateway/"
+    ]
+}

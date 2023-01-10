@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Gcp-Management-Stackdriver-Api",
+    "pkg_summary": "Centreon Plugin to monitor Google Cloud Platform Stackdriver service using RestAPI",
+    "plugin_name": "centreon_gcp_management_stackdriver_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/google/gcp/custom/",
+        "cloud/google/gcp/management/stackdriver/"
+    ]
+}

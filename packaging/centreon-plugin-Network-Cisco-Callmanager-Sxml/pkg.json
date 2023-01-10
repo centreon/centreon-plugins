@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Callmanager-Sxml",
+    "pkg_summary": "Centreon Plugin to monitor CUCM using SXML",
+    "plugin_name": "centreon_cisco_cucm_sxml.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/cisco/callmanager/sxml/"
+    ]
+}

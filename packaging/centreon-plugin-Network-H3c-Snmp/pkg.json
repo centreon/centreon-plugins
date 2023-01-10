@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-H3c-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor H3C switches using SNMP",
+    "plugin_name": "centreon_h3c.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "centreon/common/h3c/snmp",
+        "network/h3c/snmp"
+    ]
+}

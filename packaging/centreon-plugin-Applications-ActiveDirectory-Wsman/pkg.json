@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-ActiveDirectory-Wsman",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_activedirectory_wsman.pl",
+    "files": [
+        "centreon/plugins/script_wsman.pm",
+        "centreon/plugins/wsman.pm",
+        "apps/microsoft/activedirectory/wsman/"
+    ]
+}

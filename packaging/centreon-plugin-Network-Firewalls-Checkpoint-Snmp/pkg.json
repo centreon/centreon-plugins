@@ -1,0 +1,16 @@
+{
+    "pkg_name": "centreon-plugin-Network-Firewalls-Checkpoint-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_checkpoint.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/ntp.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "snmp_standard/mode/vrrp.pm",
+        "network/checkpoint/snmp/"
+    ]
+}

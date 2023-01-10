@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Health-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS Health",
+    "plugin_name": "centreon_aws_health_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/health/"
+    ]
+}

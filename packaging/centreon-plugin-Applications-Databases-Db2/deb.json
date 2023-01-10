@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "libdbi-perl",
+        "libtime-hires-perl",
+        "libdatetime-perl"
+    ]
+}

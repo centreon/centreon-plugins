@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Cisco-Ucs-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_ucs.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/server/cisco/ucs/snmp/"
+    ]
+}

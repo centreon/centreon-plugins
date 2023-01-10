@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Sensors-Geist-Snmp",
+    "pkg_summary": "Centreon Plugin Sensor Geist SNMP",
+    "plugin_name": "centreon_sensors_geist_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/sensors/geist/snmp/"
+    ]
+}

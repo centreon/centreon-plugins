@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Openvpn-Omi",
+    "pkg_summary": "Centreon Plugin to monitor Openvpn using management interface",
+    "plugin_name": "centreon_openvpn_omi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/openvpn/omi/"
+    ]
+}
