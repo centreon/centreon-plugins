@@ -70,14 +70,15 @@ jobs:
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
           echo "package_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
 
-          folders=()
-          for f in ${{ steps.filter.outputs.plugins_files }}; \
-            do \
-              echo "Adding $(dirname $f) to folders"; \
-              folders+=($(dirname $f)); \
-          done
-          unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
-          echo "plugin_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+          echo "plugin_directories='${{ steps.filter.outputs.plugins_files }}'" >> $GITHUB_OUTPUT
+          #folders=()
+          #for f in ${{ steps.filter.outputs.plugins_files }}; \
+          #  do \
+          #    echo "Adding $(dirname $f) to folders"; \
+          #    folders+=($(dirname $f)); \
+          #done
+          #unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
+          #echo "plugin_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
 
       - name: Get plugins for build
         id: get_plugins
