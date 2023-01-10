@@ -97,6 +97,8 @@ jobs:
             echo "::notice::There are no modifications to the plugins packages"
           fi
 
+      - run: exit 1
+
   package:
     needs: [get-environment, get-plugins]
     uses: ./.github/workflows/plugin-package.yml
