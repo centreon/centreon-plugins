@@ -147,11 +147,11 @@ Check remote engines.
 
 =item B<--filter-name>
 
-Remote engine name filter.
+Remote engine name filter (Can be a regexp).
 
 =item B<--filter-environment-name>
 
-Environment filter.
+Environment filter (Can be a regexp).
 
 =item B<--unknown-status>
 
