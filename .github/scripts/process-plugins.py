@@ -27,7 +27,6 @@ for plugin in plugins:
     list_plugins.add(plugin)
     try:
         found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
-        print(found)
         list_plugins.add(found)
     except AttributeError:
         pass
