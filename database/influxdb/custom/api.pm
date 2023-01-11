@@ -129,8 +129,6 @@ sub settings {
 sub request {
     my ($self, %options) = @_;
 
-    my $content = '{"results":[{"statement_id":0,"series":[{"name":"haproxy","columns":["time","last_ses_sec"],"values":[[0,44]]}]}]}';
-=pod
     $self->settings();
     
     $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':'  . $self->{port} . $options{url_path} . "'", debug => 1);
@@ -147,7 +145,6 @@ sub request {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-=cut
 
     my $decoded;
     eval {
