@@ -182,7 +182,7 @@ sub set_counters {
         {
             label => 'execution-status',
             type => 2,
-            critical_default => '%{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i',
+            critical_default => '%{status} =~ /execution_failed/i',
             set => {
                 key_values => [
                     { name => 'status' }, { name => 'planName' }
@@ -374,7 +374,7 @@ Can used special variables like: %{status}, %{planName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last plan execution status.
+Set critical threshold for last plan execution status (Default: '{status} =~ /execution_failed/i').
 Can used special variables like: %{status}, %{planName}
 
 =item B<--warning-*> B<--critical-*>

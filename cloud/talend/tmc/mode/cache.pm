@@ -52,6 +52,7 @@ sub manage_selection {
     my $to = time();
 
     $options{custom}->cache_environments();
+    $options{custom}->cache_remote_engines();
     $options{custom}->cache_tasks_config();
     $options{custom}->cache_tasks_execution(
         from => ($to - $self->{option_results}->{since_timeperiod}) * 1000,

@@ -374,7 +374,7 @@ Can used special variables like: %{status}, %{taskName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last task execution status.
+Set critical threshold for last task execution status (Default: %{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i).
 Can used special variables like: %{status}, %{taskName}
 
 =item B<--warning-*> B<--critical-*>

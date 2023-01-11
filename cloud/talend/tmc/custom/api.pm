@@ -256,6 +256,18 @@ sub cache_tasks_config {
     return $datas;
 }
 
+sub cache_remote_engines {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_remote_engines(disable_cache => 1);
+    $self->write_cache_file(
+        statefile => 'remote_engines',
+        response => $datas
+    );
+
+    return $datas;
+}
+
 sub write_cache_file {
     my ($self, %options) = @_;
 
@@ -345,6 +357,17 @@ sub get_tasks_config {
         method => 'GET',
         endpoint => '/orchestration/executables/tasks',
         paging => 1
+    );
+}
+
+sub get_remote_engines {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'remote_engines')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+    return $self->request_api(
+        method => 'GET',
+        endpoint => '/processing/runtimes/remote-engines'
     );
 }
 

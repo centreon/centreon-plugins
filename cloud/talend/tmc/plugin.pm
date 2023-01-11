@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cache'             => 'cloud::talend::tmc::mode::cache',
-        'list-environments' => 'cloud::talend::tmc::mode::listenvironments',
-        'list-plans'        => 'cloud::talend::tmc::mode::listplans',
-        'list-tasks'        => 'cloud::talend::tmc::mode::listtasks',
-        'plans'             => 'cloud::talend::tmc::mode::plans',
-        'tasks'             => 'cloud::talend::tmc::mode::tasks'
+        'cache'               => 'cloud::talend::tmc::mode::cache',
+        'list-environments'   => 'cloud::talend::tmc::mode::listenvironments',
+        'list-plans'          => 'cloud::talend::tmc::mode::listplans',
+        'list-remote-engines' => 'cloud::talend::tmc::mode::listremoteengines',
+        'list-tasks'          => 'cloud::talend::tmc::mode::listtasks',
+        'plans'               => 'cloud::talend::tmc::mode::plans',
+        'remote-engines'      => 'cloud::talend::tmc::mode::remoteengines',
+        'tasks'               => 'cloud::talend::tmc::mode::tasks'
     };
 
     $self->{custom_modes}->{api} = 'cloud::talend::tmc::custom::api';
