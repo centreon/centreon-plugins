@@ -324,7 +324,7 @@ sub get_tasks_execution {
         if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache})
             && !(defined($options{taskId}) && $options{taskId} ne ''));
     return $self->request_api(
-        method => 'POST',
+        method => (defined($options{taskId}) && $options{taskId} ne '') ? 'GET' : 'POST',
         endpoint => (defined($options{taskId}) && $options{taskId} ne '') ? 
             '/processing/executables/tasks/' . $options{taskId} . '/executions' : '/processing/executables/tasks/executions',
         body => {

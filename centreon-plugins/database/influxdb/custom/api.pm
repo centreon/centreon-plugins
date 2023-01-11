@@ -145,7 +145,7 @@ sub request {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
@@ -174,11 +174,11 @@ sub query {
             post_param => ['q=' . $query]
         );
 
-        if (defined($results->{results}[0]->{error})) {
-            $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}[0]->{error} . "'");
+        if (defined($results->{results}->[0]->{error})) {
+            $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}->[0]->{error} . "'");
             $self->{output}->option_exit();
         }
-        push @{$data}, @{$results->{results}[0]->{series}} if (defined($results->{results}[0]->{series}));
+        push @$data, @{$results->{results}->[0]->{series}} if (defined($results->{results}->[0]->{series}));
     }
 
     return $data;
