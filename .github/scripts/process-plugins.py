@@ -15,9 +15,6 @@ a = argv[2][1:n-1]
 packages = a.split(',')
 packages = map(clean_inputs, packages)
 
-if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
-    print('okkkkkkk')
-
 n = len(argv[3])
 a = argv[3][1:n-1]
 plugins = a.split(',')
@@ -47,6 +44,8 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
 
     if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' == directory_path:
         print('superrrrrrr')
+        if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
+            print('okkkkkkk')
 
     if directory_path in packages:
         print('wonderful ' + directory_path)
