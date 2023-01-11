@@ -103,7 +103,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['target', 'station']);
+    $self->{output}->add_disco_format(elements => ['target', 'runner']);
 }
 
 sub disco_show {
