@@ -14,6 +14,7 @@ n = len(argv[2])
 a = argv[2][1:n-1]
 packages = a.split(',')
 packages = map(clean_inputs, packages)
+print(*packages)
 
 n = len(argv[3])
 a = argv[3][1:n-1]
@@ -41,7 +42,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
         packaging_path = packaging_path + "=>" + packaging["pkg_name"]
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
-    print(directory_path)
+    #print(directory_path)
     if common:
         list_packages.add(packaging_path)
     elif directory_path in packages:
