@@ -9,11 +9,11 @@ common = argv[1] == 'true'
 
 n = len(argv[2])
 a = argv[2][1:n-1]
-packages = a.split(', ')
+packages = a.split(',')
 
 n = len(argv[3])
 a = argv[3][1:n-1]
-plugins = a.split(', ')
+plugins = a.split(',')
 
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
