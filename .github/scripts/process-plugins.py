@@ -13,6 +13,7 @@ def clean_inputs(n):
 n = len(argv[2])
 a = argv[2][1:n-1]
 packages = a.split(',')
+print(packages)
 packages = map(clean_inputs, packages)
 
 n = len(argv[3])
