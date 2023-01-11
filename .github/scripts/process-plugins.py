@@ -33,9 +33,7 @@ for plugin in plugins:
 
 
 if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
-    print('top')
-
-print(*packages)
+    print(list(packages))
 
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
     packaging_file = open(filepath)
