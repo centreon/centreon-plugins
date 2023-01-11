@@ -83,7 +83,6 @@ jobs:
         id: get_plugins
         if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
         run: |
-          set -x
           PLUGINS="$(python3 .github/scripts/process-plugins.py \
             '${{ steps.filter.outputs.common == 'true' }}' \
             '${{ steps.transform.outputs.package_directories }}' \
@@ -95,8 +94,6 @@ jobs:
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
-
-      - run: exit 1
 
   package:
     needs: [get-environment, get-plugins]
