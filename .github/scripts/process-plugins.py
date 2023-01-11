@@ -45,7 +45,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
                 except AttributeError:
                     pass
                 print(pkg_file_dir)
-                if pkg_file_dir in list_plugins_dirs:
+                if pkg_file_dir in list_plugins_dir:
                     print("bonjour " + pkg_file_dir)
                     list_packages.add(packaging_path)
 print("list packages")
