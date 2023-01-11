@@ -49,8 +49,6 @@ jobs:
             common:
               - added|deleted|modified:
                 - 'centreon-plugins/centreon/**'
-                - 'packaging/rpm/**'
-                - 'packaging/debian/**'
             packages:
               - added|modified:
                 - 'packaging/centreon-**'
