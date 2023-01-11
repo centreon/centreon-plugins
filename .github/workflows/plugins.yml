@@ -77,7 +77,6 @@ jobs:
               files+=($f); \
           done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
-          echo $unique_files
           echo "plugins=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]})" >> $GITHUB_OUTPUT
 
       - name: Get plugins for build

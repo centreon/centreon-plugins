@@ -6,8 +6,14 @@ import os
 import json
 
 common = argv[1] == 'true'
-packages = argv[2]
-plugins = argv[3]
+
+n = len(argv[2]])
+a = argv[2][1:n-1]
+packages = a.split(', ')
+
+n = len(argv[3])
+a = argv[3][1:n-1]
+plugins = a.split(', ')
 
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
