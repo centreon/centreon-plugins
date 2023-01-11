@@ -49,7 +49,7 @@ foreach my $plugin (@plugins) {
             $plugin = $1;
         }
     }
-    print "::group::Processing $plugin...";
+
     if (-f $plugin . '/pkg.json') {
         my $plugin_build_dir = $build_dir . '/' . $plugin;
         File::Path::make_path($plugin_build_dir);
@@ -89,7 +89,6 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/hardware.pm'
         );
         foreach my $file ((@common_files, @{$config->{files}})) {
-            print "  - $file\n";
             if (-f $file) {
                 File::Copy::Recursive::fcopy($file, 'lib/' . $file);
             } elsif (-d $file) {
@@ -107,5 +106,4 @@ foreach my $plugin (@plugins) {
         close($fh);
         chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
     }
-    print "::endgroup::";
 }
