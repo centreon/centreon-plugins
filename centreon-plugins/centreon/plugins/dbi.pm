@@ -18,7 +18,6 @@
 # limitations under the License.
 #
 
-
 package centreon::plugins::dbi;
 
 use strict;

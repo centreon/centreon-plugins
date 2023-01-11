@@ -18,8 +18,6 @@
 # limitations under the License.
 #
 
-
-
 package os::linux::local::mode::checkplugin;
 
 use base qw(centreon::plugins::templates::counter);
