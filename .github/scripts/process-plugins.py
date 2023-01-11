@@ -7,7 +7,7 @@ import json
 
 common = argv[1] == 'true'
 
-n = len(argv[2]])
+n = len(argv[2])
 a = argv[2][1:n-1]
 packages = a.split(', ')
 
