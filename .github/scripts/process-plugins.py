@@ -19,9 +19,10 @@ list_plugins = set()
 list_packages = set()
 
 for plugin in plugins.split(' '):
+    print("with prefix " + plugin)
     plugin = remove_prefix(plugin.strip('/'), 'centreon-plugins/')
     list_plugins.add(plugin)
-    print(plugin)
+    print("without prefix " + plugin)
     try:
         found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
         print(found)
