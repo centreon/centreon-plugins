@@ -44,6 +44,9 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
         packaging_path = packaging_path + "=>" + packaging["pkg_name"]
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
+
+    if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' == directory_path:
+        print('superrrrrrr')
     #print(directory_path)
     if common:
         list_packages.add(packaging_path)
