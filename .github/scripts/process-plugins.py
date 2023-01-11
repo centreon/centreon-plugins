@@ -30,7 +30,7 @@ if not common:
     updated_packages = packages.split(' ')
 
 print("list plugins")
-print(*list_plugins_dir)
+print(*list_plugins_changes)
 print("end list plugins")
 
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
@@ -50,8 +50,10 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
                     pkg_file_dir = 'centreon-plugins/' + found
                 except AttributeError:
                     pass
+                print(pkg_file_dir)
                 if pkg_file_dir in list_plugins_changes:
                     print("bonjour " + pkg_file_dir)
                     list_packages.add(packaging_path)
-
+print("list packages")
 print(*list_packages)
+print("end list packages")
