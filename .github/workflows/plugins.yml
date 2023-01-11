@@ -70,16 +70,14 @@ jobs:
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
           echo "package_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
 
-          echo '${{ steps.filter.outputs.plugins_files }}'
-          echo "plugins='${{ steps.filter.outputs.plugins_files }}'" >> $GITHUB_OUTPUT
-          #files=()
-          #for f in ${{ steps.filter.outputs.plugins_files }}; \
-          #  do \
-          #    echo "Adding $(dirname $f) to folders"; \
-          #    folders+=($(dirname $f)); \
-          #done
-          #unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
-          #echo "plugin_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+          files=()
+          for f in ${{ steps.filter.outputs.plugins_files }}; \
+            do \
+              echo "Adding $f to files"; \
+              files+=($f); \
+          done
+          unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
+          echo "plugins=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]})" >> $GITHUB_OUTPUT
 
       - name: Get plugins for build
         id: get_plugins
@@ -89,10 +87,11 @@ jobs:
           PLUGINS="$(python3 .github/scripts/process-plugins.py \
             '${{ steps.filter.outputs.common == 'true' }}' \
             '${{ steps.transform.outputs.package_directories }}' \
-            '${{ steps.transform.outputs.plugin_directories }}' \
+            '${{ steps.transform.outputs.plugins }}' \
           )"
+
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
-          echo $PLUGINS
+
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
