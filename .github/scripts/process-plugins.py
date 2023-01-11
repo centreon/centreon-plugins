@@ -17,9 +17,9 @@ list_packages = set()
 for plugin in plugins.split(' '):
     try:
         found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
-        list_plugins_dir.add(found)
+        list_plugins_dir.add(found.strip('/').lstrip('centreon-plugins/'))
     except AttributeError:
-        list_plugins_dir.add(plugin.strip('/'))
+        list_plugins_dir.add(plugin.strip('/').lstrip('centreon-plugins/'))
 
 updated_packages = packages.split(' ')
 
@@ -38,10 +38,10 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
             list_packages.add(packaging_path)
         else:
             for pkg_file in packaging["files"]:
-                pkg_file_dir = 'centreon-plugins/' + pkg_file.strip('/')
+                pkg_file_dir = pkg_file.strip('/')
                 try:
                     found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', pkg_file).group(1)
-                    pkg_file_dir = 'centreon-plugins/' + found
+                    pkg_file_dir = found.strip('/')
                 except AttributeError:
                     pass
                 print(pkg_file_dir)
