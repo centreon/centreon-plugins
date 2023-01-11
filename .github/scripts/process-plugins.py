@@ -40,7 +40,8 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
         if not packaging_path == packaging["pkg_name"]:
             packaging_path = packaging_path + "=>" + packaging["pkg_name"]
 
-        if common or filepath in packages:
+        directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
+        if common or directory_path in packages:
             list_packages.add(packaging_path)
         else:
             for pkg_file in packaging["files"]:
