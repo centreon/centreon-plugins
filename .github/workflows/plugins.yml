@@ -78,6 +78,7 @@ jobs:
         id: get_plugins
         if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
         run: |
+          set -x
           PLUGINS="$(python3 .github/scripts/process-plugins.py \
             '${{ steps.filter.outputs.common == 'true' }}' \
             '${{ steps.transform.outputs.package_directories }}' \
