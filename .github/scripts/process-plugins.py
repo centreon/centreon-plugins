@@ -27,6 +27,9 @@ if not common:
                 pass
     updated_packages = packages.split(' ')
 
+print("list plugins")
+print(*list_plugins_dir)
+
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
         packaging_file = open(filepath)
         packaging = json.load(packaging_file)
