@@ -7,13 +7,18 @@ import json
 
 common = argv[1] == 'true'
 
+def clean_inputs(n):
+    return n.strip('"/').removeprefix('centreon-plugins/')
+
 n = len(argv[2])
 a = argv[2][1:n-1]
 packages = a.split(',')
+packages = map(clean_inputs, packages)
 
 n = len(argv[3])
 a = argv[3][1:n-1]
 plugins = a.split(',')
+plugins = map(clean_inputs, plugins)
 
 list_plugins_dir = set()
 list_plugins = set()
@@ -21,7 +26,6 @@ list_packages = set()
 
 for plugin in plugins:
     print("with prefix " + plugin)
-    plugin = plugin.strip('/').removeprefix('centreon-plugins/')
     list_plugins.add(plugin)
     print("without prefix " + plugin)
     try:
