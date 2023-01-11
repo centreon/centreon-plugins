@@ -113,8 +113,14 @@ sub check_options {
         }
     }
 
-    $self->{statefile_format} = defined($options{option_results}->{statefile_format}) && $options{option_results}->{statefile_format} =~ /^(?:dumper|json|storable)$/ ?    
-        $options{option_results}->{statefile_format} : 'dumper';
+    $self->{statefile_format} = 'dumper';
+    if (defined($options{option_results}->{statefile_format}) && $options{option_results}->{statefile_format} ne '' && 
+        $options{option_results}->{statefile_format} =~ /^(?:dumper|json|storable)$/) {
+        $self->{statefile_format} = $options{option_results}->{statefile_format};
+    } elsif (defined($options{default_format}) && $options{default_format} =~ /^(?:dumper|json|storable)$/) {
+        $self->{statefile_format} = $options{default_format};
+    }
+
     if (defined($options{option_results}->{statefile_storable})) {
         $self->{statefile_format} = 'storable';
     }
