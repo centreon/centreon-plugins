@@ -49,7 +49,7 @@ jobs:
             common:
               - added|deleted|modified: centreon-plugins/centreon/**
             packages:
-              - added|modified: packaging/centreon-**
+              - added|modified: packaging/**
             plugins:
               - added|modified: centreon-plugins/**
 
