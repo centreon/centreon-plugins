@@ -29,6 +29,7 @@ if not common:
 
 print("list plugins")
 print(*list_plugins_dir)
+print("end list plugins")
 
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
         packaging_file = open(filepath)
