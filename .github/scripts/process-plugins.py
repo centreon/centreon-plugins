@@ -42,16 +42,12 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
             list_packages.add(packaging_path)
         else:
             for pkg_file in packaging["files"]:
-                pkg_file_dir = pkg_file
+                pkg_file_dir = 'centreon-plugins/' + pkg_file.rstrip('/')
                 try:
-                    found = re.search('(.*)\/mode\/.*', pkg_file).group(1)
+                    found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', pkg_file).group(1)
                     pkg_file_dir = 'centreon-plugins/' + found
                 except AttributeError:
-                    try:
-                        found = re.search('(.*)\/plugin.pm', pkg_file).group(1)
-                        pkg_file_dir = 'centreon-plugins/' + found
-                    except AttributeError:
-                        pass
+                    pass
                 if pkg_file_dir in list_plugins_dir:
                     print("bonjour " + pkg_file_dir)
                     list_packages.add(packaging_path)
