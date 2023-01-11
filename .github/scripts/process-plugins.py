@@ -12,9 +12,11 @@ plugins = argv[3]
 print(plugins)
 
 list_plugins_dir = set()
+list_plugins = set()
 list_packages = set()
 
 for plugin in plugins.split(' '):
+    list_plugins.add(plugin.strip('/').lstrip('centreon-plugins/'))
     try:
         found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
         list_plugins_dir.add(found.strip('/').lstrip('centreon-plugins/'))
@@ -38,14 +40,14 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
             list_packages.add(packaging_path)
         else:
             for pkg_file in packaging["files"]:
-                pkg_file_dir = pkg_file.strip('/')
-                try:
-                    found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', pkg_file).group(1)
-                    pkg_file_dir = found.strip('/')
-                except AttributeError:
-                    pass
-                print(pkg_file_dir)
-                if pkg_file_dir in list_plugins_dir:
+                pkg_file_dir = pkg_file.strip('/').lstrip('centreon-plugins/')
+                #try:
+                #    found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', pkg_file).group(1)
+                #    pkg_file_dir = found.strip('/')
+                #except AttributeError:
+                #    pass
+                #print(pkg_file_dir)
+                if pkg_file_dir in list_plugins:
                     print("bonjour " + pkg_file_dir)
                     list_packages.add(packaging_path)
 print("list packages")
