@@ -39,6 +39,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
 
     if not packaging_path == packaging["pkg_name"]:
         packaging_path = packaging_path + "=>" + packaging["pkg_name"]
+        print('packaging/' + packaging["pkg_name"])
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
     #print(directory_path)
