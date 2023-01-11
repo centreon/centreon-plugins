@@ -31,6 +31,9 @@ for plugin in plugins:
     except AttributeError:
         pass
 
+if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
+    print('top')
+
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
     packaging_file = open(filepath)
     packaging = json.load(packaging_file)
