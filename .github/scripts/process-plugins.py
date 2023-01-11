@@ -24,7 +24,7 @@ list_plugins_dir = set()
 list_plugins = set()
 list_packages = set()
 
-for plugin in plugins.split(' '):
+for plugin in plugins:
     print("with prefix " + plugin)
     plugin = remove_prefix(plugin.strip('/'), 'centreon-plugins/')
     list_plugins.add(plugin)
@@ -36,7 +36,7 @@ for plugin in plugins.split(' '):
     except AttributeError:
         pass
 
-updated_packages = packages.split(' ')
+updated_packages = packages
 
 #print("list plugins")
 #print(*list_plugins_dir)
