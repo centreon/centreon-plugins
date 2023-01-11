@@ -59,9 +59,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        major_version: ["22.04", "22.10"]
-        include:
-          - distrib: bullseye
+        distrib: [bullseye]
 
     steps:
       - name: Checkout sources
@@ -71,7 +69,6 @@ jobs:
         uses: ./.github/actions/deb-delivery
         with:
           distrib: ${{ matrix.distrib }}
-          major_version: ${{ matrix.major_version }}
           version: ${{ inputs.version }}
           release: ${{ inputs.release }}
           artifactory_username: ${{ secrets.artifactory_username }}
