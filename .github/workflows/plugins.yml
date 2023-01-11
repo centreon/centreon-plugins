@@ -48,13 +48,13 @@ jobs:
           filters: |
             common:
               - added|deleted|modified:
-                - 'centreon-plugins/centreon/**'
+                - centreon-plugins/centreon/**
             packages:
               - added|modified:
-                - 'packaging/centreon-**'
+                - packaging/centreon-**
             plugins:
               - added|modified:
-                - 'centreon-plugins/**'
+                - centreon-plugins/**
 
       - name: transform to directories
         id: transform
