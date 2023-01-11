@@ -12,14 +12,16 @@ def clean_inputs(n):
 
 n = len(argv[2])
 a = argv[2][1:n-1]
-packages = a.split(',').map(clean_inputs, packages)
+packages = a.split(',')
+packages = map(clean_inputs, packages)
 
 if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
     print('okkkkkkk')
 
 n = len(argv[3])
 a = argv[3][1:n-1]
-plugins = a.split(',').map(clean_inputs, plugins)
+plugins = a.split(',')
+plugins = map(clean_inputs, plugins)
 
 list_plugins = set()
 list_packages = set()
