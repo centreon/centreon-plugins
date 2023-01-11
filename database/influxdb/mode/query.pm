@@ -125,11 +125,11 @@ sub check_options {
     foreach my $query (@{$self->{option_results}->{query}}) {
         next if ($query !~ /^(.*?),(.*)$/);
         $self->{queries}->{$1} = $2;
-        push @{$self->{maps_counters}->{queries_results}[0]->{set}->{key_values}}, { name => $1 };
+        push @{$self->{maps_counters}->{queries_results}->[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
     }
 
-    $self->{maps_counters_type}[0]->{message_multiple} = $self->{option_results}->{multiple_output} if (defined($self->{option_results}->{multiple_output}));
+    $self->{maps_counters_type}->[0]->{message_multiple} = $self->{option_results}->{multiple_output} if (defined($self->{option_results}->{multiple_output}));
 }
 
 sub manage_selection {
@@ -145,14 +145,15 @@ sub manage_selection {
         push @queries, $self->{queries}->{$label};
 
         my $queries_results = $options{custom}->query(queries => \@queries);
+    
+        foreach my $result (@$queries_results) {
+            next if (!defined($result->{tags}->{ $self->{option_results}->{instance} }));
 
-        foreach my $result (@{$queries_results}) {
-            next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
-            my ($column_index) = grep { $result->{columns}[$_] eq $self->{custom_keys}[$query_index] } (0 .. @{$result->{columns}} - 1);
+            my ($column_index) = grep { $result->{columns}->[$_] eq $self->{custom_keys}->[$query_index] } (0 .. @{$result->{columns}} - 1);
             my $value;
             $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
-            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
-            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[$column_index]} = $value;
+            $self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } }->{instance} = $result->{tags}->{ $self->{option_results}->{instance} };
+            $self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } }->{ $result->{columns}->[$column_index] } = $value;
         }
     }
 
