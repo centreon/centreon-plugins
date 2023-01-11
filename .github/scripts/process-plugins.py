@@ -15,18 +15,13 @@ n = len(argv[3])
 a = argv[3][1:n-1]
 plugins = a.split(',')
 
-def remove_prefix(text, prefix):
-    if text.startswith(prefix):
-        return text[len(prefix):]
-    return text
-
 list_plugins_dir = set()
 list_plugins = set()
 list_packages = set()
 
 for plugin in plugins:
     print("with prefix " + plugin)
-    plugin = remove_prefix(plugin.strip('/'), 'centreon-plugins/')
+    plugin = plugin.strip('/').removeprefix('centreon-plugins/')
     list_plugins.add(plugin)
     print("without prefix " + plugin)
     try:
@@ -55,7 +50,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
             list_packages.add(packaging_path)
         else:
             for pkg_file in packaging["files"]:
-                pkg_file_dir = remove_prefix(pkg_file.strip('/'), 'centreon-plugins/')
+                pkg_file_dir = pkg_file.strip('/').removeprefix('centreon-plugins/')
                 #try:
                 #    found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', pkg_file).group(1)
                 #    pkg_file_dir = found.strip('/')
