@@ -8,13 +8,16 @@ PLUGINS="$3"
 
 for PLUGIN_NAME in $PLUGINS; do
 
-    if [[ "$PLUGIN_NAME" =~ (.*)"=>".* ]]; then
-        PLUGIN_NAME=$(echo ${BASH_REMATCH[1]})
+    PACKAGE_PATH=$PLUGIN_NAME
+
+    if [[ "$PLUGIN_NAME" =~ (.+)"=>"(.+) ]]; then
+        PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
+        PLUGIN_NAME=$(echo ${BASH_REMATCH[2]})
     fi
 
     # Process specfile
     rm -f plugin.specfile
-    python3 .github/scripts/create-spec-file.py "$PLUGIN_NAME" "$VERSION" "$RELEASE"
+    python3 .github/scripts/create-spec-file.py "$PACKAGE_PATH" "$PLUGIN_NAME" "$VERSION" "$RELEASE"
 
     rm -rf $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}

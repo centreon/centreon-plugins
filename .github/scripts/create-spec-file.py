@@ -3,17 +3,18 @@
 import json
 from sys import argv
 
-package_name = argv[1]
-package_version = argv[2]
-package_release = argv[3]
+package_path = argv[1]
+package_name = argv[2]
+package_version = argv[3]
+package_release = argv[4]
 
 with open('.github/packaging/rpm/plugin.spectemplate', 'r') as rfile:
     specfile = rfile.read()
 
-with open('packaging/%s/pkg.json' % package_name, 'r') as rfile:
+with open('packaging/%s/pkg.json' % package_path, 'r') as rfile:
     plugincfg = json.load(rfile)
 
-with open('packaging/%s/rpm.json' % package_name, 'r') as rfile:
+with open('packaging/%s/rpm.json' % package_path, 'r') as rfile:
     pluginrpm = json.load(rfile)
 
 specfile = specfile.replace('@NAME@', package_name)
