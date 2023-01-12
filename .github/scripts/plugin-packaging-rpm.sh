@@ -7,6 +7,7 @@ RELEASE="$2"
 PLUGINS="$3"
 
 for PLUGIN_NAME in $PLUGINS; do
+    echo "::group::Packaging $PLUGIN_NAME"
 
     PACKAGE_PATH=$PLUGIN_NAME
 
@@ -32,4 +33,5 @@ for PLUGIN_NAME in $PLUGINS; do
 
     cd -
 
+    echo "::endgroup::"
 done
