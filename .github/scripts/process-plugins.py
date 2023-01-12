@@ -7,19 +7,19 @@ import json
 
 common = argv[1] == 'true'
 
-def clean_inputs(n):
-    return n.strip('"/').removeprefix('centreon-plugins/')
-
 n = len(argv[2])
 a = argv[2][1:n-1]
-packages = a.split(',')
-print(list(packages))
-packages = map(clean_inputs, packages)
+input_packages = a.split(',')
+packages = set()
+for package in input_packages:
+    packages.add(package.strip('"/').removeprefix('centreon-plugins/'))
 
 n = len(argv[3])
 a = argv[3][1:n-1]
-plugins = a.split(',')
-plugins = map(clean_inputs, plugins)
+input_plugins = a.split(',')
+plugins = set()
+for plugin in input_plugins:
+    plugins.add(plugin.strip('"/').removeprefix('centreon-plugins/'))
 
 list_plugins = set()
 list_packages = set()
