@@ -47,6 +47,7 @@ sub new {
         'vacuum'           => 'database::postgres::mode::vacuum'
     };
 
+    $self->{sql_modes}->{dbi} = 'database::postgres::dbi';
     $self->{sql_modes}->{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
 }
