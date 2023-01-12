@@ -62,6 +62,13 @@ runs:
         artifactory_username: ${{ inputs.artifactory_username }}
         artifactory_password: ${{ inputs.artifactory_password }}
 
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages-${{ inputs.package_extension }}
+        path: ./*.${{ inputs.package_extension }}
+        retention-days: 1
+
     - name: Cache packaged files
       uses: actions/cache@v3
       with:
