@@ -44,17 +44,19 @@ foreach my $plugin (@plugins) {
     chdir($packaging_dir);
 
     # Load plugin configuration file.
-    if (! -f $plugin . '/pkg.json') {
-        if ($plugin =~ /(.*)=>/) {
-            $plugin = $1;
+    my $package_path = $plugin;
+    if (! -f $package_path . '/pkg.json') {
+        if ($package_path =~ /(.+)=>(.+)/) {
+            $package_path = $1;
+            $plugin = $2;
         }
     }
 
-    if (-f $plugin . '/pkg.json') {
+    if (-f $package_path . '/pkg.json') {
         my $plugin_build_dir = $build_dir . '/' . $plugin;
         File::Path::make_path($plugin_build_dir);
 
-        open($fh, '<', $plugin . '/pkg.json');
+        open($fh, '<', $package_path . '/pkg.json');
         my $json_content = do { local $/; <$fh> };
         close($fh);
         $config = JSON::decode_json($json_content);
