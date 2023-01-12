@@ -32,11 +32,6 @@ for plugin in plugins:
     except AttributeError:
         pass
 
-
-#if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
-#    print('top')
-#    print(packages)
-
 for filepath in os.popen('find packaging -type f -name pkg.json').read().split('\n')[0:-1]:
     packaging_file = open(filepath)
     packaging = json.load(packaging_file)
@@ -48,20 +43,9 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
 
-#    if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' == directory_path:
-  #      print('superrrrrrr')
-    #    print(packages)
-      #  if 'packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager' in packages:
-        #    print('okkkkkkk')
-
-   # if directory_path in packages:
-   #     print('wonderful ' + directory_path)
-    #print(directory_path)
     if common:
         list_packages.add(packaging_path)
     elif directory_path in packages:
-        list_packages.add(packaging_path)
-    elif ('packaging/' + packaging["pkg_name"]) in packages:
         list_packages.add(packaging_path)
     else:
         for pkg_file in packaging["files"]:
