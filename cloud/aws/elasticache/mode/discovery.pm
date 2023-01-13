@@ -66,11 +66,9 @@ sub run {
         }
         else {
             $ecc{replication_group_log_delivery_enabled} = 1    
-        }
-
-           
+        }   
         foreach my $secureGroups (@{$ecc_instance->{SecurityGroups}}) {
-            push @{$ecc{security_groups}}, { status => $secureGroups->{Status}, security_group_id => $secureGroups->{SecurityGroupId} };
+            push @{$ecc{security_groups}}, {status => $secureGroups->{Status}, security_group_id => $secureGroups->{SecurityGroupId}};
         }
         push @disco_data, \%ecc;       
     }
