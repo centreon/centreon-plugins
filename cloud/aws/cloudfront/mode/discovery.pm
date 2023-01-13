@@ -61,11 +61,11 @@ sub run {
         $cft{status} = $cft_instance->{Status};
         $cft{domain_name} = $cft_instance->{DomainName};
        
-        if ($cft_instance->{Aliases}->{Quantity} < 0) {
+        if ($cft_instance->{Aliases}->{Quantity} > 0) {
             $cft{aliases} = $cft_instance->{Aliases}->{Items};
         }
         else {
-            $cft{aliases} = $cft_instance->{Aliases}->{Quantity};
+            $cft{aliases} = my @empty_array;;
         }
          push @disco_data, \%cft;     
     }
