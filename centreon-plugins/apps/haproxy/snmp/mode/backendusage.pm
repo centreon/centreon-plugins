@@ -36,15 +36,7 @@ sub prefix_backend_output {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("status : %s", $self->{result_values}->{status});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alBackendStatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf("status: %s", $self->{result_values}->{status});
 }
 
 sub set_counters {
@@ -60,57 +52,51 @@ sub set_counters {
             type => 2,
             critical_default => '%{status} !~ /UP/i',
             set => {
-                key_values => [ { name => 'alBackendStatus' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'current-queue', nlabel => 'backend.queue.current.count', set => {
-                key_values => [ { name => 'alBackendQueueCur' }, { name => 'display' } ],
-                output_template => 'Current queue : %s',
+                key_values => [ { name => 'queueCur' }, { name => 'display' } ],
+                output_template => 'current queue: %s',
                 perfdatas => [
-                    { label => 'current_queue', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'current-sessions', nlabel => 'backend.sessions.current.count', set => {
-                key_values => [ { name => 'alBackendSessionCur' }, { name => 'display' } ],
-                output_template => 'Current sessions : %s',
+                key_values => [ { name => 'sessionCur' }, { name => 'display' } ],
+                output_template => 'current sessions: %s',
                 perfdatas => [
-                    { label => 'current_sessions', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'total-sessions', nlabel => 'backend.sessions.total.count', set => {
-                key_values => [ { name => 'alBackendSessionTotal', diff => 1 }, { name => 'display' } ],
-                output_template => 'Total sessions : %s',
+                key_values => [ { name => 'sessionTotal', diff => 1 }, { name => 'display' } ],
+                output_template => 'total sessions: %s',
                 perfdatas => [
-                    { label => 'total_connections', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-in', nlabel => 'backend.traffic.in.bitpersecond', set => {
-                key_values => [ { name => 'alBackendBytesIN', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic In : %s %s/s',
+                key_values => [ { name => 'bytesIN', per_second => 1 }, { name => 'display' } ],
+                output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'backend.traffic.out.bitpersecond', set => {
-                key_values => [ { name => 'alBackendBytesOUT', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic Out : %s %s/s',
+                key_values => [ { name => 'bytesOUT', per_second => 1 }, { name => 'display' } ],
+                output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -119,7 +105,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -130,26 +116,35 @@ sub new {
 }
 
 my $mapping = {
-    entreprise => {
-        alBackendQueueCur       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.4' },
-        alBackendSessionCur     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.7' },
-        alBackendSessionTotal   => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.10' },
-        alBackendBytesIN        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.12' },
-        alBackendBytesOUT       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.13' },
-        alBackendStatus         => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.20' }
+    aloha => {
+        queueCur     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.4' },
+        sessionCur   => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.7' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.10' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.12' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.13' },
+        status       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.20' }
     },
     csv => {
-        alBackendQueueCur       => { oid => '.1.3.6.1.4.1.29385.106.1.1.2' },
-        alBackendSessionCur     => { oid => '.1.3.6.1.4.1.29385.106.1.1.4' },
-        alBackendSessionTotal   => { oid => '.1.3.6.1.4.1.29385.106.1.1.7' },
-        alBackendBytesIN        => { oid => '.1.3.6.1.4.1.29385.106.1.1.8' },
-        alBackendBytesOUT       => { oid => '.1.3.6.1.4.1.29385.106.1.1.9' },
-        alBackendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.1.17' }
+        queueCur     => { oid => '.1.3.6.1.4.1.29385.106.1.1.2' },
+        sessionCur   => { oid => '.1.3.6.1.4.1.29385.106.1.1.4' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.29385.106.1.1.7' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.29385.106.1.1.8' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.29385.106.1.1.9' },
+        status       => { oid => '.1.3.6.1.4.1.29385.106.1.1.17' }
     },
+    hapee => {
+        queueCur     => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.4' },
+        sessionCur   => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.7' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.10' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.12' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.13' },
+        status       => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.20' }
+    }
 };
 my $mapping_name = {
     csv => '.1.3.6.1.4.1.29385.106.1.1.0',
-    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3', # alBackendName
+    aloha => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3', # alBackendName
+    hapee => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.3' # lbBackendName
 };
 
 sub manage_selection {
@@ -160,10 +155,19 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
-    my $branch = 'entreprise';
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping_name->{csv} },
+            { oid => $mapping_name->{aloha} },
+            { oid => $mapping_name->{hapee} }
+        ],
+        nothing_quit => 1
+    );
+    my $branch = 'aloha';
     if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(keys %{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
         $branch = 'csv';
+    } elsif (defined($snmp_result->{ $mapping_name->{hapee} }) && scalar(keys %{$snmp_result->{ $mapping_name->{hapee} }}) > 0) {
+        $branch = 'hapee';
     }
 
     $self->{backend} = {};
@@ -198,8 +202,8 @@ sub manage_selection {
     foreach (keys %{$self->{backend}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$branch}, results => $snmp_result, instance => $_);
 
-        $result->{alBackendBytesIN} *= 8;
-        $result->{alBackendBytesOUT} *= 8;
+        $result->{bytesIN} *= 8;
+        $result->{bytesOUT} *= 8;
 
         $self->{backend}->{$_} = { %{$self->{backend}->{$_}}, %$result };
     }
