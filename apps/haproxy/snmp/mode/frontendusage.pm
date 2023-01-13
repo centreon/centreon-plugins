@@ -36,15 +36,7 @@ sub prefix_frontend_output {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("status : %s", $self->{result_values}->{status});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alFrontendStatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf("status: %s", $self->{result_values}->{status});
 }
 
 sub set_counters {
@@ -60,48 +52,43 @@ sub set_counters {
             type => 2, 
             critical_default => '%{status} !~ /OPEN/i',
             set => {
-                key_values => [ { name => 'alFrontendStatus' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'current-sessions', nlabel => 'frontend.sessions.current.count', set => {
-                key_values => [ { name => 'alFrontendSessionCur' }, { name => 'display' } ],
-                output_template => 'Current sessions : %s',
+                key_values => [ { name => 'sessionCur' }, { name => 'display' } ],
+                output_template => 'current sessions: %s',
                 perfdatas => [
-                    { label => 'current_sessions', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'total-sessions', nlabel => 'frontend.sessions.total.count', set => {
-                key_values => [ { name => 'alFrontendSessionTotal', diff => 1 }, { name => 'display' } ],
-                output_template => 'Total sessions : %s',
+                key_values => [ { name => 'sessionTotal', diff => 1 }, { name => 'display' } ],
+                output_template => 'total sessions: %s',
                 perfdatas => [
-                    { label => 'total_connections', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-in', nlabel => 'frontend.traffic.in.bitpersecond', set => {
-                key_values => [ { name => 'alFrontendBytesIN', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic In : %s %s/s',
+                key_values => [ { name => 'bytesIN', per_second => 1 }, { name => 'display' } ],
+                output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'frontend.traffic.out.bitpersecond', set => {
-                key_values => [ { name => 'alFrontendBytesOUT', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic Out : %s %s/s',
+                key_values => [ { name => 'bytesOUT', per_second => 1 }, { name => 'display' } ],
+                output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -110,7 +97,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -121,25 +108,33 @@ sub new {
 }
 
 my $mapping = {
-    entreprise => {
-        alFrontendSessionCur    => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.4' },
-        alFrontendSessionTotal  => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.7' },
-        alFrontendBytesIN       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.8' },
-        alFrontendBytesOUT      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.9' },
-        alFrontendStatus        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' }
+    aloha => {
+        sessionCur   => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.4' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.7' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.8' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.9' },
+        status       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' }
     },
     csv => {
-        alFrontendSessionCur     => { oid => '.1.3.6.1.4.1.29385.106.1.0.4' },
-        alFrontendSessionTotal   => { oid => '.1.3.6.1.4.1.29385.106.1.0.7' },
-        alFrontendBytesIN        => { oid => '.1.3.6.1.4.1.29385.106.1.0.8' },
-        alFrontendBytesOUT       => { oid => '.1.3.6.1.4.1.29385.106.1.0.9' },
-        alFrontendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' }
+        sessionCur   => { oid => '.1.3.6.1.4.1.29385.106.1.0.4' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.29385.106.1.0.7' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.29385.106.1.0.8' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.29385.106.1.0.9' },
+        status       => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' }
     },
+    hapee => {
+        sessionCur   => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.4' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.7' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.8' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.9' },
+        status       => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.13' }
+    }
 };
 
 my $mapping_name = {
     csv => '.1.3.6.1.4.1.29385.106.1.0.0',
-    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3' # alFrontendName
+    aloha => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3', # alFrontendName
+    hapee => '.1.3.6.1.4.1.23263.4.3.1.3.2.1.3'  # lbFrontendName
 };
 
 sub manage_selection {
@@ -150,10 +145,20 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
-    my $branch = 'entreprise';
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping_name->{csv} },
+            { oid => $mapping_name->{aloha} },
+            { oid => $mapping_name->{hapee} }
+        ],
+        nothing_quit => 1
+    );
+
+    my $branch = 'aloha';
     if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(keys %{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
         $branch = 'csv';
+    } elsif (defined($snmp_result->{ $mapping_name->{hapee} }) && scalar(keys %{$snmp_result->{ $mapping_name->{hapee} }}) > 0) {
+        $branch = 'hapee';
     }
 
     $self->{frontend} = {};
@@ -188,8 +193,8 @@ sub manage_selection {
     foreach (keys %{$self->{frontend}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$branch}, results => $snmp_result, instance => $_);
 
-        $result->{alFrontendBytesIN} *= 8;
-        $result->{alFrontendBytesOUT} *= 8;
+        $result->{bytesIN} *= 8;
+        $result->{bytesOUT} *= 8;
 
         $self->{frontend}->{$_} = { %{$self->{frontend}->{$_}}, %$result };
     }
