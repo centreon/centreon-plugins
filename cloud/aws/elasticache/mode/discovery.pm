@@ -56,12 +56,18 @@ sub run {
 
     foreach my $ecc_instance (@{$instances->{CacheClusters}}) {
         next if (!defined($ecc_instance->{CacheClusterId}));
-            my %ecc;
-            $ecc{type}= "elasticache";
-            $ecc{id} = $ecc_instance->{CacheClusterId};
-            $ecc{engine} = $ecc_instance->{Engine};
-            $ecc{engine_version} = $ecc_instance->{EngineVersion};
-            $ecc{replication_group_log_delivery_enabled} = $ecc_instance->{ReplicationGroupLogDeliveryEnabled};
+        my %ecc;
+        $ecc{type}= "elasticache";
+        $ecc{id} = $ecc_instance->{CacheClusterId};
+        $ecc{engine} = $ecc_instance->{Engine};
+        $ecc{engine_version} = $ecc_instance->{EngineVersion};
+        if (! $ecc_instance->{ReplicationGroupLogDeliveryEnabled}) {
+            $ecc{replication_group_log_delivery_enabled} = 0;
+        }
+        else {
+            $ecc{replication_group_log_delivery_enabled} = 1    
+        }
+
            
         foreach my $secureGroups (@{$ecc_instance->{SecurityGroups}}) {
             push @{$ecc{security_groups}}, { status => $secureGroups->{Status}, security_group_id => $secureGroups->{SecurityGroupId} };
