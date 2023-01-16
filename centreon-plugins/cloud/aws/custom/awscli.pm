@@ -875,6 +875,25 @@ sub tgw_list_gateways {
     return $gateway_results;
 }
 
+sub cloudfront_list_distributions {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->discovery_set_cmd(service => 'cloudfront', command => 'list-distributions');
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = [];
+    foreach (@{$raw_results->{DistributionList}->{Items}}) {   
+        push @$results, {
+            Id => $_->{Id},
+            Status => $_->{Status},
+            DomainName => $_->{DomainName},
+            Aliases => $_->{Aliases}
+        };
+    }
+
+    return $results;
+}
+
 1;
 
 __END__

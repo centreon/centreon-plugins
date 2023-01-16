@@ -29,15 +29,15 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'errors'                => 'cloud::aws::cloudfront::mode::errors',
-        'requests'              => 'cloud::aws::cloudfront::mode::requests',
-        'throughput'            => 'cloud::aws::cloudfront::mode::throughput',
-    );
+    $self->{modes} = {
+        'discovery' => 'cloud::aws::cloudfront::mode::discovery',
+        'errors'     => 'cloud::aws::cloudfront::mode::errors',
+        'requests'   => 'cloud::aws::cloudfront::mode::requests',
+        'throughput' => 'cloud::aws::cloudfront::mode::throughput'
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}->{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}->{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
