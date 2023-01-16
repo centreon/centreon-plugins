@@ -762,6 +762,33 @@ sub cloudfront_list_distributions {
     return $results;
 }
 
+sub elasticache_describe_cache_clusters {
+    my ($self, %options) = @_;
+
+    my $results = [];
+    eval {
+        my $ec = $self->{paws}->service('ElastiCache', region => $self->{option_results}->{region});
+        my $cacheClusterMessage = $ec->DescribeCacheClusters();
+        my $cacheClusters = $cacheClusterMessage->CacheClusters;
+
+        foreach (@$cacheClusters) {
+            push @$results, {
+                CacheClusterId => $_->{CacheClusterId},
+                Engine => $_->{Engine},
+                EngineVersion => $_->{EngineVersion},
+                ReplicationGroupLogDeliveryEnabled => $_->{ReplicationGroupLogDeliveryEnabled},
+                SecurityGroups => $_->{SecurityGroups}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
 1;
 
 __END__
