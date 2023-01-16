@@ -882,12 +882,32 @@ sub cloudfront_list_distributions {
     my $raw_results = $self->execute(cmd_options => $cmd_options);
 
     my $results = [];
-    foreach (@{$raw_results->{DistributionList}->{Items}}) {   
+    foreach (@{$raw_results->{DistributionList}->{Items}}) {
         push @$results, {
             Id => $_->{Id},
             Status => $_->{Status},
             DomainName => $_->{DomainName},
             Aliases => $_->{Aliases}
+        };
+    }
+
+    return $results;
+}
+
+sub elasticache_describe_cache_clusters {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->discovery_set_cmd(service => 'elasticache', command => 'describe-cache-clusters');
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = [];
+    foreach (@{$raw_results->{CacheClusters}}) {
+        push @$results, {
+            CacheClusterId => $_->{CacheClusterId},
+            Engine => $_->{Engine},
+            EngineVersion => $_->{EngineVersion},
+            ReplicationGroupLogDeliveryEnabled => $_->{ReplicationGroupLogDeliveryEnabled},
+            SecurityGroups => $_->{SecurityGroups}
         };
     }
 

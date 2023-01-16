@@ -29,25 +29,24 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'commands-memcached'    => 'cloud::aws::elasticache::mode::commandsmemcached',
-        'commands-redis'        => 'cloud::aws::elasticache::mode::commandsredis',
-        'connections'           => 'cloud::aws::elasticache::mode::connections',
-        'cpu'                   => 'cloud::aws::elasticache::mode::cpu',
-        'discovery'             => 'cloud::aws::elasticache::mode::discovery',
-        'evictions'             => 'cloud::aws::elasticache::mode::evictions',
-        'items'                 => 'cloud::aws::elasticache::mode::items',
-        'network'               => 'cloud::aws::elasticache::mode::network',
-        'replication'           => 'cloud::aws::elasticache::mode::replication',
-        'requests-memcached'    => 'cloud::aws::elasticache::mode::requestsmemcached',
-        'requests-redis'        => 'cloud::aws::elasticache::mode::requestsredis',
-        'usage-memcached'       => 'cloud::aws::elasticache::mode::usagememcached',
-        'usage-redis'           => 'cloud::aws::elasticache::mode::usageredis',
-    );
+    $self->{modes} = {
+        'commands-memcached' => 'cloud::aws::elasticache::mode::commandsmemcached',
+        'commands-redis'     => 'cloud::aws::elasticache::mode::commandsredis',
+        'connections'        => 'cloud::aws::elasticache::mode::connections',
+        'cpu'                => 'cloud::aws::elasticache::mode::cpu',
+        'discovery'          => 'cloud::aws::elasticache::mode::discovery',
+        'evictions'          => 'cloud::aws::elasticache::mode::evictions',
+        'items'              => 'cloud::aws::elasticache::mode::items',
+        'network'            => 'cloud::aws::elasticache::mode::network',
+        'replication'        => 'cloud::aws::elasticache::mode::replication',
+        'requests-memcached' => 'cloud::aws::elasticache::mode::requestsmemcached',
+        'requests-redis'     => 'cloud::aws::elasticache::mode::requestsredis',
+        'usage-memcached'    => 'cloud::aws::elasticache::mode::usagememcached',
+        'usage-redis'        => 'cloud::aws::elasticache::mode::usageredis',
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}->{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}->{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
