@@ -410,7 +410,8 @@ sub ec2spot_get_active_instances {
             $instance_results->{$_->{InstanceId}} = {
                 health      => $_->{InstanceHealth},
                 type        => $_->{InstanceType},
-                request_id  => $_->{SpotInstanceRequestId} };
+                request_id  => $_->{SpotInstanceRequestId}
+            };
         }
     };
     if ($@) {
@@ -578,6 +579,7 @@ sub rds_list_clusters {
 
 sub vpn_list_connections {
     my ($self, %options) = @_;
+
     my $connections_results = [];
     eval {
         my $vpn = $self->{paws}->service('EC2', region => $self->{option_results}->{region});
@@ -696,6 +698,7 @@ sub sqs_list_queues {
 
 sub sns_list_topics {
     my ($self, %options) = @_;
+
     my $topics_results = [];
     eval {
         my $topics = $self->{paws}->service('SNS', region => $self->{option_results}->{region});
@@ -715,6 +718,7 @@ sub sns_list_topics {
 
 sub tgw_list_gateways {
     my ($self, %options) = @_;
+
     my $gateway_results = [];
     eval {
         my $gateways = $self->{paws}->service('EC2', region => $self->{option_results}->{region});
@@ -730,6 +734,32 @@ sub tgw_list_gateways {
     }
 
     return $gateway_results;
+}
+
+sub cloudfront_list_distributions {
+    my ($self, %options) = @_;
+
+    my $results = [];
+    eval {
+        my $cf = $self->{paws}->service('CloudFront', region => $self->{option_results}->{region});
+        my $listDistributionsResult = $cf->ListDistributions();
+        my $distributionList = $listDistributionsResult->DistributionList;
+
+        foreach (@{$distributionList->{Items}}) {
+            push @$results, {
+                Id => $_->{Id},
+                Status => $_->{Status},
+                DomainName => $_->{DomainName},
+                Aliases => $_->{Aliases}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
 }
 
 1;

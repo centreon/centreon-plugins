@@ -39,6 +39,7 @@ sub new {
         APIGATEWAY         => $self->can('discover_api'),
         BACKUP_VAULT       => $self->can('discover_backup_vault'),
 #        DYNAMODB           => $self->can('discover_dynamodb_table'),
+        CLOUDFRONT         => $self->can('discover_cloudfront'),
         EBS                => $self->can('discover_ebs'),
         EC2                => $self->can('discover_ec2'),
         EFS                => $self->can('discover_efs'),
@@ -124,6 +125,15 @@ sub discover_backup_vault {
 
     use cloud::aws::backup::mode::discovery;
     my @disco_data = cloud::aws::backup::mode::discovery->run(custom => $options{custom}, discover => 1);
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
+    return \@disco_data, \@disco_keys;
+}
+
+sub discover_cloudfront {
+    my (%options) = @_;
+
+    use cloud::aws::cloudfront::mode::discovery;
+    my @disco_data = cloud::aws::cloudfront::mode::discovery->run(custom => $options{custom}, discover => 1);
     my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
