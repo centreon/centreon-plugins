@@ -40,6 +40,7 @@ sub new {
         BACKUP_VAULT       => $self->can('discover_backup_vault'),
 #        DYNAMODB           => $self->can('discover_dynamodb_table'),
         CLOUDFRONT         => $self->can('discover_cloudfront'),
+        ELASTICACHE        => $self->can('discover_elasticache'),
         EBS                => $self->can('discover_ebs'),
         EC2                => $self->can('discover_ec2'),
         EFS                => $self->can('discover_efs'),
@@ -64,7 +65,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
 }
 
 sub discover_vpc {
@@ -72,8 +72,11 @@ sub discover_vpc {
 
     my @disco_data;
 
-    my $vpcs = $options{custom}->discovery(region => $options{region},
-        service => 'ec2', command => 'describe-vpcs');
+    my $vpcs = $options{custom}->discovery(
+        region => $options{region},
+        service => 'ec2',
+        command => 'describe-vpcs'
+    );
     foreach my $vpc (@{$vpcs->{Vpcs}}) {
         next if (!defined($vpc->{VpcId}));
         my %vpc;
@@ -134,6 +137,15 @@ sub discover_cloudfront {
 
     use cloud::aws::cloudfront::mode::discovery;
     my @disco_data = cloud::aws::cloudfront::mode::discovery->run(custom => $options{custom}, discover => 1);
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
+    return \@disco_data, \@disco_keys;
+}
+
+sub discover_elasticache {
+    my (%options) = @_;
+
+    use cloud::aws::elasticache::mode::discovery;
+    my @disco_data = cloud::aws::elasticache::mode::discovery->run(custom => $options{custom}, discover => 1);
     my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
