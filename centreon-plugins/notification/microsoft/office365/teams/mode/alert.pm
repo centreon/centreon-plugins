@@ -140,7 +140,11 @@ sub build_resource_status_filters {
                 "name" => "search",
                 "object_type" => undef,
                 "type" => "text",
-                "value"=> "s.description:$self->{option_results}->{service_name} h.name:$self->{option_results}->{host_name}"
+                "value" => sprintf(
+                    's.description:%s h.name:%s',
+                     defined($self->{option_results}->{service_name}) ? $self->{option_results}->{service_name} : '',
+                     defined($self->{option_results}->{host_name}) ? $self->{option_results}->{host_name} : ''
+                )
             },
             {
                 "name" => "sort",
