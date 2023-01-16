@@ -36,7 +36,6 @@ for PLUGIN in $PLUGINS; do
 
 	sed -e "s/@NAME@/$PLUGIN_NAME_LOWER/g" -e "s/@SUMMARY@/$pkg_summary/g" -e "s/@REQUIRES@/$deb_dependencies/g" < centreon-plugins/debian/control.body.template >> centreon-plugins/debian/control
 
-    cat centreon-plugins/debian/control
     # .install file
 	sed -e "s/@DIR@/$PLUGIN/g" -e "s/@NAME@/$plugin_name/g" < centreon-plugins/debian/plugin.install.template >> centreon-plugins/debian/$PLUGIN_NAME_LOWER.install
 

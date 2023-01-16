@@ -28,7 +28,6 @@ for PLUGIN_NAME in $PLUGINS; do
     mv $PLUGIN_NAME-$VERSION.tar.gz $HOME/rpmbuild/SOURCES/
 
     cd $PLUGIN_NAME-$VERSION
-    cat ../plugin.specfile
     rpmbuild -ba ../plugin.specfile
     find $HOME/rpmbuild/RPMS -name *.rpm -exec mv {} /src/ \;
 
