@@ -37,9 +37,6 @@ jobs:
               ;;
           esac
 
-          # @todo remove next line
-          STABILITY="unstable"
-
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 
           VERSION=`date '+%Y%m%d'`
