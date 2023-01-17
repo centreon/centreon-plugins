@@ -14,9 +14,13 @@ mv centreon-plugins/debian/control.head.template centreon-plugins/debian/control
 
 for PLUGIN in $PLUGINS; do
 
-    if [[ "$PLUGIN" =~ (.*)"=>".* ]]; then
-        PLUGIN=$(echo ${BASH_REMATCH[1]})
+    PACKAGE_PATH=$PLUGIN
+
+    if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
+        PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
+        PLUGIN=$(echo ${BASH_REMATCH[2]})
     fi
+
 	PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
 
 	echo "::group::Preparing $PLUGIN_NAME_LOWER"
@@ -25,10 +29,10 @@ for PLUGIN in $PLUGINS; do
 	cp -R build/$PLUGIN/*.pl centreon-plugins/plugins/$PLUGIN
 
 	# Process package files
-	pkg_values=($(cat "packaging/$PLUGIN/pkg.json" | jq -r '.pkg_name,.plugin_name'))
+	pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
 	pkg_summary=$(echo "${pkg_values[0]}")
 	plugin_name=$(echo "${pkg_values[1]}")
-	deb_dependencies=$(cat "packaging/$PLUGIN/deb.json" | jq -r '.dependencies | join(",\\n  ")')
+	deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
 
 	sed -e "s/@NAME@/$PLUGIN_NAME_LOWER/g" -e "s/@SUMMARY@/$pkg_summary/g" -e "s/@REQUIRES@/$deb_dependencies/g" < centreon-plugins/debian/control.body.template >> centreon-plugins/debian/control
 

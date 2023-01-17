@@ -13,15 +13,13 @@ on:
 
 jobs:
   get-version:
-    runs-on: [self-hosted, common]
+    runs-on: ubuntu-22.04
     outputs:
       stability: ${{ steps.get_environment.outputs.stability }}
       version: ${{ steps.get_environment.outputs.version }}
       release: ${{ steps.get_environment.outputs.release }}
 
     steps:
-      #- uses: actions/checkout@v3
-
       - id: get_environment
         run: |
           case "$BRANCHNAME" in
@@ -38,9 +36,6 @@ jobs:
               STABILITY="canary"
               ;;
           esac
-
-          # @todo remove next line
-          STABILITY="unstable"
 
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 

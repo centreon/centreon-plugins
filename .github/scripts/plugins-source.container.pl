@@ -44,17 +44,19 @@ foreach my $plugin (@plugins) {
     chdir($packaging_dir);
 
     # Load plugin configuration file.
-    if (! -f $plugin . '/pkg.json') {
-        if ($plugin =~ /(.*)=>/) {
-            $plugin = $1;
+    my $package_path = $plugin;
+    if (! -f $package_path . '/pkg.json') {
+        if ($package_path =~ /(.+)=>(.+)/) {
+            $package_path = $1;
+            $plugin = $2;
         }
     }
-    print "::group::Processing $plugin...";
-    if (-f $plugin . '/pkg.json') {
+
+    if (-f $package_path . '/pkg.json') {
         my $plugin_build_dir = $build_dir . '/' . $plugin;
         File::Path::make_path($plugin_build_dir);
 
-        open($fh, '<', $plugin . '/pkg.json');
+        open($fh, '<', $package_path . '/pkg.json');
         my $json_content = do { local $/; <$fh> };
         close($fh);
         $config = JSON::decode_json($json_content);
@@ -89,7 +91,6 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/hardware.pm'
         );
         foreach my $file ((@common_files, @{$config->{files}})) {
-            print "  - $file\n";
             if (-f $file) {
                 File::Copy::Recursive::fcopy($file, 'lib/' . $file);
             } elsif (-d $file) {
@@ -107,5 +108,4 @@ foreach my $plugin (@plugins) {
         close($fh);
         chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
     }
-    print "::endgroup::";
 }

@@ -83,9 +83,9 @@ runs:
           scp -o StrictHostKeyChecking=no ./*.rpm "${{ inputs.yum_repo_address }}:$TARGET"
 
           # Cleanup is done on unstable repository only
-          if [ "$REPOTYPE" == "unstable" ]; then
-            ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" "ls -drc $PROJECT_LOCATION/* 2>&- | head -n -1 | xargs rm -rf"
-          fi
+          #if [ "$REPOTYPE" == "unstable" ]; then
+          #  ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" "ls -drc $PROJECT_LOCATION/* 2>&- | head -n -1 | xargs rm -rf"
+          #fi
 
           # Update repository metadata
           METADATAS="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH"

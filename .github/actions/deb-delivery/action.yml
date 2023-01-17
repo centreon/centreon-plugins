@@ -4,9 +4,6 @@ inputs:
   distrib:
     description: "The distribution used for packaging"
     required: true
-  major_version:
-    description: "The major version"
-    required: true
   artifactory_username:
     description: The artifactory username
     required: true
@@ -37,28 +34,14 @@ runs:
 
     - name: Publish DEBS to Nexus
       run: |
-        set -e
-        FILES="centreon-plugin-operatingsystems-linux-*.deb"
+        for MAJOR in "22.04" "22.10"; do
+          echo "Delivering to $MAJOR ${{ inputs.stability }}"
 
-        VERSION="${{ inputs.version }}"
-        RELEASE="${{ inputs.release }}"
-        REPOTYPE="${{ inputs.stability }}"
-        PROJECT="plugins"
-        PROJECT_PATH="standard"
+          FOLDER_SUFFIX="-${{ inputs.stability }}"
+          if [[ "${{ inputs.stability }}" == "stable" ]]; then
+            FOLDER_SUFFIX=""
+          fi
 
-        find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/${{ inputs.major_version }}-$REPOTYPE/
-
-        #for MAJOR in "22.04" "22.10"; do
-        #  echo "Delivering to $MAJOR $REPOTYPE"
-
-        #  find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR-$REPOTYPE/
-
-        #  for FILE in $FILES; do
-        #    echo "::group::Delivering $FILE"
-
-            #curl -v -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@./$FILE" https://apt.centreon.com/repository/$MAJOR-$REPOTYPE/
-
-        #    echo "::endgroup::"
-        #  done
-        #done
+          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/
+        done
       shell: bash
