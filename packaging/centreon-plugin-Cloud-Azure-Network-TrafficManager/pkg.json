@@ -8,6 +8,5 @@
         "cloud/azure/management/monitor/mode/discovery.pm",
         "cloud/azure/management/monitor/mode/health.pm",
         "cloud/azure/network/trafficmanager/"
-        
     ]
 }
