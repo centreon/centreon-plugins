@@ -34,7 +34,7 @@ sub new {
         'list-pools' => 'apps::ceph::restapi::mode::listpools',
         'osd'        => 'apps::ceph::restapi::mode::osd',
         'pools'      => 'apps::ceph::restapi::mode::pools',
-	'df'         => 'apps::ceph::restapi::mode::df'
+	    'df'         => 'apps::ceph::restapi::mode::df'
     };
 
     $self->{custom_modes}->{api} = 'apps::ceph::restapi::custom::api';
