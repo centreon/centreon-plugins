@@ -45,6 +45,9 @@ sub new {
         $options{options}->add_options(arguments => {
             'api-username:s'    => { name => 'api_username' },
             'api-password:s'    => { name => 'api_password' },
+            'service-account:s' => { name => 'service_account' },
+            'secret:s'          => { name => 'secret' },
+            'organization-id:s' => { name => 'organization_id' },
             'hostname:s'        => { name => 'hostname' },
             'port:s'            => { name => 'port' },
             'proto:s'           => { name => 'proto' },
@@ -80,6 +83,9 @@ sub check_options {
     $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{service_account} = (defined($self->{option_results}->{service_account})) ? $self->{option_results}->{service_account} : '';
+    $self->{secret} = (defined($self->{option_results}->{secret})) ? $self->{option_results}->{secret} : '';
+    $self->{organization_id} = (defined($self->{option_results}->{organization_id})) ? $self->{option_results}->{organization_id} : '';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
@@ -92,6 +98,15 @@ sub check_options {
     if (defined($self->{token})) {
         $self->{cache}->check_options(option_results => $self->{option_results});
         return 0 if ($self->{token} ne '');
+    }
+
+    if ($self->{service_account} ne '') {
+        if ($self->{secret} eq '') {
+            $self->{output}->add_option_msg(short_msg => 'Need to specify --secret option.');
+            $self->{output}->option_exit();
+        }
+        $self->{cache}->check_options(option_results => $self->{option_results});
+        return 0;
     }
 
     if ($self->{api_username} eq '') {
@@ -141,7 +156,68 @@ sub get_token {
             credentials => 1,
             basic => 1,
             username => $self->{api_username},
-            password => $self->{api_password}
+            password => $self->{api_password},
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->option_exit();
+        }
+
+        $token = $decoded->{token};
+        my $datas = {
+            updated => time(),
+            token => $decoded->{token},
+            md5_secret => $md5_secret
+        };
+        $self->{cache}->write(data => $datas);
+    }
+
+    return $token;
+}
+
+sub get_service_account_token {
+    my ($self, %options) = @_;
+
+    my $has_cache_file = $self->{cache}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
+    my $token = $self->{cache}->get(name => 'token');
+    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{service_account} . $self->{secret});
+
+    if ($has_cache_file == 0 ||
+        !defined($token) ||
+        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        ) {
+        my $json_request = {
+            serviceAccountId => $self->{service_account},
+            secret => $self->{secret}
+        };
+        $json_request->{organizationId} = $self->{organization_id} if ($self->{organization_id} ne '');
+
+        my $encoded;
+        eval {
+            $encoded = encode_json($json_request);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+            $self->{output}->option_exit();
+        }
+
+        $self->settings();
+        my $content = $self->{http}->request(
+            method => 'POST',
+            url_path => '/api/v1/service_account/session',
+            query_form_post => $encoded,
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
         );
 
         my $decoded;
@@ -181,7 +257,15 @@ sub credentials {
     }
 
     my $creds = {};
-    if (defined($self->{token})) {
+    if ($self->{service_account} ne '') {
+        $token = $self->get_service_account_token();
+        $creds = {
+            header => ['Authorization: Bearer ' . $token],
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        };
+    } elsif (defined($self->{token})) {
         $creds = {
             header => ['Authorization: Bearer ' . $token],
             unknown_status => '',
@@ -272,6 +356,18 @@ Port used (Default: 443)
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
+
+=item B<--service-account>
+
+Service account ID (with --secret and --organization-id options).
+
+=item B<--secret>
+
+Service account secret (with --service-account and --organization-id options).
+
+=item B<--organization-id>
+
+Organization ID (with --service-account and --secret options).
 
 =item B<--api-username>
 
