@@ -12,14 +12,14 @@ a = argv[2][1:n-1]
 input_packages = a.split(',')
 packages = set()
 for package in input_packages:
-    packages.add(package.strip('"/').removeprefix('centreon-plugins/'))
+    packages.add(package.strip('"/').removeprefix('src/'))
 
 n = len(argv[3])
 a = argv[3][1:n-1]
 input_plugins = a.split(',')
 plugins = set()
 for plugin in input_plugins:
-    plugins.add(plugin.strip('"/').removeprefix('centreon-plugins/'))
+    plugins.add(plugin.strip('"/').removeprefix('src/'))
 
 list_plugins = set()
 list_packages = set()
@@ -49,7 +49,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
         list_packages.add(packaging_path)
     else:
         for pkg_file in packaging["files"]:
-            pkg_file_dir = pkg_file.strip('/').removeprefix('centreon-plugins/')
+            pkg_file_dir = pkg_file.strip('/').removeprefix('src/')
             if pkg_file_dir in list_plugins:
                 list_packages.add(packaging_path)
 
