@@ -22,6 +22,12 @@ jobs:
     steps:
       - id: get_environment
         run: |
+          if [[ -z "$GITHUB_HEAD_REF" ]]; then
+            BRANCHNAME="$GITHUB_REF_NAME"
+          else
+            BRANCHNAME="$GITHUB_HEAD_REF"
+          fi
+
           case "$BRANCHNAME" in
             develop)
               STABILITY="unstable"
