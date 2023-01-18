@@ -41,6 +41,12 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/plugins-source.container.pl "${{ inputs.plugins }}" "${{ steps.get_version.outputs.version }} ($COMMIT)"
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: plugins
+          path: ./build/*
+          retention-days: 1
+
       - uses: actions/cache@v3
         with:
           path: ./build/
