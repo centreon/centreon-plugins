@@ -81,6 +81,10 @@ I can set threshold with options ``--warning`` and ``--critical``:
 
 For more information or help, please read ['doc/en/user/guide.rst'](./doc/en/user/guide.rst).
 
+## Continuous integration
+
+Please follow documentation [here](./doc/CI.md)
+
 <!-- URL AND IMAGES FOR SHIELDS -->
 [contributors-shield]: https://img.shields.io/github/contributors/centreon/centreon-plugins?color=%2384BD00&label=CONTRIBUTORS&style=for-the-badge
 [stars-shield]: https://img.shields.io/github/stars/centreon/centreon-plugins?color=%23433b02a&label=STARS&style=for-the-badge

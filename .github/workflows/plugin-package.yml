@@ -76,6 +76,7 @@ jobs:
       - uses: ./.github/actions/package
         with:
           package_extension: ${{ matrix.package_extension }}
+          distrib: ${{ matrix.distrib }}
           image_name: ${{ matrix.image }}
           script_name: plugin-packaging-${{ matrix.package_extension }}
           plugins: ${{ inputs.plugins }}

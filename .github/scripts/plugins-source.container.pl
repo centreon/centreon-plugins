@@ -8,7 +8,7 @@ use JSON;
 use Cwd qw(getcwd);
 
 my $pwd = (getcwd . '/');
-my $plugins_dir = ($pwd . 'centreon-plugins');
+my $plugins_dir = ($pwd . 'src');
 my $packaging_dir = ($pwd . 'packaging');
 my $build_dir = ($pwd . 'build');
 
