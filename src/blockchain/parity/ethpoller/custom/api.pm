@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use DateTime;
+
 use JSON::XS;
 
 sub new {
