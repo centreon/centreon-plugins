@@ -71,12 +71,9 @@ runs:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ inputs.cache_key }}
 
-    - run: zip -9 packages-${{ inputs.distrib }}.zip ./*.${{ inputs.package_extension }}
-      shell: bash
-
     - name: Upload package artifacts
       uses: actions/upload-artifact@v3
       with:
         name: packages-${{ inputs.distrib }}
-        path: ./packages-${{ inputs.distrib }}.zip
+        path: ./*.${{ inputs.package_extension }}
         retention-days: 1

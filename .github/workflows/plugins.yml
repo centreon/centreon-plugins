@@ -14,9 +14,7 @@ on:
   push:
     branches:
       - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
       - master
-      - "[2-9][0-9].[0-9][0-9].x"
     paths:
       - '.github/workflows/plugins.yml'
       - 'src/**'
@@ -63,7 +61,8 @@ jobs:
               folders+=($(dirname $f)); \
           done
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
-          echo "package_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+          #echo "package_directories=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]})" >> $GITHUB_OUTPUT
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
 
           files=()
           for f in ${{ steps.filter.outputs.plugins_files }}; \
@@ -72,23 +71,22 @@ jobs:
               files+=($f); \
           done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
-          echo "plugins=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]})" >> $GITHUB_OUTPUT
+          #echo "plugins=$(jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]})" >> $GITHUB_OUTPUT
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
+        shell: bash
 
       - name: Get plugins for build
         id: get_plugins
         if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
         run: |
-          PLUGINS="$(python3 .github/scripts/process-plugins.py \
-            '${{ steps.filter.outputs.common == 'true' }}' \
-            '${{ steps.transform.outputs.package_directories }}' \
-            '${{ steps.transform.outputs.plugins }}' \
-          )"
+          PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
 
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
+        shell: bash
 
   package:
     needs: [get-environment, get-plugins]

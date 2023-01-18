@@ -7,15 +7,19 @@ import json
 
 common = argv[1] == 'true'
 
-n = len(argv[2])
-a = argv[2][1:n-1]
+f = open("package_directories.txt", "r")
+line_packages = f.readline()
+n = len(line_packages)
+a = line_packages[1:n-1]
 input_packages = a.split(',')
 packages = set()
 for package in input_packages:
     packages.add(package.strip('"/').removeprefix('src/'))
 
-n = len(argv[3])
-a = argv[3][1:n-1]
+f = open("plugins.txt", "r")
+line_plugins = f.readline()
+n = len(line_plugins)
+a = line_plugins[1:n-1]
 input_plugins = a.split(',')
 plugins = set()
 for plugin in input_plugins:
