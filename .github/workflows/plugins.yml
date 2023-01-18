@@ -45,11 +45,11 @@ jobs:
           list-files: shell
           filters: |
             common:
-              - added|deleted|modified: centreon-plugins/centreon/**
+              - added|deleted|modified: src/centreon/**
             packages:
               - added|modified: packaging/**
             plugins:
-              - added|modified: centreon-plugins/**
+              - added|modified: src/**
 
       - name: transform to directories
         run: |
@@ -86,6 +86,7 @@ jobs:
         shell: bash
 
   package:
+    if: ${{ needs.get-plugins.outputs.plugins != '' }}
     needs: [get-environment, get-plugins]
     uses: ./.github/workflows/plugin-package.yml
     with:
