@@ -11,7 +11,6 @@ with open('package_directories.txt') as f:
     line_packages = f.readline().strip('\n')
 n = len(line_packages)
 a = line_packages[1:n-1]
-print(a)
 input_packages = a.split(',')
 packages = set()
 for package in input_packages:
