@@ -15,6 +15,7 @@ on:
     branches:
       - develop
       - master
+      - test-trigger
     paths:
       - '.github/workflows/plugins.yml'
       - 'src/**'
