@@ -9,9 +9,9 @@ common = argv[1] == 'true'
 
 f = open("package_directories.txt", "r")
 line_packages = f.readline()
-print(line_packages)
 n = len(line_packages)
 a = line_packages[1:n-1]
+print(a)
 input_packages = a.split(',')
 packages = set()
 for package in input_packages:
@@ -19,9 +19,9 @@ for package in input_packages:
 
 f = open("plugins.txt", "r")
 line_plugins = f.readline()
-print(line_plugins)
 n = len(line_plugins)
 a = line_plugins[1:n-1]
+print(a)
 input_plugins = a.split(',')
 plugins = set()
 for plugin in input_plugins:
