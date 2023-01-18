@@ -86,6 +86,7 @@ jobs:
         shell: bash
 
   package:
+    if: ${{ needs.get-plugins.outputs.plugins != '' }}
     needs: [get-environment, get-plugins]
     uses: ./.github/workflows/plugin-package.yml
     with:
