@@ -45,11 +45,11 @@ jobs:
           list-files: shell
           filters: |
             common:
-              - added|deleted|modified: centreon-plugins/centreon/**
+              - added|deleted|modified: src/centreon/**
             packages:
               - added|modified: packaging/**
             plugins:
-              - added|modified: centreon-plugins/**
+              - added|modified: src/**
 
       - name: transform to directories
         run: |
