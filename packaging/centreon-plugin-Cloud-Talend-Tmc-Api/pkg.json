@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Talend-Tmc-Api",
+    "pkg_summary": "Centreon Plugin to monitor Talend Cloud Management Console using API.",
+    "plugin_name": "centreon_talend_tmc_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/talend/tmc/"
+    ]
+}
