@@ -7,8 +7,8 @@ import json
 
 common = argv[1] == 'true'
 
-f = open("package_directories.txt", "r")
-line_packages = f.readline()
+with open('package_directories.txt') as f:
+    line_packages = f.readline().strip('\n')
 n = len(line_packages)
 a = line_packages[1:n-1]
 input_packages = a.split(',')
@@ -16,8 +16,8 @@ packages = set()
 for package in input_packages:
     packages.add(package.strip('"/').removeprefix('src/'))
 
-f = open("plugins.txt", "r")
-line_plugins = f.readline()
+with open('plugins.txt') as f:
+    line_plugins = f.readline().strip('\n')
 n = len(line_plugins)
 a = line_plugins[1:n-1]
 input_plugins = a.split(',')
@@ -31,7 +31,7 @@ list_packages = set()
 for plugin in plugins:
     list_plugins.add(plugin)
     try:
-        found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
+        found = re.search('(.*)\/(?:plugin\.pm|mode\/.+|custom\/.+)', plugin).group(1)
         list_plugins.add(found)
     except AttributeError:
         pass
