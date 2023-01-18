@@ -4,6 +4,9 @@ inputs:
   package_extension:
     description: The package extension (deb or rpm)
     required: true
+  distrib:
+    description: The package distrib (el8, bullseye...)
+    required: true
   image_name:
     description: The docker image name
     required: true
@@ -62,15 +65,15 @@ runs:
         artifactory_username: ${{ inputs.artifactory_username }}
         artifactory_password: ${{ inputs.artifactory_password }}
 
-    - name: Upload package artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: packages-${{ inputs.package_extension }}
-        path: ./*.${{ inputs.package_extension }}
-        retention-days: 1
-
     - name: Cache packaged files
       uses: actions/cache@v3
       with:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ inputs.cache_key }}
+
+    - if: ${{ inputs.distrib == 'el8' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages-${{ inputs.distrib }}
+        path: ./*.${{ inputs.package_extension }}
+        retention-days: 1
