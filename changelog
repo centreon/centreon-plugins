@@ -1,3 +1,11 @@
+2023-01-18 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Talend TMC API
+ * Plugin added: Sensor APC SNMP
+ * Plugin added: Vectra SNMP
+ * Plugin added: Stormshield API
+ * Mode added: [netapp/ontap/restapi] 'quotas'
+ * Break: pure storage refactoring
+
 2022-11-15 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Thales Mistral VS9 Rest API
  * Plugin added: PICOS SNMP
