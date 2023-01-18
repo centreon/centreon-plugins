@@ -71,7 +71,6 @@ jobs:
           done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
-          cat plugins.txt
         shell: bash
 
       - name: Get plugins for build

@@ -31,7 +31,7 @@ list_packages = set()
 for plugin in plugins:
     list_plugins.add(plugin)
     try:
-        found = re.search('(.*)\/(?:plugin\.pm|mode\/.+)', plugin).group(1)
+        found = re.search('(.*)\/(?:plugin\.pm|mode\/.+|custom\/.+)', plugin).group(1)
         list_plugins.add(found)
     except AttributeError:
         pass
