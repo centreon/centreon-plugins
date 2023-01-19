@@ -100,20 +100,20 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'warning', nlabel => 'events.type.warning.count', set => {
                 key_values => [ { name => 'warning' } ],
-                output_template => 'Warning : %d',
+                output_template => 'warning: %d',
                 perfdatas => [
-                    { label => 'warning_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
         { label => 'normal', nlabel => 'events.type.normal.count', set => {
                 key_values => [ { name => 'normal' } ],
-                output_template => 'Normal : %d',
+                output_template => 'normal: %d',
                 perfdatas => [
-                    { label => 'normal_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{events} = [
@@ -142,18 +142,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-type:s'         => { name => 'filter_type' },
-        'filter-namespace:s'    => { name => 'filter_namespace' }
+        'filter-type:s'      => { name => 'filter_type' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

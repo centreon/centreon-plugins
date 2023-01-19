@@ -90,7 +90,8 @@ sub set_counters {
         { label => 'status', type => 2, set => {
                 key_values => [
                     { name => 'active' }, { name => 'last_schedule_time' }, { name => 'name' },
-                    { name => 'namespace' } ],
+                    { name => 'namespace' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
