@@ -140,12 +140,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-type:s"         => { name => 'filter_type' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
+        'filter-type:s'         => { name => 'filter_type' },
+        'filter-namespace:s'    => { name => 'filter_namespace' }
     });
-   
+
     return $self;
 }
 
@@ -159,12 +159,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{events} = {};
-
     my $results = $options{custom}->kubernetes_list_events();
 
     $self->{global} = { normal => 0, warning => 0 };
-    
+    $self->{events} = {};
     foreach my $event (@{$results}) {
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $event->{type} !~ /$self->{option_results}->{filter_type}/) {
@@ -178,7 +176,7 @@ sub manage_selection {
         }
 
         $self->{global}->{lc($event->{type})}++;
-        
+
         $self->{events}->{$event->{metadata}->{uid}} = {
             name => $event->{metadata}->{name},
             namespace => $event->{metadata}->{namespace},
