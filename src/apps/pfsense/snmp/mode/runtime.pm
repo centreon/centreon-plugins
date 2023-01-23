@@ -67,26 +67,36 @@ sub run {
     $valueRuntime = $result->{$oid_pfsenseRuntime};
     
     if ($valueStatus == 1) {
-        my $exit_code = $self->{perfdata}->threshold_check(value => $valueRuntime, 
-                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
-        $self->{output}->perfdata_add(label => 'runtime', unit => 's',
-                                      value => floor($valueRuntime / 100),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("PfSense running since : %s",
-                                                         centreon::plugins::misc::change_seconds(value => floor($valueRuntime / 100))));
-
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $valueRuntime, 
+            threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+        );
+        $self->{output}->perfdata_add(
+            label => 'runtime', unit => 's',
+            value => floor($valueRuntime / 100),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf(
+                "PfSense running since : %s",
+                centreon::plugins::misc::change_seconds(value => floor($valueRuntime / 100))
+            )
+        );
     } else {
-        $self->{output}->perfdata_add(label => 'runtime', unit => 's',
-                                      value => 0,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => 'PfSense not running');
-        
+        $self->{output}->perfdata_add(
+            label => 'runtime', unit => 's',
+            value => 0,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->output_add(
+            severity => 'critical',
+            short_msg => 'PfSense not running'
+        );        
     }
     $self->{output}->display();
     $self->{output}->exit();
