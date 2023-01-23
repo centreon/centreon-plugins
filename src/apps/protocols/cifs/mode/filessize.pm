@@ -58,9 +58,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'directory:s@' => { name => 'directory' },
-        'file:s@'      => { name => 'file' },
-        'max-depth:s'  => { name => 'max_depth', default => 0 }
+        'filter-file:s' => { name => 'filter_file' },
+        'directory:s@'  => { name => 'directory' },
+        'file:s@'       => { name => 'file' },
+        'max-depth:s'   => { name => 'max_depth', default => 0 }
     });
 
     return $self;
@@ -120,6 +121,9 @@ sub check_directory {
 
                 my $name = $dir . '/' . $file->[1];
 
+                next if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
+                    $name !~ /$self->{option_results}->{filter_file}/);
+
                 if ($file->[0] == SMBC_DIR) {
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
                         push @$list, { name => $name, level => $level + 1 };
@@ -174,6 +178,10 @@ Can get sub directory size with --max-depth option.
 =item B<--file>
 
 Check file (Multiple option)
+
+=item B<--filter-file>
+
+Filter files (can be a regexp. Directory in the name).
 
 =item B<--max-depth>
 
