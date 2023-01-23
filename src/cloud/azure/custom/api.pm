@@ -96,7 +96,8 @@ sub check_options {
     $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : undef;
     $self->{client_secret} = (defined($self->{option_results}->{client_secret})) ? $self->{option_results}->{client_secret} : undef;
     $self->{login_endpoint} = (defined($self->{option_results}->{login_endpoint})) ? $self->{option_results}->{login_endpoint} : 'https://login.microsoftonline.com';
-    $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://management.azure.com';
+    # $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://management.azure.com';
+    $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'http://localhost:3000';
     $self->{api_version} = (defined($self->{option_results}->{api_version})) ? $self->{option_results}->{api_version} : undef;
 
     if ((!defined($self->{subscription}) || $self->{subscription} eq '') && $self->{mode_name} !~ /discovery-tenant/) {
@@ -150,8 +151,8 @@ sub get_access_token {
 
     my $has_cache_file = $options{statefile}->read(
         statefile =>
-            'azure_api_' . 
-            md5_hex($self->{tenant}) . '_' . 
+            'azure_api_' .
+            md5_hex($self->{tenant}) . '_' .
             md5_hex($self->{client_id}) . '_' .
             md5_hex($self->{management_endpoint})
     );
@@ -243,7 +244,7 @@ sub convert_duration {
     my ($self, %options) = @_;
 
     my $duration;
-    
+
     if ($options{time_string} =~ /^P.*S$/) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
@@ -268,7 +269,7 @@ sub convert_duration {
 
 sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
-    
+
     if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d.*)Z/) {
         my $dt = DateTime->new(
             year       => $1,
@@ -284,7 +285,7 @@ sub convert_iso8601_to_epoch {
         return $epoch_time;
 
     }
-    
+
     $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
     $self->{output}->option_exit();
 
@@ -310,7 +311,7 @@ sub json_decode {
 sub azure_get_subscription_cost_management_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version} ;
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version};
 
     return $url;
 }
@@ -321,7 +322,7 @@ sub azure_get_subscription_cost_management {
     my $results = {};
     my $encoded_form_post;
 
-    my $full_url = $self->azure_get_subscription_cost_management_set_url(); 
+    my $full_url = $self->azure_get_subscription_cost_management_set_url();
 
     eval {
         $encoded_form_post = JSON::XS->new->utf8->encode($options{body_post});
@@ -1175,6 +1176,98 @@ sub azure_list_sqlelasticpools {
     }
 
     return $full_response;
+}
+
+sub azure_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if length $options{resource_group};
+    $url .= "/providers/" . $options{providers} if length $options{providers};
+    $url .= "/" . $options{resource} if length $options{resource};
+    $url .= "/" . $options{query_name} . "?";
+    $url .= length $options{force_api_version} ? "api-version=" . $options{force_api_version} : "api-version=" . $self->{api_version};
+    $url .= "&" . $options{query} if length $options{query};
+    $url .= "";
+}
+
+sub azure_list_policystates {
+    my ($self, %options) = @_;
+
+    $self->{access_token} = 'azerty';
+
+    my $query = '$select=ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState';
+    my $resource_location = ("ResourceLocation eq '".$options{resource_location}."'") if (defined($options{resource_location}) && $options{resource_location} ne '');
+    my $resource_type = ("ResourceType eq '".$options{resource_type}."'") if (defined($options{resource_type}) && $options{resource_type} ne '');
+    if (length $resource_location && length $resource_type) {
+        $query .= '&$filter=' . $resource_location . " and " . $resource_type;
+    } elsif (length $resource_location) {
+        $query .= '&$filter=' . $resource_location
+    } elsif (length $resource_type) {
+        $query .= '&$filter=' . $resource_type
+    }
+
+    $options{query} = $query;
+
+    my $full_url = $self->azure_set_url(%options);
+    my $response = $self->request_api(
+        method => 'POST',
+        full_url => $full_url,
+        hostname => '',
+        header => ['Content-Type: application/json']
+    );
+
+    # $full_url = "http://localhost:3000/subscriptions/a74765e5-d967-492f-9ea1-2ddf04c405cf/providers/Microsoft.PolicyInsights/policyStates/default/queryResults";
+    # my $response = $self->request_api(
+    #     http_backend => 'lwp',
+    #     method => 'POST',
+    #     full_url => $full_url,
+    #     hostname => '',
+    #     header => ['Content-Type: application/json']
+    # );
+    # 
+    # my $content = '{
+    # "@odata.nextLink": null,
+    # "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest",
+    # "@odata.count": 2,
+    # "value": [
+    #     {
+    #     "@odata.id": null,
+    #     "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity",
+    #     "resourceId": "/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1",
+    #     "isCompliant": false,
+    #     "resourceType": "/Microsoft.Network/publicIPAddresses",
+    #     "resourceLocation": "eastus",
+    #     "resourceGroup": "myrg1",
+    #     "policyAssignmentName": "Enable Monitoring in Azure Security Center",
+    #     "policyDefinitionName": "9daedab3-fb2d-461e-b861-71790eead4f6",
+    #     "policyDefinitionAction": "AuditIfNotExists",
+    #     "policyDefinitionCategory": "tbd",
+    #     "policySetDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
+    #     "policySetDefinitionName": "1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
+    #     "complianceState": "NonCompliant"
+    #     },
+    #     {
+    #     "@odata.id": null,
+    #     "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity",
+    #     "resourceId": "/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2",
+    #     "isCompliant": false,
+    #     "resourceType": "/Microsoft.Network/publicIPAddresses",
+    #     "resourceLocation": "eastus",
+    #     "resourceGroup": "myrg1",
+    #     "policyAssignmentName": "9ac09b0657d942e5ad4041a6",
+    #     "policyDefinitionName": "9daedab3-fb2d-461e-b861-71790eead4f6",
+    #     "policyDefinitionAction": "AuditIfNotExists",
+    #     "policyDefinitionCategory": "tbd",
+    #     "policySetDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
+    #     "policySetDefinitionName": "1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
+    #     "complianceState": "NonCompliant"
+    #     }
+    # ]
+    # }';
+    # my $response = decode_json($content);
+
+    return $response->{value};
 }
 
 1;
