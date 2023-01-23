@@ -113,7 +113,7 @@ sub check_options {
         }
     }
 
-    $self->{statefile_format} = 'dumper';
+    $self->{statefile_format} = 'json';
     if (defined($options{option_results}->{statefile_format}) && $options{option_results}->{statefile_format} ne '' && 
         $options{option_results}->{statefile_format} =~ /^(?:dumper|json|storable)$/) {
         $self->{statefile_format} = $options{option_results}->{statefile_format};
