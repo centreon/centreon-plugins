@@ -100,20 +100,20 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'warning', nlabel => 'events.type.warning.count', set => {
                 key_values => [ { name => 'warning' } ],
-                output_template => 'Warning : %d',
+                output_template => 'warning: %d',
                 perfdatas => [
-                    { label => 'warning_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
         { label => 'normal', nlabel => 'events.type.normal.count', set => {
                 key_values => [ { name => 'normal' } ],
-                output_template => 'Normal : %d',
+                output_template => 'normal: %d',
                 perfdatas => [
-                    { label => 'normal_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{events} = [
@@ -140,31 +140,22 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-type:s"         => { name => 'filter_type' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
+        'filter-type:s'      => { name => 'filter_type' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
-   
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{events} = {};
-
     my $results = $options{custom}->kubernetes_list_events();
 
     $self->{global} = { normal => 0, warning => 0 };
-    
+    $self->{events} = {};
     foreach my $event (@{$results}) {
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $event->{type} !~ /$self->{option_results}->{filter_type}/) {
@@ -178,7 +169,7 @@ sub manage_selection {
         }
 
         $self->{global}->{lc($event->{type})}++;
-        
+
         $self->{events}->{$event->{metadata}->{uid}} = {
             name => $event->{metadata}->{name},
             namespace => $event->{metadata}->{namespace},
