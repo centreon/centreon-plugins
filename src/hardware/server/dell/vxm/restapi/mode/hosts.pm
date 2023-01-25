@@ -165,7 +165,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request(endpoint => '/rest/vxm/v1/hosts');
+    my $results = $options{custom}->request(endpoint => '/hosts');
 
     $self->{global} = { num_hosts => 0, unhealthy => 0 };
     $self->{hosts} = {};
