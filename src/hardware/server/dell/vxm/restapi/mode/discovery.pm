@@ -55,7 +55,7 @@ sub check_options {
 sub discovery_host {
     my ($self, %options) = @_;
 
-    my $hosts = $options{custom}->request(endpoint => '/rest/vxm/v1/hosts');
+    my $hosts = $options{custom}->request(endpoint => '/hosts');
 
     my $disco_data = [];
     foreach my $host (@$hosts) {
