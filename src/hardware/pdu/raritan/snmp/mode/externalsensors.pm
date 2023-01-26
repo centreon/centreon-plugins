@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::pdu::raritan::snmp::mode::inletsensors;
+package hardware::pdu::raritan::snmp::mode::externalsensors;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -51,6 +51,14 @@ sub snmp_execute {
         /\.(\d+)$/;
         $self->{pduNames}->{$1} = $snmp_result->{$_};
     }
+
+    my $oid_externalSensorType = '.1.3.6.1.4.1.13742.6.3.6.3.1.2';
+    $snmp_result = $self->{snmp}->get_table(oid => $oid_externalSensorType, return_type => 1);
+    $self->{externalSensorType} = {};
+    foreach (keys %$snmp_result) {
+        /\.(\d+\.\d+)$/;
+        $self->{externalSensorType}->{$1} = $snmp_result->{$_};
+    }
 }
 
 sub check_numeric_section_option {
@@ -71,7 +79,7 @@ sub load_components {
         error_msg => "Cannot load module '$mod_name'."
     );
     my $func = $mod_name->can('load');
-    $func->($self, type => 'inlet');
+    $func->($self, type => 'external');
     
     $self->{loaded} = 1;
 }
@@ -81,7 +89,7 @@ sub exec_components {
     
     my $mod_name = $self->{components_path} . "::sensor";
     my $func = $mod_name->can('check');
-    $func->($self, component => $self->{option_results}->{component}, type => 'inlet'); 
+    $func->($self, component => $self->{option_results}->{component}, type => 'external'); 
 }
 
 sub new {
@@ -100,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check inlet sensors.
+Check external sensors.
 
 =over 8
 

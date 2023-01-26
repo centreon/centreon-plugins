@@ -43,6 +43,14 @@ sub snmp_execute {
     
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request}, return_type => 1);
+
+    my $oid_pduName = '.1.3.6.1.4.1.13742.6.3.2.2.1.13';
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_pduName, return_type => 1);
+    $self->{pduNames} = {};
+    foreach (keys %$snmp_result) {
+        /\.(\d+)$/;
+        $self->{pduNames}->{$1} = $snmp_result->{$_};
+    }
 }
 
 sub check_numeric_section_option {
@@ -58,8 +66,10 @@ sub load_components {
     my ($self, %options) = @_;
     
     my $mod_name = $self->{components_path} . "::sensor";
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                          error_msg => "Cannot load module '$mod_name'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => $mod_name,
+        error_msg => "Cannot load module '$mod_name'."
+    );
     my $func = $mod_name->can('load');
     $func->($self, type => 'ocprot');
     
@@ -76,11 +86,10 @@ sub exec_components {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
