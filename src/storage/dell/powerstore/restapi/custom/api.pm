@@ -133,7 +133,7 @@ sub get_port {
     return $self->{port};
 }
 
-sub get_metrics_by_clusters {
+sub get_performance_metrics_by_clusters {
     my ($self, %options) = @_;
 
     my $clusters = $self->request_api(endpoint => '/api/rest/cluster');
@@ -143,6 +143,33 @@ sub get_metrics_by_clusters {
         my $post_json = JSON::XS->new->utf8->encode(
             {
                 entity => 'performance_metrics_by_cluster',
+                entity_id => $_->{id},
+                interval => 'Five_Mins'
+            }
+        );
+
+        my $perfs = $self->request_api(
+            method => 'POST',
+            endpoint => '/api/rest/metrics/generate',
+            headers => ['Content-Type: application/json'],
+            query_form_post => $post_json
+        );
+        $results->{ $_->{id} } = $perfs;
+    }
+
+    return $results;
+}
+
+sub get_space_metrics_by_appliance {
+    my ($self, %options) = @_;
+
+    my $appliances = $self->request_api(endpoint => '/api/rest/appliance');
+
+    my $results = {};
+    foreach (@$appliances) {
+        my $post_json = JSON::XS->new->utf8->encode(
+            {
+                entity => 'space_metrics_by_appliance',
                 entity_id => $_->{id},
                 interval => 'Five_Mins'
             }

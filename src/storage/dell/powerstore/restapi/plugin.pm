@@ -32,7 +32,8 @@ sub new {
     $self->{modes} = {
         'alerts'   => 'storage::dell::powerstore::restapi::mode::alerts',
         'clusters' => 'storage::dell::powerstore::restapi::mode::clusters',
-        'hardware' => 'storage::dell::powerstore::restapi::mode::hardware'
+        'hardware' => 'storage::dell::powerstore::restapi::mode::hardware',
+        'memory'   => 'storage::dell::powerstore::restapi::mode::memory'
     };
 
     $self->{custom_modes}->{api} = 'storage::dell::powerstore::restapi::custom::api';
