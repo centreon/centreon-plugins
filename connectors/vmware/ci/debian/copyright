@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: centreon-plugin-virtualization-vmware-daemon
-Upstream-Contact: Luiz Costa <me@luizgustavo.pro.br>
+Upstream-Contact: Centreon <contact@centreon.com>
 Source: https://www.centreon.com
 
 Files: *

@@ -1,7 +1,7 @@
 Source: centreon-plugin-virtualization-vmware-daemon
 Section: net
 Priority: optional
-Maintainer: Luiz Costa <me@luizgustavo.pro.br>
+Maintainer: Centreon <contact@centreon.com>
 Build-Depends: debhelper-compat (= 12)
 Standards-Version: 4.5.0
 Homepage: https://www.centreon.com

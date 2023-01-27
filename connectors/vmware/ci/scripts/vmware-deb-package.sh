@@ -8,8 +8,8 @@ fi
 
 echo "################################################## PACKAGING COLLECT ##################################################"
 
-AUTHOR="Luiz Costa"
-AUTHOR_EMAIL="me@luizgustavo.pro.br"
+AUTHOR="Centreon"
+AUTHOR_EMAIL="contact@centreon.com"
 
 if [ -d /build ]; then
   rm -rf /build
