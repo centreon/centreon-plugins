@@ -37,10 +37,10 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total CPU Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_total', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{cpu} = [
@@ -48,47 +48,47 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization5secs' }, { name => 'num' }, ],
                 output_template => '5 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5secs', value => 'extremeCpuMonitorSystemUtilization5secs', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
-                ],
+                    { label => 'cpu_5secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' }
+                ]
             }
         },
         { label => '10secs', set => {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization10secs' }, { name => 'num' }, ],
                 output_template => '10 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_10secs', value => 'extremeCpuMonitorSystemUtilization10secs', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
-                ],
+                    { label => 'cpu_10secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' }
+                ]
             }
         },
         { label => '30secs', set => {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization30secs' }, { name => 'num' }, ],
                 output_template => '30 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_30secs', value => 'extremeCpuMonitorSystemUtilization30secs', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
-                ],
+                    { label => 'cpu_30secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' }
+                ]
             }
         },
         { label => '1min', set => {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization1min' }, { name => 'num' }, ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1min', value => 'extremeCpuMonitorSystemUtilization1min', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
-                ],
+                    { label => 'cpu_1min', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' }
+                ]
             }
         },
         { label => '5min', set => {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization5mins' }, { name => 'num' }, ],
                 output_template => '5 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5min', value => 'extremeCpuMonitorSystemUtilization5mins', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
-                ],
+                    { label => 'cpu_5min', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -141,11 +141,11 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{extremeCpuMonitorSystemUtilization1min}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_extremeCpuMonitorSystemEntry}, instance => $instance);
-        
+
         foreach (keys %{$mapping}) {
             $result->{$_} = undef if (defined($result->{$_}) && $result->{$_} =~ /n\/a/i);
         }
-        
+
         $self->{cpu}->{$instance} = { num => $instance, %$result };
     }
 
@@ -170,12 +170,12 @@ Example: --filter-counters='^(1min|5min)$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total', '5sec', '10sec', '30sec, '1min', '5min'.
+Can be: 'total', '5secs', '10secs', '30secs', '1min', '5min'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total', '5sec', '10sec', '30sec, '1min', '5min'.
+Can be: 'total', '5secs', '10secs', '30secs', '1min', '5min'.
 
 =back
 
