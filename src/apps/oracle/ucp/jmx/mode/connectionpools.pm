@@ -30,10 +30,9 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        unit => 'B',
         instances => $self->{result_values}->{poolName},
         value => $self->{result_values}->{used},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => $warn_label),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
         max => $self->{result_values}->{total} > 0 ? $self->{result_values}->{total} : undef
@@ -45,7 +44,6 @@ sub custom_usage_free_perfdata {
     
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        unit => 'B',
         instances => $self->{result_values}->{poolName},
         value => $self->{result_values}->{free},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),

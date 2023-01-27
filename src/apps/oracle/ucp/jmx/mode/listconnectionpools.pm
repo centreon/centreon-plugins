@@ -54,10 +54,10 @@ sub manage_selection {
 
     my $results = {};
     foreach my $mbean (keys %$mbeans) {
-        $key =~ /(?:[:,])poolName=(.*?)(?:,|$)/;
+        $mbean =~ /(?:[:,])poolName=(.*?)(?:,|$)/;
         my $poolName = $1;
     
-        $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
+        $mbean =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $name = $1;
 
         $results->{$name} = { 
@@ -92,7 +92,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'poolName');
+    $self->{output}->add_disco_format(elements => ['name', 'poolName']);
 }
 
 sub disco_show {
