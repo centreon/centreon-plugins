@@ -23,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [centos7, alma8, bullseye]
+        distrib: [centos7, alma8, alma9, bullseye]
         include:
           - project: plugins
     steps:

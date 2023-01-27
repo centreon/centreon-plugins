@@ -36,7 +36,8 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el7, el8]
+        distrib: [el9]
+        #distrib: [el7, el8, el9]
 
     steps:
       - name: Checkout sources
@@ -55,23 +56,23 @@ jobs:
           yum_repo_key: ${{ secrets.yum_repo_key }}
           stability: ${{ inputs.stability }}
 
-  deliver-deb:
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [bullseye]
+  # deliver-deb:
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     matrix:
+  #       distrib: [bullseye]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v3
 
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery
-        with:
-          distrib: ${{ matrix.distrib }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          artifactory_username: ${{ secrets.artifactory_username }}
-          artifactory_password: ${{ secrets.artifactory_password }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ inputs.stability }}
+  #     - name: Delivery
+  #       uses: ./.github/actions/deb-delivery
+  #       with:
+  #         distrib: ${{ matrix.distrib }}
+  #         version: ${{ inputs.version }}
+  #         release: ${{ inputs.release }}
+  #         artifactory_username: ${{ secrets.artifactory_username }}
+  #         artifactory_password: ${{ secrets.artifactory_password }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+  #         stability: ${{ inputs.stability }}

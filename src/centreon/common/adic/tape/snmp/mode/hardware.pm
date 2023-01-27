@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 
+
 package centreon::common::adic::tape::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
