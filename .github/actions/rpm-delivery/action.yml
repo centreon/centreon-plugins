@@ -63,8 +63,7 @@ runs:
         eval `ssh-agent`
         ssh-add - <<< "${{ inputs.yum_repo_key }}"
 
-        #for MAJOR in "21.10" "22.04" "22.10"; do
-        for MAJOR in "23.04"; do
+        for MAJOR in "21.10" "22.04" "22.10"; do
           echo "::group::Delivering to $MAJOR $REPOTYPE"
 
           if [ "$REPOTYPE" == "stable" ]; then
