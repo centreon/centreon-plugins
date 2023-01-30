@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Oracle-Ucp-Jmx",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_oracle_ucp_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/oracle/ucp/jmx/"
+    ]
+}
