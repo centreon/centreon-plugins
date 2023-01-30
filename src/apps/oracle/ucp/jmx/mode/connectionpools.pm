@@ -197,10 +197,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-index:s'   => { name => 'filter_index' },
-        'filter-vserver:s' => { name => 'filter_vserver' },
-        'filter-volume:s'  => { name => 'filter_volume' },
-        'filter-qtree:s'   => { name => 'filter_qtree' }
+        'filter-pool-name:s' => { name => 'filter_pool_name' }
     });
 
     return $self;
