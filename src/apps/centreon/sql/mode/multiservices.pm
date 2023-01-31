@@ -374,6 +374,7 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{groups} = {};
+    my @hosts;
 
     if ($config_data->{counters}->{totalhosts} eq 'true') {
         push @{$self->{maps_counters_type}}, {
@@ -435,26 +436,54 @@ sub manage_selection {
                 up => 0, down => 0, unreachable => 0,
                 ok => 0, warning => 0, critical => 0, unknown => 0
             };
-            foreach my $tuple (keys %{$config_data->{selection}->{$group}}) {
-                my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                             FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
-                             AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
-                             AND hosts.name = '" . $tuple . "'
-                             AND services.description = '" . $config_data->{selection}->{$group}->{$tuple} . "'";
-                $self->{sql}->query(query => $query);
-                while ((my $row = $self->{sql}->fetchrow_hashref())) {
-                    if (!exists($self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}})) {
-                        push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_host_state{$row->{hstate}}}} ,$row->{name};
-                        $self->{totalhost}->{$map_host_state{$row->{hstate}}}++;
-                        $self->{logicalgroups}->{$group}->{$map_host_state{$row->{hstate}}}++;
-                    }
-                    push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_service_state{$row->{sstate}}}}, $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description};
+            foreach my $host (keys %{$config_data->{selection}->{$group}}) {
+                if (ref($config_data->{selection}->{$group}->{$host}) eq "ARRAY") { 
+                    foreach my $service (@{$config_data->{selection}->{$group}->{$host}}) {
+                        my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
+                                    FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
+                                    AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
+                                    AND hosts.name = '" . $host . "'
+                                    AND services.description = '" . $service . "'";
+                        $self->{sql}->query(query => $query);
+                        while ((my $row = $self->{sql}->fetchrow_hashref())) {
+                            if (!exists($self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}})) {
+                                push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_host_state{$row->{hstate}}}} ,$row->{name};
+                                $self->{totalhost}->{$map_host_state{$row->{hstate}}}++ if !grep {$_ eq $row->{name}} @hosts;
+                                push @hosts, $row->{name};
+                                $self->{logicalgroups}->{$group}->{$map_host_state{$row->{hstate}}}++;   
+                            }
+                            push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_service_state{$row->{sstate}}}}, $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description};
 
-                    $self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}} = $row->{hstate};
-                    $self->{instance_mode}->{inventory}->{services}{ $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description} } = { state => $row->{sstate}, output => $row->{soutput} } ;
-                    $self->{instance_mode}->{inventory}->{groups}->{$group}->{$row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description}} = { state => $row->{sstate}, output => $row->{soutput} };
-                    $self->{totalservice}->{$map_service_state{$row->{sstate}}}++;
-                    $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;
+                            $self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}} = $row->{hstate};
+                            $self->{instance_mode}->{inventory}->{services}{ $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description} } = { state => $row->{sstate}, output => $row->{soutput} } ;
+                            $self->{instance_mode}->{inventory}->{groups}->{$group}->{$row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description}} = { state => $row->{sstate}, output => $row->{soutput} };
+                            $self->{totalservice}->{$map_service_state{$row->{sstate}}}++;
+                            $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;                     
+                        }
+                    }
+                
+                } else {
+                    my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
+                                FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
+                                AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
+                                AND hosts.name = '" . $host . "'
+                                AND services.description = '" . $config_data->{selection}->{$group}->{$host} . "'";
+                    $self->{sql}->query(query => $query);
+                    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+                        if (!exists($self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}})) {
+                            push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_host_state{$row->{hstate}}}} ,$row->{name};
+                            $self->{totalhost}->{$map_host_state{$row->{hstate}}}++ if !grep {$_ eq $row->{name}} @hosts;
+                            push @hosts, $row->{name};;
+                            $self->{logicalgroups}->{$group}->{$map_host_state{$row->{hstate}}}++;
+                        }
+                        push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_service_state{$row->{sstate}}}}, $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description};
+
+                        $self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}} = $row->{hstate};
+                        $self->{instance_mode}->{inventory}->{services}{ $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description} } = { state => $row->{sstate}, output => $row->{soutput} } ;
+                        $self->{instance_mode}->{inventory}->{groups}->{$group}->{$row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description}} = { state => $row->{sstate}, output => $row->{soutput} };
+                        $self->{totalservice}->{$map_service_state{$row->{sstate}}}++;
+                        $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;
+                    }
                 }
             }
         }
