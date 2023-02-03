@@ -100,7 +100,7 @@ sub run {
         }
         next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
 
-        next if (defined($self->{option_results}->{exclude_user}) && $self->{option_results}->{exclude_user} && $row->{usename} =~ /$self->{option_results}->{exclude_user}/);
+        next if (defined($self->{option_results}->{exclude_user}) && $self->{option_results}->{exclude_user} ne '' && $row->{usename} =~ /$self->{option_results}->{exclude_user}/);
 
         my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
