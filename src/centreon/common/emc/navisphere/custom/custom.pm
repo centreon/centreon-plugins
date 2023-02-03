@@ -117,9 +117,9 @@ sub check_options {
         command => $self->{option_results}->{naviseccli_command},
         command_path => $self->{option_results}->{naviseccli_path}
     );
-    $self->{option_results}->{navicli_command} = 'naviseccli'
+    $self->{option_results}->{naviseccli_command} = 'naviseccli'
         if (!defined($self->{option_results}->{naviseccli_command}) || $self->{option_results}->{naviseccli_command} eq '');
-    $self->{option_results}->{navicli_path} = '/opt/Navisphere/bin'
+    $self->{option_results}->{naviseccli_path} = '/opt/Navisphere/bin'
         if (!defined($self->{option_results}->{naviseccli_path}) || $self->{option_results}->{naviseccli_path} eq '');
 
     if (defined($self->{option_results}->{ssh_address}) && $self->{option_results}->{ssh_address} ne '') {
