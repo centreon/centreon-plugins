@@ -93,25 +93,24 @@ sub run {
     );
     my $dbquery = {};
     while ((my $row = $options{sql}->fetchrow_hashref())) {
-        if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {
-            next;
-        }
+        next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->{datname} =~ /$self->{option_results}->{exclude}/);
 
         if (!defined($dbquery->{$row->{datname}})) {
             $dbquery->{ $row->{datname} } = { total => 0, code => {} };
         }
         next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
 
-        if (defined($self->{option_results}->{exclude_user}) && $row->{usename} !~ /$self->{option_results}->{exclude_user}/) {
-            next;
-        }
+        next if (defined($self->{option_results}->{exclude_user}) && $self->{option_results}->{exclude_user} ne '' && $row->{usename} =~ /$self->{option_results}->{exclude_user}/);
 
         my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 long_msg => sprintf(
-                    "Request from client '%s' too long (%d sec) on database '%s': %s",
-                    $row->{client_addr}, $row->{seconds}, $row->{datname}, $row->{current_query}
+                    "Request from client '%s' too long (%s sec) on database '%s': %s",
+                    defined($row->{client_addr}) ? $row->{client_addr} : 'unknown',
+                    defined($row->{seconds}) ? $row->{seconds} : '-',
+                    defined($row->{datname}) ? $row->{datname} : '-',
+                    defined($row->{current_query}) ? $row->{current_query} : '-'
                 )
             );
             $dbquery->{ $row->{datname} }->{total}++;
