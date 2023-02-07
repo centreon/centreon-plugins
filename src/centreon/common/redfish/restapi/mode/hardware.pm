@@ -51,7 +51,7 @@ sub set_system {
     $self->{components_exec_load} = 0;
 
     $self->{components_path} = 'centreon::common::redfish::restapi::mode::components';
-    $self->{components_module} = ['chassis', 'device', 'fan', 'psu', 'temperature'];
+    $self->{components_module} = ['chassis', 'device', 'drive', 'fan', 'psu', 'sc', 'storage', 'temperature', 'volume'];
 }
 
 sub new {
@@ -106,6 +106,43 @@ sub get_chassis {
     }
 }
 
+sub get_drive {
+    my ($self, %options) = @_;
+
+    return {} if (!defined($options{drive}->{'@odata.id'}));
+    return $self->{custom}->request_api(url_path => $options{drive}->{'@odata.id'});
+}
+
+sub get_volumes {
+    my ($self, %options) = @_;
+
+    return [] if (!defined($options{storage}->{Volumes}->{'@odata.id'}));
+
+    my $volumes = $self->{custom}->request_api(url_path => $options{storage}->{Volumes}->{'@odata.id'});
+
+    my $result = [];
+    foreach my $volume (@{$volumes->{Members}}) {
+        my $volume_detailed = $self->{custom}->request_api(url_path => $volume->{'@odata.id'});
+        push @$result, $volume_detailed;
+    }
+
+    return $result;
+}
+
+sub get_storages {
+    my ($self, %options) = @_;
+
+    $self->{storages} = [];
+    my $systems = $self->{custom}->request_api(url_path => '/redfish/v1/Systems');
+    foreach my $system (@{$systems->{Members}}) {
+        my $storages = $self->{custom}->request_api(url_path => $system->{'@odata.id'} . '/Storage/');
+        foreach my $storage (@{$storages->{Members}}) {
+            my $storage_detailed = $self->{custom}->request_api(url_path => $storage->{'@odata.id'});
+            push @{$self->{storages}}, $storage_detailed;
+        }
+    }
+}
+
 sub execute_custom {
     my ($self, %options) = @_;
 
@@ -123,7 +160,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'chassis', 'device', 'fan', 'psu', 'temperature'.
+Can be: 'chassis', 'device', 'drive', 'fan', 'psu', 'sc', 'storage', 'temperature', 'volume'.
 
 =item B<--filter>
 
