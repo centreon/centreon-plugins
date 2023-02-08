@@ -1,4 +1,4 @@
-FROM docker-proxy.centreon.com/almalinux:8
+FROM docker-proxy.centreon.com/almalinux:9
 
 RUN <<EOF
 
