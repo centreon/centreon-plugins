@@ -19,11 +19,11 @@ on:
 
 jobs:
   create-and-push-docker:
-    runs-on: [self-hosted, common]
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        distrib: [centos7, alma8, bullseye]
+        distrib: [centos7, alma8, alma9, bullseye]
         include:
           - project: plugins
     steps:
