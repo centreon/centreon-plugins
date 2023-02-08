@@ -4,11 +4,11 @@ Upstream-Contact: Centreon <contact@centreon.com>
 Source: https://www.centreon.com
 
 Files: *
-Copyright: 2021 Centreon
+Copyright: 2023 Centreon
 License: Apache-2.0
 
 Files: debian/*
-Copyright: 2021 Centreon
+Copyright: 2023 Centreon
 License: Apache-2.0
 
 License: Apache-2.0

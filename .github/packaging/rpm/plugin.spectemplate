@@ -4,7 +4,7 @@ Release:        @RELEASE@%{?dist}
 Source0:        %{name}-%{version}.tar.gz
 Summary:        @SUMMARY@
 Group:          Development/Libraries
-License:        ASL 2.0
+License:        Apache-2.0
 URL:            https://www.centreon.com/
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
