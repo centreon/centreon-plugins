@@ -278,14 +278,14 @@ sub manage_selection {
             $qtree !~ /$self->{option_results}->{filter_qtree}/);
         next if ($volume ne '' && defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
             $volume !~ /$self->{option_results}->{filter_volume}/);
-        next if ($vserver ne '' &&defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+        next if ($vserver ne '' && defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
             $vserver !~ /$self->{option_results}->{filter_vserver}/);
 
         my $path = $vserver . $volume . $qtree;
         $self->{duplicated}->{$path} = 0 if (!defined($self->{duplicated}->{$path}));
         $self->{duplicated}->{$path}++;
 
-        $self->{quotas}->{$index} = {
+        $self->{quotas}->{$path . $index} = {
             index => $index,
             qtree => $qtree,
             volume => $volume,
