@@ -30,7 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'hardware' => 'storage::wd::nas::snmp::mode::hardware'
+        'hardware'     => 'storage::wd::nas::snmp::mode::hardware',
+        'list-volumes' => 'storage::wd::nas::snmp::mode::listvolumes',
+        'volumes'      => 'storage::wd::nas::snmp::mode::volumes' 
     };
 
     return $self;
