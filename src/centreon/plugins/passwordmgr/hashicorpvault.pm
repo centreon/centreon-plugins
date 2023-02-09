@@ -223,7 +223,7 @@ sub do_map {
         while ($map =~ /\%\{(.*?)\}/g) {
             my $sub = '';
             $sub = $self->{lookup_values}->{$1} if (defined($self->{lookup_values}->{$1}));
-            $map =~ s/\%\{$1\}/$sub/g
+            $map =~ s/\%\{$1\}/$sub/g;
         }
         $option =~ s/-/_/g;
         $options{option_results}->{$option} = $map;
