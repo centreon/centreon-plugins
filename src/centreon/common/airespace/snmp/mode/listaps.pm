@@ -57,7 +57,8 @@ sub manage_selection {
         my ($num, $index) = ($1, $2);
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
-        my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
+        # my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
+        my $name = $num . '.' . $index;
 
         $results->{$name} = {
             name => $result->{name}
