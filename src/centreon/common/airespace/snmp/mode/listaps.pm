@@ -44,24 +44,35 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # Collecting all the relevant informations user may needs when using discovery function for AP in Cisco WLC controllers.
+    # They had been select with https://oidref.com/1.3.6.1.4.1.14179.2.2.1.1.3 as support.
     my $mapping = {
-        name => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' } # bsnAPName
+        name => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
+        location => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.4' }, # bsnAPLocation
+        model => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.16' } # bsnAPModel
     };
+    # parent oid for all the mapping usage
+    my $oid_bsnAPEntry = '.1.3.6.1.4.1.14179.2.2.1.1';
 
     my $snmp_result = $options{snmp}->get_table(
-        oid => $mapping->{name}->{oid}
+        oid => $oid_bsnAPEntry,
+        start => $mapping->{name}->{oid}, # First oid of the mapping => here : 3
+        end => $mapping->{model}->{oid} # Last oid of the mapping => here : 16
     );
+
     my $results = {};
+    # Iterate for all oids catch in snmp result above
     foreach my $oid (keys %$snmp_result) {
-        $oid =~ /^$mapping->{name}->{oid}\.(.*?)\.(.*)$/;
+        next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
         my ($num, $index) = ($1, $2);
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
-        # my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
-        my $name = $num . '.' . $index;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+        my $oid_path = $num . '.' . $index;
 
-        $results->{$name} = {
-            name => $result->{name}
+        $results->{$oid_path} = {
+            name => $result->{name},
+            location => $result->{location},
+            model => $result->{model}
         };
     }
 
@@ -72,12 +83,14 @@ sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(snmp => $options{snmp});
-    foreach my $name (sort keys %$results) {
+    foreach my $oid_path (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[name: %s] [name: %s]',
-                $name,
-                $results->{$name}->{name}
+                '[oid_path: %s] [name: %s] [location: %s] [model: %s]',
+                $oid_path,
+                $results->{$oid_path}->{name},
+                $results->{$oid_path}->{location},
+                $results->{$oid_path}->{model}
             )
         );
     }
@@ -93,17 +106,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'name']);
+    $self->{output}->add_disco_format(elements => ['oid_path', 'name','location','model']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(snmp => $options{snmp});
-    foreach my $name (sort keys %$results) {
+    foreach my $oid_path (sort keys %$results) {
         $self->{output}->add_disco_entry(
-            name => $name,
-            name => $results->{$name}->{name}
+            oid_path => $oid_path,
+            name => $results->{$oid_path}->{name},
+            location => $results->{$oid_path}->{location},
+            model => $results->{$oid_path}->{model}
         );
     }
 }
