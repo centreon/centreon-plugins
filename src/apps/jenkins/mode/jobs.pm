@@ -96,8 +96,7 @@ sub manage_selection {
     my ($content) = $self->{http}->request(
         url_path => (defined($self->{option_results}->{url_path}) ? $self->{option_results}->{url_path} : '') . '/api/json',
         get_param => [
-            'tree=jobs[name,buildable,healthReport[description,score],jobs[name,buildable,healthReport[description,score]]]',
-            'pretty'
+            'tree=jobs[name,buildable,healthReport[description,score],jobs[name,buildable,healthReport[description,score]]]'
         ]
     );
 
