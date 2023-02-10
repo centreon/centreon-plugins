@@ -22,7 +22,7 @@ package apps::jenkins::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,8 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'jobs' => 'apps::jenkins::mode::jobs'
+        'jobs'      => 'apps::jenkins::mode::jobs',
+        'list-jobs' => 'apps::jenkins::mode::listjobs'
     };
+
+    $self->{custom_modes}->{api} = 'apps::jenkins::custom::api';
 
     return $self;
 }

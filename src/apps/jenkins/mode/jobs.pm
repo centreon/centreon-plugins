@@ -24,9 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use centreon::plugins::statefile;
-use JSON::XS;
 
 sub prefix_job_output {
     my ($self, %options) = @_;
@@ -67,47 +64,21 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'port:s'            => { name => 'port' },
-        'proto:s'           => { name => 'proto' },
-        'urlpath:s'         => { name => 'url_path' },
-        'timeout:s'         => { name => 'timeout' },
-        'credentials'       => { name => 'credentials' },
-        'basic'             => { name => 'basic' },
-        'username:s'        => { name => 'username' },
-        'password:s'        => { name => 'password' },
         'filter-job-name:s' => { name => 'filter_job_name' }
     });
 
-    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($content) = $self->{http}->request(
-        url_path => (defined($self->{option_results}->{url_path}) ? $self->{option_results}->{url_path} : '') . '/api/json',
+    my $jobs = $options{custom}->request_api(
+        endpoint => '/api/json',
         get_param => [
             'tree=jobs[name,buildable,healthReport[description,score],jobs[name,buildable,healthReport[description,score]]]'
         ]
     );
-
-    my $jobs;
-    eval {
-        $jobs = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
 
     $self->{jobs} = {};
     foreach my $job (@{$jobs->{jobs}}) {
@@ -145,53 +116,13 @@ __END__
 
 =head1 MODE
 
-Check Jenkins jobs.
+Check jobs.
 
 =over 8
 
 =item B<--filter-job-name>
 
 Filter jobs by name (can be a regexp).
-
-=item B<--hostname>
-
-IP Addr/FQDN of the Jenkins host
-
-=item B<--port>
-
-Port used by Jenkins API
-
-=item B<--proto>
-
-Specify https if needed (Default: 'http')
-
-=item B<--urlpath>
-
-Set path to get Jenkins information
-
-=item B<--credentials>
-
-Required to use username/password authentication method
-
-=item B<--basic>
-
-Specify this option if you access API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
-
-Specify this option if you access API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
-
-=item B<--username>
-
-Specify username for API authentification
-
-=item B<--password>
-
-Specify password for API authentification
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 5)
 
 =item B<--warning-*> B<--critical-*>
 
