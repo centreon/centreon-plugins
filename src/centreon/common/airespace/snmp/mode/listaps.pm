@@ -64,10 +64,9 @@ sub manage_selection {
     # Iterate for all oids catch in snmp result above
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
-        my ($num, $index) = ($1, $2);
+        my $oid_path = $1;
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-        my $oid_path = $num . '.' . $index;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $oid_path);
 
         $results->{$oid_path} = {
             name => $result->{name},
