@@ -105,7 +105,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['oid_path', 'name','location','model']);
+    $self->{output}->add_disco_format(elements => ['name','location','model']);
 }
 
 sub disco_show {
@@ -114,7 +114,6 @@ sub disco_show {
     my $results = $self->manage_selection(snmp => $options{snmp});
     foreach my $oid_path (sort keys %$results) {
         $self->{output}->add_disco_entry(
-            oid_path => $oid_path,
             name => $results->{$oid_path}->{name},
             location => $results->{$oid_path}->{location},
             model => $results->{$oid_path}->{model}
@@ -125,8 +124,13 @@ sub disco_show {
 1;
 
 __END__
+
 =head1 MODE
+
 List wireless name.
+
 =over 8
+
 =back
+
 =cut
