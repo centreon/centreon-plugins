@@ -22,18 +22,19 @@ package apps::jenkins::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'job-state' => 'apps::jenkins::mode::jobstate',
-    );
+    $self->{modes} = {
+        'jobs'      => 'apps::jenkins::mode::jobs',
+        'list-jobs' => 'apps::jenkins::mode::listjobs'
+    };
+
+    $self->{custom_modes}->{api} = 'apps::jenkins::custom::api';
 
     return $self;
 }
