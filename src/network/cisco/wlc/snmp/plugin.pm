@@ -39,6 +39,7 @@ sub new {
         'discovery'                => 'centreon::common::airespace::snmp::mode::discovery',
         'hardware'                 => 'centreon::common::airespace::snmp::mode::hardware',
         'interfaces'               => 'snmp_standard::mode::interfaces', 
+        'list-aps'                 => 'centreon::common::airespace::snmp::mode::listaps',
         'list-groups'              => 'centreon::common::airespace::snmp::mode::listgroups',
         'list-interfaces'          => 'snmp_standard::mode::listinterfaces',
         'list-radius-acc-servers'  => 'centreon::common::airespace::snmp::mode::listradiusaccservers',
