@@ -55,7 +55,7 @@ sub set_counters {
             type => 2,
             unknown_default => '%{status} =~ /unknown/i',
             warning_default => '%{status} =~ /low/i',
-            critical_default => '%{status} =~ /depleted|failure/i',
+            critical_default => '%{status} =~ /depleted/i',
             set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -169,7 +169,7 @@ Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /depleted|failure/i').
+Set critical threshold for status (Default: '%{status} =~ /depleted/i').
 Can used special variables like: %{status}
 
 =item B<--warning-*> B<--critical-*>
