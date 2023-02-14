@@ -96,8 +96,7 @@ sub check_options {
     $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : undef;
     $self->{client_secret} = (defined($self->{option_results}->{client_secret})) ? $self->{option_results}->{client_secret} : undef;
     $self->{login_endpoint} = (defined($self->{option_results}->{login_endpoint})) ? $self->{option_results}->{login_endpoint} : 'https://login.microsoftonline.com';
-    # $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://management.azure.com';
-    $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'http://localhost:3000';
+    $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://management.azure.com';
     $self->{api_version} = (defined($self->{option_results}->{api_version})) ? $self->{option_results}->{api_version} : undef;
 
     if ((!defined($self->{subscription}) || $self->{subscription} eq '') && $self->{mode_name} !~ /discovery-tenant/) {
@@ -1185,36 +1184,45 @@ sub azure_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if length $options{resource_group};
     $url .= "/providers/" . $options{providers} if length $options{providers};
     $url .= "/" . $options{resource} if length $options{resource};
-    $url .= "/" . $options{query_name} . "?";
-    $url .= length $options{force_api_version} ? "api-version=" . $options{force_api_version} : "api-version=" . $self->{api_version};
-    $url .= "&" . $options{query} if length $options{query};
-    $url .= "";
+    $url .= "/" . $options{query_name};
 }
 
 sub azure_list_policystates {
     my ($self, %options) = @_;
 
-    $self->{access_token} = 'azerty';
-
-    my $query = '$select=ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState';
-    my $resource_location = ("ResourceLocation eq '".$options{resource_location}."'") if (defined($options{resource_location}) && $options{resource_location} ne '');
-    my $resource_type = ("ResourceType eq '".$options{resource_type}."'") if (defined($options{resource_type}) && $options{resource_type} ne '');
+    my $get_params = [
+        'api-version', $self->{api_version},
+        '$select', 'ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState'
+    ];
+    my $resource_location;
+    if (length $options{resource_location}) {
+        $resource_location = ("ResourceLocation eq '" . $options{resource_location} . "'");
+        delete $options{$resource_location};
+    }
+    my $resource_type;
+    if (length $options{resource_type}) {
+        $resource_type = ("ResourceType eq '" . $options{resource_type} . "'");
+        delete $options{$resource_type};
+    }
+    my $filter;
     if (length $resource_location && length $resource_type) {
-        $query .= '&$filter=' . $resource_location . " and " . $resource_type;
+        $filter = $resource_location . " and " . $resource_type;
     } elsif (length $resource_location) {
-        $query .= '&$filter=' . $resource_location
+        $filter = $resource_location
     } elsif (length $resource_type) {
-        $query .= '&$filter=' . $resource_type
+        $filter = $resource_type
+    }
+    if (length($filter)) {
+        push(@$get_params, '$filter', $filter);
     }
 
-    $options{query} = $query;
-
-    my $full_url = $self->azure_set_url(%options);
+    my ($url) = $self->azure_set_url(%options);
     my $response = $self->request_api(
         method => 'POST',
-        full_url => $full_url,
+        full_url => $url,
         hostname => '',
-        header => ['Content-Type: application/json']
+        header => ['Content-Type: application/json'],
+        get_params => $get_params
     );
 
     return $response->{value};
