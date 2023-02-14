@@ -40,7 +40,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{non_compliant_policies} = [
-        { label => 'non-compliant-policies', nlabel => 'non.compliant.policies.count', set => {
+        { label => 'non-compliant-policies', nlabel => 'policies.non_compliant.count', set => {
                 key_values => [ { name => 'non_compliant_policies' } ],
                 output_template => 'Number of non compiant policies: %d',
                 perfdatas => [
@@ -54,12 +54,8 @@ sub set_counters {
         {   label => 'compliance-state',
             type => 2,
             critical_default => '%{compliance_state} eq "NonCompliant"',
-            nlabel => 'compliance.state',
             set => {
                 key_values => [ { name => 'compliance_state' }, { name => 'policy_name' }, { name => 'resource_name' }, { name => 'display' } ],
-                perfdatas => [
-                    { template => '%s', label_extra_instance => 1 }
-                ],
                 closure_custom_output => $self->can('custom_compliance_state_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -74,7 +70,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'api-version:s'    => { name => 'api_version', default => '2019-10-01'},
-        'policy-states:s'  => { name => 'policy_states' },
+        'policy-states:s'  => { name => 'policy_states', default => 'default' },
         'resource-group:s' => { name => 'resource_group' },
         'resource-location:s' => { name => 'resource_location' },
         'resource-type:s' => { name => 'resource_type' }
@@ -126,38 +122,36 @@ __END__
 
 =head1 MODE
 
-Check Azure Data Factory for factory size and resource usage.
+Check Azure policies compliance.
 
 Example:
 
-Using resource name :
-
-perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factories::plugin --mode=factoryusage --custommode=api
---resource=<factory_id> --resource-group=<resourcegroup_id>
-
-Using resource id :
-
-perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factories::plugin --mode=factoryusage --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DataFactory/factories/<factory_id>'
+perl centreon_plugins.pl --plugin=cloud::azure::policyinsights::policystates::plugin --mode=compliance --policy-states=default
+[--resource-group='MYRESOURCEGROUP'] --api-version=2019-10-01
 
 
 =over 8
 
-=item B<--resource>
+=item B<--policy-states>
 
-Set resource name or id (Required).
+The virtual resource under PolicyStates resource type. In a given time range, 'latest' represents the latest policy state(s), whereas 'default' represents all policy state(s).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (Optional).
 
-=item B<--warning-non-compliant-policies>
+=item B<--resource-location>
 
-Thresholds warning ($metric$ can be: 'non-compliant-policies' ,'compliance-state').
+Set resource location (Optional).
 
-=item B<--critical-non-compliant-policies>
+=item B<--resource-type>
 
-Thresholds critical ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
+Set resource type (Optional).
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'non-compliant-policies' ,'compliance-state'.
 
 =back
 

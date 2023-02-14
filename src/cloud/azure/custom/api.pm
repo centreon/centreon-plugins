@@ -1217,56 +1217,6 @@ sub azure_list_policystates {
         header => ['Content-Type: application/json']
     );
 
-    # $full_url = "http://localhost:3000/subscriptions/a74765e5-d967-492f-9ea1-2ddf04c405cf/providers/Microsoft.PolicyInsights/policyStates/default/queryResults";
-    # my $response = $self->request_api(
-    #     http_backend => 'lwp',
-    #     method => 'POST',
-    #     full_url => $full_url,
-    #     hostname => '',
-    #     header => ['Content-Type: application/json']
-    # );
-    # 
-    # my $content = '{
-    # "@odata.nextLink": null,
-    # "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest",
-    # "@odata.count": 2,
-    # "value": [
-    #     {
-    #     "@odata.id": null,
-    #     "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity",
-    #     "resourceId": "/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1",
-    #     "isCompliant": false,
-    #     "resourceType": "/Microsoft.Network/publicIPAddresses",
-    #     "resourceLocation": "eastus",
-    #     "resourceGroup": "myrg1",
-    #     "policyAssignmentName": "Enable Monitoring in Azure Security Center",
-    #     "policyDefinitionName": "9daedab3-fb2d-461e-b861-71790eead4f6",
-    #     "policyDefinitionAction": "AuditIfNotExists",
-    #     "policyDefinitionCategory": "tbd",
-    #     "policySetDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
-    #     "policySetDefinitionName": "1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
-    #     "complianceState": "NonCompliant"
-    #     },
-    #     {
-    #     "@odata.id": null,
-    #     "@odata.context": "https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity",
-    #     "resourceId": "/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2",
-    #     "isCompliant": false,
-    #     "resourceType": "/Microsoft.Network/publicIPAddresses",
-    #     "resourceLocation": "eastus",
-    #     "resourceGroup": "myrg1",
-    #     "policyAssignmentName": "9ac09b0657d942e5ad4041a6",
-    #     "policyDefinitionName": "9daedab3-fb2d-461e-b861-71790eead4f6",
-    #     "policyDefinitionAction": "AuditIfNotExists",
-    #     "policyDefinitionCategory": "tbd",
-    #     "policySetDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
-    #     "policySetDefinitionName": "1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
-    #     "complianceState": "NonCompliant"
-    #     }
-    # ]
-    # }';
-    # my $response = decode_json($content);
-
     return $response->{value};
 }
 
