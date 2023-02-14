@@ -190,8 +190,8 @@ Centreon librarie :
 use base qw(**centreon_library**);
 ```
 There are five kinds of centreon libraries here :
-* centreon::plugins::script_simple : Previously the general use case if no custom is needed, more explainations [here]((#custom_mode_tuto) in this section.
-* centreon::plugins::script_custom : Need custom directory - More explainations [here]((#custom_mode_tuto) in this section.
+* centreon::plugins::script_simple : Previously the general use case if no custom is needed, more explainations [here](#custom_mode_tuto) in this section.
+* centreon::plugins::script_custom : Need custom directory - More explainations [here](#custom_mode_tuto) in this section.
 * centreon::plugins::script_snmp : If SNMP protocol is needed for this plugin
 * centreon::plugins::script_sql : If DB acess is needed for this plugin
 * centreon::plugins::script_wsman : Concern Windows specific protocols
