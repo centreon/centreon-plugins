@@ -14,6 +14,7 @@ Depends:    ${misc:Depends},
             libnet-curl-perl,
             libjson-xs-perl,
             liblwp-protocol-https-perl,
+            libtext-template-perl,
             libzmq-constants-perl,
             zmq-libzmq4-perl,
             perl-vmware-vsphere
