@@ -29,13 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cluster-events'                => 'cloud::kubernetes::mode::clusterevents',
         'cronjob-status'                => 'cloud::kubernetes::mode::cronjobstatus',
         'daemonset-status'              => 'cloud::kubernetes::mode::daemonsetstatus',
         'deployment-status'             => 'cloud::kubernetes::mode::deploymentstatus',
-        'discovery-nodes'               => 'cloud::kubernetes::mode::discoverynodes',
+        'discovery'                     => 'cloud::kubernetes::mode::discovery',
         'list-cronjobs'                 => 'cloud::kubernetes::mode::listcronjobs',
         'list-daemonsets'               => 'cloud::kubernetes::mode::listdaemonsets',
         'list-deployments'              => 'cloud::kubernetes::mode::listdeployments',
@@ -54,11 +53,11 @@ sub new {
         'pod-status'                    => 'cloud::kubernetes::mode::podstatus',
         'replicaset-status'             => 'cloud::kubernetes::mode::replicasetstatus',
         'replicationcontroller-status'  => 'cloud::kubernetes::mode::replicationcontrollerstatus',
-        'statefulset-status'            => 'cloud::kubernetes::mode::statefulsetstatus',
-    );
+        'statefulset-status'            => 'cloud::kubernetes::mode::statefulsetstatus'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::kubernetes::custom::api';
-    $self->{custom_modes}{kubectl} = 'cloud::kubernetes::custom::kubectl';
+    $self->{custom_modes}->{api} = 'cloud::kubernetes::custom::api';
+    $self->{custom_modes}->{kubectl} = 'cloud::kubernetes::custom::kubectl';
     return $self;
 }
 

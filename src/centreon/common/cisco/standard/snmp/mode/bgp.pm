@@ -219,7 +219,10 @@ sub manage_selection {
         }
 
         my $local;
-        if (length($result->{localAddr}) == 4) {
+        # it can be empty
+        if (length($result->{localAddr}) == 0) {
+            $local = '-';
+        } elsif (length($result->{localAddr}) == 4) {
             $local = Socket::inet_ntop(Socket::AF_INET, $result->{localAddr}) . ':' . $result->{localPort};
         } else {
             $local = '[' . Socket::inet_ntop(Socket::AF_INET6, $result->{localAddr}) . ']:' . $result->{localPort};

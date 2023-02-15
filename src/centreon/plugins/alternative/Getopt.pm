@@ -62,6 +62,15 @@ sub GetOptions {
         if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)((?s).*)/) {
             my ($option, $value) = ($1, $2);
 
+            # The special argument "--" forces an end of option-scanning.
+            # All arguments placed after are stored in a list with the special option key '_double_dash_'.
+            if ($option eq '' && $value eq '') {
+                my @values = splice @ARGV, $i + 1, $num_args - $i - 1;
+                push @{${$opts{'_double_dash_'}}}, @values;
+                splice @ARGV, $i, 1;
+                last;
+            }
+
             # find type of option
             if ($search_str !~ /,((?:[^,]*?\|){0,}$option(?:\|.*?){0,}(:.*?){0,1}),/) {
                 warn "Unknown option: $option" if ($warn_message == 1);

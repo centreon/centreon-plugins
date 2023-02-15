@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'list-pfinterfaces' => 'apps::pfsense::snmp::mode::listpfinterfaces',
         'packet-stats'      => 'apps::pfsense::snmp::mode::packetstats',
         'pfinterfaces'      => 'apps::pfsense::snmp::mode::pfinterfaces',
-        'runtime'           => 'apps::pfsense::snmp::mode::runtime'
+        'runtime'           => 'apps::pfsense::snmp::mode::runtime',
+        'state-table'       => 'apps::pfsense::snmp::mode::statetable'
     };
 
     return $self;

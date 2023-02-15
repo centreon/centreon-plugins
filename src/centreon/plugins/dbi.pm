@@ -136,8 +136,15 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
+    $self->{username} = undef;
+    if (defined($self->{option_results}->{username})) {
+        $self->{username} = ref($self->{option_results}->{username}) eq 'ARRAY' ? shift(@{$self->{option_results}->{username}}) : $self->{option_results}->{username};
+    }
+    $self->{password} = undef;
+    if (defined($self->{option_results}->{password})) {
+        $self->{password} = ref($self->{option_results}->{password}) eq 'ARRAY' ? shift(@{$self->{option_results}->{password}}) : $self->{option_results}->{password};
+    }
+    
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
     $self->{connect_query} = (defined($self->{option_results}->{connect_query})) ? shift(@{$self->{option_results}->{connect_query}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;

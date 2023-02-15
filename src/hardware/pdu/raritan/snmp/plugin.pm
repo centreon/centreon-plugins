@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
+        'external-sensors' => 'hardware::pdu::raritan::snmp::mode::externalsensors',
         'inlet-sensors'    => 'hardware::pdu::raritan::snmp::mode::inletsensors',
         'outlet-sensors'   => 'hardware::pdu::raritan::snmp::mode::outletsensors',
-        'ocprot-sensors'   => 'hardware::pdu::raritan::snmp::mode::ocprotsensors',
-    );
+        'ocprot-sensors'   => 'hardware::pdu::raritan::snmp::mode::ocprotsensors'
+    };
 
     return $self;
 }

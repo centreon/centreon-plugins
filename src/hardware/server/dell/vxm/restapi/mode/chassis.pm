@@ -128,7 +128,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request(endpoint => '/rest/vxm/v1/chassis');
+    my $results = $options{custom}->request(endpoint => '/chassis');
 
     $self->{global} = { num_chassis => 0, unhealthy => 0 };
     $self->{chassis} = {};

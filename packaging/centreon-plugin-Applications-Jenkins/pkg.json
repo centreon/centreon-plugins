@@ -3,7 +3,7 @@
     "pkg_summary": "Centreon Plugin",
     "plugin_name": "centreon_jenkins.pl",
     "files": [
-        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/script_custom.pm",
         "apps/jenkins/"
     ]
 }

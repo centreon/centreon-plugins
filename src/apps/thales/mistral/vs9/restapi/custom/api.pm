@@ -181,7 +181,7 @@ sub clean_token {
     my ($self, %options) = @_;
 
     my $datas = { updated => time() };
-    $self->{cache}->write(data => $datas);
+    $self->{cache_connect}->write(data => $datas);
 }
 
 sub request_api {

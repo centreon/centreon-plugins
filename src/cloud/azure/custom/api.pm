@@ -280,7 +280,7 @@ sub convert_iso8601_to_epoch {
             nanosecond => $7
         );
 
-        my $epoch_time = $dt->epoch;
+        my $epoch_time = $dt->epoch();
         return $epoch_time;
 
     }
@@ -327,8 +327,13 @@ sub azure_get_subscription_cost_management {
         $encoded_form_post = JSON::XS->new->utf8->encode($options{body_post});
     };
 
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    my $response = $self->request_api(method => 'POST', full_url => $full_url, query_form_post => $encoded_form_post, hostname => '');  
+    my $response = $self->request_api(
+        method => 'POST',
+        full_url => $full_url,
+        query_form_post => $encoded_form_post,
+        hostname => '',
+        header => ['Content-Type: application/json']
+    );
 
     return $response->{properties}->{rows};
 }
@@ -562,23 +567,23 @@ sub azure_list_vms {
     my $full_response = [];
     my $full_url = $self->azure_list_vms_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
-	
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
-    
+
     return $full_response;
 }
 
 sub azure_list_file_shares_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" 
-    . $options{storage_account} . "/fileServices/default/shares?api-version=" . $options{api_version};
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" .
+        $options{storage_account} . "/fileServices/default/shares?api-version=" . $options{api_version};
     return $url;
 }
 
@@ -766,13 +771,13 @@ sub azure_list_sqlservers {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlservers_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -992,13 +997,13 @@ sub azure_list_nics {
     my $full_response = [];
     my $full_url = $self->azure_list_nics_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1020,13 +1025,13 @@ sub azure_list_nsgs {
     my $full_response = [];
     my $full_url = $self->azure_list_nsgs_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1048,13 +1053,13 @@ sub azure_list_publicips {
     my $full_response = [];
     my $full_url = $self->azure_list_publicips_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1076,13 +1081,13 @@ sub azure_list_route_tables {
     my $full_response = [];
     my $full_url = $self->azure_list_route_tables_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1104,13 +1109,13 @@ sub azure_list_snapshots {
     my $full_response = [];
     my $full_url = $self->azure_list_snapshots_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1132,13 +1137,13 @@ sub azure_list_sqlvms {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlvms_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1160,13 +1165,13 @@ sub azure_list_sqlelasticpools {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlelasticpools_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;

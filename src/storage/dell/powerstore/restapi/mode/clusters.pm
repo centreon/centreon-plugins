@@ -170,7 +170,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $clusters = $options{custom}->get_metrics_by_clusters();
+    my $clusters = $options{custom}->get_performance_metrics_by_clusters();
 
     $self->{global} = { detected => 0 };
     $self->{clusters} = {};

@@ -1,0 +1,13 @@
+FROM docker-proxy.centreon.com/almalinux:9
+
+RUN <<EOF
+
+dnf -y install git gettext rpm-build dos2unix python3 epel-release
+dnf -y install perl-App-cpanminus perl-JSON
+cpanm App::FatPacker
+cpanm File::Copy::Recursive
+dnf clean all
+
+EOF
+
+WORKDIR /src

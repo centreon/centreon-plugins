@@ -237,8 +237,7 @@ Example: --filter-counters='tunnels-total'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tunnels-total', 'tunnels-traffic-in', 'tunnels-traffic-out',
-'tunnel-traffic-in', 'tunnel-traffic-out'.
+Can be: 'tunnels-total', 'tunnel-traffic-in', 'tunnel-traffic-out'.
 
 =back
 

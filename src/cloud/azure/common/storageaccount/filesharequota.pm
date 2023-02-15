@@ -28,9 +28,8 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'capacity-usage';
     my $value_perf = $self->{result_values}->{used_space};
-    
+
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total_capacity};
@@ -38,12 +37,12 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        nlabel => 'fileshare.capacity.usage.bytes', 
+        nlabel => 'fileshare.capacity.usage.bytes',
+        unit => 'B',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total_capacity},
+        min => 0, max => $self->{result_values}->{total_capacity}
     );
 }
 
@@ -55,9 +54,13 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                              { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -66,11 +69,13 @@ sub custom_usage_output {
 
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_capacity} );
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space} );
-    my $msg = sprintf("Fileshare '%s' from storage account '%s' used capacity: %s (%.2f%%), total size %s",
-                   $self->{result_values}->{fileshare},
-                   $self->{result_values}->{storageaccount},
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_size_value . " " . $total_size_unit);
+    my $msg = sprintf(
+        "Fileshare '%s' from storage account '%s' used capacity: %s (%.2f%%), total size %s",
+        $self->{result_values}->{fileshare},
+        $self->{result_values}->{storageaccount},
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_size_value . " " . $total_size_unit
+    );
     return $msg;
 }
 
@@ -89,7 +94,7 @@ sub custom_usage_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'fileshare', type => 0 }
     ];
@@ -100,7 +105,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         }
     ]
@@ -111,13 +116,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"     => { name => 'resource_group' },
-                                    "storage-account:s"    => { name => 'storage_account' },
-                                    "units:s"              => { name => 'units', default => '%' },
-                                    "fileshare:s"          => { name => 'fileshare' }
-                                });
+    $options{options}->add_options(arguments => {
+        'resource-group:s'  => { name => 'resource_group' },
+        'storage-account:s' => { name => 'storage_account' },
+        'units:s'           => { name => 'units', default => '%' },
+        'fileshare:s'       => { name => 'fileshare' }
+    });
     
     return $self;
 }
@@ -140,21 +144,22 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --fileshare <name>");
         $self->{output}->option_exit();
     }
-
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $results;
-    $results = $options{custom}->azure_get_file_share_stats(resource_group => $self->{option_results}->{resource_group}, storage_account => $self->{option_results}->{storage_account}, 
-                                         fileshare => $self->{option_results}->{fileshare}, api_version => $self->{api_version});
+    $results = $options{custom}->azure_get_file_share_stats(
+        resource_group => $self->{option_results}->{resource_group}, storage_account => $self->{option_results}->{storage_account}, 
+        fileshare => $self->{option_results}->{fileshare}, api_version => $self->{api_version}
+    );
 
     $self->{fileshare} = {
         storage_account => $self->{option_results}->{storage_account},
         fileshare => $self->{option_results}->{fileshare},
         total_capacity => $results->{properties}->{shareQuota},
-        used_space => $results->{properties}->{shareUsageBytes} * 1024 ** 3
+        used_space => $results->{properties}->{shareUsageBytes}
     };
 
     if (scalar(keys %{$self->{fileshare}}) <= 0) {
