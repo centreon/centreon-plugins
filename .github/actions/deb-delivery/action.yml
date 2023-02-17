@@ -4,11 +4,11 @@ inputs:
   distrib:
     description: "The distribution used for packaging"
     required: true
-  artifactory_username:
-    description: The artifactory username
+  nexus_username:
+    description: The nexus username
     required: true
-  artifactory_password:
-    description: The artifactory password
+  nexus_password:
+    description: The nexus password
     required: true
   version:
     description: "Centreon packaged version"
@@ -21,6 +21,9 @@ inputs:
     required: true
   stability:
     description: "The package stability (stable, testing, unstable)"
+    required: true
+  artifactory_token:
+    description: "token for artifactory"
     required: true
 
 runs:
@@ -42,6 +45,7 @@ runs:
             FOLDER_SUFFIX=""
           fi
 
-          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/
+          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl --fail -v -u "${{ inputs.nexus_username }}":"${{ inputs.nexus_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/
+          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl --fail -v -H "Authorization: Bearer ${{ inputs.artifactory_token }}" -X PUT "https://centreon.jfrog.io/artifactory/apt-$MAJOR-${{ inputs.stability }}/pool/%;deb.distribution=${{ inputs.distrib }};deb.component=main;deb.architecture=all" -T "%"
         done
       shell: bash
