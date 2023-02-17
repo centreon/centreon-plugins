@@ -118,7 +118,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-file:s' => { name => 'filter_file' }
+        'filter-file:s' => { name => 'filter_file' },
         'directory:s@'  => { name => 'directory' },
         'file:s@'       => { name => 'file' },
         'max-depth:s'   => { name => 'max_depth', default => 0 },
