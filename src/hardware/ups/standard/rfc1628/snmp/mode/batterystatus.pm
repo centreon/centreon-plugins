@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'charge_remain' }, { name => 'minute_remain' } ],
                 closure_custom_output => $self->can('custom_load_output'),
                 perfdatas => [
-                    { label => 'load', template => '%s', min => 0, max => 100, unit => '%' }
+                    { template => '%s', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'minute_remain' } ],
                 output_template => 'minutes remaining: %s',
                 perfdatas => [
-                    { label => 'charge_remaining', template => '%s', min => 0, unit => 'minutes' }
+                    { template => '%s', min => 0, unit => 'minutes' }
                 ]
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'current', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', template => '%s', min => 0, unit => 'A' }
+                    { template => '%s', min => 0, unit => 'A' }
                 ]
             }
         },
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', template => '%s', unit => 'V' }
+                    { template => '%s', unit => 'V' }
                 ]
             }
         },
@@ -99,7 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { label => 'temp', template => '%s', unit => 'C' }
+                    { template => '%s', unit => 'C' }
                 ]
             }
         }
@@ -108,7 +108,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
