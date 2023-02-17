@@ -55,7 +55,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'frequence', nlabel => 'lines.input.frequence.hertz', set => {
+        { label => 'frequence', nlabel => 'line.input.frequence.hertz', set => {
                 key_values => [ { name => 'frequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
