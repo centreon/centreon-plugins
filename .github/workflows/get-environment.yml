@@ -39,13 +39,13 @@ jobs:
               STABILITY="stable"
               ;;
             *)
-              STABILITY="canary"
+              STABILITY="unstable"
               ;;
           esac
 
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 
-          VERSION=`date '+%Y%m%d'`
+          VERSION=`date '20230215'`
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
 
           RELEASE=`date '+%H%M%S'`
