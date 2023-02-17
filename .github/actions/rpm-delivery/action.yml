@@ -31,6 +31,9 @@ inputs:
   stability:
     description: "The package stability (stable, testing, unstable)"
     required: true
+  artifactory_token:
+    description: "token for artifactory"
+    required: true
 
 runs:
   using: "composite"
@@ -68,11 +71,17 @@ runs:
 
           if [ "$REPOTYPE" == "stable" ]; then
             TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/RPMS"
+            ARTIFACTORY_TARGET="https://centreon.jfrog.io/artifactory/rpm/$PROJECT_PATH/$MAJOR/$DISTRIB/${{ inputs.stability }}/$ARCH"
           else
             FOLDER="centreon-$PROJECT-$VERSION-$RELEASE"
             TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/$PROJECT/$FOLDER"
             PROJECT_LOCATION="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/$PROJECT"
+            ARTIFACTORY_TARGET="https://centreon.jfrog.io/artifactory/rpm/$PROJECT_PATH/$MAJOR/$DISTRIB/${{ inputs.stability }}/$ARCH/$PROJECT/$FOLDER"
           fi
+
+          for FILE in $FILES; do
+            curl --fail -v -H "Authorization: Bearer ${{ inputs.artifactory_token }}" -X PUT "$ARTIFACTORY_TARGET/$FILE" -T "./$FILE"
+          done
 
           echo "[DEBUG] - Folder: $FOLDER"
           echo "[DEBUG] - Project : $PROJECT"
