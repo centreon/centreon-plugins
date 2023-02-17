@@ -14,9 +14,9 @@ on:
         type: string
         required: true
     secrets:
-      artifactory_username:
+      nexus_username:
         required: true
-      artifactory_password:
+      nexus_password:
         required: true
       update_repo_path:
         description: "The update repo script path"
@@ -29,6 +29,9 @@ on:
         required: true
       yum_repo_key:
         description: "The repo key"
+        required: true
+      artifactory_token:
+        description: "The artifactory token"
         required: true
 
 jobs:
@@ -54,6 +57,7 @@ jobs:
           yum_repo_address: ${{ secrets.yum_repo_address }}
           yum_repo_key: ${{ secrets.yum_repo_key }}
           stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
     runs-on: [self-hosted, common]
@@ -71,7 +75,8 @@ jobs:
           distrib: ${{ matrix.distrib }}
           version: ${{ inputs.version }}
           release: ${{ inputs.release }}
-          artifactory_username: ${{ secrets.artifactory_username }}
-          artifactory_password: ${{ secrets.artifactory_password }}
+          nexus_username: ${{ secrets.nexus_username }}
+          nexus_password: ${{ secrets.nexus_password }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
