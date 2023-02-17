@@ -57,7 +57,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{cache} = centreon::plugins::statefile->new(%options, default_backend => 'curl');
 
     return $self;
 }
@@ -138,7 +138,8 @@ sub settings {
     $self->{http}->set_options(
         hostname => $self->{api_hostname},
         port => $self->{api_port},
-        proto => $self->{api_proto}
+        proto => $self->{api_proto},
+        %{$self->{option_results}}
     );
 }
 
