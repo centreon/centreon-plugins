@@ -1,4 +1,6 @@
-FROM docker-proxy.centreon.com/debian:bullseye
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/debian:bullseye
 
 # fix locale
 RUN <<EOF
