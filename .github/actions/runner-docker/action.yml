@@ -13,11 +13,14 @@ inputs:
   centreon_pat:
     description: "Secret"
     required: false
-  artifactory_username:
-    description: The artifactory username
+  registry_url:
+    description: Docker registry url
     required: true
-  artifactory_password:
-    description: The artifactory password
+  registry_username:
+    description: Docker registry username
+    required: true
+  registry_password:
+    description: Docker registry password
     required: true
   params:
     description: "params for script"
@@ -28,9 +31,9 @@ runs:
     - name: Login to Registry (via runner)
       uses: docker/login-action@v2
       with:
-        registry: docker.centreon.com
-        username: ${{ inputs.artifactory_username }}
-        password: ${{ inputs.artifactory_password }}
+        registry: ${{ inputs.registry_url }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
 
-    - run: docker run -i -e TOKEN=${{ inputs.centreon_pat }} --entrypoint /src/.github/scripts/${{ inputs.script_name }}.sh -v "$PWD:/src" docker.centreon.com/${{ inputs.image_name }}:${{ inputs.image_version }} ${{ inputs.params }}
+    - run: docker run -i -e TOKEN=${{ inputs.centreon_pat }} --entrypoint /src/.github/scripts/${{ inputs.script_name }}.sh -v "$PWD:/src" ${{ inputs.registry_url }}/${{ inputs.image_name }}:${{ inputs.image_version }} ${{ inputs.params }}
       shell: bash
