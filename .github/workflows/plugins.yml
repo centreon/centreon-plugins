@@ -95,8 +95,8 @@ jobs:
       version: ${{ needs.get-environment.outputs.version }}
       release: ${{ needs.get-environment.outputs.release }}
     secrets:
-      artifactory_username: ${{ secrets.REPOS_USERNAME }}
-      artifactory_password: ${{ secrets.REPOS_PASSWORD }}
+      registry_username: ${{ secrets.DOCKER_REGISTRY_ID }}
+      registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
   deliver:
     needs: [get-environment, package]

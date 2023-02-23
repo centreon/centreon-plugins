@@ -1,4 +1,6 @@
-FROM docker-proxy.centreon.com/almalinux:8
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/almalinux:8
 
 RUN <<EOF
 

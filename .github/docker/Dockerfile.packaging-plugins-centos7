@@ -1,4 +1,6 @@
-FROM docker-proxy.centreon.com/centos:7
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/centos:7
 
 RUN <<EOF
 

@@ -11,9 +11,9 @@ on:
         required: true
         type: string
     secrets:
-      artifactory_username:
+      registry_username:
         required: true
-      artifactory_password:
+      registry_password:
         required: true
 
 jobs:
@@ -87,5 +87,6 @@ jobs:
           release: ${{ inputs.release }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           sign: true
-          artifactory_username: ${{ secrets.artifactory_username }}
-          artifactory_password: ${{ secrets.artifactory_password }}
+          registry_url: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          registry_username: ${{ secrets.registry_username }}
+          registry_password: ${{ secrets.registry_password }}

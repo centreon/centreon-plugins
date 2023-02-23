@@ -27,11 +27,14 @@ inputs:
   sign:
     description: Wether to sign the package or not
     default: ""
-  artifactory_username:
-    description: The artifactory username
+  registry_url:
+    description: Docker registry url
     required: true
-  artifactory_password:
-    description: The artifactory password
+  registry_username:
+    description: Docker registry username
+    required: true
+  registry_password:
+    description: Docker registry password
     required: true
 
 runs:
@@ -41,9 +44,9 @@ runs:
     - name: Login to Registry
       uses: docker/login-action@v2
       with:
-        registry: docker.centreon.com
-        username: ${{ inputs.artifactory_username }}
-        password: ${{ inputs.artifactory_password }}
+        registry: ${{ inputs.registry_url }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
 
     - name: Package
       uses: ./.github/actions/runner-docker
@@ -51,8 +54,9 @@ runs:
         script_name: ${{ inputs.script_name }}
         image_name: ${{ inputs.image_name }}
         image_version: latest
-        artifactory_username: ${{ inputs.artifactory_username }}
-        artifactory_password: ${{ inputs.artifactory_password }}
+        registry_url: ${{ inputs.registry_url }}
+        registry_username: ${{ inputs.registry_username }}
+        registry_password: ${{ inputs.registry_password }}
         params: ${{ inputs.version }} ${{ inputs.release }} "${{ inputs.plugins }}"
 
     - name: Sign
@@ -62,8 +66,9 @@ runs:
         script_name: rpm-signing
         image_name: rpm-signing
         image_version: ubuntu
-        artifactory_username: ${{ inputs.artifactory_username }}
-        artifactory_password: ${{ inputs.artifactory_password }}
+        registry_url: ${{ inputs.registry_url }}
+        registry_username: ${{ inputs.registry_username }}
+        registry_password: ${{ inputs.registry_password }}
 
     - name: Cache packaged files
       uses: actions/cache@v3
