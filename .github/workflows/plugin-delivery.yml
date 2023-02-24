@@ -59,24 +59,24 @@ jobs:
           stability: ${{ inputs.stability }}
           artifactory_token: ${{ secrets.artifactory_token }}
 
-  # deliver-deb:
-  #   runs-on: [self-hosted, common]
-  #   strategy:
-  #     matrix:
-  #       distrib: [bullseye]
+  deliver-deb:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        distrib: [bullseye]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
 
-  #     - name: Delivery
-  #       uses: ./.github/actions/deb-delivery
-  #       with:
-  #         distrib: ${{ matrix.distrib }}
-  #         version: ${{ inputs.version }}
-  #         release: ${{ inputs.release }}
-  #         nexus_username: ${{ secrets.nexus_username }}
-  #         nexus_password: ${{ secrets.nexus_password }}
-  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-  #         stability: ${{ inputs.stability }}
-  #         artifactory_token: ${{ secrets.artifactory_token }}
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          distrib: ${{ matrix.distrib }}
+          version: ${{ inputs.version }}
+          release: ${{ inputs.release }}
+          nexus_username: ${{ secrets.nexus_username }}
+          nexus_password: ${{ secrets.nexus_password }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
