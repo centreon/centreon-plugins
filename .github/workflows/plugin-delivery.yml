@@ -36,7 +36,7 @@ on:
 
 jobs:
   deliver-rpm:
-    runs-on: [self-hosted, common]
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distrib: [el7, el8, el9]
