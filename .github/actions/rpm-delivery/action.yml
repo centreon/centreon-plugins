@@ -125,5 +125,5 @@ runs:
 
     - name: Publish RPMS
       run: |
-        jf rt upload "*.rpm" "rpm-connectors/${{ inputs.distrib }}/${{ inputs.stability }}/noarch"
+        jf rt upload "*.rpm" "rpm-connectors/${{ inputs.distrib }}/${{ inputs.stability }}/noarch/"
       shell: bash
