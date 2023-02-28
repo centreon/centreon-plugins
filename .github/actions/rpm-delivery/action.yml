@@ -61,7 +61,7 @@ runs:
         sudo ./aws/install
       shell: bash
 
-    - name: Publish RPMs to to standard repositories
+    - name: Publish RPMs to standard repositories
       run: |
         FILES="*.rpm"
 
