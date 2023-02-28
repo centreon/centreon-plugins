@@ -36,7 +36,7 @@ on:
 
 jobs:
   deliver-rpm:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, common]
     strategy:
       matrix:
         distrib: [el7, el8, el9]
@@ -60,7 +60,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, common]
     strategy:
       matrix:
         distrib: [bullseye]
