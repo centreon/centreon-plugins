@@ -61,6 +61,8 @@ sub new {
 sub extract_map_options {
     my ($self, %options) = @_;
 
+    # Parse all options to find '/\{.*\:\:secret\:\:(.*)\}/' dedicated patern in value and add entries in map_option
+
     foreach my $option (keys %{$options{option_results}}) {
         if (defined($options{option_results}{$option})) {
             next if ($option eq 'map_option');
@@ -96,32 +98,24 @@ sub vault_settings {
         my $json = JSON::XS->new->utf8->pretty->decode($file_content);
         foreach my $vault_name (keys %{$json}) {
             if ($json->{$vault_name}->{'vault-protocol'} && $json->{$vault_name}->{'vault-protocol'} ne '') {
-                $self->{vault_protocol} = $json->{$vault_name}->{'vault-protocol'};
+                $self->{$vault_name}->{vault_protocol} = $json->{$vault_name}->{'vault-protocol'};
             } else {
-                $self->{vault_protocol} = 'http';
+                $self->{$vault_name}->{vault_protocol} = 'https';
             }
             if ($json->{$vault_name}->{'vault-address'} && $json->{$vault_name}->{'vault-address'} ne '') {
-                $self->{vault_address} = $json->{$vault_name}->{'vault-address'};
+                $self->{$vault_name}->{vault_address} = $json->{$vault_name}->{'vault-address'};
+            } else {
+                $self->{$vault_name}->{vault_address} = '127.0.0.1'
             }
             if ($json->{$vault_name}->{'vault-port'} && $json->{$vault_name}->{'vault-port'} ne '') {
-                $self->{vault_port} = $json->{$vault_name}->{'vault-port'};
+                $self->{$vault_name}->{vault_port} = $json->{$vault_name}->{'vault-port'};
             } else {
-                $self->{vault_port} = '8200';
+                $self->{$vault_name}->{vault_port} = '8100';
             }
             if ($json->{$vault_name}->{'vault-token'} && $json->{$vault_name}->{'vault-token'} ne '') {
-                $self->{vault_token} = $json->{$vault_name}->{'vault-token'};
+                $self->{$vault_name}->{vault_token} = $json->{$vault_name}->{'vault-token'};
             }
         }
-
-        $self->{http}->add_header(key => 'Accept', value => 'application/json');
-        if (defined($self->{vault_token})) {
-            $self->{http}->add_header(key => 'X-Vault-Token', value => $self->{vault_token});
-        }
-    }
-
-    if (!defined($self->{vault_address})) {
-        $self->{output}->add_option_msg(short_msg => "Please configure vault-address in $options{option_results}->{vault_config} file");
-        $self->{output}->option_exit();
     }
 }
 
@@ -131,11 +125,20 @@ sub request_api {
     $self->vault_settings(%options);
 
     foreach my $endpoint (@{$self->{request_endpoint}}) {
+        # Extract vault name configuration from endpoint
+        my $vault_path = substr($endpoint, index($endpoint, "/", 1), length($endpoint));
+        my $vault_name = substr($vault_path, 1, index($vault_path, "/", 1) - 1);
+
+        $self->{http}->add_header(key => 'Accept', value => 'application/json');
+        if (defined($self->{$vault_name}->{vault_token})) {
+            $self->{http}->add_header(key => 'X-Vault-Token', value => $self->{$vault_name}->{vault_token});
+        }
+
         my $json;
         my $response = $self->{http}->request(
-            hostname => $self->{vault_address},
-            port => $self->{vault_port},
-            proto => $self->{vault_protocol},
+            hostname => $self->{$vault_name}->{vault_address},
+            port => $self->{$vault_name}->{vault_port},
+            proto => $self->{$vault_name}->{vault_protocol},
             method => 'GET',
             url_path => $endpoint
         );
