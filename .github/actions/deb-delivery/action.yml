@@ -42,7 +42,7 @@ runs:
 
     - name: Publish DEBs to artifactory
       run: |
-        jf rt upload "*.deb" "apt-connectors/pool/" --deb "${{ inputs.distrib }}/main/all"
+        jf rt upload "*.deb" "apt-connectors-${{ inputs.stability }}/pool/" --deb "${{ inputs.distrib }}/main/all"
       shell: bash
 
     - name: Publish DEBs to Nexus
