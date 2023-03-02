@@ -9,10 +9,10 @@ To develop a Plugin/mode, we need the following:
 * SQL: requests
 * JMX: mbean names and attributes
 
-If some parts of information are confidentials, please send them directly by email to qgarnier@centreon.com and sbomm@centreon.com.
+If some parts of information are confidentials, please send them directly by email to qgarnier@centreon.com.
 
 Please note that all the developments are open-source. We can't give a date for the development, achievement or release. If it's a priority for you,
-send us an email about it (qgarnier@centreon.com and sbomm@centreon.com) and we'll put you in touch with our company.
+send us an email about it (qgarnier@centreon.com) and we'll put you in touch with our company.
 
 
 ## Bug/Question
