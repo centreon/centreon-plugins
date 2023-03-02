@@ -384,8 +384,9 @@ sub manage_query {
             # $self->{totalhost}->{$map_host_state{$row->{hstate}}}++ if !grep {$_ eq $row->{name}} $options{hosts};
             # push @{$options{hosts}} , $row->{name};
             # $self->{logicalgroups}->{$options{group}}->{$map_host_state{$row->{hstate}}}++;   
-            if ( !grep(/$row->{name}/, $self->{hosts}) ) {
-                push @{$self->{hosts}}, $row->{name};
+            if (!defined($self->{hosts}->{$options{host}}) ) {
+                # push @{$self->{hosts}}, $row->{name};
+                $self->{hosts}->{$options{host}} = 1;
                 $self->{totalhost}->{$map_host_state{$row->{hstate}}}++;
                 $self->{logicalgroups}->{$options{group}}->{$map_host_state{$row->{hstate}}}++;
             }
@@ -407,7 +408,7 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{groups} = {};
-    $self->{hosts} = [];
+    $self->{hosts} = {};
 
     if ($config_data->{counters}->{totalhosts} eq 'true') {
         push @{$self->{maps_counters_type}}, {
