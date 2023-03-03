@@ -35,7 +35,17 @@ runs:
         path: ./*.deb
         key: ${{ inputs.cache_key }}
 
-    - name: Publish DEBS to Nexus
+    - uses: jfrog/setup-jfrog-cli@v3
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+
+    - name: Publish DEBs to artifactory
+      run: |
+        jf rt upload "*.deb" "apt-connectors-${{ inputs.stability }}/pool/" --deb "${{ inputs.distrib }}/main/all"
+      shell: bash
+
+    - name: Publish DEBs to Nexus
       run: |
         for MAJOR in "22.04" "22.10"; do
           echo "Delivering to $MAJOR ${{ inputs.stability }}"
@@ -46,6 +56,5 @@ runs:
           fi
 
           find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl --fail -v -u "${{ inputs.nexus_username }}":"${{ inputs.nexus_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/
-          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl --fail -v -H "Authorization: Bearer ${{ inputs.artifactory_token }}" -X PUT "https://centreon.jfrog.io/artifactory/apt-$MAJOR-${{ inputs.stability }}/pool/%;deb.distribution=${{ inputs.distrib }};deb.component=main;deb.architecture=all" -T "%"
         done
       shell: bash
