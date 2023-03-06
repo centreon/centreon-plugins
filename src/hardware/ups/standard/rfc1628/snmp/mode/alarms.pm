@@ -20,47 +20,52 @@
 
 package hardware::ups::standard::rfc1628::snmp::mode::alarms;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'alarms-current', nlabel => 'alarms.current.count', set => {
+                key_values => [ { name => 'current_alarms' } ],
+                output_template => 'current alarms: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ]
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    my $oid_upsAlarmsPresent = '.1.3.6.1.2.1.33.1.6.1.0';    
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_upsAlarmsPresent ], nothing_quit => 1);
+    my $oid_upsAlarmsPresent = '.1.3.6.1.2.1.33.1.6.1.0';
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ $oid_upsAlarmsPresent ],
+        nothing_quit => 1
+    );
 
-    $self->{output}->output_add(severity => 'ok',
-                                short_msg => 'No alarms');
-    if ($result->{$oid_upsAlarmsPresent} > 0) {
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf('%d Alarms (check your equipment to have more informations)', $result->{$oid_upsAlarmsPresent}));
-    }
-    $self->{output}->perfdata_add(label => 'alarms',
-                                  value => $result->{$oid_upsAlarmsPresent},
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = {
+        current_alarms => $snmp_result->{$oid_upsAlarmsPresent}
+    };
 }
 
 1;
@@ -69,11 +74,14 @@ __END__
 
 =head1 MODE
 
-Check if Alarms present.
-Need an example to do the display from 'upsAlarmTable'. If you have ;)
-https://forge.centreon.com/issues/5377
+Check current alarms.
 
 =over 8
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'alarms-current'.
 
 =back
 
