@@ -29,7 +29,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'alarms'         => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
         'battery-status' => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',

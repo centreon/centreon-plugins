@@ -20,52 +20,65 @@
 
 package hardware::ups::standard::rfc1628::snmp::mode::outputsource;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my %outputsource_status = (
-    1 => ['other', 'UNKNOWN'], 
-    2 => ['none', 'CRITICAL'], 
-    3 => ['normal', 'OK'], 
-    4 => ['bypass', 'WARNING'],
-    5 => ['battery', 'WARNING'],
-    6 => ['booster', 'WARNING'],
-    7 => ['reducer', 'WARNING'],
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf("Output source status is '%s'", $self->{result_values}->{status});
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label => 'source-status',
+            type => 2,
+            unknown_default => '%{status} =~ /other/',
+            warning_default => '%{status} =~ /bypass|battery|booster|reducer/',
+            critical_default => '%{status} =~ /none/',
+            set => {
+                key_values => [ { name => 'status' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
+    my $map_status = {
+        1 => 'other', 2 => 'none',
+        3 => 'normal', 4 => 'bypass', 5 => 'battery',
+        6 => 'booster', 7 => 'reducer'
+    };
+
     my $oid_upsOutputSource = '.1.3.6.1.2.1.33.1.4.1.0';
-    
-    my $result = $self->{snmp}->get_leef(oids => [$oid_upsOutputSource], nothing_quit => 1);
-    my $status = $result->{'.1.3.6.1.2.1.33.1.4.1.0'};
-  
-    $self->{output}->output_add(severity => ${$outputsource_status{$status}}[1],
-                                short_msg => sprintf("Output source status is %s", ${$outputsource_status{$status}}[0]));
+    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_upsOutputSource], nothing_quit => 1);
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = { status => $map_status->{ $snmp_result->{$oid_upsOutputSource} } };
 }
 
 1;
@@ -77,6 +90,21 @@ __END__
 Check output source status.
 
 =over 8
+
+=item B<--unknown-source-status>
+
+Set unknown threshold for status (Default: '%{status} =~ /other/')
+Can used special variables like: %{status}
+
+=item B<--warning-source-status>
+
+Set warning threshold for status (Default: '%{status} =~ /bypass|battery|booster|reducer/')
+Can used special variables like: %{status}
+
+=item B<--critical-source-status>
+
+Set critical threshold for status (Default: '%{status} =~ /none/')
+Can used special variables like: %{status}
 
 =back
 
