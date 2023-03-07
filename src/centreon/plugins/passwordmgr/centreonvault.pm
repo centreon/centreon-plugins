@@ -41,14 +41,7 @@ sub new {
     }
 
     $options{options}->add_options(arguments => {
-        'auth-method:s'    => { name => 'auth_method', default => 'token' },
-        'auth-settings:s%' => { name => 'auth_settings' },
-        #'map-option:s@'    => { name => 'map_option' },
         'vault-config:s'   => { name => 'vault_config', default => '/etc/centreon-engine/centreonvault.json'},
-        #'vault-address:$@'  => { name => 'vault_address'},
-        #'vault-port:s@'     => { name => 'vault_port'},
-        #'vault-protocol:s@' => { name => 'vault_protocol'},
-        #'vault-token:s@'    => { name => 'vault_token'}
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'VAULT OPTIONS');
 
@@ -62,7 +55,6 @@ sub extract_map_options {
     my ($self, %options) = @_;
 
     # Parse all options to find '/\{.*\:\:secret\:\:(.*)\}/' dedicated patern in value and add entries in map_option
-
     foreach my $option (keys %{$options{option_results}}) {
         if (defined($options{option_results}{$option})) {
             next if ($option eq 'map_option');
