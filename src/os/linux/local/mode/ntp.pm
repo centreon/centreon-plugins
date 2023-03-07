@@ -243,11 +243,36 @@ sub manage_selection {
             }
             next if ($line !~ /$mode->{regexp}/);
 
+            my $entry = {};
             my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
             if ($mode->{type} eq 'chronyc') {
                 $remote_peer = centreon::plugins::misc::trim($3);
                 $peer_fate = centreon::plugins::misc::trim($2);
+                my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
+                $entry = {
+                    display  => $remote_peer,
+                    rawstate => $peer_fate,
+                    state    => $state_map_chronyc{$peer_fate},
+                    stratum  => centreon::plugins::misc::trim($stratum),
+                    rawtype  => centreon::plugins::misc::trim($type),
+                    type     => $type_map_chronyc{centreon::plugins::misc::trim($type)},
+                    reach    => centreon::plugins::misc::trim($reach),
+                    offset   => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
+                };
+            } else {
+                my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
+                $entry = {
+                    display  => $remote_peer,
+                    rawstate => $peer_fate,
+                    state    => $state_map_ntpq{$peer_fate},
+                    stratum  => centreon::plugins::misc::trim($stratum),
+                    rawtype  => centreon::plugins::misc::trim($type),
+                    type     => $type_map_ntpq{centreon::plugins::misc::trim($type)},
+                    reach    => centreon::plugins::misc::trim($reach),
+                    offset   => centreon::plugins::misc::trim($offset)
+                };
             }
+
             if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
                 $remote_peer !~ /$self->{option_results}->{filter_name}/) {
                 $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer name.", debug => 1);
@@ -261,16 +286,7 @@ sub manage_selection {
 
             if ($mode->{type} eq 'ntpq') {
                 my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
-                $self->{peers}->{$remote_peer} = {
-                    display  => $remote_peer,
-                    rawstate => $peer_fate,
-                    state    => $state_map_ntpq{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_ntpq{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset)
-                };
+                $self->{peers}->{$remote_peer} = $entry;
             } elsif ($mode->{type} eq 'chronyc') {
                 #210 Number of sources = 4
                 #MS Name/IP address         Stratum Poll Reach LastRx Last sample               
@@ -278,19 +294,9 @@ sub manage_selection {
                 #^+ 212.83.187.62                 2   9   377   179   -715us[ -731us] +/-   50ms
                 #^- 129.250.35.251                2   8   377    15    -82us[  -99us] +/-   96ms
 
-                my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
-                $self->{peers}->{$remote_peer} = {
-                    display  => $remote_peer,
-                    rawstate => $peer_fate,
-                    state    => $state_map_chronyc{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_chronyc{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
-                };
+                $self->{peers}->{$remote_peer} = $entry;
             }
-
+            
             $self->{global}->{peers}++;
         }
     }
