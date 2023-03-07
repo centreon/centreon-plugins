@@ -40,7 +40,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
             'hostname:s'  => { name => 'hostname' },
@@ -117,19 +117,19 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_hostname {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname};
 }
 
 sub get_port {
     my ($self, %options) = @_;
-    
+
     return $self->{port};
 }
 
@@ -168,9 +168,8 @@ sub get_endpoint {
     my ($self, %options) = @_;
 
     $self->settings();
-
     my $response = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
-    
+
     my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);
