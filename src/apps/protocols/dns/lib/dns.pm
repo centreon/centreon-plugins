@@ -76,24 +76,18 @@ sub connect {
     my ($self, %options) = @_;
     my %dns_options = ();
     
-    my $nameservers = [];
     if (defined($self->{option_results}->{nameservers})) {
-        $nameservers = [@{$self->{option_results}->{nameservers}}];
+        $dns_options{nameservers} = [@{$self->{option_results}->{nameservers}}];
     }
-    my $searchlist = [];
     if (defined($self->{option_results}->{searchlist})) {
-        $searchlist = [@{$self->{option_results}->{searchlist}}];
+        $dns_options{searchlist} = [@{$self->{option_results}->{searchlist}}];
     }
     foreach my $option (@{$self->{option_results}->{dns_options}}) {
         next if ($option !~ /^(.+?)=(.+)$/);
         $dns_options{$1} = $2;
     }
 
-    $handle = Net::DNS::Resolver->new(
-        nameservers => $nameservers,
-        searchlist  => $searchlist,
-        %dns_options
-    );
+    $handle = Net::DNS::Resolver->new(%dns_options);
 }
 
 1;
