@@ -127,7 +127,7 @@ sub check_options {
     foreach my $query (@{$self->{option_results}->{query}}) {
         next if ($query !~ /^(\w+),(.*)/);
         $self->{queries}->{$1} = $2;
-        push @{$self->{maps_counters}->{expressions}[0]->{set}->{key_values}}, { name => $1 };
+        push @{$self->{maps_counters}->{expressions}->[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
     }
 
@@ -135,14 +135,14 @@ sub check_options {
     foreach my $query (@{$self->{option_results}->{query_range}}) {
         next if ($query !~ /^(\w+),(.*)/);
         $self->{query_ranges}->{$1} = $2;
-        push @{$self->{maps_counters}->{expressions}[0]->{set}->{key_values}}, { name => $1 };
+        push @{$self->{maps_counters}->{expressions}->[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
     }
 
     $self->{maps_counters_type}[0]->{message_multiple} = $self->{option_results}->{multiple_output} if (defined($self->{option_results}->{multiple_output}));
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : '1m';
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
