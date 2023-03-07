@@ -187,6 +187,7 @@ sub manage_selection {
         }
 
         my $instance_key = join('_', @$instances);
+        next if (!defined($instance_key) || $instance_key eq '');
 
         my $value;
         $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
