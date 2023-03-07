@@ -29,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'discovery'        => 'cloud::prometheus::restapi::mode::discovery',
-        'expression'       => 'cloud::prometheus::restapi::mode::expression',
-        'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
-    );
+    $self->{modes} = {
+        'discovery'     => 'cloud::prometheus::restapi::mode::discovery',
+        'expression'    => 'cloud::prometheus::restapi::mode::expression',
+        'target-status' => 'cloud::prometheus::restapi::mode::targetstatus'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
 
