@@ -49,7 +49,7 @@ sub search {
     $map_search_field->{PTR} = 'ptrdname' if (defined($self->{option_results}->{use_ptr_fqdn}));
 
     my $error_quit = defined($options{error_quit}) ? $options{error_quit} : undef;
-    
+
     my $reply = $handle->search($self->{option_results}->{search}, $search_type);
     if ($reply) {
         foreach my $rr ($reply->answer) {
@@ -68,14 +68,14 @@ sub search {
             $self->{output}->exit();
         }
     }
-    
+
     return sort @results;
 }
 
 sub connect {
     my ($self, %options) = @_;
     my %dns_options = ();
-    
+
     if (defined($self->{option_results}->{nameservers})) {
         $dns_options{nameservers} = [@{$self->{option_results}->{nameservers}}];
     }
