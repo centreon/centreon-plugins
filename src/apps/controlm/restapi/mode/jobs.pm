@@ -229,7 +229,7 @@ sub manage_selection {
             type => $job->{type}, 
             status => lc($job->{status}),
             elapsed => $elapsed,
-            failed => 1
+            failed => $failed
         };
     }
 }
