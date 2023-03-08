@@ -60,7 +60,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
-    ]
+    ];
 }
 
 sub new {
