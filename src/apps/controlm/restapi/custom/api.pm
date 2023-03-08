@@ -145,7 +145,7 @@ sub get_token {
         $self->settings();
         my $content = $self->{http}->request(
             method => 'POST',
-            url_path => '/automation-api',
+            url_path => '/session/login',
             query_form_post => $encoded,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
