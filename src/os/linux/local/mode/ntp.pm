@@ -82,7 +82,7 @@ sub custom_status_output {
 sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state} ne '*') {
+    if ($self->{result_values}->{rawstate} ne '*') {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
             unit => 'ms',
@@ -106,7 +106,7 @@ sub custom_offset_perfdata {
 sub custom_offset_threshold {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state} ne '*') {
+    if ($self->{result_values}->{rawstate} ne '*') {
         return 'ok';
     }
     return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -150,7 +150,7 @@ sub set_counters {
             }
         },
         { label => 'offset', nlabel => 'peer.time.offset.milliseconds', display_ok => 0, set => {
-                key_values => [ { name => 'offset' }, { name => 'state' }, { name => 'display' } ],
+                key_values => [ { name => 'offset' }, { name => 'rawstate' }, { name => 'display' } ],
                 output_template => 'offset: %s ms',
                 closure_custom_threshold_check => $self->can('custom_offset_threshold'),
                 closure_custom_perfdata => $self->can('custom_offset_perfdata'),
