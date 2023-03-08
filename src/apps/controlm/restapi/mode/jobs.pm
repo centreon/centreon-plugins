@@ -131,7 +131,7 @@ sub set_counters {
             }
         },
         { label => 'jobs-executing', nlabel => 'jobs.executing.count', set => {
-                key_values => [ { name => 'running' }, { name => 'total' } ],
+                key_values => [ { name => 'executing' }, { name => 'total' } ],
                 output_template => 'executing: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
@@ -229,7 +229,7 @@ sub manage_selection {
             type => $job->{type}, 
             status => lc($job->{status}),
             elapsed => $elapsed,
-            failed => 1
+            failed => $failed
         };
     }
 }
