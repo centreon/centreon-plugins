@@ -1,5 +1,5 @@
 {
-    "pkg_name": "centreon-plugin-Applications-Contoolm-Restapi",
+    "pkg_name": "centreon-plugin-Applications-Controlm-Restapi",
     "pkg_summary": "Centreon Plugin to monitor Control-M throught Automation API",
     "plugin_name": "centreon_controlm_restapi.pl",
     "files": [
