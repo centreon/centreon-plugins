@@ -54,21 +54,23 @@ sub new {
 sub extract_map_options {
     my ($self, %options) = @_;
 
+    $self->{map_option} = [];
+
     # Parse all options to find '/\{.*\:\:secret\:\:(.*)\}/' dedicated patern in value and add entries in map_option
     foreach my $option (keys %{$options{option_results}}) {
         if (defined($options{option_results}{$option})) {
             next if ($option eq 'map_option');
-            if (ref $options{option_results}{$option} eq 'ARRAY') {
+            if (ref($options{option_results}{$option}) eq 'ARRAY') {
                 foreach (@{$options{option_results}{$option}}) {
                     if ($_ =~ /\{.*\:\:secret\:\:(.*)\}/i) {
                         push (@{$self->{request_endpoint}}, "/v1".$1);
-                        push (@{$options{option_results}->{map_option}}, $option."=%".$_);
+                        push (@{$self->{map_option}}, $option."=%".$_);
                     }
                 }
             } else {
                 if ($options{option_results}{$option} =~ /\{.*\:\:secret\:\:(.*)\}/i) {
                     push (@{$self->{request_endpoint}}, "/v1".$1);
-                    push (@{$options{option_results}->{map_option}}, $option."=%".$options{option_results}{$option});
+                    push (@{$self->{map_option}}, $option."=%".$options{option_results}{$option});
                 }
             }
         }
@@ -78,36 +80,47 @@ sub extract_map_options {
 sub vault_settings {
     my ($self, %options) = @_;
 
-    if (defined($options{option_results}->{vault_config})
-        && $options{option_results}->{vault_config} ne ''
-        && -f $options{option_results}->{vault_config}
-    ) {
-        my $file_content;
-        open(FH, '<', $options{option_results}->{vault_config}) or die $!;
-        $file_content = do { local ($/); <FH> };
-        close(FH);
-
-        my $json = JSON::XS->new->utf8->pretty->decode($file_content);
-        foreach my $vault_name (keys %{$json}) {
-            if ($json->{$vault_name}->{'vault-protocol'} && $json->{$vault_name}->{'vault-protocol'} ne '') {
-                $self->{$vault_name}->{vault_protocol} = $json->{$vault_name}->{'vault-protocol'};
-            } else {
-                $self->{$vault_name}->{vault_protocol} = 'https';
-            }
-            if ($json->{$vault_name}->{'vault-address'} && $json->{$vault_name}->{'vault-address'} ne '') {
-                $self->{$vault_name}->{vault_address} = $json->{$vault_name}->{'vault-address'};
-            } else {
-                $self->{$vault_name}->{vault_address} = '127.0.0.1'
-            }
-            if ($json->{$vault_name}->{'vault-port'} && $json->{$vault_name}->{'vault-port'} ne '') {
-                $self->{$vault_name}->{vault_port} = $json->{$vault_name}->{'vault-port'};
-            } else {
-                $self->{$vault_name}->{vault_port} = '8100';
-            }
-            if ($json->{$vault_name}->{'vault-token'} && $json->{$vault_name}->{'vault-token'} ne '') {
-                $self->{$vault_name}->{vault_token} = $json->{$vault_name}->{'vault-token'};
-            }
+    if (!defined($options{option_results}->{vault_config})
+        || $options{option_results}->{vault_config} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Please set --vault-config option");
+        $self->{output}->option_exit();
+    }
+    if (! -f $options{option_results}->{vault_config}) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find file '$options{option_results}->{vault_config}'");
+        $self->{output}->option_exit();
+    }
+    
+    my $file_content = do {
+        local $/ = undef;
+        if (!open my $fh, "<", $options{option_results}->{vault_config}) {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $options{option_results}->{vault_config}: $!");
+            $self->{output}->option_exit();
         }
+        <$fh>;
+    };
+
+    my $json;
+    eval {
+        $json = JSON::XS->new->utf8->decode($file_content);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json file");
+        $self->{output}->option_exit();
+    }
+
+    foreach my $vault_name (keys %$json) {
+        $self->{$vault_name}->{vault_protocol} = 'https';
+        $self->{$vault_name}->{vault_address} = '127.0.0.1';
+        $self->{$vault_name}->{vault_port} = '8100';
+
+        $self->{$vault_name}->{vault_protocol} = $json->{$vault_name}->{'vault-protocol'}
+            if ($json->{$vault_name}->{'vault-protocol'} && $json->{$vault_name}->{'vault-protocol'} ne '');
+        $self->{$vault_name}->{vault_address} = $json->{$vault_name}->{'vault-address'}
+            if ($json->{$vault_name}->{'vault-address'} && $json->{$vault_name}->{'vault-address'} ne '');
+        $self->{$vault_name}->{vault_port} = $json->{$vault_name}->{'vault-port'}
+            if ($json->{$vault_name}->{'vault-port'} && $json->{$vault_name}->{'vault-port'} ne '');
+        $self->{$vault_name}->{vault_token} = $json->{$vault_name}->{'vault-token'}
+            if ($json->{$vault_name}->{'vault-token'} && $json->{$vault_name}->{'vault-token'} ne '');
     }
 }
 
@@ -116,35 +129,37 @@ sub request_api {
 
     $self->vault_settings(%options);
 
+    $self->{lookup_values} = {};
     foreach my $endpoint (@{$self->{request_endpoint}}) {
         # Extract vault name configuration from endpoint
-        my $vault_path = substr($endpoint, index($endpoint, "/", 1), length($endpoint));
-        my $vault_name = substr($vault_path, 1, index($vault_path, "/", 1) - 1);
+        my $vault_path = substr($endpoint, index($endpoint, '/', 1), length($endpoint));
+        my $vault_name = substr($vault_path, 1, index($vault_path, '/', 1) - 1);
 
-        $self->{http}->add_header(key => 'Accept', value => 'application/json');
+        my $headers = ['Accept: application/json'];
         if (defined($self->{$vault_name}->{vault_token})) {
-            $self->{http}->add_header(key => 'X-Vault-Token', value => $self->{$vault_name}->{vault_token});
+            push @$headers, 'X-Vault-Token: ' . $self->{$vault_name}->{vault_token};
         }
 
-        my $json;
-        my $response = $self->{http}->request(
+        my ($response) = $self->{http}->request(
             hostname => $self->{$vault_name}->{vault_address},
             port => $self->{$vault_name}->{vault_port},
             proto => $self->{$vault_name}->{vault_protocol},
             method => 'GET',
-            url_path => $endpoint
+            url_path => $endpoint,
+            header => $headers
         );
-        $self->{output}->output_add(long_msg => $response, debug => 1);
+        
+        my $json;
         eval {
             $json = JSON::XS->new->utf8->decode($response);
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
             $self->{output}->option_exit();
-        } else {
-            foreach (keys %{$json->{data}}) {
-                $self->{lookup_values}->{"{".$_."::secret::".substr($endpoint, index($endpoint, "/", 1))."}"} = $json->{data}->{$_};
-            }
+        };
+
+        foreach (keys %{$json->{data}}) {
+            $self->{lookup_values}->{'{' . $_ . '::secret::' . substr($endpoint, index($endpoint, '/', 1)) . '}'} = $json->{data}->{$_};
         }
     }
 }
@@ -152,12 +167,11 @@ sub request_api {
 sub do_map {
     my ($self, %options) = @_;
 
-    return if (!defined($options{option_results}->{map_option}));
-    foreach (@{$options{option_results}->{map_option}}) {
+    foreach (@{$self->{map_option}}) {
         next if (! /^(.+?)=%(.+)$/);
 
         my ($option, $map) = ($1, $2);
-        
+
         $map = $self->{lookup_values}->{$2} if (defined($self->{lookup_values}->{$2}));
         $option =~ s/-/_/g;
         $options{option_results}->{$option} = $map;
@@ -170,16 +184,10 @@ sub manage_options {
 
     $self->extract_map_options(%options);
 
-    return if (!defined($options{option_results}->{map_option}));
+    return if (scalar(@{$self->{map_option}}) <= 0);
 
-    my ($content, $debug) = $self->request_api(%options);
-    if (!defined($content)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot read Vault information");
-        $self->{output}->option_exit();
-    }
+    $self->request_api(%options);
     $self->do_map(%options);
-
-    $self->{output}->output_add(long_msg => Data::Dumper::Dumper($debug), debug => 1) if ($self->{output}->is_debug());
 }
 
 1;
