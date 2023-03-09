@@ -145,7 +145,7 @@ sub get_token {
         $self->settings();
         my $content = $self->{http}->request(
             method => 'POST',
-            url_path => '/session/login',
+            url_path => '/automation-api/session/login',
             query_form_post => $encoded,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
@@ -193,7 +193,7 @@ sub request_api {
     $self->settings();
     my $token = $self->get_token();
     my ($content) = $self->{http}->request(
-        url_path => $options{endpoint},
+        url_path => '/automation-api' . $options{endpoint},
         get_param => $get_param,
         header => ['Authorization: Bearer ' . $token],
         unknown_status => '',
@@ -206,7 +206,7 @@ sub request_api {
         $self->clean_token();
         $token = $self->get_token();
         $content = $self->{http}->request(
-            url_path => $options{endpoint},
+            url_path => '/automation-api' . $options{endpoint},
             get_param => $get_param,
             header => ['Authorization: Bearer ' . $token],
             unknown_status => $self->{unknown_http_status},
