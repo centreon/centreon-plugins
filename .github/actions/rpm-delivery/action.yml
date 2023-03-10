@@ -49,9 +49,9 @@ runs:
         JF_URL: https://centreon.jfrog.io
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
-    - name: Publish RPMs to connectors repository
+    - name: Publish RPMs to plugins repository
       run: |
-        jf rt upload "*.rpm" "rpm-connectors/${{ inputs.distrib }}/${{ inputs.stability }}/noarch/"
+        jf rt upload "*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/noarch/"
       shell: bash
 
     - name: Setup awscli
