@@ -42,7 +42,7 @@ sub set_counters {
     $self->{maps_counters}->{non_compliant_policies} = [
         { label => 'non-compliant-policies', nlabel => 'policies.non_compliant.count', set => {
                 key_values => [ { name => 'non_compliant_policies' } ],
-                output_template => 'Number of non compiant policies: %d',
+                output_template => 'Number of non compliant policies: %d',
                 perfdatas => [
                     { label => 'total_non_compliant_policies', template => '%d', min => 0, unit => '' }
                 ]
