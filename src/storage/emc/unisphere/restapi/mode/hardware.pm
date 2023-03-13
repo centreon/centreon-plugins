@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2022 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,7 +46,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'storage::emc::unisphere::restapi::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'];
+    $self->{components_module} = ['disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp','memoryModule'];
 }
 
 sub new {
@@ -76,7 +76,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'.
+Can be: 'disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp','memoryModule'.
 
 =item B<--filter>
 
