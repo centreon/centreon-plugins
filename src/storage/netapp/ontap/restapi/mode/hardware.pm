@@ -28,18 +28,30 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{cb_hook2} = 'execute_custom';
+    $self->{cb_hook2} = 'save_custom';
 
     $self->{thresholds} = {
         state => [
             ['ok', 'OK'],
             ['error', 'CRITICAL'],
             ['.*', 'CRITICAL']
+        ],
+        disk => [
+            ['present', 'OK'],
+            ['broken', 'CRITICAL'],
+            ['copy', 'OK'],
+            ['maintenance', 'OK'],
+            ['partner', 'OK'],
+            ['reconstructing', 'OK'],
+            ['removed', 'OK'],
+            ['spare', 'OK'],
+            ['unfail', 'OK'],
+            ['zeroing', 'OK']
         ]
     };
     
     $self->{components_path} = 'storage::netapp::ontap::restapi::mode::components';
-    $self->{components_module} = ['shelf', 'bay', 'fru'];
+    $self->{components_module} = ['bay', 'disk', 'fru', 'shelf'];
 }
 
 sub new {
@@ -52,10 +64,24 @@ sub new {
     return $self;
 }
 
-sub execute_custom {
+sub get_disks {
     my ($self, %options) = @_;
 
-    $self->{json_results} = $options{custom}->request_api(endpoint => '/api/storage/shelves?fields=*');
+    return $self->{custom}->request_api(endpoint => '/api/storage/disks?fields=*');
+}
+
+sub get_shelves {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{shelves}));
+
+    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=*');
+}
+
+sub save_custom {
+    my ($self, %options) = @_;
+
+    $self->{custom} = $options{custom};
 }
 
 1;

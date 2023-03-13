@@ -31,9 +31,12 @@ sub check {
     $self->{output}->output_add(long_msg => 'checking bays');
     $self->{components}->{bay} = { name => 'bays', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'bay'));
-    return if (!defined($self->{json_results}->{records}));
 
-    foreach my $shelf (@{$self->{json_results}->{records}}) {
+    $self->get_shelves();
+
+    return if (!defined($self->{shelves}->{records}));
+
+    foreach my $shelf (@{$self->{shelves}->{records}}) {
         my $shelf_instance = $shelf->{serial_number};
         my $shelf_name = $shelf->{name};
 
