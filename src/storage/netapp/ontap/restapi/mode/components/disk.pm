@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::netapp::ontap::restapi::mode::components::shelf;
+package storage::netapp::ontap::restapi::mode::components::disk;
 
 use strict;
 use warnings;
@@ -28,39 +28,37 @@ sub load {}
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => 'checking shelfs');
-    $self->{components}->{shelf} = { name => 'shelfs', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'shelf'));
+    $self->{output}->output_add(long_msg => 'checking disks');
+    $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'disk'));
 
-    $self->get_shelves();
+    my $disks = $self->get_disks();
 
-    return if (!defined($self->{shelves}->{records}));
+    return if (!defined($disks->{records}));
 
-    foreach my $shelf (@{$self->{shelves}->{records}}) {
-        my $shelf_instance = $shelf->{serial_number};
-        my $shelf_name = $shelf->{name};
+    foreach my $disk (@{$disks->{records}}) {
+        next if ($self->check_filter(section => 'disk', instance => $disk->{name}));
 
-        next if ($self->check_filter(section => 'shelf', instance => $shelf_instance));
-
-        $self->{components}->{shelf}->{total}++;
-
+        $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "shelf '%s' state is '%s' [instance: %s]",
-                $shelf_name,
-                $shelf->{state},
-                $shelf_instance
+                "disk '%s' state is '%s' [bay: %s, serial: %s, instance: %s]",
+                $disk->{name},
+                $disk->{state},
+                $disk->{bay},
+                $disk->{serial_number},
+                $disk->{name}
             )
         );
         
-        my $exit = $self->get_severity(label => 'state', section => 'shelf', value => $shelf->{state});
+        my $exit = $self->get_severity(section => 'disk', value => $disk->{state});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "Shelf '%s' state is '%s'",
-                    $shelf_name,
-                    $shelf->{state}
+                    "Disk '%s' state is '%s'",
+                    $disk->{name},
+                    $disk->{state}
                 )
             );
         }
