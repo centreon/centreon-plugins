@@ -150,8 +150,8 @@ sub get_access_token {
 
     my $has_cache_file = $options{statefile}->read(
         statefile =>
-            'azure_api_' . 
-            md5_hex($self->{tenant}) . '_' . 
+            'azure_api_' .
+            md5_hex($self->{tenant}) . '_' .
             md5_hex($self->{client_id}) . '_' .
             md5_hex($self->{management_endpoint})
     );
@@ -243,7 +243,7 @@ sub convert_duration {
     my ($self, %options) = @_;
 
     my $duration;
-    
+
     if ($options{time_string} =~ /^P.*S$/) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
@@ -268,7 +268,7 @@ sub convert_duration {
 
 sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
-    
+
     if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d.*)Z/) {
         my $dt = DateTime->new(
             year       => $1,
@@ -284,7 +284,7 @@ sub convert_iso8601_to_epoch {
         return $epoch_time;
 
     }
-    
+
     $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
     $self->{output}->option_exit();
 
@@ -310,7 +310,7 @@ sub json_decode {
 sub azure_get_subscription_cost_management_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version} ;
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version};
 
     return $url;
 }
@@ -321,7 +321,7 @@ sub azure_get_subscription_cost_management {
     my $results = {};
     my $encoded_form_post;
 
-    my $full_url = $self->azure_get_subscription_cost_management_set_url(); 
+    my $full_url = $self->azure_get_subscription_cost_management_set_url();
 
     eval {
         $encoded_form_post = JSON::XS->new->utf8->encode($options{body_post});
@@ -1175,6 +1175,57 @@ sub azure_list_sqlelasticpools {
     }
 
     return $full_response;
+}
+
+sub azure_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if length $options{resource_group};
+    $url .= "/providers/" . $options{providers} if length $options{providers};
+    $url .= "/" . $options{resource} if length $options{resource};
+    $url .= "/" . $options{query_name};
+}
+
+sub azure_list_policystates {
+    my ($self, %options) = @_;
+
+    my $get_params = [
+        'api-version', $self->{api_version},
+        '$select', 'ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState'
+    ];
+    my $resource_location;
+    if (length $options{resource_location}) {
+        $resource_location = ("ResourceLocation eq '" . $options{resource_location} . "'");
+        delete $options{$resource_location};
+    }
+    my $resource_type;
+    if (length $options{resource_type}) {
+        $resource_type = ("ResourceType eq '" . $options{resource_type} . "'");
+        delete $options{$resource_type};
+    }
+    my $filter;
+    if (length $resource_location && length $resource_type) {
+        $filter = $resource_location . " and " . $resource_type;
+    } elsif (length $resource_location) {
+        $filter = $resource_location
+    } elsif (length $resource_type) {
+        $filter = $resource_type
+    }
+    if (length($filter)) {
+        push(@$get_params, '$filter', $filter);
+    }
+
+    my ($url) = $self->azure_set_url(%options);
+    my $response = $self->request_api(
+        method => 'POST',
+        full_url => $url,
+        hostname => '',
+        header => ['Content-Type: application/json'],
+        get_params => $get_params
+    );
+
+    return $response->{value};
 }
 
 1;
