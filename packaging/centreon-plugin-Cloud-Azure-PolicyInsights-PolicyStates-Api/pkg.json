@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-PolicyInsights-PolicyStates-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Policy States using RestAPI",
+    "plugin_name": "centreon_azure_policyinsights_policystates_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/policyinsights/policystates/"
+    ]
+}
