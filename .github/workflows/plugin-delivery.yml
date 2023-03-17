@@ -35,30 +35,6 @@ on:
         required: true
 
 jobs:
-  deliver-rpm:
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [el7, el8, el9]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - name: Delivery
-        uses: ./.github/actions/rpm-delivery
-        with:
-          distrib: ${{ matrix.distrib }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          update_repo_path: ${{ secrets.update_repo_path }}
-          cloudfront_id: ${{ secrets.cloudfront_id }}
-          yum_repo_address: ${{ secrets.yum_repo_address }}
-          yum_repo_key: ${{ secrets.yum_repo_key }}
-          stability: ${{ inputs.stability }}
-          artifactory_token: ${{ secrets.artifactory_token }}
-
   deliver-deb:
     runs-on: [self-hosted, common]
     strategy:

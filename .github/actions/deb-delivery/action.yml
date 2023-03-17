@@ -35,19 +35,9 @@ runs:
         path: ./*.deb
         key: ${{ inputs.cache_key }}
 
-    - uses: jfrog/setup-jfrog-cli@v3
-      env:
-        JF_URL: https://centreon.jfrog.io
-        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
-
-    - name: Publish DEBs to artifactory
-      run: |
-        jf rt upload "*.deb" "apt-plugins-${{ inputs.stability }}/pool/" --deb "${{ inputs.distrib }}/main/all"
-      shell: bash
-
     - name: Publish DEBs to Nexus
       run: |
-        for MAJOR in "22.04" "22.10"; do
+        for MAJOR in "22.10"; do
           echo "Delivering to $MAJOR ${{ inputs.stability }}"
 
           FOLDER_SUFFIX="-${{ inputs.stability }}"
