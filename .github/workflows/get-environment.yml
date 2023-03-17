@@ -45,7 +45,7 @@ jobs:
 
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 
-          VERSION=`date '20230315'`
+          VERSION="20230315"
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
 
           RELEASE=`date '+%H%M%S'`
