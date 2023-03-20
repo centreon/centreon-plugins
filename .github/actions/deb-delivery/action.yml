@@ -55,6 +55,6 @@ runs:
             FOLDER_SUFFIX=""
           fi
 
-          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 sh -c "curl --connect-timeout 20 --retry 2 --retry-max-time 10 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary '@%' https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/ >/dev/null || exit 255" || break
+          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 sh -c "curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary '@%' https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/ >/dev/null || exit 255" || break
         done
       shell: bash
