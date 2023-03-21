@@ -88,6 +88,9 @@ sub check_options {
         $server = $2;
         $resource = $2 . '/databases/' . $3;
     }
+    else {
+        $resource = $server . '/databases/' . $resource
+    }
 
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
