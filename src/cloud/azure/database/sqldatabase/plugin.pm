@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2022 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,9 @@ sub new {
         'health'        => 'cloud::azure::database::sqldatabase::mode::health',
         'sessions'      => 'cloud::azure::database::sqldatabase::mode::sessions',
         'storage'       => 'cloud::azure::database::sqldatabase::mode::storage',
-        'workers'       => 'cloud::azure::database::sqldatabase::mode::workers'
+        'workers'       => 'cloud::azure::database::sqldatabase::mode::workers',
+        'cpu'           => 'cloud::azure::database::sqldatabase::mode::cpu',
+        'memory'        => 'cloud::azure::database::sqldatabase::mode::memory'
     );
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
