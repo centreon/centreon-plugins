@@ -132,7 +132,7 @@ sub request_api {
     $self->{lookup_values} = {};
     foreach my $item (@{$self->{request_endpoint}}) {
         # Extract vault name configuration from endpoint
-        # 'vault::/v1/jja/monitoring/hosts/7ad55afc-fa9e-4851-85b7-e26f47e421d7'
+        # 'vault::/v1/<root_path>/monitoring/hosts/7ad55afc-fa9e-4851-85b7-e26f47e421d7'
         my ($vault_name, $endpoint);
         if ($item =~ /(.*)\:\:(.*)/i) {
             $vault_name = $1;
