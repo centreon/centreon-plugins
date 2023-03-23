@@ -48,8 +48,11 @@ sub custom_cpu_avg_calc {
             #
             #Cal Method ref: http://technet.microsoft.com/en-us/library/cc757283%28WS.10%29.aspx
             #
-            $total_cpu += (1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
+            my $cpu_core = (1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
                  ( $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'} - $options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} ) ) * 100;
+            if ($cpu_core > 0) {
+                $total_cpu += $cpu_core;
+            }
             $count++;
         }
     }
@@ -60,12 +63,7 @@ sub custom_cpu_avg_calc {
         return -1;
     }
 
-    my $prct_used = $total_cpu / $count;
-    if ($prct_used < 0) {
-        $$self->{result_values}->{prct_used} = 0;
-    } else {
-        $self->{result_values}->{prct_used} = $prct_used;
-    }
+    $self->{result_values}->{prct_used} = $total_cpu / $count;
     return 0;
 }
 
@@ -81,7 +79,7 @@ sub custom_cpu_core_calc {
     $self->{result_values}->{prct_used} = $core_usage;
     
     if ($core_usage < 0) {
-        $$self->{result_values}->{prct_used} = 0;
+        $self->{result_values}->{prct_used} = 0;
     } else {
         $self->{result_values}->{prct_used} = $core_usage;
     }
