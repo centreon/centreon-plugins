@@ -62,14 +62,14 @@ sub extract_map_options {
             next if ($option eq 'map_option');
             if (ref($options{option_results}{$option}) eq 'ARRAY') {
                 foreach (@{$options{option_results}{$option}}) {
-                    if ($_ =~ /\{.*\:\:secret\:\:(.*)\}/i) {
-                        push (@{$self->{request_endpoint}}, "/v1".$1);
+                    if ($_ =~ /\{.*\:\:secret\:\:(.*)\:\:(.*)\}/i) {
+                        push (@{$self->{request_endpoint}}, "$1::/v1/".$2);
                         push (@{$self->{map_option}}, $option."=%".$_);
                     }
                 }
             } else {
-                if ($options{option_results}{$option} =~ /\{.*\:\:secret\:\:(.*)\}/i) {
-                    push (@{$self->{request_endpoint}}, "/v1".$1);
+                if ($options{option_results}{$option} =~ /\{.*\:\:secret\:\:(.*)\:\:(.*)\}/i) {
+                    push (@{$self->{request_endpoint}}, "$1::/v1/".$2);
                     push (@{$self->{map_option}}, $option."=%".$options{option_results}{$option});
                 }
             }
@@ -130,10 +130,19 @@ sub request_api {
     $self->vault_settings(%options);
 
     $self->{lookup_values} = {};
-    foreach my $endpoint (@{$self->{request_endpoint}}) {
+    foreach my $item (@{$self->{request_endpoint}}) {
         # Extract vault name configuration from endpoint
-        my $vault_path = substr($endpoint, index($endpoint, '/', 1), length($endpoint));
-        my $vault_name = substr($vault_path, 1, index($vault_path, '/', 1) - 1);
+        # 'vault::/v1/<root_path>/monitoring/hosts/7ad55afc-fa9e-4851-85b7-e26f47e421d7'
+        my ($vault_name, $endpoint);
+        if ($item =~ /(.*)\:\:(.*)/i) {
+            $vault_name = $1;
+            $endpoint = $2;
+        }
+
+        if (!defined($self->{$vault_name})) {
+            $self->{output}->add_option_msg(short_msg => "Cannot get vault access for: $vault_name");
+            $self->{output}->option_exit();
+        }
 
         my $headers = ['Accept: application/json'];
         if (defined($self->{$vault_name}->{vault_token})) {
@@ -159,7 +168,7 @@ sub request_api {
         };
 
         foreach (keys %{$json->{data}}) {
-            $self->{lookup_values}->{'{' . $_ . '::secret::' . substr($endpoint, index($endpoint, '/', 1)) . '}'} = $json->{data}->{$_};
+            $self->{lookup_values}->{'{' . $_ . '::secret::' . $vault_name . '::' . substr($endpoint, index($endpoint, '/', 1) + 1) . '}'} = $json->{data}->{$_};
         }
     }
 }
