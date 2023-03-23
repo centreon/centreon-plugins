@@ -38,13 +38,22 @@ sub custom_cpu_avg_calc {
             $skipped = 0;
             next if (!defined($options{old_datas}->{$_}));
             $buffer = 0;
+	    if($options{old_datas}->{$prefix . '_PercentProcessorTime'} > $options{new_datas}->{$prefix . '_PercentProcessorTime'}) {
+                $options{old_datas}->{$prefix . '_PercentProcessorTime'} = 0;
+	    }
+	    if($options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} > $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'}) {
+		$options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} = 0;
+	    }
 
-           #
-           #Cal Method ref: http://technet.microsoft.com/en-us/library/cc757283%28WS.10%29.aspx
-           #
-           $total_cpu += (1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
-                ( $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'} - $options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} ) ) * 100;
-           $count++;
+            #
+            #Cal Method ref: http://technet.microsoft.com/en-us/library/cc757283%28WS.10%29.aspx
+            #
+            my $cpu_core = (1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
+                 ( $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'} - $options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} ) ) * 100;
+            if ($cpu_core > 0) {
+                $total_cpu += $cpu_core;
+            }
+            $count++;
         }
     }
 
@@ -68,6 +77,12 @@ sub custom_cpu_core_calc {
     my $core_usage = (1 - ( $options{new_datas}->{$self->{instance} . '_PercentProcessorTime'} - $options{old_datas}->{$self->{instance} . '_PercentProcessorTime'} ) /
         ( $options{new_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} - $options{old_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} ) ) * 100;
     $self->{result_values}->{prct_used} = $core_usage;
+    
+    if ($core_usage < 0) {
+        $self->{result_values}->{prct_used} = 0;
+    } else {
+        $self->{result_values}->{prct_used} = $core_usage;
+    }
 
     return 0;
 }
