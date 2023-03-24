@@ -10,12 +10,6 @@ inputs:
   nexus_password:
     description: The nexus password
     required: true
-  version:
-    description: "Centreon packaged version"
-    required: true
-  release:
-    description: The release number
-    required: true
   cache_key:
     description: "The cached package key"
     required: true
