@@ -1,14 +1,6 @@
 on:
   workflow_call:
     inputs:
-      version:
-        description: "Plugins version"
-        type: string
-        required: true
-      release:
-        description: The release number
-        type: string
-        required: true
       stability:
         description: The package stability (stable, testing, unstable)
         type: string
@@ -48,9 +40,8 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
         with:
+          module_name: plugins
           distrib: ${{ matrix.distrib }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
           update_repo_path: ${{ secrets.update_repo_path }}
           cloudfront_id: ${{ secrets.cloudfront_id }}
@@ -73,8 +64,6 @@ jobs:
         uses: ./.github/actions/deb-delivery
         with:
           distrib: ${{ matrix.distrib }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
