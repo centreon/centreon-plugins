@@ -1,14 +1,11 @@
 name: "rpm-delivery"
 description: "rpm delivery"
 inputs:
+  module_name:
+    description: "The package module name"
+    required: true
   distrib:
     description: "The distribution used for packaging"
-    required: true
-  version:
-    description: "Centreon packaged version"
-    required: true
-  release:
-    description: The release number
     required: true
   cache_key:
     description: "The cached package key"
@@ -51,7 +48,41 @@ runs:
 
     - name: Publish RPMs to plugins repository
       run: |
-        jf rt upload "*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/noarch/"
+        FILES="*.rpm"
+
+        echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
+
+        if [ -z "${{ inputs.module_name }}" ]; then
+          echo "module name is required"
+          exit 1
+        fi
+
+        if [ -z "${{ inputs.distrib }}" ]; then
+          echo "distrib is required"
+          exit 1
+        fi
+
+        mkdir noarch x86_64
+
+        for FILE in $FILES; do
+          echo "[DEBUG] - File: $FILE"
+
+          ARCH=$(echo $FILE | grep -oP '(x86_64|noarch)')
+
+          echo "[DEBUG] - Arch: $ARCH"
+
+          cp "$FILE" "$ARCH"
+        done
+
+        for ARCH in "noarch" "x86_64"; do
+          if [ "$(ls -A $ARCH)" ]; then
+            if [ "${{ inputs.stability }}" == "stable" ]; then
+              jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/" --flat
+            else
+              jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat
+            fi
+          fi
+        done
       shell: bash
 
     - name: Setup awscli
@@ -65,10 +96,7 @@ runs:
       run: |
         FILES="*.rpm"
 
-        VERSION="${{ inputs.version }}"
-        RELEASE="${{ inputs.release }}"
         REPOTYPE="${{ inputs.stability }}"
-        PROJECT="plugins"
         PROJECT_PATH="standard"
         DISTRIB="${{ inputs.distrib }}"
         ARCH="noarch"
@@ -82,23 +110,15 @@ runs:
           if [ "$REPOTYPE" == "stable" ]; then
             TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/RPMS"
           else
-            FOLDER="centreon-$PROJECT-$VERSION-$RELEASE"
-            TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/$PROJECT/$FOLDER"
-            PROJECT_LOCATION="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/$PROJECT"
+            TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/${{ inputs.module_name }}"
+            PROJECT_LOCATION="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH/${{ inputs.module_name }}"
           fi
 
-          echo "[DEBUG] - Folder: $FOLDER"
-          echo "[DEBUG] - Project : $PROJECT"
           echo "[DEBUG] - Target : $TARGET"
           echo "[DEBUG] - PROJECT_LOCATION : $PROJECT_LOCATION"
 
           ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" mkdir -p "$TARGET"
           scp -o StrictHostKeyChecking=no ./*.rpm "${{ inputs.yum_repo_address }}:$TARGET"
-
-          # Cleanup is done on unstable repository only
-          #if [ "$REPOTYPE" == "unstable" ]; then
-          #  ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" "ls -drc $PROJECT_LOCATION/* 2>&- | head -n -1 | xargs rm -rf"
-          #fi
 
           # Update repository metadata
           METADATAS="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/$MAJOR/$DISTRIB/$REPOTYPE/$ARCH"

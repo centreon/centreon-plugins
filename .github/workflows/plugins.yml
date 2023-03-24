@@ -103,8 +103,6 @@ jobs:
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
-      version: ${{ needs.get-environment.outputs.version }}
-      release: ${{ needs.get-environment.outputs.release }}
       stability: ${{ needs.get-environment.outputs.stability }}
     secrets:
       nexus_username: ${{ secrets.NEXUS_USERNAME }}
