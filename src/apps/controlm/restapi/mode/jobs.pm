@@ -171,7 +171,7 @@ sub manage_selection {
 
     my $get_param = ['application=*'];
     if (defined($self->{option_results}->{job_name}) && $self->{option_results}->{job_name} ne '') {
-        push @$get_param, $self->{option_results}->{job_name};
+        push @$get_param, 'jobname=' . $self->{option_results}->{job_name};
     } else {
         push @$get_param, 'jobname=*';
     }
