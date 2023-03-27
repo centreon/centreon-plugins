@@ -59,7 +59,7 @@ sub set_counters {
                 ],
             }
         },
-    ]
+    ];
 }
 
 sub new {
