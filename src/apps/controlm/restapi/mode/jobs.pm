@@ -72,12 +72,12 @@ sub prefix_job_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
         { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -10 => 1, -11 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{jobs} = [
         { 
             label => 'status',
@@ -159,6 +159,7 @@ sub new {
         'filter-folder:s'      => { name => 'filter_folder' },
         'filter-type:s'        => { name => 'filter_type' },
         'filter-name:s'        => { name => 'filter_name' },
+        'job-name:s'           => { name => 'job_name' },
         'timezone:s'           => { name => 'timezone' }
     });
 
@@ -168,15 +169,23 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $get_param = ['application=*'];
+    if (defined($self->{option_results}->{job_name}) && $self->{option_results}->{job_name} ne '') {
+        push @$get_param, 'jobname=' . $self->{option_results}->{job_name};
+    } else {
+        push @$get_param, 'jobname=*';
+    }
     my $jobs = $options{custom}->request_api(
         endpoint => '/run/jobs/status',
-        get_param => ['jobname=*', 'application=*']
+        get_param => $get_param
     );
 
     my $current_time = time();
     $self->{global} = { total => 0, failed => 0, waiting => 0, succeeded => 0, executing => 0 };
     $self->{jobs} = {};
     foreach my $job (@{$jobs->{statuses}}) {
+        next if (defined($self->{option_results}->{job_name}) && $self->{option_results}->{job_name} ne '' &&
+            $job->{name} ne $self->{option_results}->{job_name});
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $job->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_folder}) && $self->{option_results}->{filter_folder} ne '' &&
@@ -264,6 +273,10 @@ Filter jobs by type (cannot be a regexp).
 =item B<--filter-name>
 
 Filter jobs by job name (can be a regexp).
+
+=item B<--job-name>
+
+Check exact job name (no regexp).
 
 =item B<--timezone>
 
