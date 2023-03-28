@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         #'antenna'         => 'network::cambium::epmp::snmp::mode::antenna',
-        #'cpu'             => 'network::cambium::epmp::snmp::mode::cpu',
+        'cpu'             => 'network::cambium::cnpilot::snmp::mode::cpu',
         #'interfaces'      => 'network::cambium::epmp::snmp::mode::interfaces',
         #'license'         => 'network::cambium::epmp::snmp::mode::license',
         #'list-interfaces' => 'snmp_standard::mode::listinterfaces',
