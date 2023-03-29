@@ -102,7 +102,7 @@ sub manage_selection {
     $self->{compliance_state} = {};
     foreach my $policy_state (@{ $policy_states }) {
         my $resource_name = $policy_state->{resourceId};
-        $resource_name =~ /.*\/(\w*)$/;
+        $resource_name =~ /(\w*)$/;
         $resource_name = $1;
         my $display = $policy_state->{policyDefinitionName} . "_" . $resource_name;
         $self->{compliance_state}->{ $display } = {
