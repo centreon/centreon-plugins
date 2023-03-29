@@ -1221,7 +1221,8 @@ sub azure_list_policystates {
         method => 'POST',
         full_url => $url,
         hostname => '',
-        get_params => $get_params
+        get_params => $get_params,
+        query_form_post => ''
     );
 
     return $response->{value};
