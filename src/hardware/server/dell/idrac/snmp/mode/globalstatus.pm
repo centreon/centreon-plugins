@@ -171,7 +171,7 @@ Check the overall status of iDrac card.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/').
+Set unknown threshold for status (Default: '%{status} =~ /unknown/').
 Can used special variables like: %{status}
 
 =item B<--warning-status>

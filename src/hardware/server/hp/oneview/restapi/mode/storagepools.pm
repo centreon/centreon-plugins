@@ -172,7 +172,7 @@ Filter pool name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
+Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>

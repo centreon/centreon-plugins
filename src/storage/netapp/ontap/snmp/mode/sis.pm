@@ -174,7 +174,7 @@ Filter name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
+Set unknown threshold for status (Default: '').
 Can used special variables like: %{state}, %{status}, %{lastOpError}, %{display}
 
 =item B<--warning-status>
