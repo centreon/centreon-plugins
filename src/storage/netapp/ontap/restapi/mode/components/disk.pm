@@ -39,6 +39,9 @@ sub check {
     foreach my $disk (@{$disks->{records}}) {
         next if ($self->check_filter(section => 'disk', instance => $disk->{name}));
 
+        # state can be missing
+        $disk->{state} = defined($disk->{state}) ? $disk->{state} : 'n/a';
+
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
