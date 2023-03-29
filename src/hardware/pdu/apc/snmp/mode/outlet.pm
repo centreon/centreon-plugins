@@ -244,7 +244,7 @@ Check outlet.
 
 =item B<--unknown-status>
 
-Set warning threshold for status.
+Set unknown threshold for status.
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>

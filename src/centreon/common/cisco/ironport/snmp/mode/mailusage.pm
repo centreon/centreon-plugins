@@ -251,7 +251,7 @@ Check email security usage.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
+Set unknown threshold for status (Default: '').
 Can used special variables like: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-status>

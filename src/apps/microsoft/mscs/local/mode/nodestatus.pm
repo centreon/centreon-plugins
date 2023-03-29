@@ -126,7 +126,7 @@ Filter node name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{state} =~ /unknown/').
+Set unknown threshold for status (Default: '%{state} =~ /unknown/').
 Can used special variables like: %{state}, %{display}
 
 =item B<--warning-status>
