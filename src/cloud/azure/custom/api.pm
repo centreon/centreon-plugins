@@ -1221,7 +1221,6 @@ sub azure_list_policystates {
         method => 'POST',
         full_url => $url,
         hostname => '',
-        header => ['Content-Type: application/json'],
         get_params => $get_params
     );
 
