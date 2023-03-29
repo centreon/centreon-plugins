@@ -8,6 +8,7 @@
         "cloud/aws/cloudwatch/",
         "cloud/aws/apigateway/mode/discovery.pm",
         "cloud/aws/backup/mode/discovery.pm",
+        "cloud/aws/cloudfront/mode/discovery.pm",
         "cloud/aws/ebs/mode/discovery.pm",
         "cloud/aws/ec2/mode/discovery.pm",
         "cloud/aws/ec2/mode/discoveryspotfleetrequests.pm",
