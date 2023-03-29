@@ -131,7 +131,7 @@ Search in following datacenter(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
+Set unknown threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
 Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--warning-status>

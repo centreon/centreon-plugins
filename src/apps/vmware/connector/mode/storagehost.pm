@@ -360,7 +360,7 @@ Filter paths by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
 Can used special variables like: %{status}, %{maintenance}
 
 =item B<--warning-status>

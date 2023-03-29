@@ -390,7 +390,7 @@ It monitors only ESX nic that belongs to the filtered vswitches.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
 Can used special variables like: %{status}
 
 =item B<--warning-status>

@@ -188,7 +188,7 @@ Datastore name is a regexp.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
 Can used special variables like: %{status}
 
 =item B<--warning-status>
