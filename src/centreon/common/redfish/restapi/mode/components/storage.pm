@@ -48,7 +48,7 @@ sub check {
         $self->{output}->output_add(
             long_msg => sprintf(
                 "storage '%s/%s' status is '%s' [instance: %s, state: %s]",
-                $system_name, $storage_name, $storage->{Status}->{HealthRollup}, $instance, $storage->{Status}->{State}
+                $system_name, $storage_name, $storage->{Status}->{Health}, $instance, $storage->{Status}->{State}
             )
         );
 
@@ -60,11 +60,11 @@ sub check {
             );
         }
 
-        $exit = $self->get_severity(label => 'status', section => 'storage.status', value => $storage->{Status}->{HealthRollup});
+        $exit = $self->get_severity(label => 'status', section => 'storage.status', value => $storage->{Status}->{Health});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Storage '%s/%s' status is '%s'", $system_name, $storage_name, $storage->{Status}->{HealthRollup})
+                short_msg => sprintf("Storage '%s/%s' status is '%s'", $system_name, $storage_name, $storage->{Status}->{Health})
             );
         }
     }
