@@ -46,7 +46,8 @@ sub set_system {
             ['removed', 'OK'],
             ['spare', 'OK'],
             ['unfail', 'OK'],
-            ['zeroing', 'OK']
+            ['zeroing', 'OK'],
+            ['n/a', 'OK']
         ]
     };
     
