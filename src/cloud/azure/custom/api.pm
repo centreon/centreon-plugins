@@ -1233,8 +1233,8 @@ sub azure_list_policystates {
             push @$full_response, $_;
         }
 
-        last if (!defined($response->{nextLink}));
-        $url = $response->{nextLink};
+        last if (!defined($response->{'@odata.nextLink'}));
+        $url = $response->{'@odata.nextLink'};
     }
 
     return $full_response;
