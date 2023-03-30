@@ -1217,15 +1217,24 @@ sub azure_list_policystates {
     }
 
     my ($url) = $self->azure_set_url(%options);
-    my $response = $self->request_api(
-        method => 'POST',
-        full_url => $url,
-        hostname => '',
-        get_params => $get_params,
-        query_form_post => ''
-    );
+    my $full_response = [];
+    while (1) {
+        my $response = $self->request_api(
+            method => 'POST',
+            full_url => $url,
+            hostname => '',
+            get_params => $get_params,
+            query_form_post => ''
+        );
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-    return $response->{value};
+        last if (!defined($response->{nextLink}));
+        $url = $response->{nextLink};
+    }
+
+    return $full_response;
 }
 
 1;
