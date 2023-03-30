@@ -115,7 +115,7 @@ sub run {
     my ($stdout) = $options{custom}->execute_command(
         command => 'nmap',
         command_options => $self->{option_results}->{nmap_options},
-        command_options_suffix => $self->{option_results}->{subnet},
+        command_options_suffix => $self->{option_results}->{subnet} . ' 2> /dev/null',
         timeout => 120
     );
 
@@ -187,7 +187,7 @@ __END__
 =head1 MODE
 
 Resources discovery.
-Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
+Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__ 2> /dev/null
 
 Timeout defaults to 120 seconds.
 
