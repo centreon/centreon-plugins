@@ -71,6 +71,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'api-version:s'    => { name => 'api_version', default => '2019-10-01'},
         'policy-states:s'  => { name => 'policy_states', default => 'default' },
+        'policy-name:s' => { name => 'policy_name' },
         'resource-group:s' => { name => 'resource_group' },
         'resource-location:s' => { name => 'resource_location' },
         'resource-type:s' => { name => 'resource_type' }
@@ -95,7 +96,8 @@ sub manage_selection {
 	    resource_group => $self->{option_results}->{resource_group},
         query_name => 'queryResults',
 	    resource_location => $self->{option_results}->{resource_location},
-	    resource_type => $self->{option_results}->{resource_type}
+	    resource_type => $self->{option_results}->{resource_type},
+	    policy_name => $self->{option_results}->{policy_name}
     );
 
     my $non_compliant_policies = 0;
@@ -147,6 +149,10 @@ Set resource location (Optional).
 =item B<--resource-type>
 
 Set resource type (Optional).
+
+=item B<--policy-name>
+
+Set policy name (Optional).
 
 =item B<--warning-*> B<--critical-*>
 
