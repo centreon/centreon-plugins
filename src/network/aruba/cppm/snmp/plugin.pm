@@ -19,7 +19,7 @@
 #
 # Authors : Alexandre Moreau <alexandre.moreau@cheops.fr> (@SpyL1nk)
 
-package network::aruba::clearpass::snmp::plugin;
+package network::aruba::cppm::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,16 +30,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'               => 'snmp_standard::mode::cpu',
-        'memory'            => 'network::aruba::clearpass::snmp::mode::memory',
-        'disk'              => 'network::aruba::clearpass::snmp::mode::disk',
-        'radius-counter'    => 'network::aruba::clearpass::snmp::mode::radius-counter',
-        'radius'            => 'network::aruba::clearpass::snmp::mode::radius',
-        'tacacs'            => 'network::aruba::clearpass::snmp::mode::tacacs',
-        'repository'        => 'network::aruba::clearpass::snmp::mode::repository',
-    );
+    $self->{modes} = {
+        'cpu'          => 'network::aruba::cppm::snmp::mode::cpu',
+        'disks'        => 'network::aruba::cppm::snmp::mode::disks',
+        'memory'       => 'network::aruba::cppm::snmp::mode::memory',
+        'radius'       => 'network::aruba::cppm::snmp::mode::radius',
+        'repositories' => 'network::aruba::cppm::snmp::mode::repositories',
+        'tacacs'       => 'network::aruba::cppm::snmp::mode::tacacs'
+    };
 
     return $self;
 }
@@ -50,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Aruba ClearPass in SNMP.
+Check Aruba ClearPass Policy Manager in SNMP.
 
 =cut
