@@ -31,12 +31,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'          => 'network::aruba::cppm::snmp::mode::cpu',
-        'disks'        => 'network::aruba::cppm::snmp::mode::disks',
-        'memory'       => 'network::aruba::cppm::snmp::mode::memory',
-        'radius'       => 'network::aruba::cppm::snmp::mode::radius',
-        'repositories' => 'network::aruba::cppm::snmp::mode::repositories',
-        'tacacs'       => 'network::aruba::cppm::snmp::mode::tacacs'
+        'cpu'             => 'network::aruba::cppm::snmp::mode::cpu',
+        'disks'           => 'network::aruba::cppm::snmp::mode::disks',
+        'interfaces'      => 'network::aruba::cppm::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::aruba::cppm::snmp::mode::memory',
+        'radius'          => 'network::aruba::cppm::snmp::mode::radius',
+        'repositories'    => 'network::aruba::cppm::snmp::mode::repositories',
+        'tacacs'          => 'network::aruba::cppm::snmp::mode::tacacs'
     };
 
     return $self;
