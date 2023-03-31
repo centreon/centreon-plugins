@@ -34,10 +34,14 @@ sub new {
         'allocatable-resources' => 'cloud::azure::compute::aks::mode::allocatableresources',
         'cpu'                   => 'cloud::azure::compute::aks::mode::cpu',
         'discovery'             => 'cloud::azure::compute::aks::mode::discovery',
+	'memory'                => 'cloud::azure::compute::aks::mode::memory',
+	'node-state'            => 'cloud::azure::compute::aks::mode::nodestate',
+	'pod-state'             => 'cloud::azure::compute::aks::mode::podstate',
 	'health'		=> 'cloud::azure::compute::aks::mode::health',
         'storage'               => 'cloud::azure::compute::aks::mode::storage',
         'traffic'               => 'cloud::azure::compute::aks::mode::traffic',
-        'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes'
+        'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes',
+	'unschedulable-pods'    => 'cloud::azure::compute::aks::mode::unschedulablepods'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
