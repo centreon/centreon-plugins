@@ -130,7 +130,7 @@ Check ClearPass authentication repository statistics.
 
 =item B<--filter-name>
 
-Filter radius by system hostname (can be a regexp).
+Filter authentification repositories by system hostname (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
