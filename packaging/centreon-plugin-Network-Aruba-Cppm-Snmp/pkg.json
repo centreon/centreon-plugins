@@ -9,6 +9,6 @@
         "snmp_standard/mode/listinterfaces.pm",
         "snmp_standard/mode/resources/",
         "snmp_standard/mode/interfaces.pm",
-        "network/aruba/clearpass/snmp/"
+        "network/aruba/cppm/snmp/"
     ]
 }
