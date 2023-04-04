@@ -171,6 +171,6 @@ Example:
 
 =head1 DESCRIPTION
 
-B<keepass>.
+B<secret file>.
 
 =cut
