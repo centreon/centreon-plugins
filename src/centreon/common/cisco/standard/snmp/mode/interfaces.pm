@@ -304,12 +304,18 @@ sub custom_add_result {
         defined($self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}) &&
         $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}} =~ /(\d+)/) {
         $self->{int}->{ $options{instance} }->{traffic_in_limit} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}};
+        
+        $self->{int}->{ $options{instance} }->{speed_in} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}
+            if (!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '');
     }
 
     if (defined($qos->{ $options{instance} }->{output}) &&
         defined($self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}}) &&
         $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}} =~ /(\d+)/) {
         $self->{int}->{ $options{instance} }->{traffic_out_limit} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}};
+
+        $self->{int}->{ $options{instance} }->{speed_out} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}}
+            if (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq '');
     }
 }
 
