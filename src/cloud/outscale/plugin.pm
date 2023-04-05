@@ -30,11 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'client-gateways'      => 'cloud::outscale::mode::clientgateways',
-        'account-consumptions' => 'cloud::outscale::mode::accountconsumptions',
-        'list-client-gateways' => 'cloud::outscale::mode::listclientgateways',
-        'list-load-balancers'  => 'cloud::outscale::mode::listloadbalancers',
-        'load-balancers'       => 'cloud::outscale::mode::loadbalancers'
+        'client-gateways'       => 'cloud::outscale::mode::clientgateways',
+        'account-consumptions'  => 'cloud::outscale::mode::accountconsumptions',
+        'list-client-gateways'  => 'cloud::outscale::mode::listclientgateways',
+        'list-load-balancers'   => 'cloud::outscale::mode::listloadbalancers',
+        'list-virtual-gateways' => 'cloud::outscale::mode::listvirtualgateways',
+        'load-balancers'        => 'cloud::outscale::mode::loadbalancers',
+        'virtual-gateways'      => 'cloud::outscale::mode::virtualgateways'
     };
 
     $self->{custom_modes}->{http} = 'cloud::outscale::custom::http';

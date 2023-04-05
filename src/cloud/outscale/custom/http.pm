@@ -235,6 +235,19 @@ sub read_consumption_account {
     return $raw_results->{ConsumptionEntries};
 }
 
+sub read_virtual_gateways {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadVirtualGateways',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{VirtualGateways};
+}
+
 1;
 
 __END__

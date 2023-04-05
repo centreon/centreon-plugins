@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::outscale::mode::clientgateways;
+package cloud::outscale::mode::virtualgateways;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,20 +26,20 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub cg_long_output {
+sub vg_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking client gateway '%s'",
+        "checking virtual gateway '%s'",
         $options{instance_value}->{name}
     );
 }
 
-sub prefix_cg_output {
+sub prefix_vg_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "client gateway '%s' ",
+        "virtual gateway '%s' ",
         $options{instance_value}->{name}
     );
 }
@@ -47,7 +47,7 @@ sub prefix_cg_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'number of client gateways ';
+    return 'number of virtual gateways ';
 }
 
 sub set_counters {
@@ -56,7 +56,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'cgs', type => 3, cb_prefix_output => 'prefix_cg_output', cb_long_output => 'cg_long_output', indent_long_output => '    ', message_multiple => 'All client gateways are ok',
+            name => 'vgs', type => 3, cb_prefix_output => 'prefix_vg_output', cb_long_output => 'vg_long_output', indent_long_output => '    ', message_multiple => 'All virtual gateways are ok',
             group => [
                 { name => 'status', type => 0 }
             ]
@@ -64,7 +64,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'cgs-detected', display_ok => 0, nlabel => 'client_gateways.detected.count', set => {
+        { label => 'vgs-detected', display_ok => 0, nlabel => 'virtual_gateways.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [
@@ -72,7 +72,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cgs-available', display_ok => 0, nlabel => 'client_gateways.available.count', set => {
+        { label => 'vgs-available', display_ok => 0, nlabel => 'virtual_gateways.available.count', set => {
                 key_values => [ { name => 'available' } ],
                 output_template => 'available: %s',
                 perfdatas => [
@@ -80,7 +80,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cgs-pending', display_ok => 0, nlabel => 'client_gateways.pending.count', set => {
+        { label => 'vgs-pending', display_ok => 0, nlabel => 'virtual_gateways.pending.count', set => {
                 key_values => [ { name => 'pending' } ],
                 output_template => 'pending: %s',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cgs-deleting', display_ok => 0, nlabel => 'client_gateways.deleting.count', set => {
+        { label => 'vgs-deleting', display_ok => 0, nlabel => 'virtual_gateways.deleting.count', set => {
                 key_values => [ { name => 'deleting' } ],
                 output_template => 'deleting: %s',
                 perfdatas => [
@@ -96,7 +96,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cgs-deleted', display_ok => 0, nlabel => 'client_gateways.deleted.count', set => {
+        { label => 'vgs-deleted', display_ok => 0, nlabel => 'virtual_gateways.deleted.count', set => {
                 key_values => [ { name => 'deleted' } ],
                 output_template => 'deleted: %s',
                 perfdatas => [
@@ -108,10 +108,10 @@ sub set_counters {
 
     $self->{maps_counters}->{status} = [
         {
-            label => 'cg-status',
+            label => 'vg-status',
             type => 2,
             set => {
-                key_values => [ { name => 'state' }, { name => 'cgName' } ],
+                key_values => [ { name => 'state' }, { name => 'vgName' } ],
                 output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -127,17 +127,17 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'filter-name:s' => { name => 'filter_name' },
-        'cg-tag-name:s' => { name => 'cg_tag_name', default => 'name' }
+        'vg-tag-name:s' => { name => 'vg_tag_name', default => 'name' }
     });
 
     return $self;
 }
 
-sub get_cg_name {
+sub get_vg_name {
     my ($self, %options) = @_;
 
     foreach my $tag (@{$options{tags}}) {
-        return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{cg_tag_name}$/i);
+        return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{vg_tag_name}$/i);
     }
 
     return $options{id};
@@ -146,27 +146,27 @@ sub get_cg_name {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $cgs = $options{custom}->read_client_gateways();
+    my $vgs = $options{custom}->read_virtual_gateways();
 
     $self->{global} = { detected => 0, available => 0, pending => 0, deleting => 0, deleted => 0 };
-    $self->{cgs} = {};
+    $self->{vgs} = {};
 
-    foreach my $cg (@$cgs) {
-        my $name = $self->get_cg_name(tags => $cg->{Tags}, id => $cg->{ClientGatewayId});
+    foreach my $vg (@$vgs) {
+        my $name = $self->get_vg_name(tags => $vg->{Tags}, id => $vg->{VirtualGatewayId});
 
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{cgs}->{$name} = {
+        $self->{vgs}->{$name} = {
             name => $name,
             status => {
-                cgName => $name,
-                state => lc($cg->{State})
+                vgName => $name,
+                state => lc($vg->{State})
             }
         };
 
-        $self->{global}->{ lc($cg->{State}) }++
-            if (defined($self->{global}->{ lc($cg->{State}) }));
+        $self->{global}->{ lc($vg->{State}) }++
+            if (defined($self->{global}->{ lc($vg->{State}) }));
         $self->{global}->{detected}++;
     }
 }
@@ -177,38 +177,38 @@ __END__
 
 =head1 MODE
 
-Check client gateways.
+Check virtual gateways.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter client gateways by name.
+Filter virtual gateways by name.
 
-=item B<--cg-tag-name>
+=item B<--vg-tag-name>
 
-Client gateway tags to be used for the name (Default: 'name').
+Virtual gateway tag to be used for the name (Default: 'name').
 
-=item B<--unknown-cg-status>
+=item B<--unknown-vg-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{cgName}
+Can used special variables like: %{state}, %{vgName}
 
-=item B<--warning-cg-status>
+=item B<--warning-vg-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{cgName}
+Can used special variables like: %{state}, %{vgName}
 
-=item B<--critical-cg-status>
+=item B<--critical-vg-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{cgName}
+Can used special variables like: %{state}, %{vgName}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cgs-detected', 'cgs-available', 'cgs-pending',
-'cgs-deleting', 'cgs-deleted'.
+Can be: 'vgs-detected', 'vgs-available', 'vgs-pending',
+'vgs-deleting', 'vgs-deleted'.
 
 =back
 
