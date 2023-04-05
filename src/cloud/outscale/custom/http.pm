@@ -200,6 +200,19 @@ sub read_vms {
     return $raw_results->{Vms};
 }
 
+sub read_client_gateways {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadClientGateways',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{ClientGateways};
+}
+
 1;
 
 __END__

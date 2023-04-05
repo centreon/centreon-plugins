@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::outscale::mode::loadbalancers;
+package cloud::outscale::mode::clientgateways;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,20 +26,20 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub lb_long_output {
+sub cg_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking load balancer '%s'",
+        "checking client gateway '%s'",
         $options{instance_value}->{name}
     );
 }
 
-sub prefix_lb_output {
+sub prefix_cg_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "load balancer '%s' ",
+        "client gateway '%s' ",
         $options{instance_value}->{name}
     );
 }
@@ -47,19 +47,7 @@ sub prefix_lb_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of load balancers ';
-}
-
-sub prefix_vm_metrics_output {
-    my ($self, %options) = @_;
-
-    return 'number of virtual machines ';
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "virtual machine '" . $options{instance_value}->{vmName} . "' ";
+    return 'number of client gateways ';
 }
 
 sub set_counters {
@@ -68,18 +56,49 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'lbs', type => 3, cb_prefix_output => 'prefix_lb_output', cb_long_output => 'lb_long_output', indent_long_output => '    ', message_multiple => 'All load balancers are ok',
+            name => 'cgs', type => 3, cb_prefix_output => 'prefix_cg_output', cb_long_output => 'cg_long_output', indent_long_output => '    ', message_multiple => 'All client gateways are ok',
             group => [
-                { name => 'vm_metrics', type => 0, cb_prefix_output => 'prefix_vm_metrics_output' },
-                { name => 'vms', display_long => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'all virtual machines are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'status', type => 0 }
             ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'load-balancers-detected', display_ok => 0, nlabel => 'load_balancers.detected.count', set => {
+        { label => 'cgs-detected', display_ok => 0, nlabel => 'client_gateways.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'cgs-available', display_ok => 0, nlabel => 'client_gateways.available.count', set => {
+                key_values => [ { name => 'available' } ],
+                output_template => 'available: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'cgs-pending', display_ok => 0, nlabel => 'client_gateways.pending.count', set => {
+                key_values => [ { name => 'pending' } ],
+                output_template => 'pending: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'cgs-deleting', display_ok => 0, nlabel => 'client_gateways.deleting.count', set => {
+                key_values => [ { name => 'deleting' } ],
+                output_template => 'deleting: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'cgs-deleted', display_ok => 0, nlabel => 'client_gateways.deleted.count', set => {
+                key_values => [ { name => 'deleted' } ],
+                output_template => 'deleted: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -87,23 +106,13 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{vm_metrics} = [
-        { label => 'load-balancer-vms-up', nlabel => 'load_balancer.virtual_machines.up.count', set => {
-                key_values => [ { name => 'up' } ],
-                output_template => 'up: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
-        }
-    ];
 
-    $self->{maps_counters}->{vms} = [
+    $self->{maps_counters}->{status} = [
         {
-            label => 'vm-status',
+            label => 'cg-status',
             type => 2,
             set => {
-                key_values => [ { name => 'state' }, { name => 'vmName' } ],
+                key_values => [ { name => 'state' }, { name => 'cgName' } ],
                 output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -119,58 +128,47 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'filter-name:s' => { name => 'filter_name' },
-        'vm-tag-name:s' => { name => 'vm_tag_name', default => 'name' },
+        'cg-tag-name:s' => { name => 'cg_tag_name', default => 'name' }
     });
 
     return $self;
 }
 
-sub get_vm_name {
+sub get_cg_name {
     my ($self, %options) = @_;
 
-    foreach my $vm (@{$options{vms}}) {
-        next if ($vm->{VmId} ne $options{vm_id});
-
-        foreach my $tag (@{$vm->{Tags}}) {
-            return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{vm_tag_name}$/i);
-        }
+    foreach my $tag (@{$options{tags}}) {
+        return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{cg_tag_name}$/i);
     }
 
-    return $options{vm_id};
+    return $options{id};
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $lbs = $options{custom}->load_balancer_read();
-    my $vms = $options{custom}->read_vms();
+    my $cgs = $options{custom}->read_client_gateways();
 
-    $self->{global} = { detected => 0 };
-    $self->{lbs} = {};
+    $self->{global} = { detected => 0, available => 0, pending => 0, deleting => 0, deleted => 0 };
+    $self->{cgs} = {};
 
-    foreach my $lb (@$lbs) {
+    foreach my $cg (@$cgs) {
+        my $name = $self->get_cg_name(tags => $cg->{Tags}, id => $cg->{ClientGatewayId});
+
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $lb->{LoadBalancerName} !~ /$self->{option_results}->{filter_name}/);
+            $name !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{global}->{detected}++;
-
-        $self->{lbs}->{ $lb->{LoadBalancerName} } = {
-            name => $lb->{LoadBalancerName},
-            vm_metrics => { up => 0 },
-            vms => {}
+        $self->{cgs}->{$name} = {
+            name => $name,
+            status => {
+                cgName => $name,
+                state => lc($cg->{State})
+            }
         };
 
-        my $members = $options{custom}->read_vms_health(load_balancer_name => $lb->{LoadBalancerName});
-        foreach (@$members) {
-            my $name = $self->get_vm_name(vms => $vms, vm_id => $_->{VmId});
-
-            $self->{lbs}->{ $lb->{LoadBalancerName} }->{vms}->{ $_->{VmId} } = {
-                vmName => $name,
-                state => lc($_->{State})
-            };
-            $self->{lbs}->{ $lb->{LoadBalancerName} }->{vm_metrics}->{ lc($_->{State}) }++
-                if (defined($self->{lbs}->{ $lb->{LoadBalancerName} }->{vm_metrics}->{ lc($_->{State}) }));
-        }
+        $self->{global}->{ lc($cg->{State}) }++
+            if (defined($self->{global}->{ lc($cg->{State}) }));
+        $self->{global}->{detected}++;
     }
 }
 
@@ -180,37 +178,38 @@ __END__
 
 =head1 MODE
 
-Check load balancers.
+Check client gateways.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter load balancers by name.
+Filter client gateways by name.
 
-=item B<--vm-tag-name>
+=item B<--cg-tag-name>
 
-Virtual machine tags to used for the name (Default: 'name').
+Client gateway tags to be used for the name (Default: 'name').
 
-=item B<--unknown-vm-status>
+=item B<--unknown-cg-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{cgName}
 
-=item B<--warning-vm-status>
+=item B<--warning-cg-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{cgName}
 
-=item B<--critical-vm-status>
+=item B<--critical-cg-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{cgName}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'load-balancers-detected', 'load-balancer-vms-up'.
+Can be: 'cgs-detected', 'cgs-available', 'cgs-pending',
+'cgs-deleting', 'cgs-deleted'.
 
 =back
 
