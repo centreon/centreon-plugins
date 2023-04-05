@@ -54,16 +54,28 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    # A voir si ce sont des options pertinentes
+    # A voir si ce sont des options pertinentes ?
     $options{options}->add_options(arguments => {
-    #    'warning:s'  => { name => 'warning', },
-    #    'critical:s' => { name => 'critical' }
+        'warning:s'  => { name => 'warning', },
+        'critical:s' => { name => 'critical' }
     });
 
     return $self;
 }
 
-# Fonction check option si on doit vérifier qu'il y ait des options obligatoires transmises par l'utilisateur
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -98,9 +110,9 @@ sub manage_selection {
 
         $result->{cambiumAPName} = centreon::plugins::misc::trim($result->{cambiumAPName});
 
-        # If options ar defined :
-        #if (defined($self->{option_results}->{filter_site}) && $self->{option_results}->{filter_site} ne '' &&
-        #    $result->{cambiumAPName} !~ /$self->{option_results}->{filter_site}/) {
+        # If options are defined :
+        # if (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
+        #    $result->{cambiumAPName} !~ /$self->{option_results}->{warning}/) {
         #    $self->{output}->output_add(long_msg => "skipping '" . $result->{cambiumAPName} . "': no matching filter.", debug => 1);
         #    next;
         #}
@@ -126,11 +138,11 @@ Check CPU usage.
 
 =over 8
 
-=item B<--warning-cpu>
+=item B<--warning>
 
 Warning threshold for CPU.
 
-=item B<--critical-cpu>
+=item B<--critical>
 
 Critical threshold for CPU.
 
