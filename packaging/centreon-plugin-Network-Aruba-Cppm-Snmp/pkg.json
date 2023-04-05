@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Aruba-Cppm-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Aruba ClearPass Policy Manager using SNMP",
+    "plugin_name": "centreon_aruba_cppm_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/interfaces.pm",
+        "network/aruba/cppm/snmp/"
+    ]
+}
