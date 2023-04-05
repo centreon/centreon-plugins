@@ -261,6 +261,19 @@ sub read_vpn_connections {
     return $raw_results->{VpnConnections};
 }
 
+sub read_volumes {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadVolumes',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{Volumes};
+}
+
 1;
 
 __END__

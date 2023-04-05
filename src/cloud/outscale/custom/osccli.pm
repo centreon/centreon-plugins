@@ -266,6 +266,26 @@ sub read_vpn_connections {
     return $raw_results->{VpnConnections};
 }
 
+sub read_volumes_set_cmd {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{command_options} if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = 'api ReadVolumes';
+    $cmd_options .= " --profile '$self->{option_results}->{profile}'" if (defined($self->{option_results}->{profile}) && $self->{option_results}->{profile} ne '');
+
+    return $cmd_options;
+}
+
+sub read_volumes {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->read_volumes_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{Volumes};
+}
+
 1;
 
 __END__

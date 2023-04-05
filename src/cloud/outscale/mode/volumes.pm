@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::outscale::mode::loadbalancers;
+package cloud::outscale::mode::volumes;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,34 +26,28 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub lb_long_output {
+sub volume_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking load balancer '%s'",
-        $options{instance_value}->{name}
+        "checking volume '%s'",
+        $options{instance_value}->{id}
     );
 }
 
-sub prefix_lb_output {
+sub prefix_volume_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "load balancer '%s' ",
-        $options{instance_value}->{name}
+        "volume '%s' ",
+        $options{instance_value}->{id}
     );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of load balancers ';
-}
-
-sub prefix_vm_metrics_output {
-    my ($self, %options) = @_;
-
-    return 'number of virtual machines ';
+    return 'number of volumes ';
 }
 
 sub prefix_vm_output {
@@ -68,32 +62,36 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'lbs', type => 3, cb_prefix_output => 'prefix_lb_output', cb_long_output => 'lb_long_output', indent_long_output => '    ', message_multiple => 'All load balancers are ok',
+            name => 'volumes', type => 3, cb_prefix_output => 'prefix_volume_output', cb_long_output => 'volume_long_output', indent_long_output => '    ', message_multiple => 'All volumes are ok',
             group => [
-                { name => 'vm_metrics', type => 0, cb_prefix_output => 'prefix_vm_metrics_output' },
+                { name => 'status', type => 0 },
                 { name => 'vms', display_long => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'all virtual machines are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'load-balancers-detected', display_ok => 0, nlabel => 'load_balancers.detected.count', set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'detected: %s',
+    $self->{maps_counters}->{global} = [];
+    foreach ('detected', 'creating', 'available', 'in-use', 'updating', 'deleting', 'error') {
+        push @{$self->{maps_counters}->{global}}, {
+            label => 'volumes-' . $_, display_ok => 0, nlabel => 'volumes.' . $_ . '.count', set => {
+                key_values => [ { name => $_ } ],
+                output_template => $_ . ': %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
             }
-        }
-    ];
+        };
+    }
 
-    $self->{maps_counters}->{vm_metrics} = [
-        { label => 'load-balancer-vms-up', nlabel => 'load_balancer.virtual_machines.up.count', set => {
-                key_values => [ { name => 'up' } ],
-                output_template => 'up: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
+    $self->{maps_counters}->{status} = [
+        {
+            label => 'volume-status',
+            type => 2,
+            set => {
+                key_values => [ { name => 'state' }, { name => 'volumeId' } ],
+                output_template => 'state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -104,7 +102,7 @@ sub set_counters {
             type => 2,
             set => {
                 key_values => [ { name => 'state' }, { name => 'vmName' } ],
-                output_template => 'state: %s',
+                output_template => 'volume state: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -118,7 +116,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-id:s'   => { name => 'filter_id' },
         'vm-tag-name:s' => { name => 'vm_tag_name', default => 'name' }
     });
 
@@ -142,34 +140,36 @@ sub get_vm_name {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $lbs = $options{custom}->load_balancer_read();
+    my $volumes = $options{custom}->read_volumes();
     my $vms = $options{custom}->read_vms();
 
-    $self->{global} = { detected => 0 };
-    $self->{lbs} = {};
+    $self->{global} = { detected => 0, creating => 0, available => 0, 'in-use' => 0, updating => 0, deleting => 0, error => 0 };
+    $self->{volumes} = {};
 
-    foreach my $lb (@$lbs) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $lb->{LoadBalancerName} !~ /$self->{option_results}->{filter_name}/);
+    foreach my $volume (@$volumes) {
+        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $volume->{VolumeId} !~ /$self->{option_results}->{filter_id}/);
 
-        $self->{global}->{detected}++;
-
-        $self->{lbs}->{ $lb->{LoadBalancerName} } = {
-            name => $lb->{LoadBalancerName},
-            vm_metrics => { up => 0 },
+        $self->{volumes}->{ $volume->{VolumeId} } = {
+            id => $volume->{VolumeId},
+            status => {
+                volumeId => $volume->{VolumeId},
+                state => lc($volume->{State})
+            },
             vms => {}
         };
 
-        my $members = $options{custom}->read_vms_health(load_balancer_name => $lb->{LoadBalancerName});
-        foreach (@$members) {
+        $self->{global}->{ lc($volume->{State}) }++
+            if (defined($self->{global}->{ lc($volume->{State}) }));
+        $self->{global}->{detected}++;
+
+        foreach (@{$volume->{LinkedVolumes}}) {
             my $name = $self->get_vm_name(vms => $vms, vm_id => $_->{VmId});
 
-            $self->{lbs}->{ $lb->{LoadBalancerName} }->{vms}->{ $_->{VmId} } = {
+            $self->{volumes}->{ $volume->{VolumeId} }->{vms}->{ $_->{VmId} } = {
                 vmName => $name,
                 state => lc($_->{State})
             };
-            $self->{lbs}->{ $lb->{LoadBalancerName} }->{vm_metrics}->{ lc($_->{State}) }++
-                if (defined($self->{lbs}->{ $lb->{LoadBalancerName} }->{vm_metrics}->{ lc($_->{State}) }));
         }
     }
 }
@@ -180,37 +180,38 @@ __END__
 
 =head1 MODE
 
-Check load balancers.
+Check volumes.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-id>
 
-Filter load balancers by name.
+Filter volumes by id.
 
 =item B<--vm-tag-name>
 
 Virtual machine tags to used for the name (Default: 'name').
 
-=item B<--unknown-vm-status>
+=item B<--unknown-volume-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{volumeId}
 
-=item B<--warning-vm-status>
+=item B<--warning-volume-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{volumeId}
 
-=item B<--critical-vm-status>
+=item B<--critical-volume-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{vmName}
+Can used special variables like: %{state}, %{volumeId}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'load-balancers-detected', 'load-balancer-vms-up'.
+Can be: 'volumes-detected', 'volumes-creating', 'volumes-available', 
+'volumes-in-use', 'volumes-updating', 'volumes-deleting', 'volumes-error'.
 
 =back
 
