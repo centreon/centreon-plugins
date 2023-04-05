@@ -274,6 +274,19 @@ sub read_volumes {
     return $raw_results->{Volumes};
 }
 
+sub read_nets {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadNets',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{Nets};
+}
+
 1;
 
 __END__

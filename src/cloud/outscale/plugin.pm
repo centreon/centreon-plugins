@@ -34,10 +34,12 @@ sub new {
         'account-consumptions'  => 'cloud::outscale::mode::accountconsumptions',
         'list-client-gateways'  => 'cloud::outscale::mode::listclientgateways',
         'list-load-balancers'   => 'cloud::outscale::mode::listloadbalancers',
+        'list-nets'             => 'cloud::outscale::mode::listnets',
         'list-virtual-gateways' => 'cloud::outscale::mode::listvirtualgateways',
         'list-volumes'          => 'cloud::outscale::mode::listvolumes',
         'list-vpn-connections'  => 'cloud::outscale::mode::listvpnconnections',
         'load-balancers'        => 'cloud::outscale::mode::loadbalancers',
+        'nets'                  => 'cloud::outscale::mode::nets',
         'virtual-gateways'      => 'cloud::outscale::mode::virtualgateways',
         'volumes'               => 'cloud::outscale::mode::volumes',
         'vpn-connections'       => 'cloud::outscale::mode::vpnconnections'
