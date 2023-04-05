@@ -248,6 +248,19 @@ sub read_virtual_gateways {
     return $raw_results->{VirtualGateways};
 }
 
+sub read_vpn_connections {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadVpnConnections',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{VpnConnections};
+}
+
 1;
 
 __END__

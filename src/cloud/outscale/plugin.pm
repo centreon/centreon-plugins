@@ -35,8 +35,10 @@ sub new {
         'list-client-gateways'  => 'cloud::outscale::mode::listclientgateways',
         'list-load-balancers'   => 'cloud::outscale::mode::listloadbalancers',
         'list-virtual-gateways' => 'cloud::outscale::mode::listvirtualgateways',
+        'list-vpn-connections'  => 'cloud::outscale::mode::listvpnconnections',
         'load-balancers'        => 'cloud::outscale::mode::loadbalancers',
-        'virtual-gateways'      => 'cloud::outscale::mode::virtualgateways'
+        'virtual-gateways'      => 'cloud::outscale::mode::virtualgateways',
+        'vpn-connections'       => 'cloud::outscale::mode::vpnconnections'
     };
 
     $self->{custom_modes}->{http} = 'cloud::outscale::custom::http';
