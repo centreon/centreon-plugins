@@ -213,6 +213,28 @@ sub read_client_gateways {
     return $raw_results->{ClientGateways};
 }
 
+sub read_consumption_account {
+    my ($self, %options) = @_;
+
+    my $post;
+    eval {
+        $post = JSON::XS->new->utf8->encode({ FromDate => $options{from_date}, ToDate => $options{to_date} });
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+        $self->{output}->option_exit();
+    }
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadConsumptionAccount',
+        header => ['Content-Type: application/json'],
+        query_form_post => $post
+    );
+
+    return $raw_results->{ConsumptionEntries};
+}
+
 1;
 
 __END__

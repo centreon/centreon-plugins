@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'client-gateways'      => 'cloud::outscale::mode::clientgateways',
+        'account-consumptions' => 'cloud::outscale::mode::accountconsumptions',
         'list-client-gateways' => 'cloud::outscale::mode::listclientgateways',
         'list-load-balancers'  => 'cloud::outscale::mode::listloadbalancers',
         'load-balancers'       => 'cloud::outscale::mode::loadbalancers'

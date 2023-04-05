@@ -205,6 +205,27 @@ sub read_client_gateways {
     return $raw_results->{ClientGateways};
 }
 
+sub read_consumption_account_set_cmd {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{command_options} if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = 'api ReadConsumptionAccount';
+    $cmd_options .= " --profile '$self->{option_results}->{profile}'" if (defined($self->{option_results}->{profile}) && $self->{option_results}->{profile} ne '');
+    $cmd_options .= " --FromDate '$options{from_date}' --ToDate '$options{to_date}'";
+
+    return $cmd_options;
+}
+
+sub read_consumption_account {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->read_consumption_account_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{ConsumptionEntries};
+}
+
 1;
 
 __END__
