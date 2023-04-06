@@ -40,6 +40,7 @@ sub new {
         'list-subnets'          => 'cloud::outscale::mode::listsubnets',
         'list-virtual-gateways' => 'cloud::outscale::mode::listvirtualgateways',
         'list-volumes'          => 'cloud::outscale::mode::listvolumes',
+        'list-vms'              => 'cloud::outscale::mode::listvms',
         'list-vpn-connections'  => 'cloud::outscale::mode::listvpnconnections',
         'load-balancers'        => 'cloud::outscale::mode::loadbalancers',
         'nets'                  => 'cloud::outscale::mode::nets',
@@ -48,6 +49,7 @@ sub new {
         'subnets'               => 'cloud::outscale::mode::subnets',
         'virtual-gateways'      => 'cloud::outscale::mode::virtualgateways',
         'volumes'               => 'cloud::outscale::mode::volumes',
+        'vms'                   => 'cloud::outscale::mode::vms',
         'vpn-connections'       => 'cloud::outscale::mode::vpnconnections'
     };
 
