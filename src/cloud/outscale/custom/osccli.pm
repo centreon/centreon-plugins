@@ -366,6 +366,26 @@ sub read_route_tables {
     return $raw_results->{RouteTables};
 }
 
+sub read_internet_services_set_cmd {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{command_options} if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = 'api ReadInternetServices';
+    $cmd_options .= " --profile '$self->{option_results}->{profile}'" if (defined($self->{option_results}->{profile}) && $self->{option_results}->{profile} ne '');
+
+    return $cmd_options;
+}
+
+sub read_internet_services {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->read_internet_services_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{InternetServices};
+}
+
 1;
 
 __END__

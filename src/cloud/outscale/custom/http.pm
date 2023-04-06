@@ -326,6 +326,19 @@ sub read_route_tables {
     return $raw_results->{RouteTables};
 }
 
+sub read_internet_services {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadInternetServices',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{InternetServices};
+}
+
 1;
 
 __END__
