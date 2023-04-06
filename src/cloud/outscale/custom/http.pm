@@ -287,6 +287,19 @@ sub read_nets {
     return $raw_results->{Nets};
 }
 
+sub read_quotas {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadQuotas',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{QuotaTypes};
+}
+
 1;
 
 __END__
