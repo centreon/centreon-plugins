@@ -339,6 +339,19 @@ sub read_internet_services {
     return $raw_results->{InternetServices};
 }
 
+sub read_nat_services {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadNatServices',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{NatServices};
+}
+
 1;
 
 __END__

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::outscale::mode::listvms;
+package cloud::outscale::mode::listnatservices;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vm-tag-name:s' => { name => 'vm_tag_name', default => 'name' }
+        'nat-tag-name:s' => { name => 'nat_tag_name', default => 'name' }
     });
 
     return $self;
@@ -44,11 +44,11 @@ sub check_options {
 
 my @labels = ('id', 'name', 'state'); 
 
-sub get_vm_name {
+sub get_nat_name {
     my ($self, %options) = @_;
 
     foreach my $tag (@{$options{tags}}) {
-        return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{vm_tag_name}$/i);
+        return $tag->{Value} if ($tag->{Key} =~ /^$self->{option_results}->{nat_tag_name}$/i);
     }
 
     return $options{id};
@@ -57,14 +57,14 @@ sub get_vm_name {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $vms = $options{custom}->read_vms();
+    my $services = $options{custom}->read_nat_services();
 
     my $results = {};
-    foreach (@$vms) {
-        my $name = $self->get_vm_name(tags => $_->{Tags}, id => $_->{VmId});
+    foreach (@$services) {
+        my $name = $self->get_nat_name(tags => $_->{Tags}, id => $_->{NatServiceId});
 
-        $results->{ $_->{VmId} } = {
-            id => $_->{VmId},
+        $results->{ $_->{NatServiceId} } = {
+            id => $_->{NatServiceId},
             name => $name,
             state => lc($_->{State})
         };
@@ -85,7 +85,7 @@ sub run {
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List virtual machines:'
+        short_msg => 'List nat services:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -113,7 +113,7 @@ __END__
 
 =head1 MODE
 
-List virtual machines.
+List nat services.
 
 =over 8
 
