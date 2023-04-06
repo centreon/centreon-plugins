@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::custom::osccli;
+package cloud::outscale::custom::osccli;
 
 use strict;
 use warnings;
