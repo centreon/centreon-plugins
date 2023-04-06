@@ -300,6 +300,32 @@ sub read_quotas {
     return $raw_results->{QuotaTypes};
 }
 
+sub read_subnets {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadSubnets',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{Subnets};
+}
+
+sub read_route_tables {
+    my ($self, %options) = @_;
+
+    my $raw_results = $self->request_api(
+        method => 'POST',
+        endpoint => '/ReadRouteTables',
+        header => ['Content-Type: application/json'],
+        query_form_post => ''
+    );
+
+    return $raw_results->{RouteTables};
+}
+
 1;
 
 __END__

@@ -26,21 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub vg_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking virtual gateway '%s'",
-        $options{instance_value}->{name}
-    );
-}
-
 sub prefix_vg_output {
     my ($self, %options) = @_;
 
     return sprintf(
         "virtual gateway '%s' ",
-        $options{instance_value}->{name}
+        $options{instance_value}->{vgName}
     );
 }
 
@@ -55,12 +46,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        {
-            name => 'vgs', type => 3, cb_prefix_output => 'prefix_vg_output', cb_long_output => 'vg_long_output', indent_long_output => '    ', message_multiple => 'All virtual gateways are ok',
-            group => [
-                { name => 'status', type => 0 }
-            ]
-        }
+        { name => 'vgs', type => 1, cb_prefix_output => 'prefix_vg_output', message_multiple => 'All virtual gateways are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -106,7 +92,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{status} = [
+    $self->{maps_counters}->{vgs} = [
         {
             label => 'vg-status',
             type => 2,
@@ -158,11 +144,8 @@ sub manage_selection {
             $name !~ /$self->{option_results}->{filter_name}/);
 
         $self->{vgs}->{$name} = {
-            name => $name,
-            status => {
-                vgName => $name,
-                state => lc($vg->{State})
-            }
+            vgName => $name,
+            state => lc($vg->{State})
         };
 
         $self->{global}->{ lc($vg->{State}) }++

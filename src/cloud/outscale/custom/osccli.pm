@@ -326,6 +326,46 @@ sub read_quotas {
     return $raw_results->{QuotaTypes};
 }
 
+sub read_subnets_set_cmd {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{command_options} if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = 'api ReadSubnets';
+    $cmd_options .= " --profile '$self->{option_results}->{profile}'" if (defined($self->{option_results}->{profile}) && $self->{option_results}->{profile} ne '');
+
+    return $cmd_options;
+}
+
+sub read_subnets {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->read_subnets_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{Subnets};
+}
+
+sub read_route_tables_set_cmd {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{command_options} if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = 'api ReadRouteTables';
+    $cmd_options .= " --profile '$self->{option_results}->{profile}'" if (defined($self->{option_results}->{profile}) && $self->{option_results}->{profile} ne '');
+
+    return $cmd_options;
+}
+
+sub read_route_tables {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->read_route_tables_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{RouteTables};
+}
+
 1;
 
 __END__

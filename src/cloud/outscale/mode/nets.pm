@@ -26,21 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub net_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking net '%s'",
-        $options{instance_value}->{name}
-    );
-}
-
 sub prefix_net_output {
     my ($self, %options) = @_;
 
     return sprintf(
         "net '%s' ",
-        $options{instance_value}->{name}
+        $options{instance_value}->{netName}
     );
 }
 
@@ -55,12 +46,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        {
-            name => 'nets', type => 3, cb_prefix_output => 'prefix_net_output', cb_long_output => 'net_long_output', indent_long_output => '    ', message_multiple => 'All nets are ok',
-            group => [
-                { name => 'status', type => 0 }
-            ]
-        }
+        { name => 'nets', type => 1, cb_prefix_output => 'prefix_net_output', message_multiple => 'All nets are ok' }
     ];
 
     $self->{maps_counters}->{global} = [];
@@ -76,7 +62,7 @@ sub set_counters {
         };
     }
 
-    $self->{maps_counters}->{status} = [
+    $self->{maps_counters}->{nets} = [
         {
             label => 'net-status',
             type => 2,
@@ -128,11 +114,8 @@ sub manage_selection {
             $name !~ /$self->{option_results}->{filter_name}/);
 
         $self->{nets}->{$name} = {
-            name => $name,
-            status => {
-                netName => $name,
-                state => lc($net->{State})
-            }
+            netName => $name,
+            state => lc($net->{State})
         };
 
         $self->{global}->{ lc($net->{State}) }++
