@@ -27,7 +27,7 @@ use warnings;
 sub prefix_cpu_output {
     my ($self, %options) = @_;
 
-    return "CPU '" . $options{instance_value}->{name} . "' utilization";
+    return "CPU '" . $options{instance_value}->{name} . "' usage: ";
 }
 
 sub set_counters {
@@ -38,11 +38,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'utilization', nlabel => 'cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu_utilization' }, { name => 'name' } ],
-                output_template => ': %.2f %%',
+        { label => 'cpu-usage-prct', nlabel => 'cpu.usage.percentage', set => {
+                key_values => [ { name => 'cpu_usage' }, { name => 'name' } ],
+                output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1}
                 ]
             }
         }
@@ -56,25 +56,10 @@ sub new {
 
     # A voir si ce sont des options pertinentes ?
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning', },
-        'critical:s' => { name => 'critical' }
+        'filter-ap:s' => { name => 'filter_ap' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
@@ -82,20 +67,12 @@ sub manage_selection {
 
     # Select relevant oids for CPU monitoring
     my $mapping = {
-        cambiumAPName               => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.2' },
-        cambiumAPCPUUtilization        => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.6' },
+        cambiumAPName           => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.2' },
+        cambiumAPCPUUtilization => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.6' }
     };
 
     # Point at the begining of the table 
     my $oid_cambiumAccessPointEntry = '.1.3.6.1.4.1.17713.22.1.1.1';
-
-    # A voir si la partie sur le SiteCount est nécessaire dans mon cas ?
-
-    # my $oid_serviceTopologySiteCount = '.1.3.6.1.4.1.13885.102.1.2.14.3.0';
-
-    # my $global_result = $options{snmp}->get_leef(oids => [$oid_serviceTopologySiteCount], nothing_quit => 1);
-
-    #$self->{global} = { sites_count => $global_result->{$oid_serviceTopologySiteCount} };
 
     my $cpu_result = $options{snmp}->get_table(
         oid => $oid_cambiumAccessPointEntry,
@@ -108,22 +85,15 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $cpu_result, instance => $instance);
 
-        $result->{cambiumAPName} = centreon::plugins::misc::trim($result->{cambiumAPName});
+        if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' &&
+            $result->{cambiumAPName} !~ /$self->{option_results}->{filter_ap}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{cambiumAPName} . "': no matching filter.", debug => 1);
+            next;
+        }
 
-        # If options are defined :
-        # if (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-        #    $result->{cambiumAPName} !~ /$self->{option_results}->{warning}/) {
-        #    $self->{output}->output_add(long_msg => "skipping '" . $result->{cambiumAPName} . "': no matching filter.", debug => 1);
-        #    next;
-        #}
-
-        # A voir si ce segment de code est aussi nécessaire ?
-        # my $site_bandwidth_total = $result->{serviceTopologySiteBandwidthTotal} * 1000000 ; #Mbps
-        # $result->{cambiumAPName} =~ s/\ /\_/g; #instance perfdata compat
-
-        $self->{cpu}->{$instance} = {
+        $self->{cpu}->{$result->{cambiumAPName}} = {
             name => $result->{cambiumAPName},
-            cpu_utilization => $result->{cambiumAPCPUUtilization}
+            cpu_usage => $result->{cambiumAPCPUUtilization}
         };
     }
 }
@@ -145,6 +115,12 @@ Warning threshold for CPU.
 =item B<--critical>
 
 Critical threshold for CPU.
+
+=over 8
+
+=item B<--filter-ap>
+
+Filter on one or several AP.
 
 =back
 
