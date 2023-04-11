@@ -274,11 +274,11 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_index}) && $self->{option_results}->{filter_index} ne '' &&
             $index !~ /$self->{option_results}->{filter_index}/);
-        next if ($qtree ne '' && defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
+        next if (defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
             $qtree !~ /$self->{option_results}->{filter_qtree}/);
-        next if ($volume ne '' && defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
+        next if (defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
             $volume !~ /$self->{option_results}->{filter_volume}/);
-        next if ($vserver ne '' && defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+        next if (defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
             $vserver !~ /$self->{option_results}->{filter_vserver}/);
 
         my $path = $vserver . $volume . $qtree;
