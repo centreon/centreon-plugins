@@ -1194,38 +1194,50 @@ sub azure_list_policystates {
         'api-version', $self->{api_version},
         '$select', 'ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState'
     ];
-    my $resource_location;
+    my @filters = ();
     if (length $options{resource_location}) {
-        $resource_location = ("ResourceLocation eq '" . $options{resource_location} . "'");
-        delete $options{$resource_location};
+        push(@filters, ("ResourceLocation eq '" . $options{resource_location} . "'"));
+        delete $options{resource_location};
     }
-    my $resource_type;
     if (length $options{resource_type}) {
-        $resource_type = ("ResourceType eq '" . $options{resource_type} . "'");
-        delete $options{$resource_type};
+        push(@filters, ("ResourceType eq '" . $options{resource_type} . "'"));
+        delete $options{resource_type};
     }
-    my $filter;
-    if (length $resource_location && length $resource_type) {
-        $filter = $resource_location . " and " . $resource_type;
-    } elsif (length $resource_location) {
-        $filter = $resource_location
-    } elsif (length $resource_type) {
-        $filter = $resource_type
+    if (length $options{policy_name}) {
+        push(@filters, ("PolicyDefinitionName eq '" . $options{policy_name} . "'"));
+        delete $options{policy_name};
     }
-    if (length($filter)) {
-        push(@$get_params, '$filter', $filter);
+    my $filterRequest;
+    foreach my $filter (@filters) {
+        if (!defined($filterRequest)) {
+            $filterRequest = $filter;
+        } else {
+            $filterRequest .= " and " . $filter;
+        }
+    }
+    if (length$filterRequest) {
+        push(@$get_params, '$filter', $filterRequest);
     }
 
     my ($url) = $self->azure_set_url(%options);
-    my $response = $self->request_api(
-        method => 'POST',
-        full_url => $url,
-        hostname => '',
-        header => ['Content-Type: application/json'],
-        get_params => $get_params
-    );
+    my $full_response = [];
+    while (1) {
+        my $response = $self->request_api(
+            method => 'POST',
+            full_url => $url,
+            hostname => '',
+            get_params => $get_params,
+            query_form_post => ''
+        );
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-    return $response->{value};
+        last if (!defined($response->{'@odata.nextLink'}));
+        $url = $response->{'@odata.nextLink'};
+    }
+
+    return $full_response;
 }
 
 1;
