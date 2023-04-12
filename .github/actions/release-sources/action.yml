@@ -40,5 +40,5 @@ runs:
         SRC_SIZE=$(stat -c '%s' $SRC_FILE)
 
         aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
-        curl "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
+        curl --fail "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
       shell: bash
