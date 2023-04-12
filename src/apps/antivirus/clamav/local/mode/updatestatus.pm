@@ -125,13 +125,15 @@ sub get_clamav_last_update {
     #0.99.2:57:23114:1487851834:1:63:45614:290
     # field 2 = main.cvd version number
     # field 3 = daily.cvd version number
-    my $nameservers = [];
+    my %dns_options = ();
     if (defined($self->{option_results}->{nameservers})) {
-        $nameservers = [@{$self->{option_results}->{nameservers}}];
+        foreach my $dns (@{$self->{option_results}->{nameservers}}) {
+            next if ($dns !~ /[a-zA-Z0-9]/);
+            $dns_options{nameservers} = [] if (!defined($dns_options{nameservers}));
+            push @{$dns_options{nameservers}}, $dns;
+        }
     }
-    my $handle = Net::DNS::Resolver->new(
-        nameservers => $nameservers
-    );
+    my $handle = Net::DNS::Resolver->new(%dns_options);
     my $txt_query = $handle->query("current.cvd.clamav.net", "TXT");
     if (!$txt_query) {
         $self->{output}->add_option_msg(short_msg => "Unable to get TXT Record : " . $handle->errorstring . ".");
