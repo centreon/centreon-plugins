@@ -40,7 +40,7 @@ on:
 jobs:
   deliver-sources:
     runs-on: [self-hosted, common]
-    #if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
+    if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
 
     steps:
       - name: Checkout sources
@@ -61,45 +61,45 @@ jobs:
           release: ${{ inputs.release }}
           token_download_centreon_com: ${{ secrets.token_download_centreon_com }}
 
-  # deliver-rpm:
-  #   runs-on: [self-hosted, common]
-  #   strategy:
-  #     matrix:
-  #       distrib: [el7, el8, el9]
+  deliver-rpm:
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [el7, el8, el9]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
 
-  #     - name: Delivery
-  #       uses: ./.github/actions/rpm-delivery
-  #       with:
-  #         module_name: plugins
-  #         distrib: ${{ matrix.distrib }}
-  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-  #         update_repo_path: ${{ secrets.update_repo_path }}
-  #         cloudfront_id: ${{ secrets.cloudfront_id }}
-  #         yum_repo_address: ${{ secrets.yum_repo_address }}
-  #         yum_repo_key: ${{ secrets.yum_repo_key }}
-  #         stability: ${{ inputs.stability }}
-  #         artifactory_token: ${{ secrets.artifactory_token }}
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: plugins
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          update_repo_path: ${{ secrets.update_repo_path }}
+          cloudfront_id: ${{ secrets.cloudfront_id }}
+          yum_repo_address: ${{ secrets.yum_repo_address }}
+          yum_repo_key: ${{ secrets.yum_repo_key }}
+          stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
 
-  # deliver-deb:
-  #   runs-on: [self-hosted, common]
-  #   strategy:
-  #     matrix:
-  #       distrib: [bullseye]
+  deliver-deb:
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [bullseye]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
 
-  #     - name: Delivery
-  #       uses: ./.github/actions/deb-delivery
-  #       with:
-  #         distrib: ${{ matrix.distrib }}
-  #         nexus_username: ${{ secrets.nexus_username }}
-  #         nexus_password: ${{ secrets.nexus_password }}
-  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-  #         stability: ${{ inputs.stability }}
-  #         artifactory_token: ${{ secrets.artifactory_token }}
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          distrib: ${{ matrix.distrib }}
+          nexus_username: ${{ secrets.nexus_username }}
+          nexus_password: ${{ secrets.nexus_password }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}

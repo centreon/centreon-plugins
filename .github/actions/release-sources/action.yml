@@ -13,6 +13,9 @@ inputs:
   version:
     description: The module version
     required: true
+  release:
+    description: The module release
+    required: true
   token_download_centreon_com:
     description: The token to call download.centreon.com api
     required: true
@@ -36,12 +39,6 @@ runs:
         SRC_HASH=$(md5sum $SRC_FILE | cut -d ' ' -f 1)
         SRC_SIZE=$(stat -c '%s' $SRC_FILE)
 
-        #aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
-        #curl "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
+        aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
+        curl "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
       shell: bash
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: centreon-plugins-sources
-        path: ${{ inputs.module_name }}-${{ inputs.version }}.tar.gz
-        retention-days: 1
