@@ -124,7 +124,7 @@ Critical threshold for CPU.
 
 =item B<--filter-ap>
 
-Filter on one or several AP.
+Filter on one AP name.
 
 =back
 
