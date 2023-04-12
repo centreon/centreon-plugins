@@ -1,6 +1,14 @@
 on:
   workflow_call:
     inputs:
+      version:
+        description: The package version
+        type: string
+        required: true
+      release:
+        description: The package release
+        type: string
+        required: true
       stability:
         description: The package stability (stable, testing, unstable)
         type: string
@@ -25,8 +33,34 @@ on:
       artifactory_token:
         description: "The artifactory token"
         required: true
+      token_download_centreon_com:
+        description: "The token to call download.centreon.com api"
+        required: true
 
 jobs:
+  deliver-sources:
+    runs-on: [self-hosted, common]
+    if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
+      - name: Deliver sources
+        uses: ./.github/actions/release-sources
+        with:
+          bucket_directory: centreon-plugins
+          module_directory: build
+          module_name: centreon-plugins
+          version: ${{ inputs.version }}
+          release: ${{ inputs.release }}
+          token_download_centreon_com: ${{ secrets.token_download_centreon_com }}
+
   deliver-rpm:
     runs-on: [self-hosted, common]
     strategy:

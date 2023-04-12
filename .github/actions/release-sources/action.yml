@@ -1,0 +1,44 @@
+name: "release-sources"
+description: "Release sources on download.centreon.com"
+inputs:
+  bucket_directory:
+    description: The bucket directory
+    required: true
+  module_directory:
+    description: The module directory
+    required: true
+  module_name:
+    description: The module name
+    required: true
+  version:
+    description: The module version
+    required: true
+  release:
+    description: The module release
+    required: true
+  token_download_centreon_com:
+    description: The token to call download.centreon.com api
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup awscli
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        sudo unzip -q awscliv2.zip
+        sudo ./aws/install
+      shell: bash
+
+    - run: |
+        SRC_FILE="${{ inputs.module_name }}-${{ inputs.version }}.tar.gz"
+
+        mv "${{ inputs.module_directory }}" "${{ inputs.module_name }}-${{ inputs.version }}"
+        tar czf $SRC_FILE "${{ inputs.module_name }}-${{ inputs.version }}"
+
+        SRC_HASH=$(md5sum $SRC_FILE | cut -d ' ' -f 1)
+        SRC_SIZE=$(stat -c '%s' $SRC_FILE)
+
+        aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
+        curl --fail "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
+      shell: bash
