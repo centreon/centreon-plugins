@@ -157,7 +157,7 @@ The snmp_standard/mode exists since the beginning when SNMP monitoring was much 
 
 <div id='architecture_plugin'/>
 
-### 3. Plugin.mp file
+### 3. Plugin.mp
 
 [Table of content (2)](#table_of_content_2)
 
@@ -184,12 +184,12 @@ Used libraries (strict and warnings are mandatory).
 use strict;
 use warnings;
 ```
-Centreon librarie :
+Centreon library :
 
 ```perl
 use base qw(**centreon_library**);
 ```
-There are five kinds of centreon libraries here :
+There are five kinds of centreon libraries access here :
 * centreon::plugins::script_simple : Previously the general use case if no custom is needed, more explainations [here](#custom_mode_tuto) in this section.
 * centreon::plugins::script_custom : Need custom directory - More explainations [here](#custom_mode_tuto) in this section.
 * centreon::plugins::script_snmp : If SNMP protocol is needed for this plugin
@@ -612,7 +612,7 @@ $self->{output}->perfdata_add(label    => 'memory_used',
 
 ```
 **tip**
-Dans cet Example, au lieu d'afficher les seuils Dégradé et Critique en 'pourcentage', la fonction calculera et affichera ceux-ci en 'bytes'.
+In this example, instead of print warning and critical thresholds in 'percent', the function calculates and prints these in 'bytes'.
 
 --------------
 #### 2.2 threshold_validate
@@ -641,7 +641,7 @@ if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{
 }
 ```
 **tip**
-Les bon formats de seuils sont consultables ici : https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
 --------------
 #### 2.3 threshold_check
