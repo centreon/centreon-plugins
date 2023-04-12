@@ -107,14 +107,14 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=nodestate --custommode=api
---resource=<cluster_id> --resource-group=<resourcegroup_id> --zeroed --warning-node-state-phase=5 --critical-node-state-phase=10
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=pod-state --custommode=api
+--resource=<cluster_id> --resource-group=<resourcegroup_id> --zeroed --warning-pod-state-phase=5 --critical-pod-state-phase=10
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=nodestate --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=pod-state --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
---zeroed --warning-node-state-phase=5 --critical-node-state-phase=10
+--zeroed --warning-pod-state-phase=5 --critical-pod-state-phase=10
 
 
 =over 8
