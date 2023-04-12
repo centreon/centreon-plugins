@@ -119,15 +119,17 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{timeframe}) || $self->{option_results}->{timeframe} !~ /\d/) {
-        $self->{option_results}->{timeframe} = 86400;
+        $self->{option_results}->{timeframe} = 1;
     }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $from_date = DateTime->now(time_zone => 'UTC')->subtract(seconds => $self->{option_results}->{timeframe})->iso8601();
-    my $to_date = DateTime->now(time_zone => 'UTC')->iso8601();
+    my $dt = DateTime->now(time_zone => 'UTC');
+    my $to_date = sprintf('%02d-%02d-%02d', $dt->year(), $dt->month(), $dt->day());
+    $dt->subtract(days => $self->{option_results}->{timeframe});
+    my $from_date = sprintf('%02d-%02d-%02d', $dt->year(), $dt->month(), $dt->day());
 
     my $consumptions = $options{custom}->read_consumption_account(from_date => $from_date, to_date => $to_date);
 
@@ -190,7 +192,7 @@ Filter account consumptions by region.
 
 =item B<--timeframe>
 
-Set timeframe in seconds (Default: 86400).
+Set timeframe in days (Default: 1).
 
 =item B<--warning-*> B<--critical-*>
 

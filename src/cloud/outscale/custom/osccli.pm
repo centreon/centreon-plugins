@@ -42,6 +42,7 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'profile:s'           => { name => 'profile' },
+            'virtual-env:s'       => { name => 'virtual_env' },
             'timeout:s'           => { name => 'timeout', default => 50 },
             'sudo'                => { name => 'sudo' },
             'command:s'           => { name => 'command' },
@@ -78,6 +79,11 @@ sub check_options {
     if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
         $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
+
+    if (defined($self->{option_results}->{virtual_env}) && $self->{option_results}->{virtual_env} ne '') {
+        $ENV{VIRTUAL_ENV} = $self->{option_results}->{virtual_env};
+        $ENV{PATH} = "$ENV{VIRTUAL_ENV}/bin:$ENV{PATH}";
     }
 
     centreon::plugins::misc::check_security_command(
@@ -423,6 +429,10 @@ Outscale CLI
 =item B<--profile>
 
 Set profile option.
+
+=item B<--virtual-env>
+
+Set python virtual environment (to be used if osc-cli is installed in python venv).
 
 =item B<--timeout>
 
