@@ -54,7 +54,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    # A voir si ce sont des options pertinentes ?
     $options{options}->add_options(arguments => {
         'filter-ap:s' => { name => 'filter_ap' }
     });
@@ -95,6 +94,11 @@ sub manage_selection {
             name => $result->{cambiumAPName},
             cpu_usage => $result->{cambiumAPCPUUtilization}
         };
+    }
+
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No AP matching with filter found.");
+        $self->{output}->option_exit();
     }
 }
 
