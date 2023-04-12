@@ -1,6 +1,14 @@
 on:
   workflow_call:
     inputs:
+      version:
+        description: The package version
+        type: string
+        required: true
+      release:
+        description: The package release
+        type: string
+        required: true
       stability:
         description: The package stability (stable, testing, unstable)
         type: string
@@ -25,47 +33,73 @@ on:
       artifactory_token:
         description: "The artifactory token"
         required: true
+      token_download_centreon_com:
+        description: "The token to call download.centreon.com api"
+        required: true
 
 jobs:
-  deliver-rpm:
+  deliver-sources:
     runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [el7, el8, el9]
+    #if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - name: Delivery
-        uses: ./.github/actions/rpm-delivery
+      - uses: actions/cache@v3
         with:
-          module_name: plugins
-          distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          update_repo_path: ${{ secrets.update_repo_path }}
-          cloudfront_id: ${{ secrets.cloudfront_id }}
-          yum_repo_address: ${{ secrets.yum_repo_address }}
-          yum_repo_key: ${{ secrets.yum_repo_key }}
-          stability: ${{ inputs.stability }}
-          artifactory_token: ${{ secrets.artifactory_token }}
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
-  deliver-deb:
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [bullseye]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery
+      - name: Deliver sources
+        uses: ./.github/actions/release-sources
         with:
-          distrib: ${{ matrix.distrib }}
-          nexus_username: ${{ secrets.nexus_username }}
-          nexus_password: ${{ secrets.nexus_password }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ inputs.stability }}
-          artifactory_token: ${{ secrets.artifactory_token }}
+          bucket_directory: centreon-plugins
+          module_directory: build
+          module_name: centreon-plugins
+          version: ${{ inputs.version }}
+          release: ${{ inputs.release }}
+          token_download_centreon_com: ${{ secrets.token_download_centreon_com }}
+
+  # deliver-rpm:
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     matrix:
+  #       distrib: [el7, el8, el9]
+
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v3
+
+  #     - name: Delivery
+  #       uses: ./.github/actions/rpm-delivery
+  #       with:
+  #         module_name: plugins
+  #         distrib: ${{ matrix.distrib }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+  #         update_repo_path: ${{ secrets.update_repo_path }}
+  #         cloudfront_id: ${{ secrets.cloudfront_id }}
+  #         yum_repo_address: ${{ secrets.yum_repo_address }}
+  #         yum_repo_key: ${{ secrets.yum_repo_key }}
+  #         stability: ${{ inputs.stability }}
+  #         artifactory_token: ${{ secrets.artifactory_token }}
+
+  # deliver-deb:
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     matrix:
+  #       distrib: [bullseye]
+
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v3
+
+  #     - name: Delivery
+  #       uses: ./.github/actions/deb-delivery
+  #       with:
+  #         distrib: ${{ matrix.distrib }}
+  #         nexus_username: ${{ secrets.nexus_username }}
+  #         nexus_password: ${{ secrets.nexus_password }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+  #         stability: ${{ inputs.stability }}
+  #         artifactory_token: ${{ secrets.artifactory_token }}

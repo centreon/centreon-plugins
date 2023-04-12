@@ -103,6 +103,8 @@ jobs:
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
+      version: ${{ needs.get-environment.outputs.version }}
+      release: ${{ needs.get-environment.outputs.release }}
       stability: ${{ needs.get-environment.outputs.stability }}
     secrets:
       nexus_username: ${{ secrets.NEXUS_USERNAME }}
@@ -112,3 +114,4 @@ jobs:
       yum_repo_address: ${{ secrets.YUM_REPO_ADDRESS }}
       yum_repo_key: ${{ secrets.YUM_REPO_KEY }}
       artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+      token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
