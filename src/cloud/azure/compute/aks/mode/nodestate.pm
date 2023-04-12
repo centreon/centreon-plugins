@@ -93,7 +93,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Kubernetes Number uf Pods by State.
+Check Azure Kubernetes Number uf Nodes by State.
 
 Example:
 
