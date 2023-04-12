@@ -32,7 +32,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'read', nlabel => 'storage.io.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'read', per_second => 1 } ],
@@ -60,8 +60,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -72,12 +71,12 @@ my %states = (
     3 => ['ok', 'OK'], 
     4 => ['non critical', 'WARNING'],
     5 => ['critical', 'CRITICAL'],
-    6 => ['nonRecoverable', 'WARNING'],
+    6 => ['nonRecoverable', 'WARNING']
 );
 my %fs_states = (
-    1 => ['ok', 'OK'], 
-    2 => ['nearly full', 'WARNING'], 
-    3 => ['full', 'CRITICAL'], 
+    1 => ['ok', 'OK'],
+    2 => ['nearly full', 'WARNING'],
+    3 => ['full', 'CRITICAL']
 );
 
 my $oid_fsOverallStatus = '.1.3.6.1.4.1.789.1.5.7.1.0';
@@ -103,25 +102,42 @@ sub manage_selection {
     if (!$options{snmp}->is_snmpv1()) {
         push @{$request}, ($oid_misc64DiskReadBytes, $oid_misc64DiskWriteBytes);
     }
-    
+
     my $snmp_result = $options{snmp}->get_leef(oids => $request, nothing_quit => 1);
-    
+
     $self->{global} = {};
-    $self->{global}->{read} = defined($snmp_result->{$oid_misc64DiskReadBytes}) ?
-                                $snmp_result->{$oid_misc64DiskReadBytes} : 
-                                ($snmp_result->{$oid_miscHighDiskReadBytes} << 32) + $snmp_result->{$oid_miscLowDiskReadBytes};
-    $self->{global}->{write} = defined($snmp_result->{$oid_misc64DiskWriteBytes}) ?
-                                $snmp_result->{$oid_misc64DiskWriteBytes} : 
-                                ($snmp_result->{$oid_miscHighDiskWriteBytes} << 32) + $snmp_result->{$oid_miscLowDiskWriteBytes};
+    
+    if (defined($snmp_result->{$oid_misc64DiskReadBytes})) {
+        $self->{global}->{read} = $snmp_result->{$oid_misc64DiskReadBytes};
+    } elsif (defined($snmp_result->{$oid_miscLowDiskReadBytes})) {
+        $self->{global}->{read} = ($snmp_result->{$oid_miscHighDiskReadBytes} << 32) + $snmp_result->{$oid_miscLowDiskReadBytes};
+    }
+
+    if (defined($snmp_result->{$oid_misc64DiskWriteBytes})) {
+        $self->{global}->{write} = $snmp_result->{$oid_misc64DiskWriteBytes};
+    } elsif (defined($snmp_result->{$oid_miscLowDiskWriteBytes})) {
+        $self->{global}->{write} = ($snmp_result->{$oid_miscHighDiskWriteBytes} << 32) + $snmp_result->{$oid_miscLowDiskWriteBytes};
+    }
 
     $snmp_result->{$oid_miscGlobalStatusMessage} =~ s/\n//g;
-    $self->{output}->output_add(severity =>  ${$states{$snmp_result->{$oid_miscGlobalStatus}}}[1],
-                                short_msg => sprintf("Overall global status is '%s' [message: '%s']", 
-                                                ${$states{$snmp_result->{$oid_miscGlobalStatus}}}[0], $snmp_result->{$oid_miscGlobalStatusMessage}));
-    $snmp_result->{$oid_fsStatusMessage} =~ s/\n//g;
-    $self->{output}->output_add(severity =>  ${$fs_states{$snmp_result->{$oid_fsOverallStatus}}}[1],
-                                short_msg => sprintf("Overall file system status is '%s' [message: '%s']", 
-                                                ${$fs_states{$snmp_result->{$oid_fsOverallStatus}}}[0], $snmp_result->{$oid_fsStatusMessage}));
+    $self->{output}->output_add(
+        severity =>  ${$states{$snmp_result->{$oid_miscGlobalStatus}}}[1],
+        short_msg => sprintf(
+            "Overall global status is '%s' [message: '%s']", 
+            $states{ $snmp_result->{$oid_miscGlobalStatus} }->[0], $snmp_result->{$oid_miscGlobalStatusMessage}
+        )
+    );
+
+    if (defined($snmp_result->{$oid_fsStatusMessage})) {
+        $snmp_result->{$oid_fsStatusMessage} =~ s/\n//g;
+        $self->{output}->output_add(
+            severity =>  ${$fs_states{$snmp_result->{$oid_fsOverallStatus}}}[1],
+            short_msg => sprintf(
+                "Overall file system status is '%s' [message: '%s']", 
+                $fs_states{ $snmp_result->{$oid_fsOverallStatus} }->[0], $snmp_result->{$oid_fsStatusMessage}
+            )
+        );
+    }
 
     $self->{cache_name} = "cache_netapp_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
@@ -138,17 +154,11 @@ If you are in cluster mode, the following mode doesn't work. Ask to netapp to ad
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'read', 'write'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'read', 'write'.
 
 =back
 
 =cut
-    
