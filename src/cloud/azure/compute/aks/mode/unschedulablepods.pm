@@ -99,12 +99,12 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unschedulablepods --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unschedulable-pods --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --zeroed --warning-unschedulable-pods=5 --critical-unschedulable-pods=10
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unschedulablepods --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unschedulable-pods --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
 --zeroed --warning-unschedulable-pods=5 --critical-unschedulable-pods=10
 
