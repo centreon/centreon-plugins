@@ -157,7 +157,7 @@ The snmp_standard/mode exists since the beginning when SNMP monitoring was much 
 
 <div id='architecture_plugin'/>
 
-### 3. Plugin.mp
+### 3. Plugin.pm
 
 [Table of content (2)](#table_of_content_2)
 
