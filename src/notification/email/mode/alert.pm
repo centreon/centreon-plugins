@@ -29,7 +29,7 @@ use MIME::Base64;
 use Email::MIME;
 use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP;
-use JSON;
+use JSON::XS;
 use URI::Escape;
 use centreon::plugins::http;
 
@@ -99,15 +99,6 @@ my %color_service = (
         text => '#666666'
     },
 );
-#     ok => '#88B922',
-#     warning => '#FD9B27',
-#     critical => '#FF4A4A',
-#     unknown => '#E0E0E0',
-#     acknowledgement => '#F5F1E9',
-#     downtimestart => '#F0E9F8',
-#     downtimeend => '#F0E9F8',
-#     downtimecanceled => '#F0E9F8',
-# );
 
 sub new {
     my ($class, %options) = @_;
@@ -120,6 +111,7 @@ sub new {
         "smtp-user:s"            => { name => 'smtp_user', default => undef },
         "smtp-password:s"        => { name => 'smtp_password' },
         "smtp-nossl"             => { name => 'no_ssl' },
+        "smtp-debug"             => { name => 'smtp_debug' },
         "to-address:s"           => { name => 'to_address' },
         "from-address:s"         => { name => 'from_address' },
         "host-id:s"              => { name => 'host_id' },
@@ -183,6 +175,7 @@ sub check_options {
         }
     }
     $self->{insecure} = defined($self->{option_results}->{no_ssl}) ? 0 : 1;
+    $self->{smtp_debug} = defined($self->{option_results}->{smtp_debug}) ? 1 : 0;
     $self->{smtp_user} = defined($self->{option_results}->{smtp_user}) && $self->{option_results}->{smtp_user} ne '' 
                                         ? $self->{option_results}->{smtp_user} : '';
     $self->{smtp_password} = defined($self->{option_results}->{smtp_password}) && $self->{option_results}->{smtp_password} ne '' 
@@ -586,8 +579,6 @@ sub service_message {
     my $response = $ua->get($url);
     my $img = undef;
     
-    use Data::Dumper;
-    print Dumper($response->status_line);
     if($response->status_line !~ /200/){
         $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Graph not load</h2>';
     } else {
@@ -1003,7 +994,7 @@ sub run {
         sasl_username => $self->{smtp_user},
         sasl_password => $self->{smtp_password},
         ssl => $self->{insecure},
-        # debug => 1
+        debug => $self->{smtp_debug}
 
     });
 
@@ -1026,107 +1017,157 @@ __END__
 
 =head1 MODE
 
-Send slack alerts.
+Send Email alerts.
 
 Example for a host:
-centreon_plugins.pl --plugin=notification::slack::plugin --mode=alert --slack-url='https://hooks.slack.com/services/T0A754E2V/B0E0CEL4B/81V8kCJusL7kafDSdsd' --slack-channel='#testchannel' --slack-username='bot' --slack-emoji=':ghost:' --host-name='srvi-clus-win' --host-state='DOWN' --host-output='test output' --priority='High' --zone='Production' --centreon-url='https://centreon.test.com/centreon/' --link-url='%{centreon_url}/main.php?p=20202&o=svc&host_search=%{host_name}'
+
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='john.doe@example.com' --host-address='192.168.1.1' --host-name='webserver' --host-alias='Web Server' --host-state='DOWN' --host-output='CRITICAL - Socket timeout after 10 seconds' --host-attempts='3' --max-host-attempts='3' --host-duration='6d 18h 33m 51s' --date='2023-04-12 10:30:00' --type='PROBLEM' --service-description='' --service-state='' --service-output='' --service-longoutput='' --service-attempts='' --max-service-attempts='' --service-duration='' --host-id='123' --service-id='' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon-engine@centreon.com' --centreon-user='admin' --centreon-token='Toi5Ve7ie' --smtp-user='john.doe@example.com' --smtp-password='mysecret'
 
 Example for a service:
-centreon_plugins.pl --plugin=notification::slack::plugin --mode=alert --slack-url='https://hooks.slack.com/services/T0A754E2V/B0E0CEL4B/81V8kCJusL7kafDSdsd' --slack-channel='#tmptestqga' --slack-username='bot' --slack-emoji=':ghost:' --host-name='srvi-clus-win' --service-description='Ping' --service-state='WARNING' --service-output='CRITICAL - 10.50.1.78: rta nan, lost 100%' --priority='High' --zone='Production' --centreon-url='https://ces.merethis.net/centreon/' --link-url='%{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description}' --centreon-token='LxTQxFbLU6' --graph-url='%{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}'
+
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'
+
+Example for Centreon configuration:
+
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts=''$SERVICEATTEMPT$ --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
 
 =over 8
 
-=item B<--slack-url>
+=item B<--smtp-address>
 
-Specify slack url (Required).
+SMTP server address.
 
-=item B<--slack-channel>
+=item B<--smtp-port>
 
-Specify slack channel (Required).
+SMTP server port (default: 25).
 
-=item B<--slack-username>
+=item B<--smtp-user>
 
-Specify slack username.
+SMTP server username.
+
+=item B<--smtp-password>
+
+SMTP server password.
+
+=item B<--smtp-nossl>
+
+Use this option to disable SSL.
+
+=item B<--smtp-debug>
+
+Enable smtp-debug mode.
+
+=item B<--to-address>
+
+Email address of the recipient (Required).
+
+=item B<--from-address>
+
+Email address of the sender (Required).
+
+=item B<--host-id>
+
+ID of the host.
+
+=item B<--host-address>
+
+IP Address of the host.
 
 =item B<--host-name>
 
-Specify host server name for the alert (Required).
+Name of the host.
+
+=item B<--host-alias>
+
+Alias of the host.
 
 =item B<--host-state>
 
-Specify host server state for the alert.
+State of the host.
 
 =item B<--host-output>
 
-Specify host server output message for the alert.
+Output of the host.
+
+=item B<--host-attempts>
+
+Number of attempts made before HARD to check the host.
+
+=item B<--max-host-attempts>
+
+Number of attempts made before host HARD state.
+
+=item B<--host-duration>
+
+Duration of the host status.
+
+=item B<--service-id>
+
+ID of the service.
 
 =item B<--service-description>
 
-Specify service description name for the alert.
+Description of the service.
 
 =item B<--service-state>
 
-Specify service state for the alert.
+State of the service.
 
 =item B<--service-output>
 
-Specify service output message for the alert.
+Output of the service.
 
-=item B<--slack-color>
+=item B<--service-longoutput>
 
-Specify slack color (According state option, color will be choosed).
+Long output of the service.
 
-=item B<--slack-emoji>
+=item B<--service-attempts>
 
-Specify slack emoji.
+Number of attempts made to check the service.
 
-=item B<--priority>
+=item B<--max-service-attempts>
 
-Specify the priority message.
+Number of attempts made before service HARD state.
 
-=item B<--zone>
+=item B<--service-duration>
 
-Specify the zone message.
+Duration of the service status.
 
-=item B<--centreon-url>
+=item B<--centreon-user>
 
-Specify the centreon url macro (could be used in link-url and graph-url option).
+Username for the Centreon web interface.
 
 =item B<--centreon-token>
 
-Specify the centreon token for autologin macro (could be used in link-url and graph-url option).
+Token for the Centreon web interface (autologin).
 
-=item B<--graph-url>
+=item B<--date>
 
-Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
+Date of the alert.
 
-=item B<--link-url>
+=item B<--notif-author>
 
-Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
+Author of the notification.
 
-=item B<--credentials>
+=item B<--notif-comment>
 
-Specify this option if you access webpage with authentication
+Comment for the notification.
 
-=item B<--username>
+=item B<--centreon-url>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+URL of the Centreon web interface. Use either HTTP or HTTPS protocol depending on your setup, for example:
+--centreon-url='http://your-centreon-server'
+--centreon-url='https://your-centreon-server'
 
-=item B<--password>
+=item B<--type>
 
-Specify password for authentication (Mandatory if --credentials is specified)
-
-=item B<--basic>
-
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
-
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Type of the alert.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Timeout for the request (default: 10 seconds).
+
+=back
 
 =back
 
