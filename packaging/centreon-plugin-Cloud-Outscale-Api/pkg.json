@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Outscale-Api",
+    "pkg_summary": "Centreon Plugin to monitor Outscale using API",
+    "plugin_name": "centreon_outscale_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/outscale/"
+    ]
+}
