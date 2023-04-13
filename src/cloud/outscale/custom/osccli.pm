@@ -102,7 +102,6 @@ sub execute {
     my $command = defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : 'osc-cli';
 
     my $cmd_options = $options{cmd_options};
-    $cmd_options .= " --debug" if ($self->{output}->is_debug());
 
     $self->{output}->output_add(long_msg => "Command line: '" . $command . " " . $cmd_options . "'", debug => 1);
 
