@@ -95,6 +95,14 @@ sub set_counters {
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'load-balancer-vms-down', nlabel => 'load_balancer.virtual_machines.down.count', set => {
+                key_values => [ { name => 'down' } ],
+                output_template => 'down: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 
@@ -156,7 +164,7 @@ sub manage_selection {
 
         $self->{lbs}->{ $lb->{LoadBalancerName} } = {
             name => $lb->{LoadBalancerName},
-            vm_metrics => { up => 0 },
+            vm_metrics => { up => 0, down => 0 },
             vms => {}
         };
 
