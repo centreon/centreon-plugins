@@ -104,7 +104,7 @@ sub check_options {
         ) {
         $self->{command} = 'yum';
         $self->{command_options} = 'check-update 2>&1';
-        if defined($self->{option_results}->{check_security}) {
+        if (defined($self->{option_results}->{check_security})) {
             $self->{command_options} = '-q updateinfo list sec' 
         }
     } elsif ($self->{option_results}->{os_mode} eq 'debian') {
