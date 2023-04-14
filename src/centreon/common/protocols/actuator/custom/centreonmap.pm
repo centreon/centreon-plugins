@@ -145,7 +145,7 @@ sub build_options_for_httplib {
 }
 
 sub settings {
-    my ($self, %options) = @_;
+    my ($self, %options) = @_; 
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
@@ -221,7 +221,7 @@ sub request_api {
         unknown_status => '',
         critical_status => ''
     );
-    
+
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session(statefile => $self->{cache});
