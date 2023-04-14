@@ -144,7 +144,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
 }
 
-sub settings {
+sub settings { 
     my ($self, %options) = @_; 
 
     $self->build_options_for_httplib();
