@@ -254,11 +254,11 @@ __END__
 
 =head1 NAME
 
-Netbiter Argos Rest API
+Netbiter Argos RestAPI
 
 =head1 REST API OPTIONS
 
-Netbiter Argos Rest API
+Netbiter Argos RestAPI
 
 =over 8
 
