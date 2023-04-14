@@ -46,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sensors} = [
-        { label => 'sensor-value', nlabel => 'sensor.numeric.value', set => {
+        { label => 'sensor-value', nlabel => 'sensor.reading.count', set => {
                 key_values => [ { name => 'value' }, { name => 'display' }, { name => 'device_name' }, { name => 'timestamp' }, { name => 'unit' }  ],
                 closure_custom_output => $self->can('custom_status_output'),
                 output_template => "value : %s",
