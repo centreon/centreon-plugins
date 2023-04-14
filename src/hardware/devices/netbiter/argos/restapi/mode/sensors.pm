@@ -128,7 +128,6 @@ sub manage_selection {
         }
     }
 
-
     if (scalar(keys %{$self->{sensors}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No sensor found.");
         $self->{output}->option_exit();

@@ -164,7 +164,6 @@ sub manage_selection {
         get_params => $get_params
     );
 
-
     foreach (@{$result}) {
         my $timestamp = str2time($_->{timestamp}, 'GMT');
         $self->{alarms}->{$_->{id}} = {
@@ -242,7 +241,6 @@ Thresholds.
 Can be: 'warning-alarms-total' (count) 'critical-alarms-total' (count),
 'warning-alarm-duration' (s), 'critical-alarm-duration' (s),
 'warning-alarm-severity' (level from 0 to 5), critical-alarm-severity (level from 0 to 5).
-
 
 =back
 
