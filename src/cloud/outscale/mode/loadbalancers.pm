@@ -218,7 +218,7 @@ Can used special variables like: %{state}, %{vmName}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'load-balancers-detected', 'load-balancer-vms-up'.
+Can be: 'load-balancers-detected', 'load-balancer-vms-up', ''load-balancer-vms-down'.
 
 =back
 
