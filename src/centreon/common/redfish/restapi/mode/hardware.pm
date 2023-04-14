@@ -142,7 +142,7 @@ sub get_storages {
     foreach my $system (@{$systems->{Members}}) {
         my $storages = $self->{custom}->request_api(
             url_path => $system->{'@odata.id'} . '/Storage/',
-            ignore_codes => { 500 => 1, 404 => 1 }
+            ignore_codes => { 400 => 1, 404 => 1 }
         );
         next if (!defined($storages));
 
