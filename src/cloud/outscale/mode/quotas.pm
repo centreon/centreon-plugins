@@ -74,7 +74,7 @@ sub set_counters {
                 }
             }
         },
-        { label => 'quota-usage-free', display_ok => 0, nlabel => 'license.free.count', set => {
+        { label => 'quota-usage-free', display_ok => 0, nlabel => 'quota.free.count', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' }, { name => 'type' } ],
                 closure_custom_output => $self->can('custom_quota_output'),
                 closure_custom_perfdata => sub {
@@ -92,7 +92,7 @@ sub set_counters {
                 }
             }
         },
-        { label => 'quota-usage-prct', display_ok => 0, nlabel => 'license.usage.percentage', set => {
+        { label => 'quota-usage-prct', display_ok => 0, nlabel => 'quota.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' }, { name => 'type' } ],
                 closure_custom_output => $self->can('custom_quota_output'),
                 closure_custom_perfdata => sub {
