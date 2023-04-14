@@ -26,7 +26,6 @@ use DateTime;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use URI::Encode;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -49,6 +48,7 @@ sub new {
             'api-endpoint:s'      => { name => 'api_endpoint' },
             'api-password:s'      => { name => 'api_password' },
             'api-username:s'      => { name => 'api_username' },
+            'force-cache-reload'  => { name => 'force_cache_reload' },
             'hostname:s'          => { name => 'hostname' },
             'port:s'              => { name => 'port' },
             'proto:s'             => { name => 'proto' },
@@ -60,7 +60,8 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{cache_auth} = centreon::plugins::statefile->new(%options);
+    $self->{cache_sensors} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -84,17 +85,16 @@ sub check_options {
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{access_key} = (defined($self->{option_results}->{access_key})) ? $self->{option_results}->{access_key} : '';
-    $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 3600;
+    $self->{force_cache_reload} = (defined($self->{option_results}->{force_cache_reload})) ? $self->{option_results}->{force_cache_reload} : undef;
 
-    if (! (
-        ($self->{api_username} ne '' && $self->{api_password} ne '')
-        ||
-        ($self->{access_key} ne '')
-    ) ) {
+    if ( !(($self->{api_username} ne '' && $self->{api_password} ne '') || ($self->{access_key} ne '')) ) {
         $self->{output}->add_option_msg(short_msg => 'At least one of --api-username / --api-password (login) ; or --access-key must be set');
         $self->{output}->option_exit();
     }
+
+    $self->{cache_auth}->check_options(option_results => $self->{option_results});
+    $self->{cache_sensors}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -123,15 +123,14 @@ sub settings {
 sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
 
-    if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([+-]\d{4})/) {
+    if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z/) {
         my $dt = DateTime->new(
-            year       => $1,
-            month      => $2,
-            day        => $3,
-            hour       => $4,
-            minute     => $5,
-            second     => $6,
-            time_zone  => $7
+            year   => $1,
+            month  => $2,
+            day    => $3,
+            hour   => $4,
+            minute => $5,
+            second => $6
         );
 
         my $epoch_time = $dt->epoch();
@@ -146,9 +145,9 @@ sub convert_iso8601_to_epoch {
 sub get_access_key {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'netbiter_argos_api_' . md5_hex($self->{hostname}) . '_' . $self->{cache_key});
-    my $expires_on = $options{statefile}->get(name => 'expires_on');
-    my $access_key = $options{statefile}->get(name => 'access_key');
+    my $has_cache_file = $self->{cache_auth}->read(statefile => 'netbiter_argos_api_' . md5_hex($self->{hostname}) . '_' . $self->{cache_key});
+    my $expires_on = $self->{cache_auth}->get(name => 'expires_on');
+    my $access_key = $self->{cache_auth}->get(name => 'access_key');
     if ( $has_cache_file == 0 || !defined($access_key) || (($expires_on - time()) < 10) ) {
         my $login;
         if ($self->{api_username} ne '') {
@@ -162,7 +161,7 @@ sub get_access_key {
             method => 'POST',
             header => ['Content-type: application/json'],
             query_form_post => $post_json,
-            url_path => $self->{authent_endpoint} . 'user/authenticate'
+            url_path => $self->{api_endpoint} . '/user/authenticate'
         );
 
         if (!defined($content) || $content eq '') {
@@ -188,7 +187,7 @@ sub get_access_key {
         $access_key = $decoded->{access_key};
         my $expires_on = $self->convert_iso8601_to_epoch(time_string => $decoded->{expires});
         my $datas = { last_timestamp => time(), access_key => $decoded->{accessKey}, expires_on => $expires_on };
-        $options{statefile}->write(data => $datas);
+        $self->{cache_auth}->write(data => $datas);
     }
 
     return $access_key;
@@ -218,15 +217,35 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($response);
+        $decoded = JSON::XS->new->decode($response);
     };
 
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
-
     return $decoded;
+}
+
+sub list_sensors {
+    my ($self, %options) = @_;
+    # Results are cached to avoid to many API calls
+    my $has_cache_file = $self->{cache_sensors}->read(statefile => 'netbiter_cache_sensors_' . md5_hex($options{system_id}));
+    my $response = $self->{cache_sensors}->get(name => 'response');
+    my $freshness = defined($self->{cache_sensors}->get(name => 'update_time')) ? time() - $self->{cache_sensors}->get(name => 'update_time') : undef;
+    $self->{force_cache_reload} = 1 if defined($options{force});
+
+    if ( $has_cache_file == 0 || !defined($response) || (defined($freshness)) && ($freshness > $self->{reload_cache_time}) || defined($self->{force_cache_reload}) ) {
+        my $request = '/system/' . $options{system_id} . '/log/config';
+        $response = $self->request_api(request => $request);
+    }
+
+    $self->{cache_sensors}->write(data => {
+        update_time => time(),
+        response => $response
+    });
+
+    return $response
 }
 
 1;

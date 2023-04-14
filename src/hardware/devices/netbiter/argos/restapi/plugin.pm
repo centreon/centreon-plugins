@@ -33,7 +33,8 @@ sub new {
     $self->{modes} = {
         'alarms'       => 'hardware::devices::netbiter::argos::restapi::mode::alarms',
         'discovery'    => 'hardware::devices::netbiter::argos::restapi::mode::discovery',
-        'list-sensors' => 'hardware::devices::netbiter::argos::restapi::mode::listsensors'
+        'list-sensors' => 'hardware::devices::netbiter::argos::restapi::mode::listsensors',
+        'sensor-value' => 'hardware::devices::netbiter::argos::restapi::mode::sensorvalue'
     };
 
     $self->{custom_modes}->{restapi} = 'hardware::devices::netbiter::argos::restapi::custom::api';

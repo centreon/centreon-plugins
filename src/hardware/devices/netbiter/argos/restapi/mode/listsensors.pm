@@ -49,9 +49,7 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    my $request = '/system/' . $self->{option_results}->{system_id} . '/log/config';
-
-    return $options{custom}->request_api(request => $request);
+    return $options{custom}->list_sensors(system_id => $self->{option_results}->{system_id}, force => 1);
 }
 
 sub run {
@@ -92,11 +90,11 @@ sub disco_show {
     my $results = $self->manage_selection(%options);
     foreach (@$results) {
         $self->{output}->add_disco_entry(
-            id => $_->{id},
-            name => $_->{name},
-            deviceName => $_->{deviceName},
-            unit => $_->{unit},
-            logInterval => $_->{logInterval}
+            deviceName  => $_->{deviceName},
+            id          => $_->{id},
+            logInterval => $_->{logInterval},
+            name        => $_->{name},
+            unit        => defined($_->{unit}) ? $_->{unit} : ''
         );
     }
 }

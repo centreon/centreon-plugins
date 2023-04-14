@@ -48,9 +48,9 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'alarms-total', nlabel => 'alarms.total.count', set => {
-                key_values      => [ { name => 'total' }  ],
+                key_values => [ { name => 'total' }  ],
                 output_template => 'total current: %s',
-                perfdatas       => [ { template => '%d', min => 0 } ]
+                perfdatas => [ { template => '%d', min => 0 } ]
             }
         }
     ];
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'duration' }, { name => 'display' } ],
                 output_template => 'duration: %ds',
                 display_ok => 0,
-                perfdatas       => [ { template => '%d', min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' } ]
+                perfdatas => [ { template => '%d', min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'alarm-severity',
@@ -95,8 +95,7 @@ sub set_counters {
                 display_ok => 0,
                 closure_custom_perfdata => sub { return 0; }
             }
-        },
-        
+        }
     ];
 }
 
@@ -154,7 +153,7 @@ sub manage_selection {
     }
     if (defined($self->{option_results}->{filter_acked})) {
         push @$get_params, 'acked=false';
-    };
+    }
     if (defined($self->{option_results}->{filter_active})) {
         $active_alarms = 'true';
     }
@@ -172,11 +171,11 @@ sub manage_selection {
             acked       => ($_->{acked}) ? 'true' : 'false',
             active      => ($_->{active}) ? 'true' : 'false',
             device_name => $_->{deviceName},
-            duration => time() - $timestamp,
+            duration    => time() - $timestamp,
             display     => $_->{name},
             id          => $_->{id},
             severity    => $_->{severity},
-            timestamp => POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($timestamp))
+            timestamp   => POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($timestamp))
         };
     }
 
