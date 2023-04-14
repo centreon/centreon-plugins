@@ -236,6 +236,7 @@ sub request_internal {
     my $content = $self->{http}->request(
         url_path => $self->{url_path} . $options{endpoint},
         get_param => $options{get_param},
+        header => $options{header},
         warning_status => '',
         unknown_status => '',
         critical_status => ''
@@ -337,7 +338,8 @@ sub request_jobs {
 
     my $response = $self->request_internal(
         endpoint => $options{endpoint},
-        get_param => ['completedJobLookupTime=' . $lookup_time]
+        get_param => ['completedJobLookupTime=' . $lookup_time],
+        header => ['limit: 10000']
     );
 
     $self->create_cache_file(type => 'jobs', response => $response)
