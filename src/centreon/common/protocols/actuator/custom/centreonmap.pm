@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2022 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -166,33 +166,38 @@ sub get_session {
 
     my $has_cache_file = $options{statefile}->read(statefile => 'centreonmap_session_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $studio_session = $options{statefile}->get(name => 'studio_session');
-
+    
     if ($has_cache_file == 0 || !defined($studio_session)) {
         my $login = { login => $self->{api_username}, password => $self->{api_password} };
         my $post_json = JSON::XS->new->utf8->encode($login);
-
-        my ($content) = $self->{http}->request(
-            method => 'POST',
-            url_path => $self->{url_path} . '/authentication',
-            header => ['Content-type: application/json'],
-            query_form_post => $post_json,
-            warning_status => '', unknown_status => '', critical_status => ''
-        );
-
+        
+        my @urls = ('/auth/sign-in', '/authentication');
+        my $content;
+        for my $url_path (@urls) {
+            ($content) = $self->{http}->request(
+                method => 'POST',
+                url_path => $self->{url_path} . $url_path,
+                header => ['Content-type: application/json'],
+                query_form_post => $post_json,
+                warning_status => '', unknown_status => '', critical_status => ''
+            );
+            last if ($self->{http}->get_code() == 200);    
+        }
+        
         if ($self->{http}->get_code() != 200) {
-            $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->add_option_msg(short_msg => "All authentication URLs failed");
             $self->{output}->option_exit();
         }
-
+            
         my $decoded = $self->json_decode(content => $content);
-        if (!defined($decoded->{studioSession})) {
-            $self->{output}->add_option_msg(short_msg => 'Cannot studio session');
-            $self->{output}->option_exit();
-        }
-
-        $studio_session = $decoded->{studioSession};
+        if (!defined($decoded->{jwtToken})) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot studio session');
+        $self->{output}->option_exit();
+        } 
+        
+        $studio_session = $decoded->{jwtToken};
         $options{statefile}->write(data => { studio_session => $studio_session });
-    }
+    }   
 
     $self->{studio_session} = $studio_session;
 }
@@ -200,7 +205,7 @@ sub get_session {
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings();
+    $self->settings(); 
     if (!defined($self->{studio_session})) {
         $self->get_session(statefile => $self->{cache});
     }
@@ -209,23 +214,26 @@ sub request_api {
         url_path => $self->{url_path} . '/actuator' . $options{endpoint},
         get_param => $options{get_param},
         header => [
-            'studio-session: ' . $self->{studio_session}
+            'studio-session: ' . $self->{studio_session},
+            'Authorization: Bearer ' . $self->{studio_session}
         ],
         warning_status => '',
         unknown_status => '',
         critical_status => ''
     );
-
+    
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session(statefile => $self->{cache});
-        $self->get_session(statefile => $self->{cache});
+        $self->get_session(statefile => $self->{cache}); 
+
         $content = $self->{http}->request(
             url_path => $self->{url_path} . '/actuator' . $options{endpoint},
             get_param => $options{get_param},
             header => [
-                'studio-session: ' . $self->{studio_session}
-            ],
+                'studio-session: ' . $self->{studio_session},
+                'Authorization: Bearer ' . $self->{studio_session}
+            ],  
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
