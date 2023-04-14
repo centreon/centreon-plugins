@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use LWP::UserAgent;
 use MIME::Base64;
 use Email::MIME;
 use Email::Sender::Simple qw(sendmail);
@@ -32,7 +31,6 @@ use Email::Sender::Transport::SMTP;
 use JSON::XS;
 use URI::Escape;
 use centreon::plugins::http;
-
 
 my %color_host = (
     up => { 
@@ -57,12 +55,12 @@ my %color_host = (
     },
     downtimeend => { 
         background => '#F0E9F8', 
-        text => '#666666' 
+        text => '#666666'
     },
     downtimecanceled => { 
         background => '#F0E9F8', 
-        text => '#666666' 
-    },
+        text => '#666666'
+    }
 );
 
 my %color_service = (
@@ -97,7 +95,7 @@ my %color_service = (
     downtimecanceled => {
         background => '#F0E9F8',
         text => '#666666'
-    },
+    }
 );
 
 sub new {
@@ -106,46 +104,46 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "smtp-address:s"         => { name => 'smtp_address' },
-        "smtp-port:s"            => { name => 'smtp_port', default => '25' },
-        "smtp-user:s"            => { name => 'smtp_user', default => undef },
-        "smtp-password:s"        => { name => 'smtp_password' },
-        "smtp-nossl"             => { name => 'no_ssl' },
-        "smtp-debug"             => { name => 'smtp_debug' },
-        "to-address:s"           => { name => 'to_address' },
-        "from-address:s"         => { name => 'from_address' },
-        "host-id:s"              => { name => 'host_id' },
-        "host-address:s"         => { name => 'host_address'},
-        "host-name:s"            => { name => 'host_name' },
-        "host-alias:s"           => { name => 'host_alias'},
-        "host-state:s"           => { name => 'host_state' },
-        "host-output:s"          => { name => 'host_output' },
-        "host-attempts:s"        => { name => 'host_attempts'},
-        "max-host-attempts:s"    => { name => 'max_host_attempts'},
-        "host-duration:s"        => { name => 'host_duration' },
-        "service-id:s"           => { name => 'service_id' },
-        "service-description:s"  => { name => 'service_description' },
-        "service-state:s"        => { name => 'service_state' },
-        "service-output:s"       => { name => 'service_output' },
-        "service-longoutput:s"   => { name => 'service_longoutput' },
-        "service-attempts:s"     => { name => 'service_attempts'},
-        "max-service-attempts:s" => { name => 'max_service_attempts'},
-        "service-duration:s"     => { name => 'service_duration' },
+        'smtp-address:s'         => { name => 'smtp_address' },
+        'smtp-port:s'            => { name => 'smtp_port', default => '25' },
+        'smtp-user:s'            => { name => 'smtp_user', default => undef },
+        'smtp-password:s'        => { name => 'smtp_password' },
+        'smtp-nossl'             => { name => 'no_ssl' },
+        'smtp-debug'             => { name => 'smtp_debug' },
+        'to-address:s'           => { name => 'to_address' },
+        'from-address:s'         => { name => 'from_address' },
+        'host-id:s'              => { name => 'host_id' },
+        'host-address:s'         => { name => 'host_address'},
+        'host-name:s'            => { name => 'host_name' },
+        'host-alias:s'           => { name => 'host_alias'},
+        'host-state:s'           => { name => 'host_state' },
+        'host-output:s'          => { name => 'host_output' },
+        'host-attempts:s'        => { name => 'host_attempts'},
+        'max-host-attempts:s'    => { name => 'max_host_attempts'},
+        'host-duration:s'        => { name => 'host_duration' },
+        'service-id:s'           => { name => 'service_id' },
+        'service-description:s'  => { name => 'service_description' },
+        'service-state:s'        => { name => 'service_state' },
+        'service-output:s'       => { name => 'service_output' },
+        'service-longoutput:s'   => { name => 'service_longoutput' },
+        'service-attempts:s'     => { name => 'service_attempts'},
+        'max-service-attempts:s' => { name => 'max_service_attempts'},
+        'service-duration:s'     => { name => 'service_duration' },
         'centreon-user:s'        => { name => 'centreon_user' },
         'centreon-token:s'       => { name => 'centreon_tooken' },
-        "date:s"                 => { name => 'date' },
-        "notif-author:s"         => { name => 'notif_author'},
-        "notif-comment:s"        => { name => 'notif_comment' },
-        "graph-url:s"            => { name => 'graph_url' },
-        "link-url:s"             => { name => 'link_url' },
-        "centreon-url:s"         => { name => 'centreon_url' },
-        "centreon-token:s"       => { name => 'centreon_token' },
-        "type:s"                 => { name => 'type' },
-        "timeout:s"              => { name => 'timeout', default => '10' }
+        'date:s'                 => { name => 'date' },
+        'notif-author:s'         => { name => 'notif_author'},
+        'notif-comment:s'        => { name => 'notif_comment' },
+        'centreon-url:s'         => { name => 'centreon_url' },
+        'centreon-token:s'       => { name => 'centreon_token' },
+        'type:s'                 => { name => 'type' },
+        'timeout:s'              => { name => 'timeout', default => 10 }
     });
-    
+
     $self->{payload_attachment} = { 'subject' => undef, 'alt_message' => undef, 'html_message' => undef , 'png' => undef }; 
-    
+
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
+
     return $self;
 }
 
@@ -165,21 +163,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify --smtp-address option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{ssl_opt})) {
-         $self->{ssl_opts} = { SSL_verify_mode => 0, verify_hostname => 0 };
-    }
 
-    foreach (('graph_url', 'link_url')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/$self->{option_results}->{$1}/eg;
-        }
-    }
-    $self->{insecure} = defined($self->{option_results}->{no_ssl}) ? 0 : 1;
+    $self->{smtp_ssl} = defined($self->{option_results}->{no_ssl}) ? 0 : 'starttls';
     $self->{smtp_debug} = defined($self->{option_results}->{smtp_debug}) ? 1 : 0;
     $self->{smtp_user} = defined($self->{option_results}->{smtp_user}) && $self->{option_results}->{smtp_user} ne '' 
-                                        ? $self->{option_results}->{smtp_user} : '';
+        ? $self->{option_results}->{smtp_user} : '';
     $self->{smtp_password} = defined($self->{option_results}->{smtp_password}) && $self->{option_results}->{smtp_password} ne '' 
-                                        ? $self->{option_results}->{smtp_password} : '';
+        ? $self->{option_results}->{smtp_password} : '';
 }
 
 sub host_message {
@@ -188,40 +178,41 @@ sub host_message {
     my $host_id = $self->{option_results}->{host_id};
 
     my $details = {
-      id => $host_id,
-      resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id",
-      tab => "details"
+        id => $host_id,
+        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id",
+        tab => "details"
     };
 
     my $author_html = '';
     my $author_alt = '';
     my $comment_html = '';
     my $comment_alt = '';
-    if(defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne ''){
-        if($self->{option_results}->{type} =~ /^downtime.*$/i){
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
             $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime by:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
             $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
-        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+        } elsif ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
             $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Author:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
             $author_alt = 'Acknowledged Author: ' . $self->{option_results}->{notif_author};
-        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+        } elsif ($self->{option_results}->{type} =~ /^flaping.*$/i) {
             $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Author:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
+                    <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
             $author_alt = 'Flapping Author: ' . $self->{option_results}->{notif_author};
         }
     }
-    if(defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne ''){
-        if($self->{option_results}->{type} =~ /^downtime.*$/i){
+
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i){
             $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime Comment:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
             $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
-        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+        } elsif ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
             $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Comment:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
             $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
-        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+        } elsif ($self->{option_results}->{type} =~ /^flaping.*$/i) {
             $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Comment:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
             $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
@@ -230,7 +221,7 @@ sub host_message {
 
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    
+
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : Host: ' . $self->{option_results}->{host_name} . ' ' . $self->{option_results}->{host_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
         ***** Centreon *****
@@ -242,13 +233,13 @@ sub host_message {
         Address: ' . $self->{option_results}->{host_address} . '
         Date/Time: ' . $self->{option_results}->{date};
 
-        if(defined($author_alt) && $author_alt ne ''){
-            $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
-        }
-        if(defined($comment_alt) && $comment_alt ne ''){
-            $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
-        }
-        $self->{payload_attachment}->{alt_message} .= '
+    if(defined($author_alt) && $author_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
+    }
+    if(defined($comment_alt) && $comment_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
 
         Info:
         ' .$self->{option_results}->{host_output};
@@ -396,15 +387,15 @@ sub host_message {
                     </td>
                   </tr>
                   <tr>';
-                  if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-                    $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . ';">
-                                                                    <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
-                  } else{
-                    $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . ';">
-                                                                    <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
-                  }
-                  
-                  $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . ';">
+                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
+    } else{
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . ';">
+                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
+    }
+
+    $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
                     </td>
                   </tr>
                 </tbody>
@@ -459,8 +450,8 @@ sub host_message {
                     </td>
                   </tr>
                 </tbody>';
-                if(defined($author_html) && $author_html ne ''){
-                    $self->{payload_attachment}->{html_message} .= '
+    if (defined($author_html) && $author_html ne '') {
+        $self->{payload_attachment}->{html_message} .= '
                     <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
                     <tbody>
                         <tr>
@@ -469,9 +460,10 @@ sub host_message {
                             </td>
                         </tr>
                     </tbody>';
-                }
-                if(defined($comment_html) && $comment_html ne ''){
-                    $self->{payload_attachment}->{html_message} .= '
+    }
+
+    if (defined($comment_html) && $comment_html ne '') {
+        $self->{payload_attachment}->{html_message} .= '
                     <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
                     <tbody>
                         <tr>
@@ -480,27 +472,29 @@ sub host_message {
                             </td>
                         </tr>
                     </tbody>';
-                }
-                $self->{payload_attachment}->{html_message} .= '
+    }
+
+    $self->{payload_attachment}->{html_message} .= '
               <td style="font-size:16px;vertical-align:top;">&nbsp;</td>
             </table>
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
               <tbody>
                 <tr>';
-                if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-                    $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . '; height:10px"></td>';
-                } else {
-                    $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . '; height:10px"></td>';
-                }
-                $self->{payload_attachment}->{html_message} .= '
+    if ($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . '; height:10px"></td>';
+    } else {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . '; height:10px"></td>';
+    }
+    $self->{payload_attachment}->{html_message} .= '
                 </tr>
                 <tr>
                   <td style="background-color:#255891;">';
-                  if(defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne ''){
-                      $self->{payload_attachment}->{html_message} .='
+    if (defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne ''){
+        $self->{payload_attachment}->{html_message} .='
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;"><a href="'. $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data . '" style="color:#ffffff;" target="_blank">Go to Centreon</a></h2>';
-                    }
-                    $self->{payload_attachment}->{html_message} .='
+    }
+
+    $self->{payload_attachment}->{html_message} .='
                   </td>
                 </tr>
               </tbody>
@@ -530,7 +524,6 @@ sub host_message {
     </body>
     </html>
     ';
-
 }
 
 sub service_message {
@@ -543,8 +536,8 @@ sub service_message {
     my $author_alt = '';
     my $comment_html = '';
     my $comment_alt = '';
-    if(defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne ''){
-        if($self->{option_results}->{type} =~ /^downtime.*$/i){
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
             $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime by:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
             $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
@@ -558,8 +551,9 @@ sub service_message {
             $author_alt = 'Flapping Author: ' . $self->{option_results}->{notif_author};
         }
     }
-    if(defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne ''){
-        if($self->{option_results}->{type} =~ /^downtime.*$/i){
+
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
             $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime Comment:</h4>
                             <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
             $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
@@ -574,26 +568,25 @@ sub service_message {
         }
     }
 
-    my $url = $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description};
-    my $ua = LWP::UserAgent->new(ssl_opts => $self->{ssl_opts}, timeout => $self->{option_results}->{timeout});
-    my $response = $ua->get($url);
-    my $img = undef;
+    my $content = $self->{http}->request(
+        hostname => '',
+        full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
+        timeout => $self->{option_results}->{timeout}
+    );
     
-    if($response->status_line !~ /200/){
+    my $img;
+    if ($self->{http}->get_code() !~ /200/) {
         $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Graph not load</h2>';
     } else {
-        $self->{payload_attachment}->{png} = $response->decoded_content;
-        $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . '" style="display:block; width:98%; height:auto;margin:0 10px 0 10px;">
-';
+        $self->{payload_attachment}->{png} = $content;
+        $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
     }
 
-    
-
     my $details = {
-          id => $service_id,
-          resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
-          tab => "details"
-        };
+        id => $service_id,
+        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        tab => 'details'
+    };
 
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
@@ -617,13 +610,13 @@ sub service_message {
     Address: ' . $self->{option_results}->{host_address} . '
     Date/Time: ' .$self->{option_results}->{date};
 
-    if(defined($author_alt) && $author_alt ne ''){
-            $self->{payload_attachment}->{alt_message} .= "\n    " . $author_alt . "\n";
-        }
-        if(defined($comment_alt) && $comment_alt ne ''){
-            $self->{payload_attachment}->{alt_message} .= "    " . $comment_alt . "\n";
-        }
-        $self->{payload_attachment}->{alt_message} .= '
+    if (defined($author_alt) && $author_alt ne '') {
+        $self->{payload_attachment}->{alt_message} .= "\n    " . $author_alt . "\n";
+    }
+    if(defined($comment_alt) && $comment_alt ne '') {
+        $self->{payload_attachment}->{alt_message} .= "    " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
 
     Info:
     ' . $self->{option_results}->{service_output} . '
@@ -773,14 +766,14 @@ sub service_message {
                         </td>
                     </tr>
                     <tr>';
-                    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-                        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . ';">
-                                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{service_state})}->{text} .'; text-align:center;">';
-                    } else {
-                        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . ';">
-                                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{type})}->{text} .'; text-align:center;">';
-                    }
-                  $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . ';">
+            <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{service_state})}->{text} .'; text-align:center;">';
+    } else {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . ';">
+            <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{type})}->{text} .'; text-align:center;">';
+    }
+    $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
                         </td>
                     </tr>
                     </tbody>
@@ -838,10 +831,11 @@ sub service_message {
                         </td>
                     </tr>
                     </tbody>
-                    ';
-                    if(defined($author_html) && $author_html ne ''){
-                        $self->{payload_attachment}->{html_message} .= '
-                        <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
+    ';
+
+    if (defined($author_html) && $author_html ne '') {
+        $self->{payload_attachment}->{html_message} .= '
+                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
                         <tbody>
                             <tr>
                                 <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
@@ -849,9 +843,9 @@ sub service_message {
                                 </td>
                             </tr>
                         </tbody>';
-                    }
-                    if(defined($comment_html) && $comment_html ne ''){
-                        $self->{payload_attachment}->{html_message} .= '
+    }
+    if (defined($comment_html) && $comment_html ne '') {
+        $self->{payload_attachment}->{html_message} .= '
                         <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
                         <tbody>
                             <tr>
@@ -883,19 +877,19 @@ sub service_message {
                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
                 <tbody>
                     <tr>';
-                    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-                        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . '; height:10px">';
-                    } else{
-                        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . '; height:10px">';
-                    }
-                  $self->{payload_attachment}->{html_message} .= '</tr>
+    if ($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . '; height:10px">';
+    } else {
+        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . '; height:10px">';
+    }
+    $self->{payload_attachment}->{html_message} .= '</tr>
                     <tr>
                     <td style="background-color:#255891;">';
-                    if(defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne ''){
-                      $self->{payload_attachment}->{html_message} .='
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;"><a href="'. $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data . '" style="color:#ffffff;" target="_blank">Go to Centreon</a></h2>';
-                    }
-                    $self->{payload_attachment}->{html_message} .='
+    if (defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne '') {
+        $self->{payload_attachment}->{html_message} .='
+                    <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;"><a href="'. $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data . '" style="color:#ffffff;" target="_blank">Go to Centreon</a></h2>';
+    }
+    $self->{payload_attachment}->{html_message} .= '
                 </td>
                 </tr>
                 </tbody>
@@ -924,12 +918,12 @@ sub service_message {
         </center>
     </body>
     </html>
-    ';    
+    ';
 }
 
 sub set_payload {
     my ($self, %options) = @_;
-        
+
     if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
         $self->service_message();
     } else {
@@ -941,51 +935,46 @@ sub run {
     my ($self, %options) = @_;
 
     $self->set_payload();
-    # use Data::Dumper;
-    #print $self->{payload_attachment}->{html_message};
     my $attachement = '';
-    
-
-    if(defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
+    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
         my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
         $attachement = Email::MIME->create(
             header_str => [
-                'Content-ID' => "<$img_cid>",
+                'Content-ID' => "<$img_cid>"
             ],
             attributes => {
                 content_type => 'image/png',
                 disposition  => 'inline',
                 encoding     => 'base64',
-                name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png',
+                name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
             },
-            body => $self->{payload_attachment}->{png},
+            body => $self->{payload_attachment}->{png}
         );
     }
-    
 
-        my $email = Email::MIME->create(
+    my $email = Email::MIME->create(
         header_str => [
             From    => $self->{option_results}->{from_address},
             To      => $self->{option_results}->{to_address},
-            Subject => $self->{payload_attachment}->{subject},
+            Subject => $self->{payload_attachment}->{subject}
         ],
         parts => [
             Email::MIME->create(
                 attributes => {
                     content_type => 'text/plain',
-                    charset      => 'UTF-8',
+                    charset      => 'UTF-8'
                 },
-                body => $self->{payload_attachment}->{alt_message},
+                body => $self->{payload_attachment}->{alt_message}
             ),
             Email::MIME->create(
                 attributes => {
                     content_type => 'text/html',
-                    charset      => 'UTF-8',
+                    charset      => 'UTF-8'
                 },
-                body => $self->{payload_attachment}->{html_message},
+                body => $self->{payload_attachment}->{html_message}
             ),
             $attachement
-        ],
+        ]
     );
 
     my $smtp = Email::Sender::Transport::SMTP->new({
@@ -993,9 +982,8 @@ sub run {
         port => $self->{option_results}->{smtp_port},
         sasl_username => $self->{smtp_user},
         sasl_password => $self->{smtp_password},
-        ssl => $self->{insecure},
+        ssl => $self->{smtp_ssl},
         debug => $self->{smtp_debug}
-
     });
 
     eval { sendmail($email, { transport => $smtp }); };
@@ -1006,9 +994,6 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-
-    
-
 }
 
 1;
@@ -1025,7 +1010,7 @@ centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-addre
 
 Example for a service:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'
 
 Example for Centreon configuration:
 
