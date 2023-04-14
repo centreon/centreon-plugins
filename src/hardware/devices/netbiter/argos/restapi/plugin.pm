@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Netbier IoT devices using Argos RestAPI.
+Check Netbiter IoT devices using Argos RestAPI.
 
 =cut

@@ -188,7 +188,7 @@ __END__
 
 =head1 MODE
 
-Check Nebiter Argos alarms.
+Check Netbiter alarms using Argos RestAPI.
 
 Example:
 perl centreon_plugins.pl --plugin=hardware::devices::netbiter::argos::restapi::plugin --mode=alarms

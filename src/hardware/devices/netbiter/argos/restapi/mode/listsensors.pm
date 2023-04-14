@@ -105,7 +105,7 @@ __END__
 
 =head1 MODE
 
-List sensors logs instances.
+List Netbiter log sensors using Argos RestAPI.
 
 =over 8
 

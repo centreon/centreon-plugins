@@ -141,7 +141,7 @@ __END__
 
 =head1 MODE
 
-Check Netbiter Argos API sensors values.
+Check Netbiter sensors values using Argos RestAPI.
 
 Example:
 perl centreon_plugins.pl --plugin=hardware::devices::netbiter::argos::restapi::plugin --mode=sensor-value
