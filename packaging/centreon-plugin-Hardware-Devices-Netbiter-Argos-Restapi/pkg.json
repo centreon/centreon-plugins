@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Netbiter-Argos-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Netbiter devices using Argos Rest Api",
+    "plugin_name": "centreon_netbiter_argos_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "hardware/devices/netbiter/argos/restapi"
+    ]
+}
