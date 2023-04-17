@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'             => 'network::cambium::cnpilot::snmp::mode::cpu'
+        'cpu'       => 'network::cambium::cnpilot::snmp::mode::cpu',
+        'memory'    => 'network::cambium::cnpilot::snmp::mode::memory'
     };
 
     return $self;
