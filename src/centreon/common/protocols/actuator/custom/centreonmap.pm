@@ -158,16 +158,16 @@ sub clean_session {
 
     my $datas = {};
     $options{statefile}->write(data => $datas);
-    $self->{studio_session} = undef;
+    $self->{session_token} = undef;
 }
 
 sub get_session {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => 'centreonmap_session_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $studio_session = $options{statefile}->get(name => 'studio_session');
+    my $session_token = $options{statefile}->get(name => 'studio_session');
 
-    if ($has_cache_file == 0 || !defined($studio_session)) {
+    if ($has_cache_file == 0 || !defined($session_token)) {
         my $login = { login => $self->{api_username}, password => $self->{api_password} };
         my $post_json = JSON::XS->new->utf8->encode($login);
 
@@ -191,15 +191,15 @@ sub get_session {
 
         my $decoded = $self->json_decode(content => $content);
         if (!defined($decoded->{jwtToken})) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot studio session');
+        $self->{output}->add_option_msg(short_msg => 'Cannot get session token');
         $self->{output}->option_exit();
         }
 
-        $studio_session = $decoded->{jwtToken};
-        $options{statefile}->write(data => { studio_session => $studio_session });
+        $session_token = $decoded->{jwtToken};
+        $options{statefile}->write(data => { studio_session => $session_token });
     }
 
-    $self->{studio_session} = $studio_session;
+    $self->{studio_session} = $session_token;
 }
 
 sub request_api {
