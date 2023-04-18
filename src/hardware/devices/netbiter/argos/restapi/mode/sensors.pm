@@ -73,10 +73,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-device:s'    => { name => 'filter_device' },
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-sensor-id:s' => { name => 'filter_sensor_id' },
-        'system-id:s'        => { name => 'system_id' }
+        'filter-device:s' => { name => 'filter_device' },
+        'filter-name:s'   => { name => 'filter_name' },
+        'filter-id:s'     => { name => 'filter_id' },
+        'system-id:s'     => { name => 'system_id' }
     });
 
     return $self;
@@ -98,8 +98,8 @@ sub manage_selection {
     my $sensors = $options{custom}->list_sensors(system_id => $self->{option_results}->{system_id});
 
     foreach (@{$sensors}) {
-        next if (defined($self->{option_results}->{filter_sensor_id}) && $self->{option_results}->{filter_sensor_id} ne '' &&
-            $_->{id} !~ /$self->{option_results}->{filter_sensor_id}/);
+        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $_->{id} !~ /$self->{option_results}->{filter_id}/);
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_device}) && $self->{option_results}->{filter_device} ne '' &&
