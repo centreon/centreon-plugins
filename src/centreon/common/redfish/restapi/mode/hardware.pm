@@ -84,7 +84,12 @@ sub get_devices {
     $self->get_chassis() if (!defined($self->{chassis}));
     foreach my $chassis (@{$self->{chassis}}) {
         $chassis->{Devices} = [];
-        my $result = $self->{custom}->request_api(url_path => $chassis->{'@odata.id'} . 'Devices/');
+        my $result = $self->{custom}->request_api(
+            url_path => $chassis->{'@odata.id'} . 'Devices/',
+            ignore_codes => { 404 => 1 }
+        );
+        next if (!defined($result));
+
         foreach (@{$result->{Members}}) {
             my $device_detailed = $self->{custom}->request_api(url_path => $_->{'@odata.id'});
             push @{$chassis->{Devices}}, $device_detailed;
@@ -135,7 +140,12 @@ sub get_storages {
     $self->{storages} = [];
     my $systems = $self->{custom}->request_api(url_path => '/redfish/v1/Systems');
     foreach my $system (@{$systems->{Members}}) {
-        my $storages = $self->{custom}->request_api(url_path => $system->{'@odata.id'} . '/Storage/');
+        my $storages = $self->{custom}->request_api(
+            url_path => $system->{'@odata.id'} . '/Storage/',
+            ignore_codes => { 400 => 1, 404 => 1 }
+        );
+        next if (!defined($storages));
+
         foreach my $storage (@{$storages->{Members}}) {
             my $storage_detailed = $self->{custom}->request_api(url_path => $storage->{'@odata.id'});
             push @{$self->{storages}}, $storage_detailed;
