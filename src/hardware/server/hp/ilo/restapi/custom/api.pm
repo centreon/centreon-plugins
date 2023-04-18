@@ -191,18 +191,26 @@ sub request_api {
         $self->authenticate(statefile => $self->{cache});
     }
     
-    my $content = $self->{http}->request(%options, 
+    my $content = $self->{http}->request(
+        %options, 
         warning_status => '', unknown_status => '', critical_status => ''
     );
 
+    my $code = $self->{http}->get_code();
+    return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
+
     # Maybe there is an issue with the token. So we retry.
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ($code < 200 || $code >= 300) {
         $self->clean_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
-        $content = $self->{http}->request(%options, 
+        $content = $self->{http}->request(
+            %options, 
             warning_status => '', unknown_status => '', critical_status => ''
         );
+        $code = $self->{http}->get_code();
     }
+
+    return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
@@ -210,7 +218,7 @@ sub request_api {
         $self->{output}->option_exit();
     }
 
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ($code < 200 || $code >= 300) {
         $self->{output}->add_option_msg(short_msg => 'api request error: ' . (defined($decoded->{type}) ? $decoded->{type} : 'unknown'));
         $self->{output}->option_exit();
     }
