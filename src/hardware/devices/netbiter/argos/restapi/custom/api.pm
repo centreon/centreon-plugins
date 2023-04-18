@@ -229,7 +229,7 @@ sub request_api {
 
 sub list_sensors {
     my ($self, %options) = @_;
-    # Results are cached to avoid to many API calls
+    # Results are cached to avoid too many API calls
     my $has_cache_file = $self->{cache_sensors}->read(statefile => 'netbiter_cache_sensors_' . md5_hex($options{system_id}));
     my $response = $self->{cache_sensors}->get(name => 'response');
     my $freshness = defined($self->{cache_sensors}->get(name => 'update_time')) ? time() - $self->{cache_sensors}->get(name => 'update_time') : undef;
