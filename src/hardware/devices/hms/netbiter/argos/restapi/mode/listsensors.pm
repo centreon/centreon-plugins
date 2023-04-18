@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::netbiter::argos::restapi::mode::listsensors;
+package hardware::devices::hms::netbiter::argos::restapi::mode::listsensors;
 
 use base qw(centreon::plugins::mode);
 

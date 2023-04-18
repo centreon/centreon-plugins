@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::netbiter::argos::restapi::mode::discovery;
+package hardware::devices::hms::netbiter::argos::restapi::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 

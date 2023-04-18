@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::netbiter::argos::restapi::mode::alarms;
+package hardware::devices::hms::netbiter::argos::restapi::mode::alarms;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -190,7 +190,7 @@ __END__
 Check Netbiter alarms using Argos RestAPI.
 
 Example:
-perl centreon_plugins.pl --plugin=hardware::devices::netbiter::argos::restapi::plugin --mode=alarms
+perl centreon_plugins.pl --plugin=hardware::devices::hms::netbiter::argos::restapi::plugin --mode=alarms
 --access-key='ABCDEFG1234567890' --system-id='XYZ123' --filter-active --verbose
 
 More information on'https://apidocs.netbiter.net/?page=methods&show=getSystemAlarms'.

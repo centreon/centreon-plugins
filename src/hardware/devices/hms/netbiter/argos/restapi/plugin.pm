@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::netbiter::argos::restapi::plugin;
+package hardware::devices::hms::netbiter::argos::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'alarms'       => 'hardware::devices::netbiter::argos::restapi::mode::alarms',
-        'discovery'    => 'hardware::devices::netbiter::argos::restapi::mode::discovery',
-        'list-sensors' => 'hardware::devices::netbiter::argos::restapi::mode::listsensors',
-        'sensors'      => 'hardware::devices::netbiter::argos::restapi::mode::sensors'
+        'alarms'       => 'hardware::devices::hms::netbiter::argos::restapi::mode::alarms',
+        'discovery'    => 'hardware::devices::hms::netbiter::argos::restapi::mode::discovery',
+        'list-sensors' => 'hardware::devices::hms::netbiter::argos::restapi::mode::listsensors',
+        'sensors'      => 'hardware::devices::hms::netbiter::argos::restapi::mode::sensors'
     };
 
-    $self->{custom_modes}->{restapi} = 'hardware::devices::netbiter::argos::restapi::custom::api';
+    $self->{custom_modes}->{restapi} = 'hardware::devices::hms::netbiter::argos::restapi::custom::api';
     return $self;
 }
 

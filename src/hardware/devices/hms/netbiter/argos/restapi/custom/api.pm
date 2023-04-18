@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::netbiter::argos::restapi::custom::api;
+package hardware::devices::hms::netbiter::argos::restapi::custom::api;
 
 use strict;
 use warnings;
