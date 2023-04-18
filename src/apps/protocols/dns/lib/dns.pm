@@ -77,11 +77,20 @@ sub connect {
     my %dns_options = ();
 
     if (defined($self->{option_results}->{nameservers})) {
-        $dns_options{nameservers} = [@{$self->{option_results}->{nameservers}}];
+        foreach my $ns (@{$self->{option_results}->{nameservers}}) {
+            my @entries = split(/,/, $ns);
+            foreach my $name (@entries) {
+                next if ($name eq '');
+                $dns_options{nameservers} = [] if (!defined($dns_options{nameservers}));
+                push @{$dns_options{nameservers}}, $name;
+            }
+        }
     }
+
     if (defined($self->{option_results}->{searchlist})) {
         $dns_options{searchlist} = [@{$self->{option_results}->{searchlist}}];
     }
+
     foreach my $option (@{$self->{option_results}->{dns_options}}) {
         next if ($option !~ /^(.+?)=(.+)$/);
         $dns_options{$1} = $2;
