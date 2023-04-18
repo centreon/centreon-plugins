@@ -580,7 +580,7 @@ sub service_message {
     );
     
     my $img;
-    if ($self->{http}->get_code() !~ /200/ || $content !~ /^PNG/) {
+    if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
          $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
     } else {
         $self->{payload_attachment}->{png} = $content;
