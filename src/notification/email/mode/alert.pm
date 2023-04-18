@@ -170,6 +170,8 @@ sub check_options {
         ? $self->{option_results}->{smtp_user} : '';
     $self->{smtp_password} = defined($self->{option_results}->{smtp_password}) && $self->{option_results}->{smtp_password} ne '' 
         ? $self->{option_results}->{smtp_password} : '';
+
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub host_message {
@@ -594,12 +596,9 @@ sub service_message {
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
 
-    my $line_break;
+    my $line_break = '<br />';
 
     $self->{option_results}->{service_longoutput} =~ s/\n/<br \/>/g;
-    if(defined($self->{option_results}->{service_longoutput}) && $self->{option_results}->{service_longoutput} ne '') {
-        $line_break = '<br>';
-    }
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : ' . $self->{option_results}->{service_description} . ' '. $self->{option_results}->{service_state} . ' on ' . $self->{option_results}->{host_name} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
