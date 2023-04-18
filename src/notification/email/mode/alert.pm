@@ -580,8 +580,8 @@ sub service_message {
     );
     
     my $img;
-    if ($self->{http}->get_code() !~ /200/) {
-        $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Graph not load</h2>';
+    if ($self->{http}->get_code() !~ /200/ || $content !~ /^PNG/) {
+         $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
     } else {
         $self->{payload_attachment}->{png} = $content;
         $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
