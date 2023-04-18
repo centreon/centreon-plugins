@@ -163,7 +163,7 @@ perl centreon_plugins.pl --plugin=apps::protocols::dns::plugin --mode=request --
 
 =item B<--nameservers>
 
-Set nameserver to query (can be multiple).
+Set nameserver to query (can use option multiple times or separated values by coma).
 The system configuration is used by default.
 
 =item B<--searchlist>
