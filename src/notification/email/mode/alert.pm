@@ -571,7 +571,10 @@ sub service_message {
     my $content = $self->{http}->request(
         hostname => '',
         full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
-        timeout => $self->{option_results}->{timeout}
+        timeout => $self->{option_results}->{timeout},
+        unknown_status => '',
+        warning_status => '',
+        critical_status => ''
     );
     
     my $img;
