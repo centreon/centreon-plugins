@@ -32,7 +32,11 @@ use DateTime;
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status: ' . $self->{result_values}->{status};
+    my $msg = 'status: ' . $self->{result_values}->{status};
+    if ($self->{result_values}->{extra_attrs} ne '') {
+        $msg .= $self->{result_values}->{extra_attrs};
+    }
+    return $msg;
 }
 
 sub custom_long_output {
@@ -86,7 +90,7 @@ sub set_counters {
             set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'application' }, 
-                    { name => 'type' }, { name => 'folder' },
+                    { name => 'type' }, { name => 'folder' }, { name => 'extra_attrs' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -155,12 +159,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-application:s' => { name => 'filter_application' },
-        'filter-folder:s'      => { name => 'filter_folder' },
-        'filter-type:s'        => { name => 'filter_type' },
-        'filter-name:s'        => { name => 'filter_name' },
-        'job-name:s'           => { name => 'job_name' },
-        'timezone:s'           => { name => 'timezone' }
+        'filter-application:s'  => { name => 'filter_application' },
+        'filter-folder:s'       => { name => 'filter_folder' },
+        'filter-type:s'         => { name => 'filter_type' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'display-extra-attrs:s' => { name => 'display_extra_attrs' },
+        'job-name:s'            => { name => 'job_name' },
+        'timezone:s'            => { name => 'timezone' }
     });
 
     return $self;
@@ -231,6 +236,14 @@ sub manage_selection {
             # Wait Condition — waiting for a condition.
             $self->{global}->{waiting}++;
         }
+
+        my $extra_attrs = '';
+        if (defined($self->{option_results}->{display_extra_attrs}) && $self->{option_results}->{display_extra_attrs} ne '') {
+            $extra_attrs = $self->{option_results}->{display_extra_attrs};
+            $extra_attrs =~ s/%\{(.*?)\}/$job->{$1}/g;
+            $extra_attrs =~ s/%\((.*?)\)/$job->{$1}/g;
+        }
+
         $self->{jobs}->{ $job->{jobId} } = { 
             name => $job->{name},
             folder => $job->{folder},
@@ -238,7 +251,8 @@ sub manage_selection {
             type => $job->{type}, 
             status => lc($job->{status}),
             elapsed => $elapsed,
-            failed => $failed
+            failed => $failed,
+            extra_attrs => $extra_attrs
         };
     }
 }
@@ -277,6 +291,10 @@ Filter jobs by job name (can be a regexp).
 =item B<--job-name>
 
 Check exact job name (no regexp).
+
+=item B<--display-extra-attrs>
+
+Display extra job attributes (Eg: --display-extra-attrs=', number of runs: %(numberOfRuns)').
 
 =item B<--timezone>
 
