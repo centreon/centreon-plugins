@@ -29,8 +29,7 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
+    $self->{modes} = {
         'app-resources' => 'cloud::azure::database::sqldatabase::mode::appresources',
         'connections'   => 'cloud::azure::database::sqldatabase::mode::connections',
         'discovery'     => 'cloud::azure::database::sqldatabase::mode::discovery',
@@ -39,7 +38,7 @@ sub new {
         'sessions'      => 'cloud::azure::database::sqldatabase::mode::sessions',
         'storage'       => 'cloud::azure::database::sqldatabase::mode::storage',
         'workers'       => 'cloud::azure::database::sqldatabase::mode::workers'
-    );
+    };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
     $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
@@ -50,7 +49,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' }
     });
 
     $self->SUPER::init(%options);

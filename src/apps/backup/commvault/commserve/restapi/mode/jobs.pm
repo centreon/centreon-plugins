@@ -199,9 +199,9 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
             next;
         }
-        if (defined($job->{clientGroups}) && defined($self->{option_results}->{filter_client_name}) && $self->{option_results}->{filter_client_name} ne '') {
+        if (defined($self->{option_results}->{filter_client_group}) && $self->{option_results}->{filter_client_group} ne '' && defined($job->{clientGroups}) && ref($job->{clientGroups}) eq 'ARRAY') {
             my $matched = 0;
-            foreach (@$job->{clientGroups}) {
+            foreach (@{$job->{clientGroups}}) {
                 if ($_->{clientGroupName} =~ /$self->{option_results}->{filter_client_group}/) {
                     $matched = 1;
                     last;

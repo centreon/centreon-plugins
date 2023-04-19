@@ -47,8 +47,8 @@ sub check {
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "iomodule '%s' status is '%s' [instance = %s]",
-                $result->{content}->{name}, $health, $instance,
+                "iomodule '%s' status is '%s' [instance: %s]",
+                $result->{content}->{name}, $health, $instance
             )
         );
         

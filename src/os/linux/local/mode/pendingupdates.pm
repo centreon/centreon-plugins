@@ -104,7 +104,9 @@ sub check_options {
         ) {
         $self->{command} = 'yum';
         $self->{command_options} = 'check-update 2>&1';
-        $self->{command_options} .= ' --security' if defined($self->{option_results}->{check_security});
+        if (defined($self->{option_results}->{check_security})) {
+            $self->{command_options} = '-q updateinfo list sec' 
+        }
     } elsif ($self->{option_results}->{os_mode} eq 'debian') {
         $self->{command} = 'apt-get';
         $self->{command_options} = 'upgrade -sVq 2>&1';
@@ -157,11 +159,10 @@ sub parse_updates {
 sub parse_security_updates {
     my ($self, %options) = @_;
 
-    my @lines = split /\n/, $options{stdout};
+    my @lines = split(/\n/, $options{stdout});
+    $self->{global}->{total_security} = 0;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\d+).package\(s\)/);
-        my $security_updates = $1;
-        $self->{global}->{total_security} = $security_updates;
+        $self->{global}->{total_security}++;
     }
 }
 
@@ -200,6 +201,7 @@ __END__
 Check pending updates.
 
 For rhel/centos: yum check-update 2>&1
+For rhel/centos security: yum -q updateinfo list sec
 For Debian: apt-get upgrade -sVq 2>&1
 For Suse: zypper list-updates 2>&1
 
