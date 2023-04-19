@@ -35,7 +35,7 @@ sub custom_status_output {
         $self->{result_values}->{issuer}
     );
     if (defined($self->{result_values}->{verify_hostname}) && $self->{result_values}->{verify_hostname} eq 'FAILED') {
-        $msg = sprintf(" - Verify hostname status '%s'. ", $self->{result_values}->{verify_hostname}).$msg;
+        $msg .= sprintf(" - Verify hostname status '%s'", $self->{result_values}->{verify_hostname});
     }
     if (defined($self->{result_values}->{alt_subjects}) && $self->{result_values}->{alt_subjects} ne '') {
         $self->{output}->output_add(long_msg => sprintf("Alternative subject names: %s.", $self->{result_values}->{alt_subjects}));
