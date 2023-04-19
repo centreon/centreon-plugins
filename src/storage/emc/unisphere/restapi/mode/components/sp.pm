@@ -48,7 +48,7 @@ sub check {
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "storage processor '%s' status is '%s' [instance = %s]",
+                "storage processor '%s' status is '%s' [instance: %s]",
                 $name, $health, $instance
             )
         );
