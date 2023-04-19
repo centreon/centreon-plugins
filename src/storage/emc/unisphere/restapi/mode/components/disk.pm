@@ -47,8 +47,8 @@ sub check {
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk '%s' status is '%s' [instance = %s]",
-                $result->{content}->{name}, $health, $instance,
+                "disk '%s' status is '%s' [instance: %s]",
+                $result->{content}->{name}, $health, $instance
             )
         );
         
