@@ -209,6 +209,21 @@ sub get_certificate_informations {
     $cert_infos->{subject} = $socket->peer_certificate('commonName');
     $cert_infos->{issuer} = $socket->peer_certificate('authority');
 
+    if (defined($self->{ssl_context}->{SSL_verify_mode}) &&
+        defined($self->{option_results}->{servername}) &&
+        $self->{ssl_context}->{SSL_verify_mode} == SSL_VERIFY_NONE) {
+        $cert_infos->{verify_hostname} =  $socket->verify_hostname(
+            $self->{option_results}->{servername},
+            # like default scheme
+            {
+                wildcards_in_cn => 'anywhere',
+                wildcards_in_alt => 'anywhere',
+                check_cn => 'always',
+                ip_in_cn => 1,
+            }
+        );
+    }
+
     my @subject_alt_names = $socket->peer_certificate('subjectAltNames');
     my $append = '';
     $cert_infos->{alt_subjects} = '';
