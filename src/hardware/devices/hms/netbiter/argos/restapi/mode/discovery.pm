@@ -46,7 +46,6 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my @disco_data;
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
@@ -55,7 +54,7 @@ sub run {
     $disco_stats->{results} = $results;
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{discovered_items} = @disco_data;
+    $disco_stats->{discovered_items} = scalar(@{$disco_stats->{results}});
 
     my $encoded_data;
     eval {
