@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Database-Postgres-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Database for Postgres service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_database_postgres_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/azure/custom/",
+        "cloud/azure/database/postgres/"
+    ]
+}
