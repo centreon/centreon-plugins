@@ -41,12 +41,12 @@ sub set_system {
             ['major', 'CRITICAL'],
             ['critical', 'CRITICAL'],
             ['non_recoverable', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
-    
+
     $self->{components_path} = 'storage::emc::unisphere::restapi::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'];
+    $self->{components_module} = ['disk', 'fan', 'iomodule', 'memmodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'];
 }
 
 sub new {
@@ -76,7 +76,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'fan', 'iomodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'.
+Can be: 'disk', 'fan', 'iomodule', 'memmodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'.
 
 =item B<--filter>
 
