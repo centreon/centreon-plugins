@@ -127,7 +127,7 @@ sub manage_selection {
         $self->{port}->{$instance} = {
             current		=> $result->{uxPTCurrentCalls},
             total		=> $result->{uxPTTotalCalls},
-            connected	=> $result->{uxPTConnectedCalls},
+            connected	        => $result->{uxPTConnectedCalls},
             refused		=> $result->{uxPTRefusedCalls},
             errored		=> $result->{uxPTErroredCalls},
             blocked		=> $result->{uxPTBlockedCalls},
