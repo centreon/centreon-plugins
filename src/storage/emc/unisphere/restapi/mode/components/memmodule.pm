@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::unisphere::restapi::mode::components::iomodule;
+package storage::emc::unisphere::restapi::mode::components::memmodule;
 
 use strict;
 use warnings;
@@ -27,36 +27,36 @@ use storage::emc::unisphere::restapi::mode::components::resources qw($health_sta
 sub load {
     my ($self) = @_;
 
-    $self->{json_results}->{iomodules} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/ioModule/instances?fields=name,health');
+    $self->{json_results}->{memmodules} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/memoryModule/instances?fields=name,health');
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => 'checking iomodules');
-    $self->{components}->{iomodule} = { name => 'iomodules', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'iomodule'));
-    return if (!defined($self->{json_results}->{iomodules}));
+    $self->{output}->output_add(long_msg => 'checking memmodules');
+    $self->{components}->{memmodule} = { name => 'memmodules', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'memmodule'));
+    return if (!defined($self->{json_results}->{memmodules}));
 
-    foreach my $result (@{$self->{json_results}->{iomodules}->{entries}}) {
+    foreach my $result (@{$self->{json_results}->{memmodules}->{entries}}) {
         my $instance = $result->{content}->{id};
 
-        next if ($self->check_filter(section => 'iomodule', instance => $instance));
-        $self->{components}->{iomodule}->{total}++;
+        next if ($self->check_filter(section => 'memmodule', instance => $instance));  
+        $self->{components}->{memmodule}->{total}++;
 
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "iomodule '%s' status is '%s' [instance: %s]",
+                "memory module '%s' status is '%s' [instance: %s]",
                 $result->{content}->{name}, $health, $instance
             )
         );
         
-        my $exit = $self->get_severity(label => 'health', section => 'iomodule', value => $health);
+        my $exit = $self->get_severity(label => 'health', section => 'memmodule', value => $health);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("iomodule '%s' status is '%s'", $result->{content}->{name}, $health)
+                short_msg => sprintf("memory module '%s' status is '%s'", $result->{content}->{name}, $health)
             );
         }
     }

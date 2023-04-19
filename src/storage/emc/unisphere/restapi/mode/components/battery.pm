@@ -47,11 +47,11 @@ sub check {
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "battery '%s' status is '%s' [instance = %s]",
-                $result->{content}->{name}, $health, $instance,
+                "battery '%s' status is '%s' [instance: %s]",
+                $result->{content}->{name}, $health, $instance
             )
         );
-        
+
         my $exit = $self->get_severity(label => 'health', section => 'battery', value => $health);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
