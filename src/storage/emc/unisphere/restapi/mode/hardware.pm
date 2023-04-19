@@ -41,13 +41,12 @@ sub set_system {
             ['major', 'CRITICAL'],
             ['critical', 'CRITICAL'],
             ['non_recoverable', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
 
     $self->{components_path} = 'storage::emc::unisphere::restapi::mode::components';
-    $self->{components_module} = ['memmodule'];
-    #$self->{components_module} = ['disk', 'fan', 'iomodule', 'memmodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'];
+    $self->{components_module} = ['disk', 'fan', 'iomodule', 'memmodule', 'psu', 'dpe', 'battery', 'ssd', 'sp'];
 }
 
 sub new {
