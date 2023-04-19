@@ -26,84 +26,77 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_port_output {
+    my ($self, %options) = @_;
+
+    return "Port '" . $options{instance_value}->{display} . "' number of calls ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'port', type => 1, cb_prefix_output => 'prefix_port_output', message_multiple => 'All calls stats on ports are OK' },
+        { name => 'port', type => 1, cb_prefix_output => 'prefix_port_output', message_multiple => 'All ports call statistics are ok' }
     ];
 
     $self->{maps_counters}->{port} = [
-        { label => 'current-calls', set => {
+        { label => 'current', nlabel => 'port.calls.current.count', set => {
                 key_values => [ { name => 'current' }, { name => 'display' } ],
-                output_template => 'Current calls : %s',
+                output_template => 'current: %s',
                 perfdatas => [
-                    { label => 'current', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'total-per-sec', set => {
-                key_values => [ { name => 'total', per_second => 1 }, { name => 'display' } ],
-                output_template => 'total calls: %.2f/s',
+        { label => 'total', nlabel => 'port.calls.total.count', set => {
+                key_values => [ { name => 'total', diff => 1 }, { name => 'display' } ],
+                output_template => 'total: %s',
                 perfdatas => [
-                    { label => 'total', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'connected-per-sec', set => {
-                key_values => [ { name => 'connected', per_second => 1 }, { name => 'display' } ],
-                output_template => 'connected calls: %.2f/s',
+        { label => 'connected', nlabel => 'port.calls.connected.count', set => {
+                key_values => [ { name => 'connected', diff => 1 }, { name => 'display' } ],
+                output_template => 'connected: %s',
                 perfdatas => [
-                    { label => 'connected', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'refused-per-sec', set => {
-                key_values => [ { name => 'refused', per_second => 1 }, { name => 'display' } ],
-                output_template => 'refused calls: %.2f/s',
+        { label => 'refused', nlabel => 'port.calls.refused.count', set => {
+                key_values => [ { name => 'refused', diff => 1 }, { name => 'display' } ],
+                output_template => 'refused: %s',
                 perfdatas => [
-                    { label => 'refused', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'errored-per-sec', set => {
-                key_values => [ { name => 'errored', per_second => 1 }, { name => 'display' } ],
-                output_template => 'errored calls: %.2f/s',
+        { label => 'errored', nlabel => 'port.calls.errored.count', set => {
+                key_values => [ { name => 'errored', diff => 1 }, { name => 'display' } ],
+                output_template => 'errored: %s',
                 perfdatas => [
-                    { label => 'errored', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'blocked-per-sec', set => {
-                key_values => [ { name => 'blocked', per_second => 1 }, { name => 'display' } ],
-                output_template => 'blocked calls: %.2f/s',
+        { label => 'blocked', nlabel => 'port.calls.blocked.count',  set => {
+                key_values => [ { name => 'blocked', diff => 1 }, { name => 'display' } ],
+                output_template => 'blocked: %s',
                 perfdatas => [
-                    { label => 'blocked', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_dsp_output {
-    my ($self, %options) = @_;
-
-    return "Port => '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -114,34 +107,36 @@ my $mapping = {
     uxPTConnectedCalls  => { oid => '.1.3.6.1.4.1.177.15.1.5.1.2.1.7' },
     uxPTRefusedCalls    => { oid => '.1.3.6.1.4.1.177.15.1.5.1.2.1.8' },
     uxPTErroredCalls    => { oid => '.1.3.6.1.4.1.177.15.1.5.1.2.1.9' },
-    uxPTBlockedCalls    => { oid => '.1.3.6.1.4.1.177.15.1.5.1.2.1.18' },
+    uxPTBlockedCalls    => { oid => '.1.3.6.1.4.1.177.15.1.5.1.2.1.18' }
 };
-
 my $oid_uxPortTable = '.1.3.6.1.4.1.177.15.1.5.1.2.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{snmp} = $options{snmp};
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_uxPortTable,
+        nothing_quit => 1
+    );
+
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{uxPTCurrentCalls}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        $self->{port}->{$instance} = {
+            current		=> $result->{uxPTCurrentCalls},
+            total		=> $result->{uxPTTotalCalls},
+            connected	        => $result->{uxPTConnectedCalls},
+            refused		=> $result->{uxPTRefusedCalls},
+            errored		=> $result->{uxPTErroredCalls},
+            blocked		=> $result->{uxPTBlockedCalls},
+            display		=> $instance
+        };
+    }
+
     $self->{cache_name} = "sonus_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-
-    $self->{results} = $options{snmp}->get_table(oid => $oid_uxPortTable,
-                                                 nothing_quit => 1);
-
-    foreach my $oid (keys %{$self->{results}}) {
-        next if $oid !~ /^$mapping->{uxPTCurrentCalls}->{oid}\.(.*)$/;
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-
-        $self->{port}->{$instance} = { current		=> $result->{uxPTCurrentCalls},
-                                       total		=> $result->{uxPTTotalCalls},
-                                       connected	=> $result->{uxPTConnectedCalls},
-                                       refused		=> $result->{uxPTRefusedCalls},
-                                       errored		=> $result->{uxPTErroredCalls},
-                                       blocked		=> $result->{uxPTBlockedCalls},
-                                       display		=> $instance };
-    }
 }
 
 1;
@@ -150,17 +145,13 @@ __END__
 
 =head1 MODE
 
-Check Call statistics
+Check port call statistics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning on counters. Can be ('current-calls', 'total-per-sec', 'connected-per-sec', 'refused-per-sec', 'errored-per-sec', 'blocked-per-sec')
-
-=item B<--critical-*>
-
-Critical on counters. Can be ('current-calls', 'total-per-sec', 'connected-per-sec', 'refused-per-sec', 'errored-per-sec', 'blocked-per-sec')
+Thresholds. Can be: 'current', 'total', 'connected', 'refused', 'errored', 'blocked'.
 
 =back
 
