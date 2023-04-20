@@ -598,7 +598,7 @@ sub service_message {
 
     my $line_break = '<br />';
 
-    $self->{option_results}->{service_longoutput} =~ s/\n/<br \/>/g;
+    $self->{option_results}->{service_longoutput} =~ s/\\n/<br \/>/g;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : ' . $self->{option_results}->{service_description} . ' '. $self->{option_results}->{service_state} . ' on ' . $self->{option_results}->{host_name} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -954,6 +954,22 @@ sub run {
         );
     }
 
+    my $html_part = Email::MIME->create(
+        attributes => {
+            content_type => 'text/html',
+            charset      => 'UTF-8'
+        },
+        body => $self->{payload_attachment}->{html_message}
+    );
+
+    my $text_part = Email::MIME->create(
+        attributes => {
+            content_type => 'text/plain',
+            charset      => 'UTF-8'
+        },
+        body => $self->{payload_attachment}->{alt_message}
+    );
+
     my $email = Email::MIME->create(
         header_str => [
             From    => $self->{option_results}->{from_address},
@@ -962,20 +978,13 @@ sub run {
         ],
         parts => [
             Email::MIME->create(
-                attributes => {
-                    content_type => 'text/plain',
-                    charset      => 'UTF-8'
-                },
-                body => $self->{payload_attachment}->{alt_message}
-            ),
-            Email::MIME->create(
-                attributes => {
-                    content_type => 'text/html',
-                    charset      => 'UTF-8'
-                },
-                body => $self->{payload_attachment}->{html_message}
-            ),
-            $attachement
+            attributes => {
+                content_type => 'multipart/alternative',
+                charset     => 'UTF-8',
+            },
+            parts => [$text_part, $html_part],
+        ),
+        $attachement
         ]
     );
 
