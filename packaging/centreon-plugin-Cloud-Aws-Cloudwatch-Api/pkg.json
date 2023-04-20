@@ -13,6 +13,7 @@
         "cloud/aws/ec2/mode/discovery.pm",
         "cloud/aws/ec2/mode/discoveryspotfleetrequests.pm",
         "cloud/aws/efs/mode/discovery.pm",
+        "cloud/aws/elasticache/mode/discovery.pm",
         "cloud/aws/elb/application/mode/discovery.pm",
         "cloud/aws/elb/classic/mode/discovery.pm",
         "cloud/aws/elb/network/mode/discovery.pm",
