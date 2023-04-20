@@ -1227,7 +1227,8 @@ sub azure_list_policystates {
             full_url => $url,
             hostname => '',
             get_params => $get_params,
-            query_form_post => ''
+            query_form_post => '',
+            header => ['Content-Type: application/json']
         );
         foreach (@{$response->{value}}) {
             push @$full_response, $_;
