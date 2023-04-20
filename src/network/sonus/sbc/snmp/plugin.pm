@@ -32,7 +32,7 @@ sub new {
     $self->{modes} = {
         'call-statistics'   => 'network::sonus::sbc::snmp::mode::callstats',
         'channels'          => 'network::sonus::sbc::snmp::mode::channels',
-        'cpu'               => 'snmp_standard::mode::cpu',
+        'cpu'               => 'network::sonus::sbc::snmp::mode::cpu',
         'cpu-detailed'      => 'network::sonus::sbc::snmp::mode::cpudetailed',
         'dsp-stats'         => 'network::sonus::sbc::snmp::mode::dspstats',
         'interfaces'        => 'network::sonus::sbc::snmp::mode::interfaces',
