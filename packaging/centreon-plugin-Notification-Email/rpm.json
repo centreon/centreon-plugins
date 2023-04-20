@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+    "perl(MIME::Base64)",
+    "perl(Email::MIME)",
+    "perl(Email::Sender::Simple)",
+    "perl(Email::Sender)",
+    "perl(JSON::XS)",
+    "perl(URI::Escape)"
+    ]
+}
