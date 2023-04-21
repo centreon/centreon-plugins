@@ -116,7 +116,7 @@ sub set_counters {
           indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
