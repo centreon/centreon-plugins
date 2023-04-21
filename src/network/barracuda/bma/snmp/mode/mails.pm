@@ -135,7 +135,9 @@ Check e-mails.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'firmware-space', 'maillog-space'.
+Can be: 'internal-hourly', 'internal-daily', 'internal-total',
+'outbound-hourly', 'outbound-daily', 'outbound-total',
+'inbound-hourly', 'inbound-daily', 'inbound-total'.
 
 =back
 
