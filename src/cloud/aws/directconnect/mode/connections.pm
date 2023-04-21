@@ -261,7 +261,7 @@ sub manage_selection {
 
         my $cw_metrics = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/DX',
-            dimensions => [ { ConnectionId => $connection_id } ],
+            dimensions => [ { Name => 'ConnectionId', Value => $connection_id } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
@@ -284,7 +284,7 @@ sub manage_selection {
 
         $cw_metrics = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/DX',
-            dimensions => [ { ConnectionId => $connection_id } ],
+            dimensions => [ { Name => 'ConnectionId', Value => $connection_id } ],
             metrics => $self->{aws_fiber_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
