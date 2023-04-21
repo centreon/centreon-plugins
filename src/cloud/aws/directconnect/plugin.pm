@@ -30,10 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'connections'             => 'cloud::aws::ec2::mode::connections',
-        'list-connections'        => 'cloud::aws::ec2::mode::listconnections',
-        'list-virtual-interfaces' => 'cloud::aws::ec2::mode::listvirtualinterfaces',
-        'virtual-interfaces'      => 'cloud::aws::ec2::mode::virtualinterfaces'
+        'connections'             => 'cloud::aws::directconnect::mode::connections',
+        'list-connections'        => 'cloud::aws::directconnect::mode::listconnections',
+        'list-virtual-interfaces' => 'cloud::aws::directconnect::mode::listvirtualinterfaces',
+        'virtual-interfaces'      => 'cloud::aws::directconnect::mode::virtualinterfaces'
     };
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

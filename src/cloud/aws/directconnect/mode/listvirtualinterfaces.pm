@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::directconnect::mode::listconnections;
+package cloud::aws::directconnect::mode::listvirtualinterfaces;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,27 +43,42 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->directconnect_describe_connections();
+    my $connections = $options{custom}->directconnect_describe_connections();
+    my $interfaces = $options{custom}->directconnect_describe_virtual_interfaces();
+
+    my $results = [];
+    foreach my $vid (keys %$interfaces) {
+        push @$results, {
+            connectionId => $interfaces->{$vid}->{connectionId},
+            connectionName => $connections->{ $interfaces->{$vid}->{connectionId} }->{name},
+            virtualInterfaceId => $vid,
+            virtualInterfaceName => $interfaces->{$vid}->{name},
+            virtualInterfaceState => $interfaces->{$vid}->{state}
+        };
+    }
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $connections = $self->manage_selection(%options);
-    foreach my $connection_id (keys %$connections) {
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[id: %s][name: %s][state: %s]',
-                $connection_id,
-                $connections->{$connection_id}->{name},
-                $connections->{$connection_id}->{state}
+                '[connectionId: %s][connectionName: %s][virtualInterfaceId: %s][virtualInterfaceName: %s][virtualInterfaceState: %s]',
+                $_->{connectionId},
+                $_->{connectionName},
+                $_->{virtualInterfaceId},
+                $_->{virtualInterfaceName},
+                $_->{virtualInterfaceState}
             )
         );
     }
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List connections:'
+        short_msg => 'List virtual interfaces:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -72,19 +87,15 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'state']);
+    $self->{output}->add_disco_format(elements => ['virtualInterfaceId', 'virtualInterfaceName', 'connectionName', 'connectionId', 'virtualInterfaceState']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $connections = $self->manage_selection(%options);
-    foreach my $connection_id (keys %$connections) {
-        $self->{output}->add_disco_entry(
-            id => $connection_id,
-            name => $connections->{$connection_id}->{name},
-            state => $connections->{$connection_id}->{state}
-        );
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
+        $self->{output}->add_disco_entry(%$_);
     }
 }
 
@@ -94,7 +105,7 @@ __END__
 
 =head1 MODE
 
-List direct connections.
+List virtual interfaces.
 
 =over 8
 

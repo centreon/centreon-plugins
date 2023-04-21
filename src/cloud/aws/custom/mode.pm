@@ -71,18 +71,25 @@ sub custom_metric_perfdata {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my $msg = '';
+    my $extra_unit = '';
+    my $metric_label = 'value';
     if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        my ($value, $unit) = ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') ?
-            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec}) :
-            ($self->{result_values}->{value_per_sec}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
-        $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit . '/s');
-    } else {
-        my ($value, $unit) = ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') ?
-            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}) :
-            ($self->{result_values}->{value}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
-        $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit);
+        $metric_label = 'value_per_sec';
+        $extra_unit = '/s';
     }
+
+    my ($value, $unit);
+    if ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') {
+        ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$metric_label});
+    } elsif ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'bps') {
+        ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$metric_label}, network => 1);
+        $extra_unit = '/s';
+    } else {
+        ($value, $unit) = ($self->{result_values}->{$metric_label}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
+    }
+
+    my $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit . $extra_unit);
+
     return $msg;
 }
 

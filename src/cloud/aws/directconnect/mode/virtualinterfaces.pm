@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::directconnect::mode::connections;
+package cloud::aws::directconnect::mode::virtualinterfaces;
 
 use base qw(cloud::aws::custom::mode);
 
@@ -31,56 +31,40 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         extra_params => {
-            message_multiple => 'All connections are ok'
+            message_multiple => 'All virtual interfaces are ok'
         },
         metrics => {
-            ConnectionBpsEgress => {
+            VirtualInterfaceBpsEgress => {
                 output => 'outbound data',
-                label => 'connection-egress',
+                label => 'virtual-interface-egress',
                 nlabel => {
-                    absolute => 'connection.egress.bitspersecond',
+                    absolute => 'virtual_interface.egress.bitspersecond',
                 },
                 unit => 'bps'
             },
-            ConnectionBpsIngress => {
+            VirtualInterfaceBpsIngress => {
                 output => 'inbound data',
-                label => 'connection-ingress',
+                label => 'virtual-interface-ingress',
                 nlabel => {
-                    absolute => 'connection.ingress.bitspersecond',
+                    absolute => 'virtual_interface.ingress.bitspersecond',
                 },
                 unit => 'bps'
             },
-            ConnectionPpsEgress => {
+            VirtualInterfacePpsEgress => {
                 output => 'outbound packets data',
-                label => 'connection-packets-egress',
+                label => 'virtual-interface-packets-egress',
                 nlabel => {
-                    absolute => 'connection.egress.packets.persecond',
+                    absolute => 'virtual_interface.egress.packets.persecond',
                 },
                 unit => '/s'
             },
-            ConnectionPpsIngress => {
+            VirtualInterfacePpsIngress => {
                 output => 'inbound packet data',
-                label => 'connection-packets-ingress',
+                label => 'virtual-interface-packets-ingress',
                 nlabel => {
-                    absolute => 'connection.ingress.packets.persecond',
+                    absolute => 'virtual_interface.ingress.packets.persecond',
                 },
                 unit => '/s'
-            },
-            ConnectionLightLevelTx => {
-                output => 'outbound light level',
-                label => 'connection-ligh-level-outbound',
-                nlabel => {
-                    absolute => 'connection.outbound.light.level.dbm',
-                },
-                unit => 'dBm'
-            },
-            ConnectionLightLevelRx => {
-                output => 'inbound light level',
-                label => 'connection-ligh-level-inbound',
-                nlabel => {
-                    absolute => 'connection.inbound.light.level.dbm',
-                },
-                unit => 'dBm'
             }
         }
     };
@@ -91,19 +75,19 @@ sub get_metrics_mapping {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    return sprintf('state: %s [bandwidth: %s]', $self->{result_values}->{state}, $self->{result_values}->{bandwidth});
+    return sprintf('state: %s [vlan: %s, type: %s]', $self->{result_values}->{state}, $self->{result_values}->{vlan}, $self->{result_values}->{type});
 }
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
 
-    return "connection '" . $options{instance_value}->{display} . "' ";
+    return "connection '" . $options{instance_value}->{connectionName} . "' virtual interface '" . $options{instance_value}->{virtualInterfaceName} . "' ";
 }
 
 sub long_output {
     my ($self, %options) = @_;
 
-    return "Checking connection '" . $options{instance_value}->{display} . "' ";
+    return "Checking connection '" . $options{instance_value}->{connectionName} . "' virtual interface '" . $options{instance_value}->{virtualInterfaceName} . "'";
 }
 
 sub prefix_statistics_output {
@@ -124,7 +108,7 @@ sub set_counters {
 
     $self->{maps_counters}->{status} = [
         { label => 'status', type => 2, set => {
-                key_values => [ { name => 'state' }, { name => 'bandwidth' }, { name => 'connectionName' } ],
+                key_values => [ { name => 'state' }, { name => 'vlan' }, { name => 'type' }, { name => 'connectionName' }, { name => 'virtualInterfaceName' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -139,7 +123,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-connection-id:s' => { name => 'filter_connection_id' }
+        'filter-connection-id:s'        => { name => 'filter_connection_id' },
+        'filter-virtual-interface-id:s' => { name => 'filter_virtual_interface_id' }
     });
     
     return $self;
@@ -154,24 +139,32 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $connections = $options{custom}->directconnect_describe_connections();
+    my $interfaces = $options{custom}->directconnect_describe_virtual_interfaces();
 
-    foreach my $connection_id (keys %$connections) {
+    foreach my $vid (keys %$interfaces) {
+        next if (defined($self->{option_results}->{filter_virtual_interface_id}) && $self->{option_results}->{filter_virtual_interface_id} ne ''
+            && $vid !~ /$self->{option_results}->{filter_virtual_interface_id}/);
         next if (defined($self->{option_results}->{filter_connection_id}) && $self->{option_results}->{filter_connection_id} ne ''
-            && $connection_id !~ /$self->{option_results}->{filter_connection_id}/);
+            && $interfaces->{$vid}->{connectionId} !~ /$self->{option_results}->{filter_connection_id}/);
+        
+        my $key = $connections->{ $interfaces->{$vid}->{connectionId} }->{name} . $self->{output}->get_instance_perfdata_separator() . $interfaces->{$vid}->{name};
 
-        $self->{metrics}->{$connection_id} = {
-            display => $connections->{$connection_id}->{name},
+        $self->{metrics}->{$key} = {
+            connectionName => $connections->{ $interfaces->{$vid}->{connectionId} }->{name},
+            virtualInterfaceName => $interfaces->{$vid}->{name},
             status => {
-                connectionName => $connections->{$connection_id}->{name},
-                bandwidth => $connections->{$connection_id}->{bandwidth},
-                state => $connections->{$connection_id}->{state}
+                connectionName => $connections->{ $interfaces->{$vid}->{connectionId} }->{name},
+                virtualInterfaceName => $interfaces->{$vid}->{name},
+                type => $interfaces->{$vid}->{type},
+                vlan => $interfaces->{$vid}->{vlan},
+                state => $interfaces->{$vid}->{state}
             },
             statistics => {}
         };
 
         my $cw_metrics = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/DX',
-            dimensions => [ { Name => 'ConnectionId', Value => $connection_id } ],
+            dimensions => [ { Name => 'ConnectionId', Value => $interfaces->{$vid}->{connectionId} }, { Name => 'VirtualInterfaceId', Value => $vid } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
@@ -183,10 +176,10 @@ sub manage_selection {
                 next if (!defined($cw_metrics->{$metric}->{lc($statistic)}) &&
                     !defined($self->{option_results}->{zeroed}));
 
-                $self->{metrics}->{$connection_id}->{display} = $connections->{$connection_id}->{name};
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{$metric} = 
+                $self->{metrics}->{$key}->{display} = $interfaces->{$vid}->{name};
+                $self->{metrics}->{$key}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$key}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
+                $self->{metrics}->{$key}->{statistics}->{lc($statistic)}->{$metric} = 
                     defined($cw_metrics->{$metric}->{lc($statistic)}) ? 
                     $cw_metrics->{$metric}->{lc($statistic)} : 0;
             }
@@ -194,7 +187,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{metrics}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No connection found');
+        $self->{output}->add_option_msg(short_msg => 'No virtual interface found');
         $self->{output}->option_exit();
     }
 }
@@ -205,11 +198,11 @@ __END__
 
 =head1 MODE
 
-Check direct connect connections.
+Check direct connect virtual interfaces.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::directconnect::plugin --custommode=paws --mode=connections --region='eu-west-1'
---filter-metric='ConnectionBpsEgress' --statistic='average' --critical-connection-egress='10Mb' --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::directconnect::plugin --custommode=paws --mode=virtual-interfaces --region='eu-west-1'
+--filter-metric='VirtualInterfaceBpsEgress' --statistic='average' --critical-virtual-interface-egress='10Mb' --verbose
 
 See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/viewing_metrics_with_cloudwatch.html' for more informations.
 
@@ -221,28 +214,31 @@ Default statistic: 'average' / All satistics are valid.
 
 Filter connection id (can be a regexp).
 
+=item B<--filter-virtual-interface-id>
+
+Filter virtual interface id (can be a regexp).
+
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress', 
-'ConnectionPpsEgress', 'ConnectionPpsIngress', 'ConnectionLightLevelTx', 'ConnectionLightLevelRx') 
+Filter metrics (Can be: 'VirtualInterfaceBpsEgress', 'VirtualInterfaceBpsIngress', 
+'VirtualInterfacePpsEgress', 'VirtualInterfacePpsIngress') 
 (Can be a regexp).
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{bandwidth}, %{connectionName}
+Can used special variables like: %{state}, %{vlan}, %{type}, %{virtualInterfaceId}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{bandwidth}, %{connectionName}
+Can used special variables like: %{state}, %{vlan}, %{type}, %{virtualInterfaceId}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be 'connection-egress', 'connection-ingress', 
-'connection-packets-egress', 'connection-packets-ingress',
-'connection-ligh-level-outbound', 'connection-ligh-level-inbound.
+Can be 'virtual-interface-egress', 'virtual-interface-ingress', 
+'virtual-interface-packets-egress', 'virtual-interface-packets-ingress'.
 
 =back
 
