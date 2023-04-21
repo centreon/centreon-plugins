@@ -90,6 +90,12 @@ sub get_metrics_mapping {
     return $metrics_mapping;
 }
 
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    return sprintf('state: %s [bandwidth: %s', $self->{result_values}->{state}, $self->{result_values}->{bandwidth});
+}
+
 sub custom_fiber_metric_calc {
     my ($self, %options) = @_;
 
