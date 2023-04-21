@@ -53,8 +53,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'used',
                 perfdatas => [
-                    { label => 'memory', value => 'used', template => '%s', threshold_total => 'total', cast_int => 1,
-                      min => 0, max => 100, unit => '%',label_extra_instance => 1 }
+                    { label => 'memory', value => 'used', template => '%s',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name'}
                 ]
             }
         }
@@ -102,10 +102,10 @@ sub manage_selection {
             next;
         }
 
-        $self->{memory}->{$result->{cambiumAPName}} = {
+        $self->{memory}->{$instance} = {
             name => $result->{cambiumAPName},
-            used => $result->{cambiumAPMemoryFree},
-            free => 100 - $result->{cambiumAPMemoryFree}
+            free => $result->{cambiumAPMemoryFree},
+            used => 100 - $result->{cambiumAPMemoryFree}
         };
     }
 

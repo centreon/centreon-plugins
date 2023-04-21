@@ -42,7 +42,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_usage' }, { name => 'name' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1}
+                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1,  instance_use => 'name'}
                 ]
             }
         }
@@ -90,7 +90,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{cpu}->{$result->{cambiumAPName}} = {
+        $self->{cpu}->{$result->{$instance}} = {
             name => $result->{cambiumAPName},
             cpu_usage => $result->{cambiumAPCPUUtilization}
         };
