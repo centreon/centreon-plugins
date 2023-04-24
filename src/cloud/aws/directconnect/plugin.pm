@@ -36,8 +36,8 @@ sub new {
         'virtual-interfaces'      => 'cloud::aws::directconnect::mode::virtualinterfaces'
     };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}->{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}->{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
