@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "perl(Email::MIME)",
+        "perl(Email::Simple)",
+        "perl(Email::Sender)"
+    ]
+}
