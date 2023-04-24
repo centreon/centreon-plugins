@@ -119,7 +119,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => defined($data->{extra_params}->{message_mutiple}) ? $data->{extra_params}->{message_mutiple} : 'All metrics are ok',
+          message_multiple => defined($data->{extra_params}->{message_multiple}) ? $data->{extra_params}->{message_multiple} : 'All metrics are ok',
           indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
