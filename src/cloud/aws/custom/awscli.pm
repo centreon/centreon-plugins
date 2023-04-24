@@ -914,6 +914,68 @@ sub elasticache_describe_cache_clusters {
     return $results;
 }
 
+sub directconnect_describe_connections_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "directconnect describe-connections --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub directconnect_describe_connections {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->directconnect_describe_connections_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = {};
+    foreach (@{$raw_results->{connections}}) {
+        $results->{ $_->{connectionId} } = {
+            name => $_->{connectionName},
+            state => $_->{connectionState},
+            bandwidth => $_->{bandwidth}
+        };
+    }
+
+    return $results;
+}
+
+sub directconnect_describe_virtual_interfaces_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "directconnect describe-virtual-interfaces --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub directconnect_describe_virtual_interfaces {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->directconnect_describe_virtual_interfaces_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = {};
+    foreach (@{$raw_results->{virtualInterfaces}}) {
+        $results->{ $_->{virtualInterfaceId} } = {
+            name => $_->{virtualInterfaceName},
+            state => $_->{virtualInterfaceState},
+            type => $_->{virtualInterfaceType},
+            vlan => $_->{vlan},
+            connectionId => $_->{connectionId}
+        };
+    }
+
+    return $results;
+}
+
 1;
 
 __END__

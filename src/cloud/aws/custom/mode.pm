@@ -71,18 +71,25 @@ sub custom_metric_perfdata {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my $msg = '';
+    my $extra_unit = '';
+    my $metric_label = 'value';
     if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        my ($value, $unit) = ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') ?
-            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec}) :
-            ($self->{result_values}->{value_per_sec}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
-        $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit . '/s');
-    } else {
-        my ($value, $unit) = ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') ?
-            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}) :
-            ($self->{result_values}->{value}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
-        $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit);
+        $metric_label = 'value_per_sec';
+        $extra_unit = '/s';
     }
+
+    my ($value, $unit);
+    if ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') {
+        ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$metric_label});
+    } elsif ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'bps') {
+        ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$metric_label}, network => 1);
+        $extra_unit = '/s';
+    } else {
+        ($value, $unit) = ($self->{result_values}->{$metric_label}, $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit});
+    }
+
+    my $msg = sprintf("%s: %.2f %s", $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{output}, $value, $unit . $extra_unit);
+
     return $msg;
 }
 
@@ -112,16 +119,16 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => defined($data->{extra_params}->{message_mutiple}) ? $data->{extra_params}->{message_mutiple} : 'All metrics are ok',
+          message_multiple => defined($data->{extra_params}->{message_multiple}) ? $data->{extra_params}->{message_multiple} : 'All metrics are ok',
           indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
-    foreach my $metric (keys %{$self->{metrics_mapping}}) {
+    foreach my $metric (sort keys %{$self->{metrics_mapping}}) {
         my $entry = {
             label => $self->{metrics_mapping}->{$metric}->{label},
             set => {
