@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Email",
+    "pkg_summary": "Centreon Plugin to send notifications by Email",
+    "plugin_name": "centreon_notification_email.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "notification/email"
+    ]
+}
