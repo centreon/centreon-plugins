@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'connections'             => 'cloud::aws::directconnect::mode::connections',
+        'discovery'               => 'cloud::aws::directconnect::mode::discovery',
         'list-connections'        => 'cloud::aws::directconnect::mode::listconnections',
         'list-virtual-interfaces' => 'cloud::aws::directconnect::mode::listvirtualinterfaces',
         'virtual-interfaces'      => 'cloud::aws::directconnect::mode::virtualinterfaces'
