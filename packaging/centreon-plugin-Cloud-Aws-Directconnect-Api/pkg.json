@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Directconnect-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS Direct Connect service using Cloudwatch API",
+    "plugin_name": "centreon_aws_directconnect_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/directconnect/"
+    ]
+}
