@@ -159,7 +159,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_connection_id}) && $self->{option_results}->{filter_connection_id} ne ''
             && $connection_id !~ /$self->{option_results}->{filter_connection_id}/);
 
-        $self->{metrics}->{$connection_id} = {
+        $self->{metrics}->{ $connections->{$connection_id}->{name} } = {
             display => $connections->{$connection_id}->{name},
             status => {
                 connectionName => $connections->{$connection_id}->{name},
@@ -183,10 +183,10 @@ sub manage_selection {
                 next if (!defined($cw_metrics->{$metric}->{lc($statistic)}) &&
                     !defined($self->{option_results}->{zeroed}));
 
-                $self->{metrics}->{$connection_id}->{display} = $connections->{$connection_id}->{name};
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metrics}->{$connection_id}->{statistics}->{lc($statistic)}->{$metric} = 
+                $self->{metrics}->{ $connections->{$connection_id}->{name} }->{display} = $connections->{$connection_id}->{name};
+                $self->{metrics}->{ $connections->{$connection_id}->{name} }->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{ $connections->{$connection_id}->{name} }->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
+                $self->{metrics}->{ $connections->{$connection_id}->{name} }->{statistics}->{lc($statistic)}->{$metric} = 
                     defined($cw_metrics->{$metric}->{lc($statistic)}) ? 
                     $cw_metrics->{$metric}->{lc($statistic)} : 0;
             }
