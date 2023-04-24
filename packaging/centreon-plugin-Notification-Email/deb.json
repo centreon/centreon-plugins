@@ -1,9 +1,6 @@
 {
     "dependencies": [
         "libemail-sender-perl",
-        "libmime-base64-perl",
-        "libjson-xs-perl",
-        "liburi-perl", 
         "libemail-mime-perl"
     ]
 }
