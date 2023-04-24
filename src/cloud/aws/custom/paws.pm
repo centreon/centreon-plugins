@@ -792,16 +792,42 @@ sub elasticache_describe_cache_clusters {
 sub directconnect_describe_connections {
     my ($self, %options) = @_;
 
-    my $results = [];
+    my $results = {};
     eval {
         my $ec = $self->{paws}->service('DirectConnect', region => $self->{option_results}->{region});
         my $connections = $ec->DescribeConnections();
 
         foreach (@{$connections->{Connections}}) {
-            push @$results, {
+            $results->{ $_->{ConnectionId} } = { {
                 name => $_->{ConnectionName},
                 state => $_->{ConnectionState},
                 bandwidth => $_->{Bandwidth}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
+sub directconnect_describe_virtual_interfaces {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    eval {
+        my $ec = $self->{paws}->service('DirectConnect', region => $self->{option_results}->{region});
+        my $vi = $ec->DescribeVirtualInterfaces();
+
+        foreach (@{$vi->{VirtualInterfaces}}) {
+            $results->{ $_->{VirtualInterfaceId} } = {
+                name => $_->{VirtualInterfaceName},
+                state => $_->{VirtualInterfaceState},
+                type => $_->{VirtualInterfaceType},
+                vlan => $_->{Vlan},
+                connectionId => $_->{ConnectionId}
             };
         }
     };
