@@ -33,7 +33,7 @@ sub custom_usage_perfdata_ms {
         nlabel => $self->{nlabel},
         unit => 'ms',
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-        value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        value => sprintf('%.2f', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
