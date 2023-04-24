@@ -227,16 +227,6 @@ Check radio interfaces.
 
 =over 8
 
-=item B<--warning>
-
-Warning threshold for CPU.
-
-=item B<--critical>
-
-Critical threshold for CPU.
-
-=over 8
-
 =item B<--filter-name>
 
 Filter interface by MACAdress
