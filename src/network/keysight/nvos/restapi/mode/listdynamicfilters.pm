@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::keysight::nvos::restapi::mode::listports;
+package network::keysight::nvos::restapi::mode::listdynamicfilters;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $ports = $options{custom}->request_api(
+    my $df = $options{custom}->request_api(
         method => 'POST',
         endpoint => '/api/stats/',
         query_form_post => '',
@@ -51,19 +51,11 @@ sub manage_selection {
     );
 
     my $results = [];
-    foreach (@{$ports->{stats_snapshot}}) {
-        next if ($_->{type} ne 'Port');
-
-        my $info = $options{custom}->request_api(
-            method => 'GET',
-            endpoint => '/api/ports/' . $_->{default_name},
-            get_param => ['properties=enabled,license_status,link_status']
-        );
+    foreach (@{$df->{stats_snapshot}}) {
+        next if ($_->{type} ne 'Dynamic Filter');
 
         push @$results, {
-            name => $_->{default_name},
-            adminStatus => $info->{enabled} =~ /true|1/i ? 'enabled' : 'disabled',
-            operationalStatus => $info->{link_status}->{link_up} =~ /true|1/i ? 'up' : 'down'
+            name => $_->{default_name}
         };
     }
 
@@ -77,17 +69,15 @@ sub run {
     foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[name: %s][adminStatus: %s][operationalStatus: %s]',
-                $_->{name},
-                $_->{adminStatus},
-                $_->{operationalStatus}
+                '[name: %s]',
+                $_->{name}
             )
         );
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List ports:'
+        short_msg => 'List dynamic filters:'
     );
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -115,7 +105,7 @@ __END__
 
 =head1 MODE
 
-List ports.
+List dynamic filters.
 
 =over 8
 

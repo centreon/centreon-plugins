@@ -27,20 +27,6 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_space_usage_output {
-    my ($self, %options) = @_;
-
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    return sprintf(
-        "space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
-        $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
-    );
-}
-
 sub custom_link_output {
     my ($self, %options) = @_;
 
@@ -202,7 +188,6 @@ sub manage_selection {
     my $result = $options{custom}->request_api(
         method => 'POST',
         endpoint => '/api/stats/',
-        get_param => ['properties=power_module_a,power_module_b,temperature_readings,fan_failure_count'],
         query_form_post => '',
         header => ['Content-Type: application/json'],
     );
