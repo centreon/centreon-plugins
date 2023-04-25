@@ -30,8 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'time'   => 'network::keysight::nvos::restapi::mode::time',
-        'uptime' => 'network::keysight::nvos::restapi::mode::uptime'
+        'hardware'   => 'network::keysight::nvos::restapi::mode::hardware',
+        'list-ports' => 'network::keysight::nvos::restapi::mode::listports',
+        'ports'      => 'network::keysight::nvos::restapi::mode::ports',
+        'time'       => 'network::keysight::nvos::restapi::mode::time',
+        'uptime'     => 'network::keysight::nvos::restapi::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'network::keysight::nvos::restapi::custom::api';

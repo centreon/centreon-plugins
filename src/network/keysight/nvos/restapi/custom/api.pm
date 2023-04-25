@@ -138,8 +138,11 @@ sub request_api {
 
     $self->settings();
     my $content = $self->{http}->request(
+        method => $options{method},
         url_path => $options{endpoint},
         get_param => $options{get_param},
+        query_form_post => $options{query_form_post},
+        header => $options{header},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
