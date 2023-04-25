@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'time'   => 'network::keysight::nvos::restapi::mode::time',
         'uptime' => 'network::keysight::nvos::restapi::mode::uptime'
     };
 
