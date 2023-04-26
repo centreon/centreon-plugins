@@ -798,7 +798,7 @@ sub directconnect_describe_connections {
         my $connections = $ec->DescribeConnections();
 
         foreach (@{$connections->{Connections}}) {
-            $results->{ $_->{ConnectionId} } = { {
+            $results->{ $_->{ConnectionId} } = {
                 name => $_->{ConnectionName},
                 state => $_->{ConnectionState},
                 bandwidth => $_->{Bandwidth}
