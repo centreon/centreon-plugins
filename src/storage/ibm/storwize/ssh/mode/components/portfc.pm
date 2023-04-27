@@ -41,19 +41,20 @@ sub check {
 
     my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
-        next if ($self->check_filter(section => 'portfc', instance => $_->{id}));
+        my $name = $_->{node_name} . "." . $_->{WWPN};
+
+        next if ($self->check_filter(section => 'portfc', instance => $_->{id}, name => $name));
         $self->{components}->{portfc}->{total}++;
 
-        my $name = $_->{node_name} . "." . $_->{WWPN};
         $self->{output}->output_add(
             long_msg => sprintf(
-                "portfc '%s' status is '%s' [instance: %s].",
+                "portfc '%s' status is '%s' [instance: %s]",
                 $name,
                 $_->{status},
                 $_->{id}
             )
         );
-        my $exit = $self->get_severity(section => 'portfc', value => $_->{status});
+        my $exit = $self->get_severity(section => 'portfc', instance => $_->{id}, name => $name, value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,
