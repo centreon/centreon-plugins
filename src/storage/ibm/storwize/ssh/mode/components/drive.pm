@@ -51,7 +51,7 @@ sub check {
                 $_->{id}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'drive', value => $_->{status});
+        my $exit = $self->get_severity(label => 'default', section => 'drive', instance => $_->{id}, value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,
