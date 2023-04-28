@@ -38,19 +38,19 @@ sub set_system {
             ['offline', 'CRITICAL'],
             ['degraded', 'WARNING'],
             ['excluded', 'OK'], # lsarray
-            ['mask', 'OK'], # lshost
+            ['mask', 'OK'] # lshost
         ],
         portfc => [
             ['active', 'OK'],
             ['inactive_unconfigured', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         portsas => [
             ['online', 'OK'],
             ['offline_unconfigured', 'OK'],
             ['excluded', 'OK'],
             ['offline', 'CRITICAL'],
-            ['degraded', 'WARNING'],
+            ['degraded', 'WARNING']
         ],
         mdisk => [
             ['online', 'OK'],
@@ -58,8 +58,8 @@ sub set_system {
             ['offline', 'CRITICAL'],
             ['degraded_paths', 'WARNING'],
             ['degraded_ports', 'WARNING'],
-            ['degraded', 'WARNING'],
-        ],
+            ['degraded', 'WARNING']
+        ]
     };
     
     $self->{components_path} = 'storage::ibm::storwize::ssh::mode::components';
@@ -102,6 +102,10 @@ Check components.
 Which component to check (Default: '.*').
 Can be: 'array', 'drive', 'enclosure', 'enclosurebattery', 'enclosurecanister',
 'enclosurepsu', 'host', 'portfc', 'portsas', 'vdisk', 'node', 'quorum', 'mdisk', 'systemstats'.
+
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, absent-problem and threshold options).
 
 =item B<--filter>
 
