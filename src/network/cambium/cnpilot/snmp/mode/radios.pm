@@ -26,86 +26,46 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_radios_output {
+    my ($self, %options) = @_;
+
+    return "RADIOS '" . $options{instance_value}->{name} . " ";
+}
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'state: %s [ON: %s]',
-        $self->{result_values}->{state},
-        $self->{result_values}->{enabled}
+        'Transmit power : %s',
+        $self->{result_values}->{transmit_power}
     );
-}
-
-sub radio_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking radio interface '%s'",
-        $options{instance_value}->{name}
-    );
-}
-
-sub prefix_radio_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "radio interface '%s' ",
-        $options{instance_value}->{name}
-    );
-}
-
-sub prefix_signal_output {
-    my ($self, %options) = @_;
-
-    return 'signal ';
-}
-
-sub prefix_traffic_output {
-    my ($self, %options) = @_;
-
-    return 'traffic ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'radios', type => 3, cb_prefix_output => 'prefix_radio_output', cb_long_output => 'radio_long_output',
-          indent_long_output => '    ', message_multiple => 'All radio interfaces are ok',
-            group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'clients', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'signal', type => 0, cb_prefix_output => 'prefix_signal_output', skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } }
-            ]
-        }
+        { name => 'radios', type => 1, cb_prefix_output => 'prefix_radios_output', message_multiple => 'All Radios are ok' }
     ];
 
-    $self->{maps_counters}->{status} = [
-        {
-            label => 'status', type => 2, critical_default => '%{OFF} eq "down"',
+    $self->{maps_counters}->{radios} = [
+        { label => 'clients', nlabel => 'number.of.clients.connected', set => {
+                key_values => [ { name => 'num_clients' }, { name => 'name' } ],
+                output_template => '- Number of clients connected :%s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name'}
+                ]
+            }
+        },
+        { label => 'status',type => 2, critical_default => '%{OFF} eq "down"',
             set => {
                 key_values => [ { name => 'transmit_power' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        }
-    ];
-
-     $self->{maps_counters}->{clients} = [
-        { label => 'num-clients', nlabel => 'number.of.clients.connected', set => {
-                key_values => [ { name => 'num_clients' }, { name => 'name' } ],
-                output_template => '%s ',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name'}
-                ]
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{signal} = [
-        { label => 'noise-floor', nlabel => 'radio.interface.noise.floor.dbm', set => {
+        },
+        { label => 'noise_floor', nlabel => 'radio.interface.noise.floor.dbm', set => {
                 key_values => [ { name => 'noise_floor' } ],
                 output_template => 'noise floor: %s dBm',
                 perfdatas => [
@@ -120,10 +80,7 @@ sub set_counters {
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name'}
                 ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{traffic} = [
+        },
         { label => 'traffic-in', nlabel => 'radio.interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'in: %s %s/s',
@@ -162,7 +119,7 @@ sub manage_selection {
 
     # Mac adress
     # Num Client
-    # RadioTransmitPower
+    # RadioState  
     # Radio TxtDataBytes => Traffic => convert in Mb
     # Radio RXDataBytes => Traffic => convert in Mb
     # Noise floor (dBm)
@@ -172,9 +129,9 @@ sub manage_selection {
     my $mapping = {
         cambiumRadioMACAddress    => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.2' },
         cambiumRadioNumClients    => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.5' },
-        cambiumRadioTrasnmitPower => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.8' },
         cambiumRadioTxDataBytes   => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.9' },
         cambiumRadioRxDataBytes   => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.10' },
+        cambiumRadioState         => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.13' },
         cambiumRadioNoiseFloor    => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.16' },
         cambiumRadioInterference  => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.17' }
     };
@@ -202,7 +159,7 @@ sub manage_selection {
         $self->{radios}->{$instance} = {
             name => $result->{cambiumRadioMACAddress},
             num_clients => $result->{cambiumRadioNumClients},
-            transmit_power => $result->{cambiumRadioTransmitPower},
+            transmit_power => $result->{cambiumRadioState},
             traffic_out => $result->{cambiumRadioTxDataBytes},
             traffic_in => $result->{cambiumRadioRxDataBytes},
             noise_floor => $result->{cambiumRadioNoiseFloor},
