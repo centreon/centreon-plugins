@@ -184,6 +184,11 @@ Check radio interfaces.
 
 =over 8
 
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='status'
+
 =item B<--filter-name>
 
 Filter interface by MACAdress
