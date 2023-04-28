@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Keysight-Nvos-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Keysight NVOS using RestAPI",
+    "plugin_name": "centreon_keysight_nvos_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/keysight/nvos/restapi/"
+    ]
+}
