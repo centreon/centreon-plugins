@@ -32,9 +32,11 @@ sub new {
     $self->{modes} = {
         'app-resources' => 'cloud::azure::database::sqldatabase::mode::appresources',
         'connections'   => 'cloud::azure::database::sqldatabase::mode::connections',
+        'cpu'           => 'cloud::azure::database::sqldatabase::mode::cpu',
         'discovery'     => 'cloud::azure::database::sqldatabase::mode::discovery',
         'deadlocks'     => 'cloud::azure::database::sqldatabase::mode::deadlocks',
         'health'        => 'cloud::azure::database::sqldatabase::mode::health',
+        'memory'        => 'cloud::azure::database::sqldatabase::mode::memory',
         'sessions'      => 'cloud::azure::database::sqldatabase::mode::sessions',
         'storage'       => 'cloud::azure::database::sqldatabase::mode::storage',
         'workers'       => 'cloud::azure::database::sqldatabase::mode::workers'
