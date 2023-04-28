@@ -41,18 +41,24 @@ sub check {
 
     my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
-        next if ($self->check_filter(section => 'quorum', instance => $_->{quorum_index}));
+        next if ($self->check_filter(section => 'quorum', instance => $_->{quorum_index}, name => $_->{controller_name}));
         $self->{components}->{quorum}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "quorum '%s' status is '%s' [instance: %s].",
+                "quorum '%s' status is '%s' [instance: %s]",
                 $_->{controller_name},
                 $_->{status},
                 $_->{quorum_index}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'quorum', value => $_->{status});
+        my $exit = $self->get_severity(
+            label => 'default',
+            section => 'quorum',
+            instance => $_->{quorum_index},
+            name => $_->{controller_name},
+            value => $_->{status}
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

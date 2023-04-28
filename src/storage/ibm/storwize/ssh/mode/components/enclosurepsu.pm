@@ -47,13 +47,13 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "enclosure power supply '%s' status is '%s' [instance: %s].",
+                "enclosure power supply '%s' status is '%s' [instance: %s]",
                 $instance,
                 $_->{status},
                 $instance
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'enclosurepsu', value => $_->{status});
+        my $exit = $self->get_severity(label => 'default', section => 'enclosurepsu', instance => $instance, value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

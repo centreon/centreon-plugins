@@ -41,7 +41,7 @@ sub check {
     
     my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
-        next if ($self->check_filter(section => 'array', instance => $_->{mdisk_id}));
+        next if ($self->check_filter(section => 'array', instance => $_->{mdisk_id}, name => $_->{mdisk_name}));
         $self->{components}->{array}->{total}++;
 
         $self->{output}->output_add(
@@ -52,7 +52,13 @@ sub check {
                 $_->{mdisk_id}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'array', value => $_->{status});
+        my $exit = $self->get_severity(
+            label => 'default',
+            section => 'array',
+            instance => $_->{mdisk_id},
+            name => $_->{mdisk_name},
+            value => $_->{status}
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

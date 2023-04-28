@@ -46,13 +46,13 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "enclosure '%s' status is '%s' [instance: %s].",
+                "enclosure '%s' status is '%s' [instance: %s]",
                 $_->{id},
                 $_->{status},
                 $_->{id}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $_->{status});
+        my $exit = $self->get_severity(label => 'default', section => 'enclosure', instance => $_->{id}, value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

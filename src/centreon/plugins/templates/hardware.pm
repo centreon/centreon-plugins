@@ -453,7 +453,9 @@ sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
 
-     foreach (@{$self->{overload_th}}) {
+    $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
+
+    foreach (@{$self->{overload_th}}) {
         if ($options{section} =~ /$_->{section}/i) {
             if ($options{value} =~ /$_->{filter}/i &&
                 (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
