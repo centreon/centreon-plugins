@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
@@ -86,10 +87,9 @@ sub set_counters {
                 key_values => [
                     { name => 'state' }, { name => 'ipSrc' }, { name => 'ipDst' }
                 ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output')
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
