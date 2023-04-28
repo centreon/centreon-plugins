@@ -29,15 +29,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {        
         'allocatable-resources' => 'cloud::azure::compute::aks::mode::allocatableresources',
         'cpu'                   => 'cloud::azure::compute::aks::mode::cpu',
         'discovery'             => 'cloud::azure::compute::aks::mode::discovery',
-	'health'		=> 'cloud::azure::compute::aks::mode::health',
+        'health'                => 'cloud::azure::compute::aks::mode::health',
+        'memory'                => 'cloud::azure::compute::aks::mode::memory',
+        'node-state'            => 'cloud::azure::compute::aks::mode::nodestate',
+        'pod-state'             => 'cloud::azure::compute::aks::mode::podstate',
         'storage'               => 'cloud::azure::compute::aks::mode::storage',
         'traffic'               => 'cloud::azure::compute::aks::mode::traffic',
-        'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes'
+        'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes',
+        'unschedulable-pods'    => 'cloud::azure::compute::aks::mode::unschedulablepods'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -49,7 +52,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' }
     });
 
     $self->SUPER::init(%options);
