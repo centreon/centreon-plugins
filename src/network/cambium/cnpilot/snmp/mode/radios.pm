@@ -82,7 +82,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-in', nlabel => 'radio.interface.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                key_values => [ { name => 'traffic_in'}],
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
@@ -91,7 +91,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'radio.interface.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                key_values => [ { name => 'traffic_out'}],
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
