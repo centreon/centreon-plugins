@@ -1,7 +1,7 @@
 
 Package: @NAME@
 Architecture: all
-Description: @SUMMARY@
+Description: @SUMMARY@@CUSTOM_PKG_DATA@
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
@@ -21,4 +21,4 @@ Depends:
   libkeepass-reader-perl,
   libdatetime-perl,
   @REQUIRES@
-@CUSTOM_PKG_DATA@
+
