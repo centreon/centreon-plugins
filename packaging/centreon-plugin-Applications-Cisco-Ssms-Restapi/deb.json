@@ -1,4 +1,5 @@
 {
     "dependencies": [
-    ]
+    ],
+    "custom_pkg_data": "Replaces: centreon-plugin-Network-Cisco-Ssms-Restapi"
 }
