@@ -76,8 +76,8 @@ runs:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ inputs.cache_key }}
 
-    - if: ${{ inputs.distrib == 'el8' }}
-      uses: actions/upload-artifact@v3
+    #- if: ${{ inputs.distrib == 'el8' }}
+    - uses: actions/upload-artifact@v3
       with:
         name: packages-${{ inputs.distrib }}
         path: ./*.${{ inputs.package_extension }}
