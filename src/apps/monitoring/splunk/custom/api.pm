@@ -274,6 +274,8 @@ sub query_count {
     }
 
     my $retries = 0;
+    my $is_done = 0;
+
     while ($retries < $self->{http}->{options}->{splunk_retries}) {
         my $query_status = $self->request_api(
             method => 'GET',
@@ -281,22 +283,27 @@ sub query_count {
         );
 
         foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
-            if ($_->{name} eq 'isDone' && $_->{content} == 0){
-                # let's try to give a bit more time before trying again
-                sleep($self->{http}->{options}->{splunk_retries}->{splunk_wait});
-                $retries++
-
-                # this was the last time tried to get a result, need to tell people that the query is not done yet
-                if ($retries == $self->{http}->{options}->{splunk_retries} - 1) {
-                    $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
-                    $self->{output}->option_exit();
-                }
-                next;
+            if ($_->{name} eq 'isDone' && $_->{content} == 1){
+                $is_done = 1;
+                last;
             } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
                 $self->{output}->add_option_msg(short_msg => "Search command failed.");
                 $self->{output}->option_exit();
             }
         }
+
+        if ($is_done) {
+            last;
+        }
+
+        $retries++
+        sleep($self->{http}->{options}->{splunk_wait});
+    }
+
+    # it took too long to run query
+    if (!$is_done) {
+        $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
+        $self->{output}->option_exit();
     }
 
     my $query_res = $self->request_api(
