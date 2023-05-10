@@ -298,7 +298,7 @@ sub query_count {
         }
     }
 
-    $query_count = 0;
+    my $query_count = 0;
     if ($success) {
         my $query_res = $self->request_api(
             method => 'GET',
