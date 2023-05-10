@@ -279,7 +279,7 @@ sub query_count {
     while ($retries < $self->{http}->{options}->{splunk_retries}) {
         my $query_status = $self->request_api(
             method => 'GET',
-            endpoint => '/services/search/jobs/' . $query_sid->{sid},
+            endpoint => '/services/search/jobs/' . $query_sid->{sid}
         );
 
         foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
@@ -296,7 +296,7 @@ sub query_count {
             last;
         }
 
-        $retries++
+        $retries++;
         sleep($self->{http}->{options}->{splunk_wait});
     }
 
@@ -308,7 +308,7 @@ sub query_count {
 
     my $query_res = $self->request_api(
         method => 'GET',
-        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
+        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results'
     );
 
     my $query_count = $query_res->{result}->{field}->{value}->{text};
