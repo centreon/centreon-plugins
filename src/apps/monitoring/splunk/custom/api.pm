@@ -55,8 +55,8 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
-            'splunk-retries:s'         => { name => 'splunk_retries' },
-            'splunk-wait:s'            => { name => 'splunk_wait' }
+            'splunk-retries:s'       => { name => 'splunk_retries' },
+            'splunk-wait:s'          => { name => 'splunk_wait' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
