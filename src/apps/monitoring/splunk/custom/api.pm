@@ -275,7 +275,7 @@ sub query_count {
 
     my $retries = 0;
     my $success = false;
-    while ($retries =< $options{splunk_retries}) {
+    while ($retries <= $options{splunk_retries}) {
         my $query_status = $self->request_api(
             method => 'GET',
             endpoint => '/services/search/jobs/' . $query_sid->{sid},
