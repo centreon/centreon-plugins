@@ -54,7 +54,9 @@ sub new {
             'timeout:s'              => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'splunk-retries'         => { name => 'splunk_retries' },
+            'splunk-wait'            => { name => 'splunk_wait' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
@@ -86,6 +88,8 @@ sub check_options {
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{splunk_retries} = (defined($self->{option_results}->{splunk_retries})) ? $self->{option_results}->{splunk_retries} : 5;
+    $self->{splunk_wait} = (defined($self->{option_results}->{splunk_wait})) ? $self->{option_results}->{splunk_wait} : 2;
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
@@ -200,7 +204,7 @@ sub get_access_token {
             $self->{output}->add_option_msg(short_msg => 'error retrieving session_token');
             $self->{output}->option_exit();
         }
-       
+
         $session_token = $xml_result->{sessionKey};
 
         my $datas = { session_token => $session_token };
@@ -251,7 +255,6 @@ sub get_splunkd_health {
     }
 
     return \@splunkd_features_health;
-
 }
 
 sub query_count {
@@ -270,28 +273,40 @@ sub query_count {
         $self->{output}->option_exit();
     }
 
-    sleep(1.5);
+    my $retries = 0;
+    my $success = false;
+    while ($retries =< $options{splunk_retries}) {
+        my $query_status = $self->request_api(
+            method => 'GET',
+            endpoint => '/services/search/jobs/' . $query_sid->{sid},
+        );
 
-    my $query_status = $self->request_api(
-        method => 'GET',
-        endpoint => '/services/search/jobs/' . $query_sid->{sid},
-    );
-
-    foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
-        if ($_->{name} eq 'isDone' && $_->{content} == 0){
-            $self->{output}->add_option_msg(short_msg => "Search command wasn't completed.");
-            $self->{output}->option_exit();
-        } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
-            $self->{output}->add_option_msg(short_msg => "Search command failed.");
-            $self->{output}->option_exit();  
+        foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
+            if ($_->{name} eq 'isDone' && $_->{content} == 0){
+                # let's try to give a bit more time before trying again
+                sleep($options{splunk_wait});
+                $retries++
+                next;
+            } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
+                $self->{output}->add_option_msg(short_msg => "Search command failed.");
+                $self->{output}->option_exit();
+                last;
+            } else {
+                $success = true;
+                last;
+            }
         }
     }
 
-    my $query_res = $self->request_api(
-        method => 'GET',
-        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
-    );
-    my $query_count = $query_res->{result}->{field}->{value}->{text};
+    $query_count = 0;
+    if ($success) {
+        my $query_res = $self->request_api(
+            method => 'GET',
+            endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
+        );
+
+        $query_count = $query_res->{result}->{field}->{value}->{text};
+    }
 
     return $query_count;
 }
@@ -386,6 +401,14 @@ Specify api password.
 =item B<--timeout>
 
 Set HTTP timeout.
+
+=item B<--splunk-retries>
+
+How many times queries we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
+
+=item B<--splunk-wait>
+
+How long (in seconds) should we wait between each retry. To use in par with the --splunk-retries paramater (Default: 1)
 
 =back
 
