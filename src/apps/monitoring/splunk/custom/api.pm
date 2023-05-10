@@ -55,8 +55,8 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
-            'splunk-retries'         => { name => 'splunk_retries' },
-            'splunk-wait'            => { name => 'splunk_wait' }
+            'splunk-retries:s'         => { name => 'splunk_retries' },
+            'splunk-wait:s'            => { name => 'splunk_wait' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
@@ -274,7 +274,7 @@ sub query_count {
     }
 
     my $retries = 0;
-    while ($retries < $options{splunk_retries}) {
+    while ($retries < $self->{http}->{options}->{splunk_retries}) {
         my $query_status = $self->request_api(
             method => 'GET',
             endpoint => '/services/search/jobs/' . $query_sid->{sid},
@@ -283,15 +283,14 @@ sub query_count {
         foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
             if ($_->{name} eq 'isDone' && $_->{content} == 0){
                 # let's try to give a bit more time before trying again
-                sleep($options{splunk_wait});
+                sleep($self->{http}->{options}->{splunk_retries}->{splunk_wait});
                 $retries++
 
                 # this was the last time tried to get a result, need to tell people that the query is not done yet
-                if ($retries == $options{splunk_retries} - 1) {
+                if ($retries == $self->{http}->{options}->{splunk_retries} - 1) {
                     $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
                     $self->{output}->option_exit();
                 }
-
                 next;
             } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
                 $self->{output}->add_option_msg(short_msg => "Search command failed.");
@@ -403,7 +402,7 @@ Set HTTP timeout.
 
 =item B<--splunk-retries>
 
-How many times queries we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
+How many times we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
 
 =item B<--splunk-wait>
 
