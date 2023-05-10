@@ -291,7 +291,6 @@ sub query_count {
                     $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
                     $self->{output}->option_exit();
                 }
-
                 next;
             } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
                 $self->{output}->add_option_msg(short_msg => "Search command failed.");
@@ -403,7 +402,7 @@ Set HTTP timeout.
 
 =item B<--splunk-retries>
 
-How many times queries we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
+How many times we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
 
 =item B<--splunk-wait>
 
