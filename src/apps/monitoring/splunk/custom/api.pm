@@ -274,8 +274,7 @@ sub query_count {
     }
 
     my $retries = 0;
-    my $success = false;
-    while ($retries <= $options{splunk_retries}) {
+    while ($retries < $options{splunk_retries}) {
         my $query_status = $self->request_api(
             method => 'GET',
             endpoint => '/services/search/jobs/' . $query_sid->{sid},
@@ -286,27 +285,27 @@ sub query_count {
                 # let's try to give a bit more time before trying again
                 sleep($options{splunk_wait});
                 $retries++
+
+                # this was the last time tried to get a result, need to tell people that the query is not done yet
+                if ($retries == $options{splunk_retries} - 1) {
+                    $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
+                    $self->{output}->option_exit();
+                }
+
                 next;
             } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
                 $self->{output}->add_option_msg(short_msg => "Search command failed.");
                 $self->{output}->option_exit();
-                last;
-            } else {
-                $success = true;
-                last;
             }
         }
     }
 
-    my $query_count = 0;
-    if ($success) {
-        my $query_res = $self->request_api(
-            method => 'GET',
-            endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
-        );
+    my $query_res = $self->request_api(
+        method => 'GET',
+        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
+    );
 
-        $query_count = $query_res->{result}->{field}->{value}->{text};
-    }
+    my $query_count = $query_res->{result}->{field}->{value}->{text};
 
     return $query_count;
 }
