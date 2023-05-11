@@ -51,6 +51,5 @@ done
 rm -f centreon-plugins/debian/*.template
 tar czf centreon-plugins-${VERSION}-${RELEASE}.tar.gz centreon-plugins
 cd centreon-plugins
-cat debian/control
 debmake -f "Centreon" -e "contact@centreon.com" -u "${VERSION}-${RELEASE}" -y -r "bullseye"
 debuild-pbuilder --no-lintian
