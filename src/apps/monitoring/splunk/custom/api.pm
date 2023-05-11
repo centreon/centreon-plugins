@@ -413,7 +413,7 @@ How many times we should retry queries to splunk. To use in par with the --splun
 
 =item B<--splunk-wait>
 
-How long (in seconds) should we wait between each retry. To use in par with the --splunk-retries paramater (Default: 1)
+How long (in seconds) should we wait between each retry. To use in par with the --splunk-retries paramater (Default: 2)
 
 =back
 
