@@ -33,8 +33,14 @@ for PLUGIN in $PLUGINS; do
 	pkg_summary=$(echo "${pkg_values[0]}")
 	plugin_name=$(echo "${pkg_values[1]}")
 	deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
+	deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '("\\n" + .custom_pkg_data) // ""')
 
-	sed -e "s/@NAME@/$PLUGIN_NAME_LOWER/g" -e "s/@SUMMARY@/$pkg_summary/g" -e "s/@REQUIRES@/$deb_dependencies/g" < centreon-plugins/debian/control.body.template >> centreon-plugins/debian/control
+	sed -e "s/@NAME@/$PLUGIN_NAME_LOWER/g" \
+		-e "s/@SUMMARY@/$pkg_summary/g" \
+		-e "s/@REQUIRES@/$deb_dependencies/g" \
+		-e "s/@CUSTOM_PKG_DATA@/$deb_custom_pkg_data/g" \
+		< centreon-plugins/debian/control.body.template \
+		>> centreon-plugins/debian/control
 
     # .install file
 	sed -e "s/@DIR@/$PLUGIN/g" -e "s/@NAME@/$plugin_name/g" < centreon-plugins/debian/plugin.install.template >> centreon-plugins/debian/$PLUGIN_NAME_LOWER.install
