@@ -1,7 +1,7 @@
 
 Package: @NAME@
 Architecture: all
-Description: @SUMMARY@
+Description: @SUMMARY@@CUSTOM_PKG_DATA@
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
