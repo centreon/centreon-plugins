@@ -1,0 +1,69 @@
+{
+	"mapping": {
+		 "gtmWideipStatusAvailState": {
+			 "0": "none",
+			 "1": "green",
+			 "2": "yellow",
+			 "3": "red",
+			 "4": "blue",
+			 "5": "gray"
+		 },
+		 "gtmWideipStatusEnabledState": {
+			 "0": "none",
+			 "1": "enabled",
+			 "2": "disabled",
+			 "3": "disabledbyparent"
+		 },
+		 "gtmWideipStatusType": {
+			 "1": "a",
+			 "5": "cname",
+			 "15": "mx",
+			 "28": "aaaa",
+			 "33": "srv",
+			 "35": "naptr"
+		 }
+	},
+	"constants": {
+		"criticalStatus": "red",
+		"okState": "enabled"
+	},
+	"snmp": {
+		"tables": [
+			{
+				"name": "gtmWideipStatusEntry",
+				"oid": ".1.3.6.1.4.1.3375.2.3.12.3.2.1",
+				"used_instance": "\\.1\\.3\\.6\\.1\\.4\\.1\\.3375\\.2\\.3\\.12\\.3\\.2\\.1\\.\\d+\\.(\\d+(\\.\\d+)*).*$",
+				"entries": [
+					{ "name": "gtmWideipStatusName", "oid": ".1.3.6.1.4.1.3375.2.3.12.3.2.1.1" },
+					{ "name": "gtmWideipStatusAvailState", "oid": ".1.3.6.1.4.1.3375.2.3.12.3.2.1.2", "map": "gtmWideipStatusAvailState" },
+					{ "name": "gtmWideipStatusEnabledState", "oid": ".1.3.6.1.4.1.3375.2.3.12.3.2.1.3", "map": "gtmWideipStatusEnabledState" },
+					{ "name": "gtmWideipStatusDetailReason", "oid": ".1.3.6.1.4.1.3375.2.3.12.3.2.1.5" }
+				]
+			}
+		]
+	},
+	"selection_loop": [
+		{
+			"name": "F5 Wide IPs",
+			"source": "%(snmp.tables.gtmWideipStatusEntry)",
+			"expand_table": {
+				"gtmWideipStatusEntry": "%(snmp.tables.gtmWideipStatusEntry.[%(gtmWideipStatusEntry.instance)])"
+			},
+			"critical": "%(gtmWideipStatusEntry.gtmWideipStatusAvailState) =~ /%(constants.criticalStatus)/",
+			"formatting": {
+				"printf_msg": "Wide IP '%s' status: %s [state %s][reason: %s]",
+				"printf_var": [
+					"%(gtmWideipStatusEntry.gtmWideipStatusName)",
+					"%(gtmWideipStatusEntry.gtmWideipStatusAvailState)",
+					"%(gtmWideipStatusEntry.gtmWideipStatusEnabledState)",
+					"%(gtmWideipStatusEntry.gtmWideipStatusDetailReason)"
+				],
+				"display_ok": true
+			}
+		}
+	],
+	"formatting": {
+		"custom_message_global": "All Wide IPs are OK",
+		"separator": "-"
+	}
+}
