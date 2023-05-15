@@ -39,7 +39,7 @@ jobs:
               STABILITY="stable"
               ;;
             *)
-              STABILITY="unstable"
+              STABILITY="stable"
               ;;
           esac
 
