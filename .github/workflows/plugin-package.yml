@@ -19,27 +19,21 @@ on:
 jobs:
   fatpacker:
     runs-on: ubuntu-22.04
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      release: ${{ steps.get_version.outputs.release }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
 
       - name: Prepare FatPacker
-        uses: perl-actions/install-with-cpm@stable
+        uses: shogo82148/actions-setup-perl@v1
         with:
-          install: |
-            App::FatPacker
-            File::Copy::Recursive
-            JSON
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: App::FatPacker File::Copy::Recursive JSON
 
       - name: Run FatPacker
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/plugins-source.container.pl "${{ inputs.plugins }}" "${{ steps.get_version.outputs.version }} ($COMMIT)"
+          perl .github/scripts/plugins-source.container.pl "${{ inputs.plugins }}" "${{ inputs.version }} ($COMMIT)"
 
       - uses: actions/cache@v3
         with:
@@ -53,15 +47,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - package_extension: rpm
-            image: packaging-plugins-centos7
-            distrib: el7
-          - package_extension: rpm
-            image: packaging-plugins-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: packaging-plugins-alma9
-            distrib: el9
+          # - package_extension: rpm
+          #   image: packaging-plugins-centos7
+          #   distrib: el7
+          # - package_extension: rpm
+          #   image: packaging-plugins-alma8
+          #   distrib: el8
+          # - package_extension: rpm
+          #   image: packaging-plugins-alma9
+          #   distrib: el9
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
