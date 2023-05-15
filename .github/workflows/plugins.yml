@@ -42,7 +42,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          base: ${{ github.ref }}
+          base: ${{ github.event_name != 'pull_request' && github.ref || '' }}
           list-files: shell
           filters: |
             common:
@@ -55,19 +55,17 @@ jobs:
       - name: transform to directories
         run: |
           folders=()
-          for f in ${{ steps.filter.outputs.packages_files }}; \
-            do \
-              echo "Adding $(dirname $f) to folders"; \
-              folders+=($(dirname $f)); \
+          for f in ${{ steps.filter.outputs.packages_files }}; do
+              echo "Adding $(dirname $f) to folders"
+              folders+=($(dirname $f))
           done
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
 
           files=()
-          for f in ${{ steps.filter.outputs.plugins_files }}; \
-            do \
-              echo "Adding $f to files"; \
-              files+=($f); \
+          for f in ${{ steps.filter.outputs.plugins_files }}; do
+              echo "Adding $f to files"
+              files+=($f)
           done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
