@@ -37,6 +37,7 @@ sub new {
     $options{options}->add_options(arguments => { 
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
+        'filter-name:s'     => { name => 'filter_name' }
     });
 
     return $self;

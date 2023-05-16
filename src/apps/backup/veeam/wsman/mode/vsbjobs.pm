@@ -119,8 +119,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' }
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'exclude-name:s'    => { name => 'exclude_name' },
+        'filter-type:s'     => { name => 'filter_type' }
     });
 
     return $self;

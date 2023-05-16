@@ -160,9 +160,22 @@ sub new {
     $options{options}->add_options(arguments => { 
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
+        'filter-to:s'       => { name => 'filter_to' },
+        'filter-type:s'     => { name => 'filter_type' },
+        'filter-status:s'   => { name => 'filter_status' },
+        'unit:s'            => { name => 'unit', default => 's' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 's';
+    }
 }
 
 sub manage_selection {
