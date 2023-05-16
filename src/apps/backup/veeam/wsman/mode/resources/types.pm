@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::backup::veeam::local::mode::resources::types;
+package apps::backup::veeam::wsman::mode::resources::types;
 
 use strict;
 use warnings;

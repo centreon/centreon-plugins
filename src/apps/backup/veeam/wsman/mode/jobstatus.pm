@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::powershell::veeam::jobstatus;
 use apps::backup::veeam::wsman::mode::resources::types qw($job_type $job_result);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -110,10 +110,27 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' }
+        'ps-display'          => { name => 'ps_display' },
+        'filter-name:s'       => { name => 'filter_name' },
+        'exclude-name:s'      => { name => 'exclude_name' },
+        'filter-type:s'       => { name => 'filter_type' },
+        'filter-end-time:s'   => { name => 'filter_end_time', default => 86400 },
+        'filter-start-time:s' => { name => 'filter_start_time' },
+        'ok-status:s'         => { name => 'ok_status', default => '' },
+        'warning-status:s'    => { name => 'warning_status', default => '' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /success/i' },
+        'warning-long:s'      => { name => 'warning_long' },
+        'critical-long:s'     => { name => 'critical_long' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status', 'warning_long', 'critical_long']);
 }
 
 sub prefix_job_output {
