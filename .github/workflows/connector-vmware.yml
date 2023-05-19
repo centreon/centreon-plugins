@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'connectors/vmware/src'
-      - 'connectors/vmware/packaging'
+      - 'connectors/vmware/src/**'
+      - 'connectors/vmware/packaging/**'
   push:
     branches:
       - develop
       - master
     paths:
-      - 'connectors/vmware/src'
-      - 'connectors/vmware/packaging'
+      - 'connectors/vmware/src/**'
+      - 'connectors/vmware/packaging/**'
     tags:
       - centreon-connector-vmware-*
 
