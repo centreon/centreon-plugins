@@ -44,25 +44,25 @@ contents:
     file_info:
       mode: 0755
 
-  - src: "../redhat/centreon_vmware-systemd"
+  - src: "redhat/centreon_vmware-systemd"
     dst: "/etc/systemd/system/centreon_vmware.service"
     file_info:
       mode: 0755
     packager: rpm
-  - src: "../debian/centreon_vmware-systemd"
+  - src: "debian/centreon_vmware-systemd"
     dst: "/lib/systemd/system/centreon_vmware.service"
     file_info:
       mode: 0755
     packager: deb
 
-  - src: "../redhat/centreon_vmware-sysconfig"
+  - src: "redhat/centreon_vmware-sysconfig"
     dst: "/etc/sysconfig/centreon_vmware"
     packager: rpm
-  - src: "../debian/centreon_vmware-default"
+  - src: "debian/centreon_vmware-default"
     dst: "/etc/default/centreon_vmware"
     packager: deb
 
-  - src: "../config/centreon_vmware-conf.pm"
+  - src: "config/centreon_vmware-conf.pm"
     dst: "/etc/centreon/centreon_vmware.pm"
     type: config|noreplace
 
