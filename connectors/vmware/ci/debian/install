@@ -1,4 +1,0 @@
-centreon_vmware.pl                      usr/bin
-contrib/debian/centreon_vmware-systemd  lib/systemd/system
-contrib/config/centreon_vmware-conf.pm  etc/centreon
-centreon/*                              usr/share/perl5/centreon
