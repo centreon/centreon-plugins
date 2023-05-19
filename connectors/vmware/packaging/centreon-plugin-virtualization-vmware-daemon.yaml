@@ -1,0 +1,93 @@
+name: "centreon-plugin-Virtualization-VMWare-daemon"
+arch: "all"
+platform: "linux"
+version_schema: "none"
+version: "${VERSION}"
+release: "${RELEASE}${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  Centreon VMWare connector to interact from centreon plugins to vmware sdk.
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://centreon.com"
+license: "Apache-2.0"
+
+replaces:
+  - ces-plugins-Virtualization-VMWare-daemon
+  - centreon-plugin-Virtualisation-VMWare-daemon
+conflicts:
+  - ces-plugins-Virtualization-VMWare-daemon
+  - centreon-plugin-Virtualisation-VMWare-daemon
+provides:
+  - ces-plugins-Virtualization-VMWare-daemon
+  - centreon-plugin-Virtualisation-VMWare-daemon
+
+contents:
+  - src: "../src/centreon/vmware"
+    dst: "/usr/share/perl5/vendor_perl/centreon/vmware"
+    packager: rpm
+  - src: "../src/centreon/vmware"
+    dst: "/usr/share/perl5/centreon/vmware"
+    packager: deb
+
+  - src: "../src/centreon/script/centreon_vmware.pm"
+    dst: "/usr/share/perl5/vendor_perl/centreon/script/centreon_vmware.pm"
+    packager: rpm
+  - src: "../src/centreon/script/centreon_vmware.pm"
+    dst: "/usr/share/perl5/centreon/script/centreon_vmware.pm"
+    packager: deb
+
+  - src: "../src/centreon_vmware.pl"
+    dst: "/usr/bin/centreon_vmware.pl"
+    file_info:
+      mode: 0755
+
+  - src: "../redhat/centreon_vmware-systemd"
+    dst: "/etc/systemd/system/centreon_vmware.service"
+    file_info:
+      mode: 0755
+    packager: rpm
+  - src: "../debian/centreon_vmware-systemd"
+    dst: "/lib/systemd/system/centreon_vmware.service"
+    file_info:
+      mode: 0755
+    packager: deb
+
+  - src: "../redhat/centreon_vmware-sysconfig"
+    dst: "/etc/sysconfig/centreon_vmware"
+    packager: rpm
+  - src: "../debian/centreon_vmware-default"
+    dst: "/etc/default/centreon_vmware"
+    packager: deb
+
+  - src: "../config/centreon_vmware-conf.pm"
+    dst: "/etc/centreon/centreon_vmware.pm"
+    type: config|noreplace
+
+overrides:
+  rpm:
+    depends:
+      - perl-VMware-vSphere >= 5.1
+      - perl(ZMQ::LibZMQ4)
+      - perl(ZMQ::Constants)
+      - perl(LWP::Protocol::https)
+      - perl(IO::Socket::INET6)
+      - perl(JSON::XS)
+      - perl-Net-Curl
+  deb:
+    depends:
+      - perl-vmware-vsphere
+      - zmq-libzmq4-perl
+      - libzmq-constants-perl
+      - liblwp-protocol-https-perl
+      - libio-socket-inet6-perl
+      - libjson-xs-perl
+      - libnet-curl-perl
+      - libtext-template-perl
+
+rpm:
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}

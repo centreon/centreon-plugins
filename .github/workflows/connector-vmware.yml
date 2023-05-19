@@ -1,0 +1,57 @@
+name: connector-vmware
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'connectors/vmware/src'
+      - 'connectors/vmware/packaging'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'connectors/vmware/src'
+      - 'connectors/vmware/packaging'
+    tags:
+      - centreon-connector-vmware-*
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
+
+  package:
+    needs:
+      - get-environment
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+    name: package ${{ matrix.distrib }}
+
+    uses: ./.github/workflows/package.yml
+    with:
+      module_directory: centreon-license-manager
+      nfpm_file_pattern: "centreon-license-manager/packaging/*.yaml"
+      distrib: ${{ matrix.distrib }}
+      package_extension: ${{ matrix.package_extension }}
+      image_name: ${{ matrix.image }}
+      version: ${{ needs.get-environment.outputs.version }}
+      release: ${{ needs.get-environment.outputs.release }}
+      cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+    secrets: inherit

@@ -1,9 +1,2 @@
-# Configuration for /etc/init.d/centreon_vmware
-
-# If run centcore at startup default: YES
-RUN_AT_STARTUP="YES"
-
-# Centreon user default: root
-CENTREON_USER="root"
-
+# centreon_vmware command line options
 OPTIONS="--logfile=/var/log/centreon_vmware.log --severity=error"

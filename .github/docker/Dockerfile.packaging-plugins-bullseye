@@ -2,8 +2,10 @@ ARG REGISTRY_URL
 
 FROM ${REGISTRY_URL}/debian:bullseye
 
+ENV DEBIAN_FRONTEND noninteractive
+
 # fix locale
-RUN <<EOF
+RUN bash -e <<EOF
 
 apt-get update
 apt-get install -y locales
@@ -15,12 +17,14 @@ EOF
 
 ENV LANG en_US.utf8
 
-RUN <<EOF
+RUN bash -e <<EOF
 
 apt-get update
+
 apt-get install -y \
   dh-make \
   aptitude \
+  ca-certificates \
   lintian \
   pbuilder \
   quilt \
@@ -35,6 +39,11 @@ apt-get install -y \
   libapp-fatpacker-perl \
   libfile-copy-recursive-perl \
   jq
+
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
+apt-get update
+apt-get install -y nfpm
+
 apt-get clean
 
 EOF

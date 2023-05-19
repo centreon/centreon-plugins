@@ -1,5 +1,9 @@
 on:
   workflow_call:
+    inputs:
+      version_file:
+        required: false
+        type: string
     outputs:
       stability:
         description: "branch stability (stable, testing, unstable, canary)"
@@ -45,9 +49,13 @@ jobs:
 
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 
-          VERSION=`date '+%Y%m%d'`
+          if [[ "${{ inputs.version_file }}" == "" ]]; then
+            VERSION=$(date '+%Y%m%d')
+          else
+            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
+          fi
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
 
-          RELEASE=`date '+%H%M%S'`
+          RELEASE=$(date '+%H%M%S')
           echo "release=$(echo $RELEASE)" >> $GITHUB_OUTPUT
         shell: bash
