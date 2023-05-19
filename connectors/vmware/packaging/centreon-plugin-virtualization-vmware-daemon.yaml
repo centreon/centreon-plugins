@@ -79,7 +79,7 @@ overrides:
   deb:
     depends:
       - perl-vmware-vsphere
-      - zmq-libzmq4-perl
+      - libzmq-libzmq4-perl
       - libzmq-constants-perl
       - liblwp-protocol-https-perl
       - libio-socket-inet6-perl
