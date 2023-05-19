@@ -46,8 +46,7 @@ jobs:
 
     uses: ./.github/workflows/package.yml
     with:
-      module_directory: centreon-license-manager
-      nfpm_file_pattern: "centreon-license-manager/packaging/*.yaml"
+      nfpm_file_pattern: "connectors/vmware/packaging/centreon-plugin-virtualization-vmware-daemon.yaml"
       distrib: ${{ matrix.distrib }}
       package_extension: ${{ matrix.package_extension }}
       image_name: ${{ matrix.image }}
