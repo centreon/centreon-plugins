@@ -34,6 +34,7 @@ sub new {
         'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
         'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
         'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
+		'replication'  => 'storage::ibm::storwize::ssh::mode::replication'
     );
     $self->{custom_modes}{api} = 'storage::ibm::storwize::ssh::custom::api';
 
