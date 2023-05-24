@@ -48,6 +48,7 @@ sub manage_selection {
         cambiumRadioIndex      => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.1' },
         cambiumRadioMACAddress => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.2' },
         cambiumBandType        => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.3' },
+        cambiumRadioState      => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.13' },
         cambiumRadioChannel    => { oid => '.1.3.6.1.4.1.17713.22.1.2.1.6' }
     };
 
@@ -70,6 +71,7 @@ sub manage_selection {
             id => $result->{cambiumRadioIndex},
             name => $result->{cambiumRadioMACAddress},
             band_type => $result->{cambiumBandType},
+            transmit_power => $result->{cambiumRadioState},
             radio_channel => $result->{cambiumRadioChannel}
         };
     }
@@ -84,10 +86,11 @@ sub run {
     foreach my $oid_path (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[id: %s][name: %s][radio channel: %s][band type: %s]',
+                '[id: %s][name: %s][radio channel: %s][transmit power: %s][band type: %s]',
                 $results->{$oid_path}->{id},
                 $results->{$oid_path}->{name},
                 $results->{$oid_path}->{radio_channel},
+                $results->{$oid_path}->{transmit_power},
                 $results->{$oid_path}->{band_type}
             )
         );
@@ -104,7 +107,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['id','name','radio_channel','band_type']);
+    $self->{output}->add_disco_format(elements => ['id','name','radio_channel','transmit_power','band_type']);
 }
 
 sub disco_show {
@@ -116,6 +119,7 @@ sub disco_show {
             id => $results->{$oid_path}->{id},
             name => $results->{$oid_path}->{name},
             radio_channel => $results->{$oid_path}->{radio_channel},
+            transmit_power => $results->{$oid_path}->{transmit_power},
             band_type => $results->{$oid_path}->{band_type}
         );
     }
