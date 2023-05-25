@@ -25,17 +25,17 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_connection_status_output {
+sub prefix_connection_output {
     my ($self, %options) = @_;
 
-    return "'Connection status : " . $options{instance_value}->{name} . "' ";
+    return "Access point '" . $options{instance_value}->{name} . "' ";
 }
 
-sub custom_connectionstatus_output {
+sub custom_connection_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Connection status : %s',
+        'connection status: %s',
         $self->{result_values}->{connection_status}
     );
 }
@@ -44,15 +44,14 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'connectionstatus', type => 1, cb_prefix_output => 'prefix_connection_status_output', message_multiple => 'All Connection status are ok' }
+        { name => 'connection', type => 1, cb_prefix_output => 'prefix_connection_output', message_multiple => 'All connection status are ok' }
     ];
 
-     $self->{maps_counters}->{connectionstatus} = [
-        { label => 'connection-status',type => 2,
+     $self->{maps_counters}->{connection} = [
+        { label => 'connection-status', type => 2,
             set => {
                 key_values => [ { name => 'connection_status' }, { name => 'name' } ],
-                output_template => 'status: %s',
-                closure_custom_output => $self->can('custom_connectionstatus_output'),
+                closure_custom_output => $self->can('custom_connection_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -75,7 +74,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Select relevant oids for Memory monitoring
     my $mapping = {
         cambiumAPName        => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.2' },
         cambiumAPCnmConstaus => { oid => '.1.3.6.1.4.1.17713.22.1.1.1.12' }
@@ -89,6 +87,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
+    $self->{connection} = {};
     foreach my $oid (keys %{$connectionstatus_result}) {
         next if ($oid !~ /^$mapping->{cambiumAPName}->{oid}\.(.*)$/);
         # Catch instance in table
@@ -101,7 +100,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{connectionstatus}->{$instance} = {
+        $self->{connection}->{$instance} = {
             name => $result->{cambiumAPName},
             connection_status => $result->{cambiumAPCnmConstaus}
         };
@@ -127,6 +126,16 @@ Check Connection status.
 =item B<--filter-ap>
 
 Filter on one or several AP.
+
+=item B<--warning-connection-status>
+
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}
+
+=item B<--critical-connection-status>
+
+Set critical threshold for status.
+Can used special variables like: %{status}, %{name}
 
 =back
 
