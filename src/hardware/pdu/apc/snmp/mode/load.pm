@@ -290,32 +290,32 @@ Check phase/bank load.
 =item B<--unknown-bank-status>
 
 Set warning threshold for status.
-Can used special variables like: %{type}, %{status}, %{display}
+You can use the following variables like: %{type}, %{status}, %{display}
 
 =item B<--warning-bank-status>
 
 Set warning threshold for status (Default: '%{status} =~ /low|nearOverload/i').
-Can used special variables like: %{type}, %{status}, %{display}
+You can use the following variables like: %{type}, %{status}, %{display}
 
 =item B<--critical-bank-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^overload/').
-Can used special variables like: %{type}, %{status}, %{display}
+You can use the following variables like: %{type}, %{status}, %{display}
 
 =item B<--unknown-phase-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-phase-status>
 
 Set warning threshold for status (Default: '%{status} =~ /low|nearOverload/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-phase-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^overload/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

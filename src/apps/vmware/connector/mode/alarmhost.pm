@@ -288,12 +288,12 @@ Check new alarms only.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /yellow/i).
-Can used special variables like: %{status}, %{name}, %{entity}, %{type}.
+You can use the following variables like: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /red/i').
-Can used special variables like: %{status}, %{name}, %{entity}, %{type}.
+You can use the following variables like: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--warning-*>
 

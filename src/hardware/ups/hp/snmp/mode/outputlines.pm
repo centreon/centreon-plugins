@@ -191,17 +191,17 @@ Check output lines metrics.
 =item B<--unknown-source>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{source}.
+You can use the following variables like: %{source}.
 
 =item B<--warning-source>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{source}.
+You can use the following variables like: %{source}.
 
 =item B<--critical-source>
 
 Set critical threshold for status (Default: '%{source} !~ /normal/i').
-Can used special variables like: %{source}.
+You can use the following variables like: %{source}.
 
 =item B<--warning-*> B<--critical-*>
 

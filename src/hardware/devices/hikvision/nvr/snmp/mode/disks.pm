@@ -208,17 +208,17 @@ Filter disks by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning--status>
 
 Set warning threshold for status (Default: '%{status} =~ /reparing|formatting/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /abnormal|smartfailed/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

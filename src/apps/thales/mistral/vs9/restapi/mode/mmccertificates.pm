@@ -229,17 +229,17 @@ Skip revoked certificates.
 =item B<--unknown-certificate-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>
 
 Set warning threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>
 
 Set critical threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-*> B<--critical-*>
 

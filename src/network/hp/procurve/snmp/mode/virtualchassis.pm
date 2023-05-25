@@ -324,47 +324,47 @@ Filter members by serial (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--unknown-member-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{stateLast}
+You can use the following variables like: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{stateLast}
+You can use the following variables like: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status (Default: '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i').
-Can used special variables like: %{state}, %{stateLast}
+You can use the following variables like: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} eq "down"').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

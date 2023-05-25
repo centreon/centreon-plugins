@@ -158,17 +158,17 @@ Filter backups by type (regexp can be used).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+You can use the following variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+You can use the following variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{has_backup} eq "yes" and %{exit_state} ne "SUCCESS" and %{last_error} ne "NO_ERROR"').
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+You can use the following variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -302,12 +302,12 @@ Filter repositories by type (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{type}.
+You can use the following variables like: %{status}, %{name}, %{type}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: 'not %{status} =~ /ordinal|maintenance/i').
-Can used special variables like: %{status}, %{name}, %{type}.
+You can use the following variables like: %{status}, %{name}, %{type}.
 
 =item B<--warning-*> B<--critical-*>
 

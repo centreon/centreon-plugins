@@ -109,17 +109,17 @@ Filter protocols by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{enabled}, %{name}
+You can use the following variables like: %{enabled}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{enabled}, %{name}
+You can use the following variables like: %{enabled}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{enabled}, %{name}
+You can use the following variables like: %{enabled}, %{name}
 =back
 
 =cut

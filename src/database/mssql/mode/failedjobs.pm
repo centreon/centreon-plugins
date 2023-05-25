@@ -230,12 +230,12 @@ Display job duration time.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{status}, %{duration}
+You can use the following variables like: %{name}, %{status}, %{duration}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{name}, %{status}, %{duration}
+You can use the following variables like: %{name}, %{status}, %{duration}
 
 =item B<--warning-*> B<--critical-*> 
 

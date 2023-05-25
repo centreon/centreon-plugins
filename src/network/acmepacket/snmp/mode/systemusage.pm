@@ -200,12 +200,12 @@ Example: --filter-counters='^memory-usage$'
 =item B<--warning-replication-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{replication_state}
+You can use the following variables like: %{replication_state}
 
 =item B<--critical-replication-status>
 
 Set critical threshold for status (Default: '%{replication_state} =~ /outOfService/i').
-Can used special variables like: %{replication_state}
+You can use the following variables like: %{replication_state}
 
 =item B<--warning-*>
 

@@ -244,12 +244,12 @@ Print powershell output.
 =item B<--warning-status>
 
 Set warning threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}, %{mode}, %{type}, %{name}.
+You can use the following variables like: %{status}, %{mode}, %{type}, %{name}.
 
 =item B<--critical-status>
 
 Set critical threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}, %{mode}, %{type}, %{name}.
+You can use the following variables like: %{status}, %{mode}, %{type}, %{name}.
 
 =back
 

@@ -222,47 +222,47 @@ Check high availability.
 =item B<--unknown-member-state>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =item B<--warning-member-state>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =item B<--critical-member-state>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =item B<--unknown-member-link-status>
 
 Set unknown threshold for status (Default: '%{linkStatus} =~ /unknown/i').
-Can used special variables like: %{linkStatus}, %{name}
+You can use the following variables like: %{linkStatus}, %{name}
 
 =item B<--warning-member-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{linkStatus}, %{name}
+You can use the following variables like: %{linkStatus}, %{name}
 
 =item B<--critical-member-link-status>
 
 Set critical threshold for status (Default: '%{linkStatus} =~ /failed|failing/i').
-Can used special variables like: %{linkStatus}, %{name}
+You can use the following variables like: %{linkStatus}, %{name}
 
 =item B<--unknown-member-config>
 
 Set unknown threshold for status.
-Can used special variables like: %{isConfigSync}, %{name}
+You can use the following variables like: %{isConfigSync}, %{name}
 
 =item B<--warning-member-config>
 
 Set warning threshold for status  (Default: '%{isConfigSync} eq "no"').
-Can used special variables like: %{isConfigSync}, %{name}
+You can use the following variables like: %{isConfigSync}, %{name}
 
 =item B<--critical-member-config>
 
 Set critical threshold for status.
-Can used special variables like: %{isConfigSync}, %{name}
+You can use the following variables like: %{isConfigSync}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

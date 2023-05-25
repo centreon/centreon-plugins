@@ -143,12 +143,12 @@ Filter queue name (Can use regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
+You can use the following variables like: %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "running"').
-Can used special variables like: %{state}, %{display}
+You can use the following variables like: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

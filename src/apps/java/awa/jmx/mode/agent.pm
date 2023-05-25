@@ -168,12 +168,12 @@ Filter agent name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{since}, %{display}, %{ipaddress}, %{active}
+You can use the following variables like: %{since}, %{display}, %{ipaddress}, %{active}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{since}, %{display}, %{ipaddress}, %{active}
+You can use the following variables like: %{since}, %{display}, %{ipaddress}, %{active}
 
 =item B<--timezone>
 

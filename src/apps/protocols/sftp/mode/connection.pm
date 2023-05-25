@@ -99,12 +99,12 @@ Check sftp connection.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{message}
+You can use the following variables like: %{status}, %{message}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{message} !~ /authentication succeeded/i'
-Can used special variables like: %{status}, %{message}
+You can use the following variables like: %{status}, %{message}
 
 =item B<--warning-time>
 

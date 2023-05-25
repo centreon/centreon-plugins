@@ -182,12 +182,12 @@ Set critical threshold on rule compliance.
 =item B<--warning-status>
 
 Set warning threshold for status of directive compliance (Default: '').
-Can used special variables like: %{directive}, %{compliance}
+You can use the following variables like: %{directive}, %{compliance}
 
 =item B<--critical-status>
 
 Set critical threshold for status of directive compliance (Default: '').
-Can used special variables like: %{directive}, %{compliance}
+You can use the following variables like: %{directive}, %{compliance}
 
 Example :
   --critical-status='%{directive} eq "Users" && %{compliance} < 85'

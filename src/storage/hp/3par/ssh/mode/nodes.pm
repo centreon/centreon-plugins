@@ -192,17 +192,17 @@ Filter nodes by id (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{node_id}
+You can use the following variables like: %{status}, %{node_id}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{node_id}
+You can use the following variables like: %{status}, %{node_id}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}
+You can use the following variables like: %{status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>
 

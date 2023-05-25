@@ -278,12 +278,12 @@ Only get alerts by severity (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /warning/i')
-Can used special variables like: %{name}, %{severity}, %{source}, %{category}, %{timeraised}, %{message}
+You can use the following variables like: %{name}, %{severity}, %{source}, %{category}, %{timeraised}, %{message}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /error/i').
-Can used special variables like: %{name}, %{severity}, %{source}, %{category}, %{timeraised}, %{message}
+You can use the following variables like: %{name}, %{severity}, %{source}, %{category}, %{timeraised}, %{message}
 
 =item B<--warning-*> B<--critical-*>
 

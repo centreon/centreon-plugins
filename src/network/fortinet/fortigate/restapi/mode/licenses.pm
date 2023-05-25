@@ -178,12 +178,12 @@ Filter licenses by name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{status}.
+You can use the following variables like: %{name}, %{status}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /expired/i').
-Can used special variables like: %{name}, %{status}.
+You can use the following variables like: %{name}, %{status}.
 
 =item B<--unit>
 

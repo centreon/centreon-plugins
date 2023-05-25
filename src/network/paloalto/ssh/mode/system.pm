@@ -258,12 +258,12 @@ Timezone options. Default is 'GMT'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{oper_mode}
+You can use the following variables like: %{oper_mode}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{oper_mode} !~ /normal/i').
-Can used special variables like: %{oper_mode}
+You can use the following variables like: %{oper_mode}
 
 =item B<--warning-*> B<--critical-*>
 

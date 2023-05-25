@@ -151,17 +151,17 @@ Check management entities.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{role} =~ /unknown/ or %{status} eq "unknown" or %{services_status} eq "unknown"')
-Can used special variables like: %{dn}, %{role}, %{services_status}, %{status}
+You can use the following variables like: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{dn}, %{role}, %{services_status}, %{status}
+You can use the following variables like: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{role} =~ /electionFailed|inapplicable/ or %{status} eq "down" or %{services_status} eq "down"').
-Can used special variables like: %{dn}, %{role}, %{services_status}, %{status}
+You can use the following variables like: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

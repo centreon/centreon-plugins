@@ -433,17 +433,17 @@ Filter volumes by storage virtual machine name.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{volumeName}, %{svmName}
+You can use the following variables like: %{state}, %{volumeName}, %{svmName}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{volumeName}, %{svmName}
+You can use the following variables like: %{state}, %{volumeName}, %{svmName}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /online/i').
-Can used special variables like: %{state}, %{volumeName}, %{svmName}
+You can use the following variables like: %{state}, %{volumeName}, %{svmName}
 
 =item B<--warning-*> B<--critical-*>
 

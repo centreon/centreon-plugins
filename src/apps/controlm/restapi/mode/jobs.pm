@@ -304,22 +304,22 @@ Can use format: 'Europe/London' or '+0100'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{status}, %{application}, %{folder}, %{type}
+You can use the following variables like: %{name}, %{status}, %{application}, %{folder}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /ended not ok/i').
-Can used special variables like: %{name}, %{status}, %{application}, %{folder}, %{type}
+You can use the following variables like: %{name}, %{status}, %{application}, %{folder}, %{type}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-Can used special variables like: %{name}, %{status}, %{elapsed}, %{application}, %{folder}, %{type}
+You can use the following variables like: %{name}, %{status}, %{elapsed}, %{application}, %{folder}, %{type}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-Can used special variables like: %{name}, %{status}, %{elapsed}, %{application}, %{folder}, %{type}
+You can use the following variables like: %{name}, %{status}, %{elapsed}, %{application}, %{folder}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -391,62 +391,62 @@ Filter ports by role (can be a regexp).
 =item B<--unknown-node-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{node_status}, %{node_name}
+You can use the following variables like: %{node_status}, %{node_name}
 
 =item B<--warning-node-status>
 
 Set warning threshold for status.
-Can used special variables like: %{node_status}, %{node_name}
+You can use the following variables like: %{node_status}, %{node_name}
 
 =item B<--critical-node-status>
 
 Set critical threshold for status (Default: '%{node_status} eq "clusterComLost"').
-Can used special variables like: %{node_status}, %{node_name}
+You can use the following variables like: %{node_status}, %{node_name}
 
 =item B<--unknown-bbu-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{bbu_status}, %{node_name}
+You can use the following variables like: %{bbu_status}, %{node_name}
 
 =item B<--warning-bbu-status>
 
 Set warning threshold for status.
-Can used special variables like: %{bbu_status}, %{node_name}
+You can use the following variables like: %{bbu_status}, %{node_name}
 
 =item B<--critical-bbu-status>
 
 Set critical threshold for status (Default: '%{bbu_status} !~ /fullyCharged|ok/i').
-Can used special variables like: %{bbu_status}, %{node_name}
+You can use the following variables like: %{bbu_status}, %{node_name}
 
 =item B<--unknown-port-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--warning-port-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--critical-port-link-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--unknown-port-health>
 
 Set unknown threshold for status.
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+You can use the following variables like: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-port-health>
 
 Set warning threshold for status (Default: '%{health} eq "degraded"').
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+You can use the following variables like: %{health}, %{port_id}, %{node_name}
 
 =item B<--critical-port-health>
 
 Set critical threshold for status.
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+You can use the following variables like: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-*> B<--critical-*>
 

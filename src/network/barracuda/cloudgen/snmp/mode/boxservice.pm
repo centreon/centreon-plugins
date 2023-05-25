@@ -153,12 +153,12 @@ Check box services status.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /^started$/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--filter-name>
 

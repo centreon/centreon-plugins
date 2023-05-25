@@ -119,12 +119,12 @@ Default: all services are monitored.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{start_mode}
+You can use the following variables like: %{status}, %{start_mode}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{start_mode} =~ /auto/ && %{status} !~ /^running$/').
-Can used special variables like: %{status}, %{start_mode}
+You can use the following variables like: %{status}, %{start_mode}
 
 
 =back

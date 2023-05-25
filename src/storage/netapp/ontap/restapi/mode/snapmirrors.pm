@@ -118,17 +118,17 @@ Filter snapmirror name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
+You can use the following variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
+You can use the following variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{healthy} ne "true" or %{state} eq "broken_off"').
-Can used special variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
+You can use the following variables like: %{healthy}, %{state}, %{transfer_state}, %{display}
 
 =back
 

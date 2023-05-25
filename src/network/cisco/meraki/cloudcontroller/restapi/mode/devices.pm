@@ -608,47 +608,47 @@ Skip port traffic counters if port status is disconnected.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /alerting/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--unknown-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} =~ /failed/i').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables like: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+You can use the following variables like: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-port-status>
 
 Set warning threshold for status.
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+You can use the following variables like: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>
 
 Set critical threshold for status (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+You can use the following variables like: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

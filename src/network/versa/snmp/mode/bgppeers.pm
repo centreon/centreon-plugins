@@ -205,17 +205,17 @@ Critical threshold on last update (seconds)
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+You can use the following variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+You can use the following variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /established/').
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+You can use the following variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =back
 

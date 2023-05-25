@@ -266,12 +266,12 @@ Filter by description (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{vm}, %{status}, %{hostgroup}
+You can use the following variables like: %{vm}, %{status}, %{hostgroup}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Running|Stopped/i').
-Can used special variables like: %{vm}, %{status}, %{hostgroup}
+You can use the following variables like: %{vm}, %{status}, %{hostgroup}
 
 =back
 

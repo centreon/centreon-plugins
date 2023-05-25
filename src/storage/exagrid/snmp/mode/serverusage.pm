@@ -190,12 +190,12 @@ Example: --filter-counters='^status$'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /error/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

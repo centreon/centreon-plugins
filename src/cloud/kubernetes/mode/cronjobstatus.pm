@@ -168,13 +168,13 @@ Filter CronJob namespace (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{name}, %{namespace}, %{active},
+You can use the following variables like: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{name}, %{namespace}, %{active},
+You can use the following variables like: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 
 =back

@@ -173,12 +173,12 @@ Example: --filter-counters='status'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{compaction_status}
+You can use the following variables like: %{compaction_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{compaction_status} !~ /ready/i').
-Can used special variables like: %{compaction_status}
+You can use the following variables like: %{compaction_status}
 
 =item B<--warning-*> B<--critical-*>
 

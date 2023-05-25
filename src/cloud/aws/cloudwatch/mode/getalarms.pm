@@ -164,12 +164,12 @@ Filter by alarm name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state_value} =~ /INSUFFICIENT_DATA/i')
-Can used special variables like: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
+You can use the following variables like: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state_value} =~ /ALARM/i').
-Can used special variables like: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
+You can use the following variables like: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
 
 =item B<--memory>
 

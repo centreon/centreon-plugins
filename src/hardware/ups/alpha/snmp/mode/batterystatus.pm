@@ -161,17 +161,17 @@ Example: --filter-counters='^status|load$'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /batteryDepleted/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-*>
 

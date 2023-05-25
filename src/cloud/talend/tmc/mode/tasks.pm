@@ -365,17 +365,17 @@ Select the unit for last execution time threshold. May be 's' for seconds, 'm' f
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+You can use the following variables like: %{status}, %{taskName}
 
 =item B<--warning-execution-status>
 
 Set warning threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+You can use the following variables like: %{status}, %{taskName}
 
 =item B<--critical-execution-status>
 
 Set critical threshold for last task execution status (Default: %{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i).
-Can used special variables like: %{status}, %{taskName}
+You can use the following variables like: %{status}, %{taskName}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -240,77 +240,77 @@ Filter power supplies by id (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--unknown-ac-status>
 
 Set unknown threshold for AC status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-ac-status>
 
 Set warning threshold for AC status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--critical-ac-status>
 
 Set critical threshold for AC status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--unknown-dc-status>
 
 Set unknown threshold for DC status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-dc-status>
 
 Set warning threshold for DC status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--critical-dc-status>
 
 Set critical threshold for DC status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--unknown-fan-status>
 
 Set unknown threshold for fan status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-fan-status>
 
 Set warning threshold for fan status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--critical-fan-status>
 
 Set critical threshold for fan status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--unknown-battery-status>
 
 Set unknown threshold for battery status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-battery-status>
 
 Set warning threshold for battery status.
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--critical-battery-status>
 
 Set critical threshold for battery status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{node_id}, %{psu_id}
+You can use the following variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--warning-*> B<--critical-*>
 

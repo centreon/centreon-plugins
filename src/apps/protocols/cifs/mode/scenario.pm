@@ -303,22 +303,22 @@ Can be a file or json content.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} ne "success"')
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-step-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{message}
+You can use the following variables like: %{status}, %{message}
 
 =item B<--critical-step-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}, %{message}
+You can use the following variables like: %{status}, %{message}
 
 =item B<--warning-*> B<--critical-*>
 

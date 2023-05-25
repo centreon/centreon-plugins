@@ -303,22 +303,22 @@ If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-poe-status>
 
 Set warning threshold for poe status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
 
 =item B<--critical-poe-status>
 
 Set critical threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
+You can use the following variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

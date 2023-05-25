@@ -172,17 +172,17 @@ Example: --filter-counters='^mail-sent$'
 =item B<--unknown-cluster-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{cluster_status}
+You can use the following variables like: %{cluster_status}
 
 =item B<--warning-cluster-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{cluster_status}
+You can use the following variables like: %{cluster_status}
 
 =item B<--critical-cluster-status>
 
 Set critical threshold for status (Default: '%{cluster_status} =~ /error/i').
-Can used special variables like: %{cluster_status}
+You can use the following variables like: %{cluster_status}
 
 =item B<--warning-*> B<--critical-*>
 

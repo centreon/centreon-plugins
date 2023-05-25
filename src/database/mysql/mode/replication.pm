@@ -368,32 +368,32 @@ Check MySQL replication (need to use --multiple).
 =item B<--unknown-connection-status>
 
 Set unknown threshold for status.
-Can used special variables like:  %{status}, %{error_message}, %{display}
+You can use the following variables like:  %{status}, %{error_message}, %{display}
 
 =item B<--warning-connection-status>
 
 Set warning threshold for status.
-Can used special variables like:  %{status}, %{error_message}, %{display}
+You can use the following variables like:  %{status}, %{error_message}, %{display}
 
 =item B<--critical-connection-status>
 
 Set critical threshold for status (Default: '%{status} ne "ok"').
-Can used special variables like: %{status}, %{error_message}, %{display}
+You can use the following variables like: %{status}, %{error_message}, %{display}
 
 =item B<--unknown-replication-status>
 
 Set unknown threshold for status (Default: '%{replication_status} =~ /configurationIssue/i').
-Can used special variables like: %{replication_status}, %{display}
+You can use the following variables like: %{replication_status}, %{display}
 
 =item B<--warning-replication-status>
 
 Set warning threshold for status (Default: '%{replication_status} =~ /inProgress/i').
-Can used special variables like: %{replication_status}, %{display}
+You can use the following variables like: %{replication_status}, %{display}
 
 =item B<--critical-replication-status>
 
 Set critical threshold for status (Default: '%{replication_status} =~ /connectIssueToMaster/i').
-Can used special variables like: %{replication_status}, %{display}
+You can use the following variables like: %{replication_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -203,17 +203,17 @@ Virtual machine tags to used for the name (Default: 'name').
 =item B<--unknown-vm-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{vmName}
+You can use the following variables like: %{state}, %{vmName}
 
 =item B<--warning-vm-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{vmName}
+You can use the following variables like: %{state}, %{vmName}
 
 =item B<--critical-vm-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{vmName}
+You can use the following variables like: %{state}, %{vmName}
 
 =item B<--warning-*> B<--critical-*>
 

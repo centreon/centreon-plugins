@@ -96,12 +96,12 @@ Check version.
 =item B<--warning-version>
 
 Set warning threshold for version.
-Can used special variables like: %{version}, %{repoid}, %{release}
+You can use the following variables like: %{version}, %{repoid}, %{release}
 
 =item B<--critical-version>
 
 Set critical threshold for version.
-Can used special variables like: %{version}, %{repoid}, %{release}
+You can use the following variables like: %{version}, %{repoid}, %{release}
 
 =back
 

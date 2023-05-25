@@ -200,12 +200,12 @@ Filter log name (can be a regexp).
 =item B<--warning-process-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-process-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

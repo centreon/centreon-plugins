@@ -341,47 +341,47 @@ Example: --filter-counters='^status|load$'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}, %{replace}
+You can use the following variables like: %{status}, %{replace}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
-Can used special variables like: %{status}, %{replace}
+You can use the following variables like: %{status}, %{replace}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{replace} =~ /yes/i').
-Can used special variables like: %{status}, %{replace}
+You can use the following variables like: %{status}, %{replace}
 
 =item B<--unknown-battery-pack-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-battery-pack-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-battery-pack-status>
 
 Set critical threshold for status (Default: '%{status} ne "OK"').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--unknown-cartridge-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-cartridge-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-cartridge-status>
 
 Set critical threshold for status (Default: '%{status} ne "OK"').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

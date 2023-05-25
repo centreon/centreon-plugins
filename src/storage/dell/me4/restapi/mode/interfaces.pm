@@ -238,17 +238,17 @@ Filter port name (Can be a regexp).
 =item B<--unknown-port-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}, %{health}, %{display}
+You can use the following variables like: %{status}, %{health}, %{display}
 
 =item B<--warning-port-status>
 
 Set warning threshold for status (Default: '%{status} =~ /degraded/i').
-Can used special variables like: %{status}, %{health}, %{display}
+You can use the following variables like: %{status}, %{health}, %{display}
 
 =item B<--critical-port-status>
 
 Set critical threshold for status (Default: '%{status} =~ /fault/i').
-Can used special variables like: %{status}, %{health}, %{display}
+You can use the following variables like: %{status}, %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

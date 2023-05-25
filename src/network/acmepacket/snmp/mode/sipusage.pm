@@ -170,12 +170,12 @@ Check SIP usage.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -).
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /outOfService|constraintsViolation|inServiceTimedOut/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-*>
 

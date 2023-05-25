@@ -166,12 +166,12 @@ Filter by category name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /warning/i')
-Can used special variables like: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
+You can use the following variables like: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /critical/i').
-Can used special variables like: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
+You can use the following variables like: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
 
 =item B<--memory>
 

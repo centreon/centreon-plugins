@@ -135,17 +135,17 @@ Check queue manager.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
+You can use the following variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
+You can use the following variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{mgr_status} !~ /running/i').
-Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
+You can use the following variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -226,47 +226,47 @@ Filter hosts by name (Can be a regexp).
 =item B<--unknown-host-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}, %{sn}
+You can use the following variables like: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
 Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}, %{name}, %{sn}
+You can use the following variables like: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
 
 Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
-Can used special variables like: %{status}, %{name}, %{sn}
+You can use the following variables like: %{status}, %{name}, %{sn}
 
 =item B<--unknown-nic-status>
 
 Set unknown threshold for nic status.
-Can used special variables like:  %{status}, %{mac}, %{slot}
+You can use the following variables like:  %{status}, %{mac}, %{slot}
 
 =item B<--warning-nic-status>
 
 Set warning threshold for nic status.
-Can used special variables like: %{status}, %{mac}, %{slot}
+You can use the following variables like: %{status}, %{mac}, %{slot}
 
 =item B<--critical-nic-status>
 
 Set critical threshold for nic status
-Can used special variables like: %{status}, %{mac}, %{slot}
+You can use the following variables like: %{status}, %{mac}, %{slot}
 
 =item B<--unknown-disk-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+You can use the following variables like: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-disk-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+You can use the following variables like: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>
 
 Set critical threshold for status (Default: '%{status} !~ /OK/i').
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+You can use the following variables like: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -202,12 +202,12 @@ Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{status}, %{error}.
+You can use the following variables like: %{name}, %{status}, %{error}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
-Can used special variables like: %{name}, %{status}, %{error}.
+You can use the following variables like: %{name}, %{status}, %{error}.
 
 =back
 

@@ -114,12 +114,12 @@ Filter volumes by volume name (can be a regexp).
 =item B<--warning-health-status>
 
 Set warning threshold for status.
-Can used special variables like: %{health_state}, %{cluster_name}, %{volume_name}
+You can use the following variables like: %{health_state}, %{cluster_name}, %{volume_name}
 
 =item B<--critical-health-status>
 
 Set critical threshold for status (Default: '%{health_state} ne "ok"').
-Can used special variables like: %{health_state}, %{cluster_name}, %{volume_name}
+You can use the following variables like: %{health_state}, %{cluster_name}, %{volume_name}
 
 =back
 

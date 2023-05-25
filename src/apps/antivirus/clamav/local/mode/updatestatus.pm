@@ -248,32 +248,32 @@ Antivirus daily.cvd file (Default: '/var/lib/clamav/daily.cvd').
 =item B<--warning-engine-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{last_engine_version}, %{current_engine_version}
+You can use the following variables like: %{last_engine_version}, %{current_engine_version}
 
 =item B<--critical-engine-status>
 
 Set critical threshold for status (Default: '%{last_engine_version} ne %{current_engine_version}').
-Can used special variables like: %{last_engine_version}, %{current_engine_version}
+You can use the following variables like: %{last_engine_version}, %{current_engine_version}
 
 =item B<--warning-maindb-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
+You can use the following variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--critical-maindb-status>
 
 Set critical threshold for status (Default: '%{last_maindb_version} ne %{current_maindb_version}').
-Can used special variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
+You can use the following variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--warning-dailydb-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
+You can use the following variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =item B<--critical-dailydb-status>
 
 Set critical threshold for status (Default: '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000').
-Can used special variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
+You can use the following variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =back
 

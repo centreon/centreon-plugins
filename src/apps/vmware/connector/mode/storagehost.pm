@@ -361,47 +361,47 @@ Filter paths by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
-Can used special variables like: %{status}, %{maintenance}
+You can use the following variables like: %{status}, %{maintenance}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{maintenance}
+You can use the following variables like: %{status}, %{maintenance}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}, %{maintenance}
+You can use the following variables like: %{status}, %{maintenance}
 
 =item B<--warning-adapter-status>
 
 Set warning threshold for adapter status.
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--critical-adapter-status>
 
 Set critical threshold for adapter status (Default: '%{status} =~ /fault/').
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--warning-lun-status>
 
 Set warning threshold for lun status (Default: '%{status} =~ /degraded|quiesced/').
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--critical-lun-status>
 
 Set critical threshold for lun status (Default: '%{status} =~ /lostcommunication|error/').
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--warning-path-status>
 
 Set warning threshold for path status.
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--critical-path-status>
 
 Set critical threshold for path status (Default: '%{status} =~ /dead/').
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables like: %{name}, %{host}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

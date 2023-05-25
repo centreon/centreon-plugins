@@ -227,12 +227,12 @@ Filter cluster name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} =~ /warning/').
-Can used special variables like: %{health}, %{display}
+You can use the following variables like: %{health}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} =~ /critical/').
-Can used special variables like: %{health}, %{display}
+You can use the following variables like: %{health}, %{display}
 
 =item B<--warning-*>
 

@@ -198,12 +198,12 @@ Filter ports by index (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{location}
+You can use the following variables like: %{status}, %{name}, %{location}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /txFailure|lossOfSignal|readError/').
-Can used special variables like: %{status}, %{port}, %{location}
+You can use the following variables like: %{status}, %{port}, %{location}
 
 =item B<--warning-*> B<--critical-*>
 

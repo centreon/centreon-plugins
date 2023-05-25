@@ -155,17 +155,17 @@ Filter virtual machines by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{running_status}, %{name}
+You can use the following variables like: %{running_status}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{running_status}, %{name}
+You can use the following variables like: %{running_status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{running_status}, %{name}
+You can use the following variables like: %{running_status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

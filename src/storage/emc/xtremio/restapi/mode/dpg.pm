@@ -146,17 +146,17 @@ Filter data protection groups by name (can be a regexp).
 =item B<--unknown-health-indicator>
 
 Set unknown threshold for status.
-Can used special variables like: %{health}, %{indicator}
+You can use the following variables like: %{health}, %{indicator}
 
 =item B<--warning-health-indicator>
 
 Set warning threshold for status.
-Can used special variables like: %{health}, %{indicator}
+You can use the following variables like: %{health}, %{indicator}
 
 =item B<--critical-health-indicator>
 
 Set critical threshold for status (Default: '%{health} !~ /done|normal|null/i').
-Can used special variables like: %{health}, %{indicator}
+You can use the following variables like: %{health}, %{indicator}
 
 =back
 

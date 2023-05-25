@@ -183,22 +183,22 @@ Example: --filter-counters='^temperature-cpum$'
 =item B<--warning-wifi-status>
 
 Set warning threshold for wifi status (Default: '%{status} =~ /bad_param/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-wifi-status>
 
 Set critical threshold for wifi status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-disk-status>
 
 Set warning threshold for disk status.
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-disk-status>
 
 Set critical threshold for disk status (Default: '%{status} =~ /error/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

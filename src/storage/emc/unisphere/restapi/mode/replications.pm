@@ -142,32 +142,32 @@ Filter replication name (can be a regexp).
 =item B<--unknown-health-status>
 
 Set unknown threshold for status (Default: '%{health_status} =~ /unknown/i').
-Can used special variables like: %{health_status}, %{display}
+You can use the following variables like: %{health_status}, %{display}
 
 =item B<--warning-health-status>
 
 Set warning threshold for status (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
-Can used special variables like: %{health_status}, %{display}
+You can use the following variables like: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
 Set critical threshold for status (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
-Can used special variables like: %{health_status}, %{display}
+You can use the following variables like: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
 Set unknown threshold for status (Default: '%{repl_status} =~ /unknown/i').
-Can used special variables like: %{repl_status}, %{display}
+You can use the following variables like: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
 
 Set warning threshold for status (Default: '%{repl_status} =~ /syncing/i').
-Can used special variables like: %{repl_status}, %{display}
+You can use the following variables like: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>
 
 Set critical threshold for status (Default: '%{repl_status} =~ /inconsistent/i').
-Can used special variables like: %{repl_status}, %{display}
+You can use the following variables like: %{repl_status}, %{display}
 
 =back
 

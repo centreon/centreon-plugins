@@ -286,22 +286,22 @@ Print powershell output.
 =item B<--warning-link-status>
 
 Set warning threshold for current synchronisation status (Default: '')
-Can used special variables like: %{status}.
+You can use the following variables like: %{status}.
 
 =item B<--critical-link-status>
 
 Set critical threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}.
+You can use the following variables like: %{status}.
 
 =item B<--warning-site-status>
 
 Set warning threshold for current synchronisation status (Default: '')
-Can used special variables like: %{status}, %{type}, %{site_to_site_state}, %{last_sync_time}.
+You can use the following variables like: %{status}, %{type}, %{site_to_site_state}, %{last_sync_time}.
 
 =item B<--critical-site-status>
 
 Set critical threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}, %{type}, %{site_to_site_state}, %{last_sync_time}.
+You can use the following variables like: %{status}, %{type}, %{site_to_site_state}, %{last_sync_time}.
 
 =back
 

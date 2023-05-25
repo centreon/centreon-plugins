@@ -266,27 +266,27 @@ Threshold critical.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-offline-disks>
 
 Set warning threshold for offline disks (Default: '(%{offline_disks} > 0 && %{type} eq "extern") || (%{offline_disks} > 1 && %{type} eq "high")').
-Can used special variables like: %{offline_disks}, %{type}, %{display}
+You can use the following variables like: %{offline_disks}, %{type}, %{display}
 
 =item B<--critical-offline-disks>
 
 Set critical threshold for offline disks (Default: '%{offline_disks} > 0 && %{type} =~ /^normal|high$/').
-Can used special variables like: %{offline_disks}, %{type}, %{display}
+You can use the following variables like: %{offline_disks}, %{type}, %{display}
 
 =item B<--units>
 

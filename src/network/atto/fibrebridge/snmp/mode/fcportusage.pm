@@ -206,12 +206,12 @@ Filter name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{status}, %{display}
+You can use the following variables like: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admin} =~ /enabled/ and %{status} !~ /online/').
-Can used special variables like: %{admin}, %{status}, %{display}
+You can use the following variables like: %{admin}, %{status}, %{display}
 
 =back
 

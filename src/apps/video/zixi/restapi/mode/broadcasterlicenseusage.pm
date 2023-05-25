@@ -256,12 +256,12 @@ Thresholds are on free license left.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{error}, %{info}.
+You can use the following variables like: %{name}, %{error}, %{info}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: -).
-Can used special variables like: %{name}, %{error}, %{info}.
+You can use the following variables like: %{name}, %{error}, %{info}.
 
 =back
 

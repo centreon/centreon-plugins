@@ -463,12 +463,12 @@ If the expression is true, metrics are checked (Default: '%{opstatus} eq "enable
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+You can use the following variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
-Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+You can use the following variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

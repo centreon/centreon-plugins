@@ -159,12 +159,12 @@ Name of the ticket group (Can be a regexp).
 =item B<--warning-ticket>
 
 Set warning threshold for status.
-Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
+You can use the following variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--critical-ticket>
 
 Set critical threshold for status.
-Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
+You can use the following variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--warning-open>
 

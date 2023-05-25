@@ -213,12 +213,12 @@ Filter virtual machines (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} =~ /Warning/i').
-Can used special variables like: %{vm}, %{state}, %{health}
+You can use the following variables like: %{vm}, %{state}, %{health}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} =~ /Critical/i').
-Can used special variables like: %{vm}, %{state}, %{health}
+You can use the following variables like: %{vm}, %{state}, %{health}
 
 =back
 

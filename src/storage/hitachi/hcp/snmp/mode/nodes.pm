@@ -412,62 +412,62 @@ Filter nodes by id (can be a regexp).
 =item B<--unknown-node-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{node_status}, %{node_id}
+You can use the following variables like: %{node_status}, %{node_id}
 
 =item B<--warning-node-status>
 
 Set warning threshold for status.
-Can used special variables like: %{node_status}, %{node_id}
+You can use the following variables like: %{node_status}, %{node_id}
 
 =item B<--critical-node-status>
 
 Set critical threshold for status (Default: '%{node_status} eq "unavailable"').
-Can used special variables like: %{node_status}, %{node_id}
+You can use the following variables like: %{node_status}, %{node_id}
 
 =item B<--unknown-nic-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{nic_status}, %{node_id}
+You can use the following variables like: %{nic_status}, %{node_id}
 
 =item B<--warning-nic-status>
 
 Set warning threshold for status.
-Can used special variables like: %{nic_status}, %{node_id}
+You can use the following variables like: %{nic_status}, %{node_id}
 
 =item B<--critical-nic-status>
 
 Set critical threshold for status (Default: '%{nic_status} eq "failed"').
-Can used special variables like: %{nic_status}, %{node_id}
+You can use the following variables like: %{nic_status}, %{node_id}
 
 =item B<--unknown-san-path-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{san_path_status}, %{node_id}
+You can use the following variables like: %{san_path_status}, %{node_id}
 
 =item B<--warning-san-path-status>
 
 Set warning threshold for status.
-Can used special variables like: %{san_path_status}, %{node_id}
+You can use the following variables like: %{san_path_status}, %{node_id}
 
 =item B<--critical-san-path-status>
 
 Set critical threshold for status (Default: '%{san_path_status} eq "error"').
-Can used special variables like: %{san_path_status}, %{node_id}
+You can use the following variables like: %{san_path_status}, %{node_id}
 
 =item B<--unknown-bbu-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{bbu_status}, %{node_id}
+You can use the following variables like: %{bbu_status}, %{node_id}
 
 =item B<--warning-bbu-status>
 
 Set warning threshold for status.
-Can used special variables like: %{bbu_status}, %{node_id}
+You can use the following variables like: %{bbu_status}, %{node_id}
 
 =item B<--critical-bbu-status>
 
 Set critical threshold for status (Default: '%{bbu_status} !~ /healthy/i').
-Can used special variables like: %{bbu_status}, %{node_id}
+You can use the following variables like: %{bbu_status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -165,7 +165,7 @@ Check time offset of server with ntp server. Use local time if ntp-host option i
 Set thresholds for status (Default critical: '%{status} !~ /in_reach|in_sync/i')
 
 
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-offset>
 

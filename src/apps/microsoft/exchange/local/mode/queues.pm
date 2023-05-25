@@ -248,12 +248,12 @@ Print powershell output.
 =item B<--warning-status>
 
 Set warning threshold.
-Can used special variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
+You can use the following variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
 
 =item B<--critical-status>
 
 Set critical threshold (Default: '%{status} !~ /Ready|Active/i').
-Can used special variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
+You can use the following variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
 
 =back
 

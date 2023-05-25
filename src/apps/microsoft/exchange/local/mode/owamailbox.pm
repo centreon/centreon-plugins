@@ -196,12 +196,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{result}, %{scenario}
+You can use the following variables like: %{result}, %{scenario}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{result} !~ /Success/i').
-Can used special variables like: %{result}, %{scenario}
+You can use the following variables like: %{result}, %{scenario}
 
 =item B<--url>
 

@@ -166,13 +166,13 @@ Filter StatefulSet namespace (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
-Can used special variables like: %{name}, %{namespace}, %{desired}, %{current},
+You can use the following variables like: %{name}, %{namespace}, %{desired}, %{current},
 %{up_to_date}, %{ready}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{ready} < %{desired}').
-Can used special variables like: %{name}, %{namespace}, %{desired}, %{current},
+You can use the following variables like: %{name}, %{namespace}, %{desired}, %{current},
 %{up_to_date}, %{ready}.
 
 =back

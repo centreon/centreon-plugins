@@ -212,12 +212,12 @@ Can be: 'total-int-inservice', 'total-int-outservice'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{display}, %{oper_state}, %{admin_state}.
+You can use the following variables like: %{display}, %{oper_state}, %{admin_state}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admin_state} eq "inService" and %{oper_state} !~ /inService|transition/').
-Can used special variables like:  %{display}, %{oper_state}, %{admin_state}.
+You can use the following variables like:  %{display}, %{oper_state}, %{admin_state}.
 
 =item B<--filter-name>
 

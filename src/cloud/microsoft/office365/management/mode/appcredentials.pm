@@ -239,22 +239,22 @@ Filter applications (can be a regexp).
 =item B<--warning-key-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{id}, %{app_name}.
+You can use the following variables like: %{status}, %{id}, %{app_name}.
 
 =item B<--critical-key-status>
 
 Set critical threshold for status (Default: '%{status} =~ /expired/i').
-Can used special variables like: %{status}, %{id}, %{app_name}.
+You can use the following variables like: %{status}, %{id}, %{app_name}.
 
 =item B<--warning-password-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{id}, %{app_name}.
+You can use the following variables like: %{status}, %{id}, %{app_name}.
 
 =item B<--critical-password-status>
 
 Set critical threshold for status (Default: '%{status} =~ /expired/i').
-Can used special variables like: %{status}, %{id}, %{app_name}.
+You can use the following variables like: %{status}, %{id}, %{app_name}.
 
 =item B<--unit>
 

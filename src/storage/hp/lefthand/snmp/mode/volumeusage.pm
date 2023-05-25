@@ -302,12 +302,12 @@ Filter volume name (can be a regexp).
 =item B<--warning-replication-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-replication-status>
 
 Set critical threshold for status (Default: '%{status} !~ /normal/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-*>
 

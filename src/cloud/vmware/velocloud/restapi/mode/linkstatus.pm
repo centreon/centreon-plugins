@@ -182,7 +182,7 @@ Filter link by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
+You can use the following variables like: %{state}, %{vpn_state}, %{backup_state}.
 
 =item B<--warning-*> B<--critical-*>
 

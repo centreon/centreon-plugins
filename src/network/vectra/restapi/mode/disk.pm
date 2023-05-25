@@ -134,17 +134,17 @@ Check disks.
 =item B<--unknown-raid-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-raid-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--critical-raid-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

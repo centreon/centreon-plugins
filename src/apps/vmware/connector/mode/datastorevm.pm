@@ -243,17 +243,17 @@ Display virtual machine description.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
-Can used special variables like: %{connection_state}, %{power_state}
+You can use the following variables like: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like:  %{connection_state}, %{power_state}
+You can use the following variables like:  %{connection_state}, %{power_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like:  %{connection_state}, %{power_state}
+You can use the following variables like:  %{connection_state}, %{power_state}
 
 =item B<--warning-*> B<--critical-*>
 

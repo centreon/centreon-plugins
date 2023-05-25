@@ -215,13 +215,13 @@ Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
-Can used special variables like: %{display}, %{desired}, %{current},
+You can use the following variables like: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{available} < %{desired}').
-Can used special variables like: %{display}, %{desired}, %{current},
+You can use the following variables like: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 
 =item B<--extra-filter>

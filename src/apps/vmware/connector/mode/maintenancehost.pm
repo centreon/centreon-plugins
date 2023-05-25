@@ -145,27 +145,27 @@ Search in following cluster(s) (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-maintenance-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{maintenance}
+You can use the following variables like: %{maintenance}
 
 =item B<--critical-maintenance-status>
 
 Set critical threshold for status (Default: '%{maintenance} !~ /false/').
-Can used special variables like: %{maintenance}
+You can use the following variables like: %{maintenance}
 
 
 =back

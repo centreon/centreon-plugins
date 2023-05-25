@@ -132,17 +132,17 @@ Example: --filter-counters='^status$'
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+You can use the following variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i').
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+You can use the following variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+You can use the following variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-*> B<--critical-*>
 

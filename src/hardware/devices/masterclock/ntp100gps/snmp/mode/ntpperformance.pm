@@ -141,12 +141,12 @@ Check NTP performances
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} !~ /No leap second today/')
-Can used special variables like: %{leap}
+You can use the following variables like: %{leap}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '')
-Can used special variables like: %{health}
+You can use the following variables like: %{health}
 
 =item B<--warning-*>
 

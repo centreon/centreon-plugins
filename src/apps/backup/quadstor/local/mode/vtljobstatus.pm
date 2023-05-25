@@ -177,32 +177,32 @@ Command used: '/quadstorvtl/bin/impexp -l'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: none)
-Can used special variables like: %{display}, %{status}
+You can use the following variables like: %{display}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /error/i').
-Can used special variables like: %{display}, %{status}
+You can use the following variables like: %{display}, %{status}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs (Default: none)
-Can used special variables like: %{display}, %{status}, %{elapsed}
+You can use the following variables like: %{display}, %{status}, %{elapsed}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs (Default: none).
-Can used special variables like: %{display}, %{status}, %{elapsed}
+You can use the following variables like: %{display}, %{status}, %{elapsed}
 
 =item B<--warning-frozen>
 
 Set warning threshold for frozen jobs (Default: none)
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{kb}
+You can use the following variables like: %{display}, %{status}, %{elapsed}, %{kb}
 
 =item B<--critical-frozen>
 
 Set critical threshold for frozen jobs (Default: none).
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{kb}
+You can use the following variables like: %{display}, %{status}, %{elapsed}, %{kb}
 
 =back
 

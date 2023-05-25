@@ -261,47 +261,47 @@ Filter tdd cells by id (can be a regexp).
 =item B<--unknown-node-sync-status>
 
 Set unknown threshold for synchronization status.
-Can used special variables like: %{node_id}, %{sync_status}
+You can use the following variables like: %{node_id}, %{sync_status}
 
 =item B<--warning-node-sync-status>
 
 Set warning threshold for synchronization status.
-Can used special variables like: %{node_id}, %{sync_status}
+You can use the following variables like: %{node_id}, %{sync_status}
 
 =item B<--critical-node-sync-status>
 
 Set critical threshold for synchronization status (Default: '%{sync_status} =~ /unsynchronized/i').
-Can used special variables like: %{node_id}, %{sync_status}
+You can use the following variables like: %{node_id}, %{sync_status}
 
 =item B<--unknown-fru-status>
 
 Set unknown threshold for field replaceable unit status.
-Can used special variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--warning-fru-status>
 
 Set warning threshold for field replaceable unit status.
-Can used special variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--critical-fru-status>
 
 Set critical threshold for field replaceable unit status.
-Can used special variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{fru_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--unknown-cell-tdd-status>
 
 Set unknown threshold for cell tdd status.
-Can used special variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--warning-cell-tdd-status>
 
 Set warning threshold for cell tdd status.
-Can used special variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--critical-cell-tdd-status>
 
 Set critical threshold for cell tdd status.
-Can used special variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
+You can use the following variables like: %{node_id}, %{cell_tdd_id}, %{label}, %{administrative_state}, %{availability_status}, %{operational_state}
 
 =item B<--warning-*> B<--critical-*>
 

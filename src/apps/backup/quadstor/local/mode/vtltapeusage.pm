@@ -252,12 +252,12 @@ Thresholds are on free tape left.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

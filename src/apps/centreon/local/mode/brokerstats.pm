@@ -245,12 +245,12 @@ Can be: 'speed-events', 'queued-events', 'unacknowledged-events'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
+You can use the following variables like: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
-Can used special variables like: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
+You can use the following variables like: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =back
 

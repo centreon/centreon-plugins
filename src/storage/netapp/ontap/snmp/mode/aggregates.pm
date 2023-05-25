@@ -134,32 +134,32 @@ Filter aggregates by name.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /normal|mirrored/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--unknown-state>
 
 Set unknown threshold for state.
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =item B<--warning-state>
 
 Set warning threshold for state.
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =item B<--critical-state>
 
 Set critical threshold for state (Default: '%{state} =~ /offline/i').
-Can used special variables like: %{state}, %{name}
+You can use the following variables like: %{state}, %{name}
 
 =back
 

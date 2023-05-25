@@ -193,12 +193,12 @@ Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{phase}.
+You can use the following variables like: %{display}, %{phase}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{phase} !~ /Active/').
-Can used special variables like: %{display}, %{phase}
+You can use the following variables like: %{display}, %{phase}
 
 =item B<--extra-filter>
 

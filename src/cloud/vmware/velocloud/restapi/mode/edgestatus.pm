@@ -128,19 +128,19 @@ Filter edge by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
-Can used special variables like: %{edge_state}, %{service_state},
+You can use the following variables like: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{edge_state}, %{service_state},
+You can use the following variables like: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
-Can used special variables like: %{edge_state}, %{service_state},
+You can use the following variables like: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =back

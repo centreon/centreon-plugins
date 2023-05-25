@@ -114,12 +114,12 @@ Check configuration status.
 =item B<--warning-status>
 
 Set warning threshold for status (Default : '%{config_status} =~ /notInSync|outOfSync/').
-Can used special variables like: %{config_status}
+You can use the following variables like: %{config_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{config_status}
+You can use the following variables like: %{config_status}
 
 =back
 

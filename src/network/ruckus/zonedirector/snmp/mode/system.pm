@@ -264,17 +264,17 @@ Check system.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{system_status}, %{peer_connected_status}
+You can use the following variables like: %{system_status}, %{peer_connected_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{system_status}, %{peer_connected_status}
+You can use the following variables like: %{system_status}, %{peer_connected_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{system_status}, %{peer_connected_status}
+You can use the following variables like: %{system_status}, %{peer_connected_status}
 
 =item B<--warning-*> B<--critical-*>
 

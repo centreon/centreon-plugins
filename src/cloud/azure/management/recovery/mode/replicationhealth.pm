@@ -158,22 +158,22 @@ Filter item name (Can be a regexp).
 =item B<--warning-replication-status>
 
 Set warning threshold for replication health (Default: '%{replication_status} eq "Warning"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-replication-status>
 
 Set critical threshold for replication health (Default: '%{replication_status} eq "Critical"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--warning-failover-status>
 
 Set warning threshold for failover status (Default: '%{failover_status} eq "Warning"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =item B<--critical-failover-status>
 
 Set critical threshold for failover status (Default: '%{failover_status} eq "Critical"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables like: %{status}, %{display}
 
 =back
 

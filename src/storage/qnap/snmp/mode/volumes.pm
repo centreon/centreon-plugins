@@ -270,17 +270,17 @@ Force to use legacy counters. Should be used when EX/QTS counters are buggy.
 =item B<--unknown-volume-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-volume-status>
 
 Set warning threshold for status (Default: '%{status} =~ /degraded|warning/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--critical-volume-status>
 
 Set critical threshold for status (Default: '%{status} =~ /critical/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

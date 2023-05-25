@@ -301,12 +301,12 @@ Check alarms.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /warning|minor/i')
-Can used special variables like: %{severity}, %{type}, %{label}, %{since}
+You can use the following variables like: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /critical|major/i').
-Can used special variables like: %{severity}, %{type}, %{label}, %{since}
+You can use the following variables like: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--timezone>
 

@@ -131,17 +131,17 @@ Check the overall status of Dell Compellent.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
-Can used special variables like: %{status}
+You can use the following variables like: %{status}
 
 =back
 

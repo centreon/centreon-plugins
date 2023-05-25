@@ -133,17 +133,17 @@ Check virtual chassis.
 =item B<--unknown-chassis-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{role}, %{status}, %{mac}
+You can use the following variables like: %{role}, %{status}, %{mac}
 
 =item B<--warning-chassis-status>
 
 Set warning threshold for status.
-Can used special variables like: %{role}, %{status}, %{mac}
+You can use the following variables like: %{role}, %{status}, %{mac}
 
 =item B<--critical-chassis-status>
 
 Set critical threshold for status (Default: %{status} !~ /init|running/)
-Can used special variables like: %{role}, %{status}, %{mac}
+You can use the following variables like: %{role}, %{status}, %{mac}
 
 =item B<--warning-*> B<--critical-*>
 

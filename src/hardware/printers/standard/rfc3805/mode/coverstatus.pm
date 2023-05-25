@@ -111,17 +111,17 @@ Check covers of the printer.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%%{status} =~ /other|unknown/').
-Can used special variables like: %{status}, %{description}
+You can use the following variables like: %{status}, %{description}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%%{status} =~ /coverOpen|interlockOpen/').
-Can used special variables like: %{status}, %{description}
+You can use the following variables like: %{status}, %{description}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}, %{description}
+You can use the following variables like: %{status}, %{description}
 
 =back
 
