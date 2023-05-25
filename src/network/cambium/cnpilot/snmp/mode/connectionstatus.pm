@@ -107,7 +107,7 @@ sub manage_selection {
 
     }
 
-    if (scalar(keys %{$self->{connectionstatus}}) <= 0) {
+    if (scalar(keys %{$self->{connection}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No AP matching with filter found.");
         $self->{output}->option_exit();
     }
