@@ -107,7 +107,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['id','name','radio_channel','transmit_power','band_type']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'radio_channel', 'transmit_power', 'band_type']);
 }
 
 sub disco_show {
@@ -131,7 +131,7 @@ __END__
 
 =head1 MODE
 
-List radio name.
+List radio interfaces.
 
 =over 8
 
