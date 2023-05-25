@@ -451,7 +451,7 @@ Specify the path to the plugin.
 
 =item B<--list-plugin>
 
-Print available plugins.
+List all available plugins.
 
 =item B<--version>
 
@@ -475,7 +475,8 @@ Set script timeout.
 
 =item B<--environment>
 
-Set environment variables for the script (prefer to set it before running it for better performance).
+Set environment variables for the script (set them in the execution environment
+before running it for better performance).
 
 =item B<--convert-args>
 

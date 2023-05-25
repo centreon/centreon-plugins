@@ -271,15 +271,15 @@ __END__
 
 =item B<--mode>
 
-Choose a mode.
+Define the mode in which you want the plugin to be executed (see --list-mode).
 
 =item B<--dyn-mode>
 
-Specify a mode with the path (separated by '::').
+Specify a mode with the module's path (advanced).
 
 =item B<--list-mode>
 
-List available modes.
+List all available modes.
 
 =item B<--mode-version>
 
@@ -287,7 +287,7 @@ Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
-Display plugin version.
+Display the plugin's version.
 
 =item B<--custommode>
 
@@ -303,7 +303,8 @@ Multiple custom mode objects (required by some specific modes)
 
 =item B<--pass-manager>
 
-Use a password manager.
+Define the password manager you want to use.
+Supported types are: environment, file, keepass, hashicorpvault and teampass.
 
 =back
 
