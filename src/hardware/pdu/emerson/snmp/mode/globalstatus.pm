@@ -136,7 +136,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{pdu}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot found pdu.");
+        $self->{output}->add_option_msg(short_msg => "Cannot find pdu.");
         $self->{output}->option_exit();
     }
 }
