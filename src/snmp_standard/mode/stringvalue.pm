@@ -366,13 +366,14 @@ Allows to use regexp non case-sensitive.
 
 =item B<--format-*>
 
-Output format according the threshold.
+Output format according to the threshold.
 Can be: 
 'ok' (default: '%{filter_rows} value(s)'), 
 'warning' (default: 'value(s): %{details_warning}'), 
 'critical' (default: 'value(s): %{details_critical}'), 
 'unknown' (default: 'value(s): %{details_unknown}').
-Can used: %{rows}, %{filter_rows}, %{details_warning}, %{details_ok}, %{details_critical}, %{details_unknown}
+You can use the following variables:
+%{rows}, %{filter_rows}, %{details_warning}, %{details_ok}, %{details_critical}, %{details_unknown}
 
 =item B<--map-values>
 
