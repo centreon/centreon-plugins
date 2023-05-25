@@ -298,7 +298,7 @@ Filter pod namespace (can be a regexp).
 
 =item B<--extra-filter>
 
-Add an extra filter based on labels (Can be multiple)
+Add an extra filter based on labels (can be defined multiple times)
 
 Example : --extra-filter='app=mynewapp'
 

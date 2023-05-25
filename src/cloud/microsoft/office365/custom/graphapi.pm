@@ -509,7 +509,7 @@ Microsoft Office 365 Graph API
 
 To connect to the Office 365 Graph API, you must register an application.
 
-Follow the 'How-to guide' in https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
+Follow the 'How-to guide' at https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'.
 

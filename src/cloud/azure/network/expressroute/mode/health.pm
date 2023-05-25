@@ -41,7 +41,7 @@ __END__
 
 Check ExpressRoute Circuit health status.
 
-(Usefull to determine host status)
+(Useful to determine host status)
 
 =over 8
 

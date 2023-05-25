@@ -40,7 +40,7 @@ __END__
 =head1 MODE
 
 Check Azure Virtual Machine Scale Sets Health.
-(Usefull to determine host status)
+(Useful to determine host status)
 
 =over 8
 

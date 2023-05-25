@@ -241,7 +241,7 @@ perl centreon_plugins.pl --plugin=cloud::aws::elb::classic::plugin --custommode=
 
 See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
 
-Default statistic: 'sum' / Most usefull statistics: 'sum'.
+Default statistic: 'sum' / Most useful statistics: 'sum'.
 
 =over 8
 
@@ -251,7 +251,7 @@ Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
