@@ -42,7 +42,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_usage' }, { name => 'name' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1,  instance_use => 'name'}
+                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1,  instance_use => 'name' }
                 ]
             }
         }
@@ -90,7 +90,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{cpu}->{$result->{$instance}} = {
+        $self->{cpu}->{$instance} = {
             name => $result->{cambiumAPName},
             cpu_usage => $result->{cambiumAPCPUUtilization}
         };
@@ -112,6 +112,10 @@ Check CPU usage.
 
 =over 8
 
+=item B<--filter-ap>
+
+Filter on one AP name.
+    
 =item B<--warning>
 
 Warning threshold for CPU.
@@ -119,12 +123,6 @@ Warning threshold for CPU.
 =item B<--critical>
 
 Critical threshold for CPU.
-
-=over 8
-
-=item B<--filter-ap>
-
-Filter on one AP name.
 
 =back
 
