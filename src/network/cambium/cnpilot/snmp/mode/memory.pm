@@ -27,16 +27,15 @@ use warnings;
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return "MEMORY '" . $options{instance_value}->{name} . " ";
+    return "Memory '" . $options{instance_value}->{name} . "' ";
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Used: %.2f %% - Free: %.2f %%',
-        $self->{result_values}->{used},
-        $self->{result_values}->{free}
+        'used: %.2f %%',
+        $self->{result_values}->{used}
     );
 }
 
@@ -44,17 +43,15 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All Memories are ok' }
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memories are ok' }
     ];
 
      $self->{maps_counters}->{memory} = [
         { label => 'memory-usage-prct', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'name' }, { name => 'used' }, { name => 'free' }  ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'used',
                 perfdatas => [
-                    { label => 'memory', value => 'used', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name'}
+                    { template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name'}
                 ]
             }
         }
@@ -121,9 +118,13 @@ __END__
 
 =head1 MODE
 
-Check Memory usage and free.
+Check memory usage.
 
 =over 8
+
+=item B<--filter-ap>
+
+Filter on one or several AP.
 
 =item B<--warning>
 
@@ -132,12 +133,6 @@ Warning threshold for Memory.
 =item B<--critical>
 
 Critical threshold for Memory.
-
-=over 8
-
-=item B<--filter-ap>
-
-Filter on one or several AP.
 
 =back
 
