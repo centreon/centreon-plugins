@@ -223,7 +223,7 @@ Display the plugin's version.
 =item B<--pass-manager>
 
 Define the password manager you want to use.
-Supported types are: environment, file, keepass, hashicorpvault and teampass.
+Supported managers are: environment, file, keepass, hashicorpvault and teampass.
 
 =back
 

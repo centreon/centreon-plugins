@@ -1032,7 +1032,7 @@ Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when CloudWatch
+Set metrics value to 0 if none. Useful when CloudWatch
 does not return value when not defined.
 
 =item B<--timeout>

@@ -291,20 +291,21 @@ Display the plugin's version.
 
 =item B<--custommode>
 
-Choose a custom mode.
+When a plugin offers several ways (CLI, library, etc.) to get the an information
+the desired one must be defined with this option.
 
 =item B<--list-custommode>
 
-List available custom modes.
+List all available custom modes.
 
 =item B<--multiple>
 
-Multiple custom mode objects (required by some specific modes)
+Multiple custom mode objects. This may be required by some specific modes (advanced).
 
 =item B<--pass-manager>
 
 Define the password manager you want to use.
-Supported types are: environment, file, keepass, hashicorpvault and teampass.
+Supported managers are: environment, file, keepass, hashicorpvault and teampass.
 
 =back
 

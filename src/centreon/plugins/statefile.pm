@@ -459,7 +459,7 @@ Memcached server to use (only one server).
 
 =item B<--redis-server>
 
-Redis server to use (only one server). SYntax: address[:port]
+Redis server to use (only one server). Syntax: address[:port]
 
 =item B<--redis-attribute>
 

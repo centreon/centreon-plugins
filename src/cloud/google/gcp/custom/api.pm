@@ -474,7 +474,7 @@ Google Cloud Platform Rest API
 
 To connect to the GCP Rest API, you need to create an API key.
 
-Follow the 'How-to guide' in https://cloud.google.com/video-intelligence/docs/common/auth
+Follow the 'How-to guide' at https://cloud.google.com/video-intelligence/docs/common/auth
 
 =over 8
 
@@ -496,7 +496,7 @@ Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/cloud-plat
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when Stackdriver
+Set metrics value to 0 if none. Useful when Stackdriver
 does not return value when not defined.
 
 =item B<--timeout>

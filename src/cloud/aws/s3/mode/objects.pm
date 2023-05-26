@@ -155,7 +155,7 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--warning-$metric$-$statistic$>
 

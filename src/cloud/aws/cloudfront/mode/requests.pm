@@ -154,7 +154,7 @@ Default statistic: 'sum' / Valid statistic: 'sum'.
 
 =item B<--id>
 
-Set the instance id (Required) (Can be multiple).
+Set the instance id (Required) (can be defined multiple times).
 
 =item B<--warning-requests>
 

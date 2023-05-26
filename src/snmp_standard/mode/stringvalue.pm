@@ -395,7 +395,7 @@ Example to convert octetstring to macaddress: --convert-custom-values='join(":",
 
 =item B<--use-perl-mod>
 
-Load additional Perl module (Can be multiple)
+Load additional Perl module (can be defined multiple times)
 Example : --use-perl-mod='Date::Parse'
 
 =back

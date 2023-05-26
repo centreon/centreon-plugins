@@ -205,13 +205,13 @@ perl centreon_plugins.pl --plugin=cloud::aws::elb::application::plugin --customm
 
 See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html' for more informations.
 
-Default statistic: 'average' / Most usefull statistics: 'average', 'minimum', 'maximum'.
+Default statistic: 'average' / Most useful statistics: 'average', 'minimum', 'maximum'.
 
 =over 8
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
