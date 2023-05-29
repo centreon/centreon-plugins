@@ -95,9 +95,7 @@ jobs:
             BASENAME=$(basename $FILE)
             cd $DIRNAME
             sed -i \
-              "s/@COMMIT_HASH@/${{ github.sha }}/g" \
-              "s#@PERL_SITELIB@#${PERL_SITELIB}#g" \
-              "s#@PERL_VENDORLIB@#${PERL_VENDORLIB}#g" \
+              "s/@COMMIT_HASH@/${{ github.sha }}/g; s#@PERL_SITELIB@#${PERL_SITELIB}#g; s#@PERL_VENDORLIB@#${PERL_VENDORLIB}#g" \
               $BASENAME
             nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
             cd -
