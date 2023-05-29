@@ -22,17 +22,17 @@ homepage: "https://vmware.com"
 license: "GPLv2+"
 
 contents:
-  - src: "../../vmware-vsphere-cli-distrib/VMware"
+  - src: "../../../vmware-vsphere-cli-distrib/VMware"
     dst: "@PERL_SITELIB@/VMware"
     packager: rpm
-  - src: "../../vmware-vsphere-cli-distrib/VMware"
+  - src: "../../../vmware-vsphere-cli-distrib/VMware"
     dst: "/usr/share/perl5/VMware"
     packager: deb
 
-  - src: "../../vmware-vsphere-cli-distrib/WSMan"
+  - src: "../../../vmware-vsphere-cli-distrib/WSMan"
     dst: "@PERL_SITELIB@/WSMan"
     packager: rpm
-  - src: "../../vmware-vsphere-cli-distrib/WSMan"
+  - src: "../../../vmware-vsphere-cli-distrib/WSMan"
     dst: "/usr/share/perl5/WSMan"
     packager: deb
 
