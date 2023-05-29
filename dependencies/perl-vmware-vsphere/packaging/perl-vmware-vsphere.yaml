@@ -58,6 +58,7 @@ overrides:
       - libnet-smtp-ssl-perl
       - libsoap-lite-perl
       - libtext-template-perl
+      - libxml-libxml-perl
 
 rpm:
   compression: zstd

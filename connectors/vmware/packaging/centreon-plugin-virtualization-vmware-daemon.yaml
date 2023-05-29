@@ -65,6 +65,10 @@ contents:
   - src: "config/centreon_vmware-conf.pm"
     dst: "/etc/centreon/centreon_vmware.pm"
     type: config|noreplace
+    packager: rpm
+  - src: "config/centreon_vmware-conf.pm"
+    dst: "/etc/centreon/centreon_vmware.pm.new"
+    packager: deb
 
 overrides:
   rpm:
