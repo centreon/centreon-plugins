@@ -37,7 +37,7 @@ jobs:
         run: |
           cd vmware-vsphere-cli-distrib
           perl Makefile.PL
-          make pure_install
+          sudo make pure_install
         shell: bash
 
       - name: Cache vsphere cli sources
