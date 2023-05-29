@@ -20,11 +20,19 @@ on:
       version:
         type: string
         description: The package version
-        required: true
+        required: false
       release:
         type: string
         description: The release number
-        required: true
+        required: false
+      source_cache_key:
+        type: string
+        description: The source files cache key
+        required: false
+      source_cache_path:
+        type: string
+        description: The source files path
+        required: false
       cache_key:
         type: string
         description: The package files cache key
@@ -49,6 +57,14 @@ jobs:
         run: echo -n "$RPM_GPG_SIGNING_KEY" > key.gpg
         shell: bash
 
+      - if: ${{ inputs.source_cache_key != '' && inputs.source_cache_path != '' }}
+        name: Import source files
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ inputs.source_cache_path }}
+          key: ${{ inputs.source_cache_key }}
+          fail-on-cache-miss: true
+
       - name: Build ${{ inputs.package_extension }} files
         env:
           RPM_GPG_SIGNING_KEY_ID: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
@@ -67,6 +83,9 @@ jobs:
             export APACHE_GROUP="www-data"
           fi
 
+          export PERL_SITELIB="$(eval "$(perl -V:installsitelib)"; echo $installsitelib)"
+          export PERL_VENDORLIB="$(eval "$(perl -V:installvendorlib)"; echo $installvendorlib)"
+
           export RPM_SIGNING_KEY_FILE="$(pwd)/key.gpg"
           export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
           export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
@@ -75,7 +94,11 @@ jobs:
             DIRNAME=$(dirname $FILE)
             BASENAME=$(basename $FILE)
             cd $DIRNAME
-            sed -i "s/@COMMIT_HASH@/${{ github.sha }}/g" $BASENAME
+            sed -i \
+              "s/@COMMIT_HASH@/${{ github.sha }}/g" \
+              "s#@PERL_SITELIB@#${PERL_SITELIB}#g" \
+              "s#@PERL_VENDORLIB@#${PERL_VENDORLIB}#g" \
+              $BASENAME
             nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
             cd -
             mv $DIRNAME/*.${{ inputs.package_extension }} ./
