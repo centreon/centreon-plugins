@@ -184,12 +184,12 @@ Example: --filter-counters='status'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
+You can use the following variables: %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{connection_state} !~ /connected/i').
-You can use the following variables like:  %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
+You can use the following variables:  %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -190,17 +190,17 @@ Filter updates' category.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{error}, %{service}
+You can use the following variables: %{error}, %{service}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{error}, %{service}
+You can use the following variables: %{error}, %{service}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{error} =~ /false/').
-You can use the following variables like: %{error}, %{service}
+You can use the following variables: %{error}, %{service}
 
 =item B<--warning-*> B<--critical-*>
 

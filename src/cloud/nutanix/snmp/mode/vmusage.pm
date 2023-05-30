@@ -271,12 +271,12 @@ Filter virtual machine name (can be a regexp).
 =item B<--warning-vm-power-state>
 
 Set warning threshold for the virtual machine power state.
-You can use the following variables like: %{vmPowerState}.
+You can use the following variables: %{vmPowerState}.
 
 =item B<--critical-vm-power-state>
 
 Set critical threshold for the virtual machine power state.
-You can use the following variables like: %{vmPowerState}.
+You can use the following variables: %{vmPowerState}.
 
 =item B<--warning-*>
 

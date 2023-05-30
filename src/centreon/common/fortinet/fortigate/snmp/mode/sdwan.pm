@@ -365,17 +365,17 @@ Filter sd-wan links by vdom name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} eq "down"').
-You can use the following variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
 =item B<--warning-*> B<--critical-*>
 

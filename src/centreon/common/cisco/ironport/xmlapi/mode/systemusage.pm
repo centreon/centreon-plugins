@@ -301,12 +301,12 @@ Threshold critical for http response code
 =item B<--warning-system-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{system_status}
+You can use the following variables: %{system_status}
 
 =item B<--critical-system-status>
 
 Set critical threshold for status (Default: '%{system_status} !~ /online/i').
-You can use the following variables like: %{system_status}
+You can use the following variables: %{system_status}
 
 =item B<--warning-*> B<--critical-*> 
 

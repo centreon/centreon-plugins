@@ -175,17 +175,17 @@ Virtual gateway tag to be used for the name (Default: 'name').
 =item B<--unknown-vg-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{state}, %{vgName}
+You can use the following variables: %{state}, %{vgName}
 
 =item B<--warning-vg-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{vgName}
+You can use the following variables: %{state}, %{vgName}
 
 =item B<--critical-vg-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{state}, %{vgName}
+You can use the following variables: %{state}, %{vgName}
 
 =item B<--warning-*> B<--critical-*>
 

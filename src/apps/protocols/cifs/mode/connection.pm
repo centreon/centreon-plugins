@@ -109,12 +109,12 @@ Set the share directory.
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{message}
+You can use the following variables: %{status}, %{message}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{message} !~ /authentication succeeded/i'
-You can use the following variables like: %{status}, %{message}
+You can use the following variables: %{status}, %{message}
 
 =item B<--warning-time>
 

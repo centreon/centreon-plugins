@@ -194,17 +194,17 @@ Ignore counters equals to 0.
 =item B<--unknown-source-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-source-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-source-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

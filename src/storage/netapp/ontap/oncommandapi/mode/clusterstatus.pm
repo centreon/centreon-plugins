@@ -136,12 +136,12 @@ Filter snapmirror name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{status}, %{metro_cluster_mode}, %{metro_cluster_configuration_state}
+You can use the following variables: %{status}, %{metro_cluster_mode}, %{metro_cluster_configuration_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-You can use the following variables like: %{status}, %{metro_cluster_mode}, %{metro_cluster_configuration_state}
+You can use the following variables: %{status}, %{metro_cluster_mode}, %{metro_cluster_configuration_state}
 
 =back
 

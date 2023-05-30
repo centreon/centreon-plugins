@@ -199,12 +199,12 @@ Can be: 'frequence', 'voltage', 'current'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{badstatus}, %{failcause}
+You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{badstatus} =~ /yes/').
-You can use the following variables like: %{badstatus}, %{failcause}
+You can use the following variables: %{badstatus}, %{failcause}
 
 =back
 

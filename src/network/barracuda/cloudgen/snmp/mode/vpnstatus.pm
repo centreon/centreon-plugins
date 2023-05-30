@@ -151,12 +151,12 @@ Check VPNs status.
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^down$/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--filter-name>
 

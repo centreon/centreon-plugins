@@ -197,17 +197,17 @@ Filter reverse proxy by UID (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{uid}
+You can use the following variables: %{status}, %{uid}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{uid}
+You can use the following variables: %{status}, %{uid}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-You can use the following variables like: %{status}, %{uid}
+You can use the following variables: %{status}, %{uid}
 
 =item B<--warning-*> B<--critical-*>
 

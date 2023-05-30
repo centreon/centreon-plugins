@@ -161,12 +161,12 @@ Check alerts.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /warning/i')
-You can use the following variables like: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
+You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /critical/i').
-You can use the following variables like: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
+You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
 
 =item B<--memory>
 

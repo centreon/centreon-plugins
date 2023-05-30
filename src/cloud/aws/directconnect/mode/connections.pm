@@ -230,12 +230,12 @@ Filter metrics (Can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress',
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{bandwidth}, %{connectionName}
+You can use the following variables: %{state}, %{bandwidth}, %{connectionName}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{state}, %{bandwidth}, %{connectionName}
+You can use the following variables: %{state}, %{bandwidth}, %{connectionName}
 
 =item B<--warning-*> B<--critical-*>
 

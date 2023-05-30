@@ -189,17 +189,17 @@ Filter interfaces by type (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{source_address}, %{destination_address}
+You can use the following variables: %{status}, %{source_address}, %{destination_address}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{source_address}, %{destination_address}
+You can use the following variables: %{status}, %{source_address}, %{destination_address}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-You can use the following variables like: %{status}, %{source_address}, %{destination_address}
+You can use the following variables: %{status}, %{source_address}, %{destination_address}
 
 =item B<--warning-*> B<--critical-*>
 

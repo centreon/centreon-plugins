@@ -319,27 +319,27 @@ Filter job with end time greater than current time less value in seconds (Defaul
 =item B<--ok-status>
 
 Set ok threshold for status.
-You can use the following variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
+You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
+You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
-You can use the following variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
+You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-You can use the following variables like:  %{display}, %{status}, %{type}, %{elapsed}.
+You can use the following variables:  %{display}, %{status}, %{type}, %{elapsed}.
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-You can use the following variables like:  %{display}, %{status}, %{type}, %{elapsed}.
+You can use the following variables:  %{display}, %{status}, %{type}, %{elapsed}.
 
 =item B<--warning-total>
 

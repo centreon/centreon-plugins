@@ -361,47 +361,47 @@ Filter paths by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
-You can use the following variables like: %{status}, %{maintenance}
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{maintenance}
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{status}, %{maintenance}
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-adapter-status>
 
 Set warning threshold for adapter status.
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-adapter-status>
 
 Set critical threshold for adapter status (Default: '%{status} =~ /fault/').
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-lun-status>
 
 Set warning threshold for lun status (Default: '%{status} =~ /degraded|quiesced/').
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-lun-status>
 
 Set critical threshold for lun status (Default: '%{status} =~ /lostcommunication|error/').
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-path-status>
 
 Set warning threshold for path status.
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-path-status>
 
 Set critical threshold for path status (Default: '%{status} =~ /dead/').
-You can use the following variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -374,7 +374,7 @@ Example: --filter-counters='clients'
 =item B<--warning-status>
     
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{detailed_status}, 
+You can use the following variables: %{status}, %{detailed_status}, 
 %{role}, %{loading}, %{sync}, %{backup}.
 'status' can be: 'active', 'inactive', 'trimming'.
 'detailed_status' can be: 'ok', 'importing', 'timeout', 
@@ -388,7 +388,7 @@ You can use the following variables like: %{status}, %{detailed_status},
 
 Set critical threshold for status (Default: '%{status} =~ /inactive/i || 
 %{backup} =~ /failed/i || %{sync} =~ /link_down/i').
-You can use the following variables like: %{status}, %{detailed_status}, 
+You can use the following variables: %{status}, %{detailed_status}, 
 %{role}, %{loading}, %{sync}, %{backup}.
 'status' can be: 'active', 'inactive', 'trimming'.
 'detailed_status' can be: 'ok', 'importing', 'timeout', 

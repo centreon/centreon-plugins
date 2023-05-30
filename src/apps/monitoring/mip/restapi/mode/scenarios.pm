@@ -322,7 +322,7 @@ Filter scenarios by applicationn name (can be a regexp).
 =item B<--display-instance>
 
 Set the scenario display value (Default: '%{name}').
-You can use the following variables like: %{name}, %{app_name}, %{display_name}, %{id}
+You can use the following variables: %{name}, %{app_name}, %{display_name}, %{id}
 
 =item B<--memory>
 
@@ -331,17 +331,17 @@ Only check new result entries for scenarios.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /warning/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /critical/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =back
 

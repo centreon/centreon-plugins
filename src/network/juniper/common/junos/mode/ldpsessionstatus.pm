@@ -176,12 +176,12 @@ Can be: 'entity', 'peer' (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /operational/i').
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--warning-last-change>
 

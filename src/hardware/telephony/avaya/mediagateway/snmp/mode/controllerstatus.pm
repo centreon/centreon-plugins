@@ -121,17 +121,17 @@ Check controller status.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-You can use the following variables like: %{h248_link_status}, %{registration_state}
+You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{h248_link_status}, %{registration_state}
+You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{h248_link_status} =~ /down/i || %{registration_state} =~ /notRegistred/i').
-You can use the following variables like: %{h248_link_status}, %{registration_state}
+You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =back
 

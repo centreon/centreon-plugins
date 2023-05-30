@@ -205,62 +205,62 @@ Filter sensors by name (can be a regexp).
 =item B<--unknown-sensor-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-sensor-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-sensor-status>
 
 Set critical threshold for status (Default: '%{status} !~ /^paired/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-trafficdrop-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{trafficDropStatus}, %{name}
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--warning-trafficdrop-status>
 
 Set warning threshold for status (Default: '%{trafficDropStatus} =~ /warning|unknown|skip/i').
-You can use the following variables like: %{trafficDropStatus}, %{name}
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--critical-trafficdrop-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{trafficDropStatus}, %{name}
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--unknown-connectivity-status>
 
 Set warning threshold for status (Default: '%{connectivityStatus} =~ /unknown/i').
-You can use the following variables like: %{connectivityStatus}, %{name}
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--warning-connectivity-status>
 
 Set warning threshold for status (Default: '%{connectivityStatus} =~ /warning/i').
-You can use the following variables like: %{connectivityStatus}, %{name}
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--critical-connectivity-status>
 
 Set critical threshold for status (Default: '%{connectivityStatus} =~ /critical/i').
-You can use the following variables like: %{connectivityStatus}, %{name}
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--unknown-interface-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{interfaceName}, %{sensorName}
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-interface-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{interfaceName}, %{sensorName}
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--critical-interface-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-You can use the following variables like: %{status}, %{interfaceName}, %{sensorName}
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-*> B<--critical-*>
 

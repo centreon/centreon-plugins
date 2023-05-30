@@ -169,12 +169,12 @@ Example: --filter-counters='^status$'
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
+You can use the following variables: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{NbrState} =~ /down/i').
-You can use the following variables like: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
+You can use the following variables: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--warning-total-change>
 

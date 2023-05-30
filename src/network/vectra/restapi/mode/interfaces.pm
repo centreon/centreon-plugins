@@ -120,17 +120,17 @@ Filter interfaces by name (can be a regexp).
 =item B<--unknown-interface-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-interface-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-interface-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

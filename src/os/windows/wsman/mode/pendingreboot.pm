@@ -145,13 +145,13 @@ Print powershell output.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{RebootPending} =~ /true/i').
-You can use the following variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-You can use the following variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 
 =back

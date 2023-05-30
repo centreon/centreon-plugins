@@ -168,32 +168,32 @@ Search in following host(s) (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i').
-You can use the following variables like: %{connection_state}, %{power_state}
+You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{connection_state}
+You can use the following variables: %{connection_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{connection_state}, %{power_state}
+You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--unknown-overall-status>
 
 Set unknown threshold for status (Default: '%{overall_status} =~ /gray/i').
-You can use the following variables like: %{overall_status}
+You can use the following variables: %{overall_status}
 
 =item B<--warning-overall-status>
 
 Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i').
-You can use the following variables like: %{overall_status}
+You can use the following variables: %{overall_status}
 
 =item B<--critical-overall-status>
 
 Set critical threshold for status (Default: '%{overall_status} =~ /red/i').
-You can use the following variables like: %{overall_status}
+You can use the following variables: %{overall_status}
 
 =back
 

@@ -191,12 +191,12 @@ Can be: 'traffic-in', 'traffic-out'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-You can use the following variables like: %{source}, %{status}, %{error}.
+You can use the following variables: %{source}, %{status}, %{error}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
-You can use the following variables like: %{source}, %{status}, %{error}.
+You can use the following variables: %{source}, %{status}, %{error}.
 
 =back
 

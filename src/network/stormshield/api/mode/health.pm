@@ -136,17 +136,17 @@ Filter by firewalls by serial (can be a regexp).
 =item B<--unknown-service-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{health}, %{service}
+You can use the following variables: %{health}, %{service}
 
 =item B<--warning-service-status>
 
 Set warning threshold for status (Default: '%{health} =~ /minor/i').
-You can use the following variables like: %{health}, %{service}
+You can use the following variables: %{health}, %{service}
 
 =item B<--critical-service-status>
 
 Set critical threshold for status (Default: '%{health} =~ /major/i').
-You can use the following variables like: %{health}, %{service}
+You can use the following variables: %{health}, %{service}
 
 =back
 

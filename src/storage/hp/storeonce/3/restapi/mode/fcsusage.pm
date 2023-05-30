@@ -158,12 +158,12 @@ Filter name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{is_online} == 1 and %{health} =~ /warning/i').
-You can use the following variables like: %{health}, %{is_online}, %{display}
+You can use the following variables: %{health}, %{is_online}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{is_online} == 1 and %{health} =~ /critical/i').
-You can use the following variables like: %{health}, %{is_online}, %{display}
+You can use the following variables: %{health}, %{is_online}, %{display}
 
 =item B<--warning-*>
 

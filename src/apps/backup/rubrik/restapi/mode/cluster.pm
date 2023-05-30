@@ -174,17 +174,17 @@ Which cluster to check (Default: 'me').
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

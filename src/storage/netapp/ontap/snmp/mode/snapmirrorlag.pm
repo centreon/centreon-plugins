@@ -246,17 +246,17 @@ Example: --filter-counters='^status$'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state} =~ /quiesced/i').
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} =~ /unknown|brokenOff|uninitialized/i').
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-lag>
 

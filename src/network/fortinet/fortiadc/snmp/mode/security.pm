@@ -85,12 +85,12 @@ Check security.
 =item B<--warning-ddos-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-ddos-status>
 
 Set critical threshold for status (Default: '%{status} eq "attacking"').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

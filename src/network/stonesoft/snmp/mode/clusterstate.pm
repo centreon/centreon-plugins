@@ -110,17 +110,17 @@ Check status of clustered node.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{node_status} =~ /unknown/i').
-You can use the following variables like: %{node_status}, %{node_member_id}.
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{node_status} =~ /lockedOnline/i').
-You can use the following variables like: %{node_status}, %{node_member_id}.
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
-You can use the following variables like: %{node_status}, %{node_member_id}.
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =back
 

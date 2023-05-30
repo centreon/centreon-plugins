@@ -216,47 +216,47 @@ Check high availability disaster recovery.
 =item B<--unknown-connection-status>
 
 Set unknown threshold for connection status.
-You can use the following variables like:  %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables:  %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--warning-connection-status>
 
 Set warning threshold for connection status (Default: '%{status} eq "congested"').
-You can use the following variables like:  %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables:  %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--critical-connection-status>
 
 Set critical threshold for connection status (Default: '%{status} eq "disconnected"').
-You can use the following variables like: %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables: %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--unknown-state>
 
 Set unknown threshold for state.
-You can use the following variables like: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--warning-state>
 
 Set warning threshold for state.
-You can use the following variables like: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--critical-state>
 
 Set critical threshold for state (Default: '%{state} ne "peer"').
-You can use the following variables like: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
+You can use the following variables: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--unknown-role>
 
 Set unknown threshold for role status.
-You can use the following variables like: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
+You can use the following variables: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
 
 =item B<--warning-role>
 
 Set warning threshold for role status.
-You can use the following variables like: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
+You can use the following variables: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
 
 =item B<--critical-role>
 
 Set critical threshold for role status.
-You can use the following variables like: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
+You can use the following variables: %{role}, %{roleLast}, %{primaryMember}, %{primaryMemberLast}, %{standbyMember}, %{standbyMemberLast}, %{standbyId}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -357,17 +357,17 @@ Threshold critical for extracted value
 =item B<--unknown-content>
 
 Set warning threshold for content page (Default: '').
-You can use the following variables like: %{content}, %{header}, %{first_header}, %{code}
+You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--warning-content>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{content}, %{header}, %{first_header}, %{code}
+You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--critical-content>
 
 Set critical threshold for content page (Default: '').
-You can use the following variables like: %{content}, %{header}, %{first_header}, %{code}
+You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =back
 

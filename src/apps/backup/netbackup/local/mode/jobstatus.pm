@@ -336,38 +336,38 @@ Filter job with end time greater than current time less value in seconds (Defaul
 =item B<--ok-status>
 
 Set ok threshold for status (Default: '%{status} == 0')
-You can use the following variables like: %{display}, %{status}
+You can use the following variables: %{display}, %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} == 1')
-You can use the following variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} > 1').
-You can use the following variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs (Default: none)
-You can use the following variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs (Default: none).
-You can use the following variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--warning-frozen>
 
 Set warning threshold for frozen jobs (Default: none)
-You can use the following variables like:
+You can use the following variables:
 %{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 
 =item B<--critical-frozen>
 
 Set critical threshold for frozen jobs (Default: '%{state} =~ /active|queue/ && %{kb} == 0').
-You can use the following variables like: 
+You can use the following variables: 
 %{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 
 =item B<--warning-total>

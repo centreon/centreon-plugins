@@ -216,23 +216,23 @@ Check replication status
 =item B<--warning-status>
 
 Set warning threshold for checked instance status (Default: '').
-You can use the following variables like: %{state}, %{sync_host}.
+You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--critical-status>
 
 Set critical threshold for checked instance status (Default: '').
-You can use the following variables like: %{state}, %{sync_host}.
+You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--warning-member-status>
 
 Set warning threshold for members status (Default: '%{state} !~ /PRIMARY|SECONDARY/').
-You can use the following variables like: %{name}, %{state}, %{health},
+You can use the following variables: %{name}, %{state}, %{health},
 %{slave_delay}, %{priority}.
 
 =item B<--critical-member-status>
 
 Set critical threshold for members status (Default: '%{health} !~ /up/').
-You can use the following variables like: %{name}, %{state}, %{health},
+You can use the following variables: %{name}, %{state}, %{health},
 %{slave_delay}, %{priority}.
 
 =item B<--warning-instance-replication-lag-seconds>

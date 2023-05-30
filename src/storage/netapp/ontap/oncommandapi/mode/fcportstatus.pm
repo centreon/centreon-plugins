@@ -141,12 +141,12 @@ Can be: 'name', 'volume' (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{state}, %{state}
+You can use the following variables: %{state}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /online/i || %{state} !~ /online/i').
-You can use the following variables like: %{status}, %{state}
+You can use the following variables: %{status}, %{state}
 
 =back
 

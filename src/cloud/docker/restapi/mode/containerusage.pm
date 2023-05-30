@@ -346,12 +346,12 @@ Example: --filter-counters='^container-status$'
 =item B<--warning-container-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{name}, %{state}, %{health}.
+You can use the following variables: %{name}, %{state}, %{health}.
 
 =item B<--critical-container-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{name}, %{state}, %{health}.
+You can use the following variables: %{name}, %{state}, %{health}.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -144,12 +144,12 @@ Check VRRP status (VRRP-MIB).
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{adminState}, %{operStateLast}, %{operState}, %{masterIpAddr}
+You can use the following variables: %{adminState}, %{operStateLast}, %{operState}, %{masterIpAddr}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{adminState} eq "up" and %{operState} ne %{operStateLast}').
-You can use the following variables like: %{adminState}, %{operStateLast}, %{operState}, %{masterIpAddr}
+You can use the following variables: %{adminState}, %{operStateLast}, %{operState}, %{masterIpAddr}
 
 =back
 

@@ -154,12 +154,12 @@ Example: --filter-counters='^status$'
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{primaryStateLast}, %{secondaryStateLast}, %{primaryState}, %{secondaryState}
+You can use the following variables: %{primaryStateLast}, %{secondaryStateLast}, %{primaryState}, %{secondaryState}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{primaryStateLast}, %{secondaryStateLast}, %{primaryState}, %{secondaryState}
+You can use the following variables: %{primaryStateLast}, %{secondaryStateLast}, %{primaryState}, %{secondaryState}
 
 =item B<--warning-*>
 

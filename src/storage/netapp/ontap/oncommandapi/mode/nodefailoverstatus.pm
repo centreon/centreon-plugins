@@ -154,12 +154,12 @@ Can be: 'name', 'clusters' (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
+You can use the following variables: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /connected/i || %{interconnect} !~ /up/i').
-You can use the following variables like: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
+You can use the following variables: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
 
 =back
 

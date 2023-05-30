@@ -112,12 +112,12 @@ Check storage array status.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Normal/i').
-You can use the following variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =back
 

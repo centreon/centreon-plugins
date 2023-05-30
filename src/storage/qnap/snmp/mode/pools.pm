@@ -258,17 +258,17 @@ Filter pools by name (can be a regexp).
 =item B<--unknown-pool-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-pool-status>
 
 Set warning threshold for status (Default: '%{status} =~ /degraded|warning/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-pool-status>
 
 Set critical threshold for status (Default: '%{status} =~ /error|critical/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -184,12 +184,12 @@ Filter alerts by name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /minor/i')
-You can use the following variables like: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
+You can use the following variables: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /major|critical/i').
-You can use the following variables like: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
+You can use the following variables: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--warning-*> B<--critical-*>
 

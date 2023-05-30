@@ -957,122 +957,122 @@ Check tunnels.
 =item B<--unknown-certificate-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--unknown-connection-status>
 
 Set unknown threshold for status (Default: '%{connectionStatus} =~ /unknown/i').
-You can use the following variables like: %{sn}, %{connectionStatus}
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
 
 Set warning threshold for status (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
-You can use the following variables like: %{sn}, %{connectionStatus}
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{sn}, %{connectionStatus}
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--unknown-operating-state>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{operatingState}
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--warning-operating-state>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{operatingState}
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--critical-operating-state>
 
 Set critical threshold for status  (Default: '%{operatingState} !~ /operating/i').
-You can use the following variables like: %{sn}, %{operatingState}
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--unknown-autotest-state>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-autotest-state>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-autotest-state>
 
 Set critical threshold for status  (Default: '%{state} !~ /success/i').
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{operatingStatus}
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--warning-interface-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{operatingStatus}
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--critical-interface-status>
 
 Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
-You can use the following variables like: %{sn}, %{name}, %{operatingStatus}
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--unknown-vpn-ike-service-state>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{state}
+You can use the following variables: %{sn}, %{state}
 
 =item B<--warning-vpn-ike-service-state>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{state}
+You can use the following variables: %{sn}, %{state}
 
 =item B<--critical-vpn-ike-service-state>
 
 Set critical threshold for status  (Default: '%{state} =~ /stopped/i').
-You can use the following variables like: %{sn}, %{state}
+You can use the following variables: %{sn}, %{state}
 
 =item B<--unknown-vpn-ike-sa-state>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-ike-sa-state>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-ike-sa-state>
 
 Set critical threshold for status  (Default: '%{state} =~ /down/i').
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-vpn-sa-state>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-sa-state>
 
 Set warning threshold for status.
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-sa-state>
 
 Set critical threshold for status  (Default: '%{state} =~ /down/i').
-You can use the following variables like: %{sn}, %{name}, %{state}
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--ntp-hostname>
 

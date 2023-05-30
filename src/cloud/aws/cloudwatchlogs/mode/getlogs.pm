@@ -175,17 +175,17 @@ If not set: lookup logs since the last execution.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '')
-You can use the following variables like: %{message}, %{stream_name}, %{since}
+You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-You can use the following variables like: %{message}, %{stream_name}, %{since}
+You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-You can use the following variables like: %{message}, %{stream_name}, %{since}
+You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =back
 

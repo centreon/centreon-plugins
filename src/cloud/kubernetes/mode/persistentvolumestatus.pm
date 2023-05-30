@@ -116,12 +116,12 @@ Filter persistent volume name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-You can use the following variables like: %{name}, %{phase}.
+You can use the following variables: %{name}, %{phase}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{phase} !~ /Bound|Available|Released/i').
-You can use the following variables like: %{name}, %{phase}.
+You can use the following variables: %{name}, %{phase}.
 
 =back
 

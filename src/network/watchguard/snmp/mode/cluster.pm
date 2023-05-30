@@ -162,32 +162,32 @@ Check cluster.
 =item B<--unknown-cluster-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--warning-cluster-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--critical-cluster-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--unknown-member-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{role}, %{serial}
+You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{role}, %{serial}
+You can use the following variables: %{role}, %{serial}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{role}, %{serial}
+You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-*> B<--critical-*>
 

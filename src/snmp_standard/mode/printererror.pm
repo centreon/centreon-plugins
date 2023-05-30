@@ -172,22 +172,22 @@ Use that option if your printer provides big-endian bits ordering.
 =item B<--ok-status>
 
 Set warning threshold for status (Default: '%{status} =~ /ok/').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /.*/').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

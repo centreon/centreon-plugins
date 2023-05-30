@@ -226,52 +226,52 @@ Filter by device name (can be a regexp).
 =item B<--warning-device-status>
 
 Set warning threshold for device status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>
 
 Set critical threshold for device status
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-con-status>
 
 Set warning threshold for device connection status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-con-status>
 
 Set critical threshold for device connection status (Default: '%{status} =~ /down/i').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-db-status>
 
 Set warning threshold for device DB status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-db-status>
 
 Set critical threshold for device DB status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-config-status>
 
 Set warning threshold for device configuration status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-config-status>
 
 Set critical threshold for device configuration status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-policy-package-status>
 
 Set warning threshold for device policy package status.
-You can use the following variables like: %{status}, %{package_name}
+You can use the following variables: %{status}, %{package_name}
 
 =item B<--critical-device-policy-package-status>
 
 Set critical threshold for device policy package status.
-You can use the following variables like: %{status}, %{package_name}
+You can use the following variables: %{status}, %{package_name}
 
 =back
 

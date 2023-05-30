@@ -271,12 +271,12 @@ Check cluster status.
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
+You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
-You can use the following variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
+You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -199,12 +199,12 @@ Filter by trunk name (regexp can be used).
 =item B<--warning-trunk-status>
 
 Set warning threshold for status
-You can use the following variables like: %{trunkstatus}
+You can use the following variables: %{trunkstatus}
 
 =item B<--critical-trunk-status>
 
 Set critical threshold for status (Default: '%{trunkstatus} =~ /oos/i').
-You can use the following variables like: %{trunkstatus}
+You can use the following variables: %{trunkstatus}
 
 =item B<--warning-*>
 

@@ -114,13 +114,13 @@ Check fabrics.
 =item B<--warning-health>
 
 Set warning for the health level
-You can use the following variables like: %{current}, %{previous}.
+You can use the following variables: %{current}, %{previous}.
 example: --warning-health='%{previous} < %{current}'
 
 =item B<--critical-health>
 
 Set critical for the health level
-You can use the following variables like: %{current}, %{previous}.
+You can use the following variables: %{current}, %{previous}.
 example: --critical-health='%{current} < 98'
 
 =back

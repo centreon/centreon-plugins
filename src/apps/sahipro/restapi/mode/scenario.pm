@@ -525,12 +525,12 @@ Threshold critical for running scenario rest api response.
 =item B<--warning-status>
 
 Set warning threshold for scenario status.
-You can use the following variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
 Set critical threshold for scenario status (Default: '%{status} ne "SUCCESS"').
-You can use the following variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--warning-*> B<--critical-*>
 

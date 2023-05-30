@@ -308,22 +308,22 @@ Filter job with end time greater than current time less value in seconds (Defaul
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}.
+You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: 'not %{status} =~ /succeeded/i').
-You can use the following variables like: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}.
+You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}.
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-You can use the following variables like: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}, %{elapsed}.
+You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}, %{elapsed}.
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-You can use the following variables like: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}, %{elapsed}.
+You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}, %{elapsed}.
 
 =item B<--warning-detected>
 

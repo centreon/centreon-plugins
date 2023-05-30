@@ -178,12 +178,12 @@ Filter AP name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{opstatus}, %{display}
+You can use the following variables: %{opstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{opstatus} !~ /init|redundant|operationnal/').
-You can use the following variables like: %{opstatus}, %{display}
+You can use the following variables: %{opstatus}, %{display}
 
 =item B<--warning-total>
 

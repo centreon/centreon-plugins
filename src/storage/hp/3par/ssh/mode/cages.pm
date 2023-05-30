@@ -324,7 +324,7 @@ Filter cages by id (can be a regexp).
 Set thresholds for status (Default critical: '%{status} !~ /Normal/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}
+You can use the following variables: %{status}, %{cage_id}
 
 
 =item B<--unknown-board-firmware-status>
@@ -336,7 +336,7 @@ You can use the following variables like: %{status}, %{cage_id}
 Set thresholds for status (Default critical: '%{status} !~ /Current/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{board_id}
+You can use the following variables: %{status}, %{cage_id}, %{board_id}
 
 
 =item B<--unknown-board-[self|partner]-status>
@@ -348,7 +348,7 @@ You can use the following variables like: %{status}, %{cage_id}, %{board_id}
 Set thresholds for status (Default critical: '%{status} !~ /ok/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{board_id}
+You can use the following variables: %{status}, %{cage_id}, %{board_id}
 
 
 =item B<--unknown-psu-status>
@@ -360,7 +360,7 @@ You can use the following variables like: %{status}, %{cage_id}, %{board_id}
 Set thresholds for status (Default critical: '%{status} !~ /ok/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{psu_id}
+You can use the following variables: %{status}, %{cage_id}, %{psu_id}
 
 
 =item B<--unknown-psu-[ac|dc|fan]-status>
@@ -372,7 +372,7 @@ You can use the following variables like: %{status}, %{cage_id}, %{psu_id}
 Set thresholds for status (Default critical: '%{status} !~ /ok/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{psu_id}
+You can use the following variables: %{status}, %{cage_id}, %{psu_id}
 
 
 =item B<--unknown-drive-status>
@@ -384,7 +384,7 @@ You can use the following variables like: %{status}, %{cage_id}, %{psu_id}
 Set thresholds for status (Default critical: '%{status} !~ /normal/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{drive_id}
+You can use the following variables: %{status}, %{cage_id}, %{drive_id}
 
 
 =item B<--unknown-drive-[porta|portb]-status>
@@ -396,7 +396,7 @@ You can use the following variables like: %{status}, %{cage_id}, %{drive_id}
 Set thresholds for status (Default critical: '%{status} !~ /ok/i')
 
 
-You can use the following variables like: %{status}, %{cage_id}, %{drive_id}
+You can use the following variables: %{status}, %{cage_id}, %{drive_id}
 
 =item B<--warning-*> B<--critical-*>
 

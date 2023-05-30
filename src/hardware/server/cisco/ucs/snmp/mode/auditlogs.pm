@@ -210,12 +210,12 @@ Check audit logs.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /minor|warning/')
-You can use the following variables like: %{severity}, %{description}, %{dn}
+You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /major|critical/').
-You can use the following variables like: %{severity}, %{description}, %{dn}
+You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--memory>
 

@@ -149,12 +149,12 @@ Check user password expiration.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-You can use the following variables like: %{username}, %{account_status}, %{expire}
+You can use the following variables: %{username}, %{account_status}, %{expire}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-You can use the following variables like: %{username}, %{account_status}, %{expire}
+You can use the following variables: %{username}, %{account_status}, %{expire}
 
 =item B<--timezone>
 

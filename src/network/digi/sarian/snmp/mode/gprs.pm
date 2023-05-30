@@ -181,12 +181,12 @@ Example: --filter-counters='signal|technology'
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{registered}, %{attachement}
+You can use the following variables: %{registered}, %{attachement}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{attachement} eq "attached" and %{registered} !~ /registeredHostNetwork|registeredRoaming/'
-You can use the following variables like: %{registered}, %{attachement}
+You can use the following variables: %{registered}, %{attachement}
 
 =item B<--warning-technology>
 

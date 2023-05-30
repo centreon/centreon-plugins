@@ -188,22 +188,22 @@ Only display some counters (regexp can be used).
 =item B<--warning-sync-status>
 
 Set warning threshold for sync status
-You can use the following variables like: %{syncstatus}
+You can use the following variables: %{syncstatus}
 
 =item B<--critical-sync-status>
 
 Set critical threshold for sync status (Default: '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/').
-You can use the following variables like: %{syncstatus}
+You can use the following variables: %{syncstatus}
 
 =item B<--warning-failover-status>
 
 Set warning threshold for failover status
-You can use the following variables like: %{failoverstatus}
+You can use the following variables: %{failoverstatus}
 
 =item B<--critical-failover-status>
 
 Set critical threshold for failover status (Default: '%{failoverstatus} =~ /unknown/').
-You can use the following variables like: %{failoverstatus}
+You can use the following variables: %{failoverstatus}
 
 =back
 

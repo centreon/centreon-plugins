@@ -447,42 +447,42 @@ Skip mapi/mailflow test (regexp can be used. In Powershell).
 =item B<--warning-status>
 
 Set warning threshold.
-You can use the following variables like: %{mounted}, %{database}, %{server}
+You can use the following variables: %{mounted}, %{database}, %{server}
 
 =item B<--critical-status>
 
 Set critical threshold (Default: '%{mounted} == 0').
-You can use the following variables like: %{mounted}, %{database}, %{server}
+You can use the following variables: %{mounted}, %{database}, %{server}
 
 =item B<--warning-mapi>
 
 Set warning threshold.
-You can use the following variables like: %{mapi_result}, %{database}, %{server}
+You can use the following variables: %{mapi_result}, %{database}, %{server}
 
 =item B<--critical-mapi>
 
 Set critical threshold (Default: '%{mapi_result} !~ /Success/i').
-You can use the following variables like: %{mapi_result}, %{database}, %{server}
+You can use the following variables: %{mapi_result}, %{database}, %{server}
 
 =item B<--warning-mailflow>
 
 Set warning threshold.
-You can use the following variables like: %{mailflow_result}, %{database}, %{server}
+You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--critical-mailflow>
 
 Set critical threshold (Default: '%{mailflow_result} !~ /Success/i').
-You can use the following variables like: %{mailflow_result}, %{database}, %{server}
+You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--warning-copystatus>
 
 Set warning threshold.
-You can use the following variables like: %{mailflow_result}, %{database}, %{server}
+You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--critical-copystatus>
 
 Set critical threshold (Default: '%{contentindexstate} !~ /Healthy/i').
-You can use the following variables like: %{copystatus_indexstate}, %{database}, %{server}
+You can use the following variables: %{copystatus_indexstate}, %{database}, %{server}
 
 =back
 

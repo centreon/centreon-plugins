@@ -151,22 +151,22 @@ Example: --filter-counters='^ha-status$'
 =item B<--warning-ha-status>
 
 Set warning threshold for status (Default: none).
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-ha-status>
 
 Set critical threshold for status (Default: none).
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-sync-status>
 
 Set warning threshold for status (Default: none).
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-sync-status>
 
 Set critical threshold for status (Default: none).
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =back
 

@@ -203,12 +203,12 @@ Filter by name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{display}, %{alarm}, %{dchannel}, %{state}
+You can use the following variables: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i').
-You can use the following variables like: %{display}, %{alarm}, %{dchannel}, %{state}
+You can use the following variables: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =item B<--warning-*>
 

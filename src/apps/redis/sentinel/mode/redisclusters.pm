@@ -240,17 +240,17 @@ Filter clusters by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
-You can use the following variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>
 

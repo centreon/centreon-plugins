@@ -212,17 +212,17 @@ Filter connections by type.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{type}, %{privateIp}, %{publicIp}
+You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicIp}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{type}, %{privateIp}, %{publicIp}
+You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicIp}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /up|connect/').
-You can use the following variables like: %{status}, %{type}, %{privateIp}, %{publicIp}
+You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicIp}
 
 =item B<--warning-*> B<--critical-*>
 

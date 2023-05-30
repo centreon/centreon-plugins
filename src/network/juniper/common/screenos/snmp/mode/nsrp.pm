@@ -186,17 +186,17 @@ Check nsrp groups.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /undefined/i').
-You can use the following variables like: %{status}, %{statusLast}
+You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{statusLast}
+You can use the following variables: %{status}, %{statusLast}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /ineligible|inoperable/i').
-You can use the following variables like: %{status}, %{statusLast}
+You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-*> B<--critical-*>
 

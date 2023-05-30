@@ -133,12 +133,12 @@ Filter drive name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{display}, %{status}
+You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /up/i').
-You can use the following variables like: %{display}, %{status}
+You can use the following variables: %{display}, %{status}
 
 =back
 

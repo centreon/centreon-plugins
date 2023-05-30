@@ -350,12 +350,12 @@ Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 =item B<--warning-vm-status>
 
 Set warning threshold for status (Default: -)
-You can use the following variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-vm-status>
 
 Set critical threshold for status (Default: -).
-You can use the following variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =back
 

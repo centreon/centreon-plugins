@@ -276,17 +276,17 @@ Filter tunnels by destination ip address.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
+You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
+You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{adminState} eq "up" and %{operState} ne "up"').
-You can use the following variables like: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
+You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
 
 =item B<--warning-*> B<--critical-*>
 

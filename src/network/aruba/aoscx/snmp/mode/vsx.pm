@@ -253,47 +253,47 @@ Check virtual switching extension.
 =item B<--unknown-device-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{role}, %{config_sync}
+You can use the following variables: %{role}, %{config_sync}
 
 =item B<--warning-device-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{role}, %{config_sync}
+You can use the following variables: %{role}, %{config_sync}
 
 =item B<--critical-device-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{role}, %{config_sync}
+You can use the following variables: %{role}, %{config_sync}
 
 =item B<--unknown-isl-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{isl_status}
+You can use the following variables: %{isl_status}
 
 =item B<--warning-isl-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{isl_status}
+You can use the following variables: %{isl_status}
 
 =item B<--critical-isl-status>
 
 Set critical threshold for status (Default: '%{isl_status} =~ /outSync/').
-You can use the following variables like: %{isl_status}
+You can use the following variables: %{isl_status}
 
 =item B<--unknown-keepalive-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{keepalive_status}
+You can use the following variables: %{keepalive_status}
 
 =item B<--warning-keepalive-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{keepalive_status}
+You can use the following variables: %{keepalive_status}
 
 =item B<--critical-keepalive-status>
 
 Set critical threshold for status (Default: '%{keepalive_status} =~ /outofSyncEstablished|failed/').
-You can use the following variables like: %{keepalive_status}
+You can use the following variables: %{keepalive_status}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -202,17 +202,17 @@ Filter stores by hostname.
 =item B<--unknown-health>
 
 Set unknown threshold for status (Default: '%{health} =~ /unknown/i').
-You can use the following variables like: %{health}, %{name}
+You can use the following variables: %{health}, %{name}
 
 =item B<--warning-health>
 
 Set warning threshold for status (Default: '%{health} =~ /warning/i').
-You can use the following variables like: %{health}, %{name}
+You can use the following variables: %{health}, %{name}
 
 =item B<--critical-health>
 
 Set critical threshold for status (Default: '%{health} =~ /critical/i').
-You can use the following variables like: %{health}, %{name}
+You can use the following variables: %{health}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

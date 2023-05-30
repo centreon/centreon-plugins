@@ -184,12 +184,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-You can use the following variables like: %{type}, %{id}, %{message}
+You can use the following variables: %{type}, %{id}, %{message}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{type} !~ /Success|Information/i').
-You can use the following variables like: %{type}, %{id}, %{message}
+You can use the following variables: %{type}, %{id}, %{message}
 
 =item B<--mailbox>
 

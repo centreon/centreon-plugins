@@ -136,12 +136,12 @@ Filter vpn name (Can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
+You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{provisioning_state} ne "Succeeded"').
-You can use the following variables like: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
+You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =back
 

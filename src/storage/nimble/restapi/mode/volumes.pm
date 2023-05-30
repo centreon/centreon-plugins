@@ -202,17 +202,17 @@ Filter volumes by replication role (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{state}, %{space_level_usage}, %{display}
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{space_usage_level} =~ /warning/').
-You can use the following variables like: %{state}, %{space_level_usage}, %{display}
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
-You can use the following variables like: %{state}, %{space_level_usage}, %{display}
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -255,17 +255,17 @@ Filter receptable branch name (can be a regexp).
 =item B<--unknown-rcp-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{oper_state}, %{power_state}, %{display}
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-rcp-status>
 
 Set warning threshold for status (Default: '%{oper_state} =~ /warning|alarm/').
-You can use the following variables like: %{oper_state}, %{power_state}, %{display}
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--critical-rcp-status>
 
 Set critical threshold for status (Default: '%{oper_state} =~ /abnormal/').
-You can use the following variables like: %{oper_state}, %{power_state}, %{display}
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

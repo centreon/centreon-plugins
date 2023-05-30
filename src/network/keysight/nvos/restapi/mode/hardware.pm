@@ -163,32 +163,32 @@ Check hardware.
 =item B<--unknown-temperature-status>
 
 Set unknown threshold for status (Default : '%{status} eq "unknown"').
-You can use the following variables like: %{status}, %{class}
+You can use the following variables: %{status}, %{class}
 
 =item B<--warning-temperature-status>
 
 Set warning threshold for status (Default : '%{status} eq "warn"').
-You can use the following variables like: %{status}, %{class}
+You can use the following variables: %{status}, %{class}
 
 =item B<--critical-temperature-status>
 
 Set critical threshold for status (Default: '%{status} eq "hot"');
-You can use the following variables like: %{status}, %{class}
+You can use the following variables: %{status}, %{class}
 
 =item B<--unknown-psu-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-psu-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} eq "bad"');
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

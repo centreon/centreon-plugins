@@ -187,17 +187,17 @@ Filter processes by type (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{name}, %{group}, %{type}
+You can use the following variables: %{status}, %{name}, %{group}, %{type}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{name}, %{group}, %{type}
+You can use the following variables: %{status}, %{name}, %{group}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /ABENDED/i').
-You can use the following variables like: %{status}, %{name}, %{group}, %{type}
+You can use the following variables: %{status}, %{name}, %{group}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -173,17 +173,17 @@ Filter virtual machines by virtual machine name.
 =item B<--unknown-ha-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/').
-You can use the following variables like: %{ha_status}, %{vm_name}
+You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-ha-status>
 
 Set warning threshold for status (Default: '%{status} =~ /degraded/').
-You can use the following variables like: %{ha_status}, %{vm_name}
+You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--critical-ha-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{ha_status}, %{vm_name}
+You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-*> B<--critical-*>
 

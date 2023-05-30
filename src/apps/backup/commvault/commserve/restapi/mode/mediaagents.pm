@@ -178,17 +178,17 @@ Filter media agents by name (Can be a regexp).
 =item B<--unknown-device-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
+You can use the following variables: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{is_maintenance} eq "no" and %{status} eq "offline"').
-You can use the following variables like: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
+You can use the following variables: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

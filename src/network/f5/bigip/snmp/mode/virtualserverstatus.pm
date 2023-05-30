@@ -185,17 +185,17 @@ Filter by name (regexp can be used).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-You can use the following variables like: %{state}, %{status}, %{display}
+You can use the following variables: %{state}, %{status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state} eq "enabled" and %{status} eq "yellow"').
-You can use the following variables like: %{state}, %{status}, %{display}
+You can use the following variables: %{state}, %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} eq "enabled" and %{status} eq "red"').
-You can use the following variables like: %{state}, %{status}, %{display}
+You can use the following variables: %{state}, %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

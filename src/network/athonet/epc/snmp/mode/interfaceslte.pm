@@ -431,17 +431,17 @@ Filter interfaces by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{sctp_status}, %{s1ap_status}, %{name}
+You can use the following variables: %{sctp_status}, %{s1ap_status}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{sctp_status}, %{s1ap_status}, %{name}
+You can use the following variables: %{sctp_status}, %{s1ap_status}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{sctp_status} =~ /down/i || %{s1ap_status} =~ /down/i').
-You can use the following variables like: %{sctp_status}, %{s1ap_status}, %{name}
+You can use the following variables: %{sctp_status}, %{s1ap_status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

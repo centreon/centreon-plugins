@@ -56,25 +56,25 @@ Set resource group (Required if resource's name is used).
 
 Set warning threshold for status (Default: '').
 
-You can use the following variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^Unavailable$/').
 
-You can use the following variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /^Unknown$/').
 
-You can use the following variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--ok-status>
 
 Set ok threshold for status (Default: '%{status} =~ /^Available$/').
 
-You can use the following variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =back
 

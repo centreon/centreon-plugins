@@ -361,22 +361,22 @@ Can use format: 'Europe/London' or '+0100'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-You can use the following variables like: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{exit_code} =~ /Error/i').
-You can use the following variables like: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs (Default: none)
-You can use the following variables like: %{name}, %{status}, %{elapsed}, %{application}
+You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs (Default: none).
-You can use the following variables like: %{name}, %{status}, %{elapsed}, %{application}
+You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
 
 =item B<--warning-*> B<--critical-*>
 

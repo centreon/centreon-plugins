@@ -132,17 +132,17 @@ Search in following datacenter(s) (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
-You can use the following variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
-You can use the following variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
-You can use the following variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =back
 

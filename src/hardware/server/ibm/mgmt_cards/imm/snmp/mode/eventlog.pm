@@ -159,12 +159,12 @@ Check alarms.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /warning/i')
-You can use the following variables like: %{severity}, %{text}, %{since}
+You can use the following variables: %{severity}, %{text}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /error/i').
-You can use the following variables like: %{severity}, %{text}, %{since}
+You can use the following variables: %{severity}, %{text}, %{since}
 
 =item B<--timezone>
 

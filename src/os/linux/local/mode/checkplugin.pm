@@ -192,17 +192,17 @@ command to execute on the remote machine
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{exit_code} == 3').
-You can use the following variables like: %{short_message}, %{exit_code}
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{exit_code} == 1').
-You can use the following variables like: %{short_message}, %{exit_code}
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{exit_code} == 2').
-You can use the following variables like: %{short_message}, %{exit_code}
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-time>
 

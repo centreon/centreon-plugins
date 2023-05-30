@@ -97,17 +97,17 @@ Check GNSS.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /nominal/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

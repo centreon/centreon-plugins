@@ -217,17 +217,17 @@ Filter controller name (can be a regexp).
 =item B<--unknown-controller-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-controller-status>
 
 Set warning threshold for status (Default: '%{status} =~ /rpaParErr|degraded/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-controller-status>
 
 Set critical threshold for status (Default: '%{status} =~ /failed/i').
-You can use the following variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

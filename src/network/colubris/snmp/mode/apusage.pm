@@ -231,12 +231,12 @@ Can be: 'total-ap', 'total-users', 'ap-users'.
 =item B<--warning-ap-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-ap-status>
 
 Set critical threshold for status (Default: '%{state} eq "disconnected"').
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =back
 

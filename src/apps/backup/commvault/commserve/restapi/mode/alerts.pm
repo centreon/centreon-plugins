@@ -212,12 +212,12 @@ Filter alerts by type (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /warning/')
-You can use the following variables like: %{severity}, %{status}, %{type}, %{name}, %{since}
+You can use the following variables: %{severity}, %{status}, %{type}, %{name}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /critical/').
-You can use the following variables like: %{severity}, %{status}, %{type}, %{name}, %{since}
+You can use the following variables: %{severity}, %{status}, %{type}, %{name}, %{since}
 
 =item B<--memory>
 

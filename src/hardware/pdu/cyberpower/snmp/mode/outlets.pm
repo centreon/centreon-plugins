@@ -285,17 +285,17 @@ Check outlets.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %%{state}, %{phase}, %{bank}, %{display}
+You can use the following variables: %%{state}, %{phase}, %{bank}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{phase}, %{bank}, %{display}
+You can use the following variables: %{state}, %{phase}, %{bank}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} =~ /off/').
-You can use the following variables like: %{state}, %{phase}, %{bank}, %{display}
+You can use the following variables: %{state}, %{phase}, %{bank}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

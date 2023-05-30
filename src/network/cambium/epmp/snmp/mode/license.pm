@@ -108,17 +108,17 @@ Check Cambium license status.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /validation fail|not provided/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /not valid/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

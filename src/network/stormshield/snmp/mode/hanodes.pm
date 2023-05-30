@@ -239,12 +239,12 @@ Critical on deadnode (absolute unless --percent is used)
 =item B<--warning-state>
 
 Set warning threshold for state.
-You can use the following variables like: %{state}, %{role}
+You can use the following variables: %{state}, %{role}
 
 =item B<--critical-state>
 
 Set critical threshold for state. (Default: '%{state} =~ /offline/i').
-You can use the following variables like: %{state}, %{role}
+You can use the following variables: %{state}, %{role}
 
 =item B<--percent>
 

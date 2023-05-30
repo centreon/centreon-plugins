@@ -218,17 +218,17 @@ Check stack units.
 =item B<--unknown-unit-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{operState}, %{adminState}, %{serial}
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--warning-unit-status>
 
 Set warning threshold for status (Default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
-You can use the following variables like: %{operState}, %{adminState}, %{serial}
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--critical-unit-status>
 
 Set critical threshold for status (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
-You can use the following variables like: %{operState}, %{adminState}, %{serial}
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--unit>
 

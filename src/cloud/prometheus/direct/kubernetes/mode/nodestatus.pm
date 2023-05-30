@@ -252,12 +252,12 @@ Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-You can use the following variables like: %{display}, %{status}, %{schedulable}
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
-You can use the following variables like: %{display}, %{status}, %{schedulable}
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--warning-allocated-pods>
 

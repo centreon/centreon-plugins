@@ -133,12 +133,12 @@ Check AC plant status.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /true/i').
-You can use the following variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

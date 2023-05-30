@@ -203,12 +203,12 @@ Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{display}, %{state}
+You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} =~ /outOfService/')
-You can use the following variables like:  %{display}, %{state}
+You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-name>
 

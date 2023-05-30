@@ -257,62 +257,62 @@ Filter hosts by name.
 =item B<--unknown-host-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-host-status>
 
 Set warning threshold for status (Default: '%{status} =~ /suspected/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-host-status>
 
 Set critical threshold for status (Default: '%{status} =~ /faulty/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-raid-status>
 
 Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-raid-status>
 
 Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-raid-status>
 
 Set critical threshold for component status (Default: '%{status} =~ /red/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-logical-drive-status>
 
 Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-logical-drive-status>
 
 Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-logical-drive-status>
 
 Set critical threshold for component status (Default: '%{status} =~ /red/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-physical-drive-status>
 
 Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-physical-drive-status>
 
 Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-physical-drive-status>
 
 Set critical threshold for component status (Default: '%{status} =~ /red/').
-You can use the following variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

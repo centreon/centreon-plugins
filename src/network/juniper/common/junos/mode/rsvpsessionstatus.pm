@@ -170,12 +170,12 @@ Can be: 'name', 'from', 'to' (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /up/i').
-You can use the following variables like: %{state}
+You can use the following variables: %{state}
 
 =back
 

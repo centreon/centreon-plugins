@@ -165,17 +165,17 @@ Example: --filter-counters='^status$'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-You can use the following variables like: operation_mode
+You can use the following variables: operation_mode
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-You can use the following variables like: operation_mode
+You can use the following variables: operation_mode
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{operation_mode} !~ /source1|source2/i').
-You can use the following variables like: %{operation_mode}
+You can use the following variables: %{operation_mode}
 
 =item B<--warning-*>
 

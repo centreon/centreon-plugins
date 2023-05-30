@@ -150,17 +150,17 @@ Filter tunnels by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-You can use the following variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{ike_phase1_state} eq "down" or %{state} ne "active"').
-You can use the following variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -159,12 +159,12 @@ Get activity log more recent than X hour(s) (default: '1').
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /warning/')
-You can use the following variables like: %{message}, %{severity}, %{since}
+You can use the following variables: %{message}, %{severity}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /error|severe/').
-You can use the following variables like: %{message}, %{severity}, %{since}
+You can use the following variables: %{message}, %{severity}, %{since}
 
 =item B<--timezone>
 

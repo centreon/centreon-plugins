@@ -279,12 +279,12 @@ Select the unit for uptime threshold. May be 's' for seconds, 'm' for minutes,
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-You can use the following variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

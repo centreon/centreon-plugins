@@ -136,12 +136,12 @@ Filter services (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-You can use the following variables like: %{service_name}, %{status}, %{classification}
+You can use the following variables: %{service_name}, %{status}, %{classification}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /serviceOperational|serviceRestored/i').
-You can use the following variables like: %{service_name}, %{status}, %{classification}
+You can use the following variables: %{service_name}, %{status}, %{classification}
 
 =back
 
