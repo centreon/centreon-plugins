@@ -1530,7 +1530,9 @@ Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
 
 =item B<--filter-perfdata-adv>
 
-Filter perfdata based on a "if" condition.
+Filter perfdata based on a "if" condition using the following variables:
+label, value, unit, warning, critical, min, max.
+Variables must be written either %{variable} or %(variable).
 Eg: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
 remove all metrics whose value equals 0 and that don't have a maximum value.
 
@@ -1598,7 +1600,7 @@ Change perfdata range thresholds display:
 
 =item B<--filter-uom>
 
-Filter UOM that match the regexp.
+Masks the units when they don't match the given regular expression.
 
 =item B<--opt-exit>
 
