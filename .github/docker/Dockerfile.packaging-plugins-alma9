@@ -2,9 +2,15 @@ ARG REGISTRY_URL
 
 FROM ${REGISTRY_URL}/almalinux:9
 
-RUN <<EOF
+RUN bash -e <<EOF
 
-dnf -y install git gettext rpm-build dos2unix python3 epel-release
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+
+dnf -y install git gettext rpm-build dos2unix python3 epel-release nfpm zstd
 dnf -y install perl-App-cpanminus perl-JSON
 cpanm App::FatPacker
 cpanm File::Copy::Recursive
