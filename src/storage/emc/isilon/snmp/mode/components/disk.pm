@@ -27,7 +27,7 @@ my $mapping = {
     diskLogicalNumber   => { oid => '.1.3.6.1.4.1.12124.2.52.1.2' },
     diskChassisNumber   => { oid => '.1.3.6.1.4.1.12124.2.52.1.3' },
     diskDeviceName      => { oid => '.1.3.6.1.4.1.12124.2.52.1.4' },
-    diskStatus          => { oid => '.1.3.6.1.4.1.12124.2.52.1.5' },
+    diskStatus          => { oid => '.1.3.6.1.4.1.12124.2.52.1.5' }
 };
 my $oid_diskEntry = '.1.3.6.1.4.1.12124.2.52.1';
 
@@ -52,15 +52,20 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' status is '%s' [instance = %s] [logical = %s] [chassis = %s]",
-                                    $result->{diskDeviceName}, $result->{diskStatus}, $instance,
-                                    $result->{diskLogicalNumber}, $result->{diskChassisNumber}
-                                    ));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' status is '%s' [instance: %s] [logical: %s] [chassis: %s]",
+                $result->{diskDeviceName}, $result->{diskStatus}, $instance,
+                $result->{diskLogicalNumber}, $result->{diskChassisNumber}
+            )
+        );
+
         my $exit = $self->get_severity(section => 'disk', value => $result->{diskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Disk '%s' status is '%s'", $result->{diskDeviceName}, $result->{diskStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Disk '%s' status is '%s'", $result->{diskDeviceName}, $result->{diskStatus})
+            );
         }
     }
 }
