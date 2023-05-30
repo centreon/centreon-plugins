@@ -77,6 +77,7 @@ runs:
 
         # Update repository metadata
         METADATAS="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH"
+        sleep $((RANDOM % 120)) # wait random time to avoid simultaneous createrepo
         ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" "sh "${{ inputs.update_repo_path }}" $METADATAS" 2>&-
 
         # Invalidate cloudfront cache

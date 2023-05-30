@@ -131,7 +131,6 @@ jobs:
       matrix:
         distrib: [bullseye]
         major_version:
-          - "21.10"
           - "22.04"
           - "22.10"
 
