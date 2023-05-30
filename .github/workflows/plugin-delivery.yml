@@ -84,11 +84,8 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el7, el8, el9]
-        major_version:
-          - "21.10"
-          - "22.04"
-          - "22.10"
+        distrib: [el7, el8]
+        major_version: ["21.10", "22.04", "22.10"]
 
     steps:
       - name: Checkout sources
@@ -130,9 +127,7 @@ jobs:
     strategy:
       matrix:
         distrib: [bullseye]
-        major_version:
-          - "22.04"
-          - "22.10"
+        major_version: ["22.04", "22.10"]
 
     steps:
       - name: Checkout sources
