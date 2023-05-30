@@ -1,0 +1,46 @@
+name: "deb-delivery-legacy"
+description: "Delivery legacy DEB packages"
+inputs:
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  major_version:
+    description: "The major version"
+    required: true
+  nexus_username:
+    description: The nexus username
+    required: true
+  nexus_password:
+    description: The nexus password
+    required: true
+  cache_key:
+    description: "The cached package key"
+    required: true
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Use cache DEB files
+      uses: actions/cache@v3
+      with:
+        path: ./*.deb
+        key: ${{ inputs.cache_key }}
+
+    - name: Publish DEBs to Nexus
+      run: |
+        echo "Delivering to ${{ inputs.major_version }} ${{ inputs.stability }}"
+
+        FOLDER_SUFFIX="-${{ inputs.stability }}"
+        if [[ "${{ inputs.stability }}" == "stable" ]]; then
+          FOLDER_SUFFIX=""
+        fi
+
+        for FILE in *.deb; do
+          sleep 2
+          echo "Delivering $FILE"
+          curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary "@./$FILE" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/ || echo "::error::Fail to deliver $FILE $MAJOR"
+        done
+      shell: bash
