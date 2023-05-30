@@ -1,5 +1,5 @@
 name: "deb-delivery-legacy"
-description: "Delivery legacy DEB packages"
+description: "Deliver legacy DEB packages"
 inputs:
   distrib:
     description: "The distribution used for packaging"
@@ -41,6 +41,6 @@ runs:
         for FILE in *.deb; do
           sleep 2
           echo "Delivering $FILE"
-          curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary "@./$FILE" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/ || echo "::error::Fail to deliver $FILE $MAJOR"
+          curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary "@./$FILE" https://apt.centreon.com/repository/${{ inputs.major_version }}$FOLDER_SUFFIX/ || echo "::error::Fail to deliver $FILE ${{ inputs.major_version }}"
         done
       shell: bash
