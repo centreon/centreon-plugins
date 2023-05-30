@@ -2,9 +2,15 @@ ARG REGISTRY_URL
 
 FROM ${REGISTRY_URL}/centos:7
 
-RUN <<EOF
+RUN bash -e <<EOF
 
-yum -y install git gettext rpm-build dos2unix python3 epel-release
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+
+yum -y install git gettext rpm-build dos2unix python3 epel-release nfpm zstd
 yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON
 yum clean all
 

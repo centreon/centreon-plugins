@@ -129,6 +129,14 @@ sub read_config {
 			<critical>a .*?chou.</critical>
 		</messages>
 	</dcdiag>
+	<dcdiag language="it">
+		<messages>
+			<global>Inizio test.*?:\s+(.*?)\n.*?(superato|warning|non ha superato)</global>
+			<ok>superato</ok>
+			<warning>warning</warning>
+			<critical>non ha superato</critical>
+		</messages>
+	</dcdiag>
 </root>
 END_FILE
 
