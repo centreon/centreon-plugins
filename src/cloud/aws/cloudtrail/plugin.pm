@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'checktrailstatus'  => 'cloud::aws::cloudtrail::mode::checktrailstatus',
-        'events'            => 'cloud::aws::cloudtrail::mode::events'
+        'events'            => 'cloud::aws::cloudtrail::mode::countevents'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

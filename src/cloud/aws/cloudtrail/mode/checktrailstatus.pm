@@ -50,14 +50,14 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{status} = $options{custom}->cloudtrail_trail_status(
+    my $status = $options{custom}->cloudtrail_trail_status(
         trail_name => $self->{option_results}->{trail_name}
     );
 
-    $self->{output}->output_add(severity => $self->{status}->{IsLogging} ? "ok" : "critical",
-                                short_msg => sprintf("Trail is logging: %s", $self->{status}->{IsLogging}));
+    $self->{output}->output_add(severity => $status->{IsLogging} ? "ok" : "critical",
+                                short_msg => sprintf("Trail is logging: %s", $status->{IsLogging}));
     $self->{output}->perfdata_add(label => "trail_is_logging", unit => '',
-                                  value => sprintf("%s", $self->{status}->{IsLogging} ),
+                                  value => sprintf("%s", $status->{IsLogging} ),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0
                                   );
