@@ -4,6 +4,8 @@
     "plugin_name": "centreon_protocol_x509.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+	    "centreon/plugins/ssh.pm",
         "apps/protocols/x509/"
     ]
 }
