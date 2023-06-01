@@ -76,7 +76,8 @@ sub check {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcModuleOperStatus}, instance => $instance);
-        my $module_descr = $self->{results}->{$self->{physical_name} }->{ $self->{physical_name} . '.' . $instance };
+        my $module_descr = defined($self->{results}->{ $self->{physical_name} }->{ $self->{physical_name} . '.' . $instance }) ? 
+            $self->{results}->{ $self->{physical_name} }->{ $self->{physical_name} . '.' . $instance } : 'n/a';
 
         next if ($self->check_filter(section => 'module', instance => $instance, name => $module_descr));
 
