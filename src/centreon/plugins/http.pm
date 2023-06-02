@@ -256,20 +256,20 @@ Set the address you want to connect to. Useful if hostname is only a vhost, to a
 
 =item B<--proxyurl>
 
-Proxy URL
+Proxy URL. Eg: http://my.proxy:3128
 
 =item B<--proxypac>
 
-Proxy pac file (can be a URL or local file)
+Proxy pac file (can be a URL or a local file).
 
 =item B<--insecure>
 
-Insecure SSL connections.
+Accept insecure SSL connections.
 
 =item B<--http-backend>
 
-Set the backend used (Default: 'lwp')
-For curl: --http-backend=curl
+Perl library to use for HTTP transactions.
+Possible values are: lwp (default) and curl.
 
 =back
 

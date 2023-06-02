@@ -1553,11 +1553,11 @@ Common examples:
 
 =over 4
 
-Change storage free perfdata in used: --change-perfdata=free,used,invert()
+Convert storage free perfdata into used: --change-perfdata=free,used,invert()
 
-Change storage free perfdata in used: --change-perfdata=used,free,invert()
+Convert storage free perfdata into used: --change-perfdata=used,free,invert()
 
-Scale traffic values automaticaly: --change-perfdata=traffic,,scale(auto)
+Scale traffic values automatically: --change-perfdata=traffic,,scale(auto)
 
 Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
 
@@ -1567,8 +1567,14 @@ Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =item B<--extend-perfdata-group>
 
-Extend perfdata from multiple perfdatas (methods in target are: min, max, average, sum)
-Syntax: --extend-perfdata-group=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
+Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+regex: regular expression
+namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+calculation: how the values of the new metrics should be calculated
+newuom (optional): unit of measure for the new metrics
+min (optional): lowest value the metrics can reach
+max (optional): highest value the metrics can reach
 
 Common examples:
 
