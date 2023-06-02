@@ -302,7 +302,7 @@ Filter scenarios (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'ping-received-lasttime' (s).
+Can be: 'status-green', 'status-red', 'status-orange', 'status-grey', 'execution-time'.
 
 =back
 
