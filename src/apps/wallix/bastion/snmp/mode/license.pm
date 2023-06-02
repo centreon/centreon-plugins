@@ -191,7 +191,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unit:s' => { name => 'unit', default => 's' }
+        'filter-category:s' => { name => 'filter_category' },
+        'unit:s'            => { name => 'unit', default => 's' }
     });
 
     return $self;
@@ -208,6 +209,9 @@ sub check_options {
 
 sub add_license {
     my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
+        $options{name} !~ /$self->{option_results}->{filter_category}/);
 
     $self->{licenses}->{ $options{name} } = {
         name => $options{name},
@@ -300,6 +304,15 @@ Check license.
 
 =over 8
 
+=item B<--filter-category>
+
+Filter licenses by category ('primary', 'secondary', 'resource').
+
+=item B<--unit>
+
+Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
 =item B<--warning-status>
 
 Set warning threshold for status.
@@ -309,11 +322,6 @@ Can used special variables like: %{status}
 
 Set critical threshold for status (Default: '%{status} eq "expired"').
 Can used special variables like: %{status}
-
-=item B<--unit>
-
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 
