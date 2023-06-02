@@ -41,7 +41,7 @@ __END__
 
 Check Virtual Machine health status.
 
-(Usefull to determine host status)
+(Useful to determine host status)
 
 =over 8
 
@@ -56,22 +56,22 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^Unavailable$/').
-Can used special variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /^Unknown$/').
-Can used special variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =item B<--ok-status>
 
 Set ok threshold for status (Default: '%{status} =~ /^Available$/').
-Can used special variables like: %{status}, %{summary}
+You can use the following variables: %{status}, %{summary}
 
 =back
 

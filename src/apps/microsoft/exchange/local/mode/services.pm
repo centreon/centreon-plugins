@@ -175,12 +175,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+You can use the following variables: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{requiredservicesrunning} =~ /True/i and %{servicesnotrunning} ne ""').
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+You can use the following variables: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
 
 =back
 

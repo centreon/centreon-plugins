@@ -189,12 +189,12 @@ Can be: 'total-running', 'total-dead', 'total-exited',
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
+You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{active} =~ /failed/i').
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
+You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =back
 

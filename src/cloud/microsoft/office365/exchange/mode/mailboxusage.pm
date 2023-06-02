@@ -304,13 +304,13 @@ Can be: 'active-mailboxes', 'total-usage-active' (count),
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{used} > %{issue_warning_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota},
+You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{used} > %{prohibit_send_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota},
+You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--filter-counters>

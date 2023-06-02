@@ -150,12 +150,12 @@ Example: --filter-counters='^frequence|voltage$'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{last_cause}
+You can use the following variables: %{last_cause}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{last_cause}
+You can use the following variables: %{last_cause}
 
 =item B<--warning-*> B<--critical-*>
 

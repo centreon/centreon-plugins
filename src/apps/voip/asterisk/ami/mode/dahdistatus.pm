@@ -126,12 +126,12 @@ Filter dahdi description (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /UNCONFIGURED|YEL|BLU/i').
-Can used special variables like: %{description}, %{status}
+You can use the following variables: %{description}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /RED/i').
-Can used special variables like: %{description}, %{status}
+You can use the following variables: %{description}, %{status}
 
 =back
 

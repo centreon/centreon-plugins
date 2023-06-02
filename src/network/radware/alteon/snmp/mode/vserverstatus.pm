@@ -206,12 +206,12 @@ Can be: 'traffic', 'total-sessions', 'current-sessions'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--filter-name>
 

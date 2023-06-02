@@ -127,12 +127,12 @@ Filter server name (Can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{fqdn}, %{display}
+You can use the following variables: %{state}, %{fqdn}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "Ready"').
-Can used special variables like: %{state}, %{fqdn}, %{display}
+You can use the following variables: %{state}, %{fqdn}, %{display}
 
 =back
 

@@ -233,7 +233,7 @@ Set resource type (Required if resource's name is used).
 
 =item B<--metric>
 
-Set monitor metrics (Required) (Can be multiple).
+Set monitor metrics (Required) (can be defined multiple times).
 
 =item B<--metric-namespace>
 

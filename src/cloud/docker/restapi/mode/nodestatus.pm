@@ -140,12 +140,12 @@ Check node status.
 =item B<--warning-node-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{display}, %{status}, %{manager_status}.
+You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--critical-node-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
-Can used special variables like: %{display}, %{status}, %{manager_status}.
+You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--warning-*>
 

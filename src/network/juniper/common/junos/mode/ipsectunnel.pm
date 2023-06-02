@@ -249,17 +249,17 @@ Example: --filter-counters='tunnels-total'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{ike_state}, %{display}
+You can use the following variables: %{ike_state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{ike_state}, %{display}
+You can use the following variables: %{ike_state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{ike_state} eq "down"').
-Can used special variables like: %{ike_state}, %{display}
+You can use the following variables: %{ike_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

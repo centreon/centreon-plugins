@@ -279,12 +279,12 @@ Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /yellow/i')
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /red/i').
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =back
 

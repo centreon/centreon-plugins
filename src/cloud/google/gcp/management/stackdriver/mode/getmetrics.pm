@@ -231,7 +231,9 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
+Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+and 'count'.
+Can be called multiple times.
 
 =item B<--warning-metric>
 
@@ -243,7 +245,7 @@ Threshold critical.
 
 =item B<--extra-filter>
 
-Set extra filters (Can be multiple).
+Set extra filters (can be defined multiple times).
 
 Example: --extra-filter='metric.labels.mylabel = "LABELBLEUE"'
 

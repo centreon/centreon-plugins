@@ -355,12 +355,12 @@ Filter hostgroup (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{vm}, %{vmaddition}, %{status}
+You can use the following variables: %{vm}, %{vmaddition}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{vmaddition} =~ /not detected/i').
-Can used special variables like: %{vm}, %{vmaddition}, %{status}
+You can use the following variables: %{vm}, %{vmaddition}, %{status}
 
 =back
 

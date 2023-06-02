@@ -190,17 +190,17 @@ Subnet tags to be used for the name (Default: 'name').
 =item B<--unknown-subnet-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{subnetName}
+You can use the following variables: %{state}, %{subnetName}
 
 =item B<--warning-subnet-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{subnetName}
+You can use the following variables: %{state}, %{subnetName}
 
 =item B<--critical-subnet-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{subnetName}
+You can use the following variables: %{state}, %{subnetName}
 
 =item B<--warning-*> B<--critical-*>
 

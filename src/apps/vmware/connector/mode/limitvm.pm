@@ -242,32 +242,32 @@ Check disk limits (since vsphere 5.0).
 =item B<--warning-disk-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-disk-status>
 
 Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-cpu-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-cpu-status>
 
 Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-memory-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-memory-status>
 
 Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =back
 

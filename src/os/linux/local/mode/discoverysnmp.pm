@@ -219,11 +219,11 @@ Specify SNMP port (Default: 161).
 
 =item B<--snmp-version>
 
-Specify SNMP version (Can be multiple) (Mandatory).
+Specify SNMP version (can be defined multiple times) (Mandatory).
 
 =item B<--snmp-community>
 
-Specify SNMP community (Can be multiple) (Mandatory).
+Specify SNMP community (can be defined multiple times) (Mandatory).
 
 =item B<--snmp-timeout>
 

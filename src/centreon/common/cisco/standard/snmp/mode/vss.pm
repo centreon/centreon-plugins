@@ -267,47 +267,47 @@ Check virtual switching system.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{mode}
+You can use the following variables: %{mode}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{mode}
+You can use the following variables: %{mode}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{mode}
+You can use the following variables: %{mode}
 
 =item B<--unknown-member-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{switch_id}
+You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{switch_id}
+You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status (Default: '%{role} ne %{role_last}').
-Can used special variables like: %{role}, %{role_last}, %{switch_id}
+You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--unknown-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} eq "down"').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

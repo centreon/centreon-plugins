@@ -415,23 +415,26 @@ Override all the format options but substitute are still applied.
 
 =item B<--format-ok>
 
-Output format (Default: '%{count} element(s) found')
-Can used:
+Customize the format of the output when the status is OK (Default: '%{count} element(s) found')
+You can use the following variables:
 '%{values}' = display all values (also text string)
 '%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
 '%{values_warning}' and '%{values_critical}'
 
 =item B<--format-warning>
 
-Output warning format (Default: %{count} element(s) found')
+Customize the format of the output when the status is WARNING (Default: '%{count} element(s) found')
+You can use the variables described in --format-ok
 
 =item B<--format-critical>
 
-Output critical format (Default: %{count} element(s) found')
+Customize the format of the output when the status is CRITICAL (Default: '%{count} element(s) found')
+You can use the variables described in --format-ok
 
 =item B<--format-unknown>
 
-Output unknown format (Default: %{count} element(s) found')
+Customize the format of the output when the status is UNKNOWN (Default: '%{count} element(s) found')
+You can use the variables described in --format-ok
 
 =item B<--values-separator>
 

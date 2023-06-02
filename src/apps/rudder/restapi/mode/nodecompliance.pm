@@ -176,12 +176,12 @@ Set critical threshold on node compliance.
 =item B<--warning-status>
 
 Set warning threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
+You can use the following variables: %{rule}, %{compliance}
 
 =item B<--critical-status>
 
 Set critical threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
+You can use the following variables: %{rule}, %{compliance}
 
 Example :
   --critical-status='%{rule} eq "Global configuration for all nodes" && %{compliance} < 95'

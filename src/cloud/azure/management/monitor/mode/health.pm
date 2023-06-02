@@ -131,7 +131,7 @@ __END__
 
 =head1 MODE
 
-Check resource health status. Usefull to determine host status (ie UP/DOWN).
+Check resource health status. Useful to determine host status (ie UP/DOWN).
 
 =over 8
 

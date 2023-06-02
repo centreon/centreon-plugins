@@ -345,47 +345,47 @@ Check virtual port-channel (vPC).
 =item B<--unknown-peer-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--warning-peer-status>
 
 Set warning threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--critical-peer-status>
 
 Set critical threshold for status (Default: '%{role} ne %{role_last}').
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--unknown-keepalive-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{keepalive_status}, %{domain_id}
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--warning-keepalive-status>
 
 Set warning threshold for status.
-Can used special variables like: %{keepalive_status}, %{domain_id}
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--critical-keepalive-status>
 
 Set critical threshold for status (Default: '%{keepalive_status} ne "alive"').
-Can used special variables like: %{keepalive_status}, %{domain_id}
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--unknown-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
 Set warning threshold for status (Default: '%{link_status} =~ /downStar/i')
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} eq "down"').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

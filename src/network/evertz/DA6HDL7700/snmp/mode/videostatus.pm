@@ -130,12 +130,12 @@ Check video stream status.
 =item B<--warning-video-status>
 
 Set warning threshold for device connection status.
-Can used special variables like: %{video_locked}, %{display}
+You can use the following variables: %{video_locked}, %{display}
 
 =item B<--critical-video-status>
 
 Set critical threshold for device connection status (Default: '%{video_locked} =~ /notLocked/i').
-Can used special variables like: %{video_locked}, %{display}
+You can use the following variables: %{video_locked}, %{display}
 
 =back
 

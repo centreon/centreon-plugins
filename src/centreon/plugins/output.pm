@@ -1516,26 +1516,33 @@ Output class
 
 =item B<--verbose>
 
-Display long output.
+Display extended status information (long output).
 
 =item B<--debug>
 
-Display also debug messages.
+Display debug messages.
 
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
+Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
+'avg' from performance data.
 
 =item B<--filter-perfdata-adv>
 
-Advanced perfdata filter.
-
-Eg: --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")'
+Filter perfdata based on a "if" condition using the following variables:
+label, value, unit, warning, critical, min, max.
+Variables must be written either %{variable} or %(variable).
+Eg: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
+remove all metrics whose value equals 0 and that don't have a maximum value.
 
 =item B<--explode-perfdata-max>
 
-Put max perfdata (if it exist) in a specific perfdata 
-(without values: same with '_max' suffix) (Multiple options)
+Create a new metric for each metric that comes with a maximum limit. The new
+metric will be named identically with a '_max' suffix). 
+Eg: it will split 'used_prct'=26.93%;0:80;0:90;0;100
+into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
+
 
 =item B<--change-perfdata> B<--extend-perfdata> 
 
@@ -1575,11 +1582,16 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 
 =item B<--change-short-output> B<--change-long-output>
 
-Change short/long output display: --change-short-output=pattern~replace~modifier
+Modify the short/long output that is returned by the plugin.
+Syntax: --change-short-output=pattern~replacement~modifier
+Most commonly used modifiers are i (case insensitive) and g (replace all occurrences).
+Eg: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
 
 =item B<--change-exit>
 
-Change exit code: --change-exit=unknown=critical
+Replace an exit code with one of your choice.
+Eg: adding --change-exit=unknown=critical will result in a CRITICAL state
+instead of an UNKNOWN state.
 
 =item B<--range-perfdata>
 
@@ -1588,21 +1600,22 @@ Change perfdata range thresholds display:
 
 =item B<--filter-uom>
 
-Filter UOM that match the regexp.
+Masks the units when they don't match the given regular expression.
 
 =item B<--opt-exit>
 
-Optional exit code for an execution error (i.e. wrong option provided,
-SSH connection refused, timeout, etc)
-(Default: unknown).
+Replace the exit code in case of an execution error (i.e. wrong option provided,
+SSH connection refused, timeout, etc). Default: unknown.
 
 =item B<--output-ignore-perfdata>
 
-Remove perfdata from output.
+Remove all the metrics from the service. The service will still have a status
+and an output.
 
 =item B<--output-ignore-label>
 
-Remove label status from output.
+Remove the status label from the beginning of the output.
+Eg: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 
@@ -1630,11 +1643,11 @@ Display discovery values (if the mode manages it).
 
 =item B<--float-precision>
 
-Set the float precision for thresholds (Default: 8).
+Set the float precision for thresholds (default: 8).
 
 =item B<--source-encoding>
 
-Set encoding of monitoring sources (In some case. Default: 'UTF-8').
+Set encoding of monitoring sources (in some cases. Default: 'UTF-8').
 
 =head1 DESCRIPTION
 
