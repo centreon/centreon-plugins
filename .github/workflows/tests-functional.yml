@@ -30,18 +30,19 @@ jobs:
             LWP::Protocol::https
             LWP::UserAgent
             MIME::Base64
+            Paws
             POSIX
             Storable
             URI
             URI::Encode
       - name: Run Mockoon CLI
-        run: npx mockoon-cli start --data test/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
+        run: npx mockoon-cli start --data tests/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
       - name: Run plugin
         run: |
-          sudo chmod -R +x test/functional/
+          sudo chmod -R +x tests/functional/
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          TESTS="$(test/functional/cloud/aws/cloudtrail/checktrailstatus.sh)"
+          TESTS="$(tests/functional/cloud/aws/cloudtrail/checktrailstatus.sh)"
           echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
           if [[ $TESTS = "OK:"* ]]; then
             echo "OK"
@@ -49,7 +50,7 @@ jobs:
             echo $TESTS
             exit 1
           fi
-          TESTS="$(test/functional/cloud/aws/cloudtrail/countevents.sh)"
+          TESTS="$(tests/functional/cloud/aws/cloudtrail/countevents.sh)"
           echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
           if [[ $TESTS = "OK:"* ]]; then
             echo "OK"
