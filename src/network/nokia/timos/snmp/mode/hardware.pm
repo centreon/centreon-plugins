@@ -50,7 +50,7 @@ sub set_system {
             ['preExtension', 'OK']
         ]
     };
-    
+
     $self->{components_path} = 'network::nokia::timos::snmp::mode::components';
     $self->{components_module} = ['entity'];
 }
@@ -168,35 +168,45 @@ sub check {
         next if ($oid !~ /^$mapping->{tmnxHwName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'entity', instance => $result->{tmnxHwClass} . '.' . $instance));
-        
+
         $self->{components}->{entity}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("%s '%s' status is '%s' [instance = %s, temperature = %s]",
-                                                        $result->{tmnxHwClass}, $result->{tmnxHwName}, 
-                                                        $result->{tmnxHwOperState}, $result->{tmnxHwClass} . '.' . $instance,
-                                                        $result->{tmnxHwTempSensor} eq 'true' ? $result->{tmnxHwTemperature} : '-'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "%s '%s' status is '%s' [instance = %s, temperature = %s]",
+                $result->{tmnxHwClass}, $result->{tmnxHwName}, 
+                $result->{tmnxHwOperState}, $result->{tmnxHwClass} . '.' . $instance,
+                $result->{tmnxHwTempSensor} eq 'true' ? $result->{tmnxHwTemperature} : '-'
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'entity', instance => $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s '%s' status is '%s'", $result->{tmnxHwClass}, $result->{tmnxHwName}, $result->{tmnxHwOperState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("%s '%s' status is '%s'", $result->{tmnxHwClass}, $result->{tmnxHwName}, $result->{tmnxHwOperState}));
         }
-        
+
         next if ($result->{tmnxHwTempSensor} eq 'false');
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $result->{tmnxHwClass} . '.' . $instance,, value => $result->{tmnxHwTemperature});            
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwTemperature});            
         if ($checked == 0 && $result->{tmnxHwTempThreshold} != -1 ) {
             $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwTempThreshold});
 
-            $exit = $self->{perfdata}->threshold_check(value => $result->{slHdwTempSensorCurrentTemp}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }]);
+            $exit = $self->{perfdata}->threshold_check(value => $result->{tmnxHwTemperature}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }]);
             $warn = undef;
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $result->{tmnxHwClass} . '.' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s '%s' temperature is '%s' C", $result->{tmnxHwClass}, 
-                                            $result->{tmnxHwName}, $result->{tmnxHwTemperature}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "%s '%s' temperature is '%s' C", $result->{tmnxHwClass}, 
+                    $result->{tmnxHwName}, $result->{tmnxHwTemperature}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',
             nlabel => 'hardware.entity.temperature.celsius',
