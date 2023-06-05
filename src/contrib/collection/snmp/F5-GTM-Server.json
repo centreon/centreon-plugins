@@ -1,0 +1,74 @@
+{
+	"constants": {
+		"criticalStatus": "red"
+	},
+	"mapping" : {
+		"gtmServerStatusAvailState": {
+			"0": "none",
+			"1": "green",
+			"2": "yellow",
+			"3": "red",
+			"4": "blue",
+			"5": "gray"
+		},
+		"gtmServerStatusEnabledState": {
+			"0": "none",
+			"1": "enabled",
+			"2": "disabled",
+			"3": "disabledbyparent"
+		}
+	},
+	"snmp": {
+		"tables": [
+			{
+				"name": "gtmServerStatusEntry",
+				"oid": ".1.3.6.1.4.1.3375.2.3.9.3.2.1",
+				"used_instance": "\\.1\\.3\\.6\\.1\\.4\\.1\\.3375\\.2\\.3\\.9\\.3\\.2\\.1\\.\\d+\\.(\\d+(\\.\\d+)*)",
+				"entries": [
+					{
+						"name": "gtmServerStatusName",
+						"oid": ".1.3.6.1.4.1.3375.2.3.9.3.2.1.1"
+					},
+					{
+						"name": "gtmServerStatusAvailState",
+						"oid": ".1.3.6.1.4.1.3375.2.3.9.3.2.1.2",
+						"map": "gtmServerStatusAvailState"
+					},
+					{
+						"name": "gtmServerStatusEnabledState",
+						"oid": ".1.3.6.1.4.1.3375.2.3.9.3.2.1.3",
+						"map": "gtmServerStatusEnabledState"
+					},
+					{
+						"name": "gtmServerStatusDetailReason",
+						"oid": ".1.3.6.1.4.1.3375.2.3.9.3.2.1.5"
+					}
+				]
+			}
+		]
+	},
+	"selection_loop": [
+		{
+			"name": "F5 GTM servers",
+			"source": "%(snmp.tables.gtmServerStatusEntry)",
+			"expand_table": {
+				"gtmServerStatusEntry": "%(snmp.tables.gtmServerStatusEntry.[%(gtmServerStatusEntry.instance)])"
+			},
+			"critical": "%(gtmServerStatusEntry.gtmServerStatusAvailState) =~ /%(constants.criticalStatus)/ and %(gtmServerStatusEntry.gtmServerStatusEnabledState) eq 'enabled'",
+			"formatting": {
+				"printf_msg": "Server '%s' status: %s [state: %s][reason: %s]",
+				"printf_var": [
+					"%(gtmServerStatusEntry.gtmServerStatusName)",
+					"%(gtmServerStatusEntry.gtmServerStatusAvailState)",
+					"%(gtmServerStatusEntry.gtmServerStatusEnabledState)",
+					"%(gtmServerStatusEntry.gtmServerStatusDetailReason)"
+				],
+				"display_ok": true
+			}
+		}
+	],
+	"formatting": {
+		"custom_message_global": "All servers are OK",
+		"separator": "-"
+	}
+}

@@ -51,7 +51,7 @@
 			},
 			"critical": "%(gtmWideipStatusEntry.gtmWideipStatusAvailState) =~ /%(constants.criticalStatus)/",
 			"formatting": {
-				"printf_msg": "Wide IP '%s' status: %s [state %s][reason: %s]",
+				"printf_msg": "Wide IP '%s' status: %s [state: %s][reason: %s]",
 				"printf_var": [
 					"%(gtmWideipStatusEntry.gtmWideipStatusName)",
 					"%(gtmWideipStatusEntry.gtmWideipStatusAvailState)",
