@@ -160,12 +160,12 @@ Can be: 'name', 'node', 'cluster' (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{type}, %{size}
+You can use the following variables: %{status}, %{type}, %{size}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /normal/i').
-Can used special variables like: %{status}, %{type}, %{size}
+You can use the following variables: %{status}, %{type}, %{size}
 
 =back
 

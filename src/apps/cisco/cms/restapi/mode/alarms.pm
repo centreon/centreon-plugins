@@ -145,12 +145,12 @@ Filter by type (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{type}, %{active_time}
+You can use the following variables: %{type}, %{active_time}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{type}, %{active_time}
+You can use the following variables: %{type}, %{active_time}
 
 =item B<--memory>
 

@@ -1,0 +1,102 @@
+name: connector-vmware
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'connectors/vmware/src/**'
+      - 'connectors/vmware/packaging/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'connectors/vmware/src/**'
+      - 'connectors/vmware/packaging/**'
+    tags:
+      - centreon-connector-vmware-*
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
+
+  package:
+    needs:
+      - get-environment
+    strategy:
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+    name: package ${{ matrix.distrib }}
+
+    uses: ./.github/workflows/package.yml
+    with:
+      nfpm_file_pattern: "connectors/vmware/packaging/centreon-plugin-virtualization-vmware-daemon.yaml"
+      distrib: ${{ matrix.distrib }}
+      package_extension: ${{ matrix.package_extension }}
+      image_name: ${{ matrix.image }}
+      version: ${{ needs.get-environment.outputs.version }}
+      release: ${{ needs.get-environment.outputs.release }}
+      cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+    secrets: inherit
+
+  deliver-rpm:
+    needs:
+      - get-environment
+      - package
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: connector-vmware
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  deliver-deb:
+    needs:
+      - get-environment
+      - package
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [bullseye]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}

@@ -237,12 +237,12 @@ Exact node name.
 =item B<--warning-storage-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-storage-status>
 
 Set critical threshold for status.
-Can used special variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =item B<--warning-*> B<--critical-*>
 

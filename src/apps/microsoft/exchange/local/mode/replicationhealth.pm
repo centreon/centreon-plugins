@@ -175,12 +175,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{result}, %{server}, %{isvalid}, %{check}
+You can use the following variables: %{result}, %{server}, %{isvalid}, %{check}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{result} !~ /Passed/i').
-Can used special variables like: %{result}, %{server}, %{isvalid}, %{check}
+You can use the following variables: %{result}, %{server}, %{isvalid}, %{check}
 
 =back
 

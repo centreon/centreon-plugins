@@ -291,17 +291,17 @@ Filter tablespaces by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{tbsname}, %{type}, %{state}
+You can use the following variables: %{tbsname}, %{type}, %{state}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{tbsname}, %{type}, %{state}
+You can use the following variables: %{tbsname}, %{type}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /normal/i').
-Can used special variables like: %{tbsname}, %{type}, %{state}
+You can use the following variables: %{tbsname}, %{type}, %{state}
 
 =item B<--warning-*> B<--critical-*>
 

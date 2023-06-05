@@ -196,18 +196,18 @@ Set the instance type (Required) (Can be: 'asg', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 'status' can be: 'passed', 'failed'.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 'status' can be: 'passed', 'failed'.
 
 =back

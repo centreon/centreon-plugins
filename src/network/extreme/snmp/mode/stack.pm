@@ -244,32 +244,32 @@ Check stack status.
 =item B<--unknown-member-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{role}, %{roleLast}
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status (Default: '%{status} eq "mismatch"').
-Can used special variables like: %{role}, %{roleLast}
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} eq "down"').
-Can used special variables like: %{role}, %{roleLast}
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--unknown-port-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-port-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-port-status>
 
 Set critical threshold for status (Default: '%{link_status} ne "up"').
-Can used special variables like: %{link_status}, %{display}
+You can use the following variables: %{link_status}, %{display}
 
 =back
 

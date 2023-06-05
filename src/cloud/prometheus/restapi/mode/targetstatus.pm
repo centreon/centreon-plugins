@@ -202,17 +202,17 @@ Check targets status.
 
 =item B<--filter-label>
 
-Set filter on label (Regexp, Can be multiple) (Example: --filter-label='job,kube.*').
+Set filter on label (Regexp, can be defined multiple times) (Example: --filter-label='job,kube.*').
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{health}.
+You can use the following variables: %{display}, %{health}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} !~ /up/').
-Can used special variables like: %{display}, %{health}
+You can use the following variables: %{display}, %{health}
 
 =item B<--warning-*>
 

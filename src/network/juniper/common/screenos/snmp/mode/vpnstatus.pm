@@ -166,12 +166,12 @@ Filter VPN name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{p1state}, %{p2state}
+You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
-Can used special variables like: %{p1state}, %{p2state}
+You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--warning-update-time>
 

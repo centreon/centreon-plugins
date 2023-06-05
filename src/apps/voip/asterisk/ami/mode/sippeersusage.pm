@@ -183,12 +183,12 @@ Filter sip peer name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /LAGGED|UNKNOWN/i').
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /UNREACHABLE/i').
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*>
 

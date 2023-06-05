@@ -498,17 +498,17 @@ Add path statuses count.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+You can use the following variables: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{ping_status}, %{service_sstatus}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+You can use the following variables: %{ping_status}, %{service_sstatus}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
-Can used special variables like: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+You can use the following variables: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

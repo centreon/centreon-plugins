@@ -277,12 +277,12 @@ Check alarms.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{description}, %{object}, %{severity}, %{type}, %{label}, %{since}
+You can use the following variables: %{description}, %{object}, %{severity}, %{type}, %{label}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} eq "serviceAffecting"').
-Can used special variables like: {description}, %{object}, %{severity}, %{type}, %{label}, %{since}
+You can use the following variables: {description}, %{object}, %{severity}, %{type}, %{label}, %{since}
 
 =item B<--timezone>
 

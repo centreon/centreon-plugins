@@ -211,12 +211,12 @@ Check user password expiration.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{user}, %{expire}, %{expire_time}
+You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{expire} ne "never" and %{expire_time} == 0').
-Can used special variables like: %{user}, %{expire}, %{expire_time}
+You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =back
 

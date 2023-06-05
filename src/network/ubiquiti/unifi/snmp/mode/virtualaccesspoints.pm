@@ -228,17 +228,17 @@ Filter virtual access points by SSID (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{name}, %{ssid}, %{status}
+You can use the following variables: %{name}, %{ssid}, %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{ssid}, %{status}
+You can use the following variables: %{name}, %{ssid}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} eq "down"').
-Can used special variables like: %{name}, %{ssid}, %{status}
+You can use the following variables: %{name}, %{ssid}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

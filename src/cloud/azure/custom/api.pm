@@ -1255,13 +1255,13 @@ Microsoft Azure Rest API
 
 To connect to the Azure Rest API, you must register an application.
 
-Follow the 'How-to guide' in https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
+Follow the 'How-to guide' at https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
 The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 
-For futher informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
+For further informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
 
 =over 8
 
@@ -1299,12 +1299,14 @@ Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
+Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+and 'count'.
+Can be called multiple times.
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when Monitor
-does not return value when not defined.
+Set metrics value to 0 if they are missing. Useful when some metrics are
+undefined.
 
 =item B<--timeout>
 

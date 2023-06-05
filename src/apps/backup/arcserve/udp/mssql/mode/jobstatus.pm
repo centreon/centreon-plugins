@@ -231,17 +231,17 @@ Timezone of mssql server (If not set, we use current server execution timezone).
 =item B<--ok-status>
 
 Set ok threshold for status (Default: '%{status} == 1')
-Can used special variables like: %{display}, %{status}
+You can use the following variables: %{display}, %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} == 1')
-Can used special variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} != 1').
-Can used special variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>
 

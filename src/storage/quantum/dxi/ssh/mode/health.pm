@@ -119,12 +119,12 @@ Check health status.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{name}, %{status}, %{state}
+You can use the following variables: %{name}, %{status}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Ready|Success/i').
-Can used special variables like: %{name}, %{status}, %{state}
+You can use the following variables: %{name}, %{status}, %{state}
 
 =back
 

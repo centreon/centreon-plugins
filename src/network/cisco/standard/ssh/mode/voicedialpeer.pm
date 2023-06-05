@@ -164,17 +164,17 @@ Filter name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
+You can use the following variables: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
+You can use the following variables: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admin} eq "up" and %{oper} eq "down"').
-Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
+You can use the following variables: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

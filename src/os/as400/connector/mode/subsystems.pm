@@ -188,17 +188,17 @@ Filter subsystems by library (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}, %{library}
+You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--warning--status>
 
 Set warning threshold for status (Default: '%{status} =~ /ending|restricted|starting/i').
-Can used special variables like: %{status}, %{name}, %{library}
+You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}, %{name}, %{library}
+You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--warning-*> B<--critical-*>
 

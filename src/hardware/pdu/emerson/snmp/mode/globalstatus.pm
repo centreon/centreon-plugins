@@ -136,7 +136,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{pdu}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot found pdu.");
+        $self->{output}->add_option_msg(short_msg => "Cannot find pdu.");
         $self->{output}->option_exit();
     }
 }
@@ -158,12 +158,12 @@ Filter PDU name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /normalWithWarning/i').
-Can used special variables like: %{status}, %{display}.
+You can use the following variables: %{status}, %{display}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /normalWithAlarm|abnormalOperation/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =back
 

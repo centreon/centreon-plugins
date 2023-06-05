@@ -209,13 +209,13 @@ Filter on port description (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{op_status},
+You can use the following variables: %{state}, %{op_status},
 %{admin_status}, %{port}, %{index}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{op_status} =~ /up/ && %{state} =~ /blocking|broken/').
-Can used special variables like: %{state}, %{op_status},
+You can use the following variables: %{state}, %{op_status},
 %{admin_status}, %{port}, %{index}.
 
 =back

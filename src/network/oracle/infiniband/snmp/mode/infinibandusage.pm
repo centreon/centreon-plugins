@@ -345,12 +345,12 @@ Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 =item B<--warning-ib-status>
 
 Set warning threshold for ib status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-ib-status>
 
 Set critical threshold for ib status (Default: '%{status} !~ /up/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 

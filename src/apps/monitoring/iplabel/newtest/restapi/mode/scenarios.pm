@@ -291,14 +291,18 @@ Check scenarios.
 
 =over 8
 
-=item B<--filter-node-id>
+=item B<--filter-robot-name>
 
-Filter nodes (can be a regexp).
+Filter robots (can be a regexp).
+
+=item B<--filter-scenario-name>
+
+Filter scenarios (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'ping-received-lasttime' (s).
+Can be: 'status-green', 'status-red', 'status-orange', 'status-grey', 'execution-time'.
 
 =back
 

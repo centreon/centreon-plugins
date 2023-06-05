@@ -252,7 +252,7 @@ HTTP abstraction layer for lwp and curl backends
 
 =item B<--http-peer-addr>
 
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
+Set the address you want to connect to. Useful if hostname is only a vhost, to avoid IP resolution.
 
 =item B<--proxyurl>
 
@@ -260,7 +260,7 @@ Proxy URL
 
 =item B<--proxypac>
 
-Proxy pac file (can be an url or local file)
+Proxy pac file (can be a URL or local file)
 
 =item B<--insecure>
 

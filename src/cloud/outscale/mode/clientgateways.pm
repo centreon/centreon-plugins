@@ -175,17 +175,17 @@ Client gateway tags to be used for the name (Default: 'name').
 =item B<--unknown-cg-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{cgName}
+You can use the following variables: %{state}, %{cgName}
 
 =item B<--warning-cg-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{cgName}
+You can use the following variables: %{state}, %{cgName}
 
 =item B<--critical-cg-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{cgName}
+You can use the following variables: %{state}, %{cgName}
 
 =item B<--warning-*> B<--critical-*>
 
