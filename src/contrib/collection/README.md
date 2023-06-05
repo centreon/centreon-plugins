@@ -16,4 +16,5 @@ Feel free to share here the file that you have developed.
 
 * SNMP
   * [moxa-iologik-collection.json](snmp/moxa-iologik-collection.json): to monitor the DI channel status (OID [diStatus](http://www.circitor.fr/Mibs/Html/M/MOXA-IO-E2210-MIB.php#DiEntry) - .1.3.6.1.4.1.8691.10.2210.10.1.1.4) of MOXA ioLogik device
-  * [F5-GTM-wide-IPs.json](src/contrib/collection): to monitor the Wide IP status of F5 GTM, web menu "DNS > GSLB > Wide IPs" (OID gtmWideipStatusAvailState - .1.3.6.1.4.1.3375.2.3.12.3.2.1.2)
+  * [F5-GTM-wide-IPs.json](snmp/F5-GTM-wide-IPs.json): to monitor the Wide IP status of F5 GTM, web menu "DNS > GSLB > Wide IPs" (OID [gtmWideipStatusAvailState](https://www.circitor.fr/Mibs/Html/F/F5-BIGIP-GLOBAL-MIB.php#gtmWideipStatusAvailState) - .1.3.6.1.4.1.3375.2.3.12.3.2.1.2)
+  * [F5-GTM-Server.json](snmp/F5-GTM-Server.json): to monitor, on F5 GTM, the availability of the specified server, web menu "DNS > GSLB > Servers" (OID [gtmServerStatusAvailState](https://www.circitor.fr/Mibs/Html/F/F5-BIGIP-GLOBAL-MIB.php#gtmServerStatusAvailState) - .1.3.6.1.4.1.3375.2.3.9.3.2.1.2)
