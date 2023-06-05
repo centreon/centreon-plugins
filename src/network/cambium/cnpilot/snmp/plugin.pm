@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'connection-status' => 'network::cambium::cnpilot::snmp::mode::connectionstatus',
         'cpu'               => 'network::cambium::cnpilot::snmp::mode::cpu',
-        'memory'            => 'network::cambium::cnpilot::snmp::mode::memory',
-        'list-radios'       => 'network::cambium::cnpilot::snmp::mode::listradios',
-        'radios'            => 'network::cambium::cnpilot::snmp::mode::radios',
         'interfaces'        => 'network::cambium::cnpilot::snmp::mode::interfaces',
-        'connection-status' => 'network::cambium::cnpilot::snmp::mode::connectionstatus'
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-radios'       => 'network::cambium::cnpilot::snmp::mode::listradios',
+        'memory'            => 'network::cambium::cnpilot::snmp::mode::memory',
+        'radios'            => 'network::cambium::cnpilot::snmp::mode::radios'
     };
 
     return $self;
