@@ -100,7 +100,7 @@ Cache SNMP datas in a JSON cache file.
 
 =item B<--file>
 
-JSON cache file.
+JSON cache file path.
 
 =item B<--snmpget>
 
