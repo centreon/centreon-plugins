@@ -22,6 +22,7 @@ package centreon::plugins::snmp;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use SNMP;
 use Socket;
 use POSIX;
@@ -54,6 +55,7 @@ sub new {
             'maxrepetitions:s'   => { name => 'maxrepetitions', default => 50 },
             'subsetleef:s'       => { name => 'subsetleef', default => 50 },
             'subsettable:s'      => { name => 'subsettable', default => 100 },
+            'snmp-cache-file:s'  => { name => 'snmp_cache_file' },
             'snmp-autoreduce:s'  => { name => 'snmp_autoreduce' },
             'snmp-force-getnext' => { name => 'snmp_force_getnext' },
             'snmp-username:s'    => { name => 'snmp_security_name' },
@@ -221,6 +223,24 @@ sub autoreduce_leef {
     return 0;
 }
 
+sub get_leef_cache {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    foreach my $oid (@{$options{oids}}) {
+        if (defined($self->{snmp_cache}->{$oid})) {
+            $results->{$oid} = $self->{snmp_cache}->{$oid};
+        }
+    }
+
+    if ($options{nothing_quit} == 1 && scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'SNMP GET Request: Cant get a single value.');
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
+
+    return $results;
+}
+
 sub get_leef {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -245,6 +265,10 @@ sub get_leef {
         }
         push @{$options{oids}}, @{$self->{oids_loaded}};
         @{$self->{oids_loaded}} = ();
+    }
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_leef_cache(oids => $options{oids}, nothing_quit => $nothing_quit);
     }
 
     my $results = {};
@@ -396,6 +420,43 @@ sub multiple_find_bigger {
     return $getting->{pop(@values)};
 }
 
+sub get_multiple_table_cache {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    foreach my $entry (@{$options{oids}}) {
+        my $result = $self->get_table_cache(
+            oid => $entry->{oid},
+            start => $entry->{start},
+            end => $entry->{end},
+            nothing_quit => 0
+        );
+        if ($options{return_type} == 0) {
+            $results->{ $entry->{oid} } = $result;
+        } else {
+            $results = { %$results, %$result };
+        }
+    }
+
+    my $total = 0;
+    if ($options{nothing_quit} == 1) {
+        if ($options{return_type} == 1) {
+            $total = scalar(keys %$results);
+        } else {
+            foreach (keys %$results) {
+                $total += scalar(keys %{$results->{$_}});
+            }
+        }
+
+        if ($total == 0) {
+            $self->{output}->add_option_msg(short_msg => 'SNMP Table Request: Cant get a single value.');
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+        }
+    }
+
+    return $results;
+}
+
 sub get_multiple_table {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -407,6 +468,14 @@ sub get_multiple_table {
     my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
     my ($nothing_quit) = (defined($options{nothing_quit}) && $options{nothing_quit} == 1) ? 1 : 0;
     $self->set_error();
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_multiple_table_cache(
+            oids => $options{oids},
+            return_type => $return_type,
+            nothing_quit => $nothing_quit
+        );
+    }
 
     my $working_oids = {};
     my $results = {};
@@ -429,7 +498,7 @@ sub get_multiple_table {
         }
 
         if ($return_type == 0) {
-            $results->{$entry->{oid}} = {};
+            $results->{ $entry->{oid} } = {};
         }
     }
 
@@ -560,6 +629,29 @@ sub get_multiple_table {
     return $results;
 }
 
+sub get_table_cache {
+    my ($self, %options) = @_;
+
+    my $branch = defined($options{start}) ? $options{start} : $options{oid};
+
+    my $results = {};
+    foreach my $oid ($self->oid_lex_sort(keys %{$self->{snmp_cache}})) {
+        if ($oid =~ /^$branch\./) {
+            $results->{$oid} = $self->{snmp_cache}->{$oid};
+            if (defined($options{end}) && $self->check_oid_up(current => $oid, end => $options{end})) {
+                last;
+            } 
+        }
+    }
+
+    if ($options{nothing_quit} == 1 && scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'SNMP Table Request: Cant get a single value.');
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
+
+    return $results;
+}
+
 sub get_table {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -576,6 +668,15 @@ sub get_table {
     }
     if (defined($options{end})) {
         $options{end} = $self->clean_oid($options{end});
+    }
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_table_cache(
+            oid => $options{oid},
+            start => $options{start},
+            end => $options{end},
+            nothing_quit => $nothing_quit
+        );
     }
 
     # we use a medium (UDP have a PDU limit. SNMP protcol cant send multiples for one request)
@@ -597,7 +698,7 @@ sub get_table {
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
-    my $main_indice = $1 . "." . $2;
+    my $main_indice = $1 . '.' . $2;
     my $results = {};
 
     # Quit if base not the same or 'ENDOFMIBVIEW' value
@@ -751,7 +852,28 @@ sub check_oid_up {
 
 sub check_options {
     my ($self, %options) = @_;
-    # $options{option_results} = ref to options result
+
+    $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
+
+    $self->{use_snmp_cache} = 0;
+    if (defined($options{option_results}->{snmp_cache_file}) && $options{option_results}->{snmp_cache_file} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'JSON::XS',
+            error_msg => "Cannot load module 'JSON::XS'."
+        );
+        my $content = centreon::plugins::misc::slurp_file(output => $self->{output}, file => $options{option_results}->{snmp_cache_file});
+        eval {
+            $self->{snmp_cache} = JSON::XS->new->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json cache file: $@");
+            $self->{output}->option_exit();
+        }
+
+        $self->{use_snmp_cache} = 1;
+        return ;
+    }
 
     if (!defined($options{option_results}->{host})) {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
@@ -768,7 +890,6 @@ sub check_options {
     $self->{maxrepetitions} = $options{option_results}->{maxrepetitions};
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
-    $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
     $self->{snmp_autoreduce} = 0;
     $self->{snmp_autoreduce_divisor} = 2;
     if (defined($options{option_results}->{snmp_autoreduce})) {
@@ -1022,6 +1143,10 @@ Auto reduce SNMP request size in case of SNMP errors (By default, the divisor is
 =item B<--snmp-force-getnext>
 
 Use snmp getnext function (even in snmp v2c and v3).
+
+=item B<--snmp-cache-file>
+
+Use SNMP cache file.
 
 =item B<--snmp-username>
 
