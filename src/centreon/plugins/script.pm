@@ -455,33 +455,34 @@ List all available plugins.
 
 =item B<--version>
 
-Print global version.
+Return the version of the plugin.
 
 =item B<--help>
 
-Print a brief help message and exits.
+Return the help message for the plugin and exit.
 
 =item B<--ignore-warn-msg>
 
-Perl warn messages are ignored (not displayed).
+Ignore Perl warning messages (they will not be displayed).
 
 =item B<--runas>
 
-Run the script as a different user (prefer to use directly the good user).
+Run the script as a different user.
 
 =item B<--global-timeout>
 
-Set script timeout.
+Define the script's timeout.
 
 =item B<--environment>
 
-Set environment variables for the script (set them in the execution environment
+Define environment variables for the script (set them in the execution environment
 before running it for better performance).
 
 =item B<--convert-args>
 
-Change strings of arguments. Useful to use '!' in nrpe protocol.
-Example: --convert-args='##,\x21'
+Replace a pattern in the provided arguments. Useful to bypass forbidden characters.
+E.g.: when a password transmitted via the NRPE protocol contains '!' (which is
+interpreted as a separator), you can send '##' instead of the '!' and the plugin will replace '##' with '!', using the --convert-args='##,\x21' option.
 
 =back
 

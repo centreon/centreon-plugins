@@ -222,7 +222,7 @@ Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
-Display the plugin's version.
+Return the version of the plugin.
 
 =item B<--pass-manager>
 

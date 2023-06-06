@@ -1620,40 +1620,47 @@ and an output.
 
 =item B<--output-ignore-label>
 
-Remove the status label from the beginning of the output.
+Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the 
+beginning of the output.
 Eg: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 
-Display output in XML format.
+Return the output in XML format (to send to an XML API).
 
 =item B<--output-json>
 
-Display output in JSON format.
+Return the output in JSON format (to send to a JSON API).
 
 =item B<--output-openmetrics>
 
-Display metrics in OpenMetrics format.
+Return the output in OpenMetrics format (to send to a tool expecting this
+format).
 
 =item B<--output-file>
 
-Write output in file (can be used with json and xml options)
+Write output in file (can be combined with json, xml and openmetrics options).
+E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 
-Display discovery arguments (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of available macros to configure a service discovery rule
+(formatted in XML).
 
 =item B<--disco-show>
 
-Display discovery values (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of discovered objects (formatted in XML) for service discovery.
 
 =item B<--float-precision>
 
-Set the float precision for thresholds (default: 8).
+Define the float precision for thresholds (default: 8).
 
 =item B<--source-encoding>
 
-Set encoding of monitoring sources (in some cases. Default: 'UTF-8').
+Define the character encoding of the response sent by the monitored resource
+Default: 'UTF-8'.
 
 =head1 DESCRIPTION
 
