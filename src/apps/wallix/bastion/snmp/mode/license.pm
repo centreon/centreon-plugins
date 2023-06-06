@@ -310,7 +310,7 @@ Filter licenses by category ('primary', 'secondary', 'resource').
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+Select the unit for the expired license threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-status>
