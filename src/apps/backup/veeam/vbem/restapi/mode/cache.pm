@@ -49,10 +49,8 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $options{custom}->cache_job();
     $options{custom}->cache_repository();
-    $options{custom}->cache_nas_job();
-    $options{custom}->cache_backup_task_session(timeframe => $self->{option_results}->{timeframe});
+    $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
 
     $self->{output}->output_add(
         severity => 'OK',
@@ -72,7 +70,7 @@ Create cache files (other modes could use it with --cache-use option).
 
 =item B<--timeframe>
 
-Timeframe to get BackupTaskSession (in seconds. Default: 86400). 
+Timeframe to get BackupJobSession (in seconds. Default: 86400). 
 
 =back
 

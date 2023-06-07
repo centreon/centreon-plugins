@@ -154,16 +154,13 @@ sub get_session_id {
             critical_status => $self->{critical_http_status}
         );
 
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $session_id = $self->{http}->get_header(name => 'x-restsvcsessionid');
+
+        if (!defined($session_id)) {
+            $self->{output}->add_option_msg(short_msg => "Cannot find session id");
             $self->{output}->option_exit();
         }
 
-        $session_id = $decoded->{SessionId};
         my $datas = {
             updated => time(),
             session_id => $session_id,
@@ -242,36 +239,12 @@ sub get_cache_file_response {
     return $response;
 }
 
-sub cache_backup_task_session {
+sub cache_backup_job_session {
     my ($self, %options) = @_;
 
-    my $datas = $self->get_backup_task_session(disable_cache => 1, timeframe => $options{timeframe});
+    my $datas = $self->get_backup_job_session(disable_cache => 1, timeframe => $options{timeframe});
     $self->write_cache_file(
-        statefile => 'backup_task_session',
-        response => $datas
-    );
-
-    return $datas;
-}
-
-sub cache_job {
-    my ($self, %options) = @_;
-
-    my $datas = $self->get_job(disable_cache => 1);
-    $self->write_cache_file(
-        statefile => 'job',
-        response => $datas
-    );
-
-    return $datas;
-}
-
-sub cache_nas_job {
-    my ($self, %options) = @_;
-
-    my $datas = $self->get_nas_job(disable_cache => 1);
-    $self->write_cache_file(
-        statefile => 'nas_job',
+        statefile => 'backup_job_session',
         response => $datas
     );
 
@@ -290,10 +263,10 @@ sub cache_repository {
     return $datas;
 }
 
-sub get_backup_task_session {
+sub get_backup_job_session {
     my ($self, %options) = @_;
 
-    return $self->get_cache_file_response(statefile => 'backup_task_session')
+    return $self->get_cache_file_response(statefile => 'backup_job_session')
         if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
 
     my $creation_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601();
@@ -301,39 +274,9 @@ sub get_backup_task_session {
     return $self->request_api(
         endpoint => '/api/query',
         get_param => [
-            'type=BackupTaskSession',
+            'type=BackupJobSession',
             'format=Entities',
             'filter=CreationTime>=' . $creation_time
-        ]
-    );
-}
-
-sub get_job {
-    my ($self, %options) = @_;
-
-    return $self->get_cache_file_response(statefile => 'job')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
-
-    return $self->request_api(
-        endpoint => '/api/query',
-        get_param => [
-            'type=Job',
-            'format=Entities'
-        ]
-    );
-}
-
-sub get_nas_job {
-    my ($self, %options) = @_;
-
-    return $self->get_cache_file_response(statefile => 'nas_job')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
-
-    return $self->request_api(
-        endpoint => '/api/query',
-        get_param => [
-            'type=NasJob',
-            'format=Entities'
         ]
     );
 }

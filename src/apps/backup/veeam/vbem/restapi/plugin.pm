@@ -30,8 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cache'  => 'apps::backup::veeam::vbem::restapi::mode::cache',
-        'jobs'   => 'apps::backup::veeam::vbem::restapi::mode::jobs'
+        'cache'     => 'apps::backup::veeam::vbem::restapi::mode::cache',
+        'jobs'      => 'apps::backup::veeam::vbem::restapi::mode::jobs',
+        'list-jobs' => 'apps::backup::veeam::vbem::restapi::mode::listjobs'
     };
 
     $self->{custom_modes}->{api} = 'apps::backup::veeam::vbem::restapi::custom::api';

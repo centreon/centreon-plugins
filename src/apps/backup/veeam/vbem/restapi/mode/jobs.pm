@@ -87,36 +87,37 @@ sub custom_duration_threshold {
     );
 }
 
-sub task_long_output {
+sub job_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking task '%s'",
-        $options{instance_value}->{name}
+        "checking job '%s' [ŧype: %s]",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
-sub prefix_task_output {
+sub prefix_job_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "task '%s' ",
-        $options{instance_value}->{name}
+        "job '%s' [type: %s] ",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of tasks ';
+    return 'Number of jobs ';
 }
 
 sub prefix_execution_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "execution '%s' [started: %s] ",
-        $options{instance_value}->{executionId},
+        "execution started: %s ",
         $options{instance_value}->{started}
     );
 }
@@ -127,7 +128,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'tasks', type => 3, cb_prefix_output => 'prefix_task_output', cb_long_output => 'task_long_output', indent_long_output => '    ', message_multiple => 'All tasks are ok',
+            name => 'jobs', type => 3, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
                 { name => 'failed', type => 0 },
                 { name => 'timers', type => 0, skipped_code => { -10 => 1 } },
@@ -137,7 +138,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'tasks-executions-detected', display_ok => 0, nlabel => 'tasks.executions.detected.count', set => {
+        { label => 'jobs-executions-detected', display_ok => 0, nlabel => 'jobs.executions.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'executions detected: %s',
                 perfdatas => [
@@ -148,18 +149,18 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{failed} = [
-        { label => 'task-executions-failed-prct', nlabel => 'task.executions.failed.percentage', set => {
-                key_values => [ { name => 'failedPrct' } ],
+        { label => 'job-executions-failed-prct', nlabel => 'job.executions.failed.percentage', set => {
+                key_values => [ { name => 'failedPrct' }, { name => 'name' } ],
                 output_template => 'number of failed executions: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{timers} = [
-         { label => 'task-execution-last', nlabel => 'task.execution.last', set => {
+         { label => 'job-execution-last', nlabel => 'job.execution.last', set => {
                 key_values  => [ { name => 'lastExecSeconds' }, { name => 'lastExecHuman' }, { name => 'name' } ],
                 output_template => 'last execution %s',
                 output_use => 'lastExecHuman',
@@ -167,7 +168,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_last_exec_threshold')
             }
         },
-        { label => 'task-running-duration', nlabel => 'task.running.duration', set => {
+        { label => 'job-running-duration', nlabel => 'job.running.duration', set => {
                 key_values  => [ { name => 'durationSeconds' }, { name => 'durationHuman' }, { name => 'name' } ],
                 output_template => 'running duration %s',
                 output_use => 'durationHuman',
@@ -181,12 +182,13 @@ sub set_counters {
         {
             label => 'execution-status',
             type => 2,
-            critical_default => '%{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i',
+            warning_default => '%{status} =~ /warning/i',
+            critical_default => '%{status} =~ /failed/i',
             set => {
                 key_values => [
-                    { name => 'status' }, { name => 'taskName' }
+                    { name => 'status' }, { name => 'jobName' }
                 ],
-                output_template => "status: %s",
+                output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -200,13 +202,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'task-id:s'          => { name => 'task_id' },
-        'environment-name:s' => { name => 'environment_name' },
-        'timeframe:s'        => { name => 'timeframe' },
-        'unit:s'             => { name => 'unit', default => 's' }
+        'filter-uid:s'  => { name => 'filter_uid' },
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-type:s' => { name => 'filter_type' },
+        'timeframe:s'   => { name => 'timeframe' },
+        'unit:s'        => { name => 'unit', default => 's' }
     });
-
-    $self->{cache_exec} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -227,95 +228,60 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $environments = $options{custom}->get_environments();
+    my $jobs_exec = $options{custom}->get_backup_job_session(timeframe => $self->{option_results}->{timeframe});
 
-    my $tasks_config = $options{custom}->get_tasks_config();
-
-    my $to = time();
-    my $tasks_exec = $options{custom}->get_tasks_execution(
-        from => ($to - $self->{option_results}->{since_timeperiod}) * 1000,
-        to => $to * 1000,
-        environmentId => $environmentId,
-        taskId => $self->{option_results}->{task_id}
-    );
-
-    $self->{cache_exec}->read(statefile => 'talend_tmc_' . $self->{mode} . '_' . 
-        Digest::MD5::md5_hex(
-            (defined($self->{option_results}->{task_id}) ? $self->{option_results}->{task_id} : '') . '_' .
-            (defined($self->{option_results}->{environment_name}) ? $self->{option_results}->{environment_name} : '')
-        )
-    );
     my $ctime = time();
-    my $last_exec_times = $self->{cache_exec}->get(name => 'tasks');
-    $last_exec_times = {} if (!defined($last_exec_times));    
 
     $self->{global} = { detected => 0 };
-    $self->{tasks} = {};
-    foreach my $task (@$tasks_config) {
-        next if (defined($self->{option_results}->{task_id}) && $self->{option_results}->{task_id} ne '' && $task->{executable} ne $self->{option_results}->{task_id});
-        next if (defined($environmentId) && $task->{workspace}->{environment}->{id} ne $environmentId);
+    $self->{jobs} = {};
+    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
+        next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' && $job->{JobUid} !~ /$self->{option_results}->{filter_uid}/);
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $job->{JobName} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && $job->{JobType} !~ /$self->{option_results}->{filter_type}/);
 
-        $self->{tasks}->{ $task->{name} } = {
-            name => $task->{name},
-            timers => {},
-            executions => {}
-        };
-
-        my ($last_exec, $older_running_exec);
-        my ($failed, $total) = (0, 0);
-        foreach my $task_exec (@$tasks_exec) {
-            next if ($task_exec->{taskId} ne $task->{executable});
-
-            if (!defined($task_exec->{finishTimestamp})) {
-                $older_running_exec = $task_exec;
-            }
-            if (!defined($last_exec)) {
-                $last_exec = $task_exec;
-            }
-
+        if (!defined($self->{jobs}->{ $job->{JobUid} })) {
+            $self->{jobs}->{ $job->{JobUid} } = {
+                name => $job->{JobName},
+                type => $job->{JobType},
+                failed => { name => $job->{JobName}, total => 0, failed => 0 }
+            };
             $self->{global}->{detected}++;
-            $failed++ if ($task_exec->{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/);
-            $total++;
         }
 
-        $self->{tasks}->{ $task->{name} }->{failed} = {
-            failedPrct => $total > 0 ? $failed * 100 / $total : 0
-        };
-
-        if (defined($last_exec)) {
-            $self->{tasks}->{ $task->{name} }->{executions}->{ $last_exec->{executionId} } = {
-                executionId => $last_exec->{executionId},
-                taskName => $task->{name},
-                started => $last_exec->{startTimestamp},
-                status => $last_exec->{status}
+        $job->{CreationTimeUTC} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+        my $epoch = $dt->epoch();
+        
+        if (!defined($self->{jobs}->{ $job->{JobUid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{JobUid} }->{executions}->{last}->{epoch}) {
+            $self->{jobs}->{ $job->{JobUid} }->{executions}->{last} = {
+                jobName => $job->{JobName},
+                started => $job->{CreationTimeUTC},
+                status => $job->{Result},
+                epoch => $epoch
             };
 
-            $last_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
-            my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
-            $last_exec_times->{ $task->{name} } = $dt->epoch();
+            $self->{jobs}->{ $job->{JobUid} }->{timers} = {
+                name => $job->{JobName},
+                lastExecSeconds => $ctime - $epoch,
+                lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $epoch)
+            };
+
+            if ($job->{State} =~ /Starting|Working|Resuming/i) {
+                my $duration = $ctime - $epoch;
+                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationSeconds} = $duration;
+                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+            }
         }
 
-        $self->{tasks}->{ $task->{name} }->{timers} = {
-            name => $task->{name},
-            lastExecSeconds => defined($last_exec_times->{ $task->{name} }) ? $ctime - $last_exec_times->{ $task->{name} } : -1,
-            lastExecHuman => 'never'
-        };
-        if (defined($last_exec_times->{ $task->{name} })) {
-            $self->{tasks}->{ $task->{name} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime -  $last_exec_times->{ $task->{name} });
-        }
-
-        if (defined($older_running_exec)) {
-            $older_running_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
-            my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
-            my $duration = $ctime - $dt->epoch();
-            $self->{tasks}->{ $task->{name} }->{timers}->{durationSeconds} = $duration;
-            $self->{tasks}->{ $task->{name} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+        $self->{jobs}->{ $job->{JobUid} }->{failed}->{total}++;
+        if (defined($job->{Result}) && $job->{Result} =~ /Failed/i) {
+            $self->{jobs}->{ $job->{JobUid} }->{failed}->{failed}++;
         }
     }
 
-    $self->{cache_exec}->write(data => {
-        tasks => $last_exec_times
-    });
+    foreach my $uid (keys %{$self->{jobs}}) {
+        $self->{jobs}->{$uid}->{failed}->{failedPrct} = $self->{jobs}->{$uid}->{failed}->{total} > 0 ? $self->{jobs}->{$uid}->{failed}->{failed} * 100 / $self->{jobs}->{$uid}->{failed}->{total} : 0;
+    }
 }
 
 1;
@@ -324,21 +290,25 @@ __END__
 
 =head1 MODE
 
-Check tasks.
+Check jobs.
 
 =over 8
 
-=item B<--task-id>
+=item B<--filter-uid>
 
-Task filter.
+Filter jobs by UID.
 
-=item B<--environment-name>
+=item B<--filter-name>
 
-Environment filter.
+Filter jobs by name.
 
-=item B<--since-timeperiod>
+=item B<--filter-type>
 
-Time period to get tasks execution informations (in seconds. Default: 86400). 
+Filter jobs by type.
+
+=item B<--timeframe>
+
+Timeframe to get BackupJobSession (in seconds. Default: 86400). 
 
 =item B<--unit>
 
@@ -347,24 +317,24 @@ Select the unit for last execution time threshold. May be 's' for seconds, 'm' f
 
 =item B<--unknown-execution-status>
 
-Set unknown threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+Set unknown threshold for last job execution status.
+Can used special variables like: %{status}, %{jobName}
 
 =item B<--warning-execution-status>
 
-Set warning threshold for last task execution status.
-Can used special variables like: %{status}, %{taskName}
+Set warning threshold for last job execution status (Default: %{status} =~ /warning/i).
+Can used special variables like: %{status}, %{jobName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last task execution status (Default: %{status} =~ /deploy_failed|execution_rejected|execution_failed|terminated_timeout/i).
-Can used special variables like: %{status}, %{taskName}
+Set critical threshold for last job execution status (Default: %{status} =~ /failed/i).
+Can used special variables like: %{status}, %{jobName}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tasks-executions-detected', 'task-executions-failed-prct',
-'task-execution-last', 'task-running-duration'.
+Can be: 'jobs-executions-detected', 'job-executions-failed-prct',
+'job-execution-last', 'job-running-duration'.
 
 =back
 
