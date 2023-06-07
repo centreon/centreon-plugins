@@ -100,7 +100,7 @@ sub run {
 
         $self->{output}->perfdata_add(
             label => 'slow_queries_delta',
-            nlabel => 'database.slowqueries.delta',
+            nlabel => 'database.slowqueries.delta.count',
             value => $value,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
