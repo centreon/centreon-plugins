@@ -68,8 +68,8 @@ sub run {
     if (length($self->{option_results}->{event_type}) || length($self->{option_results}->{error_message})) {
         $count = 0;
         foreach my $event (@{$self->{events}}) {
-            if ((length($self->{option_results}->{event_type}) && ($event->{eventType} eq $self->{option_results}->{event_type}))
-                || (length($self->{option_results}->{error_message}) && ($event->{errorMessage} =~ $self->{option_results}->{error_message}))) {
+            if ((defined($self->{option_results}->{event_type}) && length($self->{option_results}->{event_type}) && ($event->{eventType} eq $self->{option_results}->{event_type}))
+                || (defined($self->{option_results}->{error_message}) && length($self->{option_results}->{error_message}) && ($event->{errorMessage} =~ $self->{option_results}->{error_message}))) {
                 $count++;
             }
         }

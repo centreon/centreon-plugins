@@ -846,7 +846,7 @@ sub cloudtrail_events {
     my $events_results = [];
     eval {
         my $ct;
-        if (length $self->{option_results}->{endpoint}) {
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
             $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
         } else {
             $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
@@ -885,7 +885,7 @@ sub cloudtrail_trail_status {
     my $trail_status;
     eval {
         my $ct;
-        if (length $self->{option_results}->{endpoint}) {
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
             $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
         } else {
             $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
