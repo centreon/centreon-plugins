@@ -1553,11 +1553,11 @@ Common examples:
 
 =over 4
 
-Change storage free perfdata in used: --change-perfdata=free,used,invert()
+Convert storage free perfdata into used: --change-perfdata=free,used,invert()
 
-Change storage free perfdata in used: --change-perfdata=used,free,invert()
+Convert storage free perfdata into used: --change-perfdata=used,free,invert()
 
-Scale traffic values automaticaly: --change-perfdata=traffic,,scale(auto)
+Scale traffic values automatically: --change-perfdata=traffic,,scale(auto)
 
 Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
 
@@ -1567,8 +1567,14 @@ Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =item B<--extend-perfdata-group>
 
-Extend perfdata from multiple perfdatas (methods in target are: min, max, average, sum)
-Syntax: --extend-perfdata-group=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
+Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+regex: regular expression
+namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+calculation: how the values of the new metrics should be calculated
+newuom (optional): unit of measure for the new metrics
+min (optional): lowest value the metrics can reach
+max (optional): highest value the metrics can reach
 
 Common examples:
 
@@ -1614,40 +1620,47 @@ and an output.
 
 =item B<--output-ignore-label>
 
-Remove the status label from the beginning of the output.
+Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the 
+beginning of the output.
 Eg: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 
-Display output in XML format.
+Return the output in XML format (to send to an XML API).
 
 =item B<--output-json>
 
-Display output in JSON format.
+Return the output in JSON format (to send to a JSON API).
 
 =item B<--output-openmetrics>
 
-Display metrics in OpenMetrics format.
+Return the output in OpenMetrics format (to send to a tool expecting this
+format).
 
 =item B<--output-file>
 
-Write output in file (can be used with json and xml options)
+Write output in file (can be combined with json, xml and openmetrics options).
+E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 
-Display discovery arguments (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of available macros to configure a service discovery rule
+(formatted in XML).
 
 =item B<--disco-show>
 
-Display discovery values (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of discovered objects (formatted in XML) for service discovery.
 
 =item B<--float-precision>
 
-Set the float precision for thresholds (default: 8).
+Define the float precision for thresholds (default: 8).
 
 =item B<--source-encoding>
 
-Set encoding of monitoring sources (in some cases. Default: 'UTF-8').
+Define the character encoding of the response sent by the monitored resource
+Default: 'UTF-8'.
 
 =head1 DESCRIPTION
 

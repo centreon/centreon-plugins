@@ -286,19 +286,20 @@ Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
-Display the plugin's version.
+Return the version of the plugin.
 
 =item B<--sqlmode>
 
-Choose a sql mode (Default: "dbi").
+This plugin offers several ways to query the database (default: dbi).
+See --list-sqlmode.
 
 =item B<--list-sqlmode>
 
-List available sql modes.
+List all available sql modes.
 
 =item B<--multiple>
 
-Multiple database connections (required by some specific modes).
+Enable connecting to multiple databases (required by some specific modes such as replication).
 
 =item B<--pass-manager>
 

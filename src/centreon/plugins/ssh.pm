@@ -108,8 +108,8 @@ SSH abstraction layer for sscli, plink and libssh backends
 
 =item B<--ssh-backend>
 
-Set the backend used (Default: 'sshcli')
-Can be: sshcli, plink, libssh.
+Define the backend you want to use.
+It can be: sshcli (default), plink and libssh.
 
 =item B<--ssh-username>
 
