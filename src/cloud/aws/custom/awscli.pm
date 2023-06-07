@@ -976,6 +976,80 @@ sub directconnect_describe_virtual_interfaces {
     return $results;
 }
 
+sub cloudtrail_events_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "lookup-events --region $self->{option_results}->{region} --output json";
+    if (defined($options{delta})) {
+        my $endtime = time();
+        my $starttime = $endtime - ($options{delta} * 60);
+        $cmd_options .= " --start-time $starttime";
+        $cmd_options .= " --end-time $endtime";
+    }
+    $cmd_options .= " --starting-token $options{next_token}" if (length($options{next_token}));
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (length($self->{endpoint_url}));
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (length($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub cloudtrail_events {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudtrail_events_set_cmd(%options);
+
+    my $events_results = [];
+    eval {
+        while (my $list_events = $self->execute(cmd_options => $cmd_options)) {
+            foreach (@{$list_events->{Events}}) {
+                my $event = JSON::XS->new->utf8->decode($_->{CloudTrailEvent});
+                push @{$events_results}, {
+                    eventID => $event->{eventID},
+                    eventType => $event->{eventType},
+                    errorMessage => $event->{errorMessage}
+                };
+            }
+
+            last if (!defined($list_events->{NextToken}));
+            $options{next_token} = $list_events->{NextToken};
+        }
+    };
+
+    return $events_results;
+}
+
+sub cloudtrail_trail_status_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "get-trail-status --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --name $options{trail_name}";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (length($self->{endpoint_url}));
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (length($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub cloudtrail_trail_status {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudtrail_trail_status_set_cmd(%options);
+
+    my $trail_status;
+    eval {
+        $trail_status = $self->execute(cmd_options => $cmd_options);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $trail_status;
+}
+
 1;
 
 __END__
