@@ -64,6 +64,7 @@ jobs:
   deliver-rpm:
     runs-on: [self-hosted, common]
     strategy:
+      fail-fast: false
       matrix:
         distrib: [el7, el8, el9]
 
@@ -83,6 +84,7 @@ jobs:
   deliver-rpm-legacy:
     runs-on: [self-hosted, common]
     strategy:
+      fail-fast: false
       matrix:
         distrib: [el7, el8]
         major_version: ["21.10", "22.04", "22.10"]
@@ -107,6 +109,7 @@ jobs:
   deliver-deb:
     runs-on: [self-hosted, common]
     strategy:
+      fail-fast: false
       matrix:
         distrib: [bullseye]
 
@@ -125,6 +128,7 @@ jobs:
   deliver-deb-legacy:
     runs-on: [self-hosted, common]
     strategy:
+      fail-fast: false
       matrix:
         distrib: [bullseye]
         major_version: ["22.04", "22.10"]
