@@ -30,7 +30,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'timeframe:s' => { name => 'timeframe' }
+    });
 
     return $self;
 }
@@ -38,31 +40,46 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{timeframe}) || $self->{option_results}->{timeframe} eq '') {
+        $self->{option_results}->{timeframe} = 86400;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->cache_tasks_config(disable_cache => 1);
+    my $results = {};
+    my $jobs_exec = $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
+    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
+        next if (defined($results->{ $job->{JobUid} }));
+
+        $results->{ $job->{JobUid} } = {
+            jobName => $job->{JobName},
+            jobType => $job->{JobType}
+        }
+    }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach my $uid (keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[id: %s][name: %s][environmentName: %s]',
-                $_->{executable},
-                $_->{name},
-                $_->{workspace}->{environment}->{name}
+                '[uid: %s][jobName: %s][jobType: %s]',
+                $uid,
+                $results->{$uid}->{jobName},
+                $results->{$uid}->{jobType}
             )
         );
     }
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List tasks:'
+        short_msg => 'List jobs:'
     );
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -72,18 +89,18 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'environmentName']);
+    $self->{output}->add_disco_format(elements => ['uid', 'jobName', 'jobType']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach my $uid (keys %$results) {
         $self->{output}->add_disco_entry(
-            id => $_->{executable},
-            name => $_->{name},
-            environmentName => $_->{workspace}->{environment}->{name}
+            uid => $uid,
+            jobName => $results->{$uid}->{jobName},
+            jobType => $results->{$uid}->{jobType}
         );
     }
 }
@@ -94,9 +111,13 @@ __END__
 
 =head1 MODE
 
-List tasks.
+List jobs.
 
 =over 8
+
+=item B<--timeframe>
+
+Timeframe to get BackupJobSession (in seconds. Default: 86400). 
 
 =back
 
