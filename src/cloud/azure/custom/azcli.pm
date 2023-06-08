@@ -646,12 +646,14 @@ Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
+Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+and 'count'.
+Can be called multiple times.
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when Monitor
-does not return value when not defined.
+Set metrics value to 0 if they are missing. Useful when some metrics are 
+undefined.
 
 =item B<--timeout>
 

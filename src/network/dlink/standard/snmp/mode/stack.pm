@@ -245,32 +245,32 @@ Check stack.
 =item B<--unknown-member-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status (Default: '%{status} =~ /codeUpdate/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--unknown-link-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-link-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{status} eq "down"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

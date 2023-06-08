@@ -489,7 +489,7 @@ You can set the memcached server with the option ``--memcached``:
 What does ``--dyn-mode`` option do ?
 ------------------------------------
 
-With the option, you can used a mode with a plugin. It commonly used for database checks.
+With the option, you can use a mode with a plugin. It is commonly used for database checks.
 For example, I have an application which stores some monitoring information on a database. The developer can use another plugin to create the check (no need to do the SQL connections,... It saves time):
 ::
 

@@ -263,12 +263,12 @@ Filter by SAP name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for ib status.
-Can used special variables like: %{admin}, %{status}, %{display}
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for ib status (Default: '%{admin} =~ /up/i and %{status} !~ /up/i').
-Can used special variables like: %{admin}, %{status}, %{display}
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>
 

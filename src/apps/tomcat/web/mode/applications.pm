@@ -206,17 +206,17 @@ Threshold critical for http response code
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{state} ne "running"').
-Can used special variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} eq "stopped"').
-Can used special variables like: %{state}, %{display}
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

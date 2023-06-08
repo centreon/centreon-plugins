@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'cache'           => 'apps::protocols::snmp::mode::cache',
         'collection'      => 'apps::protocols::snmp::mode::collection',
         'discovery'       => 'snmp_standard::mode::discovery',
         'dynamic-command' => 'snmp_standard::mode::dynamiccommand',

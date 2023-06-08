@@ -216,32 +216,32 @@ Filter interfaces by owner (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}, %{owner}
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{owner}
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{name}, %{owner}
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--unknown-transport-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-transport-status>
 
 Set warning threshold for status.
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--critical-transport-status>
 
 Set critical threshold for status (Default: '%{transport_status} =~ /down/i').
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

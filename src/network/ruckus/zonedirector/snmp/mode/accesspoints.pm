@@ -303,17 +303,17 @@ Filter by access point name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{zd_connection_status}
+You can use the following variables: %{zd_connection_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{zd_connection_status}
+You can use the following variables: %{zd_connection_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{zd_connection_status}
+You can use the following variables: %{zd_connection_status}
 
 =item B<--warning-*> B<--critical-*>
 

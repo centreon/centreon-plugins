@@ -111,32 +111,32 @@ Filter devices by device name (can be a regexp).
 =item B<--warning-operational-status>
 
 Set warning threshold for status.
-Can used special variables like: %{operational_status}, %{device_name}
+You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--critical-operational-status>
 
 Set critical threshold for status (Default: '%{operational_status} ne "ok"').
-Can used special variables like: %{operational_status}, %{device_name}
+You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--warning-health-status>
 
 Set warning threshold for status.
-Can used special variables like: %{health_state}, %{device_name}
+You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--critical-health-status>
 
 Set critical threshold for status (Default: '%{health_state} ne "ok"').
-Can used special variables like: %{health_state}, %{device_name}
+You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--warning-service-status>
 
 Set warning threshold for status.
-Can used special variables like: %{service_status}, %{device_name}
+You can use the following variables: %{service_status}, %{device_name}
 
 =item B<--critical-service-status>
 
 Set critical threshold for status (Default: '%{service_status} ne "running"').
-Can used special variables like: %{service_status}, %{device_name}
+You can use the following variables: %{service_status}, %{device_name}
 
 =back
 

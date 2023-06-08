@@ -262,17 +262,17 @@ Filter virtual servers by vdom name.
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{state}, %{name}, %{vdom}
+You can use the following variables: %{status}, %{state}, %{name}, %{vdom}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{state}, %{name}, %{vdom}
+You can use the following variables: %{status}, %{state}, %{name}, %{vdom}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} eq "unhealthy"').
-Can used special variables like: %{status}, %{state}, %{name}, %{vdom}
+You can use the following variables: %{status}, %{state}, %{name}, %{vdom}
 
 =item B<--warning-*> B<--critical-*>
 

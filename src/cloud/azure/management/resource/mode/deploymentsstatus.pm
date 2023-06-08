@@ -179,12 +179,12 @@ Example: --filter-counters='^total-succeeded$'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} ne "Succeeded"').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 

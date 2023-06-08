@@ -264,17 +264,17 @@ Filter based on IP of peers (regexp allowed)
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -161,17 +161,17 @@ Example: --filter-counters='^status$'
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: none).
-Can used special variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{state} =~ /initializing|recovering/i').
-Can used special variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} =~ /disabledNeedsResync|uninitialized/i').
-Can used special variables like: %{state}
+You can use the following variables: %{state}
 
 =item B<--warning-*> B<--critical-*>
 

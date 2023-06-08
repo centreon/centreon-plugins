@@ -169,12 +169,12 @@ Filter node name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{dep_status}, %{display}
+You can use the following variables: %{dep_status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{dep_status} =~ /false/i').
-Can used special variables like: %{dep_status}, %{display}
+You can use the following variables: %{dep_status}, %{display}
 
 =item B<--warning-*>
 

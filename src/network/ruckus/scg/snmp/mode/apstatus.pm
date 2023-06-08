@@ -156,12 +156,12 @@ Filter by AP name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{configuration_status} !~ /^Up-to-date$/i').
-Can used special variables like: %{connection_status}, %{registration_status}, %{configuration_status}, %{display}
+You can use the following variables: %{connection_status}, %{registration_status}, %{configuration_status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{connection_status} =~ /^Disconnect$/i').
-Can used special variables like: %{connection_status}, %{registration_status}, %{configuration_status}, %{display}
+You can use the following variables: %{connection_status}, %{registration_status}, %{configuration_status}, %{display}
 
 =back
 

@@ -147,12 +147,12 @@ Filter node name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{type}, %{status}, %{reason}, %{message}, %{name}.
+You can use the following variables: %{type}, %{status}, %{reason}, %{message}, %{name}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '(%{type} =~ /Ready/i && %{status} !~ /True/i) || (%{type} =~ /.*Pressure/i && %{status} !~ /False/i)').
-Can used special variables like: %{type}, %{status}, %{reason}, %{message}, %{name}.
+You can use the following variables: %{type}, %{status}, %{reason}, %{message}, %{name}.
 
 =back
 

@@ -221,7 +221,7 @@ Check metrics about records statistics in Kinesis streams.
 
 =item B<--name>
 
-Set the stream name (Required) (Can be multiple).
+Set the stream name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

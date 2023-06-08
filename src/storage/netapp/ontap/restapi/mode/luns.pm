@@ -115,17 +115,17 @@ Filter LUN name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{container_state}, %{display}
+You can use the following variables: %{state}, %{container_state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{container_state}, %{display}
+You can use the following variables: %{state}, %{container_state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /online/i').
-Can used special variables like: %{state}, %{container_state}, %{display}
+You can use the following variables: %{state}, %{container_state}, %{display}
 
 =back
 

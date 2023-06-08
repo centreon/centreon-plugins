@@ -172,12 +172,12 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--storage-type>
 
 Set the storage type of the bucket (Default: 'StandardStorage')
-(Can be multiple: 'StandardStorage', 'StandardIAStorage', 'ReducedRedundancyStorage').
+((can be defined multiple times): 'StandardStorage', 'StandardIAStorage', 'ReducedRedundancyStorage').
 
 =item B<--warning-$metric$-$storagetype$-$statistic$>
 

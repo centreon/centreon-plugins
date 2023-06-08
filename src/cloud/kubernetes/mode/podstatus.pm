@@ -298,29 +298,29 @@ Filter pod namespace (can be a regexp).
 
 =item B<--extra-filter>
 
-Add an extra filter based on labels (Can be multiple)
+Add an extra filter based on labels (can be defined multiple times)
 
 Example : --extra-filter='app=mynewapp'
 
 =item B<--warning-pod-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{name}, %{namespace}.
+You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--critical-pod-status>
 
 Set critical threshold for status (Default: '%{status} !~ /running/i').
-Can used special variables like: %{status}, %{name}, %{namespace}.
+You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--warning-container-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{name}.
+You can use the following variables: %{status}, %{name}.
 
 =item B<--critical-container-status>
 
 Set critical threshold for status (Default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
-Can used special variables like: %{status}, %{state}, %{name}.
+You can use the following variables: %{status}, %{state}, %{name}.
 
 =item B<--warning-*>
 

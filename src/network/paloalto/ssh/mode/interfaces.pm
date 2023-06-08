@@ -132,17 +132,17 @@ Filter interface name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
+You can use the following variables: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
+You can use the following variables: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "active"').
-Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
+You can use the following variables: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

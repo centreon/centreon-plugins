@@ -252,12 +252,12 @@ Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{status}, %{schedulable}
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
-Can used special variables like: %{display}, %{status}, %{schedulable}
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--warning-allocated-pods>
 
@@ -273,13 +273,13 @@ Units of thresholds (Default: '') (Can be '%').
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

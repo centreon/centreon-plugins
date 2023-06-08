@@ -206,17 +206,17 @@ Filter servers by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
+You can use the following variables: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
+You can use the following variables: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
+You can use the following variables: %{running_status}, %{is_maintenance}, %{up2date}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

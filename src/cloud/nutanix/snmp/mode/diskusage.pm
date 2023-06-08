@@ -354,12 +354,12 @@ Filter controllervm name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{crtName}, %{diskId}
+You can use the following variables: %{state}, %{crtName}, %{diskId}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{crtName}, %{diskId}
+You can use the following variables: %{state}, %{crtName}, %{diskId}
 
 =item B<--warning-*>
 

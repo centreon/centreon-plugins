@@ -251,7 +251,7 @@ Microsoft Office 365 Management API
 
 To connect to the Office 365 Management API, you must register an application.
 
-Follow the 'How-to guide' in https://docs.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#register-your-application-in-azure-ad
+Follow the 'How-to guide' at https://docs.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#register-your-application-in-azure-ad
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'.
 

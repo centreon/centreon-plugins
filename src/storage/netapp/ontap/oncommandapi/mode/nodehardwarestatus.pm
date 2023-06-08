@@ -182,13 +182,13 @@ Can be: 'failed-fans', 'psu'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{temperature}, %{battery_status}
+You can use the following variables: %{status}, %{temperature}, %{battery_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /not healthy/i || %{temperature} !~ /ok/i ||
 %{battery_status} !~ /battery_ok|battery_fully_charge|battery_over_charged/i').
-Can used special variables like: %{status}, %{temperature}, %{battery_status}
+You can use the following variables: %{status}, %{temperature}, %{battery_status}
 
 =back
 

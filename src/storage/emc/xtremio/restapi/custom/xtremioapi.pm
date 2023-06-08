@@ -195,7 +195,7 @@ sub get_details_lookup_clusters {
     }
     
     # object is not found.
-    $self->{output}->add_option_msg(short_msg => "xtremio api issue: cannot found object details");
+    $self->{output}->add_option_msg(short_msg => "xtremio api issue: cannot find object details");
     $self->{output}->option_exit();
 }
 

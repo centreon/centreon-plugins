@@ -254,22 +254,22 @@ Example: --filter-counters='status'
 =item B<--warning-device-status>
 
 Set warning threshold (Default: '%{status} =~ /warning/').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-device-status>
 
 Set critical threshold (Default: '%{status} =~ /error/').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-process-status>
 
 Set warning threshold.
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--critical-process-status>
 
 Set critical threshold.
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

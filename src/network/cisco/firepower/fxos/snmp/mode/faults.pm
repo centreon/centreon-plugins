@@ -225,12 +225,12 @@ Check faults.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /minor|warning/).
-Can used special variables like: %{description}, %{object}, %{severity}, %{type}, %{acknowledged}, %{since}
+You can use the following variables: %{description}, %{object}, %{severity}, %{type}, %{acknowledged}, %{since}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /major|critical/').
-Can used special variables like: %{description}, %{object}, %{severity}, %{type}, %{since}
+You can use the following variables: %{description}, %{object}, %{severity}, %{type}, %{since}
 
 =item B<--timezone>
 

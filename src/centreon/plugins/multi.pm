@@ -108,13 +108,14 @@ Check multiple modes at once.
 
 =item B<--modes-exec>
 
-Which modes to select (separated by coma).
+Modes to use, separated by commas.
 Example for linux: --modes-exec=cpu,memory,storage,interfaces
 
 =item B<--option-mode>
 
-Set options for a specifi mode (can be multiple).
-Example interfaces and storage snmp:
+Define options for the modes selected in --modes-exec.
+The option can be used several times.
+E.g.: to define two options for the interfaces mode and one for the storage mode:
 --option-mode='interfaces,--statefile-dir=/tmp' --option-mode='interfaces,--add-traffic' --option-mode='storage,--statefile-dir=/tmp'
 
 =back

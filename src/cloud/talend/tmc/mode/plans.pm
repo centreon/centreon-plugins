@@ -365,17 +365,17 @@ Select the unit for last execution time threshold. May be 's' for seconds, 'm' f
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last plan execution status.
-Can used special variables like: %{status}, %{planName}
+You can use the following variables: %{status}, %{planName}
 
 =item B<--warning-execution-status>
 
 Set warning threshold for last plan execution status.
-Can used special variables like: %{status}, %{planName}
+You can use the following variables: %{status}, %{planName}
 
 =item B<--critical-execution-status>
 
 Set critical threshold for last plan execution status (Default: '{status} =~ /execution_failed/i').
-Can used special variables like: %{status}, %{planName}
+You can use the following variables: %{status}, %{planName}
 
 =item B<--warning-*> B<--critical-*>
 

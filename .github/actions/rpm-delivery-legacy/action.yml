@@ -1,0 +1,96 @@
+name: "rpm-delivery-legacy"
+description: "rpm delivery in legacy repositories"
+inputs:
+  module_name:
+    description: "The package module name"
+    required: true
+  major_version:
+    description: "The major version"
+    required: true
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  cache_key:
+    description: "The cached package key"
+    required: true
+  yum_repo_url:
+    description: "The legacy yum repo url"
+    required: true
+  update_repo_path:
+    description: "The update repo script path"
+    required: true
+  cloudfront_id:
+    description: "The cloudfront ID for repo url"
+    required: true
+  yum_repo_address:
+    description: "The legacy yum repo address"
+    required: true
+  yum_repo_key:
+    description: "The repo key"
+    required: true
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Use cache RPM files
+      uses: actions/cache@v3
+      with:
+        path: ./*.rpm
+        key: ${{ inputs.cache_key }}
+
+    - name: Setup awscli
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        sudo unzip -q awscliv2.zip
+        sudo ./aws/install
+      shell: bash
+
+    - name: Publish RPMs to standard repositories
+      run: |
+        FILES="*.rpm"
+
+        REPOTYPE="${{ inputs.stability }}"
+        PROJECT_PATH="standard"
+        DISTRIB="${{ inputs.distrib }}"
+        ARCH="noarch"
+
+        eval `ssh-agent`
+        ssh-add - <<< "${{ inputs.yum_repo_key }}"
+
+        echo "Delivering to ${{ inputs.major_version }} $REPOTYPE"
+
+        if [ "$REPOTYPE" == "stable" ]; then
+          TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH/RPMS"
+        else
+          TARGET="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH/${{ inputs.module_name }}"
+          PROJECT_LOCATION="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH/${{ inputs.module_name }}"
+        fi
+
+        echo "[DEBUG] - Target : $TARGET"
+        echo "[DEBUG] - PROJECT_LOCATION : $PROJECT_LOCATION"
+
+        ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" mkdir -p "$TARGET"
+        scp -o StrictHostKeyChecking=no ./*.rpm "${{ inputs.yum_repo_address }}:$TARGET"
+
+        # Update repository metadata
+        METADATAS="/srv/centreon-yum/yum.centreon.com/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH"
+        sleep $((RANDOM % 120)) # wait random time to avoid simultaneous createrepo
+        ssh -o StrictHostKeyChecking=no "${{ inputs.yum_repo_address }}" "sh "${{ inputs.update_repo_path }}" $METADATAS" 2>&-
+
+        # Invalidate cloudfront cache
+        ID="${{ inputs.cloudfront_id }}"
+        PATHS="/$PROJECT_PATH/${{ inputs.major_version }}/$DISTRIB/$REPOTYPE/$ARCH/*"
+        ITERATIONS=1
+
+        until aws cloudfront create-invalidation --distribution-id "$ID" --paths "$PATHS"; do
+          if [ ${ITERATIONS} -eq 10 ]; then
+            return 0
+          fi
+          echo "couldn't invalidate cache, AWS quota might have been reached, retrying in 30 seconds..."
+          sleep 30s
+          ITERATIONS=$((ITERATIONS+1))
+        done
+      shell: bash

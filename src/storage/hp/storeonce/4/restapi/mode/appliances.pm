@@ -232,17 +232,17 @@ Filter appliances by hostname.
 =item B<--unknown-service-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{service}, %{status}
+You can use the following variables: %{service}, %{status}
 
 =item B<--warning-service-status>
 
 Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{service}, %{status}
+You can use the following variables: %{service}, %{status}
 
 =item B<--critical-service-status>
 
 Set critical threshold for status (Default: '%{status} =~ /critical/i').
-Can used special variables like: %{service}, %{status}
+You can use the following variables: %{service}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

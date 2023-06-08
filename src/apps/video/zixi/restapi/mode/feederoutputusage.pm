@@ -162,12 +162,12 @@ Can be: 'current-birate'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{active}, %{error}, %{con_stat}.
+You can use the following variables: %{name}, %{active}, %{error}, %{con_stat}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: -).
-Can used special variables like: %{name}, %{active}, %{error}, %{con_stat}.
+You can use the following variables: %{name}, %{active}, %{error}, %{con_stat}.
 
 =back
 

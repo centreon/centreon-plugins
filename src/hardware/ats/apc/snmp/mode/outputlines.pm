@@ -199,12 +199,12 @@ Can be: 'voltage', 'current', 'power', 'load', 'load-capacity'.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /nearoverload/').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /^(lowload|overload)$/').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =back
 

@@ -94,17 +94,17 @@ Check output source status.
 =item B<--unknown-source-status>
 
 Set unknown threshold for status (Default: '%{status} =~ /other/')
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-source-status>
 
 Set warning threshold for status (Default: '%{status} =~ /bypass|battery|booster|reducer/')
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-source-status>
 
 Set critical threshold for status (Default: '%{status} =~ /none/')
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 

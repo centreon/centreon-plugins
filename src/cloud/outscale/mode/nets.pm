@@ -145,17 +145,17 @@ Nets tag to be used for the name (Default: 'name').
 =item B<--unknown-net-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{netName}
+You can use the following variables: %{state}, %{netName}
 
 =item B<--warning-net-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{netName}
+You can use the following variables: %{state}, %{netName}
 
 =item B<--critical-net-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{netName}
+You can use the following variables: %{state}, %{netName}
 
 =item B<--warning-*> B<--critical-*>
 

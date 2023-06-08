@@ -178,17 +178,17 @@ Filter disks by disk id (can be a regexp).
 =item B<--unknown-disks-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{id}
+You can use the following variables: %{status}, %{id}
 
 =item B<--warning-disk-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{id}
+You can use the following variables: %{status}, %{id}
 
 =item B<--critical-disk-status>
 
 Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}, %{id}
+You can use the following variables: %{status}, %{id}
 
 =item B<--warning-*> B<--critical-*>
 

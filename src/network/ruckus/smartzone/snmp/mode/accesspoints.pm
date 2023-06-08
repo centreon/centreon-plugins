@@ -221,17 +221,17 @@ Filter by access point name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{config_status}, %{connection_status}, %{registration_status}
+You can use the following variables: %{config_status}, %{connection_status}, %{registration_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like:  %{config_status}, %{connection_status}, %{registration_status}
+You can use the following variables:  %{config_status}, %{connection_status}, %{registration_status}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like:  %{config_status}, %{connection_status}, %{registration_status}
+You can use the following variables:  %{config_status}, %{connection_status}, %{registration_status}
 
 =item B<--warning-*> B<--critical-*>
 

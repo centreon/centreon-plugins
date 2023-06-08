@@ -293,32 +293,32 @@ Filter service name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{state}, %{license_error}, %{display}
+You can use the following variables: %{status}, %{state}, %{license_error}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{state}, %{license_error}, %{display}
+You can use the following variables: %{status}, %{state}, %{license_error}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "running" or %{status} ne "online"').
-Can used special variables like: %{status}, %{state}, %{license_error}, %{display}
+You can use the following variables: %{status}, %{state}, %{license_error}, %{display}
 
 =item B<--unknown-aep-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{link_state}, %{session_state}, %{display}
+You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--warning-aep-status>
 
 Set warning threshold for status.
-Can used special variables like: %{link_state}, %{session_state}, %{display}
+You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--critical-aep-status>
 
 Set critical threshold for status (Default: '%{link_state} ne "online" or %{session_state} ne "online"').
-Can used special variables like: %{link_state}, %{session_state}, %{display}
+You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

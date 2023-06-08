@@ -529,7 +529,7 @@ Example: --filter-counters='rate|latency'
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{type},  
+You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 
 'delete-pending', 'import-pending', 'creation-failed', 'recovery'.
@@ -544,7 +544,7 @@ Can used special variables like: %{status}, %{type},
 Set critical threshold for status (Default: '%{status} =~ /creation-failed/i | 
 %{backup_status} =~ /failed/i | %{export_status} =~ /failed/i | 
 %{import_status} =~ /failed/i').
-Can used special variables like: %{status}, %{type},  
+You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 
 'delete-pending', 'import-pending', 'creation-failed', 'recovery'.

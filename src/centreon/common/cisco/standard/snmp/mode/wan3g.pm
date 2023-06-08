@@ -359,77 +359,77 @@ Filter by name (can be a regexp).
 =item B<--unknown-modem-status>
 
 Set unknown threshold for status (Default: '%{modem_status} =~ /unknown/i').
-Can used special variables like: %{modem_status}, %{display}
+You can use the following variables: %{modem_status}, %{display}
 
 =item B<--warning-modem-status>
 
 Set warning threshold for status (Default: '%{modem_status} =~ /lowPowerMode/i').
-Can used special variables like: %{modem_status}, %{display}
+You can use the following variables: %{modem_status}, %{display}
 
 =item B<--critical-modem-status>
 
 Set critical threshold for status (Default: '%{modem_status} =~ /offLine/i').
-Can used special variables like: %{modem_status}, %{display}
+You can use the following variables: %{modem_status}, %{display}
 
 =item B<--unknown-connection-status>
 
 Set unknown threshold for status (Default: '%{connection_status} =~ /unknown/i').
-Can used special variables like: %{connection_status}, %{display}
+You can use the following variables: %{connection_status}, %{display}
 
 =item B<--warning-connection-status>
 
 Set warning threshold for status.
-Can used special variables like: %{connection_status}, %{display}
+You can use the following variables: %{connection_status}, %{display}
 
 =item B<--critical-connection-status>
 
 Set critical threshold for status (Default: '%{connection_status} =~ /inactive|idle|disconnected|error/i').
-Can used special variables like: %{connection_status}, %{display}
+You can use the following variables: %{connection_status}, %{display}
 
 =item B<--unknown-sim-status>
 
 Set unknown threshold for status (Default: '%{sim_status} =~ /unknown/i').
-Can used special variables like: %{sim_status}, %{display}
+You can use the following variables: %{sim_status}, %{display}
 
 =item B<--warning-sim-status>
 
 Set warning threshold for status.
-Can used special variables like: %{sim_status}, %{display}
+You can use the following variables: %{sim_status}, %{display}
 
 =item B<--critical-sim-status>
 
 Set critical threshold for status (Default: '%{sim_status} !~ /ok|unknown/i').
-Can used special variables like: %{sim_status}, %{display}
+You can use the following variables: %{sim_status}, %{display}
 
 =item B<--unknown-radio-status>
 
 Set unknown threshold for status (Default: '%{current_band} =~ /unknown/i').
-Can used special variables like: %{current_band}, %{channel_number}, %{display}
+You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--warning-radio-status>
 
 Set warning threshold for status.
-Can used special variables like: %{current_band}, %{channel_number}, %{display}
+You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--critical-radio-status>
 
 Set critical threshold for status (Default: '%{current_band} =~ /invalid|none/i').
-Can used special variables like: %{current_band}, %{channel_number}, %{display}
+You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--unknown-network-status>
 
 Set unknown threshold for status (Default: '%{service_status} =~ /unknown/i').
-Can used special variables like: %{service_status}, %{display}
+You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-network-status>
 
 Set warning threshold for status.
-Can used special variables like: %{service_status}, %{display}
+You can use the following variables: %{service_status}, %{display}
 
 =item B<--critical-network-status>
 
 Set critical threshold for status (Default: '%{service_status} =~ /emergencyOnly|noService/i').
-Can used special variables like: %{service_status}, %{display}
+You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
