@@ -89,8 +89,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-name:s'     => { name => 'filter_name' }
     });
 
     return $self;
