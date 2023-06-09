@@ -2,6 +2,7 @@
     "dependencies": [
         "perl(SNMP)",
         "perl(DateTime)",
-        "perl(Net::NTP)"
+        "perl(Net::NTP)",
+        "perl(common::sense)"
     ]
 }
