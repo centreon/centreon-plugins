@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Veeam-Vbem-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_veeam_vbem_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/backup/veeam/vbem/restapi/"
+    ]
+}
