@@ -328,7 +328,7 @@ You can use the following variables like: %{status}, %{jobName}
 =item B<--critical-execution-status>
 
 Set critical threshold for last job execution status (Default: %{status} =~ /failed/i).
-Can used special variables like: %{status}, %{jobName}
+You can use the following variables: %{status}, %{jobName}
 
 =item B<--warning-*> B<--critical-*>
 
