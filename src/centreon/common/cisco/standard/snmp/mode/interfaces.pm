@@ -387,7 +387,8 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{e
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-traffic', 'out-traffic', 'in-traffic-limit', 'out-traffic-limit',
+'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
