@@ -323,7 +323,7 @@ You can use the following variables: %{status}, %{jobName}
 =item B<--warning-execution-status>
 
 Set warning threshold for last job execution status (Default: %{status} =~ /warning/i).
-Can used special variables like: %{status}, %{jobName}
+You can use the following variables like: %{status}, %{jobName}
 
 =item B<--critical-execution-status>
 
