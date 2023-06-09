@@ -318,7 +318,7 @@ Select the unit for last execution time threshold. May be 's' for seconds, 'm' f
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last job execution status.
-Can used special variables like: %{status}, %{jobName}
+You can use the following variables: %{status}, %{jobName}
 
 =item B<--warning-execution-status>
 
