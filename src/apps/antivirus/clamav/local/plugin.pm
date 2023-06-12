@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 
+
 package apps::antivirus::clamav::local::plugin;
 
 use strict;

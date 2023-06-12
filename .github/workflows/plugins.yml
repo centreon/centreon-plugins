@@ -162,9 +162,6 @@ jobs:
 
             echo "::group::Preparing $PLUGIN_NAME_LOWER"
 
-            mkdir centreon-plugins/plugins/$PLUGIN
-            cp -R build/$PLUGIN/*.pl centreon-plugins/plugins/$PLUGIN
-
             # Process package files
             pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
             pkg_summary=$(echo "${pkg_values[0]}")
