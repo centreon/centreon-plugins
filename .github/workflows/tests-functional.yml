@@ -1,12 +1,13 @@
-name: Run mock API server
+name: Functional tests
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - MON-**
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/functional/**'
 
 jobs:
-  test:
+  AWS_tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,13 +15,15 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "14.x"
+          node-version: "16.x"
       - name: Install Mockoon CLI
         run: npm install -D @mockoon/cli
       - name: Install perl dependencies
-        uses: perl-actions/install-with-cpm@stable
+        uses: shogo82148/actions-setup-perl@v1
         with:
-          install: |
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: |
             DateTime
             Digest::MD5
             Encode
