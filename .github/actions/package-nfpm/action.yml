@@ -10,15 +10,12 @@ inputs:
   distrib:
     description: The package distrib
     required: true
-  major_version:
-    description: The major version
-    required: true
-  minor_version:
-    description: The minor version
-    required: true
+  version:
+    description: The package version
+    required: false
   release:
-    description: The release number
-    required: true
+    description: The package release number
+    required: false
   commit_hash:
     description: The commit hash
     required: true
