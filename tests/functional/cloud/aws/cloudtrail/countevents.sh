@@ -24,7 +24,7 @@ if [[ $test_oknexttoken = "OK: Number of events: 20.00 | 'events_count'=20.00;;;
 then
   ((nb_tests_ok++))
 else
-  echo "$test_oknexttoken ko"
+  echo "test_oknexttoken ko"
   echo $test_oknexttoken
 fi
 
