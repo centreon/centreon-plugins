@@ -6,10 +6,9 @@ concurrency:
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'tests/functional/**'
+  push:
+    branches:
+      - tests*
 
 jobs:
   AWS_tests:
@@ -49,26 +48,7 @@ jobs:
 
       - name: Run Mockoon CLI
         run: npx mockoon-cli start --data tests/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
-
-      - name: Run plugin
-        run: |
-          sudo chmod -R +x tests/functional/
-          sudo mkdir -p /var/lib/centreon/centplugins/
-          sudo chmod 777 /var/lib/centreon/centplugins/
-          TESTS="$(tests/functional/cloud/aws/cloudtrail/checktrailstatus.sh)"
-          echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
-          if [[ $TESTS = "OK:"* ]]; then
-            echo "OK"
-          else
-            echo $TESTS
-            exit 1
-          fi
-          TESTS="$(tests/functional/cloud/aws/cloudtrail/countevents.sh)"
-          echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
-          if [[ $TESTS = "OK:"* ]]; then
-            echo "OK"
-          else
-            echo $TESTS
-            exit 1
-          fi
-        shell: bash
+      - name: Run Robot Frameork tests
+        uses: joonvena/robotframework-docker-action@v1.0
+        with:
+          robot_tests_dir: tests/functional
