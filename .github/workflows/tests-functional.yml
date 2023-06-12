@@ -16,8 +16,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Use Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v2
         with:
           node-version: "16.x"
@@ -46,9 +45,17 @@ jobs:
             URI
             URI::Encode
 
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Robot Framework
+        run: pip3 install robotframework
+        shell: bash
+
       - name: Run Mockoon CLI
         run: npx mockoon-cli start --data tests/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
-      - name: Run Robot Frameork tests
-        uses: joonvena/robotframework-docker-action@v1.0
-        with:
-          robot_tests_dir: tests/functional
+
+      - name: Run Robot Framework tests
+        run: robot tests/functional/
