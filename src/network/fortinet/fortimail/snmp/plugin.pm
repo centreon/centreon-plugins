@@ -39,8 +39,8 @@ sub new {
         'load'            => 'network::fortinet::fortimail::snmp::mode::load',
         'queues'          => 'network::fortinet::fortimail::snmp::mode::queues',
         'list-queues'     => 'network::fortinet::fortimail::snmp::mode::listqueues',
-        'uptime'          => 'snmp_standard::mode::uptime',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'uptime'          => 'network::fortinet::fortimail::snmp::mode::uptime',
+        'interfaces'      => 'network::fortinet::fortimail::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
     };
 
