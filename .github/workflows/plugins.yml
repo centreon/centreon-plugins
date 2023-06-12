@@ -84,17 +84,117 @@ jobs:
           fi
         shell: bash
 
-  package:
+  fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
     needs: [get-environment, get-plugins]
-    uses: ./.github/workflows/plugin-package.yml
-    with:
-      plugins: ${{ needs.get-plugins.outputs.plugins }}
-      version: ${{ needs.get-environment.outputs.version }}
-      release: ${{ needs.get-environment.outputs.release }}
-    secrets:
-      registry_username: ${{ secrets.DOCKER_REGISTRY_ID }}
-      registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Prepare FatPacker
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: App::FatPacker File::Copy::Recursive JSON
+
+      - name: Run FatPacker
+        run: |
+          COMMIT=$(git log -1 HEAD --pretty=format:%h)
+          perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+
+      - uses: actions/cache@v3
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
+  package:
+    runs-on: ubuntu-22.04
+    needs: [get-environment, get-plugins, fatpacker]
+
+    strategy:
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-centos7
+            distrib: el7
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    name: "package ${{ matrix.distrib }}"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
+      - run: |
+          for PLUGIN in ${{ needs.get-plugins.outputs.plugins }}; do
+
+            PACKAGE_PATH=$PLUGIN
+
+            if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
+                PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
+                PLUGIN=$(echo ${BASH_REMATCH[2]})
+            fi
+
+            PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
+
+            echo "::group::Preparing $PLUGIN_NAME_LOWER"
+
+            mkdir centreon-plugins/plugins/$PLUGIN
+            cp -R build/$PLUGIN/*.pl centreon-plugins/plugins/$PLUGIN
+
+            # Process package files
+            pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
+            pkg_summary=$(echo "${pkg_values[0]}")
+            plugin_name=$(echo "${pkg_values[1]}")
+            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
+            deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
+
+            sed -i "s/@NAME@/$PLUGIN_NAME_LOWER/g;" \
+              -e "s/@SUMMARY@/$pkg_summary/g" \
+              -e "s/@REQUIRES@/$deb_dependencies/g" \
+              -e "s/@CUSTOM_PKG_DATA@/$deb_custom_pkg_data/g" \
+              < packaging/centreon-plugin.yaml.template \
+              >> packaging/$PLUGIN.yaml
+
+            echo "::endgroup::"
+          done
+        shell: bash
+
+      - uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "packaging/*.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          version: ${{ needs.get-environment.outputs.version }}
+          release: ${{ needs.get-environment.outputs.release }}
+          commit_hash: ${{ github.sha }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
 
   deliver:
     needs: [get-environment, package]
