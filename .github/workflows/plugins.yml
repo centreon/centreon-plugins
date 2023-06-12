@@ -170,7 +170,8 @@ jobs:
             deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
             deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
 
-            sed -e "s/@NAME@/$PLUGIN_NAME_LOWER/g;" \
+            sed -e "s/@PLUGIN_NAME@/$PLUGIN_NAME_LOWER/g;" \
+              -e "s/@NAME@/$PLUGIN_NAME_LOWER/g;" \
               -e "s/@SUMMARY@/$pkg_summary/g" \
               -e "s/@REQUIRES@/$deb_dependencies/g" \
               -e "s/@CUSTOM_PKG_DATA@/$deb_custom_pkg_data/g" \
