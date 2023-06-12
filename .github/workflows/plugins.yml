@@ -173,8 +173,8 @@ jobs:
               -e "s/@SUMMARY@/$pkg_summary/g" \
               -e "s/@REQUIRES@/$deb_dependencies/g" \
               -e "s/@CUSTOM_PKG_DATA@/$deb_custom_pkg_data/g" \
-              < packaging/centreon-plugin.yaml.template \
-              >> packaging/$PLUGIN.yaml
+              < .github/packaging/centreon-plugin.yaml.template \
+              >> .github/packaging/$PLUGIN.yaml
 
             echo "::endgroup::"
           done
@@ -182,7 +182,7 @@ jobs:
 
       - uses: ./.github/actions/package-nfpm
         with:
-          nfpm_file_pattern: "packaging/*.yaml"
+          nfpm_file_pattern: ".github/packaging/*.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: ${{ needs.get-environment.outputs.version }}

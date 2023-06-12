@@ -15,7 +15,7 @@ homepage: "https://vmware.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "../build/@PLUGIN_NAME@/*"
+  - src: "../../build/@PLUGIN_NAME@/*"
     dst: "/usr/lib/centreon/plugins/"
 
 overrides:
