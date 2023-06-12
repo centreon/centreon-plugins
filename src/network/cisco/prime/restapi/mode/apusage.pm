@@ -236,12 +236,12 @@ Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 =item B<--warning-ap-status>
 
 Set warning threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
-Can used special variables like: %{name}, %{status}, %{controller}, %{admin_status}
+You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--critical-ap-status>
 
 Set critical threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
-Can used special variables like: %{name}, %{status}, %{controller}, %{admin_status}
+You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--reload-cache-time>
 

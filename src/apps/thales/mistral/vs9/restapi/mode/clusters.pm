@@ -291,32 +291,32 @@ Filter clusters by name.
 =item B<--unknown-cluster-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--warning-cluster-status>
 
 Set warning threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--critical-cluster-status>
 
 Set critical threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--unknown-member-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--warning-member-status>
 
 Set warning threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--critical-member-status>
 
 Set critical threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--time-contact-unit>
 

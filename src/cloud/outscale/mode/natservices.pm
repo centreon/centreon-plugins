@@ -152,17 +152,17 @@ Nat service tag to be used for the name (Default: 'name').
 =item B<--unknown-nat-service-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{state}, %{natName}
+You can use the following variables: %{state}, %{natName}
 
 =item B<--warning-nat-service-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{natName}
+You can use the following variables: %{state}, %{natName}
 
 =item B<--critical-nat-service-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{natName}
+You can use the following variables: %{state}, %{natName}
 
 =item B<--warning-*> B<--critical-*>
 

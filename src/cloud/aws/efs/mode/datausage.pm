@@ -172,7 +172,7 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for m
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

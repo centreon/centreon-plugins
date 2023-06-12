@@ -123,12 +123,12 @@ Check system board status.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /Normal/i').
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =back
 

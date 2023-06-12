@@ -193,22 +193,22 @@ Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{phase}.
+You can use the following variables: %{display}, %{phase}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{phase} !~ /Active/').
-Can used special variables like: %{display}, %{phase}
+You can use the following variables: %{display}, %{phase}
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

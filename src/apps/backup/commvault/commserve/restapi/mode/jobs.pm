@@ -266,22 +266,22 @@ Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /abnormal/i')
-Can used special variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /errors|failed/i').
-Can used special variables like: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

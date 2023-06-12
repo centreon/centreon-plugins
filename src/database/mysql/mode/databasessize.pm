@@ -36,7 +36,7 @@ sub set_counters {
             group => [
                 { name => 'global_db', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'table', display_long => 0, cb_prefix_output => 'prefix_table_output',
-                  message_multiple => 'All tables are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All tables are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -47,9 +47,8 @@ sub set_counters {
                 output_template => 'Used Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used', template => '%s', unit => 'B', 
-                      min => 0 },
-                ],
+                    { template => '%s', unit => 'B', min => 0 }
+                ]
             }
         },
         { label => 'total-free', nlabel => 'databases.space.free.bytes', set => {
@@ -57,11 +56,10 @@ sub set_counters {
                 output_template => 'Free Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free', template => '%s', unit => 'B', 
-                      min => 0 },
-                ],
+                    { template => '%s', unit => 'B', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{global_db} = [
@@ -70,9 +68,8 @@ sub set_counters {
                 output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'db-free', nlabel => 'database.space.free.bytes', set => {
@@ -80,11 +77,10 @@ sub set_counters {
                 output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{table} = [
@@ -93,9 +89,8 @@ sub set_counters {
                 output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'table-free', nlabel => 'table.space.free.bytes', set => {
@@ -103,20 +98,18 @@ sub set_counters {
                 output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'table-frag', nlabel => 'table.fragmentation.percentage', set => {
                 key_values => [ { name => 'frag' }, { name => 'display' } ],
                 output_template => 'Fragmentation: %.2f %%',
                 perfdatas => [
-                    { value => 'frag', template => '%.2f', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -157,7 +150,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-database:s' => { name => 'filter_database' },
-        'filter-table:s'    => { name => 'filter_table' },
+        'filter-table:s'    => { name => 'filter_table' }
     });
 
     return $self;

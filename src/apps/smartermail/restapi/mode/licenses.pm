@@ -92,17 +92,17 @@ Check licenses.
 =item B<--unknown-upgrade-protection-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{upgrade_protection_status}
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-upgrade-protection-status>
 
 Set warning threshold for status.
-Can used special variables like: %{upgrade_protection_status}
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--critical-upgrade-protection-status>
 
 Set critical threshold for status (Default: '%{upgrade_protection_status} =~ /expired/').
-Can used special variables like: %{upgrade_protection_status}
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-*> B<--critical-*>
 

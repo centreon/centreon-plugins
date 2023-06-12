@@ -365,32 +365,34 @@ dbi class
 
 =item B<--datasource>
 
-Datasource (required. Depends of database server).
+Database server information, mandatory if the server's address and port are not
+defined in the corresponding options. The syntax depends on the database type.
 
 =item B<--username>
 
-Database username.
+User name used to connect to the database.
 
 =item B<--password>
 
-Database password.
+Password for the defined user name.
 
 =item B<--connect-options>
 
-Add options in database connect.
+Add connection options for the DBI connect method.
 Format: name=value,name2=value2,...
 
 =item B<--connect-query>
 
-Execute a query just after connection.
+Execute a query just after the connection.
 
 =item B<--sql-errors-exit>
 
-Exit code for DB Errors (default: unknown)
+Expected status in case of DB error or timeout.
+Possible values are warning, critical and unknown (default).
 
 =item B<--timeout>
 
-Timeout in seconds for connection
+Timeout in seconds for connection.
 
 =item B<--exec-timeout>
 

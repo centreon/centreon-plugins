@@ -216,12 +216,12 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod=~".*"')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{status}, %{state}, %{reason}
+You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
-Can used special variables like: %{status}, %{state}, %{reason}
+You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>
 
@@ -233,13 +233,13 @@ Threshold critical for container restarts count.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

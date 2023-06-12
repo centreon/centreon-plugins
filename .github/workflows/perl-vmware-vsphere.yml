@@ -1,0 +1,122 @@
+name: perl-vmware-vsphere
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'dependencies/perl-vmware-vsphere/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'dependencies/perl-vmware-vsphere/**'
+    tags:
+      - perl-vmware-vsphere-*
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
+
+  get-sources:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download vsphere cli sources
+        run: |
+          wget https://gitlab.labexposed.com/centreon-lab/perl-VMware-vSphere/-/raw/master/storage/VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz
+          tar zxf VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz
+        shell: bash
+
+      - name: Build vsphere cli sources
+        run: |
+          cd vmware-vsphere-cli-distrib
+          perl Makefile.PL
+          sudo make pure_install
+        shell: bash
+
+      - name: Cache vsphere cli sources
+        uses: actions/cache/save@v3
+        with:
+          path: vmware-vsphere-cli-distrib
+          key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
+
+  package:
+    needs:
+      - get-sources
+    strategy:
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+    name: package ${{ matrix.distrib }}
+
+    uses: ./.github/workflows/package.yml
+    with:
+      nfpm_file_pattern: "dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml"
+      distrib: ${{ matrix.distrib }}
+      package_extension: ${{ matrix.package_extension }}
+      image_name: ${{ matrix.image }}
+      source_cache_key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
+      source_cache_path: vmware-vsphere-cli-distrib
+      cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+    secrets: inherit
+
+  deliver-rpm:
+    needs:
+      - get-environment
+      - package
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: perl-vmware-vsphere
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  deliver-deb:
+    needs:
+      - get-environment
+      - package
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [bullseye]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}

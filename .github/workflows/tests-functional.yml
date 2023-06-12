@@ -1,0 +1,64 @@
+name: Functional tests
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/functional/**'
+
+jobs:
+  AWS_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+      - name: Install Mockoon CLI
+        run: npm install -D @mockoon/cli
+      - name: Install perl dependencies
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: |
+            DateTime
+            Digest::MD5
+            Encode
+            HTTP::ProxyPAC
+            IO::Socket::SSL
+            JSON::XS
+            LWP::Protocol::https
+            LWP::UserAgent
+            MIME::Base64
+            Paws
+            POSIX
+            Storable
+            URI
+            URI::Encode
+      - name: Run Mockoon CLI
+        run: npx mockoon-cli start --data tests/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
+      - name: Run plugin
+        run: |
+          sudo chmod -R +x tests/functional/
+          sudo mkdir -p /var/lib/centreon/centplugins/
+          sudo chmod 777 /var/lib/centreon/centplugins/
+          TESTS="$(tests/functional/cloud/aws/cloudtrail/checktrailstatus.sh)"
+          echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
+          if [[ $TESTS = "OK:"* ]]; then
+            echo "OK"
+          else
+            echo $TESTS
+            exit 1
+          fi
+          TESTS="$(tests/functional/cloud/aws/cloudtrail/countevents.sh)"
+          echo "tests=$(echo $TESTS)" >> $GITHUB_OUTPUT
+          if [[ $TESTS = "OK:"* ]]; then
+            echo "OK"
+          else
+            echo $TESTS
+            exit 1
+          fi
+        shell: bash

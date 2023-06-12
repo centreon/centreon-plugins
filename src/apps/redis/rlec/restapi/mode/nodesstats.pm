@@ -361,7 +361,7 @@ Thresholds are on free space left.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{shard_list}, 
+You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
 'provisioning', 'decommissioning', 'down'.
@@ -369,7 +369,7 @@ Can used special variables like: %{status}, %{shard_list},
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{shard_list}, 
+You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
 'provisioning', 'decommissioning', 'down'.

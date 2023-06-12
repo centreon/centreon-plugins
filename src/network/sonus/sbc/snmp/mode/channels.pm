@@ -378,12 +378,12 @@ Filter channels by channel id (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -374,22 +374,22 @@ Set if WSUS use ssl.
 =item B<--warning-synchronisation-status>
 
 Set warning threshold for current synchronisation status (Default: '')
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--critical-synchronisation-status>
 
 Set critical threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--warning-last-synchronisation-status>
 
 Set warning threshold for current synchronisation status (Default: '')
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--critical-last-synchronisation-status>
 
 Set critical threshold for current synchronisation status (Default: '%{status} !~ /Succeeded/').
-Can used special variables like: %{status}.
+You can use the following variables: %{status}.
 
 =item B<--warning-*> B<--critical-*>
 

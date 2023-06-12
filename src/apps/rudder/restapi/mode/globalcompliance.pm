@@ -148,12 +148,12 @@ Set critical threshold on global compliance.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{detail}, %{value}
+You can use the following variables: %{detail}, %{value}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{detail}, %{value}
+You can use the following variables: %{detail}, %{value}
 
 Example :
   --critical-status='%{detail} eq "error" && %{value} > 5'

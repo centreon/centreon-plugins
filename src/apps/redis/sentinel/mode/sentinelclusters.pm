@@ -219,32 +219,32 @@ Filter clusters by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
-Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-quorum-status>
 
 Set warning threshold for quorum status.
-Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--critical-quorum-status>
 
 Set critical threshold for quorum status (Default: '%{status} =~ /noQuorum/').
-Can used special variables like: %{status}, %{cluster_name}
+You can use the following variables: %{status}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>
 

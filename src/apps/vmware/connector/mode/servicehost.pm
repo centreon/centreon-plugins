@@ -180,27 +180,27 @@ Filter services you want to check (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--warning-service-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{running}, %{label}, %{policy}
+You can use the following variables: %{running}, %{label}, %{policy}
 
 =item B<--critical-service-status>
 
 Set critical threshold for status (Default: '%{policy} =~ /^on|automatic/i && !%{running}').
-Can used special variables like: %{running}, %{label}, %{policy}
+You can use the following variables: %{running}, %{label}, %{policy}
 
 =back
 

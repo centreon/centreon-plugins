@@ -197,12 +197,12 @@ Can be: 'traffic-in', 'traffic-out'.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
+You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{connectstatus} eq "disconnected"').
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
+You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =back
 

@@ -369,12 +369,12 @@ Can be: 'cpu' (%), 'memory' (%), 'swap' (%), 'fs' (%).
 =item B<--warning-node-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-node-status>
 
 Set critical threshold for status.
-Can used special variables like: %{name}, %{state}.
+You can use the following variables: %{name}, %{state}.
 
 =back
 

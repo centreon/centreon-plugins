@@ -161,17 +161,17 @@ Filter storage name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{state}, %{display}
+You can use the following variables: %{status}, %{state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /needsAttn/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

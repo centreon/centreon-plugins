@@ -136,17 +136,17 @@ Check memory usage.
 =item B<--unknown-dimm-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-dimm-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-dimm-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{name}
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

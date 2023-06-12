@@ -255,17 +255,17 @@ Filter job type (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '')
-Can used special variables like: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
+You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
+You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{enabled} == 1 and not %{last_result} =~ /Success|None/i').
-Can used special variables like: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
+You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-total>
 

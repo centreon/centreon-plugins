@@ -22,6 +22,7 @@ package centreon::plugins::snmp;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use SNMP;
 use Socket;
 use POSIX;
@@ -54,6 +55,7 @@ sub new {
             'maxrepetitions:s'   => { name => 'maxrepetitions', default => 50 },
             'subsetleef:s'       => { name => 'subsetleef', default => 50 },
             'subsettable:s'      => { name => 'subsettable', default => 100 },
+            'snmp-cache-file:s'  => { name => 'snmp_cache_file' },
             'snmp-autoreduce:s'  => { name => 'snmp_autoreduce' },
             'snmp-force-getnext' => { name => 'snmp_force_getnext' },
             'snmp-username:s'    => { name => 'snmp_security_name' },
@@ -221,6 +223,24 @@ sub autoreduce_leef {
     return 0;
 }
 
+sub get_leef_cache {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    foreach my $oid (@{$options{oids}}) {
+        if (defined($self->{snmp_cache}->{$oid})) {
+            $results->{$oid} = $self->{snmp_cache}->{$oid};
+        }
+    }
+
+    if ($options{nothing_quit} == 1 && scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'SNMP GET Request: Cant get a single value.');
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
+
+    return $results;
+}
+
 sub get_leef {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -245,6 +265,10 @@ sub get_leef {
         }
         push @{$options{oids}}, @{$self->{oids_loaded}};
         @{$self->{oids_loaded}} = ();
+    }
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_leef_cache(oids => $options{oids}, nothing_quit => $nothing_quit);
     }
 
     my $results = {};
@@ -396,6 +420,43 @@ sub multiple_find_bigger {
     return $getting->{pop(@values)};
 }
 
+sub get_multiple_table_cache {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    foreach my $entry (@{$options{oids}}) {
+        my $result = $self->get_table_cache(
+            oid => $entry->{oid},
+            start => $entry->{start},
+            end => $entry->{end},
+            nothing_quit => 0
+        );
+        if ($options{return_type} == 0) {
+            $results->{ $entry->{oid} } = $result;
+        } else {
+            $results = { %$results, %$result };
+        }
+    }
+
+    my $total = 0;
+    if ($options{nothing_quit} == 1) {
+        if ($options{return_type} == 1) {
+            $total = scalar(keys %$results);
+        } else {
+            foreach (keys %$results) {
+                $total += scalar(keys %{$results->{$_}});
+            }
+        }
+
+        if ($total == 0) {
+            $self->{output}->add_option_msg(short_msg => 'SNMP Table Request: Cant get a single value.');
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+        }
+    }
+
+    return $results;
+}
+
 sub get_multiple_table {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -407,6 +468,14 @@ sub get_multiple_table {
     my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
     my ($nothing_quit) = (defined($options{nothing_quit}) && $options{nothing_quit} == 1) ? 1 : 0;
     $self->set_error();
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_multiple_table_cache(
+            oids => $options{oids},
+            return_type => $return_type,
+            nothing_quit => $nothing_quit
+        );
+    }
 
     my $working_oids = {};
     my $results = {};
@@ -429,7 +498,7 @@ sub get_multiple_table {
         }
 
         if ($return_type == 0) {
-            $results->{$entry->{oid}} = {};
+            $results->{ $entry->{oid} } = {};
         }
     }
 
@@ -560,6 +629,29 @@ sub get_multiple_table {
     return $results;
 }
 
+sub get_table_cache {
+    my ($self, %options) = @_;
+
+    my $branch = defined($options{start}) ? $options{start} : $options{oid};
+
+    my $results = {};
+    foreach my $oid ($self->oid_lex_sort(keys %{$self->{snmp_cache}})) {
+        if ($oid =~ /^$branch\./) {
+            $results->{$oid} = $self->{snmp_cache}->{$oid};
+            if (defined($options{end}) && $self->check_oid_up(current => $oid, end => $options{end})) {
+                last;
+            } 
+        }
+    }
+
+    if ($options{nothing_quit} == 1 && scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'SNMP Table Request: Cant get a single value.');
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
+
+    return $results;
+}
+
 sub get_table {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -576,6 +668,15 @@ sub get_table {
     }
     if (defined($options{end})) {
         $options{end} = $self->clean_oid($options{end});
+    }
+
+    if ($self->{use_snmp_cache} == 1) {
+        return $self->get_table_cache(
+            oid => $options{oid},
+            start => $options{start},
+            end => $options{end},
+            nothing_quit => $nothing_quit
+        );
     }
 
     # we use a medium (UDP have a PDU limit. SNMP protcol cant send multiples for one request)
@@ -597,7 +698,7 @@ sub get_table {
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
-    my $main_indice = $1 . "." . $2;
+    my $main_indice = $1 . '.' . $2;
     my $results = {};
 
     # Quit if base not the same or 'ENDOFMIBVIEW' value
@@ -751,7 +852,28 @@ sub check_oid_up {
 
 sub check_options {
     my ($self, %options) = @_;
-    # $options{option_results} = ref to options result
+
+    $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
+
+    $self->{use_snmp_cache} = 0;
+    if (defined($options{option_results}->{snmp_cache_file}) && $options{option_results}->{snmp_cache_file} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'JSON::XS',
+            error_msg => "Cannot load module 'JSON::XS'."
+        );
+        my $content = centreon::plugins::misc::slurp_file(output => $self->{output}, file => $options{option_results}->{snmp_cache_file});
+        eval {
+            $self->{snmp_cache} = JSON::XS->new->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json cache file: $@");
+            $self->{output}->option_exit();
+        }
+
+        $self->{use_snmp_cache} = 1;
+        return ;
+    }
 
     if (!defined($options{option_results}->{host})) {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
@@ -768,7 +890,6 @@ sub check_options {
     $self->{maxrepetitions} = $options{option_results}->{maxrepetitions};
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
-    $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
     $self->{snmp_autoreduce} = 0;
     $self->{snmp_autoreduce_divisor} = 2;
     if (defined($options{option_results}->{snmp_autoreduce})) {
@@ -985,27 +1106,29 @@ snmp class
 
 =item B<--hostname>
 
-Hostname to query (required).
+Name or address of the host to monitor (mandatory).
 
 =item B<--snmp-community>
 
-Read community (defaults to public).
+SNMP community (default value: public). It is recommended to use a read-only
+community.
 
 =item B<--snmp-version>
 
-Version: 1 for SNMP v1 (default), 2 for SNMP v2c, 3 for SNMP v3.
+Version of the SNMP protocol. 1 for SNMP v1 (default), 2 for SNMP v2c, 3 for SNMP v3.
 
 =item B<--snmp-port>
 
-Port (default: 161).
+UDP port to send the SNMP request to (default: 161).
 
 =item B<--snmp-timeout>
 
-Timeout in secondes (default: 1) before retries.
+Time to wait before sending the request again if no reply has been received,
+in seconds (default: 1). See also --snmp-retries.
 
 =item B<--snmp-retries>
 
-Set the number of retries (default: 5) before failure.
+Maximum number of retries (default: 5).
 
 =item B<--maxrepetitions>
 
@@ -1017,77 +1140,91 @@ How many oid values per SNMP request (default: 50) (for get_leef method. Be caut
 
 =item B<--snmp-autoreduce>
  
-Auto reduce SNMP request size in case of SNMP errors (By default, the divisor is 2).
+Progressively reduce the number requested OIDs in bulk mode. Use it in case of
+SNMP errors (By default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 
-Use snmp getnext function (even in snmp v2c and v3).
+Use snmp getnext function in snmp v2c and v3. This will request one OID at a
+time.
+
+=item B<--snmp-cache-file>
+
+Use SNMP cache file.
 
 =item B<--snmp-username>
 
-Security name (only for SNMP v3).
+SNMP v3 only:
+User name (securityName). 
 
 =item B<--authpassphrase>
 
-Authentication protocol pass phrase.
+SNMP v3 only:
+Pass phrase hashed using the authentication protocol defined in the 
+--authprotocol option.
 
 =item B<--authprotocol>
 
+SNMP v3 only:
 Authentication protocol: MD5|SHA. Since net-snmp 5.9.1: SHA224|SHA256|SHA384|SHA512.
 
 =item B<--privpassphrase>
 
-Privacy protocol pass phrase
+SNMP v3 only:
+Privacy pass phrase (privPassword) to encrypt messages using the protocol
+defined in the --privprotocol option.
 
 =item B<--privprotocol>
 
-Privacy protocol: DES|AES. Since net-snmp 5.9.1: AES192|AES192C|AES256|AES256C.
+SNMP v3 only:
+Privacy protocol (privProtocol) used to encrypt messages.
+Supported protocols are: DES|AES and since net-snmp 5.9.1: AES192|AES192C|AES256|AES256C.
 
 =item B<--contextname>
 
-Context name
+SNMP v3 only:
+Context name (contextName), if relevant for the monitored host.
 
 =item B<--contextengineid>
 
-Context engine ID
+SNMP v3 only:
+Context engine ID (contextEngineID), if relevant for the monitored host, given 
+as a hexadecimal string.
 
 =item B<--securityengineid>
 
-Security engine ID
+SNMP v3 only:
+Security engine ID, given as a hexadecimal string.
 
 =item B<--snmp-errors-exit>
 
-Exit code for SNMP Errors (default: unknown)
+Expected status in case of SNMP error or timeout.
+Possible values are warning, critical and unknown (default).
 
 =item B<--snmp-tls-transport>
 
-TLS Transport communication used (can be: 'dtlsudp', 'tlstcp').
+Transport protocol for TLS communication (can be: 'dtlsudp', 'tlstcp').
 
 =item B<--snmp-tls-our-identity>
 
-Our X.509 identity to use, which should either be a fingerprint or the
-filename that holds the certificate.
+X.509 certificate to identify ourselves. Can be the path to the certificate file
+or its contents.
 
 =item B<--snmp-tls-their-identity>
 
-The remote server's identity to connect to, specified as either a
-fingerprint or a file name.  Either this must be specified, or the
-hostname below along with a trust anchor.
+X.509 certificate to identify the remote host. Can be the path to the 
+certificate file or its contents. This option is unnecessary if the certificate
+is already trusted by your system.
 
 =item B<--snmp-tls-their-hostname>
 
-The remote server's hostname that is expected.  If their certificate
-was signed by a CA then their hostname presented in the certificate
-must match this value or the connection fails to be established (to
-avoid man-in-the-middle attacks).
+Common Name (CN) expected in the certificate sent by the host if it differs from
+the value of the --hostname parameter.
 
 =item B<--snmp-tls-trust-cert>
 
-A trusted certificate to use as trust anchor (like a CA certificate)
-for verifying a remote server's certificate. If a CA certificate is
-used to validate a certificate then the TheirHostname parameter must
-also be specified to ensure their presented hostname in the certificate
-matches.
+A trusted CA certificate used to verify a remote host's certificate. 
+If you use this option, you must also  define --snmp-tls-their-hostname.
 
 =back
 

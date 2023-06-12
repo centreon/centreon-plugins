@@ -127,7 +127,7 @@ See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metr
 
 =item B<--service>
 
-Set the Amazon service (Required) (Can be multiple).
+Set the Amazon service (Required) (can be defined multiple times).
 
 =item B<--warning-billing>
 

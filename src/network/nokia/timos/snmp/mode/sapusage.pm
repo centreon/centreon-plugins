@@ -218,12 +218,12 @@ Check service access point usage.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admin_state} eq "up" and %{oper_state} !~ /up/').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 

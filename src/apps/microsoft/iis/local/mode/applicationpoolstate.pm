@@ -143,17 +143,17 @@ Filter application pool name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =back
 

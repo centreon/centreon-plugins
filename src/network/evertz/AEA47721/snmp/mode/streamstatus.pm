@@ -170,22 +170,22 @@ Check video/audio stream status.
 =item B<--warning-audio-status>
 
 Set warning threshold for device status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-audio-status>
 
 Set critical threshold for device status (Default: '%{status} =~ /loss/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-video-status>
 
 Set warning threshold for device connection status.
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-video-status>
 
 Set critical threshold for device connection status (Default: '%{status} =~ /loss|unknown/i').
-Can used special variables like: %{status}, %{display}
+You can use the following variables: %{status}, %{display}
 
 =back
 

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Cloudtrail-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS using Cloudtrail API",
+    "plugin_name": "centreon_aws_cloudtrail_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/cloudtrail/"
+    ]
+}

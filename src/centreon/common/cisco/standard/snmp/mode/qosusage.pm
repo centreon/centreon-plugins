@@ -431,7 +431,7 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     if (scalar(keys %{$self->{interface_classmap}}) <= 0 && !defined($options{disco})) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot found classmap.');
+        $self->{output}->add_option_msg(short_msg => 'Cannot find classmap.');
         $self->{output}->option_exit();
     }
 }

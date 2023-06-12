@@ -240,24 +240,24 @@ Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
-Can used special variables like: %{display}, %{desired}, %{current},
+You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{available} < %{desired}').
-Can used special variables like: %{display}, %{desired}, %{current},
+You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

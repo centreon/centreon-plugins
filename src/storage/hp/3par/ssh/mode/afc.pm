@@ -281,7 +281,7 @@ Filter volumes by name (can be a regexp).
 Set thresholds for status (Default critical: '%{status} !~ /normal/i')
 
 
-Can used special variables like: %{status}, %{node_id}
+You can use the following variables: %{status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>
 

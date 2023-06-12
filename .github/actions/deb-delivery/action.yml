@@ -1,5 +1,5 @@
-name: "deb-package"
-description: "Package DEB Centreon"
+name: "deb-delivery"
+description: "Deliver DEB packages"
 inputs:
   distrib:
     description: "The distribution used for packaging"
@@ -37,18 +37,4 @@ runs:
     - name: Publish DEBs to artifactory
       run: |
         jf rt upload "*.deb" "apt-plugins-${{ inputs.stability }}/pool/" --deb "${{ inputs.distrib }}/main/all"
-      shell: bash
-
-    - name: Publish DEBs to Nexus
-      run: |
-        for MAJOR in "22.04" "22.10"; do
-          echo "Delivering to $MAJOR ${{ inputs.stability }}"
-
-          FOLDER_SUFFIX="-${{ inputs.stability }}"
-          if [[ "${{ inputs.stability }}" == "stable" ]]; then
-            FOLDER_SUFFIX=""
-          fi
-
-          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 sh -c "curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary '@%' https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/ >/dev/null || exit 255" || break
-        done
       shell: bash

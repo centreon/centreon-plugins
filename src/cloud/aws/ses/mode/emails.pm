@@ -229,7 +229,7 @@ See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activ
 
 =item B<--dimension>
 
-Set SES dimensions (Can be multiple). Syntax: 
+Set SES dimensions (can be defined multiple times). Syntax: 
 --dimension='DimensionName1=Value1' --dimension='DimensionName2=Value2'.
 
 =item B<--warning-emails-*>

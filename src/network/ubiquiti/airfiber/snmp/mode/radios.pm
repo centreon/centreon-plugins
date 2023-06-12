@@ -222,17 +222,17 @@ Filter interface by name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{enabled}, %{state}, %{name}
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{enabled}, %{state}, %{name}
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{enabled} eq "yes" and %{state} eq "down"').
-Can used special variables like: %{enabled}, %{state}, %{name}
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 
