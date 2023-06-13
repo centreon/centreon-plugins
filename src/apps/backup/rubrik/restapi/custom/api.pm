@@ -334,7 +334,6 @@ sub request_api_paginate {
             $get_param = [@{$options{get_param}}, 'cursor=' . $decoded->{cursor}];
         } elsif (defined($decoded->{afterId})) {
             $get_param = [@{$options{get_param}}, 'cursor=' . $decoded->{afterId}];
-            last;
         } elsif (defined($decoded->{links}->{next})) {
             $full_url = $decoded->{links}->{next}->{href};
         }
