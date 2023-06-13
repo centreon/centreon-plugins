@@ -40,6 +40,12 @@ overrides:
       - perl(Storable)
       - perl(POSIX)
       - perl(Encode)
+    conflicts:
+      [@RPM_CONFLICTS@]
+    replaces:
+      [@RPM_REPLACES@]
+    provides:
+      [@RPM_PROVIDES@]
   deb:
     depends:
       - libpod-parser-perl
@@ -59,6 +65,10 @@ overrides:
       - libdatetime-perl
     conflicts:
       [@DEB_CONFLICTS@]
+    replaces:
+      [@DEB_REPLACES@]
+    provides:
+      [@DEB_PROVIDES@]
 
 rpm:
   compression: zstd
