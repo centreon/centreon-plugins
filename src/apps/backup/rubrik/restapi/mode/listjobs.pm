@@ -56,10 +56,11 @@ sub run {
     foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[jobId: %s][jobName: %s][jobType: %s]',
+                '[jobId: %s][jobName: %s][jobType: %s][locationName: %s]',
                 $_->{objectId},
                 $_->{objectName},
-                $_->{jobType}
+                $_->{jobType},
+                $_->{locationName}
             )
         );
     }
@@ -75,7 +76,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['jobId', 'jobName', 'jobType']);
+    $self->{output}->add_disco_format(elements => ['jobId', 'jobName', 'jobType', 'locationName']);
 }
 
 sub disco_show {
@@ -86,7 +87,8 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             jobId => $_->{objectId},
             jobName => $_->{objectName},
-            jobType => $_->{jobType}
+            jobType => $_->{jobType},
+            locationName => $_->{locationName}
         );
     }
 }

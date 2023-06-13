@@ -201,10 +201,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-job-id:s'   => { name => 'filter_job_id' },
-        'filter-job-name:s' => { name => 'filter_job_name' },
-        'filter-job-type:s' => { name => 'filter_job_type' },
-        'unit:s'            => { name => 'unit', default => 's' }
+        'filter-job-id:s'        => { name => 'filter_job_id' },
+        'filter-job-name:s'      => { name => 'filter_job_name' },
+        'filter-job-type:s'      => { name => 'filter_job_type' },
+        'filter-location-name:s' => { name => 'filter_location_name' },
+        'unit:s'                 => { name => 'unit', default => 's' }
     });
 
     $self->{cache_exec} = centreon::plugins::statefile->new(%options);
@@ -251,6 +252,8 @@ sub manage_selection {
             $job_exec->{objectName} !~ /$self->{option_results}->{filter_job_name}/);
         next if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '' && 
             $job_exec->{jobType} !~ /$self->{option_results}->{filter_job_type}/);
+        next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
+            $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
         if (!defined($self->{jobs}->{ $job_exec->{objectId} })) {
             $self->{jobs}->{ $job_exec->{objectId} } = {
@@ -339,6 +342,10 @@ Filter jobs by job name.
 =item B<--filter-job-type>
 
 Filter jobs by job type.
+
+=item B<--filter-location-name>
+
+Filter jobs by location name.
 
 =item B<--unit>
 
