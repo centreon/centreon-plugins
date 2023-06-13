@@ -7,7 +7,7 @@ Library             String
 
 *** Variables ***
 ${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSONS_DIR}            ${CURDIR}${/}..${/}resources${/}mockoon${/}
+${MOCKOON_JSON}                 ${CURDIR}${/}..${/}resources${/}mockoon${/}cloud-aws-cloudtrail.json
 
 ${CMD}                          perl ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtrail::plugin --custommode=paws --region=eu-west --aws-secret-key=secret --aws-access-key=key
 
@@ -148,7 +148,10 @@ AWS CloudTrail check trail status
     FOR    ${checktrailstatus_value}    IN    @{checktrailstatus_values}
         ${output} =    Run
         ...    ${CMD} --mode=checktrailstatus --endpoint=http://localhost:3000/cloudtrail/gettrailstatus/${checktrailstatus_value.trailstatus} --trail-name=${checktrailstatus_value.trailname}
-        Should Be Equal    ${output}    ${checktrailstatus_value.result}
+        Should Be Equal As Strings
+        ...    ${output}
+        ...    ${checktrailstatus_value.result}
+        ...    msg=Wrong output result for check trail status of ${checktrailstatus_value}
     END
 
 AWS CloudTrail count events
@@ -180,5 +183,8 @@ AWS CloudTrail count events
             ${command} =    Catenate    ${command}    --critical-count=${countevents_value.criticalcount}
         END
         ${output} =    Run    ${command}
-        Should Be Equal    ${output}    ${countevents_value.result}
+        Should Be Equal As Strings
+        ...    ${output}
+        ...    ${countevents_value.result}
+        ...    msg=Wrong output result for count events of ${countevents_value}
     END
