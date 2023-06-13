@@ -150,8 +150,13 @@ jobs:
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
       - run: |
-          ls ./build
+          echo -n "ok"
+          pwd
+          echo -n "ok"
           ls
+          echo -n "ok"
+          ls ./build
+          echo -n "ok"
           for PLUGIN in "${{ needs.get-plugins.outputs.plugins }}"; do
 
             PACKAGE_PATH=$PLUGIN
