@@ -1,4 +1,4 @@
-name: "@NAME@"
+name: "@PACKAGE_NAME@"
 arch: "amd64"
 platform: "linux"
 version_schema: "none"

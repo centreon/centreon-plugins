@@ -150,13 +150,6 @@ jobs:
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
       - run: |
-          echo "ok"
-          pwd
-          echo "ok"
-          ls
-          echo "ok"
-          ls ./build
-          echo "ok"
           for PLUGIN in "${{ needs.get-plugins.outputs.plugins }}"; do
 
             PACKAGE_PATH=$PLUGIN
@@ -178,12 +171,19 @@ jobs:
             deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
 
             sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
-              -e "s/@NAME@/$PLUGIN_NAME_LOWER/g;" \
               -e "s/@SUMMARY@/$pkg_summary/g" \
               -e "s/@REQUIRES@/$deb_dependencies/g" \
               -e "s/@CUSTOM_PKG_DATA@/$deb_custom_pkg_data/g" \
               < .github/packaging/centreon-plugin.yaml.template \
               >> .github/packaging/$PLUGIN.yaml
+
+            if [ "${{ matrix.package_extension }}" = "rpm"]; then
+              sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
+                .github/packaging/$PLUGIN.yaml
+            else
+              sed -i "s/@PACKAGE_NAME@/$PLUGIN_NAME_LOWER/g" \
+                .github/packaging/$PLUGIN.yaml
+            fi
 
             echo "::endgroup::"
           done
