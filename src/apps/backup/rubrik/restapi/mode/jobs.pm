@@ -102,8 +102,9 @@ sub prefix_job_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "job '%s' ",
-        $options{instance_value}->{name}
+        "job '%s' [type: %s] ",
+        $options{instance_value}->{name},
+        $options{instance_value}->{jobType}
     );
 }
 
