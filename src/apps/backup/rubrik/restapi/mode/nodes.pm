@@ -124,8 +124,13 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $name = $options{custom}->request_api(endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/name');
-    my $nodes = $options{custom}->request_api(endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/node');
+    my $name = $options{custom}->request_api(
+        endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/name'
+    );
+    my $nodes = $options{custom}->request_api(
+        endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/node',
+        label => 'data'
+    );
 
     $self->{clusters} = {
         $name => {
@@ -137,7 +142,7 @@ sub manage_selection {
             nodes => {}
         }
     };
-    foreach (@{$nodes->{data}}) {
+    foreach (@$nodes) {
         next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
             $_->{id} !~ /$self->{option_results}->{filter_node_id}/);
 
