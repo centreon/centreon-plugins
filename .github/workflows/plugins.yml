@@ -150,13 +150,13 @@ jobs:
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
       - run: |
-          echo -n "ok"
+          echo "ok"
           pwd
-          echo -n "ok"
+          echo "ok"
           ls
-          echo -n "ok"
+          echo "ok"
           ls ./build
-          echo -n "ok"
+          echo "ok"
           for PLUGIN in "${{ needs.get-plugins.outputs.plugins }}"; do
 
             PACKAGE_PATH=$PLUGIN
@@ -177,7 +177,7 @@ jobs:
             deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
             deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
 
-            sed -e "s/@PLUGIN_NAME@/$PLUGIN_NAME_LOWER/g;" \
+            sed -e "s/@PLUGIN_NAME@/$plugin_name/g;" \
               -e "s/@NAME@/$PLUGIN_NAME_LOWER/g;" \
               -e "s/@SUMMARY@/$pkg_summary/g" \
               -e "s/@REQUIRES@/$deb_dependencies/g" \
