@@ -269,7 +269,7 @@ sub manage_selection {
             if (!defined($_->{endTime}) && $_->{jobStatus} =~ /Active/i) {
                 $older_running_exec = $_;
             }
-            if (!defined($last_exec)) {
+            if (!defined($last_exec) && $_->{jobStatus} !~ /Scheduled/i) {
                 $last_exec = $_;
             }
 
