@@ -304,7 +304,7 @@ sub request_api_paginate {
             method => $options{method},
             full_url => $full_url,
             url_path => $endpoint,
-            get_param => $options{get_param},
+            get_param => $get_param,
             %{$options{creds}}
         );
 
