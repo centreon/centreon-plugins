@@ -1,13 +1,6 @@
 {
-    "dependencies": [
-    ],
-    "provides": [
-        "centreon-plugin-network-cisco-ssms-restapi"
-    ],
-    "replaces": [
-        "centreon-plugin-network-cisco-ssms-restapi"
-    ],
-    "conflicts": [
-        "centreon-plugin-network-cisco-ssms-restapi"
-    ]
+    "dependencies": [],
+    "provides": ["centreon-plugin-network-cisco-ssms-restapi"],
+    "replaces": ["centreon-plugin-network-cisco-ssms-restapi"],
+    "conflicts": ["centreon-plugin-network-cisco-ssms-restapi"]
 }
