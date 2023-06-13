@@ -33,6 +33,7 @@ sub new {
         'connection-status' => 'network::cambium::cnpilot::snmp::mode::connectionstatus',
         'cpu'               => 'network::cambium::cnpilot::snmp::mode::cpu',
         'interfaces'        => 'network::cambium::cnpilot::snmp::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'list-radios'       => 'network::cambium::cnpilot::snmp::mode::listradios',
         'memory'            => 'network::cambium::cnpilot::snmp::mode::memory',
         'radios'            => 'network::cambium::cnpilot::snmp::mode::radios'

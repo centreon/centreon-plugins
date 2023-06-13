@@ -27,7 +27,7 @@ use warnings;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         'Client connected threads total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $self->{result_values}->{total},
@@ -43,7 +43,6 @@ sub prefix_databse_output {
 
     return "Database '" . $options{instance_value}->{name} . "' ";
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;

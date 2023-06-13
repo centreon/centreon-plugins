@@ -99,7 +99,27 @@ sub set_counters_errors {
 
     $self->SUPER::set_counters_errors(%options);
     
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
+        { label => 'in-traffic-limit', filter => 'add_qos_limit', nlabel => 'interface.traffic.in.limit.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in_limit' }, { name => 'display' } ],
+                output_template => 'Traffic In Limit : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'traffic_in_limit', template => '%s',
+                      unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'out-traffic-limit', filter => 'add_qos_limit', nlabel => 'interface.traffic.out.limit.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out_limit' }, { name => 'display' } ],
+                output_template => 'Traffic Out Limit : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'traffic_out_limit', template => '%s',
+                      unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
         { label => 'in-crc', filter => 'add_errors', nlabel => 'interface.packets.in.crc.count', set => {
                 key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
@@ -126,10 +146,88 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-err-disable'   => { name => 'add_err_disable' }
+        'add-qos-limit'   => { name => 'add_qos_limit' },
+        'add-err-disable' => { name => 'add_err_disable' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{checking} = '';
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_qos_limit')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{checking} .= $_;
+        }
+    }
+}
+
+sub reload_cache_custom {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_qos_limit}));
+
+    my $map_direction = { 1 => 'input', 2 => 'output' };
+
+    my $mapping = {
+        policyDirection => { oid => '.1.3.6.1.4.1.9.9.166.1.1.1.1.3', map => $map_direction }, # cbQosPolicyDirection
+        ifIndex         => { oid => '.1.3.6.1.4.1.9.9.166.1.1.1.1.4' } # cbQosIfIndex
+    };
+    my $mapping2 = {
+        configIndex => { oid => '.1.3.6.1.4.1.9.9.166.1.5.1.1.2' }, # cbQosConfigIndex
+        objectsType => { oid => '.1.3.6.1.4.1.9.9.166.1.5.1.1.3' }  # cbQosObjectsType
+    };
+
+    my $oid_cbQosServicePolicyEntry = '.1.3.6.1.4.1.9.9.166.1.1.1.1';
+    my $oid_cbQosObjectsEntry = '.1.3.6.1.4.1.9.9.166.1.5.1.1';
+    my $snmp_result = $self->{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_cbQosServicePolicyEntry, start => $mapping->{policyDirection}->{oid}, end => $mapping->{ifIndex}->{oid} },
+            { oid => $oid_cbQosObjectsEntry, start => $mapping2->{configIndex}->{oid}, end => $mapping2->{objectsType}->{oid} },
+        ]
+    );
+
+    $options{datas}->{qos} = {};
+    foreach (keys %{$snmp_result->{$oid_cbQosServicePolicyEntry}}) {
+        next if ($_ !~ /^$mapping->{ifIndex}->{oid}\.(.*)$/);
+        my $policyIndex = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_cbQosServicePolicyEntry}, instance => $policyIndex);
+
+        foreach (keys %{$snmp_result->{$oid_cbQosObjectsEntry}}) {
+            # 7 = police
+            next if ($_ !~ /^$mapping2->{objectsType}->{oid}\.$policyIndex\.(.*)$/ || $snmp_result->{$oid_cbQosObjectsEntry}->{$_} != 7);
+            my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_cbQosObjectsEntry}, instance => $policyIndex . '.' . $1);
+
+            $options{datas}->{qos}->{ $result->{ifIndex} } = {} if (!defined($options{datas}->{qos}->{ $result->{ifIndex} }));
+            $options{datas}->{qos}->{ $result->{ifIndex} }->{ $result->{policyDirection} } = $result2->{configIndex};
+        }
+    }
+}
+
+sub custom_load {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_qos_limit}));
+
+    my $oid_cbQosPoliceCfgRate64 = '.1.3.6.1.4.1.9.9.166.1.12.1.1.11';
+
+    my $qos = $self->{statefile_cache}->get(name => 'qos');
+    my $instances = [];
+    foreach (keys %$qos) {
+        push @$instances, $qos->{$_}->{input} if (defined($qos->{$_}->{input}));
+        push @$instances, $qos->{$_}->{output} if (defined($qos->{$_}->{output}));
+    }
+
+    return if (scalar(@$instances) <= 0);
+
+    $self->{snmp}->load(
+        oids => [ $oid_cbQosPoliceCfgRate64 ],
+        instances => $instances,
+        instance_regexp => '^(.*)$'
+    );
 }
 
 sub load_errors {
@@ -191,6 +289,36 @@ sub add_result_status {
         if ($self->{int}->{$options{instance}}->{errdisable} eq '');
 }
 
+sub custom_add_result {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_qos_limit}));
+
+    my $qos = $self->{statefile_cache}->get(name => 'qos');
+
+    return if (!defined($qos->{ $options{instance} }));
+
+    my $oid_cbQosPoliceCfgRate64 = '.1.3.6.1.4.1.9.9.166.1.12.1.1.11';
+
+    if (defined($qos->{ $options{instance} }->{input}) &&
+        defined($self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}) &&
+        $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}} =~ /(\d+)/) {
+        $self->{int}->{ $options{instance} }->{traffic_in_limit} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}};
+        
+        $self->{int}->{ $options{instance} }->{speed_in} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}
+            if (!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '');
+    }
+
+    if (defined($qos->{ $options{instance} }->{output}) &&
+        defined($self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}}) &&
+        $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}} =~ /(\d+)/) {
+        $self->{int}->{ $options{instance} }->{traffic_out_limit} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}};
+
+        $self->{int}->{ $options{instance} }->{speed_out} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}}
+            if (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq '');
+    }
+}
+
 1;
 
 __END__
@@ -237,6 +365,10 @@ Check interface speed.
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
 
+=item B<--add-qos-limit>
+
+Check QoS traffic limit rate.
+
 =item B<--check-metrics>
 
 If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
@@ -255,7 +387,8 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus},
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-traffic', 'out-traffic', 'in-traffic-limit', 'out-traffic-limit',
+'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 

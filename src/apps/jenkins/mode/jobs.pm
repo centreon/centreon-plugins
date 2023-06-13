@@ -83,13 +83,13 @@ sub manage_selection {
     $self->{jobs} = {};
     foreach my $job (@{$jobs->{jobs}}) {
         my $name = $job->{name};
-        next if (defined($self->{option_results}->{filter_job_name}) && $self->{option_results}->{filter_job_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_job_name}/);
-
-        if (defined($job->{healthReport}->[0]->{score})) {
-            $self->{jobs}->{$name} = { score => $job->{healthReport}->[0]->{score}, violations => 0 };
-            if ($job->{healthReport}->[0]->{description} =~ /^.+?([0-9]+)/ ) {
-                $self->{jobs}->{$name}->{violations} = $1;
+        if (!defined($self->{option_results}->{filter_job_name}) || $self->{option_results}->{filter_job_name} eq '' ||
+            $name =~ /$self->{option_results}->{filter_job_name}/) {
+            if (defined($job->{healthReport}->[0]->{score})) {
+                $self->{jobs}->{$name} = { score => $job->{healthReport}->[0]->{score}, violations => 0 };
+                if ($job->{healthReport}->[0]->{description} =~ /^.+?([0-9]+)/ ) {
+                    $self->{jobs}->{$name}->{violations} = $1;
+                }
             }
         }
 

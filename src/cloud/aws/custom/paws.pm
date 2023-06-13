@@ -50,7 +50,8 @@ sub new {
             'period:s'            => { name => 'period' },
             'statistic:s@'        => { name => 'statistic' },
             'zeroed'              => { name => 'zeroed' },
-            'proxyurl:s'          => { name => 'proxyurl' }
+            'proxyurl:s'          => { name => 'proxyurl' },
+            'endpoint:s'          => { name => 'endpoint' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
@@ -837,6 +838,68 @@ sub directconnect_describe_virtual_interfaces {
     }
 
     return $results;
+}
+
+sub cloudtrail_events {
+    my ($self, %options) = @_;
+
+    my $events_results = [];
+    eval {
+        my $ct;
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
+        } else {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
+        }
+        my %ct_options = ();
+        if (defined($options{delta})) {
+            $ct_options{EndTime} = time();
+            $ct_options{StartTime} = $ct_options{EndTime} - ($options{delta} * 60);
+        }
+
+        while (my $list_events = $ct->LookupEvents(%ct_options)) {
+            foreach (@{$list_events->{Events}}) {
+                my $event = JSON::XS->new->utf8->decode($_->{CloudTrailEvent});
+                push @{$events_results}, {
+                    eventID => $event->{eventID},
+                    eventType => $event->{eventType},
+                    errorMessage => $event->{errorMessage}
+                };
+            }
+
+            last if (!defined($list_events->{NextToken}));
+            $ct_options{NextToken} = $list_events->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $events_results;
+}
+
+sub cloudtrail_trail_status {
+    my ($self, %options) = @_;
+
+    my $trail_status;
+    eval {
+        my $ct;
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
+        } else {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
+        }
+        my %ct_options = ();
+        $ct_options{Name} = $options{trail_name};
+        $trail_status = $ct->GetTrailStatus(%ct_options);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $trail_status;
 }
 
 1;
