@@ -25,6 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_edge_output {
+    my ($self, %options) = @_;
+
+    return "Edge '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_link_output {
+    my ($self, %options) = @_;
+
+    return "Link '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -102,24 +120,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_edge_output {
-    my ($self, %options) = @_;
-
-    return "Edge '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_link_output {
-    my ($self, %options) = @_;
-
-    return "Link '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
-sub long_output {
-    my ($self, %options) = @_;
-
-    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -146,15 +146,19 @@ sub manage_selection {
     my $results = $options{custom}->list_edges();
 
     $self->{edges} = {};
-    foreach my $edge (@{$results}) {
+    foreach my $edge (@$results) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $edge->{name} . "'.", debug => 1);
             next;
         }
-
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+ 
+        $self->{edges}->{ $edge->{name} } = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => { link_count => 0 },
+            links => {}
+        };
 
         my $links = $options{custom}->list_links(
             edge_id => $edge->{id},
@@ -183,8 +187,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{link_count}++;
+            $self->{edges}->{ $edge->{name} }->{links}->{ $link->{link}->{displayName} } = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},

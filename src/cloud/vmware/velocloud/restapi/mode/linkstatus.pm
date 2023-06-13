@@ -129,8 +129,12 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} } = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => { link_count => 0 },
+            links => {}
+        };
 
         my $links = $options{custom}->get_links_metrics(
             edge_id => $edge->{id},
@@ -144,8 +148,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{link_count}++;
+            $self->{edges}->{ $edge->{name} }->{links}->{ $link->{link}->{displayName} } = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 state => $link->{link}->{state},

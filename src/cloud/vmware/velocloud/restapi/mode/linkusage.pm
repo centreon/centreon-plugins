@@ -189,10 +189,10 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}} = {
+        $self->{edges}->{ $edge->{name} } = {
             id => $edge->{id},
             display => $edge->{name},
-            global => {},
+            global => { link_count => 0, traffic_in => 0, traffic_out => 0 },
             links => {}
         };
 
@@ -208,8 +208,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{link_count}++;
+            $self->{edges}->{ $edge->{name} }->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 traffic_out => int($link->{bytesTx} * 8 / $self->{timeframe}),
@@ -221,12 +221,12 @@ sub manage_selection {
                 packet_loss_out => $link->{bestLossPctTx},
                 packet_loss_in => $link->{bestLossPctRx}
             };
-            if (!defined($self->{edges}->{$edge->{name}}->{global}->{traffic_in})) {
-                $self->{edges}->{$edge->{name}}->{global}->{traffic_in} = 0;
-                $self->{edges}->{$edge->{name}}->{global}->{traffic_out} = 0;
+            if (!defined($self->{edges}->{ $edge->{name} }->{global}->{traffic_in})) {
+                $self->{edges}->{ $edge->{name} }->{global}->{traffic_in} = 0;
+                $self->{edges}->{ $edge->{name} }->{global}->{traffic_out} = 0;
             }
-            $self->{edges}->{$edge->{name}}->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
-            $self->{edges}->{$edge->{name}}->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
+            $self->{edges}->{ $edge->{name} }->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
+            $self->{edges}->{ $edge->{name} }->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
         }
     }
 
