@@ -169,27 +169,29 @@ jobs:
             pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
             pkg_summary=$(echo "${pkg_values[0]}")
             plugin_name=$(echo "${pkg_values[1]}")
-            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies | join(",\\n  ")')
             #deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
             conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
             replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
             provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
+            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
             deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
             deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
             deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
+            rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
             rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
             rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
             rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
 
             sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
               -e "s/@SUMMARY@/$pkg_summary/g" \
-              -e "s/@REQUIRES@/$deb_dependencies/g" \
               -e "s/@CONFLICTS@/$conflicts/g" \
               -e "s/@REPLACES@/$replaces/g" \
               -e "s/@PROVIDES@/$provides/g" \
+              -e "s/@DEB_DEPENDENCIES@/$deb_dependencies/g" \
               -e "s/@DEB_CONFLICTS@/$deb_conflicts/g" \
               -e "s/@DEB_REPLACES@/$deb_replaces/g" \
               -e "s/@DEB_PROVIDES@/$deb_provides/g" \
+              -e "s/@RPM_DEPENDENCIES@/$rpm_dependencies/g" \
               -e "s/@RPM_CONFLICTS@/$rpm_conflicts/g" \
               -e "s/@RPM_REPLACES@/$rpm_replaces/g" \
               -e "s/@RPM_PROVIDES@/$rpm_provides/g" \

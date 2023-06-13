@@ -29,24 +29,26 @@ provides:
 
 overrides:
   rpm:
-    depends:
-      - perl(Digest::MD5)
-      - perl(Pod::Find)
-      - perl-Net-Curl
-      - perl(URI::Encode)
-      - perl(LWP::UserAgent)
-      - perl(LWP::Protocol::https)
-      - perl(IO::Socket::SSL)
-      - perl(URI)
-      - perl(HTTP::ProxyPAC)
-      - perl-CryptX
-      - perl(MIME::Base64)
-      - perl(JSON::XS)
-      - perl-JSON-Path
-      - perl-KeePass-Reader
-      - perl(Storable)
-      - perl(POSIX)
-      - perl(Encode)
+    depends: [
+      perl(Digest::MD5),
+      perl(Pod::Find),
+      perl-Net-Curl,
+      perl(URI::Encode),
+      perl(LWP::UserAgent),
+      perl(LWP::Protocol::https),
+      perl(IO::Socket::SSL),
+      perl(URI),
+      perl(HTTP::ProxyPAC),
+      perl-CryptX,
+      perl(MIME::Base64),
+      perl(JSON::XS),
+      perl-JSON-Path,
+      perl-KeePass-Reader,
+      perl(Storable),
+      perl(POSIX),
+      perl(Encode),
+      @RPM_DEPENDENCIES@
+    ]
     conflicts:
       [@RPM_CONFLICTS@]
     replaces:
@@ -54,22 +56,24 @@ overrides:
     provides:
       [@RPM_PROVIDES@]
   deb:
-    depends:
-      - libpod-parser-perl
-      - libnet-curl-perl
-      - liburi-encode-perl
-      - libwww-perl
-      - liblwp-protocol-https-perl
-      - libhttp-cookies-perl
-      - libio-socket-ssl-perl
-      - liburi-perl
-      - libhttp-proxypac-perl
-      - libcryptx-perl
-      - libjson-xs-perl
-      - libjson-path-perl
-      - libcrypt-argon2-perl
-      - libkeepass-reader-perl
-      - libdatetime-perl
+    depends: [
+      libpod-parser-perl,
+      libnet-curl-perl,
+      liburi-encode-perl,
+      libwww-perl,
+      liblwp-protocol-https-perl,
+      libhttp-cookies-perl,
+      libio-socket-ssl-perl,
+      liburi-perl,
+      libhttp-proxypac-perl,
+      libcryptx-perl,
+      libjson-xs-perl,
+      libjson-path-perl,
+      libcrypt-argon2-perl,
+      libkeepass-reader-perl,
+      libdatetime-perl,
+      @RPM_DEPENDENCIES@
+    ]
     conflicts:
       [@DEB_CONFLICTS@]
     replaces:
