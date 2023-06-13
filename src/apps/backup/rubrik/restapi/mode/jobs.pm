@@ -305,7 +305,7 @@ sub manage_selection {
         }
 
         if (defined($older_running_exec)) {
-            $older_running_exec->{startTimestamp} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+            $older_running_exec->{startTime} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
             my $duration = $ctime - $dt->epoch();
             $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationSeconds} = $duration;
