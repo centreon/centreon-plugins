@@ -150,7 +150,7 @@ jobs:
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
       - run: |
-          $PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
+          PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
           for PLUGIN in $PLUGINS; do
 
             PACKAGE_PATH=$PLUGIN
