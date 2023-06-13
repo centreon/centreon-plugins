@@ -93,7 +93,9 @@ The following files are included by default:
 Extra entries can be used, for example to make a package obsoleting another one:
 
 ```bash
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Old-Plugin",
+    "conflicts": "centreon-plugin-Old-Plugin",
+    "replaces": "centreon-plugin-Old-Plugin",
+    "provides": "centreon-plugin-Old-Plugin",
 ```
 
 #### Create package dependencies management files

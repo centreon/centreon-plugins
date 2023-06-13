@@ -11,7 +11,7 @@ description: |
   @SUMMARY@
   Commit: @COMMIT_HASH@
 vendor: "Centreon"
-homepage: "https://vmware.com"
+homepage: "https://centreon.com"
 license: "Apache-2.0"
 
 contents:
@@ -19,6 +19,13 @@ contents:
     dst: "/usr/lib/centreon/plugins/"
     file_info:
       mode: 0775
+
+conflicts:
+  [@CONFLICTS@]
+replaces:
+  [@REPLACES@]
+provides:
+  [@PROVIDES@]
 
 overrides:
   rpm:
