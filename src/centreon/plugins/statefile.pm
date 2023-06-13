@@ -479,28 +479,29 @@ Time to keep data in seconds (Default: 86400).
 
 =item B<--statefile-dir>
 
-Directory for statefile (Default: '/var/lib/centreon/centplugins').
+Define the cache directory (default: '/var/lib/centreon/centplugins').
 
 =item B<--statefile-suffix>
 
-Add a suffix for the statefile name (Default: '').
+Define a suffix to customize the statefile name (Default: '').
 
 =item B<--statefile-concat-cwd>
 
-Concat current working directory with option '--statefile-dir'.
-Useful on Windows when plugin is compiled.
+If used with the '--statefile-dir' option, the latter's value will be used as
+a sub-directory of the current working directory.
+Useful on Windows when the plugin is compiled, as the file system and permissions are different from Linux.
 
 =item B<--statefile-format>
 
-Format used to store cache (can be: 'dumper', 'storable', 'json').
+Define the format used to store the cache. Available formats: 'dumper', 'storable', 'json' (default).
 
 =item B<--statefile-key>
 
-Key to encrypt/decrypt cache.
+Define the key to encrypt/decrypt the cache.
 
 =item B<--statefile-cipher>
 
-Cipher to encrypt cache (Default: 'AES').
+Define the cipher algorithm to encrypt the cache (Default: 'AES').
 
 =back
 
