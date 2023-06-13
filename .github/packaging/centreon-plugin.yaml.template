@@ -1,5 +1,5 @@
 name: "@PACKAGE_NAME@"
-arch: "amd64"
+arch: "all"
 platform: "linux"
 version_schema: "none"
 version: "${VERSION}"
@@ -17,6 +17,8 @@ license: "Apache-2.0"
 contents:
   - src: "../../build/@PLUGIN_NAME@/*"
     dst: "/usr/lib/centreon/plugins/"
+    file_info:
+      mode: 0775
 
 overrides:
   rpm:
@@ -55,6 +57,8 @@ overrides:
       - libcrypt-argon2-perl
       - libkeepass-reader-perl
       - libdatetime-perl
+    conflicts:
+      [@DEB_CONFLICTS@]
 
 rpm:
   compression: zstd
