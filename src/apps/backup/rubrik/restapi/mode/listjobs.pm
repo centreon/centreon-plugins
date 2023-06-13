@@ -43,17 +43,22 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->request_api(
+    my $jobs = $options{custom}->request_api(
         endpoint => '/api/v1/job_monitoring',
         label => 'jobMonitoringInfoList'
     );
+    my $results = {};
+    foreach (@$jobs) {
+        $results->{ $_->{objectId} } = $_;
+    }
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach (values %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[jobId: %s][jobName: %s][jobType: %s][locationName: %s]',
@@ -83,7 +88,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach (values %$results) {
         $self->{output}->add_disco_entry(
             jobId => $_->{objectId},
             jobName => $_->{objectName},
