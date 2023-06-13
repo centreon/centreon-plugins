@@ -251,7 +251,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_job_name}) && $self->{option_results}->{filter_job_name} ne '' && 
             $job_exec->{objectName} !~ /$self->{option_results}->{filter_job_name}/);
         next if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '' && 
-            $job_exec->{jobType} !~ /$self->{option_results}->{filter_job_type}/);
+            $job_exec->{jobType} !~ /$self->{option_results}->{filter_job_type}/i);
         next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
             $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
