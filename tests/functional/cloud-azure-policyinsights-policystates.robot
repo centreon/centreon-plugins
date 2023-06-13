@@ -2,6 +2,7 @@
 Documentation       Azure PolicyInsights PolicyStates plugin
 
 Library             OperatingSystem
+Library             Process
 Library             String
 
 Suite Setup         Start Mockoon
@@ -73,8 +74,16 @@ Azure PolicyInsights PolicyStates compliance
 
 *** Keywords ***
 Start Mockoon
-    ${output} =    Run    mockoon-cli start --data ${MOCKOON_JSON} --port=3000 --pname=mockoon-azure-policyinsights
-    Should Start With    ${output}    Mock started at http://localhost:3000
+    ${executionresult} =    Run Process
+    ...    mockoon-cli
+    ...    start
+    ...    --data
+    ...    ${MOCKOON_JSON}
+    ...    --port
+    ...    3000
+    ...    --pname
+    ...    mockoon-azure-policyinsights
+    Should Be Empty    ${executionresult.stderr}
 
 Stop Mockoon
     ${output} =    Run    mockoon-cli stop mockoon-azure-policyinsights
