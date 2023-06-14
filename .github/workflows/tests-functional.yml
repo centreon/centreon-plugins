@@ -22,7 +22,7 @@ jobs:
           node-version: "16.x"
 
       - name: Install Mockoon CLI
-        run: npm install -D @mockoon/cli
+        run: npm install -g -D @mockoon/cli
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -53,9 +53,6 @@ jobs:
       - name: Install Robot Framework
         run: pip3 install robotframework
         shell: bash
-
-      - name: Run Mockoon CLI
-        run: npx mockoon-cli start --data tests/resources/mockoon/cloud-aws-cloudtrail.json --port 3000
 
       - name: Run Robot Framework tests
         run: robot tests/functional/

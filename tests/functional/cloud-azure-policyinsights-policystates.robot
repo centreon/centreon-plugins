@@ -82,9 +82,12 @@ Start Mockoon
     ...    --port
     ...    3000
     ...    --pname
-    ...    mockoon-azure-policyinsights
+    ...    azure-policyinsights
     Should Be Empty    ${executionresult.stderr}
 
 Stop Mockoon
-    ${output} =    Run    mockoon-cli stop mockoon-azure-policyinsights
-    Should End With    ${output}    mockoon-azure-policyinsights stopped
+    ${executionresult} =    Run Process
+    ...    mockoon-cli
+    ...    stop
+    ...    mockoon-azure-policyinsights
+    Should Be Empty    ${executionresult.stderr}

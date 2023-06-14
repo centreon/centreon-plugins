@@ -2,7 +2,11 @@
 Documentation       AWS CloudTrail plugin
 
 Library             OperatingSystem
+Library             Process
 Library             String
+
+Suite Setup         Start Mockoon
+Suite Teardown      Stop Mockoon
 
 
 *** Variables ***
@@ -188,3 +192,24 @@ AWS CloudTrail count events
         ...    ${countevents_value.result}
         ...    msg=Wrong output result for count events of ${countevents_value}
     END
+
+
+*** Keywords ***
+Start Mockoon
+    ${executionresult} =    Run Process
+    ...    mockoon-cli
+    ...    start
+    ...    --data
+    ...    ${MOCKOON_JSON}
+    ...    --port
+    ...    3000
+    ...    --pname
+    ...    azure-policyinsights
+    Should Be Empty    ${executionresult.stderr}
+
+Stop Mockoon
+    ${executionresult} =    Run Process
+    ...    mockoon-cli
+    ...    stop
+    ...    mockoon-azure-policyinsights
+    Should Be Empty    ${executionresult.stderr}

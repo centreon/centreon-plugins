@@ -16,7 +16,7 @@
       "responses": [
         {
           "uuid": "0c775d57-8661-4c4f-9f30-a3a134d6d09c",
-          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"2023-02-18\"\n}",
+          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'random.numeric' 10 }}\"\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
