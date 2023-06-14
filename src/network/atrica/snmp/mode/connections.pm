@@ -431,7 +431,7 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--interface>
 
