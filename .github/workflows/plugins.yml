@@ -153,7 +153,6 @@ jobs:
       - run: |
           PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
           for PLUGIN in $PLUGINS; do
-
             PACKAGE_PATH=$PLUGIN
 
             if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
@@ -169,7 +168,6 @@ jobs:
             pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
             pkg_summary=$(echo "${pkg_values[0]}")
             plugin_name=$(echo "${pkg_values[1]}")
-            #deb_custom_pkg_data=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.custom_pkg_data // "" | if . != "" then ("\\n" + .) else "" end')
             conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
             replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
             provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
