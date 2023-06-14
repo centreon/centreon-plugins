@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Package
-        uses: ./.github/actions/package-nfpm
+        uses: ./.github/actions/package
         with:
           nfpm_file_pattern: "connectors/vmware/packaging/centreon-plugin-virtualization-vmware-daemon.yaml"
           distrib: ${{ matrix.distrib }}
