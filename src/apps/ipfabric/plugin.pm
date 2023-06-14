@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'discovery'         => 'apps::ipfabric::mode::discovery',
+        'list-paths'        => 'apps::ipfabric::mode::listpaths',
         'path-verification' => 'apps::ipfabric::mode::pathverification' 
     };
 
