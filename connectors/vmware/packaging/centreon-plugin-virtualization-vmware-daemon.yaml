@@ -1,5 +1,4 @@
 name: "centreon-plugin-Virtualization-VMWare-daemon"
-
 arch: "all"
 platform: "linux"
 version_schema: "none"
