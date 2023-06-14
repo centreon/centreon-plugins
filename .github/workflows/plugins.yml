@@ -106,7 +106,7 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
 
-      - uses: actions/cache@v3
+      - uses: actions/cache/save@v3
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
