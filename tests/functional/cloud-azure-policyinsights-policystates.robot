@@ -19,8 +19,8 @@ ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=cloud::azure::policyin
 &{compliance_value1}
 ...                     endpoint=http://localhost:3000/ok
 ...                     policyname=
-...                     resourcelocation=9daedab3-fb2d-461e-b861-71790eead4f6
-...                     resourcetype=9daedab3-fb2d-461e-b861-71790eead4f6
+...                     resourcelocation=
+...                     resourcetype=
 ...                     result=OK: Number of non compliant policies: 0 - All compliances states are ok | 'policies.non_compliant.count'=0;;;0;
 &{compliance_value2}
 ...                     endpoint=http://localhost:3000/oknextlink
