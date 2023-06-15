@@ -98,6 +98,7 @@ sub set_counters {
                 { name => 'device_performance', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_connections', type => 0, cb_prefix_output => 'prefix_connection_output', skipped_code => { -10 => 1 } },
                 { name => 'device_traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1, -11 => 1 } },
+                { name => 'device_links_counters', type => 0, skipped_code => { -10 => 1, -11 => 1 } },
                 { name => 'device_links', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } },
                 { name => 'device_ports', display_long => 1, cb_prefix_output => 'prefix_port_output',  message_multiple => 'All ports are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
@@ -144,7 +145,7 @@ sub set_counters {
                     { template => '%s', min => 0, max => 'total' }
                 ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{device_status} = [
@@ -227,6 +228,17 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{device_links_counters} = [
+        { label => 'links-ineffective', nlabel => 'device.links.ineffective.count', display_ok => 0, set => {
+                key_values => [ { name => 'ineffective' } ],
+                output_template => 'links ineffective: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -356,6 +368,8 @@ sub add_uplink {
     );
 
     if (defined($links)) {
+        $self->{devices}->{ $options{serial} }->{device_links_counters} = { ineffective => 0 };
+
         foreach (@$links) {
             my $interface = lc($_->{interface});
             $interface =~ s/\s+//g;
@@ -363,6 +377,8 @@ sub add_uplink {
                 display => $interface,
                 link_status => lc($_->{status})
             };
+            $self->{devices}->{ $options{serial} }->{device_links_counters}->{ineffective}++
+                if ($_->{status} =~ /failed|Not Connected/i);
         }
     }
 }
@@ -656,7 +672,7 @@ Thresholds.
 Can be: 'total-online', 'total-online-prct', 'total-offline', 'total-offline-prct', 'total-alerting',
 'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
 'connections-assoc', 'connections-dhcp', 'connections-dns',
-'load', 'link-latency' (ms), ''link-loss' (%),
+'load', 'links-ineffective', 'link-latency' (ms), ''link-loss' (%),
 'port-traffic-in', 'port-traffic-out'.
 
 =back
