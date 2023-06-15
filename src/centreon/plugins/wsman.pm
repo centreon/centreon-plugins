@@ -565,55 +565,55 @@ Need at least openwsman-perl version >= 2.4.0
 
 =item B<--hostname>
 
-Hostname to query (required).
+Define the hostname to query (mandatory).
 
 =item B<--wsman-port>
 
-Port (default: 5985).
+Define the port to connect to (default: 5985).
 
 =item B<--wsman-path>
 
-Set path of URL (default: '/wsman').
+Define the path of the WSMAN URL if it has been customized (default: '/wsman').
 
 =item B<--wsman-scheme>
 
-Set transport scheme (default: 'http').
+Define the transport scheme (default: 'http').
 
 =item B<--wsman-username>
 
-Set username for authentification.
+Define the username for authentication.
 
 =item B<--wsman-password>
 
-Set username password for authentification.
+Define the password associated with the user name.
 
 =item B<--wsman-timeout>
 
-Set HTTP Transport Timeout in seconds (default: 30).
+Define the HTTP transport timeout in seconds (default: 30).
 
 =item B<--wsman-auth-method>
 
-Set the authentification method (default: 'basic').
+Define the authentication method. Available methods: noauth, basic (default), pass, digest, ntlm, gssnegotiate.
 
 =item B<--wsman-proxy-url>
 
-Set HTTP proxy URL.
+Define the URL of the HTTP proxy to use.
 
 =item B<--wsman-proxy-username>
 
-Set the proxy username.
+Define the user name to authenticate to the proxy server.
 
 =item B<--wsman-proxy-password>
 
-Set the proxy password.
+Define the password to authenticate to the proxy server.
 
 =item B<--wsman-debug>
 
-Set openwsman debug on (Default: --wsman-debug=info).
+Define the openwsman log level. Available levels: error, critical, warning, message, info (default), debug.
 
 =item B<--wsman-errors-exit>
 
-Exit code for wsman Errors (default: unknown)
+Define the expected exit code when wsman errors occur (default: unknown).
 
 =back
 
