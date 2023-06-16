@@ -113,7 +113,7 @@ Filter group name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /idling/i').
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
