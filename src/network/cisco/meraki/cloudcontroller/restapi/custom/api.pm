@@ -443,6 +443,9 @@ sub get_organization_uplink_loss_and_latency {
 
         if (defined($datas)) {
             foreach (@$datas) {
+                # sometimes uplink is undef. so we skip
+                next if (!defined($_->{uplink}));
+
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
                     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }->{ $_->{uplink} } = $_;
