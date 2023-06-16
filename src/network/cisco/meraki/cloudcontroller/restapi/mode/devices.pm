@@ -218,7 +218,7 @@ sub set_counters {
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
         },
@@ -227,7 +227,7 @@ sub set_counters {
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
         }
