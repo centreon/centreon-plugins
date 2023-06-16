@@ -96,7 +96,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{id}} = {
+        $self->{edges}->{ $edge->{id} } = {
             display => $edge->{name},
             edge_state => $edge->{edgeState},
             service_state => $edge->{serviceState},
