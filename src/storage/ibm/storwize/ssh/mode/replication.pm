@@ -118,7 +118,7 @@ You can use the following variables: %{status}
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{status}
+You can use the following variables: %{status}
 
 =back
 
