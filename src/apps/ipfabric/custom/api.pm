@@ -44,7 +44,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     
     return $self;
 }
@@ -60,20 +60,20 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1/tables';
+    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v6.2/tables';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : '';
-    $self->{snapshot_id} = (defined($self->{option_results}->{snapshot_id})) ? $self->{option_results}->{snapshot_id} : "\$last";
+    $self->{snapshot_id} = (defined($self->{option_results}->{snapshot_id})) ? $self->{option_results}->{snapshot_id} : '$last';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{option_results}->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{api_key}) || $self->{api_key} eq '') {
+    if ($self->{api_key} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-key option.");
         $self->{output}->option_exit();
     }
@@ -82,8 +82,6 @@ sub check_options {
         $self->{option_results}->{curl_opt} = ['CURLOPT_POSTREDIR => CURL_REDIR_POST_ALL'];
         $self->{curl_opt} = 'CURLOPT_POSTREDIR => CURL_REDIR_POST_ALL';
     }
-
-    $self->{http}->set_options(%{$self->{option_results}});
     
     return 0;
 }
@@ -94,7 +92,6 @@ sub settings {
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->add_header(key => 'X-API-Token', value => $self->{api_key});
     $self->{http}->set_options(%{$self->{option_results}});
-
 }
 
 sub request_api {
@@ -117,7 +114,7 @@ sub request_api {
     my ($content) = $self->{http}->request(
         method => 'POST',
         url_path => $self->{url_path} . $options{endpoint},
-        query_form_post => $encoded_form_post,
+        query_form_post => $encoded_form_post
     );
 
     my $decoded = $self->json_decode(content => $content);
