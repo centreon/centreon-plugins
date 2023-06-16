@@ -69,7 +69,7 @@ sub custom_status_calc {
     foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{result_values}->{$key} = $options{new_datas}->{ $self->{instance} . '_' . $key };
     }
-    
+
     return 0;
 }
 
@@ -186,16 +186,16 @@ sub manage_selection {
             push @$instances, { name => $_, value => $result->{metric}->{$_} };
         }
 
-        my $instance_key = join('_', @$instances);
+        my $instance_key = join('_',  map { $_->{value} } @$instances);
         next if (!defined($instance_key) || $instance_key eq '');
 
         my $value;
         $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
         $value = $result->{value}->[1] if (defined($result->{value}));
-        $self->{expressions}->{$instance_key} = {
-            instances => $instances,
-            $result->{metric}->{__name__} => $value
-        };
+        if (!defined($self->{expressions}->{$instance_key})) {
+            $self->{expressions}->{$instance_key} = { instances => $instances };
+        }
+        $self->{expressions}->{$instance_key}->{ $result->{metric}->{__name__} } = $value;
     }
 
     if (scalar(keys %{$self->{expressions}}) <= 0) {
