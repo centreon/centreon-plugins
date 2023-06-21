@@ -766,7 +766,31 @@ sub change_macros {
         }
     }
 }
-    
+
+sub custom_perfdata_instances {
+    my ($self, %options) = @_;
+
+    my $instances = [];
+    foreach (split(/\s+/, $options{instances})) {
+        while (/%\((.+?)\)/g) {
+            my $name = $1;
+            if (!defined($options{labels}->{$name})) {
+                $self->{output}->add_option_msg(short_msg => "option $options{option_name} unsupported label: %($name)");
+                $self->{output}->option_exit();
+            }
+
+            push @$instances, $name;
+        }
+    }
+
+    if (scalar(@$instances) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "option $options{option_name} need at least one label");
+        $self->{output}->option_exit();
+    }
+
+    return $instances;
+}
+
 1;
 
 __END__
