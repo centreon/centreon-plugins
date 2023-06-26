@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return 'Requests ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -64,12 +70,6 @@ sub set_counters {
             }
         };
     }
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return 'Requests ';
 }
 
 sub new {

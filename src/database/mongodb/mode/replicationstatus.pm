@@ -29,11 +29,11 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 my %mapping_states = (
     0 => 'STARTUP', 1 => 'PRIMARY', 2 => 'SECONDARY',
     3 => 'RECOVERING', 5 => 'STARTUP2', 6 => 'UNKNOWN',
-    7 => 'ARBITER', 8 => 'DOWN', 9 => 'ROLLBACK', 10 => 'REMOVED',
+    7 => 'ARBITER', 8 => 'DOWN', 9 => 'ROLLBACK', 10 => 'REMOVED'
 );
 my %mapping_health = (
     0 => 'down',
-    1 => 'up',
+    1 => 'up'
 );
 
 sub custom_status_output {
@@ -55,7 +55,8 @@ sub custom_status_calc {
 sub custom_member_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("state is '%s' and health is '%s' [slave delay: %s] [priority: %s]",
+    return sprintf(
+        "state is '%s' and health is '%s' [slave delay: %s] [priority: %s]",
         $self->{result_values}->{state},
         $self->{result_values}->{health},
         $self->{result_values}->{slave_delay},
@@ -75,6 +76,12 @@ sub custom_member_status_calc {
     return 0;
 }
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "Member '" . $options{instance_value}->{name} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -90,10 +97,11 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{members} = [
         { label => 'member-status', set => {
                 key_values => [ { name => 'stateStr' }, { name => 'health' }, { name => 'slaveDelay' },
@@ -101,7 +109,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_member_status_calc'),
                 closure_custom_output => $self->can('custom_member_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'replication-lag', nlabel => 'replication.lag.seconds', set => {
@@ -110,16 +118,10 @@ sub set_counters {
                 perfdatas => [
                     { value => 'lag', template => '%d', unit => 's',
                       min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return "Member '" . $options{instance_value}->{name} . "' ";
 }
 
 sub new {

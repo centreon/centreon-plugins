@@ -25,88 +25,81 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_database_output {
+    my ($self, %options) = @_;
+
+    return "Database '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output',
-          message_multiple => 'All databases statistics are ok' },
+          message_multiple => 'All databases statistics are ok' }
     ];
 
     $self->{maps_counters}->{databases} = [
         { label => 'storage-size', nlabel => 'database.size.storage.bytes', set => {
                 key_values => [ { name => 'storageSize' }, { name => 'display' } ],
-                output_template => 'Storage Size: %s %s',
+                output_template => 'storage size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'storageSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'data-size', nlabel => 'database.size.data.bytes', set => {
                 key_values => [ { name => 'dataSize' }, { name => 'display' } ],
-                output_template => 'Data Size: %s %s',
+                output_template => 'data size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'dataSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'index-size', nlabel => 'database.size.index.bytes', set => {
                 key_values => [ { name => 'indexSize' }, { name => 'display' } ],
-                output_template => 'Index Size: %s %s',
+                output_template => 'index size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'indexSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'collections', nlabel => 'database.collections.count', set => {
                 key_values => [ { name => 'collections' }, { name => 'display' } ],
-                output_template => 'Collections: %s',
+                output_template => 'collections: %s',
                 perfdatas => [
-                    { value => 'collections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'views', nlabel => 'database.views.count', set => {
                 key_values => [ { name => 'views' }, { name => 'display' } ],
-                output_template => 'Views: %s',
+                output_template => 'views: %s',
                 perfdatas => [
-                    { value => 'views', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'documents', nlabel => 'database.documents.count', set => {
                 key_values => [ { name => 'documents' }, { name => 'display' } ],
-                output_template => 'Documents: %s',
+                output_template => 'documents: %s',
                 perfdatas => [
-                    { value => 'documents', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'indexes', nlabel => 'database.indexes.count', set => {
                 key_values => [ { name => 'indexes' }, { name => 'display' } ],
-                output_template => 'Indexes: %s',
+                output_template => 'indexes: %s',
                 perfdatas => [
-                    { value => 'indexes', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
     ];
-}
-
-sub prefix_database_output {
-    my ($self, %options) = @_;
-
-    return "Database '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {

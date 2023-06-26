@@ -25,61 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'databases', type => 3, cb_long_output => 'long_output',
-          message_multiple => 'All databases statistics are ok', indent_long_output => '    ',
-            group => [
-                { name => 'collections', display_long => 1, cb_prefix_output => 'prefix_output_collection',
-                  message_multiple => 'All collections statistics are ok', type => 1 },
-            ]
-        }
-    ];
-
-    $self->{maps_counters}->{collections} = [
-        { label => 'storage-size', nlabel => 'collection.size.storage.bytes', set => {
-                key_values => [ { name => 'storageSize' }, { name => 'display' } ],
-                output_template => 'Storage Size: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { value => 'storageSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'index-size', nlabel => 'collection.size.index.bytes', set => {
-                key_values => [ { name => 'totalIndexSize' }, { name => 'display' } ],
-                output_template => 'Index Size: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { value => 'totalIndexSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'documents', nlabel => 'collection.documents.count', set => {
-                key_values => [ { name => 'count' }, { name => 'display' } ],
-                output_template => 'Documents: %s',
-                perfdatas => [
-                    { value => 'count', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'indexes', nlabel => 'collection.indexes.count', set => {
-                key_values => [ { name => 'nindexes' }, { name => 'display' } ],
-                output_template => 'Indexes: %s',
-                perfdatas => [
-                    { value => 'nindexes', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-    ];
-}
-
 sub long_output {
     my ($self, %options) = @_;
 
@@ -92,13 +37,64 @@ sub prefix_output_collection {
     return "Collection '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'databases', type => 3, cb_long_output => 'long_output',
+          message_multiple => 'All databases statistics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'collections', display_long => 1, cb_prefix_output => 'prefix_output_collection',
+                  message_multiple => 'All collections statistics are ok', type => 1 }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{collections} = [
+        { label => 'storage-size', nlabel => 'collection.size.storage.bytes', set => {
+                key_values => [ { name => 'storageSize' }, { name => 'display' } ],
+                output_template => 'storage size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'index-size', nlabel => 'collection.size.index.bytes', set => {
+                key_values => [ { name => 'totalIndexSize' }, { name => 'display' } ],
+                output_template => 'index size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'documents', nlabel => 'collection.documents.count', set => {
+                key_values => [ { name => 'count' }, { name => 'display' } ],
+                output_template => 'documents: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'indexes', nlabel => 'collection.indexes.count', set => {
+                key_values => [ { name => 'nindexes' }, { name => 'display' } ],
+                output_template => 'indexes: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-database:s"   => { name => 'filter_database' },
+        'filter-database:s' => { name => 'filter_database' }
     });
     return $self;
 }

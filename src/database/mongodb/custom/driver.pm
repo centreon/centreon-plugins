@@ -81,7 +81,7 @@ sub check_options {
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{no_ssl} = (defined($self->{option_results}->{no_ssl})) ? 1 : 0;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
@@ -227,7 +227,7 @@ Set timeout in seconds (Default: 10).
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--no-ssl>
 
