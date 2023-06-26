@@ -21,6 +21,7 @@ jobs:
 
     steps:
       - id: get_environment
+        run: |
           case "$BRANCHNAME" in
             develop)
               STABILITY="unstable"
