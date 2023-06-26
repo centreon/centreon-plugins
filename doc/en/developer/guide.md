@@ -857,7 +857,7 @@ my $oid_sysDescr        = ".1.3.6.1.2.1.1.1";
 my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";
 
 my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                      { oid => $aix_swap_pool, start => 1 },
+                                                      { oid => $aix_swap_pool},
                                                       { oid => $oid_sysDescr },
                                                 ]);
 
