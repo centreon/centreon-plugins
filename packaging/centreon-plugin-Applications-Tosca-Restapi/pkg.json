@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Tosca-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Tosca throught Tosca Commander REST Webservice (TCRS)",
+    "plugin_name": "centreon_tosca_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/tosca/restapi/"
+    ]
+}
