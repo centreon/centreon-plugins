@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scEnclFanEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'enclfan', instance => $instance));
+        next if ($self->check_filter(section => 'enclfan', instance => $instance, name => $result->{scEnclFanLocation}));
         $self->{components}->{enclfan}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("enclosure fan '%s' status is '%s' [instance = %s]",
-                                    $result->{scEnclFanLocation}, $result->{scEnclFanStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'enclfan', value => $result->{scEnclFanStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "enclosure fan '%s' status is '%s' [instance: %s]",
+                $result->{scEnclFanLocation}, $result->{scEnclFanStatus}, $instance, 
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'enclfan', name => $result->{scEnclFanLocation}, value => $result->{scEnclFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Enclosure fan '%s' status is '%s'", $result->{scEnclFanLocation}, $result->{scEnclFanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Enclosure fan '%s' status is '%s'", $result->{scEnclFanLocation}, $result->{scEnclFanStatus})
+            );
         }
     }
 }

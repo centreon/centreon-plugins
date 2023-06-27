@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scEnclPowerStatus     => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.21.1.3', map => \%map_sc_status },
-    scEnclPowerPosition   => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.21.1.4' },
+    scEnclPowerPosition   => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.21.1.4' }
 };
 my $oid_scEnclPowerEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.21.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scEnclPowerEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'enclpower', instance => $instance));
+        next if ($self->check_filter(section => 'enclpower', instance => $instance, name => $result->{scEnclPowerPosition}));
         $self->{components}->{enclpower}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("enclosure power supply '%s' status is '%s' [instance = %s]",
-                                    $result->{scEnclPowerPosition}, $result->{scEnclPowerStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'enclpower', value => $result->{scEnclPowerStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "enclosure power supply '%s' status is '%s' [instance: %s]",
+                $result->{scEnclPowerPosition}, $result->{scEnclPowerStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'enclpower', name => $result->{scEnclPowerPosition}, value => $result->{scEnclPowerStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Enclosure power supply '%s' status is '%s'", $result->{scEnclPowerPosition}, $result->{scEnclPowerStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Enclosure power supply '%s' status is '%s'", $result->{scEnclPowerPosition}, $result->{scEnclPowerStatus})
+            );
         }
     }
 }

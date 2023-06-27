@@ -85,6 +85,10 @@ Can be: 'ctrl', 'disk', 'diskfolder', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvolta
 Exclude some parts (comma seperated list) (Example: --filter=ctrlfan --filter=enclpower)
 Can also exclude specific instance: --filter=ctrlfan,1
 
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter and threshold options).
+
 =item B<--no-component>
 
 Return an error if no compenents are checked.

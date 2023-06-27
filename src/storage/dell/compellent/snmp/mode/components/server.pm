@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scServerStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.27.1.3', map => \%map_sc_status },
-    scServerName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.27.1.4' },
+    scServerName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.27.1.4' }
 };
 my $oid_scServerEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.27.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scServerEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'server', instance => $instance));
+        next if ($self->check_filter(section => 'server', instance => $instance, name => $result->{scServerName}));
         $self->{components}->{server}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("server '%s' status is '%s' [instance = %s]",
-                                    $result->{scServerName}, $result->{scServerStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'server', value => $result->{scServerStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "server '%s' status is '%s' [instance: %s]",
+                $result->{scServerName}, $result->{scServerStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'server', name => $result->{scServerName}, value => $result->{scServerStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Server '%s' status is '%s'", $result->{scServerName}, $result->{scServerStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Server '%s' status is '%s'", $result->{scServerName}, $result->{scServerStatus})
+            );
         }
     }
 }
