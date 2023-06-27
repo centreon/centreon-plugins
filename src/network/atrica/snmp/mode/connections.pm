@@ -435,7 +435,7 @@ Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_del
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
