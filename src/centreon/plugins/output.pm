@@ -1601,8 +1601,10 @@ instead of an UNKNOWN state.
 
 =item B<--range-perfdata>
 
-Change perfdata range thresholds display: 
-1 = start value equals to '0' is removed, 2 = threshold range is not display.
+Rewrite the ranges displayed in the perfdata. Accepted values:
+0: nothing is changed.
+1: if the lower value of the range is equal to 0, it is removed.
+2: remove the thresholds from the perfdata.
 
 =item B<--filter-uom>
 
