@@ -159,7 +159,7 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifDesc) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID to be used to filter interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 

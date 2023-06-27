@@ -125,7 +125,7 @@ Display interfaces with AdminStatus 'up'.
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
+Define the OID to be used to filter interfaces (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
 
 =item B<--oid-display>
 

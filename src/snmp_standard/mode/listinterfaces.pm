@@ -409,7 +409,7 @@ Display interfaces with AdminStatus 'up'.
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-display>
 
