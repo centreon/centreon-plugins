@@ -171,7 +171,7 @@ Define the OID to be used to filter interfaces (default: ifDesc) (values: ifDesc
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifDesc) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID that will be used to name the interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 

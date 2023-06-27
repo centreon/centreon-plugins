@@ -160,7 +160,7 @@ Define the OID to be used to filter interfaces (default: ifName) (values: fcPort
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: fcPortName, ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifName) (values: fcPortName, ifDesc, ifAlias, ifName).
 
 =item B<--display-transform-src>
 

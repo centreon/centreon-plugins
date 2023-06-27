@@ -463,7 +463,7 @@ Define the OID to be used to filter interfaces (default: atrConnCepGenDescr) (va
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
+Define the OID that will be used to name the interfaces (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
 
 =item B<--oid-extra-display>
 

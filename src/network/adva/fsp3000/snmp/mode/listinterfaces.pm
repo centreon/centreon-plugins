@@ -139,7 +139,7 @@ Define the OID to be used to filter interfaces (default: ifDesc) (values: ifDesc
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifDesc) (values: ifDesc, ifAlias).
+Define the OID that will be used to name the interfaces (default: ifDesc) (values: ifDesc, ifAlias).
 
 =item B<--display-transform-src>
 
