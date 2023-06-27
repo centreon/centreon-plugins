@@ -230,7 +230,7 @@ You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
@@ -260,7 +260,7 @@ You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>

@@ -396,7 +396,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-controller-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-controller-status>
@@ -411,7 +411,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-network-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-network-status>
@@ -426,7 +426,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-port-status>
@@ -441,7 +441,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-expander-port-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-expander-port-status>
@@ -456,7 +456,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-compact-flash-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-compact-flash-status>

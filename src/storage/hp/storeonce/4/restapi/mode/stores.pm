@@ -206,7 +206,7 @@ You can use the following variables: %{health}, %{name}
 
 =item B<--warning-health>
 
-Set warning threshold for status (Default: '%{health} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--critical-health>

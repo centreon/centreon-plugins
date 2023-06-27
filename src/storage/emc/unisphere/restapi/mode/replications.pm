@@ -146,7 +146,7 @@ You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-health-status>
 
-Set warning threshold for status (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
+Define the conditions to match for the status to be WARNING (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
@@ -161,7 +161,7 @@ You can use the following variables: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
 
-Set warning threshold for status (Default: '%{repl_status} =~ /syncing/i').
+Define the conditions to match for the status to be WARNING (Default: '%{repl_status} =~ /syncing/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>

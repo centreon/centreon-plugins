@@ -361,7 +361,7 @@ You can use the following variables: %{content}, %{header}, %{first_header}, %{c
 
 =item B<--warning-content>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--critical-content>

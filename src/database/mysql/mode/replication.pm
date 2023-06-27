@@ -372,7 +372,7 @@ You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--critical-connection-status>
@@ -387,7 +387,7 @@ You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-replication-status>
 
-Set warning threshold for status (Default: '%{replication_status} =~ /inProgress/i').
+Define the conditions to match for the status to be WARNING (Default: '%{replication_status} =~ /inProgress/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--critical-replication-status>

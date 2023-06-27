@@ -247,7 +247,7 @@ Antivirus daily.cvd file (Default: '/var/lib/clamav/daily.cvd').
 
 =item B<--warning-engine-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{last_engine_version}, %{current_engine_version}
 
 =item B<--critical-engine-status>
@@ -257,7 +257,7 @@ You can use the following variables: %{last_engine_version}, %{current_engine_ve
 
 =item B<--warning-maindb-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--critical-maindb-status>
@@ -267,7 +267,7 @@ You can use the following variables: %{last_maindb_version}, %{current_maindb_ve
 
 =item B<--warning-dailydb-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =item B<--critical-dailydb-status>

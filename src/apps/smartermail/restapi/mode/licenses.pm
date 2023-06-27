@@ -96,7 +96,7 @@ You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-upgrade-protection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--critical-upgrade-protection-status>

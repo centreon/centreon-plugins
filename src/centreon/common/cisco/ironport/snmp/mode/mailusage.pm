@@ -256,7 +256,7 @@ You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
+Define the conditions to match for the status to be WARNING (Default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--critical-status>

@@ -300,7 +300,7 @@ Check alarms.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /warning|minor/i')
+Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /warning|minor/i')
 You can use the following variables: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--critical-status>

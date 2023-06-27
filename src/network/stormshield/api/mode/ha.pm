@@ -226,7 +226,7 @@ You can use the following variables: %{state}, %{name}
 
 =item B<--warning-member-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{name}
 
 =item B<--critical-member-state>
@@ -241,7 +241,7 @@ You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--warning-member-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--critical-member-link-status>
@@ -256,7 +256,7 @@ You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--warning-member-config>
 
-Set warning threshold for status  (Default: '%{isConfigSync} eq "no"').
+Define the conditions to match for the status to be WARNING  (Default: '%{isConfigSync} eq "no"').
 You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--critical-member-config>

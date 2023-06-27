@@ -198,7 +198,7 @@ Filter events status (Default: 'Active')
 
 =item B<--warning-event>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 

@@ -395,7 +395,7 @@ You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--critical-node-status>
@@ -410,7 +410,7 @@ You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--warning-bbu-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--critical-bbu-status>
@@ -425,7 +425,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{no
 
 =item B<--warning-port-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--critical-port-link-status>
@@ -440,7 +440,7 @@ You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-port-health>
 
-Set warning threshold for status (Default: '%{health} eq "degraded"').
+Define the conditions to match for the status to be WARNING (Default: '%{health} eq "degraded"').
 You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--critical-port-health>

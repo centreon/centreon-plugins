@@ -233,7 +233,7 @@ You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectComm
 
 =item B<--warning-certificate-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>

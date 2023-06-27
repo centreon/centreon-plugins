@@ -302,7 +302,7 @@ Can be a file or json content.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-status>
@@ -312,7 +312,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-step-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{message}
 
 =item B<--critical-step-status>

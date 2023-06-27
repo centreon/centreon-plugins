@@ -628,7 +628,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
@@ -643,7 +643,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
@@ -658,7 +658,7 @@ You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>

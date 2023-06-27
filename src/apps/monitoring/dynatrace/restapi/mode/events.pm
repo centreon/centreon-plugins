@@ -205,7 +205,7 @@ Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{e
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{entityId}, %{eventType}, %{startTime}, %{endTime}, %{time}
 
 =item B<--critical-status>

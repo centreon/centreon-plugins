@@ -132,7 +132,7 @@ Check arrays status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 'status' can be: 'online', 'offline', 'excluded', 'degraded'.
 
 =item B<--critical-status>

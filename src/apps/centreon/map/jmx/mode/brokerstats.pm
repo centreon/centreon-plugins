@@ -144,7 +144,7 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--critical-status>

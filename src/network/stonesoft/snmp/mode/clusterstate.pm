@@ -114,7 +114,7 @@ You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{node_status} =~ /lockedOnline/i').
+Define the conditions to match for the status to be WARNING (Default: '%{node_status} =~ /lockedOnline/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>

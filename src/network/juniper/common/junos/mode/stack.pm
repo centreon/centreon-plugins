@@ -213,12 +213,12 @@ Check stack members.
 
 =item B<--unknown-member-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{role}, %{roleLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{role}, %{roleLast}
 
 =item B<--critical-member-status>
@@ -228,12 +228,12 @@ You can use the following variables: %{role}, %{roleLast}
 
 =item B<--unknown-port-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--critical-port-status>

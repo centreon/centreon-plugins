@@ -137,7 +137,7 @@ You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--warning-chassis-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--critical-chassis-status>

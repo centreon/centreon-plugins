@@ -961,7 +961,7 @@ You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectComm
 
 =item B<--warning-certificate-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>
@@ -976,7 +976,7 @@ You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
+Define the conditions to match for the status to be WARNING (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
 You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>
@@ -991,7 +991,7 @@ You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--warning-operating-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--critical-operating-state>
@@ -1006,7 +1006,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-autotest-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-autotest-state>
@@ -1021,7 +1021,7 @@ You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--warning-interface-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--critical-interface-status>
@@ -1036,7 +1036,7 @@ You can use the following variables: %{sn}, %{state}
 
 =item B<--warning-vpn-ike-service-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{state}
 
 =item B<--critical-vpn-ike-service-state>
@@ -1051,7 +1051,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-ike-sa-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-ike-sa-state>
@@ -1066,7 +1066,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-sa-state>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-sa-state>

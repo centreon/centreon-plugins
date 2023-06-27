@@ -165,7 +165,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /batteryLow/i').
 You can use the following variables: %{status}
 
 =item B<--critical-status>

@@ -129,7 +129,7 @@ Filter on one or several AP.
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can used special variables like: %{status}, %{name}
 
 =item B<--critical-connection-status>

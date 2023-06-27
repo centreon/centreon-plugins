@@ -135,7 +135,7 @@ Filter services (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{service_name}, %{status}, %{classification}
 
 =item B<--critical-status>

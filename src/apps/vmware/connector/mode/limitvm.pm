@@ -241,7 +241,7 @@ Check disk limits (since vsphere 5.0).
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-disk-status>
@@ -251,7 +251,7 @@ You can use the following variables: %{connection_state}, %{power_state}, %{limi
 
 =item B<--warning-cpu-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-cpu-status>
@@ -261,7 +261,7 @@ You can use the following variables: %{connection_state}, %{power_state}, %{limi
 
 =item B<--warning-memory-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-memory-status>

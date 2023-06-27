@@ -192,7 +192,7 @@ You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--warning--status>
 
-Set warning threshold for status (Default: '%{status} =~ /ending|restricted|starting/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /ending|restricted|starting/i').
 You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--critical-status>

@@ -416,7 +416,7 @@ You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--critical-node-status>
@@ -431,7 +431,7 @@ You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--warning-nic-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--critical-nic-status>
@@ -446,7 +446,7 @@ You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--warning-san-path-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--critical-san-path-status>
@@ -461,7 +461,7 @@ You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-bbu-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--critical-bbu-status>

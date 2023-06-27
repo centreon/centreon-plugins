@@ -172,7 +172,7 @@ You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{connection_state}
 
 =item B<--critical-status>
@@ -187,7 +187,7 @@ You can use the following variables: %{overall_status}
 
 =item B<--warning-overall-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{overall_status} =~ /yellow/i').
 You can use the following variables: %{overall_status}
 
 =item B<--critical-overall-status>

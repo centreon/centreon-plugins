@@ -304,7 +304,7 @@ Example : --extra-filter='app=mynewapp'
 
 =item B<--warning-pod-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--critical-pod-status>
@@ -314,7 +314,7 @@ You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--warning-container-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{name}.
 
 =item B<--critical-container-status>

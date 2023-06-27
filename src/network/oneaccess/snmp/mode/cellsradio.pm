@@ -299,7 +299,7 @@ You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, 
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{signalQuality} =~ /poor/').
+Define the conditions to match for the status to be WARNING (Default: '%{signalQuality} =~ /poor/').
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--critical-status>

@@ -207,7 +207,7 @@ You can use the following variables: %{cluster_status}, %{reason_cannot_takeover
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{cluster_status} =~ /^takeover|partialGiveback/i').
+Define the conditions to match for the status to be WARNING (Default: '%{cluster_status} =~ /^takeover|partialGiveback/i').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--critical-cluster-status>
@@ -222,7 +222,7 @@ You can use the following variables: %{status}, %{reason_cannot_takeover}, %{par
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} =~ /^takeover|partialGiveback/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /^takeover|partialGiveback/i').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =item B<--critical-node-status>

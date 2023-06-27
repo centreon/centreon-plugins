@@ -237,7 +237,7 @@ Example: --filter-counters='^status|current$'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /onBattery/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /onBattery/i').
 You can use the following variables: %{status}
 
 =item B<--critical-status>

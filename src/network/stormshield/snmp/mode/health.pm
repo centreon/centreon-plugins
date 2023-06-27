@@ -176,7 +176,7 @@ You can use the following variables: %{health}, %{service}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '%{health} =~ /minor/i').
+Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /minor/i').
 You can use the following variables: %{health}, %{service}
 
 =item B<--critical-service-status>

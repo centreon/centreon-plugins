@@ -201,7 +201,7 @@ Example: --filter-counters='status'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} !~ /Enabled/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} !~ /Enabled/i').
 You can use the following variables: %{status}, %{state}, %{duration}, %{percent_complete}.
 
 =item B<--critical-status>

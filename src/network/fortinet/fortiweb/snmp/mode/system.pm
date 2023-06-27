@@ -155,7 +155,7 @@ Example: --filter-counters='memory-usage'
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{ha_mode}
 
 =item B<--critical-ha-status>

@@ -196,7 +196,7 @@ You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{exit_code} == 1').
+Define the conditions to match for the status to be WARNING (Default: '%{exit_code} == 1').
 You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--critical-status>

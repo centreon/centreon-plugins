@@ -176,7 +176,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /nonCritical|other/').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
@@ -186,12 +186,12 @@ You can use the following variables: %{status}
 
 =item B<--unknown-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}
 
 =item B<--warning-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /nonCritical|other/').
 You can use the following variables: %{status}
 
 =item B<--critical-storage-status>

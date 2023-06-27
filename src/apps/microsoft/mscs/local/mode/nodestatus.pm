@@ -131,7 +131,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} =~ /pause|joining/').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /pause|joining/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>

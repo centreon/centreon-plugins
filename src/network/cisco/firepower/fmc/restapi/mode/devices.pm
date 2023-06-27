@@ -195,7 +195,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>

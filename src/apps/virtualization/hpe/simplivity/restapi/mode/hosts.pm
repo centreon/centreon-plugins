@@ -261,7 +261,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /suspected/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /suspected/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-host-status>

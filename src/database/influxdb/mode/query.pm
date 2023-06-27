@@ -216,7 +216,7 @@ Set the global output in case everything is fine for multiple instances
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query.

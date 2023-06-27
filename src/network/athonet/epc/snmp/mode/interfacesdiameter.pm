@@ -220,7 +220,7 @@ You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--critical-status>
@@ -235,7 +235,7 @@ You can use the following variables: %{transport_status}, %{transport_type}, %{n
 
 =item B<--warning-transport-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--critical-transport-status>

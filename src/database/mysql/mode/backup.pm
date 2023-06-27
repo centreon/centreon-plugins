@@ -162,7 +162,7 @@ You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--critical-status>

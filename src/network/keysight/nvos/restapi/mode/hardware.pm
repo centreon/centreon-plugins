@@ -167,7 +167,7 @@ You can use the following variables: %{status}, %{class}
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status (Default : '%{status} eq "warn"').
+Define the conditions to match for the status to be WARNING (Default : '%{status} eq "warn"').
 You can use the following variables: %{status}, %{class}
 
 =item B<--critical-temperature-status>
@@ -182,7 +182,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-psu-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>

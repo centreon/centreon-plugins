@@ -333,7 +333,7 @@ You can use the following variables: %{state}, %{status}, %{membersAllDisabled},
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
+Define the conditions to match for the status to be WARNING (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--critical-status>
@@ -348,7 +348,7 @@ You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeNam
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--critical-member-status>

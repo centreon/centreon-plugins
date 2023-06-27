@@ -144,7 +144,7 @@ Can use special variables like: %{ha_status}
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--critical-ha-status>
@@ -159,7 +159,7 @@ Can use special variables like: %{peer_status}, %{ha_mode}
 
 =item B<--warning-peer-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{peer_status}
 
 =item B<--critical-peer-status>

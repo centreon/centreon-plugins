@@ -349,7 +349,7 @@ You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--warning-peer-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--critical-peer-status>
@@ -364,7 +364,7 @@ You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--warning-keepalive-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--critical-keepalive-status>
@@ -379,7 +379,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status (Default: '%{link_status} =~ /downStar/i')
+Define the conditions to match for the status to be WARNING (Default: '%{link_status} =~ /downStar/i')
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>

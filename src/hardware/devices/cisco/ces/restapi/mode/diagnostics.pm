@@ -150,7 +150,7 @@ Use old legacy command.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{level} =~ /warning|minor/i')
+Define the conditions to match for the status to be WARNING (Default: '%{level} =~ /warning|minor/i')
 You can use the following variables: %{description}, %{level}, %{type}
 
 =item B<--critical-status>

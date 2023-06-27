@@ -265,7 +265,7 @@ Filter by description (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{vm}, %{status}, %{hostgroup}
 
 =item B<--critical-status>

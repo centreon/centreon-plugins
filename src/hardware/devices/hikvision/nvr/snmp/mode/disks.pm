@@ -212,7 +212,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning--status>
 
-Set warning threshold for status (Default: '%{status} =~ /reparing|formatting/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /reparing|formatting/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>

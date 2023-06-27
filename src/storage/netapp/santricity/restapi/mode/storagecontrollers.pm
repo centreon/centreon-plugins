@@ -221,7 +221,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-controller-status>
 
-Set warning threshold for status (Default: '%{status} =~ /rpaParErr|degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /rpaParErr|degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-controller-status>

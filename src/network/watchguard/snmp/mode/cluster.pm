@@ -166,7 +166,7 @@ You can use the following variables: %{state}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}
 
 =item B<--critical-cluster-status>
@@ -181,7 +181,7 @@ You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{role}, %{serial}
 
 =item B<--critical-member-status>

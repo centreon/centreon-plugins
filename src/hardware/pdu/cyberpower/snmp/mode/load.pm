@@ -291,7 +291,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-bank-status>
 
-Set warning threshold for status (Default: '%{state} =~ /low|nearOverload/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /low|nearOverload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-bank-status>
@@ -306,7 +306,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-phase-status>
 
-Set warning threshold for status (Default: '%{state} =~ /low|nearOverload/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /low|nearOverload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-phase-status>

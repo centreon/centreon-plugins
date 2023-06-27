@@ -349,7 +349,7 @@ Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 
 =item B<--warning-vm-status>
 
-Set warning threshold for status (Default: -)
+Define the conditions to match for the status to be WARNING (Default: -)
 You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-vm-status>

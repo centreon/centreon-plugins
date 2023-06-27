@@ -215,7 +215,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /ok_but|degraded|minor/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /ok_but|degraded|minor/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>

@@ -198,7 +198,7 @@ Can be: 'documents-total', 'data-size-primaries',
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i')
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i')
 You can use the following variables: %{display}, %{status}.
 
 =item B<--critical-status>

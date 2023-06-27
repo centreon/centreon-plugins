@@ -204,7 +204,7 @@ Filter namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{type} =~ /warning/i')
+Define the conditions to match for the status to be WARNING (Default: '%{type} =~ /warning/i')
 Can use special variables like: %{name}, %{namespace}, %{type},
 %{object}, %{message}, %{count}, %{first_seen}, %{last_seen}.
 

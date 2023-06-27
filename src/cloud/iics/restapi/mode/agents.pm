@@ -228,7 +228,7 @@ You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--warning-agent-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
@@ -243,7 +243,7 @@ You can use the following variables: %{agentName}, %{appDisplayName}, %{status},
 
 =item B<--warning-engine-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--critical-engine-status>

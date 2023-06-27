@@ -139,7 +139,7 @@ Check node status.
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: -)
+Define the conditions to match for the status to be WARNING (Default: -)
 You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--critical-node-status>

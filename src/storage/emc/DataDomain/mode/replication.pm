@@ -165,7 +165,7 @@ You can use the following variables: %{state}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} =~ /initializing|recovering/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /initializing|recovering/i').
 You can use the following variables: %{state}
 
 =item B<--critical-status>

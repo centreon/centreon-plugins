@@ -235,7 +235,7 @@ You can use the following variables: %{display}, %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} == 1')
+Define the conditions to match for the status to be WARNING (Default: '%{status} == 1')
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>

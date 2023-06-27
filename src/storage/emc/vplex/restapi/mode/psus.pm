@@ -110,7 +110,7 @@ Filter power supplies by power supply name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{operational_status}, %{engine_id}, %{psu_name}
 
 =item B<--critical-operational-status>
@@ -120,7 +120,7 @@ You can use the following variables: %{operational_status}, %{engine_id}, %{psu_
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
 
 =item B<--critical-temperature-status>

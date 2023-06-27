@@ -262,7 +262,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-pool-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded|warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded|warning/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-pool-status>

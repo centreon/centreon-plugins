@@ -94,7 +94,7 @@ Check VA health.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} =~ /yellow/')
+Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /yellow/')
 You can use the following variables: %{status}
 
 =item B<--critical-status>

@@ -528,7 +528,7 @@ Example: --filter-counters='rate|latency'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 

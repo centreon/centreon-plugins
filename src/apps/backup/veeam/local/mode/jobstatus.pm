@@ -323,7 +323,7 @@ You can use the following variables: %{display}, %{status}, %{type}, %{is_runnin
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--critical-status>

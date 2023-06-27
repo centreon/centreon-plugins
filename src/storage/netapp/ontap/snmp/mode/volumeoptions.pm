@@ -202,7 +202,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
@@ -212,12 +212,12 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-options>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{options}, %{display}
 
 =item B<--warning-options>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{options}, %{display}
 
 =item B<--critical-options>

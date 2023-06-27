@@ -239,7 +239,7 @@ Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
+Define the conditions to match for the status to be WARNING (Default: '%{up_to_date} < %{desired}')
 You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}
 

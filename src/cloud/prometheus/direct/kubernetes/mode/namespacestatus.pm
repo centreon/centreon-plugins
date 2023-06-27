@@ -192,7 +192,7 @@ Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{display}, %{phase}.
 
 =item B<--critical-status>

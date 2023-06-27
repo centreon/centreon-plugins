@@ -113,7 +113,7 @@ Check Efficient IP SOLIDserver role and status.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} =~ /upgrading|split-brain/')
+Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /upgrading|split-brain/')
 Can be used with special variables like: %{status}, %{role}
 
 =item B<--critical-status>

@@ -110,7 +110,7 @@ Filter devices by device name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--critical-operational-status>
@@ -120,7 +120,7 @@ You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--warning-health-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--critical-health-status>
@@ -130,7 +130,7 @@ You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{service_status}, %{device_name}
 
 =item B<--critical-service-status>

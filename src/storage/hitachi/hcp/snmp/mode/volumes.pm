@@ -236,7 +236,7 @@ You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-volume-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--critical-volume-status>

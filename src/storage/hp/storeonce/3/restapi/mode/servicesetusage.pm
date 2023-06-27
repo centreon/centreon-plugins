@@ -224,7 +224,7 @@ Filter service set name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{health} =~ /warning/).
+Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/).
 You can use the following variables: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--critical-status>

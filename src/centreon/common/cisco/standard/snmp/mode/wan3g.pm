@@ -363,7 +363,7 @@ You can use the following variables: %{modem_status}, %{display}
 
 =item B<--warning-modem-status>
 
-Set warning threshold for status (Default: '%{modem_status} =~ /lowPowerMode/i').
+Define the conditions to match for the status to be WARNING (Default: '%{modem_status} =~ /lowPowerMode/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--critical-modem-status>
@@ -378,7 +378,7 @@ You can use the following variables: %{connection_status}, %{display}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--critical-connection-status>
@@ -393,7 +393,7 @@ You can use the following variables: %{sim_status}, %{display}
 
 =item B<--warning-sim-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--critical-sim-status>
@@ -408,7 +408,7 @@ You can use the following variables: %{current_band}, %{channel_number}, %{displ
 
 =item B<--warning-radio-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--critical-radio-status>
@@ -423,7 +423,7 @@ You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-network-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--critical-network-status>

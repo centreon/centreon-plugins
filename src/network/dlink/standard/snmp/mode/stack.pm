@@ -249,7 +249,7 @@ You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '%{status} =~ /codeUpdate/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /codeUpdate/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--critical-member-status>
@@ -264,7 +264,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-link-status>

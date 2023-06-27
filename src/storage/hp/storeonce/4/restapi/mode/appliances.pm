@@ -236,7 +236,7 @@ You can use the following variables: %{service}, %{status}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables: %{service}, %{status}
 
 =item B<--critical-service-status>

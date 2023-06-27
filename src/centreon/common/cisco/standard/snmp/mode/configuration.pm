@@ -131,7 +131,7 @@ Check Cisco changed and saved configurations (CISCO-CONFIG-MAN-MIB).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
 
 =item B<--critical-status>

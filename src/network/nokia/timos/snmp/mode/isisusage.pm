@@ -211,7 +211,7 @@ Can be: 'total-int-inservice', 'total-int-outservice'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{oper_state}, %{admin_state}.
 
 =item B<--critical-status>

@@ -345,7 +345,7 @@ You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /batteryLow/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--critical-status>
@@ -360,7 +360,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-battery-pack-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-battery-pack-status>
@@ -375,7 +375,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-cartridge-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-cartridge-status>

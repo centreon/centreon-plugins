@@ -254,12 +254,12 @@ Filter receptable branch name (can be a regexp).
 
 =item B<--unknown-rcp-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-rcp-status>
 
-Set warning threshold for status (Default: '%{oper_state} =~ /warning|alarm/').
+Define the conditions to match for the status to be WARNING (Default: '%{oper_state} =~ /warning|alarm/').
 You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--critical-rcp-status>

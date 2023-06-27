@@ -199,7 +199,7 @@ Example: --filter-counters='^memory-usage$'
 
 =item B<--warning-replication-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{replication_state}
 
 =item B<--critical-replication-status>

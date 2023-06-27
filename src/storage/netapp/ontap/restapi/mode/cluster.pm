@@ -254,7 +254,7 @@ You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--critical-node-status>

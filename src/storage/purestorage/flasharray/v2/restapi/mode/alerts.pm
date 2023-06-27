@@ -165,7 +165,7 @@ Filter by category name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /warning/i')
+Define the conditions to match for the status to be WARNING (Default: '%{state} ne "closed" and %{severity} =~ /warning/i')
 You can use the following variables: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
 
 =item B<--critical-status>

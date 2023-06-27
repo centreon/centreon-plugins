@@ -297,7 +297,7 @@ You can use the following variables: %{status}, %{state}, %{license_error}, %{di
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{state}, %{license_error}, %{display}
 
 =item B<--critical-status>
@@ -312,7 +312,7 @@ You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--warning-aep-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--critical-aep-status>

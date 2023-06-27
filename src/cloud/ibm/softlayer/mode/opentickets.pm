@@ -158,7 +158,7 @@ Name of the ticket group (Can be a regexp).
 
 =item B<--warning-ticket>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--critical-ticket>

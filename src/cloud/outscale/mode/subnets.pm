@@ -194,7 +194,7 @@ You can use the following variables: %{state}, %{subnetName}
 
 =item B<--warning-subnet-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{subnetName}
 
 =item B<--critical-subnet-status>

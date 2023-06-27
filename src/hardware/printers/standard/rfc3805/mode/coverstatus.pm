@@ -115,7 +115,7 @@ You can use the following variables: %{status}, %{description}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%%{status} =~ /coverOpen|interlockOpen/').
+Define the conditions to match for the status to be WARNING (Default: '%%{status} =~ /coverOpen|interlockOpen/').
 You can use the following variables: %{status}, %{description}
 
 =item B<--critical-status>

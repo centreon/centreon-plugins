@@ -203,7 +203,7 @@ Filter by autoscaling group name (can be a regexp).
 
 =item B<--warning-instances>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{health}, %{lifecycle}
 
 =item B<--critical-instances>

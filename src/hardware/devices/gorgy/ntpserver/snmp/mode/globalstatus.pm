@@ -175,7 +175,7 @@ Example: --filter-counters='^sync-status$'
 
 =item B<--warning-sync-status>
 
-Set warning threshold for status (Default: '%{sync_status} =~ /Running with autonomy|Free running/i').
+Define the conditions to match for the status to be WARNING (Default: '%{sync_status} =~ /Running with autonomy|Free running/i').
 You can use the following variables: %{sync_status}
 
 =item B<--critical-sync-status>
@@ -185,7 +185,7 @@ You can use the following variables: %{sync_status}
 
 =item B<--warning-timebase-status>
 
-Set warning threshold for status (Default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
+Define the conditions to match for the status to be WARNING (Default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
 You can use the following variables: %{timebase_status}
 
 =item B<--critical-timebase-status>

@@ -288,7 +288,7 @@ If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>

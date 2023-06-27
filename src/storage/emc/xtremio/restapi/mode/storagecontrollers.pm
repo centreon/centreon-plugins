@@ -153,7 +153,7 @@ You can use the following variables: %{health}, %{indicator}
 
 =item B<--warning-health-indicator>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{health}, %{indicator}
 
 =item B<--critical-health-indicator>

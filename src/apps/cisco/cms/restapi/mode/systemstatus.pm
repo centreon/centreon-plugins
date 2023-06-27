@@ -201,7 +201,7 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--critical-status>

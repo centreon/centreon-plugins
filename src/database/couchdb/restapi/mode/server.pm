@@ -214,7 +214,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
@@ -229,7 +229,7 @@ You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--warning-compaction-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--critical-compaction-status>

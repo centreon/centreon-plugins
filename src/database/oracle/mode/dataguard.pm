@@ -197,7 +197,7 @@ You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_s
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
+Define the conditions to match for the status to be WARNING (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--critical-status>

@@ -235,7 +235,7 @@ Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 
 =item B<--warning-ap-status>
 
-Set warning threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
+Define the conditions to match for the status to be WARNING (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--critical-ap-status>

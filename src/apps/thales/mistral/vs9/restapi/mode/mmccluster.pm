@@ -145,7 +145,7 @@ You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{replicationStatus} =~ /not_synchronized/i').
+Define the conditions to match for the status to be WARNING (Default: '%{replicationStatus} =~ /not_synchronized/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
@@ -160,7 +160,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} =~ /disconnected/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /disconnected/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>

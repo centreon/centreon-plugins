@@ -230,7 +230,7 @@ Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--warning-ap-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-ap-status>

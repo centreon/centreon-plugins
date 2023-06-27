@@ -198,7 +198,7 @@ Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>

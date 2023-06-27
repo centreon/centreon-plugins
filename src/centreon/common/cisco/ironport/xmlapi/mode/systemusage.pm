@@ -300,7 +300,7 @@ Threshold critical for http response code
 
 =item B<--warning-system-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{system_status}
 
 =item B<--critical-system-status>

@@ -206,7 +206,7 @@ Can be: 'zones-count', 'zone-calls-current', 'searches-total',
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{status}, %{type}, %{name}.
 
 =item B<--critical-status>

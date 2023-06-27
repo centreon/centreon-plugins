@@ -235,7 +235,7 @@ Filter paths by destionation port (regexp can be used).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{state}, %{expected_state}
 
 For example, if you want a warning alert when the path state is in 'error' then

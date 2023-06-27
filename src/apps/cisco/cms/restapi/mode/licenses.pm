@@ -132,7 +132,7 @@ Check features licensing.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} eq "activated" && %{expiry_days} < 60').
+Define the conditions to match for the status to be WARNING. (Default: '%{status} eq "activated" && %{expiry_days} < 60').
 Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>

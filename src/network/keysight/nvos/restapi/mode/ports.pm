@@ -257,7 +257,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-license-status>
 
-Set warning threshold for status (Default: '%{status} =~ /invalid_software_version/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /invalid_software_version/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-license-status>
@@ -272,7 +272,7 @@ You can use the following variables: %{adminStatus}, %{operationalStatus}, %{nam
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{adminStatus}, %{operationalStatus}, %{name}
 
 =item B<--critical-link-status>

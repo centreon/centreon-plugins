@@ -100,7 +100,7 @@ Check overall cluster status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warn/i')
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warn/i')
 You can use the following variables: %{status}, %{message}
 
 =item B<--critical-status>

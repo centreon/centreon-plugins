@@ -173,7 +173,7 @@ You can use the following variables: %{state}, %{hostname}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--critical-status>

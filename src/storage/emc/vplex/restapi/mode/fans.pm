@@ -111,7 +111,7 @@ Filter fans by fan name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{operational_status}, %{engine_id}, %{fan_name}
 
 =item B<--critical-operational-status>
@@ -121,7 +121,7 @@ You can use the following variables: %{operational_status}, %{engine_id}, %{fan_
 
 =item B<--warning-speed-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{speed_threshold_exceeded}, %{engine_id}, %{fan_name}
 
 =item B<--critical-speed-status>

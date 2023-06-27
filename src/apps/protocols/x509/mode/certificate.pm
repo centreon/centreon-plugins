@@ -126,7 +126,7 @@ Check X509's certificate validity (for SMTPS, POPS, IMAPS, HTTPS)
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{expiration} < 60').
+Define the conditions to match for the status to be WARNING. (Default: '%{expiration} < 60').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 =item B<--critical-status>

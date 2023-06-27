@@ -136,7 +136,7 @@ You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_en
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
 You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--critical-status>

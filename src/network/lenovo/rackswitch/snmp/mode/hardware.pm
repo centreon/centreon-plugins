@@ -141,7 +141,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} eq "noncritical"').
+Define the conditions to match for the status to be WARNING (Default: '%{status} eq "noncritical"').
 You can use the following variables: %{status}
 
 =item B<--critical-status>

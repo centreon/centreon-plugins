@@ -203,7 +203,7 @@ Check hardware.
 
 =item B<--warning-fan-status>
 
-Set warning threshold for status (Default : '%{status} ne "running"').
+Define the conditions to match for the status to be WARNING (Default : '%{status} ne "running"').
 You can use the following variables: %{status}
 
 =item B<--critical-fan-status>

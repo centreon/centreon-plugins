@@ -195,7 +195,7 @@ You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--warning-probe-estatus>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--critical-probe-status>

@@ -206,7 +206,7 @@ You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{space_usage_level} =~ /warning/').
+Define the conditions to match for the status to be WARNING (Default: '%{space_usage_level} =~ /warning/').
 You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--critical-status>

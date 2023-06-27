@@ -124,7 +124,7 @@ Check System Director state and workspaces redistributing count.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{state}
 
 =item B<--critical-status>

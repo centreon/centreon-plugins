@@ -303,7 +303,7 @@ Can be: 'active-mailboxes', 'total-usage-active' (count),
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{used} > %{issue_warning_quota}').
+Define the conditions to match for the status to be WARNING (Default: '%{used} > %{issue_warning_quota}').
 You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 

@@ -181,7 +181,7 @@ Filter by session type.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{client_name}, %{state}, %{session_type}, %{since}
 
 =item B<--critical-status>

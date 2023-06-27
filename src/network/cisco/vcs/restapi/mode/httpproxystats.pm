@@ -232,7 +232,7 @@ Can be: 'connections-client', 'connections-server',
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}.
 
 =item B<--critical-status>

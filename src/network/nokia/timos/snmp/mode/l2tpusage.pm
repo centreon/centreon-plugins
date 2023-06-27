@@ -298,7 +298,7 @@ Can be: 'vrtr-tunnel-total', 'vrtr-tunnel-active-sessions', 'vrtr-tunnel-total-s
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>

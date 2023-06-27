@@ -295,7 +295,7 @@ You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwi
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
+Define the conditions to match for the status to be WARNING (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
 You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--critical-cluster-status>
@@ -310,7 +310,7 @@ You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--critical-member-status>

@@ -136,7 +136,7 @@ Filter directors by director name (can be a regexp).
 
 =item B<--warning-health-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{operational_status}, %{engine_id}, %{director_name}
 
 =item B<--critical-health-status>
@@ -146,7 +146,7 @@ You can use the following variables: %{operational_status}, %{engine_id}, %{dire
 
 =item B<--warning-communication-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{communication_status}, %{engine_id}, %{director_name}
 
 =item B<--critical-communication-status>
@@ -156,7 +156,7 @@ You can use the following variables: %{communication_status}, %{engine_id}, %{di
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{temperature_threshold_exceeded}, %{engine_id}, %{director_name}
 
 =item B<--critical-temperature-status>
@@ -166,7 +166,7 @@ You can use the following variables: %{temperature_threshold_exceeded}, %{engine
 
 =item B<--warning-voltage-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{voltage_threshold_exceeded}, %{engine_id}, %{director_name}
 
 =item B<--critical-voltage-status>
@@ -176,7 +176,7 @@ You can use the following variables: %{voltage_threshold_exceeded}, %{engine_id}
 
 =item B<--warning-vplex-kdriver-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{vplex_kdriver_status}, %{engine_id}, %{director_name}
 
 =item B<--critical-vplex-kdriver-status>

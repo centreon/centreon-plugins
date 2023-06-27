@@ -175,7 +175,7 @@ You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{opState} =~ /pending/i').
+Define the conditions to match for the status to be WARNING (Default: '%{opState} =~ /pending/i').
 You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--critical-status>

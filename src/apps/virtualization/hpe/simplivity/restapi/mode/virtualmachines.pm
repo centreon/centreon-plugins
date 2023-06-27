@@ -177,7 +177,7 @@ You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--critical-ha-status>

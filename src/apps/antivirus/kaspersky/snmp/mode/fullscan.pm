@@ -118,7 +118,7 @@ Check full scan status.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
+Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /Warning/i').
 Can use special variables like: %{status}
 
 =item B<--critical-status>

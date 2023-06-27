@@ -220,7 +220,7 @@ Filter volume name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /needsChecking/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /needsChecking/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>

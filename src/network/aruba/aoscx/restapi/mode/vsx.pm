@@ -230,7 +230,7 @@ You can use the following variables: %{role}, %{config_sync}
 
 =item B<--warning-device-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{role}, %{config_sync}
 
 =item B<--critical-device-status>
@@ -245,7 +245,7 @@ You can use the following variables: %{isl_status}
 
 =item B<--warning-isl-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{isl_status}
 
 =item B<--critical-isl-status>
@@ -260,7 +260,7 @@ You can use the following variables: %{keepalive_status}
 
 =item B<--warning-keepalive-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{keepalive_status}
 
 =item B<--critical-keepalive-status>

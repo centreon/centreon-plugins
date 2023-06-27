@@ -196,7 +196,7 @@ You can use the following variables: %{state}, %{vpnName}
 
 =item B<--warning-vpn-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{vpnName}
 
 =item B<--critical-vpn-connection-status>

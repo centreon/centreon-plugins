@@ -171,7 +171,7 @@ Check replication status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{sync_status} =~ /in progress/i').
+Define the conditions to match for the status to be WARNING (Default: '%{sync_status} =~ /in progress/i').
 You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--critical-status>

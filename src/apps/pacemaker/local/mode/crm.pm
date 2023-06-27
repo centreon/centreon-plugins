@@ -469,7 +469,7 @@ Filter resource (also clone resource) by name (can be a regexp).
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--critical-connection-status>
@@ -479,7 +479,7 @@ You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--warning-quorum-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{quorum_status}
 
 =item B<--critical-quorum-status>
@@ -489,7 +489,7 @@ You can use the following variables: %{quorum_status}
 
 =item B<--warning-resource-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged}
 
 =item B<--critical-resource-status>
@@ -499,7 +499,7 @@ You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged
 
 =item B<--warning-clone-resource-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
 
 =item B<--critical-clone-resource-status>

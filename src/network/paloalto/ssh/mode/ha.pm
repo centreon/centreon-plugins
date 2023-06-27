@@ -194,7 +194,7 @@ Can use special variables like: %{enabled}, %{status}
 
 =item B<--warning-sync-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--critical-sync-status>
@@ -209,7 +209,7 @@ Can use special variables like: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
@@ -224,7 +224,7 @@ Can use special variables like: %{status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{status}, %{display}
 
 =item B<--critical-link-status>

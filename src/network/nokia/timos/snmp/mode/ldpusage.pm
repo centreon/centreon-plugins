@@ -222,7 +222,7 @@ Can be: 'ipv4-oper-down-events', 'ipv4-active-sessions', 'ipv4-active-link-adj',
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{display}
 
 =item B<--critical-status>

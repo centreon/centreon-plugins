@@ -144,7 +144,7 @@ You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--warning-sig-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--critical-sig-status>

@@ -439,7 +439,7 @@ You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--critical-status>

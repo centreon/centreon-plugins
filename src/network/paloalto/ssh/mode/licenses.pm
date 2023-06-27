@@ -148,7 +148,7 @@ Filter license by feature (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{expired}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>

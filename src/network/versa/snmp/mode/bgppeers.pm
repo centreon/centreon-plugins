@@ -209,7 +209,7 @@ You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{sta
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =item B<--critical-status>
