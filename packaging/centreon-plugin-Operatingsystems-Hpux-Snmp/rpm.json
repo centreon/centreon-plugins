@@ -3,5 +3,5 @@
         "perl(SNMP)",
         "perl(DateTime)"
     ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Operatingsystems-Hpuux-Snmp"
+    "replaces": ["centreon-plugin-Operatingsystems-Hpuux-Snmp"]
 }

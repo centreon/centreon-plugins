@@ -1,5 +1,8 @@
 {
     "dependencies": [
         "libsnmp-perl"
-    ]
+    ],
+    "replaces": ["centreon-plugin-hardware-devices-masterclock-ntpserver-snmp"],
+    "conflicts": ["centreon-plugin-hardware-devices-masterclock-ntpserver-snmp"],
+    "provides": ["centreon-plugin-hardware-devices-masterclock-ntpserver-snmp"]
 }
