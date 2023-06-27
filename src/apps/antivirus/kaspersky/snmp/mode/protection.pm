@@ -172,13 +172,13 @@ Can use special variables like: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
 'not-cured-objects', 'too-many-threats'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
 'not-cured-objects', 'too-many-threats'.
 

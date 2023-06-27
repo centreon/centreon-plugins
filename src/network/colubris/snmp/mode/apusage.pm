@@ -220,12 +220,12 @@ Check device even if it doesn't belongs to an controller team.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--warning-ap-status>

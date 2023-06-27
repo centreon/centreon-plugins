@@ -94,12 +94,12 @@ Example: --filter-counters='cpu'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu', 'load'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu', 'load'.
 
 =back

@@ -200,7 +200,7 @@ You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'group-transition-change'.
 
 =back

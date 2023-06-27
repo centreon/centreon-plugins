@@ -174,13 +174,13 @@ Filter protection group name (Can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'progress' (%), 'creation' (s), 'duration' (s),
 'physical-bytes-written' (B), 'data-transferred' (B).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'progress' (%), 'creation' (s), 'duration' (s),
 'physical-bytes-written' (B), 'data-transferred' (B).
 

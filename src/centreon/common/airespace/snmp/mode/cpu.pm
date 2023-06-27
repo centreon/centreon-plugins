@@ -79,11 +79,11 @@ Check cpu usage (AIRESPACE-SWITCHING-MIB).
 
 =item B<--warning-cpu-utilization>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-cpu-utilization>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

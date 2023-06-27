@@ -126,12 +126,12 @@ Filter drive name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cleaning'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cleaning'.
 
 =back

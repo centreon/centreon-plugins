@@ -215,13 +215,13 @@ Only search for the top X results (top is made on 'traffic').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-traffic', 'total-client-traffic', 'total-server-traffic',
 'traffic', 'client-traffic', 'server-traffic'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-traffic', 'total-client-traffic', 'total-server-traffic',
 'traffic', 'client-traffic', 'server-traffic'.
 

@@ -192,13 +192,13 @@ You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-peers', 'monitor-online-peers', 'monitor-offline-peers', 
 'unmonitor-online-peers', 'unmonitor-offline-peers'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-peers', 'monitor-online-peers', 'monitor-offline-peers', 
 'unmonitor-online-peers', 'unmonitor-offline-peers'.
 

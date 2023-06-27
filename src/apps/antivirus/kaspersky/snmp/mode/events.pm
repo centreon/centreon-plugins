@@ -130,12 +130,12 @@ Can use special variables like: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'events'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'events'.
 
 =back

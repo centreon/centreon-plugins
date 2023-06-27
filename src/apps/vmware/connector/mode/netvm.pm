@@ -349,12 +349,12 @@ Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =back

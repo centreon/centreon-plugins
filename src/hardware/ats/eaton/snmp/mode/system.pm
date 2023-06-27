@@ -179,12 +179,12 @@ You can use the following variables: %{operation_mode}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'temperature', 'humidity'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'temperature', 'humidity'.
 
 =back

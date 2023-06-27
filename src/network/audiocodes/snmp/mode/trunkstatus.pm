@@ -212,12 +212,12 @@ You can use the following variables: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'avg-calls', 'max-calls', 'count-calls'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'avg-calls', 'max-calls', 'count-calls'.
 
 

@@ -142,13 +142,13 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'legitimate', 'blocked', 'blocked-by-am',
 'blocked-by-mf', 'blocked-by-uf'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'legitimate', 'blocked', 'blocked-by-am',
 'blocked-by-mf', 'blocked-by-uf'.
 

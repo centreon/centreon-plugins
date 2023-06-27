@@ -178,12 +178,12 @@ You can use the following variables: %{dep_status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'bitrate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'bitrate'.
 
 =back

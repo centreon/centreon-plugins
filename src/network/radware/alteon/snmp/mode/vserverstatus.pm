@@ -195,12 +195,12 @@ Check vservers status.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic', 'total-sessions', 'current-sessions'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic', 'total-sessions', 'current-sessions'.
 
 =item B<--warning-status>

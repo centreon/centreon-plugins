@@ -277,11 +277,11 @@ You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =back
 

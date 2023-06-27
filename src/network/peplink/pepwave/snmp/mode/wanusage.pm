@@ -205,12 +205,12 @@ You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: Can be: 'traffic-in', 'traffic-out'.
 
 =back

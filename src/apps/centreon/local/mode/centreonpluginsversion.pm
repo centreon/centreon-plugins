@@ -81,11 +81,11 @@ The version is an integer increasing (format: YYYYMMDD of the release).
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

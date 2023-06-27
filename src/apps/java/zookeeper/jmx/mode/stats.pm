@@ -161,13 +161,13 @@ Example: --filter-counters='^avg-request-latency$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'avg-request-latency', 'max-request-latency', 'outstanding-requests',
 'packets-received' 'packets-sent', 'num-connections'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'avg-request-latency', 'max-request-latency', 'outstanding-requests',
 'packets-received' 'packets-sent', 'num-connections'.
 

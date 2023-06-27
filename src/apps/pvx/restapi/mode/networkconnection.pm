@@ -184,12 +184,12 @@ Only search for the top X results (top is made on 'ratio').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ratio', 'attempt' (conn/s), 'successful' (conn/s), 'connection-time' (ms).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ratio', 'attempt' (conn/s), 'successful' (conn/s), 'connection-time' (ms).
 
 =item B<--filter-counters>

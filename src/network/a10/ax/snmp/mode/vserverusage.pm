@@ -212,12 +212,12 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current-con', 'total-con', 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'current-con', 'total-con', 'traffic-in', 'traffic-out'.
 
 =item B<--filter-name>

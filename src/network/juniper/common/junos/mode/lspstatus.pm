@@ -206,12 +206,12 @@ You can use the following variables: %{state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'transition-count', 'last-transition' (seconds).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'transition-count', 'last-transition' (seconds).
 
 =back

@@ -124,19 +124,19 @@ Filter channels by channel name (can be a regexp).
 
 =item B<--warning-count>
 
-Threshold warning for channels count.
+Warning threshold for channels count.
 
 =item B<--critical-count>
 
-Threshold critical for channels count.
+Critical threshold for channels count.
 
 =item B<--warning-members>
 
-Threshold warning for members count per channel.
+Warning threshold for members count per channel.
 
 =item B<--critical-members>
 
-Threshold critical for members count per channel.
+Critical threshold for members count per channel.
 
 =back
 

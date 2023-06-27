@@ -185,11 +185,11 @@ You can use the following variables: %{state}
 
 =item B<--warning-last-change>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical-last-change>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

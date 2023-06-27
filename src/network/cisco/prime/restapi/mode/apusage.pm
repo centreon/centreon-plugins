@@ -223,13 +223,13 @@ Example: --filter-counters='^total-error$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 'ctrl-ap-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 'ctrl-ap-count'.
 

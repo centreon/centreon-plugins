@@ -168,11 +168,11 @@ You can use the following variables: %{id}, %{title}, %{priority}, %{create_date
 
 =item B<--warning-open>
 
-Threshold warning for open tickets.
+Warning threshold for open tickets.
 
 =item B<--critical-open>
 
-Threshold critical for open tickets.
+Critical threshold for open tickets.
 
 =back
 

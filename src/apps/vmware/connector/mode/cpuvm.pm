@@ -247,12 +247,12 @@ You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
 =back

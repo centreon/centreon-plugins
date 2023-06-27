@@ -152,12 +152,12 @@ Filter by zone access points name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'admitted', 'rejected', 'rejection-ratio' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'admitted', 'rejected', 'rejection-ratio' (%).
 
 =back

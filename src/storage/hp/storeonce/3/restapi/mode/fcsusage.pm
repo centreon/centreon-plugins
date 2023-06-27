@@ -167,12 +167,12 @@ You can use the following variables: %{health}, %{is_online}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'dedup', 'items'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'dedup', 'items'.
 
 =back

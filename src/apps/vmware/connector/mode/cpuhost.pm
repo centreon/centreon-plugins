@@ -211,12 +211,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =back

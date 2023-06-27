@@ -247,13 +247,13 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voltage', 'current', 'current1', 'current2', 'temperature',
 'temperature2', 'temperature2', 'amphourmeter'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'voltage', 'current', 'current1', 'current2', 'temperature',
 'temperature2', 'temperature2', 'amphourmeter'.
 

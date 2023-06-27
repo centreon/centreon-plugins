@@ -448,11 +448,11 @@ THRESHOLD OPTIONS:
 
 =item B<--warning-numeric>
 
-Threshold warning (Default: on total matching elements)
+Warning threshold (Default: on total matching elements)
 
 =item B<--critical-numeric>
 
-Threshold critical (Default: on total matching elements)
+Critical threshold (Default: on total matching elements)
 
 =item B<--threshold-value>
 
@@ -461,11 +461,11 @@ Can be: 'values' (only check numeric values)
 
 =item B<--warning-string>
 
-Threshold warning if the string match
+Warning threshold if the string match
 
 =item B<--critical-string>
 
-Threshold critical if the string match
+Critical threshold if the string match
 
 =item B<--unknown-string>
 
@@ -473,11 +473,11 @@ Threshold unknown if the string match
 
 =item B<--warning-time>
 
-Threshold warning in seconds of webservice response time
+Warning threshold in seconds of webservice response time
 
 =item B<--critical-time>
 
-Threshold critical in seconds of webservice response time
+Critical threshold in seconds of webservice response time
 
 =back
 
@@ -559,15 +559,15 @@ Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
 =item B<--unknown-status>
 
-Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Warning threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--critical-status>
 
-Threshold critical for http response code
+Critical threshold for http response code
 
 =back
 

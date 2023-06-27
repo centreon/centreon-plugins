@@ -95,12 +95,12 @@ Check firewall connections.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connections', 'rate-connections'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connections', 'rate-connections'.
 
 =back

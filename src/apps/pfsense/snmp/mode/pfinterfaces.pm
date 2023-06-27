@@ -167,12 +167,12 @@ Check pfInterfaces.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in-pass', 'traffic-out-pass', 'traffic-in-block', 'traffic-out-block'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in-pass', 'traffic-out-pass', 'traffic-in-block', 'traffic-out-block'.
 
 =item B<--filter-name>

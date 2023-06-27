@@ -112,19 +112,19 @@ Check the number of dead and wainting mail on the lotus server (NOTES-MIB.mib)
 
 =item B<--warning-dead>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-dead>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--warning-waiting>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-waiting>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

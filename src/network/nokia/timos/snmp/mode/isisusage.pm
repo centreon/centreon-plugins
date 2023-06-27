@@ -201,12 +201,12 @@ Check IS-IS usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-int-inservice', 'total-int-outservice'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-int-inservice', 'total-int-outservice'.
 
 =item B<--warning-status>

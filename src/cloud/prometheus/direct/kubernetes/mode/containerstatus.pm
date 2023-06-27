@@ -225,11 +225,11 @@ You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>
 
-Threshold warning for container restarts count.
+Warning threshold for container restarts count.
 
 =item B<--critical-restarts-count>
 
-Threshold critical for container restarts count.
+Critical threshold for container restarts count.
 
 =item B<--extra-filter>
 

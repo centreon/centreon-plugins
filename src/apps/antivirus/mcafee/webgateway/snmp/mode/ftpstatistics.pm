@@ -135,13 +135,13 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 

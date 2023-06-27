@@ -281,12 +281,12 @@ Can be: 'name', 'node', 'cluster', 'state', 'type' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'snapshot'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'snapshot'.
 
 =item B<--units>

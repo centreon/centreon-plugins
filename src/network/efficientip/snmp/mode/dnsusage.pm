@@ -113,11 +113,11 @@ Example: --filter-counters='^requestv4$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 
 General name server statistics: 'udp', 'tcp', 'requestv4', 'requestv6', 'recursion', 'response',
 'recurserej', 'duplicate', 'dropped', 'res-queryv4', 'res-queryv6', 'res-retry',

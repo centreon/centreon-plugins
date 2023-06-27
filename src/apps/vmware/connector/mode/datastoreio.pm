@@ -178,12 +178,12 @@ You can use the following variables: %{accessible}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-read', 'total-write', 'read', 'write'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-read', 'total-write', 'read', 'write'.
 
 =back

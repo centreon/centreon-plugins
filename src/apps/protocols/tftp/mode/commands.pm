@@ -245,11 +245,11 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-time>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-time>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--command>
 

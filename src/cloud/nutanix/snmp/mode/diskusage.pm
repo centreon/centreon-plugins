@@ -363,12 +363,12 @@ You can use the following variables: %{state}, %{crtName}, %{diskId}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'inodes' (%), 'avg-latency', 'iops'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'inodes' (%), 'avg-latency', 'iops'.
 
 =item B<--units>

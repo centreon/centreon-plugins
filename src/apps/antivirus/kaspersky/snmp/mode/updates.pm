@@ -207,12 +207,12 @@ Can use special variables like: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'last-server-update', 'not-updated'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'last-server-update', 'not-updated'.
 
 =item B<--timezone>

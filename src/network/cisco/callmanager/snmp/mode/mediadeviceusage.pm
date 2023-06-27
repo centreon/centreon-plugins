@@ -157,11 +157,11 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 
 Can be: 'total-registered', 'total-unregistered', 'total-rejected', 
 'total-unknown', 'total-partiallyregistered'.

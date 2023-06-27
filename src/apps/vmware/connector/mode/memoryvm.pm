@@ -362,12 +362,12 @@ Thresholds are on free space left.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'consumed', 'active', 'overhead', 'ballooning', 'shared'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'consumed', 'active', 'overhead', 'ballooning', 'shared'.
 
 =back

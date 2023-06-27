@@ -191,12 +191,12 @@ You can use the following variables: %{display}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu', 'memory' (B), 'nbchilds'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu', 'memory' (B), 'nbchilds'.
 
 =back

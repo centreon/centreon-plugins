@@ -397,12 +397,12 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-devices', 'clients', 'in', 'out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-devices', 'clients', 'in', 'out'.
 
 =back

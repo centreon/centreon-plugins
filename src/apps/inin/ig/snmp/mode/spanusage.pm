@@ -167,12 +167,12 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-channels'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-channels'.
 
 =back

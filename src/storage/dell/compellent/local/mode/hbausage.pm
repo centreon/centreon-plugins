@@ -340,13 +340,13 @@ Example: --filter-counters='^read-iops$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-iops', 'read-usage', 'read-latency', 
 'write-iops', 'write-usage', 'write-latency'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-iops', 'read-usage', 'read-latency', 
 'write-iops', 'write-usage', 'write-latency'.
 

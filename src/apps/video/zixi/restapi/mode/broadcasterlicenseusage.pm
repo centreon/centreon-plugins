@@ -237,12 +237,12 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'days'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'days'.
 
 =item B<--units>

@@ -171,12 +171,12 @@ Can be: 'name', 'clusters' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'failed-fans', 'psu'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'failed-fans', 'psu'.
 
 =item B<--warning-status>

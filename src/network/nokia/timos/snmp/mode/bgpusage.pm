@@ -192,12 +192,12 @@ Check BGP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--warning-status>

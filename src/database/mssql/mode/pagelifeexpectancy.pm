@@ -83,11 +83,11 @@ Check MSSQL page life expectancy.
 
 =item B<--warning-page-life-expectancy>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-page-life-expectancy>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

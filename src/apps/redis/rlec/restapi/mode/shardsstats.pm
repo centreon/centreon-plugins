@@ -400,7 +400,7 @@ You can use the following variables: %{status}, %{detailed_status},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 
 'connected-clients', 'blocked-clients', 
@@ -411,7 +411,7 @@ Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 
 'connected-clients', 'blocked-clients', 

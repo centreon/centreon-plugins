@@ -172,11 +172,11 @@ Check time offset of server with ntp server.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--ntp-hostname>
 

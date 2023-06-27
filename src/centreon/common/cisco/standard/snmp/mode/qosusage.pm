@@ -473,13 +473,13 @@ Example: --filter-counters='^(total-traffic)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 

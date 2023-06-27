@@ -151,12 +151,12 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current-birate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'current-birate'.
 
 =item B<--warning-status>

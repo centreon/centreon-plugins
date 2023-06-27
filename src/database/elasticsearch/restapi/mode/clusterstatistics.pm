@@ -260,7 +260,7 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 'nodes-master', 'nodes-ingest', 'indices-total', 'shards-total', 
 'shards-active-count', 'shards-active-percentage', 
@@ -269,7 +269,7 @@ Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 'nodes-master', 'nodes-ingest', 'indices-total', 'shards-total', 
 'shards-active-count', 'shards-active-percentage', 

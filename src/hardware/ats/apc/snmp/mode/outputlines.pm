@@ -188,12 +188,12 @@ Example: --filter-counters='^power$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voltage', 'current', 'power', 'load', 'load-capacity'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'voltage', 'current', 'power', 'load', 'load-capacity'.
 
 =item B<--warning-status>

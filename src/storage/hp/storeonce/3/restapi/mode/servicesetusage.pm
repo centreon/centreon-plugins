@@ -234,12 +234,12 @@ You can use the following variables: %{health}, %{replication_health}, %{houseke
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'dedup'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'dedup'.
 
 =item B<--units>

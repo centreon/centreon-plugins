@@ -157,13 +157,13 @@ Check connections number.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'reading', 'waiting', 'writing', 'active',
 'accepted', 'handled'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'reading', 'waiting', 'writing', 'active',
 'accepted', 'handled'.
 

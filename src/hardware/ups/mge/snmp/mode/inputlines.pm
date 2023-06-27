@@ -188,12 +188,12 @@ Check Input lines metrics (frequence, voltage, current).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--warning-status>

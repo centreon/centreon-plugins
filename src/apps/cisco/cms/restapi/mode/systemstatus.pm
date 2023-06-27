@@ -211,13 +211,13 @@ Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 

@@ -130,11 +130,11 @@ Check Juniper cpu usage (NETSCREEN-RESOURCE-MIB).
 
 =item B<--warning>
 
-Threshold warning in percent (1min,5min,15min).
+Warning threshold in percent (1min,5min,15min).
 
 =item B<--critical>
 
-Threshold critical in percent (1min,5min,15min).
+Critical threshold in percent (1min,5min,15min).
 
 =back
 

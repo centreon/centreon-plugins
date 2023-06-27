@@ -214,12 +214,12 @@ You can use the following variables: %{connection_state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-device-connected', 'device-connected'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-device-connected', 'device-connected'.
 
 =back

@@ -210,12 +210,12 @@ You can use the following variables: %{id}, %{subject}, %{status}, %{items},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'completed', 'published'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'completed', 'published'.
 
 =back

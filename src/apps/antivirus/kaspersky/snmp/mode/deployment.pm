@@ -307,12 +307,12 @@ Can use special variables like: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--percent>

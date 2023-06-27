@@ -233,12 +233,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ifs-usage', 'health'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ifs-usage', 'health'.
 
 =item B<--units>

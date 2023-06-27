@@ -383,12 +383,12 @@ You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--units>

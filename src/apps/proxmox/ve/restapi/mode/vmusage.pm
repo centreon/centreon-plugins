@@ -337,13 +337,13 @@ Example: --filter-counters='^vm-status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%), 'swap' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%), 'swap' (%).
 

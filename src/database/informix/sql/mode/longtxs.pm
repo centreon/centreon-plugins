@@ -96,11 +96,11 @@ Check number of current long transactions.
 
 =item B<--warning>
 
-Threshold warning in absolute.
+Warning threshold in absolute.
 
 =item B<--critical>
 
-Threshold critical in absolute.
+Critical threshold in absolute.
 
 =back
 

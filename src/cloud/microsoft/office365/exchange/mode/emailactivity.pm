@@ -258,14 +258,14 @@ Filter users.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-users', 'total-send-count' (count),
 'total-receive-count' (count), 'total-read-count' (count),
 'send-count' (count), 'receive-count' (count), 'read-count' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-users', 'total-send-count' (count),
 'total-receive-count' (count), 'total-read-count' (count),
 'send-count' (count), 'receive-count' (count), 'read-count' (count).

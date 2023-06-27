@@ -187,12 +187,12 @@ Check BCA status.
 
 =item B<--warning>
 
-Threshold warning on EURT (End User Response Time).
+Warning threshold on EURT (End User Response Time).
 Permits to add another threshold than snmp.
 
 =item B<--critical>
 
-Threshold critical on EURT (End User Response Time).
+Critical threshold on EURT (End User Response Time).
 Permits to add another threshold than snmp.
 
 =item B<--name>

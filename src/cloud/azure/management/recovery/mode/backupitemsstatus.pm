@@ -211,12 +211,12 @@ You can use the following variables: %{precheck_status}, %{last_backup_status}, 
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-completed', 'total-failed', 'total-inprogress'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-completed', 'total-failed', 'total-inprogress'.
 
 =back

@@ -286,13 +286,13 @@ Check L2TP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'vrtr-tunnel-total', 'vrtr-tunnel-active-sessions', 'vrtr-tunnel-total-sessions', 
 'peer-tunnel-total', 'peer-tunnel-active-sessions', 'peer-tunnel-total-sessions'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'vrtr-tunnel-total', 'vrtr-tunnel-active-sessions', 'vrtr-tunnel-total-sessions', 
 'peer-tunnel-total', 'peer-tunnel-active-sessions', 'peer-tunnel-total-sessions'.
 

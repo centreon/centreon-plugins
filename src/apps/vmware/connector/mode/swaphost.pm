@@ -165,12 +165,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =back

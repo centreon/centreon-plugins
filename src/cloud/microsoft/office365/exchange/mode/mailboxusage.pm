@@ -291,13 +291,13 @@ Filter mailboxes.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-mailboxes', 'total-usage-active' (count),
 'total-usage-inactive' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-mailboxes', 'total-usage-active' (count),
 'total-usage-inactive' (count).
 

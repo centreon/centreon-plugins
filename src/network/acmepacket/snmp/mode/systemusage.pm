@@ -209,13 +209,13 @@ You can use the following variables: %{replication_state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'license-usage' (%), 'memory-usage' (%), 'cpu-load' (%),
 'health-score' (%), 'current-sessions', 'current-calls'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'license-usage' (%), 'memory-usage' (%), 'cpu-load' (%),
 'health-score' (%), 'current-sessions', 'current-calls'.
 

@@ -195,12 +195,12 @@ You can use the following variables: %{timebase_status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ntp-requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ntp-requests'.
 
 =back

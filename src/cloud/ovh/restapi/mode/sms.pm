@@ -105,12 +105,12 @@ Filter service name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'left'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'left'.
 
 =back

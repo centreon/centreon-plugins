@@ -205,13 +205,13 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 

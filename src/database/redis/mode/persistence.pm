@@ -149,13 +149,13 @@ You can use the following variables: %{progress_status}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 

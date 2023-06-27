@@ -249,19 +249,19 @@ Check Oracle ASM diskgroup usage and status.
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--warning-usage-failure>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage-failure>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--unknown-status>
 

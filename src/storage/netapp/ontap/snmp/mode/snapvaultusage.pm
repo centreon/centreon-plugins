@@ -234,7 +234,7 @@ You can use the following variables: %{state}, %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be:  'lag' (s), 'transfer-traffic' (B/s), 'transfer-succeed',
 'transfer-failed'.
 

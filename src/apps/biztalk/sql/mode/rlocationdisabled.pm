@@ -112,11 +112,11 @@ The mode should be used with mssql plugin and dyn-mode option.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--filter-location>
 

@@ -214,12 +214,12 @@ Can use special variables like: %{health}, %{lifecycle}
 
 =item B<--warning-asg-instance-current>
 
-Threshold warning about number of
+Warning threshold about number of
 instances in the autoscaling group
 
 =item B<--critical-asg-instance-current>
 
-Threshold critical about number of
+Critical threshold about number of
 instances in the autoscaling group
 
 =back

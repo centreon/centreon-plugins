@@ -299,13 +299,13 @@ Check vservers status and health.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-traffic', 'out-traffic', 'health' (%),
 'clients', 'servers'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-traffic', 'out-traffic', 'health' (%),
 'clients', 'servers'.
 

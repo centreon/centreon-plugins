@@ -154,12 +154,12 @@ Can use special variables like: %{processed_packets}, %{received_packets}, %{dif
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'received-packets-rate', 'processed-packets-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'received-packets-rate', 'processed-packets-rate'.
 
 =back

@@ -142,12 +142,12 @@ Check instance locks.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'lock-dead', 'lock-wait', 'lock-request', 'lock-timeout'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'lock-dead', 'lock-wait', 'lock-request', 'lock-timeout'.
 
 =back

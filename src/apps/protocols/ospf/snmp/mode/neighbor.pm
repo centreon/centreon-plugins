@@ -188,12 +188,12 @@ Example: %{TotalLast} != %{Total}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total'.
 
 =back

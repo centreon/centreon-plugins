@@ -105,12 +105,12 @@ Check connections.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'ssl', 'non-ssl'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'ssl', 'non-ssl'.
 
 =back

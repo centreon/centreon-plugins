@@ -324,12 +324,12 @@ You can use the following variables: %{status}, %{state}, %{name}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'containers-ready', 'total-restarts-count' (count), 'restarts-count' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'containers-ready', 'total-restarts-count' (count), 'restarts-count' (count).
 
 =item B<--units>

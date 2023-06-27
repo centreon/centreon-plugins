@@ -328,27 +328,27 @@ Filter peer state (can be a regexp).
 
 =item B<--warning-peers>
 
-Threshold warning minimum amount of NTP-Server
+Warning threshold minimum amount of NTP-Server
 
 =item B<--critical-peers>
 
-Threshold critical minimum amount of NTP-Server
+Critical threshold minimum amount of NTP-Server
 
 =item B<--warning-offset>
 
-Threshold warning offset deviation value in milliseconds
+Warning threshold offset deviation value in milliseconds
 
 =item B<--critical-offset>
 
-Threshold critical offset deviation value in milliseconds
+Critical threshold offset deviation value in milliseconds
 
 =item B<--warning-stratum>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-stratum>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--unknown-status>
 

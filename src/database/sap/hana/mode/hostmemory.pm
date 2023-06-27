@@ -170,12 +170,12 @@ Example : --filter-counters='^physical-usage$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'physical-usage' (%), 'swap-usage' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'physical-usage' (%), 'swap-usage' (%).
 
 =back

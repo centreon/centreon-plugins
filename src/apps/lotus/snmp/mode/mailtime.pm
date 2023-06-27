@@ -93,11 +93,11 @@ Check the mail average delivery time (print min and max for info)(NOTES-MIB.mib)
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

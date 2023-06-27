@@ -203,12 +203,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-latency', 'write-latency'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-latency', 'write-latency'.
 
 =back

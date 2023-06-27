@@ -260,11 +260,11 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-lag>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-lag>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

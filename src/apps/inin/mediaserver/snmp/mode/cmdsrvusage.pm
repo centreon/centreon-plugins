@@ -251,12 +251,12 @@ You can use the following variables: %{accept_sessions}, %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'resource-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'resource-count'.
 
 =item B<--units>

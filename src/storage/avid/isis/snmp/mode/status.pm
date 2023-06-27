@@ -134,11 +134,11 @@ Can use special variables like: %{state}
 
 =item B<--warning-redistributing-count>
 
-Threshold warning for number of workspaces redistributing.
+Warning threshold for number of workspaces redistributing.
 
 =item B<--critical-redistributing-count>
 
-Threshold critical for number of workspaces redistributing.
+Critical threshold for number of workspaces redistributing.
 
 =back
 

@@ -114,11 +114,11 @@ Check pfSense runtime.
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

@@ -222,13 +222,13 @@ Check access point usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 

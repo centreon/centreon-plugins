@@ -200,11 +200,11 @@ Use special variables %{technology}.
 
 =item B<--warning-signal>
 
-Threshold warning for signal strength.
+Warning threshold for signal strength.
 
 =item B<--critical-signal>
 
-Threshold critical  for signal strength.
+Critical threshold  for signal strength.
 
 =back
 

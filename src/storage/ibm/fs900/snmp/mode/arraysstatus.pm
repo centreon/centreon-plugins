@@ -142,11 +142,11 @@ Define the conditions to match for the status to be CRITICAL (Default: '%{status
 
 =item B<--warning-vdisk-count>
 
-Threshold warning for VDisks count.
+Warning threshold for VDisks count.
 
 =item B<--critical-vdisk-count>
 
-Threshold critical for VDisks count.
+Critical threshold for VDisks count.
 
 =back
 

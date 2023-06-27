@@ -208,12 +208,12 @@ You can use the following variables: %{trunkstatus}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =back

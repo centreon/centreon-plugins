@@ -190,14 +190,14 @@ Check system statistics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'aps-count', 'users-count', 'total-traffic-in', 'total-traffic-out', 'total-packets-in',
 'total-mcast-packets-in', 'total-packets-out', 'total-mcast-packets-out', 'total-fail-packets-in',
 'total-retry-packets-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'aps-count', 'users-count', 'total-traffic-in', 'total-traffic-out', 'total-packets-in',
 'total-mcast-packets-in', 'total-packets-out', 'total-mcast-packets-out', 'total-fail-packets-in',
 'total-retry-packets-out'.

@@ -86,11 +86,11 @@ Check the number of user connections (NOTES-MIB.mib)
 
 =item B<--warning>
 
-Threshold warning in users.
+Warning threshold in users.
 
 =item B<--critical>
 
-Threshold critical in users.
+Critical threshold in users.
 
 =back
 

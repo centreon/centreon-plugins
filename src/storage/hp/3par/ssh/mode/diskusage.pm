@@ -176,7 +176,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back

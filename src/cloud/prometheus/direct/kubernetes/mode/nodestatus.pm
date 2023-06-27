@@ -261,11 +261,11 @@ You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--warning-allocated-pods>
 
-Threshold warning for pods allocation.
+Warning threshold for pods allocation.
 
 =item B<--critical-allocated-pods>
 
-Threshold critical for pods allocation.
+Critical threshold for pods allocation.
 
 =item B<--units>
 

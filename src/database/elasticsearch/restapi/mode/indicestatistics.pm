@@ -186,13 +186,13 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'documents-total', 'data-size-primaries',
 'data-size-total', 'shards-active', 'shards-unassigned'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'documents-total', 'data-size-primaries',
 'data-size-total', 'shards-active', 'shards-unassigned'.
 

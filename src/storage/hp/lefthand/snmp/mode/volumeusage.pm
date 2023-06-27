@@ -311,13 +311,13 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read' (b/s), 'write' (b/s), 'read-iops', 'write-iops',
 'read-latency', 'write-latency', 'usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read' (b/s), 'write' (b/s), 'read-iops', 'write-iops',
 'read-latency', 'write-latency', 'usage'.
 

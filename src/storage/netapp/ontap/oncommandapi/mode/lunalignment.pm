@@ -155,12 +155,12 @@ Can be: 'volume' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 'aligned', 'misaligned', 'possibly-misaligned', 'indeterminate', 'partial-writes', 'not-mapped'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 'aligned', 'misaligned', 'possibly-misaligned', 'indeterminate', 'partial-writes', 'not-mapped'.
 
 =back

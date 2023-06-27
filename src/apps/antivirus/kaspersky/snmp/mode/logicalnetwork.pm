@@ -162,13 +162,13 @@ Can use special variables like: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'new-hosts', 'groups', 'not-connected-long-time',
 'not-controlled'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'new-hosts', 'groups', 'not-connected-long-time',
 'not-controlled'.
 

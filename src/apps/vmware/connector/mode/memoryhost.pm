@@ -276,11 +276,11 @@ You can use the following variables: %{status}
 
 =item B<--warning-consumed-memory>
 
-Threshold warning (can use unit option).
+Warning threshold (can use unit option).
 
 =item B<--critical-consumed-memory>
 
-Threshold critical (can use unit option).
+Critical threshold (can use unit option).
 
 =item B<--warning-overhead-memory>
 
@@ -288,15 +288,15 @@ Threshold overhead.
 
 =item B<--critical-overhead-memory>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--warning-state-memory>
 
-Threshold warning. For state != 'high': --warning-state=0
+Warning threshold. For state != 'high': --warning-state=0
 
 =item B<--critical-state-memory>
 
-Threshold critical. For state != 'high': --warning-state=0
+Critical threshold. For state != 'high': --warning-state=0
 
 =item B<--no-memory-state>
 

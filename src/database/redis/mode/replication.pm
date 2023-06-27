@@ -181,13 +181,13 @@ You can use the following variables: %{sync_status}, %{link_status}, %{cluster_s
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 

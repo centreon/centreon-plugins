@@ -210,13 +210,13 @@ Check LDP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ipv4-oper-down-events', 'ipv4-active-sessions', 'ipv4-active-link-adj',
 'ipv4-active-target-adj'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ipv4-oper-down-events', 'ipv4-active-sessions', 'ipv4-active-link-adj',
 'ipv4-active-target-adj'.
 

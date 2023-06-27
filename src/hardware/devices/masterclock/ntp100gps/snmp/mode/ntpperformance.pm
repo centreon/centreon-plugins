@@ -150,11 +150,11 @@ You can use the following variables: %{health}
 
 =item B<--warning-*>
 
-Threshold warning. Can be : 'stratum-level', 'precision', 'poll-interval'
+Warning threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =item B<--critical-*>
 
-Threshold critical. Can be : 'stratum-level', 'precision', 'poll-interval'
+Critical threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =back
 

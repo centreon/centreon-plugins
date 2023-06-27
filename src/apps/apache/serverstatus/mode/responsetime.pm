@@ -148,23 +148,23 @@ Set HTTP headers (Multiple option)
 
 =item B<--unknown-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--warning-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--critical-status>
 
-Threshold critical for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Critical threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning>
 
-Threshold warning in seconds (server-status page response time)
+Warning threshold in seconds (server-status page response time)
 
 =item B<--critical>
 
-Threshold critical in seconds (server-status page response time)
+Critical threshold in seconds (server-status page response time)
 
 =back
 

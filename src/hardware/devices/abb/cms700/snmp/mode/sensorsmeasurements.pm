@@ -252,7 +252,7 @@ Example: --filter-counters='^current$'
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current-mixte', 'current-alternative', 'current-direct',
 'power-active', 'energy-active', 'power-factor'.
 

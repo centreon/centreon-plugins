@@ -149,12 +149,12 @@ You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'containers-running', 'containers-paused', 'containers-stopped'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'containers-running', 'containers-paused', 'containers-stopped'., 
 
 =back

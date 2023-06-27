@@ -297,12 +297,12 @@ You can use the following variables: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-alarm-warning', 'total-alarm-critical'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-alarm-warning', 'total-alarm-critical'.
 
 =back

@@ -131,11 +131,11 @@ Check rejected packets per second by firewall.
 
 =item B<--warning>
 
-Threshold warning for blocked packets per second.
+Warning threshold for blocked packets per second.
 
 =item B<--critical>
 
-Threshold critical for blocked packets per second.
+Critical threshold for blocked packets per second.
 
 =back
 

@@ -179,12 +179,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-sessions-rate', 'out-sessions-rate', 'latency', 'asr'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-sessions-rate', 'out-sessions-rate', 'latency', 'asr'.
 
 =item B<--filter-name>

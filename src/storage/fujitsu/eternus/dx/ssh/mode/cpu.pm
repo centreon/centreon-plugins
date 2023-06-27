@@ -122,11 +122,11 @@ Filter by name (regexp can be used).
 
 =item B<--warning-usage>
 
-Threshold warning (in percent).
+Warning threshold (in percent).
 
 =item B<--critical-usage>
 
-Threshold critical (in percent).
+Critical threshold (in percent).
 
 =back
 
