@@ -338,7 +338,7 @@ You can use the following variables: %{state}, %{status}, %{membersAllDisabled},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--unknown-member-status>
@@ -353,7 +353,7 @@ You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeNam
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-*> B<--critical-*>

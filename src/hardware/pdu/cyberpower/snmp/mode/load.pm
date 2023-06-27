@@ -296,7 +296,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-bank-status>
 
-Set critical threshold for status (Default: '%{state} =~ /^overload/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /^overload/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--unknown-phase-status>
@@ -311,7 +311,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-phase-status>
 
-Set critical threshold for status (Default: '%{state} =~ /^overload/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /^overload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

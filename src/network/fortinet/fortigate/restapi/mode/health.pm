@@ -117,7 +117,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-health>
 
-Set critical threshold for status (Default: '%{status} !~ /success/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /success/i').
 You can use the following variables: %{status}, %{name}
 
 =back

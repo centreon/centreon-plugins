@@ -167,7 +167,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /inconsistent/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /inconsistent/').
 You can use the following variables: %{status}, %{display}
 
 =back

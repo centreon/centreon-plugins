@@ -246,7 +246,7 @@ You can use the following variables: %{accept_sessions}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^ready/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^ready/i').
 You can use the following variables: %{accept_sessions}, %{status}, %{display}
 
 =item B<--warning-*>

@@ -223,7 +223,7 @@ labels you set through --query.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query.

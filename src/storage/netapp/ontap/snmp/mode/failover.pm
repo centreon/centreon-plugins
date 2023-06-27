@@ -212,7 +212,7 @@ You can use the following variables: %{cluster_status}, %{reason_cannot_takeover
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status (Default: '%{cluster_status} =~ /dead|cannotTakeover/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{cluster_status} =~ /dead|cannotTakeover/i').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--unknown-node-status>
@@ -227,7 +227,7 @@ You can use the following variables: %{status}, %{reason_cannot_takeover}, %{par
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{status} =~ /dead|cannotTakeover/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /dead|cannotTakeover/i').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =back

@@ -120,7 +120,7 @@ You can use the following variables: %{name}, %{phase}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{phase} !~ /Bound|Available|Released/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{phase} !~ /Bound|Available|Released/i').
 You can use the following variables: %{name}, %{phase}.
 
 =back

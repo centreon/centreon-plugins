@@ -173,7 +173,7 @@ You can use the following variables: %{severity}, %{host}, %{name}, %{timeraised
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /critical/i').
 You can use the following variables: %{severity}, %{host}, %{name}, %{timeraised}
 
 =item B<--warning-*> B<--critical-*>

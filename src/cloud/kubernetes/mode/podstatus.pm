@@ -309,7 +309,7 @@ You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--critical-pod-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i').
 You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--warning-container-status>
@@ -319,7 +319,7 @@ You can use the following variables: %{status}, %{name}.
 
 =item B<--critical-container-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
 You can use the following variables: %{status}, %{state}, %{name}.
 
 =item B<--warning-*>

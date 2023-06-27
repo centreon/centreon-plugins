@@ -197,7 +197,7 @@ You can use the following variables: %{display}, %{phase}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{phase} !~ /Active/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{phase} !~ /Active/').
 You can use the following variables: %{display}, %{phase}
 
 =item B<--extra-filter>

@@ -116,7 +116,7 @@ You can use the following variables: %{operational_status}, %{engine_id}, %{fan_
 
 =item B<--critical-operational-status>
 
-Set critical threshold for status (Default: '%{operational_status} ne "online"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{operational_status} ne "online"').
 You can use the following variables: %{operational_status}, %{engine_id}, %{fan_name}
 
 =item B<--warning-speed-status>
@@ -126,7 +126,7 @@ You can use the following variables: %{speed_threshold_exceeded}, %{engine_id}, 
 
 =item B<--critical-speed-status>
 
-Set critical threshold for status (Default: '%{operational_status} ne "online"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{operational_status} ne "online"').
 You can use the following variables: %{speed_threshold_exceeded}, %{engine_id}, %{fan_name}
 
 =back

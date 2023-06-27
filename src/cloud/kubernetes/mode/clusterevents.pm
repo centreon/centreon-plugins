@@ -210,7 +210,7 @@ Can use special variables like: %{name}, %{namespace}, %{type},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{type} =~ /error/i').
 Can use special variables like: %{name}, %{namespace}, %{type},
 %{object}, %{message}, %{count}, %{first_seen}, %{last_seen}.
 

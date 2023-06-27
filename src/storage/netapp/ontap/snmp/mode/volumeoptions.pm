@@ -207,7 +207,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-options>
@@ -222,7 +222,7 @@ You can use the following variables: %{options}, %{display}
 
 =item B<--critical-options>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{options}, %{display}
 
 =back

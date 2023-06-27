@@ -233,7 +233,7 @@ You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
 
-Set critical threshold for status (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>
@@ -248,7 +248,7 @@ You can use the following variables: %{agentName}, %{appDisplayName}, %{status},
 
 =item B<--critical-engine-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-*> B<--critical-*>

@@ -181,7 +181,7 @@ You can use the following variables: %{health}, %{service}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{health} =~ /major/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /major/i').
 You can use the following variables: %{health}, %{service}
 
 =back

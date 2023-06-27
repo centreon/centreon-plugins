@@ -281,7 +281,7 @@ You can use the following variables: %{description}, %{object}, %{severity}, %{t
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} eq "serviceAffecting"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} eq "serviceAffecting"').
 You can use the following variables: {description}, %{object}, %{severity}, %{type}, %{label}, %{since}
 
 =item B<--timezone>

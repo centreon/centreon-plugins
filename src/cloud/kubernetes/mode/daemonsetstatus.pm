@@ -191,7 +191,7 @@ You can use the following variables: %{name}, %{namespace}, %{desired}, %{curren
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{available} < %{desired}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{available} < %{desired}').
 You can use the following variables: %{name}, %{namespace}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}.
 

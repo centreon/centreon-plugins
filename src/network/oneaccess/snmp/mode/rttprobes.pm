@@ -200,7 +200,7 @@ You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--critical-probe-status>
 
-Set critical threshold for status (Default: '%{adminStatus} eq "active" and %{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} eq "active" and %{status} ne "ok"').
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--warning-*> B<--critical-*>

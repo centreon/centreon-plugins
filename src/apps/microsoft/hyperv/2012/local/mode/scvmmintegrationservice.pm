@@ -359,7 +359,7 @@ You can use the following variables: %{vm}, %{vmaddition}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{vmaddition} =~ /not detected/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{vmaddition} =~ /not detected/i').
 You can use the following variables: %{vm}, %{vmaddition}, %{status}
 
 =back

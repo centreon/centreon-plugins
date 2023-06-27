@@ -414,7 +414,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 Default (depends of the atrica release):
 '%{admstatus} eq "on" and %{opstatus} ne "inService"'
 '%{admstatus} eq "up" and %{opstatus} ne "up"'

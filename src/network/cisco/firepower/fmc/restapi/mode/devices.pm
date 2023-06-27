@@ -200,7 +200,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>
 
-Set critical threshold for status (Default: '%{status} =~ /red|black/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red|black/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

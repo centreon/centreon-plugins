@@ -140,7 +140,7 @@ You can use the following variables: %{provisioning_state}, %{gateway_type}, %{v
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{provisioning_state} ne "Succeeded"').
 You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =back

@@ -131,7 +131,7 @@ Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subj
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{expiration} < 30').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{expiration} < 30').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 Examples :

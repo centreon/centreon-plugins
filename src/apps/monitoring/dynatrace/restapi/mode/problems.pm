@@ -207,7 +207,7 @@ Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{m
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "OPEN"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "OPEN"').
 Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{managementZone}, %{entityName}, %{entityId}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-*> B<--critical-*>

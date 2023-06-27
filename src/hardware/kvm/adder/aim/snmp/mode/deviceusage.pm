@@ -177,7 +177,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: 'not %{status} =~ /online|rebooting|upgrading/i').
+Define the conditions to match for the status to be CRITICAL (Default: 'not %{status} =~ /online|rebooting|upgrading/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>

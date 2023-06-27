@@ -141,7 +141,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /normal/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /normal/').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

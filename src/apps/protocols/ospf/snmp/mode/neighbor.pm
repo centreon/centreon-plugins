@@ -173,7 +173,7 @@ You can use the following variables: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{NbrState} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{NbrState} =~ /down/i').
 You can use the following variables: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--warning-total-change>

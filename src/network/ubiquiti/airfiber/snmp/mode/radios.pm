@@ -231,7 +231,7 @@ You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{enabled} eq "yes" and %{state} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{enabled} eq "yes" and %{state} eq "down"').
 You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--warning-*> B<--critical-*>

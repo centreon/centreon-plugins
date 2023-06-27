@@ -350,7 +350,7 @@ You can use the following variables: %{status}, %{replace}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{replace} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{replace} =~ /yes/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--unknown-battery-pack-status>
@@ -365,7 +365,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-battery-pack-status>
 
-Set critical threshold for status (Default: '%{status} ne "OK"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "OK"').
 You can use the following variables: %{status}
 
 =item B<--unknown-cartridge-status>
@@ -380,7 +380,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-cartridge-status>
 
-Set critical threshold for status (Default: '%{status} ne "OK"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "OK"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

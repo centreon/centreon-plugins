@@ -172,7 +172,7 @@ You can use the following variables: %{status}, %{class}
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{status} eq "hot"');
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "hot"');
 You can use the following variables: %{status}, %{class}
 
 =item B<--unknown-psu-status>
@@ -187,7 +187,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"');
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"');
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

@@ -202,7 +202,7 @@ You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_s
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-*> B<--critical-*>

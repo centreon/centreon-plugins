@@ -141,7 +141,7 @@ You can use the following variables: %{operational_status}, %{engine_id}, %{dire
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_state} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_state} ne "ok"').
 You can use the following variables: %{operational_status}, %{engine_id}, %{director_name}
 
 =item B<--warning-communication-status>
@@ -151,7 +151,7 @@ You can use the following variables: %{communication_status}, %{engine_id}, %{di
 
 =item B<--critical-communication-status>
 
-Set critical threshold for status (Default: '%{communication_status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{communication_status} ne "ok"').
 You can use the following variables: %{communication_status}, %{engine_id}, %{director_name}
 
 =item B<--warning-temperature-status>
@@ -161,7 +161,7 @@ You can use the following variables: %{temperature_threshold_exceeded}, %{engine
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{temperature_threshold_exceeded} ne "false"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{temperature_threshold_exceeded} ne "false"').
 You can use the following variables: %{temperature_threshold_exceeded}, %{engine_id}, %{director_name}
 
 =item B<--warning-voltage-status>
@@ -171,7 +171,7 @@ You can use the following variables: %{voltage_threshold_exceeded}, %{engine_id}
 
 =item B<--critical-voltage-status>
 
-Set critical threshold for status (Default: '%{voltage_threshold_exceeded} ne "false"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{voltage_threshold_exceeded} ne "false"').
 You can use the following variables: %{voltage_threshold_exceeded}, %{engine_id}, %{director_name}
 
 =item B<--warning-vplex-kdriver-status>
@@ -181,7 +181,7 @@ You can use the following variables: %{vplex_kdriver_status}, %{engine_id}, %{di
 
 =item B<--critical-vplex-kdriver-status>
 
-Set critical threshold for status (Default: '%{vplex_kdriver_status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{vplex_kdriver_status} ne "ok"').
 You can use the following variables: %{vplex_kdriver_status}, %{engine_id}, %{director_name}
 
 =back

@@ -261,7 +261,7 @@ You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>

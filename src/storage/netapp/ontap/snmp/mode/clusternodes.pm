@@ -400,7 +400,7 @@ You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{node_status} eq "clusterComLost"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} eq "clusterComLost"').
 You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--unknown-bbu-status>
@@ -415,7 +415,7 @@ You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--critical-bbu-status>
 
-Set critical threshold for status (Default: '%{bbu_status} !~ /fullyCharged|ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{bbu_status} !~ /fullyCharged|ok/i').
 You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--unknown-port-link-status>
@@ -430,7 +430,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{no
 
 =item B<--critical-port-link-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--unknown-port-health>
@@ -445,7 +445,7 @@ You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--critical-port-health>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-*> B<--critical-*>

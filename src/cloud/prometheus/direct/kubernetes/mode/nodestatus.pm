@@ -256,7 +256,7 @@ You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
 You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--warning-allocated-pods>

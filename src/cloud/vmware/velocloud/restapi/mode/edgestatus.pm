@@ -139,7 +139,7 @@ You can use the following variables: %{edge_state}, %{service_state},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
 You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 

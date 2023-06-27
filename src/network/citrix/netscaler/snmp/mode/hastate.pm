@@ -149,7 +149,7 @@ Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status. (Default: '%{ha_status} =~ /down|partialFail|monitorFail|completeFail|partialFailSsl|routemonitorFail/i').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{ha_status} =~ /down|partialFail|monitorFail|completeFail|partialFailSsl|routemonitorFail/i').
 Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--unknown-peer-status>
@@ -164,7 +164,7 @@ Can use special variables like: %{peer_status}
 
 =item B<--critical-peer-status>
 
-Set critical threshold for status. (Default: '').
+Define the conditions to match for the status to be CRITICAL. (Default: '').
 Can use special variables like: %{peer_status}
 
 =back

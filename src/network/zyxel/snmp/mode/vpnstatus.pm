@@ -201,7 +201,7 @@ You can use the following variables: %{activestatus}, %{connectstatus}, %{displa
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{connectstatus} eq "disconnected"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connectstatus} eq "disconnected"').
 You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =back

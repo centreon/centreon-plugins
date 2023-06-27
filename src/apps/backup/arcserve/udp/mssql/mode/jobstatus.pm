@@ -240,7 +240,7 @@ You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} != 1').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} != 1').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>

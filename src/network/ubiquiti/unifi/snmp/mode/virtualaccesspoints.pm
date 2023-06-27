@@ -237,7 +237,7 @@ You can use the following variables: %{name}, %{ssid}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "down"').
 You can use the following variables: %{name}, %{ssid}, %{status}
 
 =item B<--warning-*> B<--critical-*>

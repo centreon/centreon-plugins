@@ -181,7 +181,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|nonRecoverable/').
 You can use the following variables: %{status}
 
 =item B<--unknown-storage-status>
@@ -196,7 +196,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-storage-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|nonRecoverable/').
 You can use the following variables: %{status}
 
 =back

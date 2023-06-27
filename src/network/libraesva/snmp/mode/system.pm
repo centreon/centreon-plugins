@@ -181,7 +181,7 @@ You can use the following variables: %{cluster_status}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status (Default: '%{cluster_status} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{cluster_status} =~ /error/i').
 You can use the following variables: %{cluster_status}
 
 =item B<--warning-*> B<--critical-*>

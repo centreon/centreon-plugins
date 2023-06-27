@@ -258,7 +258,7 @@ You can use the following variables: %{ike_state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{ike_state} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{ike_state} eq "down"').
 You can use the following variables: %{ike_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

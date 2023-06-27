@@ -155,7 +155,7 @@ You can use the following variables: %{description}, %{level}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{level} =~ /critical|major/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{level} =~ /critical|major/i').
 You can use the following variables: %{description}, %{level}, %{type}
 
 =back

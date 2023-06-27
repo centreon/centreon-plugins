@@ -368,7 +368,7 @@ You can use the following variables: %{modem_status}, %{display}
 
 =item B<--critical-modem-status>
 
-Set critical threshold for status (Default: '%{modem_status} =~ /offLine/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{modem_status} =~ /offLine/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--unknown-connection-status>
@@ -383,7 +383,7 @@ You can use the following variables: %{connection_status}, %{display}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status (Default: '%{connection_status} =~ /inactive|idle|disconnected|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_status} =~ /inactive|idle|disconnected|error/i').
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--unknown-sim-status>
@@ -398,7 +398,7 @@ You can use the following variables: %{sim_status}, %{display}
 
 =item B<--critical-sim-status>
 
-Set critical threshold for status (Default: '%{sim_status} !~ /ok|unknown/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{sim_status} !~ /ok|unknown/i').
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--unknown-radio-status>
@@ -413,7 +413,7 @@ You can use the following variables: %{current_band}, %{channel_number}, %{displ
 
 =item B<--critical-radio-status>
 
-Set critical threshold for status (Default: '%{current_band} =~ /invalid|none/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{current_band} =~ /invalid|none/i').
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--unknown-network-status>
@@ -428,7 +428,7 @@ You can use the following variables: %{service_status}, %{display}
 
 =item B<--critical-network-status>
 
-Set critical threshold for status (Default: '%{service_status} =~ /emergencyOnly|noService/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{service_status} =~ /emergencyOnly|noService/i').
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

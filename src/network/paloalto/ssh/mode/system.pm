@@ -262,7 +262,7 @@ You can use the following variables: %{oper_mode}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{oper_mode} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{oper_mode} !~ /normal/i').
 You can use the following variables: %{oper_mode}
 
 =item B<--warning-*> B<--critical-*>

@@ -214,7 +214,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-sensor-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^paired/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^paired/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-trafficdrop-status>
@@ -229,7 +229,7 @@ You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--critical-trafficdrop-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--unknown-connectivity-status>
@@ -244,7 +244,7 @@ You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--critical-connectivity-status>
 
-Set critical threshold for status (Default: '%{connectivityStatus} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connectivityStatus} =~ /critical/i').
 You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--unknown-interface-status>
@@ -259,7 +259,7 @@ You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-*> B<--critical-*>

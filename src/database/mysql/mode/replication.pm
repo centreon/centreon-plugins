@@ -377,7 +377,7 @@ You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status (Default: '%{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "ok"').
 You can use the following variables: %{status}, %{error_message}, %{display}
 
 =item B<--unknown-replication-status>
@@ -392,7 +392,7 @@ You can use the following variables: %{replication_status}, %{display}
 
 =item B<--critical-replication-status>
 
-Set critical threshold for status (Default: '%{replication_status} =~ /connectIssueToMaster/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{replication_status} =~ /connectIssueToMaster/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

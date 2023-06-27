@@ -162,7 +162,7 @@ You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "alarm").
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "alarm").
 You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*> B<--critical-*>

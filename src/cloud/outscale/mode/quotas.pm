@@ -186,7 +186,7 @@ You can use the following variables: %{state}, %{netName}
 
 =item B<--critical-net-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{netName}
 
 =item B<--warning-*> B<--critical-*>

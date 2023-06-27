@@ -206,7 +206,7 @@ Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{activated} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{activated} !~ /true/i').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--warning-*>

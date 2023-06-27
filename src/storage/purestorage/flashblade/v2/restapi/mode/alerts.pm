@@ -165,7 +165,7 @@ You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, 
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} ne "closed" and %{severity} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "closed" and %{severity} =~ /critical/i').
 You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
 
 =item B<--memory>

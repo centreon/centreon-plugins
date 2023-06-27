@@ -401,7 +401,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-controller-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-network-status>
@@ -416,7 +416,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-network-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-port-status>
@@ -431,7 +431,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-expander-port-status>
@@ -446,7 +446,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-expander-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-compact-flash-status>
@@ -461,7 +461,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-compact-flash-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

@@ -282,7 +282,7 @@ You can use the following variables: %{name}, %{severity}, %{source}, %{category
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /error/i').
 You can use the following variables: %{name}, %{severity}, %{source}, %{category}, %{timeraised}, %{message}
 
 =item B<--warning-*> B<--critical-*>

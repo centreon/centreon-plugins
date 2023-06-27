@@ -129,7 +129,7 @@ Can use special variables like: %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{state} !~ /Online/i').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{state} !~ /Online/i').
 Can use special variables like: %{state}
 
 =item B<--warning-redistributing-count>

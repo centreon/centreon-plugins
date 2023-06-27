@@ -303,7 +303,7 @@ You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-vrtr-name>

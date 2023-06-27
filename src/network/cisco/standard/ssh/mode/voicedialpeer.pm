@@ -173,7 +173,7 @@ You can use the following variables: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin} eq "up" and %{oper} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin} eq "up" and %{oper} eq "down"').
 You can use the following variables: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -119,7 +119,7 @@ You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =back

@@ -206,7 +206,7 @@ You can use the following variables: %{precheck_status}, %{last_backup_status}, 
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
 You can use the following variables: %{precheck_status}, %{last_backup_status}, %{display}
 
 =item B<--warning-*>

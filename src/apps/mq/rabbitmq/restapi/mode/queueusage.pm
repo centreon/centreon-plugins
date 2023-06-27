@@ -147,7 +147,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} ne "running"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "running"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

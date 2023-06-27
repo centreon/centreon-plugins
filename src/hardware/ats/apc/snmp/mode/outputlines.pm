@@ -203,7 +203,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^(lowload|overload)$/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /^(lowload|overload)$/').
 You can use the following variables: %{status}, %{display}
 
 =back

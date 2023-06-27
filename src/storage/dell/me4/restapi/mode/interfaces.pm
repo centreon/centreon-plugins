@@ -247,7 +247,7 @@ You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /fault/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /fault/i').
 You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>

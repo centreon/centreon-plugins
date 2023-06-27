@@ -217,7 +217,7 @@ You can use the following variables: %{vm}, %{state}, %{health}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} =~ /Critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /Critical/i').
 You can use the following variables: %{vm}, %{state}, %{health}
 
 =back

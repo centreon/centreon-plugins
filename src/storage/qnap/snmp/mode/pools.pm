@@ -267,7 +267,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-pool-status>
 
-Set critical threshold for status (Default: '%{status} =~ /error|critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /error|critical/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

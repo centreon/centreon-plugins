@@ -211,7 +211,7 @@ You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
 You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-*> B<--critical-*>

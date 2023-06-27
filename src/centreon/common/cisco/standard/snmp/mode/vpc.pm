@@ -354,7 +354,7 @@ You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--critical-peer-status>
 
-Set critical threshold for status (Default: '%{role} ne %{role_last}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{role_last}').
 You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--unknown-keepalive-status>
@@ -369,7 +369,7 @@ You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--critical-keepalive-status>
 
-Set critical threshold for status (Default: '%{keepalive_status} ne "alive"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{keepalive_status} ne "alive"').
 You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--unknown-link-status>
@@ -384,7 +384,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

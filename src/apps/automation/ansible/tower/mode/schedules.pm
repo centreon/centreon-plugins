@@ -176,7 +176,7 @@ You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--critical-job-status>
 
-Set critical threshold for status (Default: '%{last_job_status} =~ /failed/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{last_job_status} =~ /failed/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-*> B<--critical-*> 

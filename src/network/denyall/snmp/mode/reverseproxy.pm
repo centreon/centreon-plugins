@@ -206,7 +206,7 @@ You can use the following variables: %{status}, %{uid}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{uid}
 
 =item B<--warning-*> B<--critical-*>

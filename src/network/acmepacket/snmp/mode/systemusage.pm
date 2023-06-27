@@ -204,7 +204,7 @@ You can use the following variables: %{replication_state}
 
 =item B<--critical-replication-status>
 
-Set critical threshold for status (Default: '%{replication_state} =~ /outOfService/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{replication_state} =~ /outOfService/i').
 You can use the following variables: %{replication_state}
 
 =item B<--warning-*>

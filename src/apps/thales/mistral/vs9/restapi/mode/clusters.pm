@@ -300,7 +300,7 @@ You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwi
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
 You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--unknown-member-status>
@@ -315,7 +315,7 @@ You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--time-contact-unit>

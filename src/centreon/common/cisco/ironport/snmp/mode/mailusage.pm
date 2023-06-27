@@ -261,7 +261,7 @@ You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-*> B<--critical-*> 

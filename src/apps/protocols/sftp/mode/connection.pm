@@ -103,7 +103,7 @@ You can use the following variables: %{status}, %{message}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{message} !~ /authentication succeeded/i'
+Define the conditions to match for the status to be CRITICAL (Default: '%{message} !~ /authentication succeeded/i'
 You can use the following variables: %{status}, %{message}
 
 =item B<--warning-time>

@@ -386,7 +386,7 @@ You can use the following variables: %{status}, %{detailed_status},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /inactive/i || 
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /inactive/i || 
 %{backup} =~ /failed/i || %{sync} =~ /link_down/i').
 You can use the following variables: %{status}, %{detailed_status}, 
 %{role}, %{loading}, %{sync}, %{backup}.

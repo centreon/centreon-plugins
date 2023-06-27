@@ -176,7 +176,7 @@ You can use the following variables: %{sync_status}, %{link_status}, %{cluster_s
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{link_status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} =~ /down/i').
 You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--warning-*>

@@ -186,7 +186,7 @@ You can use the following variables: %{username}, %{sql_text}, %{since}, %{statu
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{username}, %{sql_text}, %{since}, %{status}
 
 =item B<--timezone>

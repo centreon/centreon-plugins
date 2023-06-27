@@ -328,7 +328,7 @@ You can use the following variables: %{display}, %{status}, %{type}, %{is_runnin
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-long>

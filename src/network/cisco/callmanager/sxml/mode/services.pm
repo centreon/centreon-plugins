@@ -194,7 +194,7 @@ You can use the following variables: %{status}, %{reason}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /starting|started/i and %{reason} !~ /service not activate/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /starting|started/i and %{reason} !~ /service not activate/i').
 You can use the following variables:  %{status}, %{reason}, %{name}
 
 =item B<--warning-*> B<--critical-*>

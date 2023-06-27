@@ -177,7 +177,7 @@ You can use the following variables: %{connection_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--unknown-overall-status>
@@ -192,7 +192,7 @@ You can use the following variables: %{overall_status}
 
 =item B<--critical-overall-status>
 
-Set critical threshold for status (Default: '%{overall_status} =~ /red/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{overall_status} =~ /red/i').
 You can use the following variables: %{overall_status}
 
 =back

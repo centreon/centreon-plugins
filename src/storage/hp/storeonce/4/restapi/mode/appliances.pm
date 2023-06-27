@@ -241,7 +241,7 @@ You can use the following variables: %{service}, %{status}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical/i').
 You can use the following variables: %{service}, %{status}
 
 =item B<--warning-*> B<--critical-*>

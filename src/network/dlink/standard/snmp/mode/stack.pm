@@ -254,7 +254,7 @@ You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--unknown-link-status>
@@ -269,7 +269,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "down"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

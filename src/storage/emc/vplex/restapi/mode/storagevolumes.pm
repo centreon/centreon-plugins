@@ -118,7 +118,7 @@ You can use the following variables: %{health_state}, %{cluster_name}, %{volume_
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_state} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_state} ne "ok"').
 You can use the following variables: %{health_state}, %{cluster_name}, %{volume_name}
 
 =back

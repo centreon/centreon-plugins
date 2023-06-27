@@ -141,7 +141,7 @@ You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_en
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
 You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =back

@@ -221,7 +221,7 @@ You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{channel_status} !~ /running|idle/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{channel_status} !~ /running|idle/i').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>

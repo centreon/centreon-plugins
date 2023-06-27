@@ -294,7 +294,7 @@ You can use the following variables: %{state}, %{phase}, %{bank}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /off/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /off/').
 You can use the following variables: %{state}, %{phase}, %{bank}, %{display}
 
 =item B<--warning-*> B<--critical-*>

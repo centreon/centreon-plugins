@@ -380,7 +380,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{errdisable}, %{display}
 
 =item B<--warning-*> B<--critical-*>

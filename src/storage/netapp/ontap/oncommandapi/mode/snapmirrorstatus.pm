@@ -135,7 +135,7 @@ You can use the following variables: %{state}, %{update}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /snapmirrored/i || %{update} =~ /not healthy/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /snapmirrored/i || %{update} =~ /not healthy/i').
 You can use the following variables: %{state}, %{update}
 
 =back

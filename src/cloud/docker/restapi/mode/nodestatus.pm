@@ -144,7 +144,7 @@ You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
 You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--warning-*>

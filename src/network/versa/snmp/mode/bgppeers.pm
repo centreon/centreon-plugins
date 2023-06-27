@@ -214,7 +214,7 @@ You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{sta
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /established/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /established/').
 You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =back

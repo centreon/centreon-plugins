@@ -189,7 +189,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-service-status>
@@ -199,7 +199,7 @@ You can use the following variables: %{running}, %{label}, %{policy}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{policy} =~ /^on|automatic/i && !%{running}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{policy} =~ /^on|automatic/i && !%{running}').
 You can use the following variables: %{running}, %{label}, %{policy}
 
 =back

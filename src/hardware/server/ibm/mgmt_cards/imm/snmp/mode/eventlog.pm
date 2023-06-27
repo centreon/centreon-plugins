@@ -163,7 +163,7 @@ You can use the following variables: %{severity}, %{text}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /error/i').
 You can use the following variables: %{severity}, %{text}, %{since}
 
 =item B<--timezone>

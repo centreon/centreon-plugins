@@ -220,7 +220,7 @@ You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /major|critical/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /major|critical/').
 You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--memory>

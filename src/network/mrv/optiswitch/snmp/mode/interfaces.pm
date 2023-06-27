@@ -467,7 +467,7 @@ You can use the following variables: %{linkstatus}, %{admstatus}, %{opstatus}, %
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
 You can use the following variables: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>

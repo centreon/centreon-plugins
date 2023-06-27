@@ -140,7 +140,7 @@ You can use the following variables: %{service_name}, %{status}, %{classificatio
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /serviceOperational|serviceRestored/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /serviceOperational|serviceRestored/i').
 You can use the following variables: %{service_name}, %{status}, %{classification}
 
 =back

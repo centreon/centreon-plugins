@@ -208,7 +208,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-fan-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

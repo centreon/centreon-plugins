@@ -145,7 +145,7 @@ You can use the following variables: %{circuit_status}, %{provider_status}, %{di
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
 You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =back

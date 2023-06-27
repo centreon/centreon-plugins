@@ -167,7 +167,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed|authenticationError/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed|authenticationError/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

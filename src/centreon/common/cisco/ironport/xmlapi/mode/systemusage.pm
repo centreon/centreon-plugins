@@ -305,7 +305,7 @@ You can use the following variables: %{system_status}
 
 =item B<--critical-system-status>
 
-Set critical threshold for status (Default: '%{system_status} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{system_status} !~ /online/i').
 You can use the following variables: %{system_status}
 
 =item B<--warning-*> B<--critical-*> 

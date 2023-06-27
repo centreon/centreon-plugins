@@ -309,7 +309,7 @@ You can use the following variables: %{used}, %{issue_warning_quota},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{used} > %{prohibit_send_quota}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{used} > %{prohibit_send_quota}').
 You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 

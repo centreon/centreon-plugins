@@ -241,7 +241,7 @@ You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--critical-volume-status>
 
-Set critical threshold for status (Default: '%{status} =~ /broken/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /broken/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-*> B<--critical-*>

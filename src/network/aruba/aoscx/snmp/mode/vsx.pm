@@ -262,7 +262,7 @@ You can use the following variables: %{role}, %{config_sync}
 
 =item B<--critical-device-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{role}, %{config_sync}
 
 =item B<--unknown-isl-status>
@@ -277,7 +277,7 @@ You can use the following variables: %{isl_status}
 
 =item B<--critical-isl-status>
 
-Set critical threshold for status (Default: '%{isl_status} =~ /outSync/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{isl_status} =~ /outSync/').
 You can use the following variables: %{isl_status}
 
 =item B<--unknown-keepalive-status>
@@ -292,7 +292,7 @@ You can use the following variables: %{keepalive_status}
 
 =item B<--critical-keepalive-status>
 
-Set critical threshold for status (Default: '%{keepalive_status} =~ /outofSyncEstablished|failed/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{keepalive_status} =~ /outofSyncEstablished|failed/').
 You can use the following variables: %{keepalive_status}
 
 =item B<--warning-*> B<--critical-*>

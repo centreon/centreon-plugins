@@ -204,7 +204,7 @@ You can use the following variables: %{id}, %{subject}, %{status}, %{items},
 
 =item B<--critical-event>
 
-Set critical threshold for status (Default: '%{status} =~ /Active/ && %{items} > 0').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /Active/ && %{items} > 0').
 You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 

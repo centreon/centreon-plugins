@@ -149,7 +149,7 @@ Can use special variables like: %{processed_packets}, %{received_packets}, %{dif
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{processed_packets} < %{received_packets}').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{processed_packets} < %{received_packets}').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--warning-*>

@@ -191,7 +191,7 @@ You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "failed"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "failed"').
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-time>

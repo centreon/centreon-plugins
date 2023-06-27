@@ -264,7 +264,7 @@ You can use the following variables: %{display}, %{enabled}, %{type}, %{last_res
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{enabled} == 1 and not %{last_result} =~ /Success|None/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{enabled} == 1 and not %{last_result} =~ /Success|None/i').
 You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-total>

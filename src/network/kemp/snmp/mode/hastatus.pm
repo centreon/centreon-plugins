@@ -155,7 +155,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status (Default: none).
+Define the conditions to match for the status to be CRITICAL (Default: none).
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-sync-status>
@@ -165,7 +165,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for status (Default: none).
+Define the conditions to match for the status to be CRITICAL (Default: none).
 You can use the following variables: %{status}, %{display}
 
 =back

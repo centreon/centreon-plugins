@@ -180,7 +180,7 @@ You can use the following variables: %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /operational/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /operational/i').
 You can use the following variables: %{state}
 
 =item B<--warning-last-change>

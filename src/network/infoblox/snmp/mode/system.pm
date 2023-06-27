@@ -190,7 +190,7 @@ You can use the following variables: %{ha_status}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{ha_status}
 
 =item B<--warning-*> B<--critical-*>

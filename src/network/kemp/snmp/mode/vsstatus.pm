@@ -193,7 +193,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /inService|disabled|redirect/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /inService|disabled|redirect/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>

@@ -238,7 +238,7 @@ You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectComm
 
 =item B<--critical-certificate-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-*> B<--critical-*>

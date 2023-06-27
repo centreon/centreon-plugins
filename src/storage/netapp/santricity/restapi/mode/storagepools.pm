@@ -209,7 +209,7 @@ You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--critical-pool-status>
 
-Set critical threshold for status (Default: '%{raid_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{raid_status} =~ /failed/i').
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

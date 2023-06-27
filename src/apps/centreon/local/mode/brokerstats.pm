@@ -249,7 +249,7 @@ You can use the following variables: %{queue_file_enabled}, %{state}, %{status},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
 You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =back

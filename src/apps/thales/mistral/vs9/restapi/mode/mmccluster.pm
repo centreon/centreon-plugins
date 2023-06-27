@@ -150,7 +150,7 @@ You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-node-status>
@@ -165,7 +165,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

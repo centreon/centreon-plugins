@@ -168,7 +168,7 @@ You can use the following variables: %{alarm_name}, %{state_value}, %{metric_nam
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state_value} =~ /ALARM/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state_value} =~ /ALARM/i').
 You can use the following variables: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
 
 =item B<--memory>

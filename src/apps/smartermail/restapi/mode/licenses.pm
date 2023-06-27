@@ -101,7 +101,7 @@ You can use the following variables: %{upgrade_protection_status}
 
 =item B<--critical-upgrade-protection-status>
 
-Set critical threshold for status (Default: '%{upgrade_protection_status} =~ /expired/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{upgrade_protection_status} =~ /expired/').
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-*> B<--critical-*>

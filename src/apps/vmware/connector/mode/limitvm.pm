@@ -246,7 +246,7 @@ You can use the following variables: %{connection_state}, %{power_state}, %{limi
 
 =item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-cpu-status>
@@ -256,7 +256,7 @@ You can use the following variables: %{connection_state}, %{power_state}, %{limi
 
 =item B<--critical-cpu-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-memory-status>
@@ -266,7 +266,7 @@ You can use the following variables: %{connection_state}, %{power_state}, %{limi
 
 =item B<--critical-memory-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =back

@@ -162,7 +162,7 @@ You can use the following variables: %{peering_state}, %{provisioning_state}, %{
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
 You can use the following variables: %{peering_state}, %{provisioning_state}, %{peer}, %{display}
 
 =back

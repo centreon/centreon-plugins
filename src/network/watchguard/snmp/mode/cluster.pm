@@ -171,7 +171,7 @@ You can use the following variables: %{state}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}
 
 =item B<--unknown-member-status>
@@ -186,7 +186,7 @@ You can use the following variables: %{role}, %{serial}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-*> B<--critical-*>

@@ -240,7 +240,7 @@ You can use the following variables: %{name}, %{status}, %{controller}, %{admin_
 
 =item B<--critical-ap-status>
 
-Set critical threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--reload-cache-time>

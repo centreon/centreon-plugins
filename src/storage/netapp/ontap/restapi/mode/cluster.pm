@@ -259,7 +259,7 @@ You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{state} ne "online"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "online"').
 You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

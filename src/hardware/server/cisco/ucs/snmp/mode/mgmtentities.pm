@@ -160,7 +160,7 @@ You can use the following variables: %{dn}, %{role}, %{services_status}, %{statu
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{role} =~ /electionFailed|inapplicable/ or %{status} eq "down" or %{services_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{role} =~ /electionFailed|inapplicable/ or %{status} eq "down" or %{services_status} eq "down"').
 You can use the following variables: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-*> B<--critical-*>

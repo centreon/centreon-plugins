@@ -153,7 +153,7 @@ Can use special variables like: %{expired}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{expired} eq "yes"').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{expired} eq "yes"').
 Can use special variables like: %{expired}, %{expiry_days}, %{feature}
 
 =back

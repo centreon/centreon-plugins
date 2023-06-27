@@ -154,7 +154,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-maintenance-status>
@@ -164,7 +164,7 @@ You can use the following variables: %{maintenance}
 
 =item B<--critical-maintenance-status>
 
-Set critical threshold for status (Default: '%{maintenance} !~ /false/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{maintenance} !~ /false/').
 You can use the following variables: %{maintenance}
 
 

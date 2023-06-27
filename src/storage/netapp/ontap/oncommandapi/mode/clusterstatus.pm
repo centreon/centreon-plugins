@@ -140,7 +140,7 @@ You can use the following variables: %{status}, %{metro_cluster_mode}, %{metro_c
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}, %{metro_cluster_mode}, %{metro_cluster_configuration_state}
 
 =back

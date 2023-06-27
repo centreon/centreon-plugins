@@ -162,7 +162,7 @@ You can use the following variables: %{state}, %{mirror_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /online/i').
 You can use the following variables: %{state}, %{mirror_status}
 
 =back

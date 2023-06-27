@@ -180,7 +180,7 @@ You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--critical-chassis-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--unknown-psu-status>

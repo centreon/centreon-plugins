@@ -144,7 +144,7 @@ You can use the following variables: %{progress_status}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /fail/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /fail/i').
 You can use the following variables: %{progress_status}, %{status}
 
 =item B<--warning-*>

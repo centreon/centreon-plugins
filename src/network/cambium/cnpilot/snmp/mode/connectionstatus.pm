@@ -134,7 +134,7 @@ Can used special variables like: %{status}, %{name}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 Can used special variables like: %{status}, %{name}
 
 =back

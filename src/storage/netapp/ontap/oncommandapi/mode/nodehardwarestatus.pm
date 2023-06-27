@@ -186,7 +186,7 @@ You can use the following variables: %{status}, %{temperature}, %{battery_status
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /not healthy/i || %{temperature} !~ /ok/i ||
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /not healthy/i || %{temperature} !~ /ok/i ||
 %{battery_status} !~ /battery_ok|battery_fully_charge|battery_over_charged/i').
 You can use the following variables: %{status}, %{temperature}, %{battery_status}
 

@@ -135,7 +135,7 @@ Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{up} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{up} !~ /true/i').
 Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
 
 =back

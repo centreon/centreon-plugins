@@ -155,7 +155,7 @@ You can use the following variables: %{health}, %{indicator}
 
 =item B<--critical-health-indicator>
 
-Set critical threshold for status (Default: '%{health} !~ /done|normal|null/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /done|normal|null/i').
 You can use the following variables: %{health}, %{indicator}
 
 =back

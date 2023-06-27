@@ -175,7 +175,7 @@ You can use the following variables: %{health}, %{replication_health}, %{display
 
 =item B<--critical-nas-status>
 
-Set critical threshold for status (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =item B<--warning-share-status>
@@ -185,7 +185,7 @@ You can use the following variables: %{health}, %{replication_health}, %{display
 
 =item B<--critical-share-status>
 
-Set critical threshold for status (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =back

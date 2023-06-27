@@ -151,7 +151,7 @@ You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
@@ -166,7 +166,7 @@ You can use the following variables: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>
 
-Set critical threshold for status (Default: '%{repl_status} =~ /inconsistent/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{repl_status} =~ /inconsistent/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =back

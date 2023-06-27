@@ -370,7 +370,7 @@ You can use the following variables: %{status}, %{maintenance}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-adapter-status>

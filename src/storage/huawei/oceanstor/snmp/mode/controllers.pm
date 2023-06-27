@@ -200,7 +200,7 @@ You can use the following variables: %{health_status}, %{running_status}, %{id}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /fault|fail/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /fault|fail/i').
 You can use the following variables: %{health_status}, %{running_status}, %{id}
 
 =item B<--warning-*> B<--critical-*>

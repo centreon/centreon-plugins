@@ -266,7 +266,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-host-status>
 
-Set critical threshold for status (Default: '%{status} =~ /faulty/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /faulty/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-raid-status>

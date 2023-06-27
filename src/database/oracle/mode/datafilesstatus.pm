@@ -250,7 +250,7 @@ You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /offline|invalid/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline|invalid/i').
 You can use the following variables: %{display}, %{status}
 
 =item B<--warning-online-status>

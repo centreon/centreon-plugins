@@ -99,7 +99,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{status} =~ /red/').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /red/').
 You can use the following variables: %{status}
 
 =back

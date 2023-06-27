@@ -115,7 +115,7 @@ Can use special variables like: %{status}, %{display}
 
 =item B<--critical-*>
 
-Set critical threshold for status. (Default: %{status} =~ /red/).
+Define the conditions to match for the status to be CRITICAL. (Default: %{status} =~ /red/).
 Can be: 'dns-connectivity', 'localdns-connectivity', 'cloud-connectivity', 'ad-connectivity'.
 
 Can use special variables like: %{status}, %{display}

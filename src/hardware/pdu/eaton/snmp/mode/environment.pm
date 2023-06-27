@@ -242,7 +242,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-humidity-status>
@@ -257,7 +257,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-humidity-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

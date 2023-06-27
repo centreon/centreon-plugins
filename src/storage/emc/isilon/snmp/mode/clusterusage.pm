@@ -228,7 +228,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down|invalid/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down|invalid/').
 You can use the following variables: %{status}
 
 =item B<--warning-*>

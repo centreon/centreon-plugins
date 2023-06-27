@@ -163,7 +163,7 @@ You can use the following variables: %{id}, %{title}, %{priority}, %{create_date
 
 =item B<--critical-ticket>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--warning-open>

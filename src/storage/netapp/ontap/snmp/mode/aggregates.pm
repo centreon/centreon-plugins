@@ -143,7 +143,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /normal|mirrored/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /normal|mirrored/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-state>

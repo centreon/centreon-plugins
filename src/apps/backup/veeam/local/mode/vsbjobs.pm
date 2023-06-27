@@ -300,7 +300,7 @@ You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: 'not %{status} =~ /success/i').
+Define the conditions to match for the status to be CRITICAL (Default: 'not %{status} =~ /success/i').
 You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 
 =item B<--warning-*> B<--critical-*>

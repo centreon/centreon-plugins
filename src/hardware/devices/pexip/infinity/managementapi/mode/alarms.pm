@@ -159,7 +159,7 @@ You can use the following variables: %{level}, %{details}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{level} =~ /critical|major|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{level} =~ /critical|major|error/i').
 You can use the following variables: %{level}, %{details}, %{name}
 
 =item B<--memory>

@@ -137,7 +137,7 @@ Set warning threshold for status.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /degraded/i').
 'status' can be: 'online', 'offline', 'excluded', 'degraded'.
 
 =item B<--warning-vdisk-count>

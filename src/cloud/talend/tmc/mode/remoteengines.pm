@@ -165,7 +165,7 @@ You can use the following variables: %{status}, %{availability}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{availability} !~ /retired/ and %{status} =~ /unpaired/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{availability} !~ /retired/ and %{status} =~ /unpaired/i').
 You can use the following variables: %{status}, %{availability}, %{name}
 
 =item B<--warning-*> B<--critical-*>

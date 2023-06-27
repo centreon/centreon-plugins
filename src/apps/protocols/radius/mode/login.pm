@@ -272,7 +272,7 @@ You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "accepted"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "accepted"').
 You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--warning-time>

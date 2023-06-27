@@ -158,7 +158,7 @@ You can use the following variables: %{state}, %{interconnect}, %{current_mode},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /connected/i || %{interconnect} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /connected/i || %{interconnect} !~ /up/i').
 You can use the following variables: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
 
 =back

@@ -141,7 +141,7 @@ You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{a
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
 You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-*> B<--critical-*>

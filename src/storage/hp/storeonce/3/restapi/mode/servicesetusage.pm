@@ -229,7 +229,7 @@ You can use the following variables: %{health}, %{replication_health}, %{houseke
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} =~ /critical/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/').
 You can use the following variables: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--warning-*>

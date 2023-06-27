@@ -161,7 +161,7 @@ You can use the following variables: %{state}, %{internetServiceName}
 
 =item B<--critical-internet-service-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{internetServiceName}
 
 =item B<--warning-*> B<--critical-*>

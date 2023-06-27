@@ -170,7 +170,7 @@ You can use the following variables: %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /disabledNeedsResync|uninitialized/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /disabledNeedsResync|uninitialized/i').
 You can use the following variables: %{state}
 
 =item B<--warning-*> B<--critical-*>

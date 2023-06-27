@@ -541,7 +541,7 @@ You can use the following variables: %{status}, %{type},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /creation-failed/i | 
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /creation-failed/i | 
 %{backup_status} =~ /failed/i | %{export_status} =~ /failed/i | 
 %{import_status} =~ /failed/i').
 You can use the following variables: %{status}, %{type},  

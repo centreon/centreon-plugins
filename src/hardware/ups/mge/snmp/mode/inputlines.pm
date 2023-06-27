@@ -203,7 +203,7 @@ You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{badstatus} =~ /yes/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{badstatus} =~ /yes/').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =back

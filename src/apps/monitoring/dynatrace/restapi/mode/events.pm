@@ -210,7 +210,7 @@ Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{e
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{entityId}, %{eventType}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-*> B<--critical-*>

@@ -211,7 +211,7 @@ You can use the following variables: %{display}, %{health}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /up/').
 You can use the following variables: %{display}, %{health}
 
 =item B<--warning-*>

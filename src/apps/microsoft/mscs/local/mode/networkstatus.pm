@@ -137,7 +137,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /down|partitioned|unavailable/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /down|partitioned|unavailable/').
 You can use the following variables: %{state}, %{display}
 
 =back

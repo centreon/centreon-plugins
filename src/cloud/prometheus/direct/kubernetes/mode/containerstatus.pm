@@ -220,7 +220,7 @@ You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
 You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>

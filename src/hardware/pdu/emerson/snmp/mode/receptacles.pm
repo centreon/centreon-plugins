@@ -264,7 +264,7 @@ You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--critical-rcp-status>
 
-Set critical threshold for status (Default: '%{oper_state} =~ /abnormal/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{oper_state} =~ /abnormal/').
 You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

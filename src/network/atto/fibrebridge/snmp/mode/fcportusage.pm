@@ -210,7 +210,7 @@ You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin} =~ /enabled/ and %{status} !~ /online/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin} =~ /enabled/ and %{status} !~ /online/').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =back

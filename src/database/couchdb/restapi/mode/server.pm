@@ -219,7 +219,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^ok/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-compaction-status>
@@ -234,7 +234,7 @@ You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--critical-compaction-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

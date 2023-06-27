@@ -103,7 +103,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-source-status>
 
-Set critical threshold for status (Default: '%{status} =~ /none/')
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /none/')
 You can use the following variables: %{status}
 
 =back

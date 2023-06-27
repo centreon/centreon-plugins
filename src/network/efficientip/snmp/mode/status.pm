@@ -118,7 +118,7 @@ Can be used with special variables like: %{status}, %{role}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{status} =~ /invalid credentials|replication stopped|timeout/')
+Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /invalid credentials|replication stopped|timeout/')
 Can be used with special variables like: %{status}, %{role}
 
 =back

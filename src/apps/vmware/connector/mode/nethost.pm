@@ -400,7 +400,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--unknown-link-status>
@@ -415,7 +415,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} !~ /up/').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

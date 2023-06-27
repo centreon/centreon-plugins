@@ -249,7 +249,7 @@ You can use the following variables: %{status}, %{role}, %{address}, %{port}, %{
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
 You can use the following variables: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>

@@ -127,7 +127,7 @@ You can use the following variables: %{healthy}, %{state}, %{transfer_state}, %{
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{healthy} ne "true" or %{state} eq "broken_off"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{healthy} ne "true" or %{state} eq "broken_off"').
 You can use the following variables: %{healthy}, %{state}, %{transfer_state}, %{display}
 
 =back

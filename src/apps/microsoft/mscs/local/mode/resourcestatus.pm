@@ -141,7 +141,7 @@ You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /failed|offline/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /failed|offline/').
 You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =back

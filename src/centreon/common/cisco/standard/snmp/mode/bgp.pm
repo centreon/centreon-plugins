@@ -273,7 +273,7 @@ You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{r
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
 You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-*> B<--critical-*>

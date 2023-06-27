@@ -180,7 +180,7 @@ You can use the following variables: %{sync_status}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for status (Default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
 You can use the following variables: %{sync_status}
 
 =item B<--warning-timebase-status>
@@ -190,7 +190,7 @@ You can use the following variables: %{timebase_status}
 
 =item B<--critical-timebase-status>
 
-Set critical threshold for status (Default: '%{timebase_status} =~ /^XO$/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{timebase_status} =~ /^XO$/i').
 You can use the following variables: %{timebase_status}
 
 =item B<--warning-*>

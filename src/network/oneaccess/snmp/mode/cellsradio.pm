@@ -304,7 +304,7 @@ You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, 
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>

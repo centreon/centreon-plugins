@@ -60,7 +60,7 @@ You can use the following variables: %{status}, %{summary}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^Unavailable$/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /^Unavailable$/').
 
 You can use the following variables: %{status}, %{summary}
 

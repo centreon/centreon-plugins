@@ -485,7 +485,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /uninitialized|down/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /uninitialized|down/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-interface-status>
@@ -500,7 +500,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

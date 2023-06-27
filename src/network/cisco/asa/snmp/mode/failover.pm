@@ -158,7 +158,7 @@ You can use the following variables: %{primaryStateLast}, %{secondaryStateLast},
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{primaryStateLast}, %{secondaryStateLast}, %{primaryState}, %{secondaryState}
 
 =item B<--warning-*>

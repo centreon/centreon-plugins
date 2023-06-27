@@ -200,7 +200,7 @@ You can use the following variables: %{source}.
 
 =item B<--critical-source>
 
-Set critical threshold for status (Default: '%{source} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{source} !~ /normal/i').
 You can use the following variables: %{source}.
 
 =item B<--warning-*> B<--critical-*>

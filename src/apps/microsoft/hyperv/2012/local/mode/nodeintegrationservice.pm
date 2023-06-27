@@ -312,7 +312,7 @@ You can use the following variables: %{vm}, %{integration_service_state},
 
 =item B<--critical-global-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
@@ -323,7 +323,7 @@ You can use the following variables: %{vm}, %{service}, %{primary_status}, %{sec
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{primary_status} !~ /Ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{primary_status} !~ /Ok/i').
 You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =back

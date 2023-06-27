@@ -231,7 +231,7 @@ You can use the following variables: %{state}, %{name}
 
 =item B<--critical-member-state>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{name}
 
 =item B<--unknown-member-link-status>
@@ -246,7 +246,7 @@ You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--critical-member-link-status>
 
-Set critical threshold for status (Default: '%{linkStatus} =~ /failed|failing/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{linkStatus} =~ /failed|failing/i').
 You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--unknown-member-config>
@@ -261,7 +261,7 @@ You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--critical-member-config>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--warning-*> B<--critical-*>

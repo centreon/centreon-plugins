@@ -142,7 +142,7 @@ You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--critical-chassis-status>
 
-Set critical threshold for status (Default: %{status} !~ /init|running/)
+Define the conditions to match for the status to be CRITICAL (Default: %{status} !~ /init|running/)
 You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--warning-*> B<--critical-*>

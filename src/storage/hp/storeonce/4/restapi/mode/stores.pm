@@ -211,7 +211,7 @@ You can use the following variables: %{health}, %{name}
 
 =item B<--critical-health>
 
-Set critical threshold for status (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--warning-*> B<--critical-*>

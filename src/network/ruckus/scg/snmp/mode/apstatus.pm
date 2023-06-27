@@ -160,7 +160,7 @@ You can use the following variables: %{connection_status}, %{registration_status
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{connection_status} =~ /^Disconnect$/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_status} =~ /^Disconnect$/i').
 You can use the following variables: %{connection_status}, %{registration_status}, %{configuration_status}, %{display}
 
 =back

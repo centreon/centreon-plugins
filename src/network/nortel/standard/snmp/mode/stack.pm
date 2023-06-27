@@ -227,7 +227,7 @@ You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--critical-unit-status>
 
-Set critical threshold for status (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--unit>

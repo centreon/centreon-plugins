@@ -242,7 +242,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /disconnected/i || %{status} =~ /shutdown/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /disconnected/i || %{status} =~ /shutdown/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*>

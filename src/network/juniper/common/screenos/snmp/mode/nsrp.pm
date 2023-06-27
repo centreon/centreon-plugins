@@ -195,7 +195,7 @@ You can use the following variables: %{status}, %{statusLast}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /ineligible|inoperable/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /ineligible|inoperable/i').
 You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-*> B<--critical-*>

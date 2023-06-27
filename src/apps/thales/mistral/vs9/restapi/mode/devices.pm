@@ -966,7 +966,7 @@ You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectComm
 
 =item B<--critical-certificate-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--unknown-connection-status>
@@ -981,7 +981,7 @@ You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--unknown-operating-state>
@@ -996,7 +996,7 @@ You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--critical-operating-state>
 
-Set critical threshold for status  (Default: '%{operatingState} !~ /operating/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{operatingState} !~ /operating/i').
 You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--unknown-autotest-state>
@@ -1011,7 +1011,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-autotest-state>
 
-Set critical threshold for status  (Default: '%{state} !~ /success/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{state} !~ /success/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
@@ -1026,7 +1026,7 @@ You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{operatingStatus} !~ /up/i').
 You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--unknown-vpn-ike-service-state>
@@ -1041,7 +1041,7 @@ You can use the following variables: %{sn}, %{state}
 
 =item B<--critical-vpn-ike-service-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /stopped/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /stopped/i').
 You can use the following variables: %{sn}, %{state}
 
 =item B<--unknown-vpn-ike-sa-state>
@@ -1056,7 +1056,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-ike-sa-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /down/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-vpn-sa-state>
@@ -1071,7 +1071,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-sa-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /down/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--ntp-hostname>
