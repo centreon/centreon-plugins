@@ -956,7 +956,7 @@ Check tunnels.
 
 =item B<--unknown-certificate-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>
@@ -971,7 +971,7 @@ You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectComm
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status (Default: '%{connectionStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connectionStatus} =~ /unknown/i').
 You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
@@ -986,7 +986,7 @@ You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--unknown-operating-state>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--warning-operating-state>
@@ -1001,7 +1001,7 @@ You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--unknown-autotest-state>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-autotest-state>
@@ -1016,7 +1016,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--warning-interface-status>
@@ -1031,7 +1031,7 @@ You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--unknown-vpn-ike-service-state>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{state}
 
 =item B<--warning-vpn-ike-service-state>
@@ -1046,7 +1046,7 @@ You can use the following variables: %{sn}, %{state}
 
 =item B<--unknown-vpn-ike-sa-state>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-ike-sa-state>
@@ -1061,7 +1061,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-vpn-sa-state>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-sa-state>

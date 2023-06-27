@@ -190,7 +190,7 @@ Check output lines metrics.
 
 =item B<--unknown-source>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{source}.
 
 =item B<--warning-source>

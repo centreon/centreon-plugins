@@ -623,7 +623,7 @@ Skip port traffic counters if port status is disconnected.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
@@ -638,7 +638,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
@@ -653,7 +653,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-port-status>

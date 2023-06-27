@@ -109,7 +109,7 @@ Check status of clustered node.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{node_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{node_status} =~ /unknown/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--warning-status>

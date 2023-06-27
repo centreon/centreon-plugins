@@ -192,7 +192,7 @@ Check oracle dataguard.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-status>

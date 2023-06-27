@@ -127,7 +127,7 @@ Filter edge by name (Can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
 You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 

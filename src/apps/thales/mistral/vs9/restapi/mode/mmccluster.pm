@@ -140,7 +140,7 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status  (Default: '%{replicationStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN  (Default: '%{replicationStatus} =~ /unknown/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
@@ -155,7 +155,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>

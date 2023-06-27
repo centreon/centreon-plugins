@@ -170,7 +170,7 @@ Exclude resource groups by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{opState} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{opState} =~ /unknown/i').
 You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--warning-status>

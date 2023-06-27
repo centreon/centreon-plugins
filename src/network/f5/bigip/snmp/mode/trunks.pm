@@ -475,7 +475,7 @@ Monitor trunk interfaces.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
@@ -490,7 +490,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-interface-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-interface-status>

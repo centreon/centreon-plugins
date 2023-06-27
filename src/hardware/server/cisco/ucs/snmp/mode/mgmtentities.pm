@@ -150,7 +150,7 @@ Check management entities.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{role} =~ /unknown/ or %{status} eq "unknown" or %{services_status} eq "unknown"')
+Define the conditions to match for the status to be UNKNOWN (Default: '%{role} =~ /unknown/ or %{status} eq "unknown" or %{services_status} eq "unknown"')
 You can use the following variables: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-status>

@@ -263,7 +263,7 @@ Check system.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{system_status}, %{peer_connected_status}
 
 =item B<--warning-status>

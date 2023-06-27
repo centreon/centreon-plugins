@@ -144,7 +144,7 @@ Nets tag to be used for the name (Default: 'name').
 
 =item B<--unknown-net-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{netName}
 
 =item B<--warning-net-status>

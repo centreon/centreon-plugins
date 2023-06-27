@@ -231,7 +231,7 @@ Filter appliances by hostname.
 
 =item B<--unknown-service-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{service}, %{status}
 
 =item B<--warning-service-status>

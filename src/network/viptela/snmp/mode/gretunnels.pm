@@ -275,7 +275,7 @@ Filter tunnels by destination ip address.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
 
 =item B<--warning-status>

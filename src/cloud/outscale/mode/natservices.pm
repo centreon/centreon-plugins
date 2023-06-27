@@ -151,7 +151,7 @@ Nat service tag to be used for the name (Default: 'name').
 
 =item B<--unknown-nat-service-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{natName}
 
 =item B<--warning-nat-service-status>

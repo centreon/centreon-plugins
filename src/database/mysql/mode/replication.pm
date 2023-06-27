@@ -367,7 +367,7 @@ Check MySQL replication (need to use --multiple).
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--warning-connection-status>
@@ -382,7 +382,7 @@ You can use the following variables: %{status}, %{error_message}, %{display}
 
 =item B<--unknown-replication-status>
 
-Set unknown threshold for status (Default: '%{replication_status} =~ /configurationIssue/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{replication_status} =~ /configurationIssue/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-replication-status>

@@ -497,7 +497,7 @@ Add path statuses count.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--warning-status>

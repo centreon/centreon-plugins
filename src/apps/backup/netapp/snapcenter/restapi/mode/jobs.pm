@@ -251,7 +251,7 @@ Set timezone (If not set, we use current server execution timezone).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--warning-status>

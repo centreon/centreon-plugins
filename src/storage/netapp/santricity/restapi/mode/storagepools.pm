@@ -199,7 +199,7 @@ Filter pool name (can be a regexp).
 
 =item B<--unknown-pool-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-pool-status>

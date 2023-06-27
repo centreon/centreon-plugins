@@ -155,7 +155,7 @@ Filter service by service name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{service_id}, %{task_id}, %{service_name}, %{node_name}, %{node_id}, %{desired_state}, %{state_message}, %{container_id}.
 
 =item B<--warning-status>

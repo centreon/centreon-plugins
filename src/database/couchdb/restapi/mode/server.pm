@@ -209,7 +209,7 @@ Filter database name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
@@ -224,7 +224,7 @@ You can use the following variables: %{status}
 
 =item B<--unknown-compaction-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--warning-compaction-status>

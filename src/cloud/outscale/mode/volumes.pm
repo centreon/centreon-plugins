@@ -194,7 +194,7 @@ Virtual machine tags to used for the name (Default: 'name').
 
 =item B<--unknown-volume-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{volumeId}
 
 =item B<--warning-volume-status>

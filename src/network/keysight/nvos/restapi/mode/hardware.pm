@@ -162,7 +162,7 @@ Check hardware.
 
 =item B<--unknown-temperature-status>
 
-Set unknown threshold for status (Default : '%{status} eq "unknown"').
+Define the conditions to match for the status to be UNKNOWN (Default : '%{status} eq "unknown"').
 You can use the following variables: %{status}, %{class}
 
 =item B<--warning-temperature-status>
@@ -177,7 +177,7 @@ You can use the following variables: %{status}, %{class}
 
 =item B<--unknown-psu-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-psu-status>

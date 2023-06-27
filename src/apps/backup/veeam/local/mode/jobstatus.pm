@@ -318,7 +318,7 @@ Filter job with end time greater than current time less value in seconds (Defaul
 
 =item B<--ok-status>
 
-Set ok threshold for status.
+Define the conditions to match for the status to be OK.
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-status>

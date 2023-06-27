@@ -135,7 +135,7 @@ Filter by firewalls by serial (can be a regexp).
 
 =item B<--unknown-service-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{health}, %{service}
 
 =item B<--warning-service-status>

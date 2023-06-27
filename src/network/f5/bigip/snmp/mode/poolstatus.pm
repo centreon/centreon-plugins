@@ -328,7 +328,7 @@ Filter by name (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--warning-status>
@@ -343,7 +343,7 @@ You can use the following variables: %{state}, %{status}, %{membersAllDisabled},
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-member-status>

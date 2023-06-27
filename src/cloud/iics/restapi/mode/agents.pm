@@ -223,7 +223,7 @@ Filter agents if active or not.
 
 =item B<--unknown-agent-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--warning-agent-status>
@@ -238,7 +238,7 @@ You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-engine-status>

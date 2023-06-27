@@ -157,7 +157,7 @@ Filter backups by type (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--warning-status>

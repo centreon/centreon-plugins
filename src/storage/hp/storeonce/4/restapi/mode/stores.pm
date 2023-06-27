@@ -201,7 +201,7 @@ Filter stores by hostname.
 
 =item B<--unknown-health>
 
-Set unknown threshold for status (Default: '%{health} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{health} =~ /unknown/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--warning-health>

@@ -245,7 +245,7 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>

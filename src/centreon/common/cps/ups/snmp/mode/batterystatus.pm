@@ -143,7 +143,7 @@ Check battery status and charge remaining.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown|notPresent/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown|notPresent/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>

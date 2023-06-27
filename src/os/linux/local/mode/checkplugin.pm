@@ -191,7 +191,7 @@ command to execute on the remote machine
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{exit_code} == 3').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{exit_code} == 3').
 You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-status>

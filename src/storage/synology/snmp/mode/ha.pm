@@ -131,7 +131,7 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-status>

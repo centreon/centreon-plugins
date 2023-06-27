@@ -202,7 +202,7 @@ Filter name with regexp (based on serial)
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--warning-cluster-status>
@@ -217,7 +217,7 @@ You can use the following variables: %{cluster_status}, %{reason_cannot_takeover
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =item B<--warning-node-status>

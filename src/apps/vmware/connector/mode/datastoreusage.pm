@@ -266,7 +266,7 @@ Explicitly ask vmware to refreshes free-space and capacity values (slower).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{accessible} !~ /^true|1$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{accessible} !~ /^true|1$/i').
 You can use the following variables: %{accessible}
 
 =item B<--warning-status>

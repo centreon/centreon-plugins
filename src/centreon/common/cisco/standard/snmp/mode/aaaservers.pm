@@ -303,7 +303,7 @@ Filter AAA server by name (E.g.: 10.199.126.100:1812:1813. Format: [address]:[au
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>

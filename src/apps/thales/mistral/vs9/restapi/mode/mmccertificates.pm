@@ -228,7 +228,7 @@ Skip revoked certificates.
 
 =item B<--unknown-certificate-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>

@@ -189,7 +189,7 @@ Filter updates' category.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{error}, %{service}
 
 =item B<--warning-status>

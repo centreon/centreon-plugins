@@ -191,7 +191,7 @@ Vpn connection tag to be used for the name (Default: 'name').
 
 =item B<--unknown-vpn-connection-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{vpnName}
 
 =item B<--warning-vpn-connection-status>

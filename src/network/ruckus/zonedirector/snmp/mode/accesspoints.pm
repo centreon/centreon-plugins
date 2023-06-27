@@ -302,7 +302,7 @@ Filter by access point name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{zd_connection_status}
 
 =item B<--warning-status>

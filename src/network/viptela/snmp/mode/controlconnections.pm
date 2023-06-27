@@ -211,7 +211,7 @@ Filter connections by type.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicIp}
 
 =item B<--warning-status>

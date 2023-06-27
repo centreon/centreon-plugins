@@ -358,7 +358,7 @@ Filter by name (can be a regexp).
 
 =item B<--unknown-modem-status>
 
-Set unknown threshold for status (Default: '%{modem_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{modem_status} =~ /unknown/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--warning-modem-status>
@@ -373,7 +373,7 @@ You can use the following variables: %{modem_status}, %{display}
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status (Default: '%{connection_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_status} =~ /unknown/i').
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--warning-connection-status>
@@ -388,7 +388,7 @@ You can use the following variables: %{connection_status}, %{display}
 
 =item B<--unknown-sim-status>
 
-Set unknown threshold for status (Default: '%{sim_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{sim_status} =~ /unknown/i').
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--warning-sim-status>
@@ -403,7 +403,7 @@ You can use the following variables: %{sim_status}, %{display}
 
 =item B<--unknown-radio-status>
 
-Set unknown threshold for status (Default: '%{current_band} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{current_band} =~ /unknown/i').
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--warning-radio-status>
@@ -418,7 +418,7 @@ You can use the following variables: %{current_band}, %{channel_number}, %{displ
 
 =item B<--unknown-network-status>
 
-Set unknown threshold for status (Default: '%{service_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{service_status} =~ /unknown/i').
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-network-status>

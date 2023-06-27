@@ -167,7 +167,7 @@ Search in following host(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_state} !~ /^connected$/i').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
@@ -182,7 +182,7 @@ You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--unknown-overall-status>
 
-Set unknown threshold for status (Default: '%{overall_status} =~ /gray/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{overall_status} =~ /gray/i').
 You can use the following variables: %{overall_status}
 
 =item B<--warning-overall-status>

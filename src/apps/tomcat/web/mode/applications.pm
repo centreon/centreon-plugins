@@ -205,7 +205,7 @@ Critical threshold for http response code
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} ne "running"').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} ne "running"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>

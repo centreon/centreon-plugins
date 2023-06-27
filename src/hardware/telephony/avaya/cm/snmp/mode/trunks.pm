@@ -139,7 +139,7 @@ Filter signaling group instance (can be a regexp).
 
 =item B<--unknown-sig-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--warning-sig-status>

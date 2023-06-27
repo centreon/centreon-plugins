@@ -286,7 +286,7 @@ Check phase/bank load.
 
 =item B<--unknown-bank-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-bank-status>
@@ -301,7 +301,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--unknown-phase-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-phase-status>

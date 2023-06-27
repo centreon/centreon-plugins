@@ -110,7 +110,7 @@ Check covers of the printer.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%%{status} =~ /other|unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%%{status} =~ /other|unknown/').
 You can use the following variables: %{status}, %{description}
 
 =item B<--warning-status>

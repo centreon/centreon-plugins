@@ -91,7 +91,7 @@ Check licenses.
 
 =item B<--unknown-upgrade-protection-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-upgrade-protection-status>

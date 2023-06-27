@@ -188,7 +188,7 @@ Filter interfaces by type (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{source_address}, %{destination_address}
 
 =item B<--warning-status>

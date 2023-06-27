@@ -179,7 +179,7 @@ Filter services you want to check (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>

@@ -217,7 +217,7 @@ Check stack units.
 
 =item B<--unknown-unit-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--warning-unit-status>

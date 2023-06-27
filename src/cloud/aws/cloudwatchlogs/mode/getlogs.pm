@@ -174,7 +174,7 @@ If not set: lookup logs since the last execution.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '')
+Define the conditions to match for the status to be UNKNOWN (Default: '')
 You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =item B<--warning-status>

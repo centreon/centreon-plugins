@@ -216,7 +216,7 @@ Filter controller name (can be a regexp).
 
 =item B<--unknown-controller-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-controller-status>

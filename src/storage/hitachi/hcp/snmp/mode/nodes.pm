@@ -411,7 +411,7 @@ Filter nodes by id (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--warning-node-status>
@@ -426,7 +426,7 @@ You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--unknown-nic-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--warning-nic-status>
@@ -441,7 +441,7 @@ You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--unknown-san-path-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--warning-san-path-status>
@@ -456,7 +456,7 @@ You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--unknown-bbu-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-bbu-status>

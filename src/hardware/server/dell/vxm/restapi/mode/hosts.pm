@@ -225,7 +225,7 @@ Filter hosts by name (Can be a regexp).
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
@@ -255,7 +255,7 @@ You can use the following variables: %{status}, %{mac}, %{slot}
 
 =item B<--unknown-disk-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-disk-status>

@@ -93,7 +93,7 @@ Check output source status.
 
 =item B<--unknown-source-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /other/')
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /other/')
 You can use the following variables: %{status}
 
 =item B<--warning-source-status>

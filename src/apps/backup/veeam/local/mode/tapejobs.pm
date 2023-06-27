@@ -254,7 +254,7 @@ Filter job type (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '')
+Define the conditions to match for the status to be UNKNOWN (Default: '')
 You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-status>

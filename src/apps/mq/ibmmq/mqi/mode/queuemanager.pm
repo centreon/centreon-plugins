@@ -134,7 +134,7 @@ Check queue manager.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--warning-status>

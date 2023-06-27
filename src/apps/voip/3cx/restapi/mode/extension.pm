@@ -164,7 +164,7 @@ Filter extension.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{extension}, %{registered}, %{dnd}, %{profile}, %{status}, %{duration}
 
 =item B<--warning-status>

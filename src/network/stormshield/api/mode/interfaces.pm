@@ -434,7 +434,7 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--warning-status>

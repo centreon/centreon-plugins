@@ -194,7 +194,7 @@ Check memory flash usages.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /readOnly/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /readOnly/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>

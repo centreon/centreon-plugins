@@ -256,7 +256,7 @@ Filter hosts by name.
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-host-status>

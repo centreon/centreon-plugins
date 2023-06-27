@@ -323,7 +323,7 @@ Filter members by serial (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-status>
@@ -338,7 +338,7 @@ You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
@@ -353,7 +353,7 @@ You can use the following variables: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>

@@ -185,7 +185,7 @@ Check nsrp groups.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /undefined/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /undefined/i').
 You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-status>

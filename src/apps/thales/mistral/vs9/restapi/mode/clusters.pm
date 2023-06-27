@@ -290,7 +290,7 @@ Filter clusters by name.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--warning-cluster-status>
@@ -305,7 +305,7 @@ You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwi
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--warning-member-status>

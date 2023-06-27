@@ -199,7 +199,7 @@ Device to check (Required) (Example: --device='VirtualCdrom').
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_state} !~ /^connected$/i').
 You can use the following variables: %{connection_state}
 
 =item B<--warning-status>

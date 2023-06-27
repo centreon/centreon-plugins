@@ -391,7 +391,7 @@ Filter controllers by controller name (can be a regexp).
 
 =item B<--unknown-controller-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-controller-status>
@@ -406,7 +406,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-network-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-network-status>
@@ -421,7 +421,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-port-status>
@@ -436,7 +436,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-expander-port-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-expander-port-status>
@@ -451,7 +451,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-compact-flash-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-compact-flash-status>

@@ -63,12 +63,12 @@ Special variables that can be used: %{status}, %{summary}.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /^Unknown$/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /^Unknown$/').
 Special variables that can be used: %{status}, %{summary}.
 
 =item B<--ok-status>
 
-Set ok threshold for status (Default: '%{status} =~ /^Available$/').
+Define the conditions to match for the status to be OK (Default: '%{status} =~ /^Available$/').
 Special variables that can be used: %{status}, %{summary}.
 
 =back

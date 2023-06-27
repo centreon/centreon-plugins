@@ -141,7 +141,7 @@ Filter replication name (can be a regexp).
 
 =item B<--unknown-health-status>
 
-Set unknown threshold for status (Default: '%{health_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{health_status} =~ /unknown/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-health-status>
@@ -156,7 +156,7 @@ You can use the following variables: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
-Set unknown threshold for status (Default: '%{repl_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{repl_status} =~ /unknown/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>

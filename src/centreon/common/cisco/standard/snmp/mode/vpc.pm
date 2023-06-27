@@ -344,7 +344,7 @@ Check virtual port-channel (vPC).
 
 =item B<--unknown-peer-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--warning-peer-status>
@@ -359,7 +359,7 @@ You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--unknown-keepalive-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--warning-keepalive-status>
@@ -374,7 +374,7 @@ You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>

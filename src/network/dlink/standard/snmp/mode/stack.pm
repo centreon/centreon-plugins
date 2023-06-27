@@ -244,7 +244,7 @@ Check stack.
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--warning-member-status>
@@ -259,7 +259,7 @@ You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-link-status>

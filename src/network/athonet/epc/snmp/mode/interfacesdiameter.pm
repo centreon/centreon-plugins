@@ -215,7 +215,7 @@ Filter interfaces by owner (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--warning-status>
@@ -230,7 +230,7 @@ You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--unknown-transport-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-transport-status>

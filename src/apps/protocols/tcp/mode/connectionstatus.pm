@@ -181,7 +181,7 @@ Connection timeout in seconds (Default: 3)
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-status>

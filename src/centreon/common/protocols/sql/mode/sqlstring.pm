@@ -164,13 +164,13 @@ Specify scalar used to replace in printf
 
 =item B<--warning-string>
 
-Set warning condition (if statement syntax) for status evaluation.
+Define the conditions to match for the status to be WARNING.
 (Can be: %{key_field}, %{value_field})
 e.g --warning-string '%{key_field} eq 'Central' && %{value_field} =~ /127.0.0.1/'
 
 =item B<--critical-string>
 
-Set critical condition (if statement syntax) for status evaluation.
+Define the conditions to match for the status to be CRITICAL
 (Can be: %{key_field} or %{value_field})
 
 =item B<--dual-table>

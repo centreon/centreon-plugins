@@ -340,7 +340,7 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-status>
@@ -355,7 +355,7 @@ You can use the following variables: %{status}, %{replace}
 
 =item B<--unknown-battery-pack-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-battery-pack-status>
@@ -370,7 +370,7 @@ You can use the following variables: %{status}
 
 =item B<--unknown-cartridge-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-cartridge-status>

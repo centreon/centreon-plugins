@@ -170,7 +170,7 @@ Filter clusters by serial number (Can be a regexp).
 
 =item B<--unknown-chassis-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--warning-chassis-status>

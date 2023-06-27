@@ -127,7 +127,7 @@ Filter interface name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>

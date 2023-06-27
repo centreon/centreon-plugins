@@ -390,7 +390,7 @@ Filter ports by role (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--warning-node-status>
@@ -405,7 +405,7 @@ You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--unknown-bbu-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--warning-bbu-status>
@@ -420,7 +420,7 @@ You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--unknown-port-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--warning-port-link-status>
@@ -435,7 +435,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{no
 
 =item B<--unknown-port-health>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-port-health>

@@ -252,7 +252,7 @@ Check virtual switching extension.
 
 =item B<--unknown-device-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{role}, %{config_sync}
 
 =item B<--warning-device-status>
@@ -267,7 +267,7 @@ You can use the following variables: %{role}, %{config_sync}
 
 =item B<--unknown-isl-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{isl_status}
 
 =item B<--warning-isl-status>
@@ -282,7 +282,7 @@ You can use the following variables: %{isl_status}
 
 =item B<--unknown-keepalive-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{keepalive_status}
 
 =item B<--warning-keepalive-status>

@@ -261,7 +261,7 @@ Thresholds are on free space left.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>

@@ -108,7 +108,7 @@ Filter protocols by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{enabled}, %{name}
 
 =item B<--warning-status>

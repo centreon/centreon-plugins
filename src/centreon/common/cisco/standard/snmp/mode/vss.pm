@@ -266,7 +266,7 @@ Check virtual switching system.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{mode}
 
 =item B<--warning-status>
@@ -281,7 +281,7 @@ You can use the following variables: %{mode}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--warning-member-status>
@@ -296,7 +296,7 @@ You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
