@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'count', nlabel => 'results.count', set => {
+        { label => 'results-count', nlabel => 'query.results.count', set => {
                 key_values => [ { name => 'count' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 perfdatas => [
@@ -104,7 +104,7 @@ object (see documentation).
 Output to print after retrieving the count of results
 (Default: "Number of results: %{count}").
 
-=item B<--warning-count> B<--critical-count>
+=item B<--warning-results-count> B<--critical-results-count>
 
 Thresholds on count of results.
 
