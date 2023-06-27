@@ -56,7 +56,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'SAILPOINT IDENTITYNOW REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
