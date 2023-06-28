@@ -84,8 +84,8 @@ Can be: 'overall', 'ad', 'extservers', 'substorage'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=substorage)
-Can also exclude specific instance: --filter=substorage,1
+Exclude the items given as a comma-separated list (example: --filter=substorage).
+You can also exclude items from specific instances: --filter=substorage,1
 
 =item B<--no-component>
 

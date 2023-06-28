@@ -101,7 +101,7 @@ Can be: 'shelf', 'bay', 'fru'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='fru,-'
+You can also exclude items from specific instances: --filter='fru,-'
 
 =item B<--no-component>
 

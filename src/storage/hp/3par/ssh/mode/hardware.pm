@@ -93,8 +93,8 @@ Can be: 'battery', 'cim', 'port', 'node', 'disk', 'psu', 'sensor', 'wsapi'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=battery --filter=cim)
-Can also exclude specific instance: --filter=port,free
+Exclude the items given as a comma-separated list (example: --filter=battery --filter=cim).
+You can also exclude items from specific instances: --filter=port,free
 
 =item B<--add-name-instance>
 

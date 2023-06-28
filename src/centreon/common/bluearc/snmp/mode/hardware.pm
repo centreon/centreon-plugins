@@ -126,8 +126,8 @@ Can be: 'temperature', 'fan', 'psu', 'sysdrive', 'battery'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=sysdrive)
-Can also exclude specific instance: --filter=sysdrive,1
+Exclude the items given as a comma-separated list (example: --filter=sysdrive).
+You can also exclude items from specific instances: --filter=sysdrive,1
 
 =item B<--no-component>
 

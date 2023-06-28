@@ -76,7 +76,7 @@ Can be: 'robot', 'drive', 'ctrl', 'ctrlpower', 'magazine'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=ctrl,1
+You can also exclude items from specific instances: --filter=ctrl,1
 
 =item B<--no-component>
 

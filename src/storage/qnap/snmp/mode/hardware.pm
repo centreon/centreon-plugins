@@ -126,8 +126,8 @@ Can be: 'disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=disk)
-Can also exclude specific instance: --filter=disk,1
+Exclude the items given as a comma-separated list (example: --filter=disk).
+You can also exclude items from specific instances: --filter=disk,1
 
 =item B<--absent-problem>
 

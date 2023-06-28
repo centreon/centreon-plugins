@@ -281,8 +281,8 @@ Can be: 'module', 'temperature', 'director, 'cabling', 'power', 'voltage', 'spar
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=module)
-Can also exclude specific instance: --filter=temperature,ES-PWS-A ES-4
+Exclude the items given as a comma-separated list (example: --filter=temperature --filter=module).
+You can also exclude items from specific instances: --filter=temperature,ES-PWS-A ES-4
 
 =item B<--no-component>
 

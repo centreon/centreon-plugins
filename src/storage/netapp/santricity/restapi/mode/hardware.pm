@@ -166,7 +166,7 @@ Can be: 'storage', 'ctrl', 'battery', 'board', 'cbd', 'cmd', 'drive', 'psu', 'fa
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='drive,010000005000C500C244251B0000000000000000'
+You can also exclude items from specific instances: --filter='drive,010000005000C500C244251B0000000000000000'
 
 =item B<--no-component>
 

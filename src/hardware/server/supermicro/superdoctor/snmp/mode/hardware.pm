@@ -81,7 +81,7 @@ Can be: 'sensor', 'disk', 'memory'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=sensor,temperature.*
+You can also exclude items from specific instances: --filter=sensor,temperature.*
 
 =item B<--no-component>
 

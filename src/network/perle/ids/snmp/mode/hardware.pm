@@ -84,8 +84,8 @@ Add literal description for instance value (used in filter, absent-problem and t
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=psu)
-Can also exclude specific instance: --filter=psu,1
+Exclude the items given as a comma-separated list (example: --filter=psu).
+You can also exclude items from specific instances: --filter=psu,1
 
 =item B<--absent-problem>
 

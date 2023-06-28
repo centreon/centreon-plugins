@@ -75,7 +75,7 @@ Check sensors.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=sensor,1.1
+You can also exclude items from specific instances: --filter=sensor,1.1
 
 =item B<--no-component>
 

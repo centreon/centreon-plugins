@@ -84,7 +84,7 @@ Can be: 'appliance', 'battery', 'dimm', 'disk', 'enclosure', 'fan', 'node', 'iom
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='disk,26018c5b69264a868e49119eec95b0a9'
+You can also exclude items from specific instances: --filter='disk,26018c5b69264a868e49119eec95b0a9'
 
 =item B<--absent-problem>
 

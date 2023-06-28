@@ -75,8 +75,8 @@ Can be: 'alarm'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=alarm)
-Can also exclude specific instance: --filter=alarm,1
+Exclude the items given as a comma-separated list (example: --filter=alarm).
+You can also exclude items from specific instances: --filter=alarm,1
 
 =item B<--no-component>
 

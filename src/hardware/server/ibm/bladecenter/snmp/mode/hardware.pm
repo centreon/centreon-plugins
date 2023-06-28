@@ -137,8 +137,8 @@ Can be: 'ambient', 'powermodule', 'fanpack', 'chassisfan',
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=blower --filter=powermodule)
-Can also exclude specific instance: --filter=blower,1
+Exclude the items given as a comma-separated list (example: --filter=blower --filter=powermodule).
+You can also exclude items from specific instances: --filter=blower,1
 
 =item B<--absent-problem>
 

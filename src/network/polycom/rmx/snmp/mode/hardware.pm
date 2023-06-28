@@ -85,7 +85,7 @@ Can be: 'fan', 'psu', 'board'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=board --filter=psu)
+Exclude the items given as a comma-separated list (example: --filter=board --filter=psu).
 
 =item B<--no-component>
 

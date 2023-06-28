@@ -215,8 +215,8 @@ Add literal description for instance value (used in filter, absent-problem and t
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fru)
-Can also exclude specific instance: --filter=fru,7.3.0.0
+Exclude the items given as a comma-separated list (example: --filter=fru).
+You can also exclude items from specific instances: --filter=fru,7.3.0.0
 
 =item B<--absent-problem>
 

@@ -82,8 +82,8 @@ Can be: 'ctrl', 'disk', 'diskfolder', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvolta
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=ctrlfan --filter=enclpower)
-Can also exclude specific instance: --filter=ctrlfan,1
+Exclude the items given as a comma-separated list (example: --filter=ctrlfan --filter=enclpower).
+You can also exclude items from specific instances: --filter=ctrlfan,1
 
 =item B<--no-component>
 

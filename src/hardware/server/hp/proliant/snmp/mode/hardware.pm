@@ -232,8 +232,8 @@ There are some magic words like: 'network', 'storage'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=temperature)
-Can also exclude specific instance: --filter=fan,1.2 --filter=lnic,1
+Exclude the items given as a comma-separated list (example: --filter=fan --filter=temperature).
+You can also exclude items from specific instances: --filter=fan,1.2 --filter=lnic,1
 
 =item B<--absent-problem>
 

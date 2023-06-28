@@ -85,8 +85,8 @@ Can be: 'shelf', 'card'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=shelf)
-Can also exclude specific instance: --filter=card,psu.1.1.4
+Exclude the items given as a comma-separated list (example: --filter=shelf).
+You can also exclude items from specific instances: --filter=card,psu.1.1.4
 
 =item B<--no-component>
 

@@ -77,7 +77,7 @@ Can be: 'module'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=module,1
+You can also exclude items from specific instances: --filter=module,1
 
 =item B<--no-component>
 

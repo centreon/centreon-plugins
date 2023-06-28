@@ -80,7 +80,7 @@ Can be: 'entity'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=entity,CT1.FC0
+You can also exclude items from specific instances: --filter=entity,CT1.FC0
 
 =item B<--no-component>
 

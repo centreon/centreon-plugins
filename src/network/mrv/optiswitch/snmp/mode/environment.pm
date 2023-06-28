@@ -86,8 +86,8 @@ Can be: 'cpu', 'psu', 'fan'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=cpu)
-Can also exclude specific instance: --filter=cpu,1
+Exclude the items given as a comma-separated list (example: --filter=cpu).
+You can also exclude items from specific instances: --filter=cpu,1
 
 =item B<--absent-problem>
 

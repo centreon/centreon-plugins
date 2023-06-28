@@ -80,7 +80,7 @@ Can be: 'service', 'sdcard'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=instance,relayOutput1
+You can also exclude items from specific instances: --filter=instance,relayOutput1
 
 =item B<--no-component>
 

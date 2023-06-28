@@ -108,8 +108,8 @@ Can be: 'sensor', 'disk'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=disk --filter=sensor)
-Can also exclude specific instance: --filter=rmsVoltage,I1
+Exclude the items given as a comma-separated list (example: --filter=disk --filter=sensor).
+You can also exclude items from specific instances: --filter=rmsVoltage,I1
 
 =item B<--absent-problem>
 

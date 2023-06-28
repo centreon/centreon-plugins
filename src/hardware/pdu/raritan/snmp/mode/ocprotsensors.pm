@@ -110,8 +110,8 @@ Which component to check (Default: '.*').
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=airPressure --filter=rmsVoltage)
-Can also exclude specific instance: --filter=rmsVoltage,C1
+Exclude the items given as a comma-separated list (example: --filter=airPressure --filter=rmsVoltage).
+You can also exclude items from specific instances: --filter=rmsVoltage,C1
 
 =item B<--no-component>
 

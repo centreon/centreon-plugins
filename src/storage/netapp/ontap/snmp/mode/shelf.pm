@@ -129,8 +129,8 @@ Can be: 'psu', 'fan', 'communication', 'voltage', 'temperature', 'electronics', 
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=psu,41239F00647-A
+Exclude the items given as a comma-separated list (example: --filter=fan --filter=psu).
+You can also exclude items from specific instances: --filter=psu,41239F00647-A
 
 =item B<--absent-problem>
 

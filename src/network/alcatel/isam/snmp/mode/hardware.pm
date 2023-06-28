@@ -81,8 +81,8 @@ Can be: 'cardtemperature', 'sfp'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=cardtemperature)
-Can also exclude specific instance: --filter=cardtemperature,1080.1
+Exclude the items given as a comma-separated list (example: --filter=cardtemperature).
+You can also exclude items from specific instances: --filter=cardtemperature,1080.1
 
 =item B<--no-component>
 

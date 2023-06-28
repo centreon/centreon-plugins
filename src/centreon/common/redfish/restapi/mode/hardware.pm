@@ -175,7 +175,7 @@ Can be: 'chassis', 'device', 'drive', 'fan', 'psu', 'sc', 'storage', 'temperatur
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='fan,1.2'
+You can also exclude items from specific instances: --filter='fan,1.2'
 
 =item B<--no-component>
 

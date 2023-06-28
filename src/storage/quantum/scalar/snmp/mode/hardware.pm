@@ -97,8 +97,8 @@ Can be: 'global', 'subsystem', 'physicaldrive', 'psu', 'voltage', 'humidity', 't
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=subsystem)
-Can also exclude specific instance: --filter=physicaldrive,1
+Exclude the items given as a comma-separated list (example: --filter=subsystem).
+You can also exclude items from specific instances: --filter=physicaldrive,1
 
 =item B<--no-component>
 

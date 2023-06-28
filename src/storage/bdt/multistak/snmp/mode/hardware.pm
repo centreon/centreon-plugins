@@ -109,8 +109,8 @@ Can be: 'module', 'device'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=disk --filter=psu)
-Can also exclude specific instance: --filter=module,1
+Exclude the items given as a comma-separated list (example: --filter=disk --filter=psu).
+You can also exclude items from specific instances: --filter=module,1
 
 =item B<--no-component>
 

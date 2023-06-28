@@ -143,7 +143,7 @@ Can be: 'ad' (audio device), 'aic' (audio input connectors), 'aoc' (audio output
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='aic,Microphone.1'
+You can also exclude items from specific instances: --filter='aic,Microphone.1'
 
 =item B<--no-component>
 

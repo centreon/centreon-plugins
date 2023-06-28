@@ -94,8 +94,8 @@ Can be: 'disk', 'enclosure', 'fan', 'fru', 'psu', 'saslink', 'sensor', 'vdisk'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fru --filter=enclosure)
-Can also exclude specific instance: --filter=disk,1
+Exclude the items given as a comma-separated list (example: --filter=fru --filter=enclosure).
+You can also exclude items from specific instances: --filter=disk,1
 
 =item B<--no-component>
 

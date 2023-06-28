@@ -234,7 +234,7 @@ Command used: show enclosure-status -type all
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=psu,ce#0_0
+You can also exclude items from specific instances: --filter=psu,ce#0_0
 
 =item B<--threshold-overload>
 

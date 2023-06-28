@@ -82,8 +82,8 @@ Can be: 'component', 'dkc', 'dku'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=dkc)
-Can also exclude specific instance: --filter=dkc,1.fan
+Exclude the items given as a comma-separated list (example: --filter=dkc).
+You can also exclude items from specific instances: --filter=dkc,1.fan
 
 =item B<--no-component>
 

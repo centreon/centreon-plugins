@@ -152,7 +152,7 @@ Check SSDs endurance level (100% is the best value)
 =item B<--filter>
 
 Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=ssds,SSD-NAME-NUMBER
+You can also exclude items from specific instances: --filter=ssds,SSD-NAME-NUMBER
 
 =item B<--warning>
 

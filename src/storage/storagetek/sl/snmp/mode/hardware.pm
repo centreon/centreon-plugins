@@ -84,8 +84,8 @@ Can be: 'interface', 'temperature', 'fan', 'psu', 'robot', 'elevator', 'controll
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=controller)
-Can also exclude specific instance: --filter=cap,1
+Exclude the items given as a comma-separated list (example: --filter=controller).
+You can also exclude items from specific instances: --filter=cap,1
 
 =item B<--no-component>
 

@@ -77,8 +77,8 @@ Can be: 'sensors'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=sensors)
-Can also exclude specific instance: --filter=sensors,Inter
+Exclude the items given as a comma-separated list (example: --filter=sensors).
+You can also exclude items from specific instances: --filter=sensors,Inter
 
 =item B<--no-component>
 

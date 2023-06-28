@@ -164,8 +164,8 @@ Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=psu)
-Can also exclude specific instance: --filter=temperature,1.1
+Exclude the items given as a comma-separated list (example: --filter=temperature --filter=psu).
+You can also exclude items from specific instances: --filter=temperature,1.1
 
 =item B<--add-name-instance>
 

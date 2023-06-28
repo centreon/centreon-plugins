@@ -82,7 +82,7 @@ Can be: 'enclosure', 'server'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='enclosure.fan,:1'
+You can also exclude items from specific instances: --filter='enclosure.fan,:1'
 
 =item B<--no-component>
 

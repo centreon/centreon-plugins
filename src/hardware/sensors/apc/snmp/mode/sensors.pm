@@ -98,8 +98,8 @@ Can be: 'temperature', 'humidity', 'fluid'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=humidity)
-Can also exclude specific instance: --filter=temperature,1
+Exclude the items given as a comma-separated list (example: --filter=temperature --filter=humidity).
+You can also exclude items from specific instances: --filter=temperature,1
 
 =item B<--no-component>
 

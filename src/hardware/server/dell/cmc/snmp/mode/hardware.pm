@@ -106,8 +106,8 @@ Can be: 'chassis', 'disk', 'health', 'psu', 'temperature', 'vdisk'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan)
-Can also exclude specific instance: --filter=health,2
+Exclude the items given as a comma-separated list (example: --filter=fan).
+You can also exclude items from specific instances: --filter=health,2
 
 =item B<--no-component>
 

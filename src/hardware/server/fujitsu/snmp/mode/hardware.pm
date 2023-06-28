@@ -176,8 +176,8 @@ Can be: 'temperature', 'fan', 'psu', 'voltage', 'cpu', 'memory'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature)
-Can also exclude specific instance: --filter=temperature,1
+Exclude the items given as a comma-separated list (example: --filter=temperature).
+You can also exclude items from specific instances: --filter=temperature,1
 
 =item B<--absent-problem>
 

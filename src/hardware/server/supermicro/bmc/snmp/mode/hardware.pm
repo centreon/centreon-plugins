@@ -72,7 +72,7 @@ Can be: 'sensor'.
 
 =item B<--filter>
 
-Can also exclude specific instance: --filter=sensor,fan
+You can also exclude items from specific instances: --filter=sensor,fan
 
 =item B<--no-component>
 

@@ -218,8 +218,8 @@ Can be: 'temperature', 'si', 'disk', 'fan', 'voltage', 'psu', 'sensors'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan)
-Can also exclude specific instance: --filter=fan,F1.RS
+Exclude the items given as a comma-separated list (example: --filter=fan).
+You can also exclude items from specific instances: --filter=fan,F1.RS
 
 =item B<--no-component>
 

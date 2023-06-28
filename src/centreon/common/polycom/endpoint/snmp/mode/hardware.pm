@@ -76,8 +76,8 @@ Can be: 'global', 'microphone', 'camera', 'nic', 'ptc', 'board'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=camera)
-Can also exclude specific instance: --filter=camera,1
+Exclude the items given as a comma-separated list (example: --filter=camera).
+You can also exclude items from specific instances: --filter=camera,1
 
 =item B<--no-component>
 

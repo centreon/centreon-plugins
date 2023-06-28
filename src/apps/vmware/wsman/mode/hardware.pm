@@ -133,8 +133,8 @@ Can be: 'omc_discretesensor', 'omc_fan', 'omc_psu', 'vmware_storageextent', 'vmw
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=cim_card --filter=cim_recordlog)
-Can also exclude specific instance: --filter='omc_psu,Power Supply 1'
+Exclude the items given as a comma-separated list (example: --filter=cim_card --filter=cim_recordlog).
+You can also exclude items from specific instances: --filter='omc_psu,Power Supply 1'
 
 =item B<--no-component>
 

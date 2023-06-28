@@ -111,7 +111,7 @@ Can be: 'hwstatus', 'temperature', 'memory'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature)
+Exclude the items given as a comma-separated list (example: --filter=temperature).
 
 =item B<--threshold-overload>
 

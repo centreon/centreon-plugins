@@ -82,7 +82,7 @@ Can be: 'sensor'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=sensor,celsius.*
+You can also exclude items from specific instances: --filter=sensor,celsius.*
 
 =item B<--no-component>
 

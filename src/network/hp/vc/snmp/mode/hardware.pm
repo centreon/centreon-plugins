@@ -91,8 +91,8 @@ Can be: 'domain', 'enclosure', 'module', 'moduleport', 'port', 'physicalserver',
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=enet --filter=fc)
-Can also exclude specific instance: --filter=fc,1
+Exclude the items given as a comma-separated list (example: --filter=enet --filter=fc).
+You can also exclude items from specific instances: --filter=fc,1
 
 =item B<--no-component>
 

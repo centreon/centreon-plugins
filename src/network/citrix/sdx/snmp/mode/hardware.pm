@@ -71,7 +71,7 @@ Can be: 'hardware', 'software'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=hardware,name
+You can also exclude items from specific instances: --filter=hardware,name
 
 =item B<--no-component>
 

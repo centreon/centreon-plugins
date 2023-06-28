@@ -86,7 +86,7 @@ Can be: 'fan', 'psu', 'module', 'temperature'.
 =item B<--filter>
 
 Exclude some parts (Example: --filter=psu --filter=module)
-Can also exclude specific instance: --filter=fan,1
+You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--no-component>
 

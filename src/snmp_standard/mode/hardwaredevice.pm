@@ -77,7 +77,7 @@ Can be: 'device'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=device,network.*
+You can also exclude items from specific instances: --filter=device,network.*
 
 =item B<--no-component>
 

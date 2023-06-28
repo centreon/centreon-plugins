@@ -92,8 +92,8 @@ Can be: 'fan', 'temperature', 'vrm', 'psu', 'cpu', 'memory', 'nic', 'battery', '
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=fan)
-Can also exclude specific instance: --filter="fan,Fan Block 1"
+Exclude the items given as a comma-separated list (example: --filter=temperature --filter=fan).
+You can also exclude items from specific instances: --filter="fan,Fan Block 1"
 
 =item B<--absent-problem>
 

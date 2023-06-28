@@ -262,8 +262,8 @@ Can be: 'director', 'xcm', 'disk', 'memory', 'config', 'fru', 'test'
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=director --filter=xcm)
-Can also exclude specific instance: --filter=director,1
+Exclude the items given as a comma-separated list (example: --filter=director --filter=xcm).
+You can also exclude items from specific instances: --filter=director,1
 
 =item B<--no-component>
 

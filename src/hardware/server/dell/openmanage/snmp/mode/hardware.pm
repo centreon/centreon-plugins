@@ -101,8 +101,8 @@ Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery',
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan)
-Can also exclude specific instance: --filter=fan,1
+Exclude the items given as a comma-separated list (example: --filter=fan).
+You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--no-component>
 

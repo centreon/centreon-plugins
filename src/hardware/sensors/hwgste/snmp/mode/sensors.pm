@@ -90,7 +90,7 @@ Can be: 'temperature', 'humidity'.
 =item B<--filter>
 
 Exclude some parts.
-Can also exclude specific instance: --filter=sensor,10
+You can also exclude items from specific instances: --filter=sensor,10
 
 =item B<--threshold-overload>
 

@@ -83,8 +83,8 @@ Can be: 'drive', 'library', 'eventlog'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=drive)
-Can also exclude specific instance: --filter=drive,1
+Exclude the items given as a comma-separated list (example: --filter=drive).
+You can also exclude items from specific instances: --filter=drive,1
 
 =item B<--no-component>
 

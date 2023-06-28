@@ -69,7 +69,7 @@ Check alarms.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter="alarm,FAN Alarm"
+You can also exclude items from specific instances: --filter="alarm,FAN Alarm"
 
 =item B<--no-component>
 

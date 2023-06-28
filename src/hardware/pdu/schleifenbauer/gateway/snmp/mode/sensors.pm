@@ -74,8 +74,8 @@ Can be: 'temperature', 'humidity', 'contact'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=contact)
-Can also exclude specific instance: --filter=temperature,1
+Exclude the items given as a comma-separated list (example: --filter=temperature --filter=contact).
+You can also exclude items from specific instances: --filter=temperature,1
 
 =item B<--no-component>
 

@@ -101,8 +101,8 @@ Can be: 'hardware', 'serviceset'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=hardware --filter=serviceset)
-Can also exclude specific instance: --filter=hardware,storageCluster
+Exclude the items given as a comma-separated list (example: --filter=hardware --filter=serviceset).
+You can also exclude items from specific instances: --filter=hardware,storageCluster
 
 =item B<--no-component>
 

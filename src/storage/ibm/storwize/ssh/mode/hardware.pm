@@ -109,8 +109,8 @@ Add literal description for instance value (used in filter, absent-problem and t
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=host --filter=enclosurecanister)
-Can also exclude specific instance: --filter=host,10
+Exclude the items given as a comma-separated list (example: --filter=host --filter=enclosurecanister).
+You can also exclude items from specific instances: --filter=host,10
 
 =item B<--no-component>
 

@@ -114,8 +114,8 @@ Can be: 'fan', 'power', 'slot'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=power)
-Can also exclude specific instance: --filter=power,1
+Exclude the items given as a comma-separated list (example: --filter=power).
+You can also exclude items from specific instances: --filter=power,1
 
 =item B<--no-component>
 

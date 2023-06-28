@@ -84,8 +84,8 @@ Add literal description for instance value (used in filter and threshold options
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=psu)
-Can also exclude specific instance: --filter=psu,0.0A.0
+Exclude the items given as a comma-separated list (example: --filter=psu).
+You can also exclude items from specific instances: --filter=psu,0.0A.0
 
 =item B<--no-component>
 

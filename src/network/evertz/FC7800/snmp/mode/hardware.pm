@@ -77,7 +77,7 @@ Can be: 'psu', 'frameline'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=psu,1
+You can also exclude items from specific instances: --filter=psu,1
 
 =item B<--no-component>
 

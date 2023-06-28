@@ -85,7 +85,7 @@ Can be: 'service'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list) 
-Can also exclude specific instance: --filter=service,pop
+You can also exclude items from specific instances: --filter=service,pop
 
 =item B<--no-component>
 

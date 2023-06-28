@@ -201,7 +201,7 @@ Command used: show disks
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=disk,CE-Disk#0
+You can also exclude items from specific instances: --filter=disk,CE-Disk#0
 
 =item B<--threshold-overload>
 

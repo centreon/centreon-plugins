@@ -110,8 +110,8 @@ Can be: 'controlstation', 'datamover'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=datamover)
-Can also exclude specific instance: --filter=datamover,slot_2
+Exclude the items given as a comma-separated list (example: --filter=datamover).
+You can also exclude items from specific instances: --filter=datamover,slot_2
 
 =item B<--no-component>
 

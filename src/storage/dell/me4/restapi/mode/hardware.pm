@@ -156,7 +156,7 @@ Can be: 'controller', 'disk', 'fan', 'fru', 'psu', 'sensor', 'volume'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='sensor,Overall Sensor'
+You can also exclude items from specific instances: --filter='sensor,Overall Sensor'
 
 =item B<--no-component>
 

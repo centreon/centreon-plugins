@@ -106,8 +106,8 @@ Can be: 'fan', 'led', 'nim', 'pem', 'pim', 'temperature', 'usb'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=temperature)
-Can also exclude specific instance: --filter=temperature,Board
+Exclude the items given as a comma-separated list (example: --filter=temperature).
+You can also exclude items from specific instances: --filter=temperature,Board
 
 =item B<--no-component>
 

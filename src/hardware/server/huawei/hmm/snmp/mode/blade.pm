@@ -97,8 +97,8 @@ Can be: 'cpu', 'disk', 'memory', 'mezz', 'raidcontroller', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=cpu)
-Can also exclude specific instance: --filter=cpu,1
+Exclude the items given as a comma-separated list (example: --filter=cpu).
+You can also exclude items from specific instances: --filter=cpu,1
 
 =item B<--no-component>
 

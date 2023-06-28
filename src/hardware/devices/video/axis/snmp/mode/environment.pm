@@ -102,8 +102,8 @@ Can be: 'video', 'psu', 'fan', 'temperature', 'audio', 'storage', 'casing'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=video)
-Can also exclude specific instance: --filter=video,fan.1
+Exclude the items given as a comma-separated list (example: --filter=video).
+You can also exclude items from specific instances: --filter=video,fan.1
 
 =item B<--absent-problem>
 

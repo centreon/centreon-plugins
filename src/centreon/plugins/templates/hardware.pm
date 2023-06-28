@@ -493,8 +493,8 @@ Can be: 'xxx', 'yyy'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=xxx --filter=yyyy)
-Can also exclude specific instance: --filter=xxxxx,instancevalue
+Exclude the items given as a comma-separated list (example: --filter=xxx --filter=yyyy).
+You can also exclude items from specific instances: --filter=xxxxx,instancevalue
 
 =item B<--absent-problem>
 
