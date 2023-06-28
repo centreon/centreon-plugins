@@ -1608,7 +1608,7 @@ Rewrite the ranges displayed in the perfdata. Accepted values:
 
 =item B<--filter-uom>
 
-Masks the units when they don't match the given regular expression.
+Mask the units when they don't match the given regular expression.
 
 =item B<--opt-exit>
 
