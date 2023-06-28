@@ -360,7 +360,6 @@ sub host_message {
 	    }
     </style>
     <![endif]-->
-    <link href="https://fonts.googleapis.com/css?family=Red+Hat+Display
     </head>
     <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
         <center style="width: 100%; background: #f6f6f6; text-align: left;">
@@ -736,7 +735,6 @@ sub service_message {
         }
     </style>
     <![endif]-->
-    <link href="https://fonts.googleapis.com/css?family=Red+Hat+Display
     </head>
     <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
             <center style="width: 100%; background: #f6f6f6; text-align: left;">
