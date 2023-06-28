@@ -1137,16 +1137,16 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 
 =item B<--subsetleef>
 
-How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious when you set it. Prefer to let the default value).
+How many OID values per SNMP request (default: 50) (for get_leef method. Be cautious when you set it. Prefer to let the default value).
 
 =item B<--snmp-autoreduce>
  
-Progressively reduce the number requested OIDs in bulk mode. Use it in case of
+Progressively reduce the number of requested OIDs in bulk mode. Use it in case of
 SNMP errors (By default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 
-Use snmp getnext function in snmp v2c and v3. This will request one OID at a
+Use SNMP getnext function in SNMP v2c and v3. This will request one OID at a
 time.
 
 =item B<--snmp-cache-file>
