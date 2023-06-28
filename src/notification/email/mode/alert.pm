@@ -927,26 +927,11 @@ sub set_payload {
     }
 }
 
+
 sub run {
     my ($self, %options) = @_;
 
     $self->set_payload();
-    my $attachement = '';
-    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
-        my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
-        $attachement = Email::MIME->create(
-            header_str => [
-                'Content-ID' => "<$img_cid>"
-            ],
-            attributes => {
-                content_type => 'image/png',
-                disposition  => 'inline',
-                encoding     => 'base64',
-                name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
-            },
-            body => $self->{payload_attachment}->{png}
-        );
-    }
 
     my $html_part = Email::MIME->create(
         attributes => {
@@ -964,23 +949,53 @@ sub run {
         body => $self->{payload_attachment}->{alt_message}
     );
 
-    my $email = Email::MIME->create(
-        header_str => [
-            From    => $self->{option_results}->{from_address},
-            To      => $self->{option_results}->{to_address},
-            Subject => $self->{payload_attachment}->{subject}
-        ],
-        parts => [
-            Email::MIME->create(
+    my $email;
+
+    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
+        my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
+        
+        $email = Email::MIME->create(
+            header_str => [
+                From    => $self->{option_results}->{from_address},
+                To      => $self->{option_results}->{to_address},
+                Subject => $self->{payload_attachment}->{subject}
+            ],
+            parts => [
+                Email::MIME->create(
+                    attributes => {
+                        content_type => 'multipart/alternative',
+                        charset     => 'UTF-8',
+                    },
+                    parts => [$text_part, $html_part],
+                ),
+                Email::MIME->create(
+                    header_str => [
+                        'Content-ID' => "<$img_cid>"
+                    ],
+                    attributes => {
+                        content_type => 'image/png',
+                        disposition  => 'inline',
+                        encoding     => 'base64',
+                        name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
+                    },
+                    body => $self->{payload_attachment}->{png}
+                )
+            ]
+        );
+    } else {
+        $email = Email::MIME->create(
+            header_str => [
+                From    => $self->{option_results}->{from_address},
+                To      => $self->{option_results}->{to_address},
+                Subject => $self->{payload_attachment}->{subject}
+            ],
             attributes => {
                 content_type => 'multipart/alternative',
                 charset     => 'UTF-8',
             },
             parts => [$text_part, $html_part],
-        ),
-        $attachement
-        ]
-    );
+        );
+    }
 
     my $smtp = Email::Sender::Transport::SMTP->new({
         host => $self->{option_results}->{smtp_address},
