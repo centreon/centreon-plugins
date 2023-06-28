@@ -94,8 +94,7 @@ You can also exclude items from specific instances: --filter=sensor,10
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='sensor,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
