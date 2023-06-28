@@ -263,6 +263,7 @@ sub host_message {
 		    padding: 0 !important;
 		    height: 100% !important;
 		    width: 100% !important;
+		    background-color: #F2F2F2;
 	    }
 	
 	    * {
@@ -638,6 +639,7 @@ sub service_message {
             padding: 0 !important;
             height: 100% !important;
             width: 100% !important;
+		    background-color: #F2F2F2;
         }
         
         * {
