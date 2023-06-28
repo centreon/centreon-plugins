@@ -93,8 +93,7 @@ Can be specific or global: --absent-problem="fan,c41c5a99937e4953a180c65756f303f
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 

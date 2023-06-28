@@ -106,7 +106,6 @@ You can also exclude items from specific instances: --filter=psu,1
 =item B<--no-component>
 
 Return an error if no components are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
 
 =item B<--threshold-overload>
 

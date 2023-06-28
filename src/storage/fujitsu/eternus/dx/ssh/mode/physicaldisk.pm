@@ -211,8 +211,7 @@ Example: --threshold-overload='disk,CRITICAL,^(?!(Available|Spare)$)'
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =back
 
