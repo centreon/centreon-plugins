@@ -107,11 +107,11 @@ Check number of open sessions ('informix' user is not counted).
 
 =item B<--warning-sessions>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-sessions>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

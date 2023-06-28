@@ -204,12 +204,12 @@ You can use: 'Canceled', 'Nonexistent', 'Active',
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{args}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{args}
 
 =item B<--warning-*> B<--critical-*>

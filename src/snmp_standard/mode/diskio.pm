@@ -309,14 +309,14 @@ Check read/write I/O disks (bytes per secondes, IOPs).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read', 'write', 'read-iops', 'write-iops',
 'total-read', 'total-write', 'total-read-iops', 'total-write-iops',
 'sum-read-write', 'sum-read-write-iops'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read', 'write', 'read-iops', 'write-iops',
 'total-read', 'total-write', 'total-read-iops', 'total-write-iops',
 'sum-read-write', 'sum-read-write-iops'.

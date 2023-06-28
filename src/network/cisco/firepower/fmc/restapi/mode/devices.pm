@@ -190,17 +190,17 @@ Filter devices by name (Can be a regexp).
 
 =item B<--unknown-device-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>
 
-Set critical threshold for status (Default: '%{status} =~ /red|black/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red|black/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

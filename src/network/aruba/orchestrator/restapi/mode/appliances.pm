@@ -168,17 +168,17 @@ Filter appliances by group.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} =~ /unknown|unreachable/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown|unreachable/i').
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--warning-*> B<--critical-*>

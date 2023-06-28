@@ -330,17 +330,17 @@ Define perfdatas instance (default: '%(cellId) %(operator)')
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--warning-status>
 
-Set warning threshold for status (default: '%{signalQuality} =~ /poor/').
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId},  %{icci},%{operator}, %{imsi}
+Define the conditions to match for the status to be WARNING (default: '%{signalQuality} =~ /poor/').
+You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
-Set critical threshold for status (default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
+Define the conditions to match for the status to be CRITICAL (default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>

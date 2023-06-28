@@ -146,12 +146,12 @@ Example: --filter-counters='^current$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voltage', 'current', 'power'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'voltage', 'current', 'power'.
 
 =back

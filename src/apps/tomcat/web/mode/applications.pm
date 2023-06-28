@@ -197,25 +197,25 @@ Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http
 
 =item B<--warning-http-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--critical-http-status>
 
-Threshold critical for http response code
+Critical threshold for http response code
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} ne "running"').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} ne "running"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} eq "stopped"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} eq "stopped"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -196,11 +196,11 @@ Check storage usage.
 
 =item B<--warning-usage>
 
-Threshold warning for used allocated storage.
+Warning threshold for used allocated storage.
 
 =item B<--critical-usage>
 
-Threshold critical for used allocated storage.
+Critical threshold for used allocated storage.
 
 =item B<--units>
 

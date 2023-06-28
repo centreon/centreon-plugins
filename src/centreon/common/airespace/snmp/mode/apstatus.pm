@@ -320,22 +320,22 @@ Monitor radio interfaces channels utilization.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-radio-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-radio-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -235,14 +235,14 @@ Check CPU based on node exporter metrics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 
 Can be: 'average', 'idle', 'iowait', 'nice', 'irq'
 'softirq', 'steal', 'system', 'user'
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 
 Can be: 'average', 'idle', 'iowait', 'nice', 'irq'
 'softirq', 'steal', 'system', 'user'

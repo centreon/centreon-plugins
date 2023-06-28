@@ -191,12 +191,12 @@ Threshold for HTTP timeout (Default: 30)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'used' (in percent), 'fragmentation' (in percent).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'used' (in percent), 'fragmentation' (in percent).
 
 =back

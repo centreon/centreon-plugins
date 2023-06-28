@@ -193,22 +193,22 @@ Example: --filter-counters='^status|current$'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ok|notInstalled/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok|notInstalled/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voltage', 'current', 'faulty-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'voltage', 'current', 'faulty-count'.
 
 =back

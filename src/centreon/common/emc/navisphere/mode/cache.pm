@@ -203,11 +203,11 @@ Set option for cache command (Default: '-pdp -state -mirror').
 
 =item B<--warning>
 
-Threshold warning in percent (for dirty cache).
+Warning threshold in percent (for dirty cache).
 
 =item B<--critical>
 
-Threshold critical in percent (for dirty cache).
+Critical threshold in percent (for dirty cache).
 
 =item B<--threshold-overload>
 

@@ -373,7 +373,7 @@ Example: --filter-counters='clients'
 
 =item B<--warning-status>
     
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{detailed_status}, 
 %{role}, %{loading}, %{sync}, %{backup}.
 'status' can be: 'active', 'inactive', 'trimming'.
@@ -386,7 +386,7 @@ You can use the following variables: %{status}, %{detailed_status},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /inactive/i || 
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /inactive/i || 
 %{backup} =~ /failed/i || %{sync} =~ /link_down/i').
 You can use the following variables: %{status}, %{detailed_status}, 
 %{role}, %{loading}, %{sync}, %{backup}.
@@ -400,7 +400,7 @@ You can use the following variables: %{status}, %{detailed_status},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 
 'connected-clients', 'blocked-clients', 
@@ -411,7 +411,7 @@ Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 
 'connected-clients', 'blocked-clients', 

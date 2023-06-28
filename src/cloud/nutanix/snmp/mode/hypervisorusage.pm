@@ -228,13 +228,13 @@ Filter hypervisor name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'memory' (%), 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'vm-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'memory' (%), 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'vm-count'.
 

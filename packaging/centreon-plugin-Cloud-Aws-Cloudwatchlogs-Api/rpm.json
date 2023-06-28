@@ -2,5 +2,5 @@
     "dependencies": [
         "perl(DateTime)"
     ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Cloud-Aws-Api"
+    "replaces": ["centreon-plugin-Cloud-Aws-Api"]
 }

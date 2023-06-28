@@ -131,17 +131,17 @@ Filter resource name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: none).
+Define the conditions to match for the status to be WARNING (Default: none).
 You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /failed|offline/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /failed|offline/').
 You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =back

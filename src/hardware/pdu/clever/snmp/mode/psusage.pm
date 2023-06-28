@@ -98,12 +98,12 @@ Check power source usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current', 'power', 'voltage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'current', 'power', 'voltage'.
 
 =back

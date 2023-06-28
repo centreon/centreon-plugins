@@ -138,12 +138,12 @@ Filter by name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'success', 'fail'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'success', 'fail'.
 
 =back

@@ -141,12 +141,12 @@ Check call server licenses used versus purchased.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'user' (%), 'device' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'user' (%), 'device' (%).
 
 =back

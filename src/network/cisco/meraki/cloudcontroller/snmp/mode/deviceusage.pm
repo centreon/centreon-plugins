@@ -387,22 +387,22 @@ Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /offline/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-devices', 'clients', 'in', 'out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-devices', 'clients', 'in', 'out'.
 
 =back

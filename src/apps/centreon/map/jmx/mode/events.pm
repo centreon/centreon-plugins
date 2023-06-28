@@ -118,7 +118,7 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restart-rate', 'update-resource-rate',
 'session-expired-rate', 'update-acl-children-rate', 'sync-children-rate', 'remove-child-rate',
 'update-status-resource-rate', 'remove-resource-rate', 'update-status-inherited-rate', 'add-child-rate',
@@ -128,7 +128,7 @@ Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restar
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restart-rate', 'update-resource-rate',
 'session-expired-rate', 'update-acl-children-rate', 'sync-children-rate', 'remove-child-rate',
 'update-status-resource-rate', 'remove-resource-rate', 'update-status-inherited-rate', 'add-child-rate',

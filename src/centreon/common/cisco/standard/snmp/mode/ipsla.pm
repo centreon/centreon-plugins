@@ -959,7 +959,7 @@ Example: --threshold-overload='opersense,CRITICAL,^(?!(ok)$)'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
@@ -967,7 +967,7 @@ Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDela
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 

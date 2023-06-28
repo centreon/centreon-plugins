@@ -217,13 +217,13 @@ Example: --filter-counters='^time$|uses'
 
 =item B<--warning-*-count/persecond>
 
-Threshold warning.
+Warning threshold.
 Can be: 'time-total' (delta), 'requests', 'ops',
 'errors', 'bootstrap-loads', 'time' (delta), 'uses'.
 
 =item B<--critical-*-count/persecond>
 
-Threshold critical.
+Critical threshold.
 Can be: 'time-total' (delta), 'requests', 'ops',
 'errors', 'bootstrap-loads', 'time' (delta), 'uses'.
 

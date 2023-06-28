@@ -134,11 +134,11 @@ Threshold for HTTP timeout (Default: 5)
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--owner>
 

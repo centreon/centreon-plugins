@@ -225,17 +225,17 @@ Filter hosts by name (Can be a regexp).
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--unknown-nic-status>
@@ -255,17 +255,17 @@ You can use the following variables: %{status}, %{mac}, %{slot}
 
 =item B<--unknown-disk-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '%{status} !~ /OK/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /OK/i').
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-*> B<--critical-*>

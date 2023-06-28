@@ -124,13 +124,13 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-calls', 'local-participants', 'remote-participants',
 'call-legs'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-calls', 'local-participants', 'remote-participants',
 'call-legs'.
 

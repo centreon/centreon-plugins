@@ -249,17 +249,17 @@ Example: --filter-counters='node-status'
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{state} ne "online"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "online"').
 You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -113,12 +113,12 @@ Example: --filter-counters='^current-connections$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current-connections', 'total-connections'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'current-connections', 'total-connections'.
 
 =back

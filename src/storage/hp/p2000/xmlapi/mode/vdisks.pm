@@ -193,17 +193,17 @@ Filter virtual disk name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -339,17 +339,17 @@ Display virtual machine description.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--units>
@@ -362,12 +362,12 @@ Thresholds are on free space left.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'consumed', 'active', 'overhead', 'ballooning', 'shared'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'consumed', 'active', 'overhead', 'ballooning', 'shared'.
 
 =back

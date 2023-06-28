@@ -1,5 +1,6 @@
 {
-    "dependencies": [
-    ],
-    "custom_pkg_data": "Provides: centreon-plugin-network-cisco-ssms-restapi\\nReplaces: centreon-plugin-network-cisco-ssms-restapi\\nConflicts: centreon-plugin-network-cisco-ssms-restapi"
+    "dependencies": [],
+    "provides": ["centreon-plugin-network-cisco-ssms-restapi"],
+    "replaces": ["centreon-plugin-network-cisco-ssms-restapi"],
+    "conflicts": ["centreon-plugin-network-cisco-ssms-restapi"]
 }

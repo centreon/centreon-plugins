@@ -113,12 +113,12 @@ Example: --filter-counters='conferences-active'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'calls-new', 'calls-voice-active', 'calls-video-active', 'conferences-active'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'calls-new', 'calls-voice-active', 'calls-video-active', 'conferences-active'.
 
 =back

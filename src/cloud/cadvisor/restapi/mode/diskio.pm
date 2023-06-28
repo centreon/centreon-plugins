@@ -201,12 +201,12 @@ Example: --filter-counters='^diskio-read$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'diskio-read', 'diskio-write'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'diskio-read', 'diskio-write'.
 
 =back

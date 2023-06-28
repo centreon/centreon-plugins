@@ -140,12 +140,12 @@ Filter circuit name (Can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
 You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =back

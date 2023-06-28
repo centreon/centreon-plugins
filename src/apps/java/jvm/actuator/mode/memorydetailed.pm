@@ -231,43 +231,43 @@ Code Cache           (non-heap) (-code)      : The HotSpot Java VM also includes
 
 =item B<--warning-eden>
 
-Threshold warning of Heap 'Eden Space' memory usage
+Warning threshold of Heap 'Eden Space' memory usage
 
 =item B<--critical-eden>
 
-Threshold critical of Heap 'Survivor Space' memory usage
+Critical threshold of Heap 'Survivor Space' memory usage
 
 =item B<--warning-tenured>
 
-Threshold warning of Heap 'Tenured Generation'  memory usage
+Warning threshold of Heap 'Tenured Generation'  memory usage
 
 =item B<--critical-tenured>
 
-Threshold critical of Heap 'Tenured Generation'  memory usage
+Critical threshold of Heap 'Tenured Generation'  memory usage
 
 =item B<--warning-survivor>
 
-Threshold warning of Heap 'Survivor Space' memory usage
+Warning threshold of Heap 'Survivor Space' memory usage
 
 =item B<--critical-survivor>
 
-Threshold critical of Heap 'Survivor Space' memory usage
+Critical threshold of Heap 'Survivor Space' memory usage
 
 =item B<--warning-permanent>
 
-Threshold warning of NonHeap 'Permanent Generation' memory usage
+Warning threshold of NonHeap 'Permanent Generation' memory usage
 
 =item B<--critical-permanent>
 
-Threshold critical of NonHeap 'Permanent Generation' memory usage
+Critical threshold of NonHeap 'Permanent Generation' memory usage
 
 =item B<--warning-code>
 
-Threshold warning of NonHeap 'Code Cache' memory usage
+Warning threshold of NonHeap 'Code Cache' memory usage
 
 =item B<--critical-code>
 
-Threshold critical of NonHeap 'Code Cache' memory usage
+Critical threshold of NonHeap 'Code Cache' memory usage
 
 =item B<--units>
 

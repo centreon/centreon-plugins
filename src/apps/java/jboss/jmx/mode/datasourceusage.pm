@@ -149,12 +149,12 @@ Filter datasource name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-con', 'available-con', 'created-con', 'in-use-con'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-con', 'available-con', 'created-con', 'in-use-con'.
 
 =back

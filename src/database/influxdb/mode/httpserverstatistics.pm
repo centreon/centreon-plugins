@@ -161,7 +161,7 @@ Check several statistics from the HTTP server serving API.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'requests-query-count', 'requests-write-count',
 'requests-ping-count', 'requests-status-count', 'requests-active',
 'requests-write-active', 'requests-response-data',
@@ -169,7 +169,7 @@ Can be: 'requests-query-count', 'requests-write-count',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'requests-query-count', 'requests-write-count',
 'requests-ping-count', 'requests-status-count', 'requests-active',
 'requests-write-active', 'requests-response-data',

@@ -121,12 +121,12 @@ Check global controller (busy usage, iops).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'busy', 'read-iops', 'write-iops'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'busy', 'read-iops', 'write-iops'.
 
 =back

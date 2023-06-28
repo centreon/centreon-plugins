@@ -223,13 +223,13 @@ Example: --filter-counters='^(power|energy)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'power', 'energy', 'current-neutral',
 'line-load', 'line-current'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'power', 'energy', 'current-neutral',
 'line-load', 'line-current'.
 

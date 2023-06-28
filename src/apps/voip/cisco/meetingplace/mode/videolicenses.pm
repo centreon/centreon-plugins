@@ -108,11 +108,11 @@ Check the percentage of video licenses used on this cisco meeting place platform
 
 =item B<--warning>
 
-Threshold warning: Percentage value of video licenses usage resulting in a warning state
+Warning threshold: Percentage value of video licenses usage resulting in a warning state
 
 =item B<--critical>
 
-Threshold critical: Percentage value of video licenses usage resulting in a critical state
+Critical threshold: Percentage value of video licenses usage resulting in a critical state
 
 =back
 

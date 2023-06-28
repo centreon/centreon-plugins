@@ -90,11 +90,11 @@ Check MSSQL buffer cache hit ratio.
 
 =item B<--warning-hit-ratio>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-hit-ratio>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

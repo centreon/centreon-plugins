@@ -237,12 +237,12 @@ Command used: /sbin/ip -s addr 2>&1
 
 =item B<--warning-*>
 
-Threshold warning in percent of total packets. Can be:
+Warning threshold in percent of total packets. Can be:
 in-error, out-error, in-discard, out-discard
 
 =item B<--critical-*>
 
-Threshold critical in percent of total packets. Can be:
+Critical threshold in percent of total packets. Can be:
 in-error, out-error, in-discard, out-discard
 
 =item B<--filter-interface>

@@ -166,12 +166,12 @@ Filter subscriptions by SKU part number (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables: %{capabilityStatus}, %{skuPartNumber}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{capabilityStatus}, %{skuPartNumber}
 
 =item B<--warning-*> B<--critical-*>

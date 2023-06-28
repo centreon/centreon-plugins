@@ -171,22 +171,22 @@ Can be: 'name', 'clusters' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'failed-fans', 'psu'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'failed-fans', 'psu'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{temperature}, %{battery_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /not healthy/i || %{temperature} !~ /ok/i ||
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /not healthy/i || %{temperature} !~ /ok/i ||
 %{battery_status} !~ /battery_ok|battery_fully_charge|battery_over_charged/i').
 You can use the following variables: %{status}, %{temperature}, %{battery_status}
 

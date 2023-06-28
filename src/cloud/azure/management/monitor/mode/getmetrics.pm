@@ -247,11 +247,11 @@ Syntax example:
 
 =item B<--warning-metric>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-metric>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

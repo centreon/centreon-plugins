@@ -29,14 +29,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'cluster'        => 'apps::backup::rubrik::restapi::mode::cluster',
-        'compliance'     => 'apps::backup::rubrik::restapi::mode::compliance',
-        'disks'          => 'apps::backup::rubrik::restapi::mode::disks',
-        'nodes'          => 'apps::backup::rubrik::restapi::mode::nodes',
-        'storage'        => 'apps::backup::rubrik::restapi::mode::storage',
-        'tasks'          => 'apps::backup::rubrik::restapi::mode::tasks'
+        'cluster'    => 'apps::backup::rubrik::restapi::mode::cluster',
+        'compliance' => 'apps::backup::rubrik::restapi::mode::compliance',
+        'disks'      => 'apps::backup::rubrik::restapi::mode::disks',
+        'jobs'       => 'apps::backup::rubrik::restapi::mode::jobs',
+        'list-jobs'  => 'apps::backup::rubrik::restapi::mode::listjobs',
+        'nodes'      => 'apps::backup::rubrik::restapi::mode::nodes',
+        'storage'    => 'apps::backup::rubrik::restapi::mode::storage',
+        'tasks'      => 'apps::backup::rubrik::restapi::mode::tasks'
     };
 
     $self->{custom_modes}->{api} = 'apps::backup::rubrik::restapi::custom::api';

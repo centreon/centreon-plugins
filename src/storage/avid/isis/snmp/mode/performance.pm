@@ -172,13 +172,13 @@ Check client performances.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-clients' (counter or %), 'open-files',
 'processing-speed', 'read-throughput', 'write-throughput'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-clients' (counter or %), 'open-files',
 'processing-speed', 'read-throughput', 'write-throughput'.
 

@@ -211,11 +211,11 @@ Command used: tail -n +1 /proc/loadavg /proc/stat 2>&1
 
 =item B<--warning>
 
-Threshold warning (1min,5min,15min).
+Warning threshold (1min,5min,15min).
 
 =item B<--critical>
 
-Threshold critical (1min,5min,15min).
+Critical threshold (1min,5min,15min).
 
 =item B<--average>
 

@@ -215,12 +215,12 @@ Check AP connections (Deprecated).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'total-time', 'inactive-time', 'channel-noise', 'snr'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'total-time', 'inactive-time', 'channel-noise', 'snr'.
 
 =item B<--filter-bssid>

@@ -196,27 +196,27 @@ Search in following cluster(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =back

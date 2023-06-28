@@ -351,12 +351,12 @@ Example: --filter-counters='users'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /expired|invalid/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /expired|invalid/i').
 Can use special variables like: %{status}
 
 =item B<--unit>

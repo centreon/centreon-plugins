@@ -259,11 +259,11 @@ OID value to check (numeric format only).
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--oid-type>
 

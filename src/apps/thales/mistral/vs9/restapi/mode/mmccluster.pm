@@ -140,32 +140,32 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status  (Default: '%{replicationStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN  (Default: '%{replicationStatus} =~ /unknown/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{replicationStatus} =~ /not_synchronized/i').
+Define the conditions to match for the status to be WARNING (Default: '%{replicationStatus} =~ /not_synchronized/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} =~ /disconnected/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /disconnected/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

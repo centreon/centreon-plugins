@@ -176,12 +176,12 @@ Command used: '/quadstorvtl/bin/impexp -l'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: none)
+Define the conditions to match for the status to be WARNING (Default: none)
 You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /error/i').
 You can use the following variables: %{display}, %{status}
 
 =item B<--warning-long>

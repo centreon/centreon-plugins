@@ -138,13 +138,13 @@ Example: --filter-counters='^match$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'match', 'badoffset', 'fragment', 'short',
 'normalize', 'memdrop'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'match', 'badoffset', 'fragment', 'short',
 'normalize', 'memdrop'.
 

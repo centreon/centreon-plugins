@@ -127,12 +127,12 @@ Example: --filter-counters='^(1m|5m)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: '1m', '5m', '1h, 'average'
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: '1m', '5m', '1h', 'average'
 
 =back

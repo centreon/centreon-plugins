@@ -206,7 +206,7 @@ Set warning threshold for cost).
 
 =item B<--critical-cost>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 
 =item B<--units>
 Unit of thresholds (Default: '%') ('%', 'count').

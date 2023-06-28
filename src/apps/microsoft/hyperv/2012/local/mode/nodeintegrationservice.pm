@@ -306,24 +306,24 @@ Filter virtual machine status (can be a regexp) (Default: 'running').
 
 =item B<--warning-global-status>
 
-Set warning threshold for status (Default: '%{integration_service_state} =~ /Update required/i').
+Define the conditions to match for the status to be WARNING (Default: '%{integration_service_state} =~ /Update required/i').
 You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--critical-global-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{primary_status} !~ /Ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{primary_status} !~ /Ok/i').
 You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =back

@@ -205,12 +205,12 @@ Check Oracle rman backup age.
 
 =item B<--warning-*>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
 =item B<--critical-*>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
 =item B<  --no-*>

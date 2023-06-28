@@ -169,12 +169,12 @@ Example: --filter-counters='^(1min|5min)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', '5secs', '10secs', '30secs', '1min', '5min'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', '5secs', '10secs', '30secs', '1min', '5min'.
 
 =back

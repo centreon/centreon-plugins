@@ -144,13 +144,13 @@ Example: --filter-counters='bandwidth'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-bandwidth', 'write-bandwidth', 'read-iops', 'write-iops',
 'read-latency', 'write-latency'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-bandwidth', 'write-bandwidth', 'read-iops', 'write-iops',
 'read-latency', 'write-latency'.
 

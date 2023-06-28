@@ -174,13 +174,13 @@ Example: --filter-counters='^traffic-in$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'under-replicated-partitions', 'offline-partitions-count', 'partition-count', 'leader-count',
 'active-controller-count', 'unclean-leader-elections', 'traffic-in', 'traffic-out', 'total-fetch-requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'under-replicated-partitions', 'offline-partitions-count', 'partition-count', 'leader-count',
 'active-controller-count', 'unclean-leader-elections', 'traffic-in', 'traffic-out', 'total-fetch-requests'.
 

@@ -8,5 +8,5 @@
         "hardware/server/ibm/mgmt_cards/imm/snmp/",
         "snmp_standard/mode/ntp.pm"
     ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-servers-ibm-imm-snmp"
+    "replaces": ["centreon-plugin-Hardware-servers-ibm-imm-snmp"]
 }

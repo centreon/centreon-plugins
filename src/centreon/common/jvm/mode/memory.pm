@@ -177,19 +177,19 @@ perl centreon_plugins.pl --plugin=apps::tomcat::jmx::plugin --custommode=jolokia
 
 =item B<--warning-heap>
 
-Threshold warning of Heap memory usage
+Warning threshold of Heap memory usage
 
 =item B<--critical-heap>
 
-Threshold critical of Heap memory usage
+Critical threshold of Heap memory usage
 
 =item B<--warning-nonheap>
 
-Threshold warning of NonHeap memory usage
+Warning threshold of NonHeap memory usage
 
 =item B<--critical-nonheap>
 
-Threshold critical of NonHeap memory usage
+Critical threshold of NonHeap memory usage
 
 =item B<--units>
 

@@ -151,17 +151,17 @@ Internet service tag to be used for the name (Default: 'name').
 
 =item B<--unknown-internet-service-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{internetServiceName}
 
 =item B<--warning-internet-service-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{internetServiceName}
 
 =item B<--critical-internet-service-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{internetServiceName}
 
 =item B<--warning-*> B<--critical-*>

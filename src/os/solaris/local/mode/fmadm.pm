@@ -101,11 +101,11 @@ Command used: '/usr/sbin/fmadm faulty -r 2>&1'
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

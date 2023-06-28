@@ -186,12 +186,12 @@ Filter on a specific cpu (Must be a PromQL filter, Default: 'cpu=~".*"')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'node-usage', 'cpu-usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'node-usage', 'cpu-usage'.
 
 =item B<--extra-filter>

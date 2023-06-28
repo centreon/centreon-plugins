@@ -284,7 +284,7 @@ Example: --filter-counters='^power|energy$'
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'power-apparent-total', 'power-active-total', 'power-reactive-total',
 'voltage', 'current', 'power-factor', 'cosphi', 'power-apparent',
 'power-active', 'power-reactive', 'energy-apparent', 'energy-active',

@@ -157,17 +157,17 @@ Check agents.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unreachable/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unreachable/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed|authenticationError/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed|authenticationError/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

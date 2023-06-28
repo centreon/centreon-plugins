@@ -292,20 +292,20 @@ Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http
 
 =item B<--warning-http-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--critical-http-status>
 
-Threshold critical for http response code
+Critical threshold for http response code
 
 =item B<--warning-system-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{system_status}
 
 =item B<--critical-system-status>
 
-Set critical threshold for status (Default: '%{system_status} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{system_status} !~ /online/i').
 You can use the following variables: %{system_status}
 
 =item B<--warning-*> B<--critical-*> 

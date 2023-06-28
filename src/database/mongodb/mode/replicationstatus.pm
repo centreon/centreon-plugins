@@ -237,12 +237,12 @@ You can use the following variables: %{name}, %{state}, %{health},
 
 =item B<--warning-instance-replication-lag-seconds>
 
-Threshold warning for replication lag between primary and secondary members.
+Warning threshold for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
 
 =item B<--critical-instance-replication-lag-seconds>
 
-Threshold critical for replication lag between primary and secondary members.
+Critical threshold for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
 
 =back

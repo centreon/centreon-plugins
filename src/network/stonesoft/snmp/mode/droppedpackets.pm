@@ -131,11 +131,11 @@ Check dropped packets per second by firewall.
 
 =item B<--warning>
 
-Threshold warning for dropped packets per second.
+Warning threshold for dropped packets per second.
 
 =item B<--critical>
 
-Threshold critical for dropped packets per second.
+Critical threshold for dropped packets per second.
 
 =back
 

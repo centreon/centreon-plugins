@@ -260,7 +260,7 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 'nodes-master', 'nodes-ingest', 'indices-total', 'shards-total', 
 'shards-active-count', 'shards-active-percentage', 
@@ -269,7 +269,7 @@ Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 'nodes-master', 'nodes-ingest', 'indices-total', 'shards-total', 
 'shards-active-count', 'shards-active-percentage', 
@@ -278,12 +278,12 @@ Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i')
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i')
 You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /red/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red/i').
 You can use the following variables: %{status}.
 
 =back

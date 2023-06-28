@@ -109,12 +109,12 @@ Filter connected username. (Can be a regex)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'users'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'users'.
 
 =back

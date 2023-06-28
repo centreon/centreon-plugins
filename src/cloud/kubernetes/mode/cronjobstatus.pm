@@ -167,13 +167,13 @@ Filter CronJob namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 

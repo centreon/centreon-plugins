@@ -76,11 +76,11 @@ Check MSSQL connected users.
 
 =item B<--warning-connected-user>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-connected-user>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

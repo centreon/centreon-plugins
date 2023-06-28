@@ -169,12 +169,12 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning on last update.
+Warning threshold on last update.
 Can be: 'dat-version', 'tsdb-version', 'proactive-version'.
 
 =item B<--critical-*>
 
-Threshold critical on last update.
+Critical threshold on last update.
 Can be: 'dat-version', 'tsdb-version', 'proactive-version'.
 
 =back

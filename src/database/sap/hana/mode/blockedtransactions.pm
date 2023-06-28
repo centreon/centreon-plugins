@@ -82,12 +82,12 @@ Check total blocked transactions.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'blocked-transactions'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'blocked-transactions'.
 
 =back

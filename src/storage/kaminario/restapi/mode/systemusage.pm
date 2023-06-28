@@ -170,13 +170,13 @@ Example: --filter-counters='^iops$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'latency-inner', 'latency-outer', 'iops', 'throughput',
 'bs-latency-inner', 'bs-latency-outer', 'bs-iops', 'bs-throughput',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'latency-inner', 'latency-outer', 'iops', 'throughput',
 'bs-latency-inner', 'bs-latency-outer', 'bs-iops', 'bs-throughput',
 

@@ -134,13 +134,13 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: ''drilldown-candidates-queue', 'cutback-computation-rate',
 'minimal-computation-rate', 'recursive-computation-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: ''drilldown-candidates-queue', 'cutback-computation-rate',
 'minimal-computation-rate', 'recursive-computation-rate'.
 

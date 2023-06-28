@@ -137,13 +137,13 @@ Check statistics (objects count).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'nodes', 'pending-nodes', 'rules',
 'directives', 'groups', 'techniques'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'nodes', 'pending-nodes', 'rules',
 'directives', 'groups', 'techniques'.
 
