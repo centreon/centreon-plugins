@@ -141,17 +141,17 @@ Check unit status
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{overall_device_status} =~ /detected|lost|changed|update/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{overall_device_status} =~ /detected|lost|changed|update/i').
 You can use the following variables: %{unit_status}, %{overall_device_status}, %{mode}, %{available_devices}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{unit_status} =~ /overload/i || %{overall_device_status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{unit_status} =~ /overload/i || %{overall_device_status} =~ /warning/i').
 You can use the following variables: %{unit_status}, %{overall_device_status}, %{mode}, %{available_devices}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{unit_status} =~ /failed/i || %{overall_device_status} =~ /alarm/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{unit_status} =~ /failed/i || %{overall_device_status} =~ /alarm/i').
 You can use the following variables: %{unit_status}, %{overall_device_status}, %{mode}, %{available_devices}
 
 =back
