@@ -102,12 +102,12 @@ Check deduplication, compression and save ratios (panzura-systemext).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'dedup', 'comp', 'save'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'dedup', 'comp', 'save'.
 
 =back

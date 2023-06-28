@@ -267,11 +267,11 @@ See: http://goessner.net/articles/JsonPath/
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--type>
 

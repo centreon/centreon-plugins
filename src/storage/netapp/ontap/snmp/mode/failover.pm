@@ -202,32 +202,32 @@ Filter name with regexp (based on serial)
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{cluster_status} =~ /^takeover|partialGiveback/i').
+Define the conditions to match for the status to be WARNING (Default: '%{cluster_status} =~ /^takeover|partialGiveback/i').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status (Default: '%{cluster_status} =~ /dead|cannotTakeover/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{cluster_status} =~ /dead|cannotTakeover/i').
 You can use the following variables: %{cluster_status}, %{reason_cannot_takeover}, %{partner_status}
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} =~ /^takeover|partialGiveback/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /^takeover|partialGiveback/i').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{status} =~ /dead|cannotTakeover/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /dead|cannotTakeover/i').
 You can use the following variables: %{status}, %{reason_cannot_takeover}, %{partner_status}, %{display}
 
 =back

@@ -89,11 +89,11 @@ Check queue length.
 
 =item B<--warning>
 
-Threshold warning
+Warning threshold
 
 =item B<--critical>
 
-Threshold critical
+Critical threshold
 
 =back
 

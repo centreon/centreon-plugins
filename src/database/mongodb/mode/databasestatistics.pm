@@ -169,23 +169,23 @@ Filter database name (Can use regexp).
 
 =item B<--warning-instance-database-size-*-bytes>
 
-Threshold warning.
+Warning threshold.
 Can be: 'storage', 'data', 'index'.
 
 =item B<--critical-instance-database-size-*-bytes>
 
-Threshold critical.
+Critical threshold.
 Can be: 'storage', 'data', 'index'.
 
 =item B<--warning-instance-database-*-count>
 
-Threshold warning.
+Warning threshold.
 Can be: 'collections', 'views', 'documents',
 'indexes'.
 
 =item B<--critical-instance-database-*-count>
 
-Threshold critical.
+Critical threshold.
 Can be: 'collections', 'views', 'documents',
 'indexes'.
 

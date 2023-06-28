@@ -108,12 +108,12 @@ Get number of requests for each connectors (information from daemon. Not VMWare)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-requests', 'requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-requests', 'requests'.
 
 =back

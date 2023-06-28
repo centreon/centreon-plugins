@@ -140,11 +140,11 @@ Check Battery Status and battery charge remaining.
 
 =item B<--warning>
 
-Threshold warning in percent of charge remaining.
+Warning threshold in percent of charge remaining.
 
 =item B<--critical>
 
-Threshold critical in percent of charge remaining.
+Critical threshold in percent of charge remaining.
 
 =item B<--filter-status>
 

@@ -237,11 +237,11 @@ Can be called multiple times.
 
 =item B<--warning-metric>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-metric>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--extra-filter>
 

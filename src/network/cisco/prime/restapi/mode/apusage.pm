@@ -223,24 +223,24 @@ Example: --filter-counters='^total-error$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 'ctrl-ap-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 'ctrl-ap-count'.
 
 =item B<--warning-ap-status>
 
-Set warning threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
+Define the conditions to match for the status to be WARNING (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--critical-ap-status>
 
-Set critical threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--reload-cache-time>

@@ -303,12 +303,12 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{name}, %{status}, %{application}, %{folder}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /ended not ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /ended not ok/i').
 You can use the following variables: %{name}, %{status}, %{application}, %{folder}, %{type}
 
 =item B<--warning-long>

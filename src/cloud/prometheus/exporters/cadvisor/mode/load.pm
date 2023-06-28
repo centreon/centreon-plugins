@@ -149,11 +149,11 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--warning-load>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-load>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--extra-filter>
 

@@ -233,32 +233,32 @@ Check system usage.
 
 =item B<--unknown-service-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-storage-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-storage-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-storage-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*> 

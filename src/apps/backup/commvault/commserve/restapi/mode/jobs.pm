@@ -265,12 +265,12 @@ Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /abnormal/i')
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /abnormal/i')
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /errors|failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /errors|failed/i').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>

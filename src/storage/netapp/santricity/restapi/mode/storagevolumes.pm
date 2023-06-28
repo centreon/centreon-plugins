@@ -202,17 +202,17 @@ Filter volume name (can be a regexp).
 
 =item B<--unknown-volume-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-volume-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-volume-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

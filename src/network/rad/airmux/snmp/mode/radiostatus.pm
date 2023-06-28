@@ -125,12 +125,12 @@ Example: --filter-counters='rx-power'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'tx-power', 'rx-power', 'bad-frames'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'tx-power', 'rx-power', 'bad-frames'.
 
 =back

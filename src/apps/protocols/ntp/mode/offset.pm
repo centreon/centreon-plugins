@@ -117,11 +117,11 @@ Threshold for NTP timeout
 
 =item B<--warning>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical>
 
-Threshold critical in seconds (e.g @10:10 means CRITICAL if offset is not between -10 and +10 seconds)
+Critical threshold in seconds (e.g @10:10 means CRITICAL if offset is not between -10 and +10 seconds)
 
 =back
 

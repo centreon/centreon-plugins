@@ -473,13 +473,13 @@ Example: --filter-counters='^(total-traffic)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 
@@ -490,11 +490,11 @@ Only for --warning-int-traffic and --critical-int-traffic options.
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =back
 

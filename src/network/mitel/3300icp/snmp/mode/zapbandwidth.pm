@@ -161,11 +161,11 @@ Filter by zone access points name (can be a regexp).
 
 =item B<--warning-usage>
 
-Threshold warning in percentage of bandwidth limit.
+Warning threshold in percentage of bandwidth limit.
 
 =item B<--critical-usage>
 
-Threshold critical in percentage of bandwidth limit.
+Critical threshold in percentage of bandwidth limit.
 
 =back
 

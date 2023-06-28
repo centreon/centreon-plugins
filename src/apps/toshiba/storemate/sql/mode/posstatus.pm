@@ -276,14 +276,14 @@ Database name (default: 'Framework').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'online, offline, state-unknown, state-signoff, state-signon, state-closed, state-paused, 
 merchandise-rep-unknown, merchandise-rep-ok, merchandise-rep-suspended, merchandise-rep-error, 
 transaction-rep-unknown, transaction-rep-ok, transaction-rep-suspended, transaction-rep-error'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'online, offline, state-unknown, state-signoff, state-signon, state-closed, state-paused, 
 merchandise-rep-unknown, merchandise-rep-ok, merchandise-rep-suspended, merchandise-rep-error, 
 transaction-rep-unknown, transaction-rep-ok, transaction-rep-suspended, transaction-rep-error'.

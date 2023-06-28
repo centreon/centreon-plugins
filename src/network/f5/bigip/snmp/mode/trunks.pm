@@ -475,32 +475,32 @@ Monitor trunk interfaces.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /uninitialized|down/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /uninitialized|down/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-interface-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-interface-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

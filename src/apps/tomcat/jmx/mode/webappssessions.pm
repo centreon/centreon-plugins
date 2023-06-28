@@ -200,12 +200,12 @@ Filter webapps name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'sessions-count', 'sessions-active'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'sessions-count', 'sessions-active'.
 
 =item B<--units>

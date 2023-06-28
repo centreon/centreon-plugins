@@ -274,19 +274,27 @@ Filter volumes by name (can be a regexp).
 
 =item B<--unknown-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /normal/i')
-
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /normal/i')
 You can use the following variables: %{status}, %{node_id}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-*>
 
-Thresholds.
-Can be: 'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct'.
+Define the WARNING thresholds for the following components:
+'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct',
+'flashcache-node-readhits', 'flashcache-volume-readhits'.
+
+=item B<--critical-*>
+
+Define the CRITICAL thresholds for the following components:
+'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct',
 'flashcache-node-readhits', 'flashcache-volume-readhits'.
 
 =back

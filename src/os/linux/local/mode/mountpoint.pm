@@ -150,11 +150,11 @@ Filter mount point type (Can use regexp).
 
 =item B<--warning-status>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-status>
 
-Threshold critical
+Critical threshold
 (Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
 
 =back

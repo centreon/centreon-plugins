@@ -320,39 +320,39 @@ Recommend to use directly --critical-content.
 
 =item B<--unknown-status>
 
-Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Warning threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
-Threshold warning for http response code
+Warning threshold for http response code
 
 =item B<--critical-status>
 
-Threshold critical for http response code 
+Critical threshold for http response code 
 
 =item B<--warning-time>
 
-Threshold warning in seconds (Webpage response time)
+Warning threshold in seconds (Webpage response time)
 
 =item B<--critical-time>
 
-Threshold critical in seconds (Webpage response time)
+Critical threshold in seconds (Webpage response time)
 
 =item B<--warning-size>
 
-Threshold warning for content size
+Warning threshold for content size
 
 =item B<--critical-size>
 
-Threshold critical for content size
+Critical threshold for content size
 
 =item B<--warning-extracted>
 
-Threshold warning for extracted value
+Warning threshold for extracted value
 
 =item B<--critical-extracted>
 
-Threshold critical for extracted value
+Critical threshold for extracted value
 
 =item B<--unknown-content>
 
@@ -361,7 +361,7 @@ You can use the following variables: %{content}, %{header}, %{first_header}, %{c
 
 =item B<--warning-content>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--critical-content>

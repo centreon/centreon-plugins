@@ -158,12 +158,12 @@ Example: --filter-counters='^(memory)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'memory', 'flash'
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'memory', 'flash'
 
 =back

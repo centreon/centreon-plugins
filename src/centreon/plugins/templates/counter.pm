@@ -784,12 +784,12 @@ Example to check SSL connections only : --filter-counters='^xxxx|yyyy$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'xxx', 'xxx'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'xxx', 'xxx'.
 
 =back

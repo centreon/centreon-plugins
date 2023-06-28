@@ -198,22 +198,22 @@ Filter by trunk name (regexp can be used).
 
 =item B<--warning-trunk-status>
 
-Set warning threshold for status
+Define the conditions to match for the status to be WARNING
 You can use the following variables: %{trunkstatus}
 
 =item B<--critical-trunk-status>
 
-Set critical threshold for status (Default: '%{trunkstatus} =~ /oos/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{trunkstatus} =~ /oos/i').
 You can use the following variables: %{trunkstatus}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =back

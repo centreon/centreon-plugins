@@ -91,12 +91,12 @@ Check threads.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'daemon'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'daemon'.
 
 =back

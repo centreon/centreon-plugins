@@ -197,13 +197,13 @@ Check consistency point metrics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'timer', 'snapshot', 'lowerwater', 'highwater', 
 'logfull', 'back', 'flush', 'sync', 'lowvbuf', 'deferred', 'lowdatavecs'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'timer', 'snapshot', 'lowerwater', 'highwater', 
 'logfull', 'back', 'flush', 'sync', 'lowvbuf', 'deferred', 'lowdatavecs'.
 

@@ -175,11 +175,11 @@ Check system number of processes.
 
 =item B<--warning>
 
-Threshold warning (process count).
+Warning threshold (process count).
 
 =item B<--critical>
 
-Threshold critical (process count).
+Critical threshold (process count).
 
 =item B<--process-cmd>
 

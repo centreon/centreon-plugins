@@ -132,12 +132,12 @@ Filter location name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'elem-count', 'avg-load'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'elem-count', 'avg-load'.
 
 =back

@@ -95,12 +95,12 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'open-views'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'open-views'.
 
 =back

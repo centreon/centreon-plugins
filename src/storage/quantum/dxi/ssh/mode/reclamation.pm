@@ -185,12 +185,12 @@ Example: --filter-counters='status'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{reclamation_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{reclamation_status} !~ /ready/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{reclamation_status} !~ /ready/i').
 You can use the following variables: %{reclamation_status}
 
 =item B<--warning-*> B<--critical-*>

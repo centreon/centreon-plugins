@@ -189,12 +189,12 @@ Filter on a specific state (Must be a PromQL filter, Default: 'state=~".*"')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'sleeping', 'running', 'stopped', 'uninterruptible', 'iowaiting'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'sleeping', 'running', 'stopped', 'uninterruptible', 'iowaiting'.
 
 =item B<--extra-filter>

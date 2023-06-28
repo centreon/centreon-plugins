@@ -156,13 +156,13 @@ Filter cache name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'evictions-count', 'lookups-count', 'inserts-count',
 'hits-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'evictions-count', 'lookups-count', 'inserts-count',
 'hits-count'.
 

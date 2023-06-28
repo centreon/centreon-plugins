@@ -254,17 +254,17 @@ Filter job type (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '')
+Define the conditions to match for the status to be UNKNOWN (Default: '')
 You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{enabled} == 1 and not %{last_result} =~ /Success|None/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{enabled} == 1 and not %{last_result} =~ /Success|None/i').
 You can use the following variables: %{display}, %{enabled}, %{type}, %{last_result}, %{last_state}.
 
 =item B<--warning-total>

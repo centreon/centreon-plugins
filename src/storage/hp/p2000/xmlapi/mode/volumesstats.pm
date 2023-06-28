@@ -180,12 +180,12 @@ Check volume statistics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
 
 =item B<--name>

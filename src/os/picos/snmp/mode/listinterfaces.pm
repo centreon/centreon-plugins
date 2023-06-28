@@ -55,7 +55,7 @@ __END__
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -79,11 +79,11 @@ Display interfaces with AdminStatus 'up'.
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifDesc) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifDesc) (values: ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName).
 
 =item B<--display-transform-src>
 

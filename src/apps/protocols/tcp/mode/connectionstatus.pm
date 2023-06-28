@@ -181,26 +181,26 @@ Connection timeout in seconds (Default: 3)
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "failed"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "failed"').
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =back
 

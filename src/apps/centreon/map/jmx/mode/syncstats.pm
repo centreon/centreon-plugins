@@ -243,21 +243,21 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'map-synchronization-centreon-count',
 'map-synchronization-centreon-duration-average-milliseconds',
 'map-synchronization-centreon-duration-max-milliseconds'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'map-synchronization-centreon-count',
 'map-synchronization-centreon-duration-average-milliseconds',
 'map-synchronization-centreon-duration-max-milliseconds'.
 
 =item B<--warning-instance-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-average-milliseconds',
 'map-synchronization-acl-duration-max-milliseconds', 'map-synchronization-resource-count',
 'map-synchronization-resource-duration-average-milliseconds',
@@ -265,7 +265,7 @@ Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-avera
 
 =item B<--critical-instance-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-average-milliseconds',
 'map-synchronization-acl-duration-max-milliseconds', 'map-synchronization-resource-count',
 'map-synchronization-resource-duration-average-milliseconds',

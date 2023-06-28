@@ -142,12 +142,12 @@ Command used: cat /proc/vmstat 2>&1
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'pgpgin', 'pgpgout', 'pswpin', 'pswpout', 'pgfault', 'pgmajfault'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'pgpgin', 'pgpgout', 'pswpin', 'pswpout', 'pgfault', 'pgmajfault'.
 
 =back

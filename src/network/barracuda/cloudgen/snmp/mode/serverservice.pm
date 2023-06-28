@@ -152,12 +152,12 @@ Check server services status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^started$/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^started$/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--filter-name>

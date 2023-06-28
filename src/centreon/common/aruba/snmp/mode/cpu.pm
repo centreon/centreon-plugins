@@ -112,11 +112,11 @@ Check CPU usage (over the last minute) (WLSX-SYSTEMEXT-MIB).
 
 =item B<--warning-utilization>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-utilization>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

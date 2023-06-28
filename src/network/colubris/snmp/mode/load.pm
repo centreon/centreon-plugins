@@ -115,12 +115,12 @@ Example: --filter-counters='15min'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: '1min', '5min', '15min'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: '1min', '5min', '15min'.
 
 =back

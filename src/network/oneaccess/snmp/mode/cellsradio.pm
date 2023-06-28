@@ -294,17 +294,17 @@ Filter cell modules by id (IMEI or MEID).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{signalQuality} =~ /poor/').
+Define the conditions to match for the status to be WARNING (Default: '%{signalQuality} =~ /poor/').
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
 You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>

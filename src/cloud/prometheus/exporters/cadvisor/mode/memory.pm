@@ -288,12 +288,12 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'working', 'cache' (B), 'rss' (B), 'swap' (B).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'working', 'cache' (B), 'rss' (B), 'swap' (B).
 
 =item B<--units>

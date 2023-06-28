@@ -43,19 +43,19 @@ __END__
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--warning-access>
 
-Threshold warning. 
+Warning threshold. 
 
 =item B<--critical-access>
 
-Threshold critical.
+Critical threshold.
 Check if storage is readOnly: --critical-access=readOnly
 
 =item B<--add-access>

@@ -152,13 +152,13 @@ Check Output lines metrics (load, voltage, current and true power) (XUPS-MIB).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'power'.
 Load is a rate for X phase.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'power'.
 Load is a rate for X phase.
 

@@ -116,13 +116,13 @@ Check channel usage: active calls, external calls.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'channels-active', 'calls-active', 'extcalls-active', 
 'calls-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'channels-active', 'calls-active', 'extcalls-active', 
 'calls-count'.
 

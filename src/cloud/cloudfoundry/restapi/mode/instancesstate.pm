@@ -167,28 +167,28 @@ App guid to look for.
 
 =item B<--warning-app-state>
 
-Threshold warning for app state.
+Warning threshold for app state.
 
 =item B<--critical-app-state>
 
-Threshold critical for app state (Default: '%{state} !~ /STARTED/i').
+Critical threshold for app state (Default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-instance-state>
 
-Threshold warning for instances state.
+Warning threshold for instances state.
 
 =item B<--critical-instance-state>
 
-Threshold critical for instances state (Default: '%{state} !~ /RUNNING/i').
+Critical threshold for instances state (Default: '%{state} !~ /RUNNING/i').
 
 =item B<--warning-*>
 
-Threshold warning for instances count based 
+Warning threshold for instances count based 
 on state (Can be: 'running', 'stopped', 'crashed')
 
 =item B<--critical-*>
 
-Threshold critical for instances count based 
+Critical threshold for instances count based 
 on state (Can be: 'running', 'stopped', 'crashed').
 
 =back

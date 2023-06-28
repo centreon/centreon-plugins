@@ -254,16 +254,16 @@ Set arguments (Multiple option. Example: --arg='arg1')
 
 =item B<--unknown-status>
 
-Threshold warning for http response code.
+Warning threshold for http response code.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
-Threshold warning for http response code.
+Warning threshold for http response code.
 
 =item B<--critical-status>
 
-Threshold critical for http response code.
+Critical threshold for http response code.
 
 =back
 

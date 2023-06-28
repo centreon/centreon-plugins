@@ -429,17 +429,17 @@ Set your domain expiration date timezone (default: 'UTC').
 
 =item B<--unknown-status>
 
-Set critical threshold for status (Default: '%{status} =~ /checkError/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /checkError/i').
 You can use the following variables: %{status}, %{domain}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{domain}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{domain}
 
 =item B<--unit>

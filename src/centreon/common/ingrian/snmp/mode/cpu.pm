@@ -124,12 +124,12 @@ Example: --filter-counters='^total$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'usage'.
 
 =back

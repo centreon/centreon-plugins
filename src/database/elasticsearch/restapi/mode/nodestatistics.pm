@@ -160,13 +160,13 @@ Example: --filter-counters='heap'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'data-size', 'disk-free', 'documents-total',
 'jvm-heap-usage' (in %), 'jvm-heap-usage-bytes'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'data-size', 'disk-free', 'documents-total',
 'jvm-heap-usage' (in %), 'jvm-heap-usage-bytes'.
 

@@ -280,13 +280,13 @@ You can use the following variables: %{vmPowerState}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'memory' (%s), 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'memory' (%s), 'traffic-in', 'traffic-out'.
 

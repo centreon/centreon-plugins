@@ -132,21 +132,21 @@ Check arrays status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 'status' can be: 'online', 'offline', 'excluded', 'degraded'.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /degraded/i').
 'status' can be: 'online', 'offline', 'excluded', 'degraded'.
 
 =item B<--warning-vdisk-count>
 
-Threshold warning for VDisks count.
+Warning threshold for VDisks count.
 
 =item B<--critical-vdisk-count>
 
-Threshold critical for VDisks count.
+Critical threshold for VDisks count.
 
 =back
 

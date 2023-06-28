@@ -292,7 +292,7 @@ Threshold for HTTP timeout (Default: 30)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'request-rate', 'request-rate-now', 
 'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now',
 'hit-percent', 'hit-percent-now'.
@@ -300,7 +300,7 @@ Can be: 'request-rate', 'request-rate-now',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'request-rate', 'request-rate-now', 
 'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now',
 'hit-percent', 'hit-percent-now'.

@@ -96,12 +96,12 @@ Check license.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /active/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /active/i').
 You can use the following variables: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
 
 =back

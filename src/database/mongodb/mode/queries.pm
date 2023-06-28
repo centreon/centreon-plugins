@@ -112,25 +112,25 @@ Check number of queries executed (absolute and per second).
 
 =item B<--warning-queries-*-persecond>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 
 =item B<--critical-queries-*-persecond>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 
 =item B<--warning-queries-*-count>
 
-Threshold warning.
+Warning threshold.
 Can be: 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 
 =item B<--critical-queries-*-count>
 
-Threshold critical.
+Critical threshold.
 Can be: 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 

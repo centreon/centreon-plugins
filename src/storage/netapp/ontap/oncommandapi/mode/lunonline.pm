@@ -144,12 +144,12 @@ Can be: 'volume' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'online', 'not-online', 'mapped', 'not-mapped'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'online', 'not-online', 'mapped', 'not-mapped'.
 
 =back

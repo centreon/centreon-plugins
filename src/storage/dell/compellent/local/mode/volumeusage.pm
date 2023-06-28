@@ -375,12 +375,12 @@ Example: --filter-counters='^sc-total$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'sc-total', 'volume-usage', 'volume-overhead', 'volume-replay'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'sc-total', 'volume-usage', 'volume-overhead', 'volume-replay'.
 
 =back

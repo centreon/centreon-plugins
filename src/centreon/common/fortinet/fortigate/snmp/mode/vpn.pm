@@ -266,12 +266,12 @@ Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traf
 
 =item B<--warning-status>
 
-Set warning threshold for status. Use "%{state}" as a special variable.
+Define the conditions to match for the status to be WARNING. Use "%{state}" as a special variable.
 Useful to be notified when tunnel is up "%{state} eq 'up'"
 
 =item B<--critical-status>
 
-Set critical threshold for status. Use "%{state}" as a special variable.
+Define the conditions to match for the status to be CRITICAL. Use "%{state}" as a special variable.
 Useful to be notified when tunnel is up "%{state} eq 'up'"
 
 =back

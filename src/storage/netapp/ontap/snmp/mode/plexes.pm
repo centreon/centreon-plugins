@@ -220,17 +220,17 @@ Filter plexes by aggregate name.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} eq "resyncing"').
+Define the conditions to match for the status to be WARNING (Default: '%{status} eq "resyncing"').
 You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status}  eq "offline"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status}  eq "offline"').
 You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--warning-*> B<--critical-*>

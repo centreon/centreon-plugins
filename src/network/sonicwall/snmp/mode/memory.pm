@@ -78,11 +78,11 @@ Check Memory usage.
 
 =item B<--warning-usage>
 
-Threshold warning. (percent)
+Warning threshold. (percent)
 
 =item B<--critical-usage>
 
-Threshold critical. (percent)
+Critical threshold. (percent)
 
 =back
 

@@ -235,12 +235,12 @@ Check WebLogic WorkManagers.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'thread-stuck', 'request-completed', 'request-pending'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'thread-stuck', 'request-completed', 'request-pending'.
 
 =item B<--filter-application>

@@ -93,11 +93,11 @@ Check temperature (SYNOLOGY-SYSTEM-MIB).
 
 =item B<--warning-temperature>
 
-Threshold warning in celsius degrees.
+Warning threshold in celsius degrees.
 
 =item B<--critical-temperature>
 
-Threshold critical in celsius degrees.
+Critical threshold in celsius degrees.
 
 =back
 

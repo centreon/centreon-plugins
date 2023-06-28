@@ -410,13 +410,13 @@ Example: --filter-counters='^(tunnels-total)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'tunnels-total', 'traffic-in', 
 'traffic-out', 'drop-in', 'drop-out', 'sa-total'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'tunnels-total', 'traffic-in', 
 'traffic-out', 'drop-in', 'drop-out', 'sa-total'.
 

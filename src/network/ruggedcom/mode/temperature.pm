@@ -90,11 +90,11 @@ Check temperature (RUGGEDCOM-SYS-INFO).
 
 =item B<--warning>
 
-Threshold warning in celsius degrees.
+Warning threshold in celsius degrees.
 
 =item B<--critical>
 
-Threshold critical in celsius degrees.
+Critical threshold in celsius degrees.
 
 =back
 

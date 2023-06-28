@@ -390,32 +390,32 @@ It monitors only ESX nic that belongs to the filtered vswitches.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--unknown-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} !~ /up/').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

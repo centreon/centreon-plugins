@@ -92,12 +92,12 @@ Example: --filter-counters='^voip$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voip', 'data'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'voip', 'data'.
 
 =back

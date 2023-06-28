@@ -152,12 +152,12 @@ Example to check SSL connections only : --filter-counters='^client-ssl|server-ss
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
 
 =back

@@ -351,11 +351,11 @@ Check tcp connections.
 
 =item B<--warning>
 
-Threshold warning for total connections.
+Warning threshold for total connections.
 
 =item B<--critical>
 
-Threshold critical for total connections.
+Critical threshold for total connections.
 
 =item B<--service>
 

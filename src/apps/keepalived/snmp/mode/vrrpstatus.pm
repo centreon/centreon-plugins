@@ -143,12 +143,12 @@ Check VRRP instances status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{instanceWantedState}, %{instanceStateLast}, %{instanceState}, %{instancePrimaryInterface}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}').
 You can use the following variables: %{instanceWantedState}, %{instanceStateLast}, %{instanceState}, %{instancePrimaryInterface}
 
 =back

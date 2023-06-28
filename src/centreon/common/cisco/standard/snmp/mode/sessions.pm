@@ -245,7 +245,7 @@ Check sessions.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connections-current', 'connections-1m', 'connections-5m',
 'sessions-total', 'sessions-email-current', 'sessions-email-psec',
 'sessions-ipsec-current', 'sessions-ipsec-psec', 'sessions-l2l-current', 'sessions-lb-psec'
@@ -254,7 +254,7 @@ Can be: 'connections-current', 'connections-1m', 'connections-5m',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connections-current', 'connections-1m', 'connections-5m',
 'sessions-total', 'sessions-email-current', 'sessions-email-psec',
 'sessions-ipsec-current', 'sessions-ipsec-psec', 'sessions-l2l-current', 'sessions-lb-psec'

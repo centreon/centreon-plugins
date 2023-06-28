@@ -225,12 +225,12 @@ Filter project name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'share-usage', 'project-usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'share-usage', 'project-usage'.
 
 =item B<--units>

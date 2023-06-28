@@ -104,12 +104,12 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-sessions', 'postured-endpoints', 'profiler-service-sessions'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-sessions', 'postured-endpoints', 'profiler-service-sessions'.
 
 =back

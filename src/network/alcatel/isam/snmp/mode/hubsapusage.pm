@@ -460,12 +460,12 @@ You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--reload-cache-time>

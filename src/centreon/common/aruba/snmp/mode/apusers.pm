@@ -268,14 +268,14 @@ Check total users connected (Deprecated).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'total-none', 'total-other', 'total-web',
 'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds),
 'total-ap', 'total-essid'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'total-none', 'total-other', 'total-web',
 'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds),
 'total-ap', 'total-essid'.

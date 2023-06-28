@@ -250,17 +250,17 @@ Filter by dst ip (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} eq "dead"').
+Define the conditions to match for the status to be WARNING (Default: '%{state} eq "dead"').
 You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-*> B<--critical-*>

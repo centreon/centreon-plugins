@@ -198,17 +198,17 @@ Filter license name (can be a regexp).
 
 =item B<--unknown-license-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-license-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-license-status>
 
-Set critical threshold for status (Default: '%{status} !~ /in compliance/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /in compliance/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

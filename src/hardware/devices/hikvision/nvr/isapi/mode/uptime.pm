@@ -127,11 +127,11 @@ Check system uptime.
 
 =item B<--warning-uptime>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-uptime>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--unit>
 

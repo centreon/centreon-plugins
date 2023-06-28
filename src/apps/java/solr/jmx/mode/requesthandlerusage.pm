@@ -153,13 +153,13 @@ Default: '(/select|/update)$'.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'requests-count', 'avg-requests', 'avg-time',
 '15min-rate-requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'requests-count', 'avg-requests', 'avg-time',
 '15min-rate-requests'.
 

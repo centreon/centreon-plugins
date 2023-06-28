@@ -170,13 +170,13 @@ Check license (WLSX-SYSTEMEXT-MIB).
 
 =item B<--warning-status>
 
-Threshold warning.
+Warning threshold.
 Can use special variables like:%{key},
 %{service}, %{flag}, %{expires} (Default: '')
 
 =item B<--critical-status>
 
-Threshold critical.
+Critical threshold.
 Can use special variables like: %{key},
 %{service}, %{flag}, %{expires} (Default: '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)')
 

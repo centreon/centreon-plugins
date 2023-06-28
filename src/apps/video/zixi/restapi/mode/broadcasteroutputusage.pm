@@ -191,22 +191,22 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: -)
+Define the conditions to match for the status to be WARNING (Default: -)
 You can use the following variables: %{name}, %{status}, %{error}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
 You can use the following variables: %{name}, %{status}, %{error}.
 
 =back
