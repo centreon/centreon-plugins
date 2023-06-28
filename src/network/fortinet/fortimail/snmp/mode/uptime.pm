@@ -45,11 +45,11 @@ Check system uptime.
 
 =item B<--warning-uptime>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-uptime>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--add-sysdesc>
 
@@ -57,7 +57,7 @@ Display system description.
 
 =item B<--force-oid>
 
-Can choose your oid (numeric format only).
+Can choose your OID (numeric format only).
 
 =item B<--check-overload>
 
@@ -66,12 +66,12 @@ With that option, we manage the counter going back. But there is a few chance we
 
 =item B<--reboot-window>
 
-To be used with check-overload option. Time in milliseconds (Default: 5000)
+To be used with check-overload option. Time in milliseconds (default: 5000)
 You increase the chance of not missing a reboot if you decrease that value.
 
 =item B<--unit>
 
 Select the unit for performance data and thresholds. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks.  Default is seconds
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds
 
 =back

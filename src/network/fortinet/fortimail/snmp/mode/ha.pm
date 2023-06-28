@@ -105,12 +105,12 @@ Check high-availability status.
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{ha_status}, %{ha_status_last}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status (Default: '%{ha_status} ne %{ha_status_last}').
+Define the conditions to match for the status to be CRITICAL (default: '%{ha_status} ne %{ha_status_last}').
 You can use the following variables: %{ha_status}, %{ha_status_last}
 
 =back
