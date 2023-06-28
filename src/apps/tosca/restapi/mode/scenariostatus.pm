@@ -134,13 +134,13 @@ Scenario unique ID.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can use special variables like: %{result}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{result}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{result} !~ /Passed/').
-Can use special variables like: %{result}
+Define the conditions to match for the status to be CRITICAL (default: '%{result} !~ /Passed/').
+You can use the following variables: %{result}
 
 =item B<--warning-*> B<--critical-*>
 
