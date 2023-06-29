@@ -42,23 +42,12 @@ my $map_battery_mode = {
     13 => 'MasterBateryTesting',
 };
 
-my $thresholds = {
-    'battery-mode' => [
-        [ 'unknown', 'UNKNOWN' ],
-        [ 'FloatCharging', 'OK' ],
-        [ 'ShortTest', 'WARNING' ],
-        [ 'BoostChargingForTest', 'WARNING' ],
-        [ 'ManualTesting', 'WARNING' ],
-        [ 'PlanTesting', 'WARNING' ],
-        [ 'ACFailTesting', 'CRITICAL' ],
-        [ 'ACFail', 'CRITICAL' ],
-        [ 'ManualBoostCharging', 'WARNING' ],
-        [ 'AutoBoostCharging', 'WARNING' ],
-        [ 'CyclicBoostCharging', 'WARNING' ],
-        [ 'MasterBoostCharging', 'WARNING' ],
-        [ 'MasterBateryTesting', 'WARNING' ]
-    ],
-};
+sub battery_mode_custom_output {
+    my ($self, %options) = @_;
+
+    return sprintf("Battery mode: '%s'", $self->{result_values}->{battery_mode});
+}
+
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -108,8 +97,7 @@ sub set_counters {
                 closure_custom_calc            => \&catalog_status_calc,
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata        => sub {return 0;},
-                closure_custom_output          => $self->can('status_custom_output'),
-                closure_custom_threshold_check => $self->can('custom_threshold_output')
+                closure_custom_output          => $self->can('battery_mode_custom_output'),
             }
         },
 
@@ -121,31 +109,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        "threshold-overload:s@" => { name => 'threshold_overload' }
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, { filter => $filter, status => $status };
-    }
 }
 
 sub manage_selection {
@@ -177,43 +143,6 @@ sub manage_selection {
     };
 }
 
-sub status_custom_output {
-    my ($self, %options) = @_;
-
-    return sprintf("Battery mode: '%s'", $self->{result_values}->{battery_mode});
-}
-
-sub custom_threshold_output {
-    my ($self, %options) = @_;
-
-    return $self->{instance_mode}->get_severity(
-        section => 'battery-mode',
-        value   => $self->{result_values}->{battery_mode}
-    );
-}
-
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN';# default
-
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    foreach (@{$thresholds->{$options{section}}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-
-    return $status;
-}
-
 1;
 
 __END__
@@ -228,11 +157,20 @@ Check system
 
 Thresholds: voltage (V), current (A), capacity (%), nominal-capacity (Ah)
 
-=item B<--threshold-overload>
+=item B<--unknown-battery-mode>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='battery-mode,CRITICAL,^(?!(FloatCharging)$)' --threshold-overload='battery-mode,WARNING,^ACFail$'
+Set unknown threshold for status (Default: '%{battery_mode} =~ /unknown/i').
+You can use the following variables: %{battery_mode}
+
+=item B<--warning-battery-mode>
+
+Set warning threshold for status (Default: '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i').
+You can use the following variables: %{battery_mode}
+
+=item B<--critical-battery-mode>
+
+Set critical threshold for status (Default: '%{battery_mode} =~ /ACFailTesting|ACFail/i').
+You can use the following variables: %{battery_mode}
 
 =back
 
