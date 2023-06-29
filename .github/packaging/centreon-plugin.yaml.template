@@ -72,7 +72,7 @@ overrides:
       libcrypt-argon2-perl,
       libkeepass-reader-perl,
       libdatetime-perl,
-      @RPM_DEPENDENCIES@
+      @DEB_DEPENDENCIES@
     ]
     conflicts:
       [@DEB_CONFLICTS@]
