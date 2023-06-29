@@ -263,6 +263,7 @@ sub host_message {
 		    padding: 0 !important;
 		    height: 100% !important;
 		    width: 100% !important;
+		    background-color: #F2F2F2;
 	    }
 	
 	    * {
@@ -360,9 +361,6 @@ sub host_message {
 	    }
     </style>
     <![endif]-->
-
-    <!--[if !mso]><!-->
-    <link href="https://fonts.googleapis.com/css?family=Red+Hat+Display
     </head>
     <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
         <center style="width: 100%; background: #f6f6f6; text-align: left;">
@@ -581,7 +579,7 @@ sub service_message {
     
     my $img;
     if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
-         $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
+        $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
     } else {
         $self->{payload_attachment}->{png} = $content;
         $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
@@ -641,6 +639,7 @@ sub service_message {
             padding: 0 !important;
             height: 100% !important;
             width: 100% !important;
+		    background-color: #F2F2F2;
         }
         
         * {
@@ -738,9 +737,6 @@ sub service_message {
         }
     </style>
     <![endif]-->
-
-    <!--[if !mso]><!-->
-    <link href="https://fonts.googleapis.com/css?family=Red+Hat+Display
     </head>
     <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
             <center style="width: 100%; background: #f6f6f6; text-align: left;">
@@ -863,10 +859,6 @@ sub service_message {
                     <tr>
                         <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
                             <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Service Graph:</h4>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
                             '. $img . '
                         </td>
                     </tr>
@@ -937,22 +929,6 @@ sub run {
     my ($self, %options) = @_;
 
     $self->set_payload();
-    my $attachement = '';
-    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
-        my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
-        $attachement = Email::MIME->create(
-            header_str => [
-                'Content-ID' => "<$img_cid>"
-            ],
-            attributes => {
-                content_type => 'image/png',
-                disposition  => 'inline',
-                encoding     => 'base64',
-                name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
-            },
-            body => $self->{payload_attachment}->{png}
-        );
-    }
 
     my $html_part = Email::MIME->create(
         attributes => {
@@ -970,23 +946,53 @@ sub run {
         body => $self->{payload_attachment}->{alt_message}
     );
 
-    my $email = Email::MIME->create(
-        header_str => [
-            From    => $self->{option_results}->{from_address},
-            To      => $self->{option_results}->{to_address},
-            Subject => $self->{payload_attachment}->{subject}
-        ],
-        parts => [
-            Email::MIME->create(
+    my $email;
+
+    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
+        my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
+        
+        $email = Email::MIME->create(
+            header_str => [
+                From    => $self->{option_results}->{from_address},
+                To      => $self->{option_results}->{to_address},
+                Subject => $self->{payload_attachment}->{subject}
+            ],
+            parts => [
+                Email::MIME->create(
+                    attributes => {
+                        content_type => 'multipart/alternative',
+                        charset     => 'UTF-8',
+                    },
+                    parts => [$text_part, $html_part],
+                ),
+                Email::MIME->create(
+                    header_str => [
+                        'Content-ID' => "<$img_cid>"
+                    ],
+                    attributes => {
+                        content_type => 'image/png',
+                        disposition  => 'inline',
+                        encoding     => 'base64',
+                        name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
+                    },
+                    body => $self->{payload_attachment}->{png}
+                )
+            ]
+        );
+    } else {
+        $email = Email::MIME->create(
+            header_str => [
+                From    => $self->{option_results}->{from_address},
+                To      => $self->{option_results}->{to_address},
+                Subject => $self->{payload_attachment}->{subject}
+            ],
             attributes => {
                 content_type => 'multipart/alternative',
                 charset     => 'UTF-8',
             },
             parts => [$text_part, $html_part],
-        ),
-        $attachement
-        ]
-    );
+        );
+    }
 
     my $smtp = Email::Sender::Transport::SMTP->new({
         host => $self->{option_results}->{smtp_address},
