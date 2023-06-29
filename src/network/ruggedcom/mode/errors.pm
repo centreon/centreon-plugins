@@ -173,7 +173,7 @@ Exclude some instance (Example: --exclude='#WatchdogReset#CrashLogCreated#')
 =item B<--no-errors>
 
 Return an error if no errors are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+
 
 =back
 

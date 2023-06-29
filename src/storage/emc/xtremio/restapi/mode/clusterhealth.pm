@@ -205,7 +205,7 @@ Check cluster health indicators ('consistency-state','shared-memory-efficiency-l
 =item B<--filter>
 
 Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=cluster,CLUSTER-NAME
+You can also exclude items from specific instances: --filter=cluster,CLUSTER-NAME
 
 =item B<--threshold-overload>
 

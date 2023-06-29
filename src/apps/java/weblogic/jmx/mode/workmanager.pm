@@ -257,8 +257,7 @@ Filter by server runtime.
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='health,CRITICAL,^(?!(HEALTH_OK)$)'
 
 =back

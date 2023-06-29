@@ -71,8 +71,8 @@ Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'loc
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=fan,/sys/chassis-7/fan-module-1-7/fan-1
+Exclude the items given as a comma-separated list (example: --filter=fan --filter=psu).
+You can also exclude items from specific instances: --filter=fan,/sys/chassis-7/fan-module-1-7/fan-1
 
 =item B<--absent-problem>
 
@@ -81,13 +81,11 @@ Can be specific or global: --absent-problem=fan,/sys/chassis-7/fan-module-1-7/fa
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Eg: --threshold-overload='fan.operability,OK,poweredOff|removed' 
 --threshold-overload='presence,OK,missing' 
 --threshold-overload='operability,OK,removed'

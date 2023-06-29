@@ -116,13 +116,13 @@ Can be: 'fan', 'lcc', 'psu', 'battery', 'memory', 'cpu', 'iomodule', 'cable'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=lcc --filter=fan)
-Can also exclude specific instance: --filter=fan,1.2
+Exclude the items given as a comma-separated list (example: --filter=lcc --filter=fan).
+You can also exclude items from specific instances: --filter=fan,1.2
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =back
 
