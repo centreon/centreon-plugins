@@ -48,7 +48,6 @@ sub battery_mode_custom_output {
     return sprintf("Battery mode: '%s'", $self->{result_values}->{battery_mode});
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -90,9 +89,15 @@ sub set_counters {
             }
         },
         {
-            label => 'battery-mode',
-            type  => 2,
-            set   => {
+            label            => 'battery-mode',
+            unknown_default  =>
+                '%{battery_mode} =~ /unknown/i',
+            warning_default  =>
+                '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i',
+            critical_default =>
+                '%{battery_mode} =~ /ACFailTesting|ACFail/i',
+            type             => 2,
+            set              => {
                 key_values                     => [ { name => 'battery_mode' } ],
                 closure_custom_calc            => \&catalog_status_calc,
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
