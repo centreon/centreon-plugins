@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scEnclIoModStatus     => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.22.1.3', map => \%map_sc_status },
-    scEnclIoModPosition   => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.22.1.4' },
+    scEnclIoModPosition   => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.22.1.4' }
 };
 my $oid_scEnclIoModEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.22.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scEnclIoModEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'encliomod', instance => $instance));
+        next if ($self->check_filter(section => 'encliomod', instance => $instance, name => $result->{scEnclIoModPosition}));
         $self->{components}->{encliomod}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("enclosure I/O module '%s' status is '%s' [instance = %s]",
-                                    $result->{scEnclIoModPosition}, $result->{scEnclIoModStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'encliomod', value => $result->{scEnclIoModStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "enclosure I/O module '%s' status is '%s' [instance: %s]",
+                $result->{scEnclIoModPosition}, $result->{scEnclIoModStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'encliomod', name => $result->{scEnclIoModPosition}, value => $result->{scEnclIoModStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Enclosure I/O module '%s' status is '%s'", $result->{scEnclIoModPosition}, $result->{scEnclIoModStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Enclosure I/O module '%s' status is '%s'", $result->{scEnclIoModPosition}, $result->{scEnclIoModStatus})
+            );
         }
     }
 }

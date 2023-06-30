@@ -31,7 +31,7 @@ my $mapping = {
     scCtlrFanWarnLwrRpm  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1.8' },
     scCtlrFanWarnUprRpm  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1.9' },
     scCtlrFanCritLwrRpm  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1.10' },
-    scCtlrFanCritUprRpm  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1.11' },
+    scCtlrFanCritUprRpm  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1.11' }
 };
 my $oid_scCtlrFanEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.16.1';
 
@@ -52,22 +52,33 @@ sub check {
         next if ($oid !~ /^$mapping->{scCtlrFanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCtlrFanEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'ctrlfan', instance => $instance));
+
+        next if ($self->check_filter(section => 'ctrlfan', instance => $instance, name => $result->{scCtlrFanName}));
 
         $self->{components}->{ctrlfan}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("controller fan '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{scCtlrFanName}, $result->{scCtlrFanStatus}, $instance, 
-                                    $result->{scCtlrFanCurrentRpm}));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'ctrlfan', value => $result->{scCtlrFanStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller fan '%s' status is '%s' [instance: %s] [value: %s]",
+                $result->{scCtlrFanName}, $result->{scCtlrFanStatus}, $instance, 
+                $result->{scCtlrFanCurrentRpm}
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'ctrlfan', name => $result->{scCtlrFanName}, value => $result->{scCtlrFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Controller fan '%s' status is '%s'", $result->{scCtlrFanName}, $result->{scCtlrFanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Controller fan '%s' status is '%s'", $result->{scCtlrFanName}, $result->{scCtlrFanStatus})
+            );
         }
-             
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'ctrlfan', instance => $instance, value => $result->{scCtlrFanCurrentRpm});
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(
+            section => 'ctrlfan',
+            instance => $instance,
+            name => $result->{scCtlrFanName},
+            value => $result->{scCtlrFanCurrentRpm}
+        );
         if ($checked == 0) {
             $result->{scCtlrFanWarnLwrRpm} = (defined($result->{scCtlrFanWarnLwrRpm}) && $result->{scCtlrFanWarnLwrRpm} =~ /[0-9]/) ?
                 $result->{scCtlrFanWarnLwrRpm} : '';
@@ -81,15 +92,18 @@ sub check {
             my $crit_th = $result->{scCtlrFanCritLwrRpm} . ':' . $result->{scCtlrFanCritUprRpm};
             $self->{perfdata}->threshold_validate(label => 'warning-ctrlfan-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-ctrlfan-instance-' . $instance, value => $crit_th);
-            
+
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-ctrlfan-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-ctrlfan-instance-' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Controller fan '%s' is %s rpm", $result->{scCtlrFanName}, $result->{scCtlrFanCurrentRpm}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Controller fan '%s' is %s rpm", $result->{scCtlrFanName}, $result->{scCtlrFanCurrentRpm})
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'ctrlfan', unit => 'rpm',
             nlabel => 'hardware.controller.fan.speed.rpm',

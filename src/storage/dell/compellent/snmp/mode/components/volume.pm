@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scVolumeStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.26.1.3', map => \%map_sc_status },
-    scVolumeName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.26.1.4' },
+    scVolumeName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.26.1.4' }
 };
 my $oid_scVolumeEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.26.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scVolumeEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'volume', instance => $instance));
+        next if ($self->check_filter(section => 'volume', instance => $instance, name => $result->{scVolumeName}));
         $self->{components}->{volume}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("volume '%s' status is '%s' [instance = %s]",
-                                    $result->{scVolumeName}, $result->{scVolumeStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "volume '%s' status is '%s' [instance: %s]",
+                $result->{scVolumeName}, $result->{scVolumeStatus}, $instance
+            )
+        );
         
-        my $exit = $self->get_severity(label => 'default', section => 'volume', value => $result->{scVolumeStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'volume', name => $result->{scVolumeName}, value => $result->{scVolumeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Volume '%s' status is '%s'", $result->{scVolumeName}, $result->{scVolumeStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Volume '%s' status is '%s'", $result->{scVolumeName}, $result->{scVolumeStatus})
+            );
         }
     }
 }

@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scCtlrStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.3', map => \%map_sc_status },
-    scCtlrName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.4' },
+    scCtlrName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.4' }
 };
 my $oid_scCtlrEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1';
 
@@ -47,18 +47,23 @@ sub check {
         next if ($oid !~ /^$mapping->{scCtlrStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCtlrEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'ctrl', instance => $instance));
+
+        next if ($self->check_filter(section => 'ctrl', instance => $instance, name => $result->{scCtlrName}));
         $self->{components}->{ctrl}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("controller '%s' status is '%s' [instance = %s]",
-                                    $result->{scCtlrName}, $result->{scCtlrStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'ctrl', value => $result->{scCtlrStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller '%s' status is '%s' [instance: %s]",
+                $result->{scCtlrName}, $result->{scCtlrStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'ctrl', name => $result->{scCtlrName}, value => $result->{scCtlrStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Controller '%s' status is '%s'", $result->{scCtlrName}, $result->{scCtlrStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Controller '%s' status is '%s'", $result->{scCtlrName}, $result->{scCtlrStatus})
+            );
         }
     }
 }

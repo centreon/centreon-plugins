@@ -31,7 +31,7 @@ my $mapping = {
     scCtlrVoltageWarnLwrV  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1.8' },
     scCtlrVoltageWarnUprV  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1.9' },
     scCtlrVoltageCritLwrV  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1.10' },
-    scCtlrVoltageCritUprV  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1.11' },
+    scCtlrVoltageCritUprV  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1.11' }
 };
 my $oid_scCtlrVoltageEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.18.1';
 
@@ -53,21 +53,32 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCtlrVoltageEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'ctrlvoltage', instance => $instance));
+        next if ($self->check_filter(section => 'ctrlvoltage', instance => $instance, name => $result->{scCtlrVoltageName}));
 
         $self->{components}->{ctrlvoltage}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("controller voltage '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{scCtlrVoltageName}, $result->{scCtlrVoltageStatus}, $instance, 
-                                    $result->{scCtlrVoltageCurrentV}));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'ctrlvoltage', value => $result->{scCtlrVoltageStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller voltage '%s' status is '%s' [instance: %s] [value: %s]",
+                $result->{scCtlrVoltageName}, $result->{scCtlrVoltageStatus}, $instance, 
+                $result->{scCtlrVoltageCurrentV}
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'ctrlvoltage', name => $result->{scCtlrVoltageName}, value => $result->{scCtlrVoltageStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Controller voltage '%s' status is '%s'", $result->{scCtlrVoltageName}, $result->{scCtlrVoltageStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Controller voltage '%s' status is '%s'", $result->{scCtlrVoltageName}, $result->{scCtlrVoltageStatus})
+            );
         }
              
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'ctrlvoltage', instance => $instance, value => $result->{scCtlrVoltageCurrentV});
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(
+            section => 'ctrlvoltage',
+            instance => $instance,
+            name => $result->{scCtlrVoltageName},
+            value => $result->{scCtlrVoltageCurrentV}
+        );
         if ($checked == 0) {
             $result->{scCtlrVoltageWarnLwrV} = (defined($result->{scCtlrVoltageWarnLwrV}) && $result->{scCtlrVoltageWarnLwrV} =~ /[0-9]/) ?
                 $result->{scCtlrVoltageWarnLwrV} : '';
@@ -85,11 +96,14 @@ sub check {
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-ctrlvoltage-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-ctrlvoltage-instance-' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Controller voltage '%s' is %s V", $result->{scCtlrVoltageName}, $result->{scCtlrVoltageCurrentV}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Controller voltage '%s' is %s V", $result->{scCtlrVoltageName}, $result->{scCtlrVoltageCurrentV})
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'ctrlvoltage', unit => 'V',
             nlabel => 'hardware.controller.voltage.volt',

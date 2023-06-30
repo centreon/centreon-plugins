@@ -31,7 +31,7 @@ my $mapping = {
     scCtlrTempWarnLwrC  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1.8' },
     scCtlrTempWarnUprC  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1.9' },
     scCtlrTempCritLwrC  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1.10' },
-    scCtlrTempCritUprC  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1.11' },
+    scCtlrTempCritUprC  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1.11' }
 };
 my $oid_scCtlrTempEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.19.1';
 
@@ -52,22 +52,33 @@ sub check {
         next if ($oid !~ /^$mapping->{scCtlrTempStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCtlrTempEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'ctrltemp', instance => $instance));
+
+        next if ($self->check_filter(section => 'ctrltemp', instance => $instance, name => $result->{scCtlrTempName}));
 
         $self->{components}->{ctrltemp}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("controller temperature '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{scCtlrTempName}, $result->{scCtlrTempStatus}, $instance, 
-                                    $result->{scCtlrTempCurrentC}));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'ctrltemp', value => $result->{scCtlrTempStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller temperature '%s' status is '%s' [instance: %s] [value: %s]",
+                $result->{scCtlrTempName}, $result->{scCtlrTempStatus}, $instance, 
+                $result->{scCtlrTempCurrentC}
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'ctrltemp', name => $result->{scCtlrTempName}, value => $result->{scCtlrTempStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Controller temperature '%s' status is '%s'", $result->{scCtlrTempName}, $result->{scCtlrTempStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Controller temperature '%s' status is '%s'", $result->{scCtlrTempName}, $result->{scCtlrTempStatus})
+            );
         }
-             
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'ctrltemp', instance => $instance, value => $result->{scCtlrTempCurrentC});
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(
+            section => 'ctrltemp',
+            instance => $instance,
+            name => $result->{scCtlrTempName},
+            value => $result->{scCtlrTempCurrentC}
+        );
         if ($checked == 0) {
             $result->{scCtlrTempWarnLwrC} = (defined($result->{scCtlrTempWarnLwrC}) && $result->{scCtlrTempWarnLwrC} =~ /[0-9]/) ?
                 $result->{scCtlrTempWarnLwrC} : '';
@@ -85,11 +96,14 @@ sub check {
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-ctrltemp-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-ctrltemp-instance-' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Controller temperature '%s' is %s C", $result->{scCtlrTempName}, $result->{scCtlrTempCurrentC}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Controller temperature '%s' is %s C", $result->{scCtlrTempName}, $result->{scCtlrTempCurrentC})
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'ctrltemp', unit => 'C',
             nlabel => 'hardware.controller.temperature.celsius',
