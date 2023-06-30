@@ -199,16 +199,16 @@ sub parse_output {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'ps',
-        command_options => '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1'
+        command_options => '-e -o state -o etime -o pid -o ppid -o comm:50 -o %a -w 2>&1'
     );
 
     $self->{global} = { processes => 0 };
     $self->{processes} = {};
 
-    my @lines = split /\n/, $stdout;
-    my $line = shift @lines;
+    my @lines = split(/\n/, $stdout);
+    my $line = shift(@lines);
     foreach my $line (@lines) {
-        next if ($line !~ /^(.*?)===(.*?)===(.*?)===(.*?)===(.*?)===(.*)$/);
+        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.{50})\s+(.*)$/);
         my ($state, $elapsed, $pid, $ppid, $cmd, $args) = (
             centreon::plugins::misc::trim($1),
             centreon::plugins::misc::trim($2),
