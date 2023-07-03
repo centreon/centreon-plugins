@@ -4,69 +4,79 @@
 
 *******
 Table of contents (1)
- 1. [Plugins introduction](#introduction)
- 2. [Layout](#architecture)
- 3. [List of shared libraries in centreon directory](#librairies)
- 4. [Tutorial : How to create a plugin - Using API](#tutoriel)
- 5. [Tutorial : How to create a plugin - Using SNMP](#tutoriel_2)
- 6. [Other examples](#examples)
- 7. [Code Style Guidelines](#code-style-guidelines)
- 8. [Plugins guidelines and good practices](#guidelines)
+1. [Plugins introduction](#introduction)
+2. [PLugins development](#plugin_development)
+3. [Plugins guidelines and good practices](#guidelines)
+4. [List of shared libraries in centreon directory](#librairies)
 *******
 
 <div id='introduction'/>
 
 ## I. Plugins introduction
 
-[Table of content (1)](#table_of_content_1)
-
-Centreon plugins are a free and open source way to monitor systems. The project can be used with Centreon and all monitoring softwares compatible with Nagios plugins.
-You can monitor many systems:
-
-* application: Apache, Asterisk, Elasticsearch, Github, Jenkins, Kafka, Nginx, Pfsense, Redis, Tomcat, Varnish,...
-* cloud: AWS, Azure, Docker, Office365, Nutanix, Prometheus,...
-* database: Firebird, Informix, MS SQL, MySQL, Oracle, Postgres, Cassandra
-* hardware: printers (rfc3805), UPS (Powerware, Mge, Standard), Sun Hardware, Cisco UCS, SensorIP, HP Proliant, HP Bladechassis, Dell Openmanage, Dell CMC, Raritan,...
-* network: Aruba, Brocade, Bluecoat, Brocade, Checkpoint, Cisco AP/IronPort/ASA/Standard, Extreme, Fortigate, H3C, Hirschmann, HP Procurve, F5 BIG-IP, Juniper, PaloAlto, Redback, Riverbed, Ruggedcom, Stonesoft,...
-* os: Linux (SNMP, NRPE), Freebsd (SNMP), AIX (SNMP), Solaris (SNMP)...
-* storage: EMC Clariion, Netapp, Nimble, HP MSA p2000, Dell EqualLogic, Qnap, Panzura, Synology...
-
-This document introduces the best practices in the development of "centreon-plugins".
-
-As all plugins are written in Perl, “there is more than one way to do it”.
-But to avoid reinventing the wheel, you should first take a look at the “example” directory, you will get an overview of how to build your own plugin and associated modes.
-
-The lastest version is available on following git repository: https://github.com/centreon/centreon-plugins.git
-
-<div id='architecture'/>
-
-## II. Layout
-
 <div id='table_of_content_2'/>
 
 *******
 Table of contents (2)
- 1. [Directories layout](#architecture_dossier)
- 2. [Shared directories](#architecture_shared)
- 3. [Plugin.pm file](#architecture_plugin)
- 4. [Mode.pm file](#architecture_mode)
- 5. [Model Classes Usage](#architecture_model_class)
- 6. [Commit and push](#commit)
+1. [Overview](#overview)
+2. [Directories layout](#architecture_layout)
+3. [Code Style Guidelines](#code-style-guidelines)
 *******
 
 [Table of content (1)](#table_of_content_1)
 
-<div id='architecture_dossier'/>
+<div id='overview'/>
 
-### 1. Directories layout
-
-#### 1.1 Plugins directories layout
+### 1. Overview
 
 [Table of content (2)](#table_of_content_2)
 
-The project content is made of a main binary (`centreon_plugins.pl`), and a logical
-directory structure allowing to separate plugins and modes files across the domain they
-are referring to.
+Centreon plugins are a free and open source way to monitor systems. The project 
+can be used with Centreon and all monitoring softwares compatible with Nagios 
+plugins. You can monitor many systems:
+
+* **application**: Apache, Asterisk, Elasticsearch, Github, Jenkins, Kafka, 
+  Nginx, 
+Pfsense, Redis, Tomcat, Varnish,...
+* **cloud**: AWS, Azure, Docker, Office365, Nutanix, Prometheus,...
+* **database**: Firebird, Informix, MS SQL, MySQL, Oracle, Postgres, Cassandra
+* **hardware**: printers (rfc3805), UPS (Powerware, Mge, Standard), Sun 
+  Hardware, 
+Cisco UCS, SensorIP, HP Proliant, HP Bladechassis, Dell Openmanage, Dell CMC, 
+Raritan,...
+* **network**: Aruba, Brocade, Bluecoat, Brocade, Checkpoint, Cisco 
+  AP/IronPort/ASA/
+Standard, Extreme, Fortigate, H3C, Hirschmann, HP Procurve, F5 BIG-IP, Juniper,
+PaloAlto, Redback, Riverbed, Ruggedcom, Stonesoft,...
+* **os**: Linux (SNMP, NRPE), Freebsd (SNMP), AIX (SNMP), Solaris (SNMP)...
+* **storage**: EMC Clariion, Netapp, Nimble, HP MSA p2000, Dell EqualLogic, 
+  Qnap, 
+Panzura, Synology...
+
+This document introduces the best practices in the development of 
+"centreon-plugins".
+
+As all plugins are written in Perl, “there is more than one way to do it”.
+But to avoid reinventing the wheel, you should first take a look at the 
+“example” directory, you will get an overview of how to build your own plugin 
+and associated modes.
+
+The lastest version is available on following git repository: 
+https://github.com/centreon/centreon-plugins.git
+
+[Table of content (1)](#table_of_content_1)
+
+<div id='architecture_layout'/>
+
+### 2. Directories layout
+
+#### 2.1 Plugins directories layout
+
+[Table of content (2)](#table_of_content_2)
+
+The project content is made of a main binary (`centreon_plugins.pl`), and a 
+logical directory structure allowing to separate plugins and modes files across 
+the domain they are referring to.
 
 You can display it using the command `tree -L 1`. 
 
@@ -102,7 +112,7 @@ Root directories are organized by section:
 * Operating System  : os
 * Storage equipment : storage
 
-#### 1.2 Single plugin directory layout
+#### 2.2 Single plugin directory layout
 
 [Table of content (2)](#table_of_content_2)
 
@@ -113,8 +123,8 @@ According to the monitored object, it exists an organization which can use:
 * Model
 * Monitoring Protocol
 
-Let's take a deeper look at the layout of the directory containing modes to monitor Linux
-systems through the command-line (`tree os/linux/local/ -L 1`). 
+Let's take a deeper look at the layout of the directory containing modes to 
+monitor Linux systems through the command-line (`tree os/linux/local/ -L 1`). 
 
 ```shell
 os/linux/local/
@@ -126,7 +136,10 @@ os/linux/local/
 [...]
 └── plugin.pm   # Type: File. **Plugin** definition.
 ```
-Note the os/linux/local. The project offers other ways to monitor Linux, SNMP for example. To avoid mixing modes using different protocols in the same directory and face some naming collisions, we split them across several directories making it clear what protocol they rely on.
+Note the os/linux/local. The project offers other ways to monitor Linux, SNMP 
+for example. To avoid mixing modes using different protocols in the same 
+directory and face some naming collisions, we split them across several 
+directories making it clear what protocol they rely on.
 
 Now, let's see how these concepts combine to build a command line:
 ```shell
@@ -134,32 +147,220 @@ Now, let's see how these concepts combine to build a command line:
 perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=cpu
 ```
 
-<div id='architecture_shared'/>
-
-### 2. Shared directories
+#### 2.3 Shared directories
 
 [Table of content (2)](#table_of_content_2)
 
-Some specific directories are not related to a domain (os, cloud...) and are used across all plugins.
+Some specific directories are not related to a domain (os, cloud...) and are 
+used across all plugins.
 
-#### 2.1 The centreon directory
+##### 2.3.1 The centreon directory
 
 The centreon directory is specific, it contains:
 
-* Project libraries/packages. This is all the code that will help you to develop faster by avoiding coding protocol-related things (SNMP, HTTPx, SSH...) or common things like options or cache management from scratch. You can read the perl modules if you're an experienced developer but there is very little chance that you would have to modify anything in it.
-* Common files shared by multiple plugins. This is to avoid duplicating code across the directory tree and ease the maintenance of the project.
+* **Project libraries/packages**. This is all the code that will help you to 
+develop faster by avoiding coding protocol-related things (SNMP, HTTPx, SSH...) 
+or common things like options or cache management from scratch. You can read the 
+perl modules if you're an experienced developer but there is very little 
+chance that you would have to modify anything in it.
+* **Common files shared by multiple plugins**. This is to avoid duplicating 
+code across the directory tree and ease the maintenance of the project.
 
 An more detailed desception of this libraries is availible [here](#librairies)
 
-#### 2.2 The snmp_standard/mode directory
+##### 2.3.2 The snmp_standard/mode directory
 
-The snmp_standard/mode exists since the beginning when SNMP monitoring was much more used than it is today. All the modes it contains use standard OIDs, which means that many plugins are relying on these when the manufacturer supports standard MIBs on their devices.
+The snmp_standard/mode exists since the beginning when SNMP monitoring was much 
+more used than it is today. All the modes it contains use standard OIDs, which 
+means that many plugins are relying on these when the manufacturer supports 
+standard MIBs on their devices.
 
-<div id='architecture_plugin'/>
+[Table of content (1)](#table_of_content_1)
 
-### 3. Plugin.pm
+<div id='code-style-guidelines'/>
+
+### 3. Code Style Guidelines
 
 [Table of content (2)](#table_of_content_2)
+
+**Introduction**
+
+Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
+
+#### 3.1 Indentation
+
+Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
+Please use 4 for indentation space width.
+
+```perl
+    if ($1 > 1) {
+    ....return 1;
+    } else {
+        if ($i == -1) {
+        ....return 0;
+        }
+        return -1
+    }
+```
+
+#### 3.2 Comments
+
+There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
+
+```perl
+    # Good comment
+    #Wrong comment
+```
+
+#### 3.3 Subroutine & Variable Names
+
+Whenever possible, use underscore to seperator words and don't use uppercase characters:
+
+```perl
+    sub get_logs {}
+    my $start_time;
+```
+Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
+
+```perl
+    $dogs->{meapolitan_mastiff} = 10;
+```
+
+#### 3.4 Curly Brackets, Parenthesis
+
+There should be a space between every control/loop keyword and the opening parenthesis:
+
+```perl
+    if ($i == 1) {
+        ...
+    }
+    while ($i == 2) {
+        ...
+    }
+```
+
+#### 3.5 If/Else Statements
+
+'else', 'elsif' should be on the same line after the previous closing curly brace:
+
+```perl
+    if ($i == 1) {
+        ...
+    } else {
+        ...
+    }
+```
+You can use single line if conditional:
+
+```perl
+    next if ($i == 1);
+```
+[Table of content (1)](#table_of_content_1)
+
+<div id='plugin_development'/>
+
+## II. Plugins development
+
+All files showed in this section can be found on the centreon-plugins GitHub in 
+the [tutorial](https://github.com/centreon/centreon-plugins/tree/develop/src/contrib/tutorial) **contrib** 
+section.
+
+> You have to move the contents of `contrib/tutorial/apps/` to `apps/` if you want to run it for testing purposes.
+>
+> `cp -R src/contrib/tutorial/apps/* src/apps/`
+
+<div id='table_of_content_3'/>
+
+*******
+Table of content (3)
+1. [Set up your environment](#set_up_tuto)
+2. [Create directory for the new plugin](#make_dir_tuto)
+3. [Create the plugin.pm file](#create_plugin_tuto)
+4. [Understand the data](#understand_data_tuto)
+5. [Input](#input_tuto)
+6. [API](#)
+7. [SNMP](#)
+8. [Other example](#)
+9. [Service discovery](#)
+10. [Host discovery](#)
+11. [Commit and push](#commit)
+*******
+
+<div id='set_up_tuto'/>
+
+### 1.Set up your environment
+
+[Table of content (3)](#table_of_content_3)
+
+To use the centreon-plugins framework, you'll need the following: 
+
+- A Linux operating system, ideally Debian 11 or RHEL/RHEL-like >= 8
+- The [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command line utility
+- A [GitHub](https://github.com/) account.
+
+#### Enable our standard repositories
+
+##### Debian
+
+If you have not already install lsb-release, first you need to follow this steps :
+
+If needed go to sudo mode
+```shell
+sudo -i
+```
+Install lib-release
+```shell
+apt install lsb-release
+```
+Create access to centreon repository (note you may need to change the version in example it's 22.04 but you can select one most up to date)
+```shell
+echo "deb https://apt.centreon.com/repository/22.04/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/centreon.list
+wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+```
+Install the following dependencies: 
+```shell
+apt-get install 'libpod-parser-perl' 'libnet-curl-perl' 'liburi-encode-perl' 'libwww-perl' \
+    'liblwp-protocol-https-perl' 'libhttp-cookies-perl' 'libio-socket-ssl-perl' 'liburi-perl' \
+    'libhttp-proxypac-perl' 'libcryptx-perl' 'libjson-xs-perl' 'libjson-path-perl' \
+    'libcrypt-argon2-perl' 'libkeepass-reader-perl' 
+```
+##### RHEL 8 and alike
+Create access to centreon repository (note you may need to change the version in example it's 22.04 but you can select one most up to date)
+```shell
+dnf install -y https://yum.centreon.com/standard/22.04/el8/stable/noarch/RPMS/centreon-release-22.04-3.el8.noarch.rpm
+```
+Install the following dependencies: 
+```shell
+dnf install 'perl(Digest::MD5)' 'perl(Pod::Find)' 'perl-Net-Curl' 'perl(URI::Encode)' \
+    'perl(LWP::UserAgent)' 'perl(LWP::Protocol::https)' 'perl(IO::Socket::SSL)' 'perl(URI)' \
+    'perl(HTTP::ProxyPAC)' 'perl-CryptX' 'perl(MIME::Base64)' 'perl(JSON::XS)' 'perl-JSON-Path' \
+    'perl-KeePass-Reader' 'perl(Storable)' 'perl(POSIX)' 'perl(Encode)'
+```
+
+<div id='make_dir_tuto'/>
+
+### 2.Create directories for a new plugin
+
+[Table of content (3)](#table_of_content_3)
+
+Create directories and files required for your **plugin** and **modes**. 
+
+Go to your centreon-plugins local git and create the appropriate directories and files:
+
+```shell
+# path to the main directory and the subdirectory containing modes
+mkdir -p src/apps/myawesomeapp/api/mode/
+# path to the main plugin file
+touch src/apps/myawesomeapp/api/plugin.pm
+# path to the specific mode(s) file(s)
+touch src/apps/myawesomeapp/api/mode/appsmetrics.pm
+```
+
+<div id='create_plugin_tuto'/>
+
+### plugin.pm
+
+[Table of content (3)](#table_of_content_3)
 
 This file must contain : 
 * license / copyright
@@ -245,1361 +446,9 @@ __END__
 
 <div id='architecture_mode'/>
 
-### 4. Mode.pm file
-
-[Table of content (2)](#table_of_content_2)
-
-Mode.pm as plugin.pm has also :
-* license / copyright
-* package name
-* libraries
-* new constructor
-
-But mode.pm also needs at least :
-* options in the new constructor
-* check_options method
-* manage_selection method (called run in old contain)
-
-```perl
-
-  # ...
-  # Authors : <your name> <<your email>>
-  
-  package path::to::plugin::mode::mode1;
-
-  use strict;
-  use warnings;
-  use base qw(centreon::plugins::mode);
-
-  sub new {
-        my ($class, %options) = @_;
-        my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-        bless $self, $class;
-
-        ...
-
-        return $self;
-  }
-```
-Mode version must be declared in the **new** constructor:
-
-```perl
-
-  $self->{version} = '1.0';
-
-```
-Several options can be declared in the **new** constructor:
-
-```perl
-
-  $options{options}->add_options(arguments => {
-      "option1:s" => { name => 'option1' },
-      "option2:s" => { name => 'option2', default => 'value1' },
-      "option3"   => { name => 'option3' },
-  });
-
-```
-Here is the description of arguments used in this example:
-
-* option1 : String value
-* option2 : String value with default value "value1"
-* option3 : Boolean value
-
-> **TIP** : You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
-
-The mode need a **check_options** method to validate options:
-
-```perl
-
-  sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    ...
-  }
-
-```
-For example, Warning and Critical thresholds must be validate in **check_options** method:
-
-```perl
-
-  if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-  }
-  if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-  }
-
-```
-In this example, help is printed if thresholds do not have a correct format.
-
-Then comes the **run** method, where you perform measurement, check thresholds, display output and format performance datas.
-
-This is an example to check a SNMP value:
-
-```perl
-
-  sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-
-    my $result = $self->{snmp}->get_leef(oids => [$self->{option_results}->{oid}], nothing_quit => 1);
-    my $value = $result->{$self->{option_results}->{oid}};
-
-    my $exit = $self->{perfdata}->threshold_check(value => $value,
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("SNMP Value is %s.", $value));
-
-    $self->{output}->perfdata_add(label => 'value', unit => undef,
-                                  value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => undef, max => undef);
-
-    $self->{output}->display();
-    $self->{output}->exit();
-  }
-
-```
-In this example, we check a SNMP OID that we compare to warning and critical thresholds.
-There are the methods which we use:
-
-* get_leef        : get a SNMP value from an OID
-* threshold_check : compare SNMP value to warning and critical thresholds
-* output_add      : add output
-* perfdata_add    : add perfdata to output
-* display         : display output
-* exit            : exit
-
-Then, declare the module:
-
-```perl
-
-  1;
-
-```
-A description of the mode and its arguments is needed to generate the documentation:
-
-```perl
-
-  __END__
-
-  =head1 PLUGIN DESCRIPTION
-
-  <Add a plugin description here>.
-
-  =cut
-
-```
-
-<div id='architecture_model_class'/>
-
-### 5. Model Classes Usage
-
-[Table of content (2)](#table_of_content_2)
-
-
-**Introduction**
-
-With the experience of plugin development, we have created two classes:
-
-* centreon::plugins::templates::counter
-* centreon::plugins::templates::hardware
-
-It was developed to have a more consistent code and less redundant code. According to context, you should use one of two classes for modes. 
-Following classes can be used for whatever plugin type (SNMP, Custom, DBI,...).
-
-#### 5.1 Class counter
-
-##### When to use it ?
-
-If you have some counters (CPU Usage, Memory, Session...), you should use that class.
-If you have only one global counter to check, it's maybe not useful to use it (but only for these case).
-
-##### Class methods
-
-List of methods:
-
-* **new**: class constructor. Overload if you need to add some specific options or to use a statefile.
-* **check_options**: overload if you need to check your specific options.
-* **manage_selection**: overload if *mandatory*. Method to get informations for the equipment.
-* **set_counters**: overload if **mandatory**. Method to configure counters.
-
-#### 5.2 Class hardware
-
-
-
-
-
-
-TODO
-
-
-
-
-
-<div id='commit'/>
-
-### 6. Commit and push
-
-[Table of content (2)](#table_of_content_2)
-
-Before committing a plugin, you need to create an **enhancement ticket** on the centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
-
-Once plugin and modes are developed, you can commit (commit messages in english) and push your work:
-
-```shell
-  git add path/to/plugin
-  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
-  git push
-```
-
-<div id='librairies'/>
-
-## III. List of shared libraries in centreon directory
-
-This chapter describes Centreon libraries which you can use in your development.
-
-<div id='table_of_content_3'/>
-
-*******
-Table of content (3)
- 1. [Output](#lib_output)
- 2. [Perfdata](#lib_perfdata)
- 3. [SNMP](#lib_snmp)
- 4. [Misc](#lib_misc)
- 5. [Statefile](#lib_statefile)
- 6. [HTTP](#lib_http)
- 7. [DBI](#lib_dbi)
-*******
-
-[Table of content (1)](#table_of_content_1)
-
-<div id='lib_output'/>
-
-### 1. Output
+### 3.Create the plugin.pm file
 
 [Table of content (3)](#table_of_content_3)
-
-This library allows you to build output of your plugin.
-
---------------
-#### 1.1 output_add
---------------
-
-**Description**
-
-Add string to output (print it with display method). If status is different than 'ok', output associated with 'ok' status is not printed
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|--------------------------------------------
-severity  | String | OK      | Status of the output.
-separator | String | \-      | Separator between status and output string.
-short_msg | String |         | Short output (first line).
-long_msg  | String |         | Long output (used with --verbose option).
-
-**Example**
-
-This is an example of how to manage output:
-
-```perl
-
-$self->{output}->output_add(severity  => 'OK',
-                            short_msg => 'All is ok');
-$self->{output}->output_add(severity  => 'Critical',
-                            short_msg => 'There is a critical problem');
-$self->{output}->output_add(long_msg  => 'Port 1 is disconnected');
-
-$self->{output}->display();
-```
-Output displays :
-
-```
-CRITICAL - There is a critical problem
-Port 1 is disconnected
-```
---------------
-#### 1.2 perfdata_add
---------------
-
-**Description**
-
-Add performance data to output (print it with **display** method).
-Performance data are displayed after '|'.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|---------------------------------------
-label     | String |         | Label of the performance data.
-value     | Int    |         | Value of the performance data.
-unit      | String |         | Unit of the performance data.
-warning   | String |         | Warning threshold.
-critical  | String |         | Critical threshold.
-min       | Int    |         | Minimum value of the performance data.
-max       | Int    |         | Maximum value of the performance data.
-
-**Example**
-
-This is an example of how to add performance data:
-
-```perl
-
-$self->{output}->output_add(severity  => 'OK',
-                            short_msg => 'Memory is ok');
-$self->{output}->perfdata_add(label    => 'memory_used',
-                              value    => 30000000,
-                              unit     => 'B',
-                              warning  => '80000000',
-                              critical => '90000000',
-                              min      => 0,
-                              max      => 100000000);
-
-$self->{output}->display();
-```
-Output displays :
-
-```
-OK - Memory is ok | 'memory_used'=30000000B;80000000;90000000;0;100000000
-```
-
-<div id='lib_perfdata'/>
-
-### 2. Perfdata
-
-[Table of content (3)](#table_of_content_3)
-
-This library allows you to manage performance data.
-
---------------
-#### 2.1 get_perfdata_for_output
---------------
-
-**Description**
-Manage thresholds of performance data for output.
-
-**Parameters**
-
-Parameter | Type         | Default | Description
-----------|--------------|---------|----------------------------------------------------------
-**label** | String       |         | Threshold label.
-total     | Int          |         | Percent threshold to transform in global.
-cast_int  | Int (0 or 1) |         | Cast absolute to int.
-op        | String       |         | Operator to apply to start/end value (uses with 'value').
-value     | Int          |         | Value to apply with 'op' option.
-
-**Example**
-
-This is an example of how to manage performance data for output:
-
-```perl
-
-my $format_warning_perfdata  = $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => 1000000000, cast_int => 1);
-my $format_critical_perfdata = $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => 1000000000, cast_int => 1);
-
-$self->{output}->perfdata_add(label    => 'memory_used',
-                              value    => 30000000,
-                              unit     => 'B',
-                              warning  => $format_warning_perfdata,
-                              critical => $format_critical_perfdata,
-                              min      => 0,
-                              max      => 1000000000);
-
-```
-**tip**
-In this example, instead of print warning and critical thresholds in 'percent', the function calculates and prints these in 'bytes'.
-
---------------
-#### 2.2 threshold_validate
---------------
-
-**Description**
-
-Validate and affect threshold to a label.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|-----------------
-label     | String |         | Threshold label.
-value     | String |         | Threshold value.
-
-**Example**
-
-This example checks if warning threshold is correct:
-
-```perl
-
-if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-  $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-  $self->{output}->option_exit();
-}
-```
-**tip**
-You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
-
---------------
-#### 2.3 threshold_check
---------------
-
-**Description**
-
-
-Check performance data value with threshold to determine status.
-
-**Parameters**
-
-Parameter | Type         | Default | Description
-----------|--------------|---------|-------------------------------------------------------
-value     | Int          |         | Performance data value to compare.
-threshold | String array |         | Threshold label to compare and exit status if reached.
-
-**Example**
-
-This example checks if performance data reached thresholds:
-
-```perl
-$self->{perfdata}->threshold_validate(label => 'warning', value => 80);
-$self->{perfdata}->threshold_validate(label => 'critical', value => 90);
-my $prct_used = 85;
-
-my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-$self->{output}->output_add(severity  => $exit,
-                            short_msg => sprint("Used memory is %i%%", $prct_used));
-$self->{output}->display();
-```
-Output displays :
-
-```
-  WARNING - Used memory is 85% |
-```
---------------
-#### 2.4 change_bytes
---------------
-
-**Description**
-
-Convert bytes to human readable unit.
-Return value and unit.
-
-**Parameters**
-
-Parameter | Type | Default | Description
-----------|------|---------|-----------------------------------
-value     | Int  |         | Performance data value to convert.
-network   |      | 1024    | Unit to divide (1000 if defined).
-
-**Example**
-
-This example change bytes to human readable unit:
-
-```perl
-
-my ($value, $unit) = $self->{perfdata}->change_bytes(value => 100000);
-
-print $value.' '.$unit."\n";
-```
-Output displays :
-
-```
-  100 KB
-```
-
-<div id='lib_snmp'/>
-
-### 3. SNMP
-
-[Table of content (3)](#table_of_content_3)
-
-This library allows you to use SNMP protocol in your plugin.
-To use it, add the following line at the beginning of your **plugin.pm**:
-
-```perl
-
-use base qw(centreon::plugins::script_snmp);
-```
---------------
-#### 3.1 get_leef
---------------
-
-**Description**
-
-Return hash table table of SNMP values for multiple OIDs (do not work with SNMP table).
-
-**Parameters**
-
-**Example**
-
-This is an example of how to get 2 SNMP values:
-
-```perl
-
-my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
-my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
-
-my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
-
-print $result->{$oid_hrSystemUptime}."\n";
-print $result->{$oid_sysUpTime}."\n";
-```
---------------
-#### 3.2 load
---------------
-
-**Description**
-
-Load a range of OIDs to use with **get_leef** method.
-
-**Parameters**
-
-Parameter       | Type         | Default | Description
-----------------|--------------|---------|---------------------------------------------------------------
-**oids**        | String array |         | Array of OIDs to check.
-instances       | Int array    |         | Array of OID instances to check.
-instance_regexp | String       |         | Regular expression to get instances from **instances** option.
-begin           | Int          |         | Instance to begin
-end             | Int          |         | Instance to end
-
-**Example**
-
-This is an example of how to get 4 instances of a SNMP table by using **load** method:
-
-```perl
-my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
-
-$self->{snmp}->load(oids => [$oid_dskPercentNode], instances => [1,2,3,4]);
-
-my $result = $self->{snmp}->get_leef(nothing_quit => 1);
-
-use Data::Dumper;
-print Dumper($result);
-```
-This is an example of how to get multiple instances dynamically (memory modules of Dell hardware) by using **load** method:
-
-```perl
-my $oid_memoryDeviceStatus = '.1.3.6.1.4.1.674.10892.1.1100.50.1.5';
-my $oid_memoryDeviceLocationName = '.1.3.6.1.4.1.674.10892.1.1100.50.1.8';
-my $oid_memoryDeviceSize = '.1.3.6.1.4.1.674.10892.1.1100.50.1.14';
-my $oid_memoryDeviceFailureModes = '.1.3.6.1.4.1.674.10892.1.1100.50.1.20';
-
-my $result = $self->{snmp}->get_table(oid => $oid_memoryDeviceStatus);
-$self->{snmp}->load(oids => [$oid_memoryDeviceLocationName, $oid_memoryDeviceSize, $oid_memoryDeviceFailureModes],
-                    instances => [keys %$result],
-                    instance_regexp => '(\d+\.\d+)$');
-
-my $result2 = $self->{snmp}->get_leef();
-
-use Data::Dumper;
-print Dumper($result2);
-```
---------------
-#### 3.3 get_table
---------------
-
-**Description**
-
-Return hash table of SNMP values for SNMP table.
-
-**Parameters**
-
-Parameter    | Type         | Default | Description
--------------|--------------|---------|--------------------------------------------------------
-**oid**      | String       |         | OID of the snmp table to check.
-start        | Int          |         | First OID to check.
-end          | Int          |         | Last OID to check.
-dont_quit    | Int (0 or 1) | 0       | Don't quit even if an SNMP error occured.
-nothing_quit | Int (0 or 1) | 0       | Quit if no value is returned.
-return_type  | Int (0 or 1) | 0       | Return a hash table with one level instead of multiple.
-
-**Example**
-
-This is an example of how to get a SNMP table:
-
-```perl
-my $oid_rcDeviceError            = '.1.3.6.1.4.1.15004.4.2.1';
-my $oid_rcDeviceErrWatchdogReset = '.1.3.6.1.4.1.15004.4.2.1.2.0';
-
-my $results = $self->{snmp}->get_table(oid => $oid_rcDeviceError, start => $oid_rcDeviceErrWatchdogReset);
-
-use Data::Dumper;
-print Dumper($results);
-```
---------------
-#### 3.4 get_multiple_table
---------------
-
-**Description**
-
-Return hash table of SNMP values for multiple SNMP tables.
-
-**Parameters**
-
-|Parameter    | Type         | Default | Description
-|-------------|--------------|---------|-----------------------------------------------------------|
-|oids         | Hash table   |-        | Hash table of OIDs to check (Can be set by 'load' method).|
-|-            |-             |-        | Keys can be: "oid", "start", "end".                       |
-|dont_quit    | Int (0 or 1) | 0       | Don't quit even if an SNMP error occured.                 |
-|nothing_quit | Int (0 or 1) | 0       | Quit if no value is returned.                             |
-|return_type  | Int (0 or 1) | 0       | Return a hash table with one level instead of multiple.   |      
-
-**Example**
-
-This is an example of how to get 2 SNMP tables:
-
-```perl
-my $oid_sysDescr        = ".1.3.6.1.2.1.1.1";
-my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";
-
-my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                      { oid => $aix_swap_pool},
-                                                      { oid => $oid_sysDescr },
-                                                ]);
-
-use Data::Dumper;
-print Dumper($results);
-```
---------------
-#### 3.5 get_hostname
---------------
-
-**Description**
-
-Get hostname parameter (useful to get hostname in mode).
-
-**Parameters**
-
-None.
-
-**Example**
-
-This is an example of how to get hostname parameter:
-
-```perl
-my $hostname = $self->{snmp}->get_hostname();
-```
---------------
-#### 3.6 get_port
---------------
-
-**Description**
-
-
-Get port parameter (useful to get port in mode).
-
-**Parameters**
-
-None.
-
-**Example**
-
-This is an example of how to get port parameter:
-
-```perl
-my $port = $self->{snmp}->get_port();
-```
---------------
-#### 3.7 oid_lex_sort
---------------
-
-**Description**
-
-Return sorted OIDs.
-
-**Parameters**
-
-Parameter | Type         | Default | Description
-----------|--------------|---------|-----------------------
-**-**     | String array |         | Array of OIDs to sort.
-
-**Example**
-
-This example prints sorted OIDs:
-
-```perl
-foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$my_oid}})) {
-  print $oid;
-}
-```
-
-<div id='lib_misc'/>
-
-### 4. Misc
-
-[Table of content (3)](#table_of_content_3)
-
-This library provides a set of miscellaneous methods.
-To use it, you can directly use the path of the method:
-
-```perl
-centreon::plugins::misc::<my_method>;
-```
---------------
-#### 4.1 trim
---------------
-
-**Description**
-
-Strip whitespace from the beginning and end of a string.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|-----------------
-**-**     | String |         | String to strip.
-
-**Example**
-
-This is an example of how to use **trim** method:
-
-```perl
-my $word = '  Hello world !  ';
-my $trim_word =  centreon::plugins::misc::trim($word);
-
-print $word."\n";
-print $trim_word."\n";
-```
-Output displays :
-
-```
-Hello world !
-```
---------------
-#### 4.2 change_seconds
---------------
-
-**Description**
-
-Convert seconds to human readable text.
-
-**Parameters**
-
-Parameter | Type | Default | Description
-----------|------|---------|------------------------------
-**-**     | Int  |         | Number of seconds to convert.
-
-**Example**
-
-This is an example of how to use **change_seconds** method:
-
-```perl
-my $seconds = 3750;
-my $human_readable_time =  centreon::plugins::misc::change_seconds($seconds);
-
-print 'Human readable time : '.$human_readable_time."\n";
-```
-Output displays :
-
-```
-Human readable time : 1h 2m 30s
-```
---------------
-#### 4.3 backtick
---------------
-
-**Description**
-
-Execute system command.
-
-**Parameters**
-
-Parameter       | Type         | Default | Description
-----------------|--------------|---------|----------------------------------------
-**command**     | String       |         | Command to execute.
-arguments       | String array |         | Command arguments.
-timeout         | Int          | 30      | Command timeout.
-wait_exit       | Int (0 or 1) | 0       | Command process ignore SIGCHLD signals.
-redirect_stderr | Int (0 or 1) | 0       | Print errors in output.
-
-**Example**
-
-This is an example of how to use **backtick** method:
-
-```perl
-my ($error, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                    command => 'ls /home',
-                                    timeout => 5,
-                                    wait_exit => 1
-                                    );
-
-print $stdout."\n";
-```
-Output displays files in '/home' directory.
-
---------------
-#### 4.4 execute
---------------
-
-**Description**
-
-Execute command remotely.
-
-**Parameters**
-
-Parameter       | Type   | Default | Description
-----------------|--------|---------|----------------------------------------------------------------
-**output**      | Object |         | Plugin output ($self->{output}).
-**options**     | Object |         | Plugin options ($self->{option_results}) to get remote options.
-sudo            | String |         | Use sudo command.
-**command**     | String |         | Command to execute.
-command_path    | String |         | Command path.
-command_options | String |         | Command arguments.
-
-**Example**
-
-This is an example of how to use **execute** method.
-We suppose ``--remote`` option is enabled:
-
-```perl
-my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                              options => $self->{option_results},
-                                              sudo => 1,
-                                              command => 'ls /home',
-                                              command_path => '/bin/',
-                                              command_options => '-l');
-```
-Output displays files in /home using ssh on a remote host.
-
---------------
-#### 4.5 windows_execute
----------------
-
-**Description**
-
-Execute command on Windows.
-
-**Parameters**
-
-Parameter       | Type   | Default | Description
-----------------|--------|---------|-------------------------------------
-**output**      | Object |         | Plugin output ($self->{output}).
-**command**     | String |         | Command to execute.
-command_path    | String |         | Command path.
-command_options | String |         | Command arguments.
-timeout         | Int    |         | Command timeout.
-no_quit         | Int    |         | Don't quit even if an error occured.
-
-**Example**
-
-This is an example of how to use **windows_execute** method.
-
-```perl
-my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                      timeout => 10,
-                                                      command => 'ipconfig',
-                                                      command_path => '',
-                                                      command_options => '/all');
-```
-Output displays IP configuration on a Windows host.
-
-<div id='lib_statefile'/>
-
-### 5.Statefile
-
-[Table of content (3)](#table_of_content_3)
-
-
-This library provides a set of methods to use a cache file.
-To use it, add the following line at the beginning of your **mode**:
-
-```perl
-use centreon::plugins::statefile;
-```
-
---------------
-#### 5.1 read
---------------
-
-**Description**
-
-Read cache file.
-
-**Parameters**
-
-Parameter         | Type   | Default | Description
-------------------|--------|---------|-----------------------------
-**statefile**     | String |         | Name of the cache file.
-**statefile_dir** | String |         | Directory of the cache file.
-memcached         | String |         | Memcached server to use.
-
-**Example**
-
-This is an example of how to use **read** method:
-
-```perl
-$self->{statefile_value} = centreon::plugins::statefile->new(%options);
-$self->{statefile_value}->check_options(%options);
-$self->{statefile_value}->read(statefile => 'my_cache_file',
-                               statefile_dir => '/var/lib/centreon/centplugins'
-                              );
-
-use Data::Dumper;
-print Dumper($self->{statefile_value});
-```
-Output displays cache file and its parameters.
-
---------------
-#### 5.2 get
---------------
-
-**Description**
-
-Get data from cache file.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|-----------------------------
-name      | String |         | Get a value from cache file.
-
-**Example**
-
-This is an example of how to use **get** method:
-
-```perl
-$self->{statefile_value} = centreon::plugins::statefile->new(%options);
-$self->{statefile_value}->check_options(%options);
-$self->{statefile_value}->read(statefile => 'my_cache_file',
-                               statefile_dir => '/var/lib/centreon/centplugins'
-                              );
-
-my $value = $self->{statefile_value}->get(name => 'property1');
-print $value."\n";
-```
-Output displays value for 'property1' of the cache file.
-
---------------
-#### 5.3 write
---------------
-
-**Description**
-
-Write data to cache file.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|-----------------------------
-data      | String |         | Data to write in cache file.
-
-**Example**
-
-This is an example of how to use **write** method:
-
-```perl
-$self->{statefile_value} = centreon::plugins::statefile->new(%options);
-$self->{statefile_value}->check_options(%options);
-$self->{statefile_value}->read(statefile => 'my_cache_file',
-                               statefile_dir => '/var/lib/centreon/centplugins'
-                              );
-
-my $new_datas = {};
-$new_datas->{last_timestamp} = time();
-$self->{statefile_value}->write(data => $new_datas);
-```
-Then, you can read the result in '/var/lib/centreon/centplugins/my_cache_file', timestamp is written in it.
-
-<div id='lib_http'/>
-
-### 6. HTTP
-
-[Table of content (3)](#table_of_content_3)
-
-This library provides a set of methodss to use HTTP protocol.
-To use it, add the following line at the beginning of your **mode**:
-
-```perl
-use centreon::plugins::http;
-```
-
-Some options must be set in **plugin.pm**:
-
- Option       | Type   | Description
--------------|--------|--------------------------------------------------------
-**hostname** | String | IP Addr/FQDN of the webserver host.
-**port**     | String | HTTP port.
-**proto**    | String | Used protocol ('http' or 'https').
-credentials  |        | Use credentials.
-ntlm         |        | Use NTLM authentication (if ``--credentials`` is used).
-username     | String | Username (if ``--credentials`` is used).
-password     | String | User password (if ``--credentials`` is used).
-proxyurl     | String | Proxy to use.
-url_path     | String | URL to connect (start to '/').
-
---------------
-#### 6.1 connect
---------------
-
-**Description**
-
-Test a connection to an HTTP url.
-Return content of the webpage.
-
-**Parameters**
-
-This method use plugin options previously defined.
-
-**Example**
-
-This is an example of how to use **connect** method.
-
-We suppose these options are defined :
-* --hostname = 'google.com'
-* --urlpath  = '/'
-* --proto    = 'http'
-* --port     = 80
-
-```perl
-$self->{http} = centreon::plugins::http->new(output => $self->{output}, options => $self->{options});
-$self->{http}->set_options(%{$self->{option_results}});
-my $webcontent = $self->{http}->request();
-print $webcontent;
-```
-Output displays content of the webpage '\http://google.com/'.
-
-<div id='lib_dbi'/>
-
-### 7. DBI
-
-[Table of content (3)](#table_of_content_3)
-
-This library allows you to connect to databases.
-To use it, add the following line at the beginning of your **plugin.pm**:
-
-```perl
-use base qw(centreon::plugins::script_sql);
-```
-
---------------
-#### 7.1 connect
---------------
-
-**Description**
-
-Connect to databases.
-
-**Parameters**
-
-Parameter | Type         | Default | Description
-----------|--------------|---------|-----------------------------------
-dontquit  | Int (0 or 1) | 0       | Don't quit even if errors occured.
-
-**Example**
-
-This is an example of how to use **connect** method.
-
-The format of the connection string can have the following forms:
-
-```
-    DriverName:database_name
-    DriverName:database_name@hostname:port
-    DriverName:database=database_name;host=hostname;port=port
-```
-In plugin.pm:
-
-```perl
-$self->{sqldefault}->{dbi} = ();
-$self->{sqldefault}->{dbi} = { data_source => 'mysql:host=127.0.0.1;port=3306' };
-```
-In your mode:
-
-```perl
-$self->{sql} = $options{sql};
-my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
-```
-Then, you are connected to the MySQL database.
-
---------------
-#### 7.2 query
---------------
-
-**Description**
-
-Send query to database.
-
-**Parameters**
-
-Parameter | Type   | Default | Description
-----------|--------|---------|-------------------
-query     | String |         | SQL query to send.
-
-**Example**
-
-This is an example of how to use **query** method:
-
-```perl
-$self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
-my ($name, $result) = $self->{sql}->fetchrow_array();
-
-print 'Name : '.$name."\n";
-print 'Value : '.$value."\n";
-```
-Output displays count of MySQL slow queries.
-
---------------
-#### 7.3 fetchrow_array
---------------
-
-**Description**
-
-Return Array from sql query.
-
-**Parameters**
-
-None.
-
-**Example**
-
-This is an example of how to use **fetchrow_array** method:
-
-```perl
-$self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
-my ($dummy, $result) = $self->{sql}->fetchrow_array();
-
-print 'Uptime : '.$result."\n";
-```
-Output displays MySQL uptime.
-
---------------
-#### 7.4 fetchall_arrayref
---------------
-
-**Description**
-
-Return Array from SQL query.
-
-**Parameters**
-
-None.
-
-**Example**
-
-This is an example of how to use **fetchrow_array** method:
-
-```perl
-$self->{sql}->query(query => q{
-      SELECT SUM(DECODE(name, 'physical reads', value, 0)),
-          SUM(DECODE(name, 'physical reads direct', value, 0)),
-          SUM(DECODE(name, 'physical reads direct (lob)', value, 0)),
-          SUM(DECODE(name, 'session logical reads', value, 0))
-      FROM sys.v_$sysstat
-});
-my $result = $self->{sql}->fetchall_arrayref();
-
-my $physical_reads = @$result[0]->[0];
-my $physical_reads_direct = @$result[0]->[1];
-my $physical_reads_direct_lob = @$result[0]->[2];
-my $session_logical_reads = @$result[0]->[3];
-
-print $physical_reads."\n";
-```
-Output displays physical reads on Oracle database.
-
---------------
-#### 7.5 fetchrow_hashref
---------------
-
-**Description**
-
-Return Hash table from SQL query.
-
-**Parameters**
-
-None.
-
-**Example**
-
-This is an example of how to use **fetchrow_hashref** method:
-
-```perl
-$self->{sql}->query(query => q{
-  SELECT datname FROM pg_database
-});
-
-while ((my $row = $self->{sql}->fetchrow_hashref())) {
-  print $row->{datname}."\n";
-}
-```
-Output displays Postgres databases.
-
-<div id='tutoriel'/>
-
-## IV. Tutorial : How to create a plugin - Using API
-
-[Table of content (1)](#table_of_content_1)
-
-<div id='table_of_content_4'/>
-
-*******
-Table of contents (4)
- 1. [Set up your environment](#set_up_tuto)
- 2. [Input](#input_tuto)
- 3. [Understand the data](#understand_data_tuto)
- 4. [Create directories for a new plugin](#make_dir_tuto)
- 5. [Create the plugin.pm file](#create_plugin_tuto)
- 6. [Create the appmetrics.pm file](#create_mode_tuto)
- 7. [Convert in custom mode](#custom_mode_tuto)
-*******
-
-All files showed in this tutorial can be found on the centreon-plugins GitHub in the 
-[tutorial](https://github.com/centreon/centreon-plugins/tree/develop/src/contrib/tutorial) **contrib** section.
-
-> You have to move the contents of `contrib/tutorial/apps/` to `apps/` if you want to run it for testing purposes.
->
-> `cp -R src/contrib/tutorial/apps/* src/apps/`
-
-<div id='set_up_tuto'/>
-
-### 1.Set up your environment
-
-[Table of content (4)](#table_of_content_4)
-
-To use the centreon-plugins framework, you'll need the following: 
-
-- A Linux operating system, ideally Debian 11 or RHEL/RHEL-like >= 8
-- The [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command line utility
-- A [GitHub](https://github.com/) account.
-
-#### Enable our standard repositories
-
-##### Debian
-
-If you have not already install lsb-release, first you need to follow this steps :
-
-If needed go to sudo mode
-```shell
-sudo -i
-```
-Install lib-release
-```shell
-apt install lsb-release
-```
-Create access to centreon repository (note you may need to change the version in example it's 22.04 but you can select one most up to date)
-```shell
-echo "deb https://apt.centreon.com/repository/22.04/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/centreon.list
-wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-```
-Install the following dependencies: 
-```shell
-apt-get install 'libpod-parser-perl' 'libnet-curl-perl' 'liburi-encode-perl' 'libwww-perl' \
-    'liblwp-protocol-https-perl' 'libhttp-cookies-perl' 'libio-socket-ssl-perl' 'liburi-perl' \
-    'libhttp-proxypac-perl' 'libcryptx-perl' 'libjson-xs-perl' 'libjson-path-perl' \
-    'libcrypt-argon2-perl' 'libkeepass-reader-perl' 
-```
-##### RHEL 8 and alike
-Create access to centreon repository (note you may need to change the version in example it's 22.04 but you can select one most up to date)
-```shell
-dnf install -y https://yum.centreon.com/standard/22.04/el8/stable/noarch/RPMS/centreon-release-22.04-3.el8.noarch.rpm
-```
-Install the following dependencies: 
-```shell
-dnf install 'perl(Digest::MD5)' 'perl(Pod::Find)' 'perl-Net-Curl' 'perl(URI::Encode)' \
-    'perl(LWP::UserAgent)' 'perl(LWP::Protocol::https)' 'perl(IO::Socket::SSL)' 'perl(URI)' \
-    'perl(HTTP::ProxyPAC)' 'perl-CryptX' 'perl(MIME::Base64)' 'perl(JSON::XS)' 'perl-JSON-Path' \
-    'perl-KeePass-Reader' 'perl(Storable)' 'perl(POSIX)' 'perl(Encode)'
-```
-
-<div id='input_tuto'/>
-
-### 2.Input
-
-[Table of content (4)](#table_of_content_4)
-
-**Context: simple JSON health API**
-
-In this tutorial, we will create a very simple probe checking an application's health
-displayed in JSON through a simple API.
-
-You can mockup an API with the free [mocky](https://designer.mocky.io/) tool.
-We created one for this tutorial, test it with `curl https://run.mocky.io/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656`
-
-It returns the following output: 
-
-```json title="my-awesome-app health JSON" 
-{
-    "health": "yellow",
-    "db_queries":{
-         "select": 1230,
-         "update": 640,
-         "delete": 44
-    },
-    "connections":[
-      {
-        "component": "my-awesome-frontend",
-        "value": 122
-      },
-      {
-        "component": "my-awesome-db",
-        "value": 92
-      }
-    ],
-    "errors":[
-      {
-        "component": "my-awesome-frontend",
-        "value": 32
-      },
-      {
-        "component": "my-awesome-db",
-        "value": 27
-      }
-    ]
-}
-```
-
-<div id='understand_data_tuto'/>
-
-### 3.Understand the data
-
-[Table of content (4)](#table_of_content_4)
-
-Understanding the data is very important as it will drive the way you will design
-the **mode** internals. This is the **first thing to do**, no matter what protocol you
-are using.
-
-There are several important properties for a piece of data:
-
-- Type of the data to process: string, int... There is no limitation in the kind of data you can process
-- Dimensions of the data, is it **global** or linked to an **instance**?
-- Data layout, in other words anticipate the kind of **data structure** to manipulate.
-
-In our example, the most common things are present. We can summarize it like that:
-
-- the `health` node is **global** data and is a string. Structure is a simple *key/value* pair
-- the `db_queries` node is a collection of **global** integer values about the database. Structure is a hash containing multiple key/value pairs
-- the `connections` node contains integer values (`122`, `92`) referring to specific **instances** (`my-awesome-frontend`, `my-awesome-db`). The structure is an array of hashes
-- `errors` is the same as `connections` except the data itself tracks errors instead of connections.
-
-Understanding this will be important to code it correctly.
-
-<div id='make_dir_tuto'/>
-
-### 4.Create directories for a new plugin
-
-[Table of content (4)](#table_of_content_4)
-
-Create directories and files required for your **plugin** and **modes**. 
-
-Go to your centreon-plugins local git and create the appropriate directories and files:
-
-```shell
-# path to the main directory and the subdirectory containing modes
-mkdir -p src/apps/myawesomeapp/api/mode/
-# path to the main plugin file
-touch src/apps/myawesomeapp/api/plugin.pm
-# path to the specific mode(s) file(s)
-touch src/apps/myawesomeapp/api/mode/appsmetrics.pm
-```
-
-<div id='create_plugin_tuto'/>
-
-### 5.Create the plugin.pm file
-
-[Table of content (4)](#table_of_content_4)
 
 The `plugin.pm` is the first thing to create, it contains:
 
@@ -1686,7 +535,216 @@ Modes Available:
 
 <div id='create_mode_tuto'/>
 
-### 6.Create the appmetrics.pm file
+### 4.Understand the data
+
+[Table of content (3)](#table_of_content_3)
+
+Understanding the data is very important as it will drive the way you will design
+the **mode** internals. This is the **first thing to do**, no matter what protocol you
+are using.
+
+There are several important properties for a piece of data:
+
+- Type of the data to process: string, int... There is no limitation in the kind of data you can process
+- Dimensions of the data, is it **global** or linked to an **instance**?
+- Data layout, in other words anticipate the kind of **data structure** to manipulate.
+
+In our example, the most common things are present. We can summarize it like that:
+
+- the `health` node is **global** data and is a string. Structure is a simple *key/value* pair
+- the `db_queries` node is a collection of **global** integer values about the database. Structure is a hash containing multiple key/value pairs
+- the `connections` node contains integer values (`122`, `92`) referring to specific **instances** (`my-awesome-frontend`, `my-awesome-db`). The structure is an array of hashes
+- `errors` is the same as `connections` except the data itself tracks errors instead of connections.
+
+Understanding this will be important to code it correctly.
+
+<div id='input_tuto'/>
+
+### 5.Input
+
+[Table of content (3)](#table_of_content_3)
+
+**Context: simple JSON health API**
+
+In this tutorial, we will create a very simple probe checking an application's health
+displayed in JSON through a simple API.
+
+You can mockup an API with the free [mocky](https://designer.mocky.io/) tool.
+We created one for this tutorial, test it with `curl https://run.mocky.io/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656`
+
+It returns the following output: 
+
+```json title="my-awesome-app health JSON" 
+{
+    "health": "yellow",
+    "db_queries":{
+         "select": 1230,
+         "update": 640,
+         "delete": 44
+    },
+    "connections":[
+      {
+        "component": "my-awesome-frontend",
+        "value": 122
+      },
+      {
+        "component": "my-awesome-db",
+        "value": 92
+      }
+    ],
+    "errors":[
+      {
+        "component": "my-awesome-frontend",
+        "value": 32
+      },
+      {
+        "component": "my-awesome-db",
+        "value": 27
+      }
+    ]
+}
+```
+
+### 6.API
+
+###  Mode.pm file
+
+[Table of content (2)](#table_of_content_2)
+
+Mode.pm as plugin.pm has also :
+* license / copyright
+* package name
+* libraries
+* new constructor
+
+But mode.pm also usually contains:
+* options in the new constructor
+* check_options method
+* manage_selection method (called run in old contain)
+
+```perl
+
+  # ...
+  # Authors : <your name> <<your email>>
+  
+  package path::to::plugin::mode::mode1;
+
+  use strict;
+  use warnings;
+  use base qw(centreon::plugins::mode);
+
+  sub new {
+        my ($class, %options) = @_;
+        my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+        bless $self, $class;
+
+        ...
+
+        return $self;
+  }
+```
+Mode version must be declared in the **new** constructor:
+
+```perl
+
+  $self->{version} = '1.0';
+
+```
+Several options can be declared in the **new** constructor:
+
+```perl
+
+  $options{options}->add_options(arguments => {
+      "option1:s" => { name => 'option1' },
+      "option2:s" => { name => 'option2', default => 'value1' },
+      "option3"   => { name => 'option3' },
+  });
+
+```
+Here is the description of arguments used in this example:
+
+* option1 : String value
+* option2 : String value with default value "value1"
+* option3 : Boolean value
+
+> **TIP** : You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
+
+The mode can have a **check_options** method to validate options:
+
+```perl
+
+  sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+    ...
+  }
+
+```
+For example, Warning and Critical thresholds can be validate in 
+**check_options** method:
+
+```perl
+
+  if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+  }
+  if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+  }
+
+```
+In this example, help is printed if thresholds do not have a correct format.
+
+Previously went the *run* method, where were perform measurement, check 
+thresholds, display output and format performance datas.
+
+Since this method had been split in at least two methods :
+* **set_counters** : describe data structure and their properties
+  (like  thresholds and how they will be displayed to the users). This 
+  method is split in twofunctions
+
+```perl
+
+  sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'radios', type => 1, cb_prefix_output => 'prefix_radio_output', message_multiple => 'All raadio interfaces are ok' }
+    ];
+
+```
+
+* **manage_selection** : method use as main sub in the mode 
+* Various output custom methods.
+
+Examples are available in the Tutorial section.
+
+Then, declare the module:
+
+```perl
+
+  1;
+
+```
+A description of the mode and its arguments is needed to generate the documentation:
+
+```perl
+
+  __END__
+
+  =head1 PLUGIN DESCRIPTION
+
+  <Add a plugin description here>.
+
+  =cut
+
+```
+
+<div id='understand_data_tuto'/>
+
+### Create the appmetrics.pm file
 
 [Table of content (4)](#table_of_content_4)
 
@@ -2365,9 +1423,9 @@ Mode:
 
 <div id='custom_mode_tuto'/>
 
-### 7.Convert in custom mode
+### Convert in custom mode
 
-[Table of content (4)](#table_of_content_4)
+[Table of content (3)](#table_of_content_3)
 
 Custom mode is a well established type of plugin. Then it can be usefull to understand the way to build and use it.
 Custom is a mode thinking for when you may have different way to collect plugin input. More broadly, build plugins using custom mode afford flexibility if later you have to add a new way to give input in a plugin. This is the main reason why most of latest plugins are in custom mode baseline.
@@ -2628,9 +1686,9 @@ sub request_api {
 
 <div id='tutoriel_2'/>
 
-## V. Tutorial : How to create a plugin - Using SNMP
+### 7.SNMP
 
-[Table of content (1)](#table_of_content_1)
+Tutorial : How to create a plugin - Using SNMP
 
 **Description**
 
@@ -2638,7 +1696,7 @@ This example explains how to check a single SNMP value on a PfSense firewall (me
 We use cache file because it's a SNMP counter. So we need to get the value between 2 checks.
 We get the value and compare it to warning and critical thresholds.
 
-### 1. Plugin file
+#### 1. Plugin file
 
 First, create the plugin directory and the plugin file:
 
@@ -2721,7 +1779,7 @@ Add a description to the plugin:
 ```
 > **TIP** : This description is printed with '--help' option.
 
-### 2.Mode file
+#### 2.Mode file
 
 Then, create the mode directory and the mode file:
 
@@ -2920,7 +1978,7 @@ Add a description of the mode options:
   =cut
 ```
 
-### 3.Command line
+#### 3.Command line
 
 This is an example of command line:
 
@@ -2935,13 +1993,13 @@ Output may display:
 
 <div id='example'/>
 
-## VI. Other examples 
+### 8. Other examples 
 
 [Table of content (1)](#table_of_content_1)
 
 ---
 
-### 1. Example 1
+#### 1. Example 1
 
 We want to develop the following SNMP plugin:
 
@@ -3043,7 +2101,7 @@ As you can see, we create two arrays of hash tables in **set_counters** method. 
       * *label_extra_instance*: if we set the value to 1, perhaps we'll have a suffix concat with *label*.
       * *instance_use*: which value from *keys_values* to be used. To be used if *label_extra_instance* is 1.
 
-### 2. Example 2
+#### 2. Example 2
 
 We want to add the current number of sessions by virtual servers.
 
@@ -3154,7 +2212,7 @@ If we have at least 2 virtual servers:
   Virtual server 'foo2' current sessions : 13, current ssl sessions : 80
 ```
 
-### 3. Example 3
+#### 3. Example 3
 
 The model can also be used to check strings (not only counters). So we want to check the status of a virtualserver.
 
@@ -3250,95 +2308,38 @@ The following example show 4 new attributes:
 * *closure_custom_perfdata*: should be used to manage yourself the perfdata.
 * *closure_custom_threshold_check*: should be used to manage yourself the threshold check.
 
-<div id='code-style-guidelines'/>
-
-## VII. Code Style Guidelines
-
 [Table of content (1)](#table_of_content_1)
-
-**Introduction**
-
-Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
-
-### 1. Indentation
-
-Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
-Please use 4 for indentation space width.
-
-```perl
-    if ($1 > 1) {
-    ....return 1;
-    } else {
-        if ($i == -1) {
-        ....return 0;
-        }
-        return -1
-    }
-```
-
-### 2. Comments
-
-There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
-
-```perl
-    # Good comment
-    #Wrong comment
-```
-
-### 3. Subroutine & Variable Names
-
-Whenever possible, use underscore to seperator words and don't use uppercase characters:
-
-```perl
-    sub get_logs {}
-    my $start_time;
-```
-Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
-
-```perl
-    $dogs->{meapolitan_mastiff} = 10;
-```
-
-### 4. Curly Brackets, Parenthesis
-
-There should be a space between every control/loop keyword and the opening parenthesis:
-
-```perl
-    if ($i == 1) {
-        ...
-    }
-    while ($i == 2) {
-        ...
-    }
-```
-
-###  5. If/Else Statements
-
-'else', 'elsif' should be on the same line after the previous closing curly brace:
-
-```perl
-    if ($i == 1) {
-        ...
-    } else {
-        ...
-    }
-```
-You can use single line if conditional:
-
-```perl
-    next if ($i == 1);
-```
 
 <div id='guidelines'/>
 
-## VIII. Pluggins guidelines
+<div id='commit'/>
 
-[Table of content (1)](#table_of_content_1)
+### 9. Service discovery
 
-<div id='table_of_content_5'/>
+### 10. Host discovery
+
+### 11. Commit and push
+
+[Table of content (3)](#table_of_content_3)
+
+Before committing a plugin, you need to create an **enhancement ticket** on the 
+centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
+
+Once plugin and modes are developed, you can commit (commit messages in english)
+and push your work:
+
+```shell
+  git add path/to/plugin
+  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
+  git push
+```
+
+## III. Plugins guidelines
+
+<div id='table_of_content_4'/>
 
 *******
-Table of contents (5)
+Table of contents (4)
  1. [Outputs](#outputs)
  2. [Options](#options)
  3. [Discovery](#discovery)
@@ -3353,7 +2354,7 @@ A large part of these guidelines come from the [Monitoring Plugins project](http
 
 ### 1. Outputs
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (4)](#table_of_content_4)
 
 #### 1.1 Formatting
 
@@ -3512,7 +2513,7 @@ Checking sensors
 
 ### 2. Options
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (4)](#table_of_content_4)
 
 Option management is a central piece of a successful plugin. You should:
 
@@ -3525,7 +2526,7 @@ Option management is a central piece of a successful plugin. You should:
 
 ###  3. Discovery
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (4)](#table_of_content_4)
 
 This section describes how you should format your data to comply with the requirements of Centreon Discovery UI modules.
 
@@ -3623,7 +2624,7 @@ You can use more advanced structures for values in the result sets, it can be:
 * a flat array: 
 
 ```json title='VMWare discovery - IP vMotion'
-"ip_vmotion": [
+"ip_vmotion" : [
   "10.10.5.21",
   "10.30.5.21"
 ],
@@ -3685,7 +2686,7 @@ no data is obtained for a given key, it still has to be displayed (e.g `total=""
 
 ### 4. Performances
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (4)](#table_of_content_4)
 
 A monitoring plugin has to do one thing and do it right - it's important to code your plugin with the idea to make
 it as efficient as possible. Keep in mind that your Plugin might run every minute, against a large
@@ -3725,7 +2726,7 @@ system when something is broken and that, for any reason, the plugin cannot obta
 
 ### 5. Security
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (4)](#table_of_content_4)
 
 #### 5.1 System commands
 
@@ -3745,7 +2746,7 @@ security problems.
 
 ### 6. Help and documentation
 
-[Table of content (5)](#table_of_content_5)
+[Table of content (5)](#table_of_content_4)
 
 For each plugin, the minimum documentation is the help, you have to explain to users what the plugin
 is doing and how they can use the built-in options to achieve their own alerting scenario.
@@ -3753,3 +2754,1029 @@ is doing and how they can use the built-in options to achieve their own alerting
 You can look at how we handle help at mode level with the centreon-plugins framework [here](develop-with-centreon-plugins.md).
 
 [Table of content (1)](#table_of_content_1)
+
+
+<div id='librairies'/>
+
+## IV. List of shared libraries in centreon directory
+
+This chapter describes Centreon libraries which you can use in your development.
+
+<div id='table_of_content_5'/>
+
+*******
+Table of content (5)
+1. [Output](#lib_output)
+2. [Perfdata](#lib_perfdata)
+3. [SNMP](#lib_snmp)
+4. [Misc](#lib_misc)
+5. [Statefile](#lib_statefile)
+6. [HTTP](#lib_http)
+7. [DBI](#lib_dbi)
+8. [Model Classes Usage](#model_class_usage)
+*******
+
+[Table of content (1)](#table_of_content_1)
+
+<div id='lib_output'/>
+
+### 1. Output
+
+[Table of content (5)](#table_of_content_5)
+
+This library allows you to build output of your plugin.
+
+--------------
+#### 1.1 output_add
+--------------
+
+**Description**
+
+Add string to output (print it with display method). If status is different than 'ok', output associated with 'ok' status is not printed
+
+**Parameters**
+
+| Parameter | Type   | Default | Description                                 |
+|-----------|--------|---------|---------------------------------------------|
+| severity  | String | OK      | Status of the output.                       |
+| separator | String | \-      | Separator between status and output string. |
+| short_msg | String |         | Short output (first line).                  |
+| long_msg  | String |         | Long output (used with --verbose option).   |
+
+**Example**
+
+This is an example of how to manage output:
+
+```perl
+
+$self->{output}->output_add(severity  => 'OK',
+                            short_msg => 'All is ok');
+$self->{output}->output_add(severity  => 'Critical',
+                            short_msg => 'There is a critical problem');
+$self->{output}->output_add(long_msg  => 'Port 1 is disconnected');
+
+$self->{output}->display();
+```
+Output displays :
+
+```
+CRITICAL - There is a critical problem
+Port 1 is disconnected
+```
+--------------
+#### 1.2 perfdata_add
+--------------
+
+**Description**
+
+Add performance data to output (print it with **display** method).
+Performance data are displayed after '|'.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description                            |
+|-----------|--------|---------|----------------------------------------|
+| label     | String |         | Label of the performance data.         |
+| value     | Int    |         | Value of the performance data.         |
+| unit      | String |         | Unit of the performance data.          |
+| warning   | String |         | Warning threshold.                     |
+| critical  | String |         | Critical threshold.                    |
+| min       | Int    |         | Minimum value of the performance data. |
+| max       | Int    |         | Maximum value of the performance data. |
+
+**Example**
+
+This is an example of how to add performance data:
+
+```perl
+
+$self->{output}->output_add(severity  => 'OK',
+                            short_msg => 'Memory is ok');
+$self->{output}->perfdata_add(label    => 'memory_used',
+                              value    => 30000000,
+                              unit     => 'B',
+                              warning  => '80000000',
+                              critical => '90000000',
+                              min      => 0,
+                              max      => 100000000);
+
+$self->{output}->display();
+```
+Output displays :
+
+```
+OK - Memory is ok | 'memory_used'=30000000B;80000000;90000000;0;100000000
+```
+
+<div id='lib_perfdata'/>
+
+### 2. Perfdata
+
+[Table of content (5)](#table_of_content_5)
+
+This library allows you to manage performance data.
+
+--------------
+#### 2.1 get_perfdata_for_output
+--------------
+
+**Description**
+Manage thresholds of performance data for output.
+
+**Parameters**
+
+| Parameter | Type         | Default | Description                                               |
+|-----------|--------------|---------|-----------------------------------------------------------|
+| **label** | String       |         | Threshold label.                                          |
+| total     | Int          |         | Percent threshold to transform in global.                 |
+| cast_int  | Int (0 or 1) |         | Cast absolute to int.                                     |
+| op        | String       |         | Operator to apply to start/end value (uses with 'value'). |
+| value     | Int          |         | Value to apply with 'op' option.                          |
+
+**Example**
+
+This is an example of how to manage performance data for output:
+
+```perl
+
+my $format_warning_perfdata  = $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => 1000000000, cast_int => 1);
+my $format_critical_perfdata = $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => 1000000000, cast_int => 1);
+
+$self->{output}->perfdata_add(label    => 'memory_used',
+                              value    => 30000000,
+                              unit     => 'B',
+                              warning  => $format_warning_perfdata,
+                              critical => $format_critical_perfdata,
+                              min      => 0,
+                              max      => 1000000000);
+
+```
+**tip**
+In this example, instead of print warning and critical thresholds in 'percent', the function calculates and prints these in 'bytes'.
+
+--------------
+#### 2.2 threshold_validate
+--------------
+
+**Description**
+
+Validate and affect threshold to a label.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description      |
+|-----------|--------|---------|------------------|
+| label     | String |         | Threshold label. |
+| value     | String |         | Threshold value. |
+
+**Example**
+
+This example checks if warning threshold is correct:
+
+```perl
+
+if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+  $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+  $self->{output}->option_exit();
+}
+```
+**tip**
+You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+
+--------------
+#### 2.3 threshold_check
+--------------
+
+**Description**
+
+
+Check performance data value with threshold to determine status.
+
+**Parameters**
+
+| Parameter | Type         | Default | Description                                            |
+|-----------|--------------|---------|--------------------------------------------------------|
+| value     | Int          |         | Performance data value to compare.                     |
+| threshold | String array |         | Threshold label to compare and exit status if reached. |
+
+**Example**
+
+This example checks if performance data reached thresholds:
+
+```perl
+$self->{perfdata}->threshold_validate(label => 'warning', value => 80);
+$self->{perfdata}->threshold_validate(label => 'critical', value => 90);
+my $prct_used = 85;
+
+my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+$self->{output}->output_add(severity  => $exit,
+                            short_msg => sprint("Used memory is %i%%", $prct_used));
+$self->{output}->display();
+```
+Output displays :
+
+```
+  WARNING - Used memory is 85% |
+```
+--------------
+#### 2.4 change_bytes
+--------------
+
+**Description**
+
+Convert bytes to human readable unit.
+Return value and unit.
+
+**Parameters**
+
+| Parameter | Type | Default | Description                        |
+|-----------|------|---------|------------------------------------|
+| value     | Int  |         | Performance data value to convert. |
+| network   |      | 1024    | Unit to divide (1000 if defined).  |
+
+**Example**
+
+This example change bytes to human readable unit:
+
+```perl
+
+my ($value, $unit) = $self->{perfdata}->change_bytes(value => 100000);
+
+print $value.' '.$unit."\n";
+```
+Output displays :
+
+```
+  100 KB
+```
+
+<div id='lib_snmp'/>
+
+### 3. SNMP
+
+[Table of content (5)](#table_of_content_5)
+
+This library allows you to use SNMP protocol in your plugin.
+To use it, add the following line at the beginning of your **plugin.pm**:
+
+```perl
+
+use base qw(centreon::plugins::script_snmp);
+```
+
+--------------
+#### 3.1 get_leef
+--------------
+
+**Description**
+
+Return hash table table of SNMP values for multiple OIDs (do not work with SNMP table).
+
+**Parameters**
+
+**Example**
+
+This is an example of how to get 2 SNMP values:
+
+```perl
+
+my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
+my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
+
+my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
+
+print $result->{$oid_hrSystemUptime}."\n";
+print $result->{$oid_sysUpTime}."\n";
+```
+--------------
+#### 3.2 load
+--------------
+
+**Description**
+
+Load a range of OIDs to use with **get_leef** method.
+
+**Parameters**
+
+| Parameter       | Type         | Default | Description                                                    |
+|-----------------|--------------|---------|----------------------------------------------------------------|
+| **oids**        | String array |         | Array of OIDs to check.                                        |
+| instances       | Int array    |         | Array of OID instances to check.                               |
+| instance_regexp | String       |         | Regular expression to get instances from **instances** option. |
+| begin           | Int          |         | Instance to begin                                              |
+| end             | Int          |         | Instance to end                                                |
+
+**Example**
+
+This is an example of how to get 4 instances of a SNMP table by using **load** method:
+
+```perl
+my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
+
+$self->{snmp}->load(oids => [$oid_dskPercentNode], instances => [1,2,3,4]);
+
+my $result = $self->{snmp}->get_leef(nothing_quit => 1);
+
+use Data::Dumper;
+print Dumper($result);
+```
+This is an example of how to get multiple instances dynamically (memory modules of Dell hardware) by using **load** method:
+
+```perl
+my $oid_memoryDeviceStatus = '.1.3.6.1.4.1.674.10892.1.1100.50.1.5';
+my $oid_memoryDeviceLocationName = '.1.3.6.1.4.1.674.10892.1.1100.50.1.8';
+my $oid_memoryDeviceSize = '.1.3.6.1.4.1.674.10892.1.1100.50.1.14';
+my $oid_memoryDeviceFailureModes = '.1.3.6.1.4.1.674.10892.1.1100.50.1.20';
+
+my $result = $self->{snmp}->get_table(oid => $oid_memoryDeviceStatus);
+$self->{snmp}->load(oids => [$oid_memoryDeviceLocationName, $oid_memoryDeviceSize, $oid_memoryDeviceFailureModes],
+                    instances => [keys %$result],
+                    instance_regexp => '(\d+\.\d+)$');
+
+my $result2 = $self->{snmp}->get_leef();
+
+use Data::Dumper;
+print Dumper($result2);
+```
+--------------
+#### 3.3 get_table
+--------------
+
+**Description**
+
+Return hash table of SNMP values for SNMP table.
+
+**Parameters**
+
+| Parameter    | Type         | Default | Description                                             |
+|--------------|--------------|---------|---------------------------------------------------------|
+| **oid**      | String       |         | OID of the snmp table to check.                         |
+| start        | Int          |         | First OID to check.                                     |
+| end          | Int          |         | Last OID to check.                                      |
+| dont_quit    | Int (0 or 1) | 0       | Don't quit even if an SNMP error occured.               |
+| nothing_quit | Int (0 or 1) | 0       | Quit if no value is returned.                           |
+| return_type  | Int (0 or 1) | 0       | Return a hash table with one level instead of multiple. |
+
+**Example**
+
+This is an example of how to get a SNMP table:
+
+```perl
+my $oid_rcDeviceError            = '.1.3.6.1.4.1.15004.4.2.1';
+my $oid_rcDeviceErrWatchdogReset = '.1.3.6.1.4.1.15004.4.2.1.2.0';
+
+my $results = $self->{snmp}->get_table(oid => $oid_rcDeviceError, start => $oid_rcDeviceErrWatchdogReset);
+
+use Data::Dumper;
+print Dumper($results);
+```
+--------------
+#### 3.4 get_multiple_table
+--------------
+
+**Description**
+
+Return hash table of SNMP values for multiple SNMP tables.
+
+**Parameters**
+
+| Parameter    | Type         | Default | Description                                                |
+|--------------|--------------|---------|------------------------------------------------------------|
+| oids         | Hash table   | -       | Hash table of OIDs to check (Can be set by 'load' method). |
+| -            | -            | -       | Keys can be: "oid", "start", "end".                        |
+| dont_quit    | Int (0 or 1) | 0       | Don't quit even if an SNMP error occured.                  |
+| nothing_quit | Int (0 or 1) | 0       | Quit if no value is returned.                              |
+| return_type  | Int (0 or 1) | 0       | Return a hash table with one level instead of multiple.    |      
+
+**Example**
+
+This is an example of how to get 2 SNMP tables:
+
+```perl
+my $oid_sysDescr        = ".1.3.6.1.2.1.1.1";
+my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";
+
+my $results = $self->{snmp}->get_multiple_table(oids => [
+                                                      { oid => $aix_swap_pool},
+                                                      { oid => $oid_sysDescr },
+                                                ]);
+
+use Data::Dumper;
+print Dumper($results);
+```
+--------------
+#### 3.5 get_hostname
+--------------
+
+**Description**
+
+Get hostname parameter (useful to get hostname in mode).
+
+**Parameters**
+
+None.
+
+**Example**
+
+This is an example of how to get hostname parameter:
+
+```perl
+my $hostname = $self->{snmp}->get_hostname();
+```
+--------------
+#### 3.6 get_port
+--------------
+
+**Description**
+
+
+Get port parameter (useful to get port in mode).
+
+**Parameters**
+
+None.
+
+**Example**
+
+This is an example of how to get port parameter:
+
+```perl
+my $port = $self->{snmp}->get_port();
+```
+--------------
+#### 3.7 oid_lex_sort
+--------------
+
+**Description**
+
+Return sorted OIDs.
+
+**Parameters**
+
+| Parameter | Type         | Default | Description            |
+|-----------|--------------|---------|------------------------|
+| **-**     | String array |         | Array of OIDs to sort. |
+
+**Example**
+
+This example prints sorted OIDs:
+
+```perl
+foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$my_oid}})) {
+  print $oid;
+}
+```
+
+<div id='lib_misc'/>
+
+### 4. Misc
+
+[Table of content (5)](#table_of_content_5)
+
+This library provides a set of miscellaneous methods.
+To use it, you can directly use the path of the method:
+
+```perl
+centreon::plugins::misc::<my_method>;
+```
+--------------
+#### 4.1 trim
+--------------
+
+**Description**
+
+Strip whitespace from the beginning and end of a string.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description      |
+|-----------|--------|---------|------------------|
+| **-**     | String |         | String to strip. |
+
+**Example**
+
+This is an example of how to use **trim** method:
+
+```perl
+my $word = '  Hello world !  ';
+my $trim_word =  centreon::plugins::misc::trim($word);
+
+print $word."\n";
+print $trim_word."\n";
+```
+Output displays :
+
+```
+Hello world !
+```
+--------------
+#### 4.2 change_seconds
+--------------
+
+**Description**
+
+Convert seconds to human readable text.
+
+**Parameters**
+
+| Parameter | Type | Default | Description                   |
+|-----------|------|---------|-------------------------------|
+| **-**     | Int  |         | Number of seconds to convert. |
+
+**Example**
+
+This is an example of how to use **change_seconds** method:
+
+```perl
+my $seconds = 3750;
+my $human_readable_time =  centreon::plugins::misc::change_seconds($seconds);
+
+print 'Human readable time : '.$human_readable_time."\n";
+```
+Output displays :
+
+```
+Human readable time : 1h 2m 30s
+```
+--------------
+#### 4.3 backtick
+--------------
+
+**Description**
+
+Execute system command.
+
+**Parameters**
+
+| Parameter       | Type         | Default | Description                             |
+|-----------------|--------------|---------|-----------------------------------------|
+| **command**     | String       |         | Command to execute.                     |
+| arguments       | String array |         | Command arguments.                      |
+| timeout         | Int          | 30      | Command timeout.                        |
+| wait_exit       | Int (0 or 1) | 0       | Command process ignore SIGCHLD signals. |
+| redirect_stderr | Int (0 or 1) | 0       | Print errors in output.                 |
+
+**Example**
+
+This is an example of how to use **backtick** method:
+
+```perl
+my ($error, $stdout, $exit_code) = centreon::plugins::misc::backtick(
+                                    command => 'ls /home',
+                                    timeout => 5,
+                                    wait_exit => 1
+                                    );
+
+print $stdout."\n";
+```
+Output displays files in '/home' directory.
+
+--------------
+#### 4.4 execute
+--------------
+
+**Description**
+
+Execute command remotely.
+
+**Parameters**
+
+| Parameter       | Type   | Default | Description                                                     |
+|-----------------|--------|---------|-----------------------------------------------------------------|
+| **output**      | Object |         | Plugin output ($self->{output}).                                |
+| **options**     | Object |         | Plugin options ($self->{option_results}) to get remote options. |
+| sudo            | String |         | Use sudo command.                                               |
+| **command**     | String |         | Command to execute.                                             |
+| command_path    | String |         | Command path.                                                   |
+| command_options | String |         | Command arguments.                                              |
+
+**Example**
+
+This is an example of how to use **execute** method.
+We suppose ``--remote`` option is enabled:
+
+```perl
+my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+                                              options => $self->{option_results},
+                                              sudo => 1,
+                                              command => 'ls /home',
+                                              command_path => '/bin/',
+                                              command_options => '-l');
+```
+Output displays files in /home using ssh on a remote host.
+
+--------------
+#### 4.5 windows_execute
+---------------
+
+**Description**
+
+Execute command on Windows.
+
+**Parameters**
+
+| Parameter       | Type   | Default | Description                          |
+|-----------------|--------|---------|--------------------------------------|
+| **output**      | Object |         | Plugin output ($self->{output}).     |
+| **command**     | String |         | Command to execute.                  |
+| command_path    | String |         | Command path.                        |
+| command_options | String |         | Command arguments.                   |
+| timeout         | Int    |         | Command timeout.                     |
+| no_quit         | Int    |         | Don't quit even if an error occured. |
+
+**Example**
+
+This is an example of how to use **windows_execute** method.
+
+```perl
+my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
+                                                      timeout => 10,
+                                                      command => 'ipconfig',
+                                                      command_path => '',
+                                                      command_options => '/all');
+```
+Output displays IP configuration on a Windows host.
+
+<div id='lib_statefile'/>
+
+### 5.Statefile
+
+[Table of content (5)](#table_of_content_5)
+
+
+This library provides a set of methods to use a cache file.
+To use it, add the following line at the beginning of your **mode**:
+
+```perl
+use centreon::plugins::statefile;
+```
+
+--------------
+#### 5.1 read
+--------------
+
+**Description**
+
+Read cache file.
+
+**Parameters**
+
+| Parameter         | Type   | Default | Description                  |
+|-------------------|--------|---------|------------------------------|
+| **statefile**     | String |         | Name of the cache file.      |
+| **statefile_dir** | String |         | Directory of the cache file. |
+| memcached         | String |         | Memcached server to use.     |
+
+**Example**
+
+This is an example of how to use **read** method:
+
+```perl
+$self->{statefile_value} = centreon::plugins::statefile->new(%options);
+$self->{statefile_value}->check_options(%options);
+$self->{statefile_value}->read(statefile => 'my_cache_file',
+                               statefile_dir => '/var/lib/centreon/centplugins'
+                              );
+
+use Data::Dumper;
+print Dumper($self->{statefile_value});
+```
+Output displays cache file and its parameters.
+
+--------------
+#### 5.2 get
+--------------
+
+**Description**
+
+Get data from cache file.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description                  |
+|-----------|--------|---------|------------------------------|
+| name      | String |         | Get a value from cache file. |
+
+**Example**
+
+This is an example of how to use **get** method:
+
+```perl
+$self->{statefile_value} = centreon::plugins::statefile->new(%options);
+$self->{statefile_value}->check_options(%options);
+$self->{statefile_value}->read(statefile => 'my_cache_file',
+                               statefile_dir => '/var/lib/centreon/centplugins'
+                              );
+
+my $value = $self->{statefile_value}->get(name => 'property1');
+print $value."\n";
+```
+Output displays value for 'property1' of the cache file.
+
+--------------
+#### 5.3 write
+--------------
+
+**Description**
+
+Write data to cache file.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description                  |
+|-----------|--------|---------|------------------------------|
+| data      | String |         | Data to write in cache file. |
+
+**Example**
+
+This is an example of how to use **write** method:
+
+```perl
+$self->{statefile_value} = centreon::plugins::statefile->new(%options);
+$self->{statefile_value}->check_options(%options);
+$self->{statefile_value}->read(statefile => 'my_cache_file',
+                               statefile_dir => '/var/lib/centreon/centplugins'
+                              );
+
+my $new_datas = {};
+$new_datas->{last_timestamp} = time();
+$self->{statefile_value}->write(data => $new_datas);
+```
+Then, you can read the result in '/var/lib/centreon/centplugins/my_cache_file', timestamp is written in it.
+
+<div id='lib_http'/>
+
+### 6. HTTP
+
+[Table of content (5)](#table_of_content_5)
+
+This library provides a set of methodss to use HTTP protocol.
+To use it, add the following line at the beginning of your **mode**:
+
+```perl
+use centreon::plugins::http;
+```
+
+Some options must be set in **plugin.pm**:
+
+| Option       | Type   | Description                                             |
+|--------------|--------|---------------------------------------------------------|
+| **hostname** | String | IP Addr/FQDN of the webserver host.                     |
+| **port**     | String | HTTP port.                                              |
+| **proto**    | String | Used protocol ('http' or 'https').                      |
+| credentials  |        | Use credentials.                                        |
+| ntlm         |        | Use NTLM authentication (if ``--credentials`` is used). |
+| username     | String | Username (if ``--credentials`` is used).                |
+| password     | String | User password (if ``--credentials`` is used).           |
+| proxyurl     | String | Proxy to use.                                           |
+| url_path     | String | URL to connect (start to '/').                          |
+
+--------------
+#### 6.1 connect
+--------------
+
+**Description**
+
+Test a connection to an HTTP url.
+Return content of the webpage.
+
+**Parameters**
+
+This method use plugin options previously defined.
+
+**Example**
+
+This is an example of how to use **connect** method.
+
+We suppose these options are defined :
+* --hostname = 'google.com'
+* --urlpath  = '/'
+* --proto    = 'http'
+* --port     = 80
+
+```perl
+$self->{http} = centreon::plugins::http->new(output => $self->{output}, options => $self->{options});
+$self->{http}->set_options(%{$self->{option_results}});
+my $webcontent = $self->{http}->request();
+print $webcontent;
+```
+Output displays content of the webpage '\http://google.com/'.
+
+<div id='lib_dbi'/>
+
+### 7. DBI
+
+[Table of content (5)](#table_of_content_5)
+
+This library allows you to connect to databases.
+To use it, add the following line at the beginning of your **plugin.pm**:
+
+```perl
+use base qw(centreon::plugins::script_sql);
+```
+
+--------------
+#### 7.1 connect
+--------------
+
+**Description**
+
+Connect to databases.
+
+**Parameters**
+
+| Parameter | Type         | Default | Description                        |
+|-----------|--------------|---------|------------------------------------|
+| dontquit  | Int (0 or 1) | 0       | Don't quit even if errors occured. |
+
+**Example**
+
+This is an example of how to use **connect** method.
+
+The format of the connection string can have the following forms:
+
+```
+    DriverName:database_name
+    DriverName:database_name@hostname:port
+    DriverName:database=database_name;host=hostname;port=port
+```
+In plugin.pm:
+
+```perl
+$self->{sqldefault}->{dbi} = ();
+$self->{sqldefault}->{dbi} = { data_source => 'mysql:host=127.0.0.1;port=3306' };
+```
+In your mode:
+
+```perl
+$self->{sql} = $options{sql};
+my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
+```
+Then, you are connected to the MySQL database.
+
+--------------
+#### 7.2 query
+--------------
+
+**Description**
+
+Send query to database.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description        |
+|-----------|--------|---------|--------------------|
+| query     | String |         | SQL query to send. |
+
+**Example**
+
+This is an example of how to use **query** method:
+
+```perl
+$self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
+my ($name, $result) = $self->{sql}->fetchrow_array();
+
+print 'Name : '.$name."\n";
+print 'Value : '.$value."\n";
+```
+Output displays count of MySQL slow queries.
+
+--------------
+#### 7.3 fetchrow_array
+--------------
+
+**Description**
+
+Return Array from sql query.
+
+**Parameters**
+
+None.
+
+**Example**
+
+This is an example of how to use **fetchrow_array** method:
+
+```perl
+$self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
+my ($dummy, $result) = $self->{sql}->fetchrow_array();
+
+print 'Uptime : '.$result."\n";
+```
+Output displays MySQL uptime.
+
+--------------
+#### 7.4 fetchall_arrayref
+--------------
+
+**Description**
+
+Return Array from SQL query.
+
+**Parameters**
+
+None.
+
+**Example**
+
+This is an example of how to use **fetchrow_array** method:
+
+```perl
+$self->{sql}->query(query => q{
+      SELECT SUM(DECODE(name, 'physical reads', value, 0)),
+          SUM(DECODE(name, 'physical reads direct', value, 0)),
+          SUM(DECODE(name, 'physical reads direct (lob)', value, 0)),
+          SUM(DECODE(name, 'session logical reads', value, 0))
+      FROM sys.v_$sysstat
+});
+my $result = $self->{sql}->fetchall_arrayref();
+
+my $physical_reads = @$result[0]->[0];
+my $physical_reads_direct = @$result[0]->[1];
+my $physical_reads_direct_lob = @$result[0]->[2];
+my $session_logical_reads = @$result[0]->[3];
+
+print $physical_reads."\n";
+```
+Output displays physical reads on Oracle database.
+
+--------------
+#### 7.5 fetchrow_hashref
+--------------
+
+**Description**
+
+Return Hash table from SQL query.
+
+**Parameters**
+
+None.
+
+**Example**
+
+This is an example of how to use **fetchrow_hashref** method:
+
+```perl
+$self->{sql}->query(query => q{
+  SELECT datname FROM pg_database
+});
+
+while ((my $row = $self->{sql}->fetchrow_hashref())) {
+  print $row->{datname}."\n";
+}
+```
+Output displays Postgres databases.
+
+<div id='model_class_usage'/>
+
+--------------
+### 8. Model Classes Usage
+--------------
+**Introduction**
+
+With the experience of plugin development, we have created two classes:
+
+* centreon::plugins::templates::counter
+* centreon::plugins::templates::hardware
+
+It was developed to have a more consistent code and less redundant code. 
+According to context, you should use one of two classes for modes. 
+Following classes can be used for whatever plugin type (SNMP, Custom, DBI,...).
+
+**Class counter**
+
+*When to use it ?*
+
+If you have some counters (CPU Usage, Memory, Session...), you should use that 
+class.
+If you have only one global counter to check, it's maybe not useful to use it 
+(but only for these case).
+
+*Class methods*
+
+List of methods:
+
+* **new**: class constructor. Overload if you need to add some specific options 
+or to use a statefile.
+* **check_options**: overload if you need to check your specific options.
+* **manage_selection**: overload if *mandatory*. Method to get informations for 
+the equipment.
+* **set_counters**: overload if **mandatory**. Method to configure counters.
+
+**Class hardware**
+
+
+
+
+
+
+TODO
+
+
+
+
+
+[Table of content (1)](#table_of_content_1)
+
+
