@@ -55,28 +55,29 @@ my $map_operation_status = {
 };
 
 my $mapping = {
-    ap_name   => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
-    ap_ipaddr => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.19' } # bsnApIpAddress
+    ap_name      => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
+    ap_location  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.4' }, # bsnAPLocation
+    ap_opstatus  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => $map_operation_status }, # bsnAPOperationStatus
+    ap_model     => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.16' }, # bsnAPModel
+    ap_ipaddr    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.19' }, # bsnApIpAddress
+    ap_admstatus => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status } # bsnAPAdminStatus
 };
-my $mapping2 = {
-    opstatus  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => $map_operation_status }, # bsnAPOperationStatus
-    admstatus => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status } # bsnAPAdminStatus
-};
-my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 
 sub run {
     my ($self, %options) = @_;
 
-    my %ap;
     my @disco_data;
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
 
     my $request = [
-        { oid => $oid_agentInventoryMachineModel },
         { oid => $mapping->{ap_name}->{oid} },
-        { oid => $mapping->{ap_ipaddr}->{oid} }
+        { oid => $mapping->{ap_location}->{oid} },
+        { oid => $mapping->{ap_opstatus}->{oid} },
+        { oid => $mapping->{ap_model}->{oid} },
+        { oid => $mapping->{ap_ipaddr}->{oid} },
+        { oid => $mapping->{ap_admstatus}->{oid} }
     ];
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => $request,
@@ -89,39 +90,23 @@ sub run {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(
-            mapping => $mapping, 
-            results => $snmp_result, 
+            mapping => $mapping,
+            results => $snmp_result,
             instance => $instance);
 
-        $self->{ap}->{ $result->{ap_name} } = {
+        next if (defined($self->{option_results}->{filter_admin_down}) && $result->{ap_admstatus} eq 'disable');
+
+        my $ap = {
             name => $result->{ap_name},
             instance => $instance,
+            location => $result->{ap_location},
+            model => $result->{ap_model},
             ip => $result->{ap_ipaddr},
-            model => defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? 
-                $snmp_result->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'
+            admstatus => $result->{ap_admstatus},
+            opstatus => $result->{ap_opstatus}
         };
-    }
 
-    $options{snmp}->load(
-        oids => [ map($_->{oid}, values(%$mapping2)) ],
-        instances => [ map($_->{instance}, values %{$self->{ap}}) ],
-        instance_regexp => '^(.*)$'
-    );
-
-    $snmp_result = $options{snmp}->get_leef();
-
-    foreach my $ap_name (keys %{$self->{ap}}) {
-        my $result = $options{snmp}->map_instance(
-            mapping => $mapping2,
-            results => $snmp_result,
-            instance => $self->{ap}->{ $ap_name }->{instance}
-        );
-
-        $self->{ap}->{ $ap_name }->{admstatus} = $result->{admstatus};
-        $self->{ap}->{ $ap_name }->{opstatus} = $result->{opstatus};
-
-        next if (defined($self->{option_results}->{filter_admin_down}) && $result->{admstatus} eq 'disable');
-        push @disco_data, $self->{ap}->{ $ap_name };
+        push @disco_data, $ap;
     }
 
     $disco_stats->{end_time} = time();
