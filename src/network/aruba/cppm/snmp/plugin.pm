@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Authors : Alexandre Moreau <alexandre.moreau@cheops.fr> (@SpyL1nk)
 
 package network::aruba::cppm::snmp::plugin;
 
