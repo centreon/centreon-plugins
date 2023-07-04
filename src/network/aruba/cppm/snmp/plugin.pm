@@ -35,10 +35,10 @@ sub new {
         'disks'           => 'network::aruba::cppm::snmp::mode::disks',
         'interfaces'      => 'network::aruba::cppm::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'swap'            => 'snmp_standard::mode::swap',
         'memory'          => 'network::aruba::cppm::snmp::mode::memory',
         'radius'          => 'network::aruba::cppm::snmp::mode::radius',
         'repositories'    => 'network::aruba::cppm::snmp::mode::repositories',
+        'swap'            => 'network::aruba::cppm::snmp::mode::swap',
         'tacacs'          => 'network::aruba::cppm::snmp::mode::tacacs'
     };
 
