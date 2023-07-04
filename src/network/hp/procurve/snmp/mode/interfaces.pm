@@ -188,6 +188,14 @@ sub custom_load {
 
     return if (!defined($self->{option_results}->{add_optical}));
 
+    # every time before we fetch the values of transceivers like temperature, voltage, Tx and RX powers
+    my $oid_hpicfXcvrDiagnosticsUpdate = '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.10';
+    my $oids2set = {};
+    foreach (keys %$optical_ports) {
+        $oids2set->{ $oid_hpicfXcvrDiagnosticsUpdate . '.' . $_ } = { value => 1, type => 'INTEGER' };
+    }
+    $self->{snmp}->set(oids => $oids2set);
+
     my $optical_ports = $self->{statefile_cache}->get(name => 'optical_ports');
     $self->{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping_optical)) ],
