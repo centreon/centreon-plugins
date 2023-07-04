@@ -104,7 +104,7 @@ sub wmi_to_seconds {
         $current_sec = $current_dt->epoch();
         $age_sec = $current_sec - $sec;
     } else {
-        $self->{output}->add_option_msg(short_msg => 'Wrong time format');
+        $self->{output}->add_option_msg(short_msg => 'Wrong time format: ' . $options{ts});
         $self->{output}->option_exit();
     }
    
@@ -114,7 +114,7 @@ sub wmi_to_seconds {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $dt = DateTime->now;
+    my $dt = DateTime->now();
     $dt = $dt->subtract(hours => $self->{option_results}->{timeframe});
     my $date = sprintf("%d%02d%02d%02d%02d%02d.000000-000", $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second);
 
