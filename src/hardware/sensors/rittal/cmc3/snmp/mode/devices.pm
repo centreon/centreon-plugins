@@ -135,8 +135,13 @@ sub manage_selection {
             name   => $data->{name},
             status => $data->{status},
             alias  => $data->{alias},
-            text   => $data->{text},
+            text   => $data->{text}
         };
+    }
+
+    if (scalar(keys %{$self->{devices}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No devices found.');
+        $self->{output}->option_exit();
     }
 };
 
