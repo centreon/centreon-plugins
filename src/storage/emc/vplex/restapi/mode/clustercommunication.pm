@@ -102,12 +102,12 @@ Filter components by name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{operational_state}, %{admin_state}, %{name}
 
 =item B<--critical-operational-status>
 
-Set critical threshold for status (Default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
 You can use the following variables: %{operational_state}, %{admin_state}, %{name}
 
 =back

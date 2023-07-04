@@ -113,11 +113,11 @@ Check neighbor optimized connections count.
 
 =item B<--warning-connection>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-connection>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

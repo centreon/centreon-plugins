@@ -24,10 +24,11 @@ runs:
   using: "composite"
   steps:
     - name: Use cache DEB files
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
         path: ./*.deb
         key: ${{ inputs.cache_key }}
+        fail-on-cache-miss: true
 
     - uses: jfrog/setup-jfrog-cli@v3
       env:

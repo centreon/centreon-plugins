@@ -232,12 +232,12 @@ Can be: 'connections-client', 'connections-server',
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "Active"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "Active"').
 Can use special variables like: %{status}.
 
 =back

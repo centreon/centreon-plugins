@@ -166,17 +166,17 @@ Filter disk name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /normal/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back

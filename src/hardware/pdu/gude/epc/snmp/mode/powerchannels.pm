@@ -264,7 +264,7 @@ Critical threshold for power supply status (Default: '%{ps_status} !~ /up/i')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-channels', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 

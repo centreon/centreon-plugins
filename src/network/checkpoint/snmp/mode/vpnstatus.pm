@@ -165,12 +165,12 @@ Filter vpn name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{type}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} eq "permanent" and %{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{type} eq "permanent" and %{status} =~ /down/i').
 You can use the following variables: %{type}, %{status}, %{display}
 
 =item B<--buggy-snmp>

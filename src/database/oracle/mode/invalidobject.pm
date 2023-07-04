@@ -189,13 +189,13 @@ Filter by message (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'objects', 'indexes', 'ind-partitions', 'ind-subpartitions',
 'registry-components'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'objects', 'indexes', 'ind-partitions', 'ind-subpartitions',
 'registry-components'.
 

@@ -78,11 +78,11 @@ Check database connection time.
 
 =item B<--warning-connection-time>
 
-Threshold warning in milliseconds.
+Warning threshold in milliseconds.
 
 =item B<--critical-connection-time>
 
-Threshold critical in milliseconds.
+Critical threshold in milliseconds.
 
 =back
 

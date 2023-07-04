@@ -111,11 +111,11 @@ Filter by poller name (can be a regexp).
 
 =item B<--warning-delay>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical-delay>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

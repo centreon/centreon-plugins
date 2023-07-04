@@ -192,22 +192,22 @@ Check BGP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /outOfService/')
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /outOfService/')
 You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-name>

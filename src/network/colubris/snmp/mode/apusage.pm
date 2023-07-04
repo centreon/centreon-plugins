@@ -220,22 +220,22 @@ Check device even if it doesn't belongs to an controller team.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--warning-ap-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-ap-status>
 
-Set critical threshold for status (Default: '%{state} eq "disconnected"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} eq "disconnected"').
 You can use the following variables: %{state}, %{display}
 
 =back

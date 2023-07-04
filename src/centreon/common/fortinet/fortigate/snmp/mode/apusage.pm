@@ -222,13 +222,13 @@ Check access point usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 
@@ -238,17 +238,17 @@ Filter by access point name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin} eq "enable" and %{status} !~ /online/i'').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admin} eq "enable" and %{status} !~ /online/i'').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =back

@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::virtualization::hpe::simplivity::restapi::mode::virtualmachines;
@@ -172,17 +171,17 @@ Filter virtual machines by virtual machine name.
 
 =item B<--unknown-ha-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-*> B<--critical-*>

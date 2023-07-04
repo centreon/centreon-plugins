@@ -118,11 +118,11 @@ Check Citrix servers per zone.
 
 =item B<--warning>
 
-Threshold warning of servers per zone.
+Warning threshold of servers per zone.
 
 =item B<--critical>
 
-Threshold critical of servers per zone.
+Critical threshold of servers per zone.
 
 =item B<--zone>
 

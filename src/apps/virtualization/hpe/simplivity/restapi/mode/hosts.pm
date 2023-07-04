@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::virtualization::hpe::simplivity::restapi::mode::hosts;
@@ -256,17 +255,17 @@ Filter hosts by name.
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /suspected/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /suspected/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-host-status>
 
-Set critical threshold for status (Default: '%{status} =~ /faulty/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /faulty/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-raid-status>

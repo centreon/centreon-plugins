@@ -86,11 +86,11 @@ Check temperature of MAG application blade (JUNIPER-IVE-MIB).
 
 =item B<--warning>
 
-Threshold warning in degree celsius.
+Warning threshold in degree celsius.
 
 =item B<--critical>
 
-Threshold critical in degree celsius.
+Critical threshold in degree celsius.
 
 =back
 

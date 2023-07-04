@@ -122,11 +122,11 @@ Check Citrix servers per folder.
 
 =item B<--warning>
 
-Threshold warning of servers per folder.
+Warning threshold of servers per folder.
 
 =item B<--critical>
 
-Threshold critical of servers per folder.
+Critical threshold of servers per folder.
 
 =item B<--folder>
 

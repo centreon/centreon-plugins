@@ -148,17 +148,17 @@ Filter storage controllers by name (can be a regexp).
 
 =item B<--unknown-health-indicator>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{health}, %{indicator}
 
 =item B<--warning-health-indicator>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{health}, %{indicator}
 
 =item B<--critical-health-indicator>
 
-Set critical threshold for status (Default: '%{health} !~ /done|normal|null/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /done|normal|null/i').
 You can use the following variables: %{health}, %{indicator}
 
 =back

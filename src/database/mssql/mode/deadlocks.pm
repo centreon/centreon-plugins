@@ -93,11 +93,11 @@ Check MSSQL dead locks per second
 
 =item B<--warning-deadlocks>
 
-Threshold warning number of dead locks per second.
+Warning threshold number of dead locks per second.
 
 =item B<--critical-deadlocks>
 
-Threshold critical number of dead locks per second.
+Critical threshold number of dead locks per second.
 
 =item B<--filter-database>
 

@@ -157,11 +157,11 @@ Check Citrix sessions.
 
 =item B<--warning>
 
-Threshold warning of active sessions.
+Warning threshold of active sessions.
 
 =item B<--critical>
 
-Threshold critical of active sessions.
+Critical threshold of active sessions.
 
 =item B<--domain>
 

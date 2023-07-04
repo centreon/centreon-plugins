@@ -528,7 +528,7 @@ Example: --filter-counters='rate|latency'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 
@@ -541,7 +541,7 @@ You can use the following variables: %{status}, %{type},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /creation-failed/i | 
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /creation-failed/i | 
 %{backup_status} =~ /failed/i | %{export_status} =~ /failed/i | 
 %{import_status} =~ /failed/i').
 You can use the following variables: %{status}, %{type},  
@@ -556,7 +556,7 @@ You can use the following variables: %{status}, %{type},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 'connections',
 'total-rates', 'latency', 'other-rates', 'other-latency', 
@@ -567,7 +567,7 @@ Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 'connections',
 'total-rates', 'latency', 'other-rates', 'other-latency', 

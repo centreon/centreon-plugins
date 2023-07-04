@@ -113,12 +113,12 @@ Check node load based on node exporter metrics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 
 Can be: 'load1', 'load5', 'load15'.
 
 =item B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 
 Can be: 'load1', 'load5', 'load15'.

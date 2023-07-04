@@ -235,32 +235,32 @@ Check vsf virtual chassis.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /no_split/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /no_split/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
 You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--warning-*> B<--critical-*>

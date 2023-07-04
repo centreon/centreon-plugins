@@ -146,12 +146,12 @@ Example: --filter-counters='^total-queue-cache$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: Can be: 'total-queue-cache', 'total-queue-lock', 'host-queue-cache'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: Can be: 'total-queue-cache', 'total-queue-lock', 'host-queue-cache'.
 
 =item B<--filter-host-queue>

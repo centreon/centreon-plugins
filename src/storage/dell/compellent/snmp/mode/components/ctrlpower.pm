@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scCtlrPowerStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.17.1.3', map => \%map_sc_status },
-    scCtlrPowerName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.17.1.4' },
+    scCtlrPowerName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.17.1.4' }
 };
 my $oid_scCtlrPowerEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.17.1';
 
@@ -47,18 +47,23 @@ sub check {
         next if ($oid !~ /^$mapping->{scCtlrPowerStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCtlrPowerEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'ctrlpower', instance => $instance));
+
+        next if ($self->check_filter(section => 'ctrlpower', instance => $instance, name => $result->{scCtlrPowerName}));
         $self->{components}->{ctrlpower}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("controller power supply '%s' status is '%s' [instance = %s]",
-                                    $result->{scCtlrPowerName}, $result->{scCtlrPowerStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'ctrlpower', value => $result->{scCtlrPowerStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller power supply '%s' status is '%s' [instance: %s]",
+                $result->{scCtlrPowerName}, $result->{scCtlrPowerStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'ctrlpower', name => $result->{scCtlrPowerName}, value => $result->{scCtlrPowerStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Controller power supply '%s' status is '%s'", $result->{scCtlrPowerName}, $result->{scCtlrPowerStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Controller power supply '%s' status is '%s'", $result->{scCtlrPowerName}, $result->{scCtlrPowerStatus})
+            );
         }
     }
 }

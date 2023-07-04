@@ -434,17 +434,17 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: "%{state} eq 'enabled' and %{plugged} eq 'unplugged'")
+Define the conditions to match for the status to be CRITICAL (Default: "%{state} eq 'enabled' and %{plugged} eq 'unplugged'")
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--warning-*> B<--critical-*>

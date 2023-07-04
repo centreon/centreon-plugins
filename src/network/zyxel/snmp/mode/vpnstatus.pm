@@ -186,22 +186,22 @@ Filter vpn name with regexp.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{connectstatus} eq "disconnected"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connectstatus} eq "disconnected"').
 You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =back

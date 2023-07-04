@@ -1,5 +1,8 @@
 {
     "dependencies": [
         "perl(SNMP)"
-    ]
+    ],
+    "replaces": ["centreon-plugin-Hardware-Devices-Masterclock-Ntpserver-Snmp"],
+    "conflicts": ["centreon-plugin-Hardware-Devices-Masterclock-Ntpserver-Snmp"],
+    "provides": ["centreon-plugin-Hardware-Devices-Masterclock-Ntpserver-Snmp"]
 }

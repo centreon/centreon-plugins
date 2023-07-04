@@ -251,17 +251,17 @@ Set timezone (If not set, we use current server execution timezone).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>

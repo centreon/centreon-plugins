@@ -241,17 +241,17 @@ Only display VMs with iops higher value (default: 50).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{accessible} !~ /^true|1$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{accessible} !~ /^true|1$/i').
 You can use the following variables: %{accessible}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{accessible}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{accessible}
 
 =item B<--warning-*> B<--critical-*>

@@ -107,11 +107,11 @@ Check a vacuum (manual or auto) command has been performed on at least one of th
 
 =item B<--warning>
 
-Threshold warning in seconds, maximum time interval since last vacuum.
+Warning threshold in seconds, maximum time interval since last vacuum.
 
 =item B<--critical>
 
-Threshold critical in seconds, maximum time interval since last vacuum.
+Critical threshold in seconds, maximum time interval since last vacuum.
 
 =back
 

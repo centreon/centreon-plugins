@@ -99,12 +99,12 @@ Example: --filter-counters='^disk-usage$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'disk-usage' (%), 'memory-usage' (%), 'cpu-load' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'disk-usage' (%), 'memory-usage' (%), 'cpu-load' (%).
 
 =back

@@ -631,11 +631,11 @@ Check Oracle tablespaces usage.
 
 =item B<--warning-tablespace>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-tablespace>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--filter-tablespace>
 

@@ -202,12 +202,12 @@ Filter xen name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu-usage', 'memory-usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu-usage', 'memory-usage'.
 
 =item B<--units>

@@ -224,12 +224,12 @@ Check faults.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /minor|warning/).
+Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /minor|warning/).
 You can use the following variables: %{description}, %{object}, %{severity}, %{type}, %{acknowledged}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /major|critical/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /major|critical/').
 You can use the following variables: %{description}, %{object}, %{severity}, %{type}, %{since}
 
 =item B<--timezone>

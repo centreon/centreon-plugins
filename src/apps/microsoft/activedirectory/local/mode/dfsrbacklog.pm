@@ -141,11 +141,11 @@ Timeout in seconds for the command (Default: 30).
 
 =item B<--warning-backlog>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-backlog>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

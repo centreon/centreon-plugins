@@ -623,47 +623,47 @@ Skip port traffic counters if port status is disconnected.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /alerting/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /alerting/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} =~ /failed/i').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-*> B<--critical-*>

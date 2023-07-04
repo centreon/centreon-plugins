@@ -225,12 +225,12 @@ Filter by VM notes (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{vm}, %{state}, %{status}, %{is_clustered}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Operating normally/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Operating normally/i').
 You can use the following variables: %{vm}, %{state}, %{status}, %{is_clustered}
 
 =back

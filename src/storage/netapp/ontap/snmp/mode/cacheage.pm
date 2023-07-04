@@ -87,11 +87,11 @@ Check age in minutes of the oldest read-only blocks in the buffer cache.
 
 =item B<--warning>
 
-Threshold warning in minutes
+Warning threshold in minutes
 
 =item B<--critical>
 
-Threshold critical in minutes
+Critical threshold in minutes
 
 =back
 

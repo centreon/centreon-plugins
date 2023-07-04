@@ -174,12 +174,12 @@ Only search for the top X results (top is made on 'hits_error').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ratio', 'hits-error' (hits/s), 'hits' (hits/s).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ratio', 'hits-error' (hits/s), 'hits' (hits/s).
 
 =item B<--filter-counters>

@@ -112,12 +112,12 @@ Filter group name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /idling/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /idling/i').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}
 
 =back

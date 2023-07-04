@@ -265,7 +265,7 @@ Check APN statistics.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
 'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
 'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',
@@ -273,7 +273,7 @@ Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%),
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
 'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
 'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',

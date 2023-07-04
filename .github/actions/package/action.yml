@@ -1,84 +1,85 @@
 name: package
-description: Package module
+description: Package module using nfpm
 inputs:
+  nfpm_file_pattern:
+    description: The pattern of the nfpm configuration file(s)
+    required: true
   package_extension:
     description: The package extension (deb or rpm)
     required: true
   distrib:
-    description: The package distrib (el8, bullseye...)
-    required: true
-  image_name:
-    description: The docker image name
-    required: true
-  script_name:
-    description: The packaging script name
-  plugins:
-    description: List of plugins to package
+    description: The package distrib
     required: true
   version:
-    description: The plugins version
-    required: true
+    description: The package version
+    required: false
   release:
-    description: The release number
+    description: The package release number
+    required: false
+  commit_hash:
+    description: The commit hash
     required: true
   cache_key:
     description: The package files cache key
     required: true
-  sign:
-    description: Wether to sign the package or not
-    default: ""
-  registry_url:
-    description: Docker registry url
+  rpm_gpg_key:
+    description: The rpm gpg key
     required: true
-  registry_username:
-    description: Docker registry username
+  rpm_gpg_signing_key_id:
+    description: The rpm gpg signing key identifier
     required: true
-  registry_password:
-    description: Docker registry password
+  rpm_gpg_signing_passphrase:
+    description: The rpm gpg signing passphrase
     required: true
 
 runs:
   using: composite
 
   steps:
-    - name: Login to Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ inputs.registry_url }}
-        username: ${{ inputs.registry_username }}
-        password: ${{ inputs.registry_password }}
+    - name: Import gpg key
+      env:
+        RPM_GPG_SIGNING_KEY: ${{ inputs.rpm_gpg_key }}
+      run: echo -n "$RPM_GPG_SIGNING_KEY" > key.gpg
+      shell: bash
 
-    - name: Package
-      uses: ./.github/actions/runner-docker
-      with:
-        script_name: ${{ inputs.script_name }}
-        image_name: ${{ inputs.image_name }}
-        image_version: latest
-        registry_url: ${{ inputs.registry_url }}
-        registry_username: ${{ inputs.registry_username }}
-        registry_password: ${{ inputs.registry_password }}
-        params: ${{ inputs.version }} ${{ inputs.release }} "${{ inputs.plugins }}"
+    - name: Build ${{ inputs.package_extension }} files
+      env:
+        RPM_GPG_SIGNING_KEY_ID: ${{ inputs.rpm_gpg_signing_key_id }}
+        RPM_GPG_SIGNING_PASSPHRASE: ${{ inputs.rpm_gpg_signing_passphrase }}
+      run: |
+        export VERSION="${{ inputs.version }}"
+        export RELEASE="${{ inputs.release }}"
 
-    - name: Sign
-      if: ${{ inputs.sign != '' && inputs.package_extension == 'rpm' }}
-      uses: ./.github/actions/runner-docker
-      with:
-        script_name: rpm-signing
-        image_name: rpm-signing
-        image_version: ubuntu
-        registry_url: ${{ inputs.registry_url }}
-        registry_username: ${{ inputs.registry_username }}
-        registry_password: ${{ inputs.registry_password }}
+        if  [ "${{ inputs.package_extension }}" = "rpm" ]; then
+          export DIST=".${{ inputs.distrib }}"
+        else
+          export DIST=""
+        fi
 
-    - name: Cache packaged files
-      uses: actions/cache@v3
-      with:
-        path: ./*.${{ inputs.package_extension }}
-        key: ${{ inputs.cache_key }}
+        export RPM_SIGNING_KEY_FILE="$(pwd)/key.gpg"
+        export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
+        export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
 
-    - if: ${{ inputs.distrib == 'el8' }}
+        for FILE in ${{ inputs.nfpm_file_pattern }}; do
+          DIRNAME=$(dirname $FILE)
+          BASENAME=$(basename $FILE)
+          cd $DIRNAME
+          sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
+          nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
+          cd -
+          mv $DIRNAME/*.${{ inputs.package_extension }} ./
+        done
+      shell: bash
+
+    - name: Upload package artifacts
       uses: actions/upload-artifact@v3
       with:
         name: packages-${{ inputs.distrib }}
         path: ./*.${{ inputs.package_extension }}
         retention-days: 1
+
+    - name: Cache packages
+      uses: actions/cache/save@v3
+      with:
+        path: ./*.${{ inputs.package_extension }}
+        key: ${{ inputs.cache_key }}

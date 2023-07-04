@@ -286,24 +286,24 @@ Check L2TP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'vrtr-tunnel-total', 'vrtr-tunnel-active-sessions', 'vrtr-tunnel-total-sessions', 
 'peer-tunnel-total', 'peer-tunnel-active-sessions', 'peer-tunnel-total-sessions'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'vrtr-tunnel-total', 'vrtr-tunnel-active-sessions', 'vrtr-tunnel-total-sessions', 
 'peer-tunnel-total', 'peer-tunnel-active-sessions', 'peer-tunnel-total-sessions'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-vrtr-name>

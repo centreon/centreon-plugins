@@ -155,17 +155,17 @@ Filter service by service name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{service_id}, %{task_id}, %{service_name}, %{node_name}, %{node_id}, %{desired_state}, %{state_message}, %{container_id}.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{service_id}, %{task_id}, %{service_name}, %{node_name}, %{node_id}, %{desired_state}, %{state_message}, %{container_id}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{desired_state} ne %{state} and %{state} !~ /complete|preparing|assigned/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{desired_state} ne %{state} and %{state} !~ /complete|preparing|assigned/').
 You can use the following variables: %{service_id}, %{task_id}, %{service_name}, %{node_name}, %{node_id}, %{desired_state}, %{state_message}, %{container_id}.
 
 =item B<--warning-*> B<--critical-*>

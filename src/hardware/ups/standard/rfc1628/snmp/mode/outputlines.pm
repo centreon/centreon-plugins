@@ -174,21 +174,21 @@ Ignore counters equals to 0.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'power'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'power'.
 
 =item B<--warning-stdev-3phases>
 
-Threshold warning for standard deviation of 3 phases.
+Warning threshold for standard deviation of 3 phases.
 
 =item B<--critical-stdev-3phases>
 
-Threshold critical for standard deviation of 3 phases.
+Critical threshold for standard deviation of 3 phases.
 
 =back
 

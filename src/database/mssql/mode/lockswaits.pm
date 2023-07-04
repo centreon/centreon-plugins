@@ -93,11 +93,11 @@ Check MSSQL locks-waits per second
 
 =item B<--warning-lockswaits>
 
-Threshold warning number of lock-waits per second.
+Warning threshold number of lock-waits per second.
 
 =item B<--critical-lockswaits>
 
-Threshold critical number of lock-waits per second.
+Critical threshold number of lock-waits per second.
 
 =item B<--filter-database>
 

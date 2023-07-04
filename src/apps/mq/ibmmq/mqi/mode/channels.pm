@@ -211,17 +211,17 @@ MQTT - Telemetry
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{channel_status} !~ /running|idle/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{channel_status} !~ /running|idle/i').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>

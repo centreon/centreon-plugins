@@ -147,19 +147,19 @@ Check bytes/s received/delivered to clients
 
 =item B<--warning-received>
 
-Threshold warning for received (in bytes/s).
+Warning threshold for received (in bytes/s).
 
 =item B<--critical-received>
 
-Threshold critical for received (in bytes/s).
+Critical threshold for received (in bytes/s).
 
 =item B<--warning-delivered>
 
-Threshold warning2 for delivered (in bytes/s).
+Warning threshold2 for delivered (in bytes/s).
 
 =item B<--critical-delivered>
 
-Threshold critical for delivered (in bytes/s).
+Critical threshold for delivered (in bytes/s).
 
 =back
 

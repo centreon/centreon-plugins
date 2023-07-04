@@ -358,77 +358,77 @@ Filter by name (can be a regexp).
 
 =item B<--unknown-modem-status>
 
-Set unknown threshold for status (Default: '%{modem_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{modem_status} =~ /unknown/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--warning-modem-status>
 
-Set warning threshold for status (Default: '%{modem_status} =~ /lowPowerMode/i').
+Define the conditions to match for the status to be WARNING (Default: '%{modem_status} =~ /lowPowerMode/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--critical-modem-status>
 
-Set critical threshold for status (Default: '%{modem_status} =~ /offLine/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{modem_status} =~ /offLine/i').
 You can use the following variables: %{modem_status}, %{display}
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status (Default: '%{connection_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_status} =~ /unknown/i').
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status (Default: '%{connection_status} =~ /inactive|idle|disconnected|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{connection_status} =~ /inactive|idle|disconnected|error/i').
 You can use the following variables: %{connection_status}, %{display}
 
 =item B<--unknown-sim-status>
 
-Set unknown threshold for status (Default: '%{sim_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{sim_status} =~ /unknown/i').
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--warning-sim-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--critical-sim-status>
 
-Set critical threshold for status (Default: '%{sim_status} !~ /ok|unknown/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{sim_status} !~ /ok|unknown/i').
 You can use the following variables: %{sim_status}, %{display}
 
 =item B<--unknown-radio-status>
 
-Set unknown threshold for status (Default: '%{current_band} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{current_band} =~ /unknown/i').
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--warning-radio-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--critical-radio-status>
 
-Set critical threshold for status (Default: '%{current_band} =~ /invalid|none/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{current_band} =~ /invalid|none/i').
 You can use the following variables: %{current_band}, %{channel_number}, %{display}
 
 =item B<--unknown-network-status>
 
-Set unknown threshold for status (Default: '%{service_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{service_status} =~ /unknown/i').
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-network-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--critical-network-status>
 
-Set critical threshold for status (Default: '%{service_status} =~ /emergencyOnly|noService/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{service_status} =~ /emergencyOnly|noService/i').
 You can use the following variables: %{service_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

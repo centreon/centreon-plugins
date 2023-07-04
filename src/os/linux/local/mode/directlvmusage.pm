@@ -132,12 +132,12 @@ Command used: lvs --separator="," 2>&1
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'data-usage' (%), 'meta-usage' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'data-usage' (%), 'meta-usage' (%).
 
 =item B<--filter-vg>

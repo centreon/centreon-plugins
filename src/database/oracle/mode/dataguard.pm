@@ -192,17 +192,17 @@ Check oracle dataguard.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
+Define the conditions to match for the status to be WARNING (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
 You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-*> B<--critical-*>

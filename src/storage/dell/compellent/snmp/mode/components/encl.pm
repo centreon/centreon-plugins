@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scEnclStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.15.1.3', map => \%map_sc_status },
-    scEnclName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.15.1.4' },
+    scEnclName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.15.1.4' }
 };
 my $oid_scEnclEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.15.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scEnclEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'encl', instance => $instance));
+        next if ($self->check_filter(section => 'encl', instance => $instance, name => $result->{scEnclName}));
         $self->{components}->{encl}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("enclosure '%s' status is '%s' [instance = %s]",
-                                    $result->{scEnclName}, $result->{scEnclStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'encl', value => $result->{scEnclStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "enclosure '%s' status is '%s' [instance: %s]",
+                $result->{scEnclName}, $result->{scEnclStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'encl', name => $result->{scEnclName}, value => $result->{scEnclStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Enclosure '%s' status is '%s'", $result->{scEnclName}, $result->{scEnclStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Enclosure '%s' status is '%s'", $result->{scEnclName}, $result->{scEnclStatus})
+            );
         }
     }
 }

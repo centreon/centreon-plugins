@@ -51,18 +51,18 @@ sub check {
         next if ($oid !~ /^$mapping->{scDiskFolderStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scDiskFolderEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'diskfolder', instance => $instance));
+
+        next if ($self->check_filter(section => 'diskfolder', instance => $instance, name => $result->{scDiskFolderName}));
         $self->{components}->{diskfolder}->{total}++;
-        
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk folder '%s' status is '%s' [instance = %s]",
-                $result->{scDiskFolderName}, $result->{scDiskFolderStatus}, $instance, 
+                "disk folder '%s' status is '%s' [instance: %s]",
+                $result->{scDiskFolderName}, $result->{scDiskFolderStatus}, $instance
             )
         );
         
-        my $exit = $self->get_severity(label => 'default', section => 'diskfolder', value => $result->{scDiskFolderStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'diskfolder', name => $result->{scDiskFolderName}, value => $result->{scDiskFolderStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,

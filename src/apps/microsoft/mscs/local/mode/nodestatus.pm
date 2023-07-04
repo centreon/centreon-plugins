@@ -126,17 +126,17 @@ Filter node name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{state} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} =~ /pause|joining/').
+Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /pause|joining/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /down/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /down/').
 You can use the following variables: %{state}, %{display}
 
 =back

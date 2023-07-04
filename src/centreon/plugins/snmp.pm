@@ -81,6 +81,8 @@ sub new {
     $self->{output} = $options{output};
     $self->{snmp_params} = {};
 
+    $self->{use_snmp_cache} = 0;
+
     # Dont load MIB
     $SNMP::auto_init_mib = 0;
     $ENV{MIBS} = '';
@@ -855,7 +857,6 @@ sub check_options {
 
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
 
-    $self->{use_snmp_cache} = 0;
     if (defined($options{option_results}->{snmp_cache_file}) && $options{option_results}->{snmp_cache_file} ne '') {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
@@ -1136,16 +1137,16 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 
 =item B<--subsetleef>
 
-How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious when you set it. Prefer to let the default value).
+How many OID values per SNMP request (default: 50) (for get_leef method. Be cautious when you set it. Prefer to let the default value).
 
 =item B<--snmp-autoreduce>
  
-Progressively reduce the number requested OIDs in bulk mode. Use it in case of
+Progressively reduce the number of requested OIDs in bulk mode. Use it in case of
 SNMP errors (By default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 
-Use snmp getnext function in snmp v2c and v3. This will request one OID at a
+Use SNMP getnext function in SNMP v2c and v3. This will request one OID at a
 time.
 
 =item B<--snmp-cache-file>

@@ -188,22 +188,22 @@ Check Input lines metrics (frequence, voltage, current).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{badstatus} =~ /yes/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{badstatus} =~ /yes/').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =back

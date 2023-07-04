@@ -161,12 +161,12 @@ Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load1', 'load5', 'load15'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load1', 'load5', 'load15'.
 
 =item B<--extra-filter>

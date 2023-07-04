@@ -175,21 +175,21 @@ Can be: 'entity', 'peer' (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /operational/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /operational/i').
 You can use the following variables: %{state}
 
 =item B<--warning-last-change>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical-last-change>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

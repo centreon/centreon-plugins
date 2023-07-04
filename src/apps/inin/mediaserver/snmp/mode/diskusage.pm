@@ -169,12 +169,12 @@ Check disk usages.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'httpcache-usage', 'tracelog-usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'httpcache-usage', 'tracelog-usage'.
 
 =item B<--units>

@@ -73,11 +73,11 @@ Check video conferencing usage.
 
 =item B<--warning-conferences-active>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-conferences-active>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

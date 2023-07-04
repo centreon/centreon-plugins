@@ -359,11 +359,11 @@ Check memory usage (CISCO-MEMORY-POOL-MIB, CISCO-ENHANCED-MEMPOOL-MIB, CISCO-PRO
 
 =item B<--warning-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-usage>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--filter-pool>
 

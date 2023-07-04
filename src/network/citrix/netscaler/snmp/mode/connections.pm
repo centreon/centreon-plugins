@@ -106,12 +106,12 @@ Check connections usage (Client, Server, ActiveServer) (NS-ROOT-MIBv2).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'server', 'active', 'client', 'established'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'server', 'active', 'client', 'established'.
 
 =back

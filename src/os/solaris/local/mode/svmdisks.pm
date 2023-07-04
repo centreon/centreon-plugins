@@ -199,11 +199,11 @@ Command used: '/usr/sbin/metastat 2>&1' and '/usr/sbin/metadb 2>&1'
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

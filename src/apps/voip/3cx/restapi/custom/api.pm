@@ -333,10 +333,10 @@ Threshold unknown for http response code.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
-Threshold warning for http response code.
+Warning threshold for http response code.
 
 =item B<--critical-http-status>
-Threshold critical for http response code.
+Critical threshold for http response code.
 
 =back
 

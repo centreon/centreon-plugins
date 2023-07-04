@@ -953,13 +953,12 @@ Filter tag (Default: '.*')
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='opersense,CRITICAL,^(?!(ok)$)'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
@@ -967,7 +966,7 @@ Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDela
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 

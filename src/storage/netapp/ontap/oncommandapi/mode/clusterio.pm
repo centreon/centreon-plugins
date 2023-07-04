@@ -129,12 +129,12 @@ Filter snapmirror name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-throughput', 'total-ops'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-throughput', 'total-ops'.
 
 =back

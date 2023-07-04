@@ -168,12 +168,12 @@ Example: --filter-counters='status'
 
 =item B<--warning-services-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-services-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

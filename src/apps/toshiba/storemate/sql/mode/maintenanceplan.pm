@@ -157,12 +157,12 @@ Database name (default: 'Framework').
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '1 == 1'. We match all errors).
+Define the conditions to match for the status to be CRITICAL (Default: '1 == 1'. We match all errors).
 You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--timezone>

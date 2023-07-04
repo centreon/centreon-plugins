@@ -124,11 +124,11 @@ Check the number of times Informix attempted to exceed the maximum number of loc
 
 =item B<--warning>
 
-Threshold warning in absolute.
+Warning threshold in absolute.
 
 =item B<--critical>
 
-Threshold critical in absolute.
+Critical threshold in absolute.
 
 =back
 

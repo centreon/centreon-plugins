@@ -163,27 +163,27 @@ Search in following datacenter(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{accessible} !~ /^true|1$/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{accessible} !~ /^true|1$/i').
 You can use the following variables: %{accessible}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{accessible}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{accessible}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-read', 'total-write', 'read', 'write'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-read', 'total-write', 'read', 'write'.
 
 =back

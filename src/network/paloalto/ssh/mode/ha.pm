@@ -189,47 +189,47 @@ Check high availability.
 
 =item B<--unknown-sync-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--warning-sync-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for status (Default: '%{enabled} eq "yes" and %{status} ne "synchronized"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{enabled} eq "yes" and %{status} ne "synchronized"').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{state} ne %{stateLast}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne %{stateLast}').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 Can use special variables like: %{status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Can use special variables like: %{status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{status} ne "up"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "up"').
 Can use special variables like: %{status}, %{display}
 
 =back

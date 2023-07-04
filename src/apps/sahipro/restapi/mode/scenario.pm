@@ -516,11 +516,11 @@ Threshold unknown for running scenario rest api response.
 
 =item B<--warning-run-status>
 
-Threshold warning for running scenario rest api response.
+Warning threshold for running scenario rest api response.
 
 =item B<--critical-run-status>
 
-Threshold critical for running scenario rest api response.
+Critical threshold for running scenario rest api response.
 
 =item B<--warning-status>
 

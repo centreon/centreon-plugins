@@ -1727,11 +1727,11 @@ Add a description of the mode options:
 
   =item B<--warning>
 
-  Threshold warning for dropped packets in packets per second.
+  Warning threshold for dropped packets in packets per second.
 
   =item B<--critical>
 
-  Threshold critical for dropped packets in packets per second.
+  Critical threshold for dropped packets in packets per second.
 
   =back
 

@@ -81,12 +81,12 @@ Check memory.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage' (B).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage' (B).
 
 =back

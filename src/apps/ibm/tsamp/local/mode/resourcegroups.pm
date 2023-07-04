@@ -170,17 +170,17 @@ Exclude resource groups by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{opState} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{opState} =~ /unknown/i').
 You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{opState} =~ /pending/i').
+Define the conditions to match for the status to be WARNING (Default: '%{opState} =~ /pending/i').
 You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{opState} =~ /failed offline|stuck online/i || %{opState} ne %{nominalState}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{opState} =~ /failed offline|stuck online/i || %{opState} ne %{nominalState}').
 You can use the following variables: %{opState}, %{nominalState}, %{name}
 
 =item B<--warning-*> B<--critical-*>

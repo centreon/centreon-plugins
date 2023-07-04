@@ -167,13 +167,13 @@ Example: --filter-name='^application1$'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
 Typical syntax: --warning-status='%{status} ne "STARTED"'
 
 =item B<--critical-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
 Typical syntax: --critical-status='%{status} =~ m/FAILED/'
 

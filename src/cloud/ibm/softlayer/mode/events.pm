@@ -198,24 +198,24 @@ Filter events status (Default: 'Active')
 
 =item B<--warning-event>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--critical-event>
 
-Set critical threshold for status (Default: '%{status} =~ /Active/ && %{items} > 0').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /Active/ && %{items} > 0').
 You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'completed', 'published'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'completed', 'published'.
 
 =back

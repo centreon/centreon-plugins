@@ -173,12 +173,12 @@ Check environment channels.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'temperature', 'humidity'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'temperature', 'humidity'.
 
 =back

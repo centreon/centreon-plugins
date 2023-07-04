@@ -114,11 +114,11 @@ Check system disk usage (FORTINET-FORTIGATE).
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

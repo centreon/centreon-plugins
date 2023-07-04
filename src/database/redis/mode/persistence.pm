@@ -139,23 +139,23 @@ Check RDB persistence status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{progress_status} =~ /in progress/i').
+Define the conditions to match for the status to be WARNING (Default: '%{progress_status} =~ /in progress/i').
 You can use the following variables: %{progress_status}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /fail/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /fail/i').
 You can use the following variables: %{progress_status}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 

@@ -128,12 +128,12 @@ Filter snapmirror name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'max-node-utilization', 'max-aggregate-utilization'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'max-node-utilization', 'max-aggregate-utilization'.
 
 =back

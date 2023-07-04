@@ -136,17 +136,17 @@ Check hardware.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} eq "noncritical"').
+Define the conditions to match for the status to be WARNING (Default: '%{status} eq "noncritical"').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "critical"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "critical"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
