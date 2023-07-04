@@ -278,11 +278,11 @@ Table of content (3)
 3. [Create the plugin.pm file](#create_plugin_tuto)
 4. [Understand the data](#understand_data_tuto)
 5. [Input](#input_tuto)
-6. [API](#)
-7. [SNMP](#)
-8. [Other example](#)
-9. [Service discovery](#)
-10. [Host discovery](#)
+6. [API]
+7. [SNMP]
+8. [Other example]
+9. [Service discovery]
+10. [Host discovery]
 11. [Commit and push](#commit)
 *******
 
