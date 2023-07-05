@@ -47,7 +47,10 @@ sub new {
             'proto:s'     => { name => 'proto' },
             'timeout:s'   => { name => 'timeout' },
             'api-path:s'  => { name => 'api_path' },
-            'api-token:s' => { name => 'api_token' }
+            'api-token:s' => { name => 'api_token' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -75,6 +78,9 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api';
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
  
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -168,9 +174,9 @@ sub request_status_api {
     my $content = $self->{http}->request(
         full_url => 'https://status.slack.com/api/v2.0.0/current',
         hostname => '',
-        critical_status => '',
-        warning_status => '',
-        unknown_status => ''
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
     );
     my $decoded;
     eval {
