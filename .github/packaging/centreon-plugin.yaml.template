@@ -82,7 +82,7 @@ overrides:
       [@DEB_PROVIDES@]
 
 rpm:
-  compression: zstd
+  compression: xz
   signature:
     key_file: ${RPM_SIGNING_KEY_FILE}
     key_id: ${RPM_SIGNING_KEY_ID}
