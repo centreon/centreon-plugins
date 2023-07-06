@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my %mapping_states = (
     0 => 'STARTUP', 1 => 'PRIMARY', 2 => 'SECONDARY',
@@ -39,7 +39,7 @@ my %mapping_health = (
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Current member state is '%s'", $self->{result_values}->{state});
+    my $msg = sprintf("current member state is '%s'", $self->{result_values}->{state});
     $msg .= sprintf(", syncing to '%s'", $self->{result_values}->{sync_host}) if ($self->{result_values}->{state} ne 'PRIMARY');
     return $msg;
 }
@@ -76,10 +76,16 @@ sub custom_member_status_calc {
     return 0;
 }
 
-sub prefix_output {
+sub prefix_member_output {
     my ($self, %options) = @_;
 
     return "Member '" . $options{instance_value}->{name} . "' ";
+}
+
+sub prefix_members_counters_output {
+    my ($self, %options) = @_;
+
+    return 'Number of members ';
 }
 
 sub set_counters {
@@ -87,37 +93,79 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'members', type => 1, cb_prefix_output => 'prefix_output',
-          message_multiple => 'All members statistics are ok', skipped_code => { -10 => 1 } },
+        { name => 'members_counters', type => 0, cb_prefix_output => 'prefix_members_counters_output', skipped_code => { -10 => 1 } },
+        { name => 'members', type => 1, cb_prefix_output => 'prefix_member_output',
+          message_multiple => 'All members statistics are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{members_counters} = [
+        { label => 'members-primary', nlabel => 'members.primary.count', display_ok => 0, set => {
+                key_values => [  { name => 'primary' } ],
+                output_template => 'primary: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'members-secondary', nlabel => 'members.secondary.count', display_ok => 0, set => {
+                key_values => [  { name => 'secondary' } ],
+                output_template => 'secondary: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'members-arbiter', nlabel => 'members.arbiter.count', display_ok => 0, set => {
+                key_values => [  { name => 'arbiter' } ],
+                output_template => 'arbiter: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'members-down', nlabel => 'members.down.count', display_ok => 0, set => {
+                key_values => [  { name => 'down' } ],
+                output_template => 'down: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, set => {
                 key_values => [ { name => 'myState' }, { name => 'syncSourceHost' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
 
     $self->{maps_counters}->{members} = [
-        { label => 'member-status', set => {
-                key_values => [ { name => 'stateStr' }, { name => 'health' }, { name => 'slaveDelay' },
-                    { name => 'priority' }, { name => 'name' } ],
+        {
+            label => 'member-status',
+            type => 2,
+            warning_default => '%{state} !~ /PRIMARY|SECONDARY/',
+            critical_default => '%{health} !~ /up/',
+            set => {
+                key_values => [
+                    { name => 'stateStr' }, { name => 'health' }, { name => 'slaveDelay' },
+                    { name => 'priority' }, { name => 'name' }
+                ],
                 closure_custom_calc => $self->can('custom_member_status_calc'),
                 closure_custom_output => $self->can('custom_member_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'replication-lag', nlabel => 'replication.lag.seconds', set => {
                 key_values => [  { name => 'lag' }, { name => 'name' } ],
-                output_template => 'Replication Lag: %s s',
+                output_template => 'replication lag: %s s',
                 perfdatas => [
-                    { value => 'lag', template => '%d', unit => 's',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
+                    { template => '%d', unit => 's', min => 0, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
@@ -129,24 +177,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'warning-status:s'         => { name => 'warning_status', default => '' },
-        'critical-status:s'        => { name => 'critical_status', default => '' },
-        'warning-member-status:s'  => { name => 'warning_member_status', default => '%{state} !~ /PRIMARY|SECONDARY/' },
-        'critical-member-status:s' => { name => 'critical_member_status', default => '%{health} !~ /up/' },
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status',
-        'warning_member_status', 'critical_member_status'
-    ]);
 }
 
 sub manage_selection {
@@ -211,31 +244,29 @@ __END__
 
 =head1 MODE
 
-Check replication status
+Check replication status.
 
 =over 8
 
 =item B<--warning-status>
 
-Set warning threshold for checked instance status (Default: '').
+Set warning threshold for checked instance status.
 You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--critical-status>
 
-Set critical threshold for checked instance status (Default: '').
+Set critical threshold for checked instance status.
 You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--warning-member-status>
 
-Set warning threshold for members status (Default: '%{state} !~ /PRIMARY|SECONDARY/').
-You can use the following variables: %{name}, %{state}, %{health},
-%{slave_delay}, %{priority}.
+Set warning threshold for members status (default: '%{state} !~ /PRIMARY|SECONDARY/').
+You can use the following variables: %{name}, %{state}, %{health}, %{slave_delay}, %{priority}.
 
 =item B<--critical-member-status>
 
-Set critical threshold for members status (Default: '%{health} !~ /up/').
-You can use the following variables: %{name}, %{state}, %{health},
-%{slave_delay}, %{priority}.
+Set critical threshold for members status (default: '%{health} !~ /up/').
+You can use the following variables: %{name}, %{state}, %{health}, %{slave_delay}, %{priority}.
 
 =item B<--warning-instance-replication-lag-seconds>
 
