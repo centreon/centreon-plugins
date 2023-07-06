@@ -123,12 +123,12 @@ Filter garbage collector name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'count', 'time' (ms).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'count', 'time' (ms).
 
 =back

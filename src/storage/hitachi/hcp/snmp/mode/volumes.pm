@@ -231,17 +231,17 @@ Filter volumes by node id (can be a regexp).
 
 =item B<--unknown-volume-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-volume-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--critical-volume-status>
 
-Set critical threshold for status (Default: '%{status} =~ /broken/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /broken/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-*> B<--critical-*>

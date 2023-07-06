@@ -184,12 +184,12 @@ Example: --filter-counters='calls'
 
 =item B<--warning-*-count/persecond>
 
-Threshold warning.
+Warning threshold.
 Can be: 'calls', 'bytes-values', 'bytes-keys'.
 
 =item B<--critical-*-count/persecond>
 
-Threshold critical.
+Critical threshold.
 Can be: 'calls', 'bytes-values', 'bytes-keys'.
 
 =back

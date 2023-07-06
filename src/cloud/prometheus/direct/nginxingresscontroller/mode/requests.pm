@@ -165,13 +165,13 @@ Check requests number.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'requests', 'requests-2xx', 'requests-3xx',
 'requests-4xx', 'requests-5xx'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'requests', 'requests-2xx', 'requests-3xx',
 'requests-4xx', 'requests-5xx'.
 

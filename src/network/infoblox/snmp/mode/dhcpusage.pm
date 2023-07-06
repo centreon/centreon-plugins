@@ -238,14 +238,14 @@ Time in minutes before reloading cache file (default: 180).
 
 ibDhcpTotalNoOfDiscovers
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-discovers', 'total-requests', 'total-releases', 
 'total-offers', 'total-acks', 'total-nacks', 'total-declines',
 'total-informs', 'total-others', 'subnet-used' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-discovers', 'total-requests', 'total-releases', 
 'total-offers', 'total-acks', 'total-nacks', 'total-declines',
 'total-informs', 'total-others', 'subnet-used' (%).

@@ -186,19 +186,19 @@ Filter files by name.
 
 =item B<--warning-one>
 
-Threshold warning in bytes for each files/directories.
+Warning threshold in bytes for each files/directories.
 
 =item B<--critical-one>
 
-Threshold critical in bytes for each files/directories.
+Critical threshold in bytes for each files/directories.
 
 =item B<--warning-total>
 
-Threshold warning in bytes for all files/directories.
+Warning threshold in bytes for all files/directories.
 
 =item B<--critical-total>
 
-Threshold critical in bytes for all files/directories.
+Critical threshold in bytes for all files/directories.
 
 =back
 

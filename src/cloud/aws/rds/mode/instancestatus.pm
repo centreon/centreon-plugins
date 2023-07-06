@@ -195,23 +195,23 @@ Filter by instance id (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 

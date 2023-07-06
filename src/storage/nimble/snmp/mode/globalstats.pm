@@ -141,13 +141,13 @@ Check global statistics of storage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read', 'read-iops', 'write', 'write-iops',
 'read-time', 'write-time'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read', 'read-iops', 'write', 'write-iops',
 'read-time', 'write-time'.
 

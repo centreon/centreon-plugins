@@ -206,23 +206,23 @@ Set filter on label (Regexp, can be defined multiple times) (Example: --filter-l
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{display}, %{health}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /up/').
 You can use the following variables: %{display}, %{health}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'dropped', 'up',
 'down', 'unknown'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'dropped', 'up',
 'down', 'unknown'.
 

@@ -153,12 +153,12 @@ Example: --filter-counters='errors'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: errors (%), hits (%), partial-hits (%), misses (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: errors (%), hits (%), partial-hits (%), misses (%).
 
 =back

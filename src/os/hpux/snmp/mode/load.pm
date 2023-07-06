@@ -127,11 +127,11 @@ Check system load-average.
 
 =item B<--warning>
 
-Threshold warning (1min,5min,15min).
+Warning threshold (1min,5min,15min).
 
 =item B<--critical>
 
-Threshold critical (1min,5min,15min).
+Critical threshold (1min,5min,15min).
 
 =back
 

@@ -86,13 +86,13 @@ Can be: 'current', 'fan', 'power', 'status', 'temperature', 'voltage'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=voltage)
-Can also exclude specific instance: --filter=fan,fan2
+Exclude the items given as a comma-separated list (example: --filter=fan --filter=voltage).
+You can also exclude items from specific instances: --filter=fan,fan2
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =item B<--warning>
 

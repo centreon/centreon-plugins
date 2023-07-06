@@ -411,62 +411,62 @@ Filter nodes by id (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{node_status} eq "unavailable"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} eq "unavailable"').
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--unknown-nic-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--warning-nic-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--critical-nic-status>
 
-Set critical threshold for status (Default: '%{nic_status} eq "failed"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{nic_status} eq "failed"').
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--unknown-san-path-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--warning-san-path-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--critical-san-path-status>
 
-Set critical threshold for status (Default: '%{san_path_status} eq "error"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{san_path_status} eq "error"').
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--unknown-bbu-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-bbu-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--critical-bbu-status>
 
-Set critical threshold for status (Default: '%{bbu_status} !~ /healthy/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{bbu_status} !~ /healthy/i').
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>

@@ -141,13 +141,13 @@ Filter channel group name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'sip-active-calls', 'tdm-active-calls',
 'channel-group-active-calls'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'sip-active-calls', 'tdm-active-calls',
 'channel-group-active-calls'.
 

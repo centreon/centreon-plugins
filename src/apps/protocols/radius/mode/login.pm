@@ -267,21 +267,21 @@ Set radius-dictionary file (mandatory with --radius-attribute) (multiple option)
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "accepted"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "accepted"').
 You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =back
 

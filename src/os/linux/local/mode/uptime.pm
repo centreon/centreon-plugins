@@ -111,11 +111,11 @@ Command used: cat /proc/uptime 2>&1
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =item B<--seconds>
 

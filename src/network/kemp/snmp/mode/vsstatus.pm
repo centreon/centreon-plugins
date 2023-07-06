@@ -188,22 +188,22 @@ Filter virtual server name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /inService|disabled|redirect/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /inService|disabled|redirect/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'in-traffic' (b/s), 'out-traffic' (b/s).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'in-traffic' (b/s), 'out-traffic' (b/s).
 
 =back

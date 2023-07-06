@@ -154,11 +154,11 @@ Check memory usages.
 
 =item B<--warning-usage>
 
-Threshold warning (in percent).
+Warning threshold (in percent).
 
 =item B<--critical-usage>
 
-Threshold critical (in percent).
+Critical threshold (in percent).
 
 =item B<--filter-name>
 

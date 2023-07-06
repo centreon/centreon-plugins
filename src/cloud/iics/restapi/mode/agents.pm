@@ -223,32 +223,32 @@ Filter agents if active or not.
 
 =item B<--unknown-agent-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--warning-agent-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
 
-Set critical threshold for status (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-engine-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--critical-engine-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-*> B<--critical-*>

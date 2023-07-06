@@ -198,11 +198,11 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
-Threshold warning (number of files)
+Warning threshold (number of files)
 
 =item B<--critical>
 
-Threshold critical (number of files)
+Critical threshold (number of files)
 
 =item B<--directory>
 

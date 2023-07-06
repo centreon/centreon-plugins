@@ -118,12 +118,12 @@ Example: --filter-counters='5m'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: '5s', '1m', '5m'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: '5s', '1m', '5m'.
 
 =back

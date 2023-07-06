@@ -169,13 +169,13 @@ Filter policy name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-connections', 'current-connections'
 'l3-traffic' (b/s), 'l2-traffic' (b/s).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-connections', 'current-connections'
 'l3-traffic' (b/s), 'l2-traffic' (b/s).
 

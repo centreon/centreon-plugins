@@ -153,11 +153,11 @@ Only search for the top X results.
 
 =item B<--warning-time>
 
-Threshold warning (s).
+Warning threshold (s).
 
 =item B<--critical-time>
 
-Threshold critical (s).
+Critical threshold (s).
 
 =back
 

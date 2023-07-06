@@ -168,35 +168,35 @@ Check Informix Checkpoints. 4 values:
 
 =item B<--warning-cp>
 
-Threshold warning 'cp_time' in seconds.
+Warning threshold 'cp_time' in seconds.
 
 =item B<--critical-cp>
 
-Threshold critical 'cp_time' in seconds.
+Critical threshold 'cp_time' in seconds.
 
 =item B<--warning-flush>
 
-Threshold warning 'flush_time' in seconds.
+Warning threshold 'flush_time' in seconds.
 
 =item B<--critical-flush>
 
-Threshold critical 'flush_time' in seconds.
+Critical threshold 'flush_time' in seconds.
 
 =item B<--warning-crit>
 
-Threshold warning 'crit_time' in seconds.
+Warning threshold 'crit_time' in seconds.
 
 =item B<--critical-crit>
 
-Threshold critical 'crit_time' in seconds.
+Critical threshold 'crit_time' in seconds.
 
 =item B<--warning-block>
 
-Threshold warning 'block_time' in seconds.
+Warning threshold 'block_time' in seconds.
 
 =item B<--critical-block>
 
-Threshold critical 'block_time' in seconds.
+Critical threshold 'block_time' in seconds.
 
 =item B<--filter-trigger>
 

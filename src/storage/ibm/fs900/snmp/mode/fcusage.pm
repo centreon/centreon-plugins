@@ -190,12 +190,12 @@ Check fibre channels usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-bandwidth', 'write-bandwidth', 'read-iops', 'write-iops', 'read-queue-depth', 'write-queue-depth'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-bandwidth', 'write-bandwidth', 'read-iops', 'write-iops', 'read-queue-depth', 'write-queue-depth'.
 
 =back

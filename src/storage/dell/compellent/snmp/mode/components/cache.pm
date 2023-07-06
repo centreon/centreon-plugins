@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scCacheStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.28.1.3', map => \%map_sc_status },
-    scCacheName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.28.1.4' },
+    scCacheName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.28.1.4' }
 };
 my $oid_scCacheEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.28.1';
 
@@ -47,18 +47,23 @@ sub check {
         next if ($oid !~ /^$mapping->{scCacheStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scCacheEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'cache', instance => $instance));
+
+        next if ($self->check_filter(section => 'cache', instance => $instance, name => $result->{scCacheName}));
         $self->{components}->{cache}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("cache '%s' status is '%s' [instance = %s]",
-                                    $result->{scCacheName}, $result->{scCacheStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'cache', value => $result->{scCacheStatus});
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cache '%s' status is '%s' [instance: %s]",
+                $result->{scCacheName}, $result->{scCacheStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'cache', name => $result->{scCacheName}, value => $result->{scCacheStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cache '%s' status is '%s'", $result->{scCacheName}, $result->{scCacheStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cache '%s' status is '%s'", $result->{scCacheName}, $result->{scCacheStatus})
+            );
         }
     }
 }

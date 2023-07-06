@@ -148,12 +148,12 @@ Check the current status of the optimization service.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{health}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} !~ /Healthy/ || %{status} !~ /running/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /Healthy/ || %{status} !~ /running/').
 You can use the following variables: %{health}, %{status}
 
 =item B<--warning-uptime>

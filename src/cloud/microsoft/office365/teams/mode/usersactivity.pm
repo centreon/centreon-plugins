@@ -277,14 +277,14 @@ Filter users.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
 'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
 'private-chat' (count), 'call' (count), 'meeting' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
 'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
 'private-chat' (count), 'call' (count), 'meeting' (count).

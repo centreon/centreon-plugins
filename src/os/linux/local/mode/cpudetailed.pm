@@ -215,12 +215,12 @@ Command used: cat /proc/stat 2>&1
 
 =item B<--warning-*>
 
-Threshold warning in percent.
+Warning threshold in percent.
 Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
 =item B<--critical-*>
 
-Threshold critical in percent.
+Critical threshold in percent.
 Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
 =back

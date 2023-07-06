@@ -155,14 +155,14 @@ Example: --filter-counters='^(1s|1m)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: '1s', '5s', '1m', '10m', '2h' for standard Raisecom devices.
 
 Can be: '1s', '10m', '2h' for xPON Raisecom devices.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: '1s', '5s', '1m', '10m', '2h'.
 
 Can be: '1s', '10m', '2h' for xPON Raisecom devices.

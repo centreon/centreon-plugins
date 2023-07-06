@@ -352,41 +352,41 @@ Set action execution timeout in second (Default: 10).
 
 =item B<--warning-*>
 
-Threshold warning for steps state count
+Warning threshold for steps state count
 (Can be: 'failed', 'successful').
 
 =item B<--critical-*>
 
-Threshold critical for steps state count
+Critical threshold for steps state count
 (Can be: 'failed', 'successful').
 
 =item B<--warning-time-scenario>
 
-Threshold warning in milliseconds
+Warning threshold in milliseconds
 for scenario execution time.
 
 =item B<--critical-time-scenario>
 
-Threshold critical in milliseconds
+Critical threshold in milliseconds
 for scenario execution time.
 
 =item B<--warning-time-step>
 
-Threshold warning in milliseconds
+Warning threshold in milliseconds
 for step execution time.
 
 =item B<--critical-time-step>
 
-Threshold critical in milliseconds
+Critical threshold in milliseconds
 for step execution time.
 
 =item B<--warning-state>
 
-Threshold warning for step state.
+Warning threshold for step state.
 
 =item B<--critical-state>
 
-Threshold critical for step state
+Critical threshold for step state
 (Default: '%{state} !~ /OK/i').
 
 =back

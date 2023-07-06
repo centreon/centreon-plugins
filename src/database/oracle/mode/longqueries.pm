@@ -181,12 +181,12 @@ Check long sql queries.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
+Define the conditions to match for the status to be WARNING (Default: '')
 You can use the following variables: %{username}, %{sql_text}, %{since}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{username}, %{sql_text}, %{since}, %{status}
 
 =item B<--timezone>

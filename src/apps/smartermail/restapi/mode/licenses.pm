@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::smartermail::restapi::mode::licenses;
@@ -91,17 +90,17 @@ Check licenses.
 
 =item B<--unknown-upgrade-protection-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-upgrade-protection-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--critical-upgrade-protection-status>
 
-Set critical threshold for status (Default: '%{upgrade_protection_status} =~ /expired/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{upgrade_protection_status} =~ /expired/').
 You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-*> B<--critical-*>

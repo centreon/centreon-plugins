@@ -328,32 +328,32 @@ Filter by name (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
+Define the conditions to match for the status to be WARNING (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
 You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-*> B<--critical-*>

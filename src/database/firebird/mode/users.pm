@@ -95,11 +95,11 @@ Check current users connected on the database (firebird version >= 2.1)
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

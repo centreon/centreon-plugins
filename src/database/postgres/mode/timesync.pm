@@ -106,11 +106,11 @@ Compares the local system time with the time reported by Postgres
 
 =item B<--warning>
 
-Threshold warning in seconds. (use a range. it can be -0.3s or +0.3s.)
+Warning threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
 
 =item B<--critical>
 
-Threshold critical in seconds. (use a range. it can be -0.3s or +0.3s.)
+Critical threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
 
 =back
 

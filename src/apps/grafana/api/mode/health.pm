@@ -87,12 +87,12 @@ Check health.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{version}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "ok"').
 You can use the following variables: %{state}, %{version}
 
 =back

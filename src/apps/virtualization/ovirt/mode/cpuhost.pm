@@ -125,12 +125,12 @@ Filter host id (Can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'host-cpu-user-utilization-percentage', 'host-cpu-system-utilization-percentage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'host-cpu-user-utilization-percentage', 'host-cpu-system-utilization-percentage'.
 
 =back

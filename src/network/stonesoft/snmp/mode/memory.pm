@@ -173,11 +173,11 @@ Check stonesoftFirewall memory usage (STONESOFT-FIREWALL-MIB).
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<-swap>
 
@@ -185,11 +185,11 @@ Check swap also.
 
 =item B<--warning-swap>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-swap>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--no-swap>
 

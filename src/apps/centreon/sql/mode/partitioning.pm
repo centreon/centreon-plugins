@@ -126,11 +126,11 @@ Example: centreon_storage.data_bin
 
 =item B<--warning>
 
-Threshold warning (number of retention forward days)
+Warning threshold (number of retention forward days)
 
 =item B<--critical>
 
-Threshold critical (number of retention forward days)
+Critical threshold (number of retention forward days)
 
 =item B<--timezone>
 

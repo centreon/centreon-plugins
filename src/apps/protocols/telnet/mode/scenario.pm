@@ -193,11 +193,11 @@ Could be used if you want to use the same scenario for X hosts.
 
 =item B<--warning>
 
-Threshold warning in seconds (Scenario execution time)
+Warning threshold in seconds (Scenario execution time)
 
 =item B<--critical>
 
-Threshold critical in seconds (Scenario execution time)
+Critical threshold in seconds (Scenario execution time)
 
 =back
 

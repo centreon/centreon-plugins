@@ -103,12 +103,12 @@ Check upgrade status
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default : '%{upgrade} ne "unavailable"').
+Define the conditions to match for the status to be WARNING (Default : '%{upgrade} ne "unavailable"').
 You can use the following variables: %{model}, %{version}, %{upgrade}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{model}, %{version}, %{upgrade}
 
 =back

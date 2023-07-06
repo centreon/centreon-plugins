@@ -167,11 +167,11 @@ Check cpu usage (FASTPATH-SWITCHING-MIB).
 
 =item B<--warning>
 
-Threshold warning in percent (5s,1min,5min).
+Warning threshold in percent (5s,1min,5min).
 
 =item B<--critical>
 
-Threshold critical in percent (5s,1min,5min).
+Critical threshold in percent (5s,1min,5min).
 
 =back
 

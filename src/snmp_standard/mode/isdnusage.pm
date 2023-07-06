@@ -172,12 +172,12 @@ Filter by name (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-calls', 'out-calls', 'current-calls'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-calls', 'out-calls', 'current-calls'.
 
 =back

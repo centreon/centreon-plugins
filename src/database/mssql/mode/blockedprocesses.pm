@@ -178,19 +178,19 @@ Filter results based on the command name (can be a regexp).
 
 =item B<--warning-blocked-processes>
 
-Threshold warning for total number of blocked processes.
+Warning threshold for total number of blocked processes.
 
 =item B<--critical-blocked-processes>
 
-Threshold critical for total number of blocked processes.
+Critical threshold for total number of blocked processes.
 
 =item B<--warning-wait-time>
 
-Threshold warning for blocked wait time.
+Warning threshold for blocked wait time.
 
 =item B<--critical-wait-time>
 
-Threshold critical for blocked wait time.
+Critical threshold for blocked wait time.
 
 =back
 

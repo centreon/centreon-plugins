@@ -110,12 +110,12 @@ Example: --filter-counters='processor|modem'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'device', 'modem', 'processor' (C).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'device', 'modem', 'processor' (C).
 
 =back

@@ -137,11 +137,11 @@ Check cpu usage (env_mib.mib).
 
 =item B<--warning>
 
-Threshold warning in percent (1s,1min,5min).
+Warning threshold in percent (1s,1min,5min).
 
 =item B<--critical>
 
-Threshold critical in percent (1s,1min,5min).
+Critical threshold in percent (1s,1min,5min).
 
 =back
 

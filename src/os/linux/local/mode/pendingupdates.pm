@@ -213,19 +213,19 @@ Default mode for parsing and command: 'rhel' (default), 'debian', 'suse'.
 
 =item B<--warning-total>
 
-Threshold warning for total amount of pending updates.
+Warning threshold for total amount of pending updates.
 
 =item B<--critical-total>
 
-Threshold critical for total amount of pending updates.
+Critical threshold for total amount of pending updates.
 
 =item B<--warning-security>
 
-Threshold warning for total amount of pending security updates.
+Warning threshold for total amount of pending security updates.
 
 =item B<--critical-security>
 
-Threshold critical for total amount of pending security updates.
+Critical threshold for total amount of pending security updates.
 
 =item B<--filter-package>
 

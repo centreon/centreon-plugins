@@ -118,13 +118,13 @@ Check average number of queries executed.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'update', 'insert', 'delete', 'truncate',
 'select', 'begin', 'commit'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'update', 'insert', 'delete', 'truncate',
 'select', 'begin', 'commit'.
 

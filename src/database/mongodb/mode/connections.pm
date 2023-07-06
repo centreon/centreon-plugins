@@ -116,29 +116,29 @@ Check connections statistics
 
 =item B<--warning-connections-*-count>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'current'.
 
 =item B<--critical-connections-*-count>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'current'.
 
 =item B<--warning-connections-usage-percentage>
 
-Threshold warning for connections usage (current over available)
+Warning threshold for connections usage (current over available)
 
 =item B<--critical-connections-usage-percentage>
 
-Threshold critical for connections usage (current over available)
+Critical threshold for connections usage (current over available)
 
 =item B<--warning-connections-created-persecond>
 
-Threshold warning for connections created per second.
+Warning threshold for connections created per second.
 
 =item B<--critical-connections-created-persecond>
 
-Threshold critical for connections created per second.
+Critical threshold for connections created per second.
 
 =back
 

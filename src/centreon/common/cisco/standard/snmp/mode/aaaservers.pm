@@ -303,17 +303,17 @@ Filter AAA server by name (E.g.: 10.199.126.100:1812:1813. Format: [address]:[au
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /dead/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /dead/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

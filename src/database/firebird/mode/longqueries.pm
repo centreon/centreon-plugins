@@ -121,11 +121,11 @@ Check current number of long queries on the database (firebird version >= 2.1)
 
 =item B<--warning>
 
-Threshold warning (number of long queries).
+Warning threshold (number of long queries).
 
 =item B<--critical>
 
-Threshold critical (number of long queries).
+Critical threshold (number of long queries).
 
 =item B<--seconds>
 

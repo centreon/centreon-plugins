@@ -122,12 +122,12 @@ Filter database name (Can use regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'measurements', 'series'.
 
 =item B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'measurements', 'series'.
 
 =back

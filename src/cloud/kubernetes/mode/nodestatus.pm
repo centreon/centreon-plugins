@@ -146,12 +146,12 @@ Filter node name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{type}, %{status}, %{reason}, %{message}, %{name}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '(%{type} =~ /Ready/i && %{status} !~ /True/i) || (%{type} =~ /.*Pressure/i && %{status} !~ /False/i)').
+Define the conditions to match for the status to be CRITICAL (Default: '(%{type} =~ /Ready/i && %{status} !~ /True/i) || (%{type} =~ /.*Pressure/i && %{status} !~ /False/i)').
 You can use the following variables: %{type}, %{status}, %{reason}, %{message}, %{name}.
 
 =back

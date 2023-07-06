@@ -218,22 +218,22 @@ Default: all existing job statuses are displayed.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "Failed"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "Failed"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-completed', 'total-failed', 'total-inprogress'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-completed', 'total-failed', 'total-inprogress'.
 
 =back

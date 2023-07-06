@@ -95,11 +95,11 @@ Check current client connections.
 
 =item B<--warning>
 
-Threshold warning (on active connections).
+Warning threshold (on active connections).
 
 =item B<--critical>
 
-Threshold critical (on active connections.
+Critical threshold (on active connections.
 
 =back
 

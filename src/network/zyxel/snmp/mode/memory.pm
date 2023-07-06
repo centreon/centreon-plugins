@@ -96,12 +96,12 @@ Check memory usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'mem-usage' (%), 'flash-usage' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'mem-usage' (%), 'flash-usage' (%).
 
 

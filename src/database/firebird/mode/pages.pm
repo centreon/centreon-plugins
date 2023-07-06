@@ -115,12 +115,12 @@ Check page statistics on current database.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'reads', 'writes', 'fetches', 'marks'. 
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'reads', 'writes', 'fetches', 'marks'. 
 
 =back

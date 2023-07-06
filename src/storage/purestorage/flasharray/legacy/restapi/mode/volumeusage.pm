@@ -207,12 +207,12 @@ Filter volume name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'data-reduction', 'total-reduction'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'data-reduction', 'total-reduction'.
 
 =item B<--units>

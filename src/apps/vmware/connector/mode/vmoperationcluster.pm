@@ -130,12 +130,12 @@ Search in following datacenter(s) (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: svmotion, vmotion, clone.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: svmotion, vmotion, clone.
 
 =back

@@ -95,12 +95,12 @@ Check connections setup rate on Stormshield Firewall equipments.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'tcp', 'udp'
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'tcp', 'udp'
 
 =back

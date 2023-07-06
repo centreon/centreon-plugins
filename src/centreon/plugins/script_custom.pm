@@ -291,7 +291,7 @@ Return the version of the plugin.
 
 =item B<--custommode>
 
-When a plugin offers several ways (CLI, library, etc.) to get the an information
+When a plugin offers several ways (CLI, library, etc.) to get information
 the desired one must be defined with this option.
 
 =item B<--list-custommode>

@@ -195,22 +195,22 @@ Filter wan name (can be a regexp).
 
 =item B<--warning-health-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /fail/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /fail/').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: Can be: 'traffic-in', 'traffic-out'.
 
 =back

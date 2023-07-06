@@ -93,11 +93,11 @@ Check Sonicwall connections usage
 
 =item B<--warning-usage>
 
-Threshold warning. Usage (%)
+Warning threshold. Usage (%)
 
 =item B<--critical-usage>
 
-Threshold critical. Usage (%)
+Critical threshold. Usage (%)
 
 =back
 

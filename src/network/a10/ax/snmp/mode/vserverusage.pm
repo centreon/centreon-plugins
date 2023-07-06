@@ -202,22 +202,22 @@ Check virtual server usage.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'current-con', 'total-con', 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'current-con', 'total-con', 'traffic-in', 'traffic-out'.
 
 =item B<--filter-name>

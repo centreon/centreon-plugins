@@ -171,12 +171,12 @@ Check nodes count by overall compliance.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'perfect', 'good', 'average', 'poor'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'perfect', 'good', 'average', 'poor'.
 
 =item B<--units>

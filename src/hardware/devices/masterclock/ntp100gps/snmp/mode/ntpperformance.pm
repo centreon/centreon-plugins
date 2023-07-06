@@ -140,21 +140,21 @@ Check NTP performances
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{health} !~ /No leap second today/')
+Define the conditions to match for the status to be WARNING (Default: '%{health} !~ /No leap second today/')
 You can use the following variables: %{leap}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '')
+Define the conditions to match for the status to be CRITICAL (Default: '')
 You can use the following variables: %{health}
 
 =item B<--warning-*>
 
-Threshold warning. Can be : 'stratum-level', 'precision', 'poll-interval'
+Warning threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =item B<--critical-*>
 
-Threshold critical. Can be : 'stratum-level', 'precision', 'poll-interval'
+Critical threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =back
 

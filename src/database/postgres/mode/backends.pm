@@ -151,11 +151,11 @@ Check the current number of connections for one or more databases
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--exclude>
 

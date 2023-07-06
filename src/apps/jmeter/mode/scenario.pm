@@ -234,11 +234,11 @@ Scenario used by JMeter (without extension).
 
 =item B<--warning>
 
-Threshold warning in seconds (scenario execution time).
+Warning threshold in seconds (scenario execution time).
 
 =item B<--critical>
 
-Threshold critical in seconds (scenario execution time).
+Critical threshold in seconds (scenario execution time).
 
 =back
 

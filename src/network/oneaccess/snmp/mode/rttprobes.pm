@@ -190,17 +190,17 @@ Filter probes by name.
 
 =item B<--unknown-probe-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--warning-probe-estatus>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--critical-probe-status>
 
-Set critical threshold for status (Default: '%{adminStatus} eq "active" and %{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} eq "active" and %{status} ne "ok"').
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
 =item B<--warning-*> B<--critical-*>

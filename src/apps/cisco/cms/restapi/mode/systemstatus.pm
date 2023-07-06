@@ -201,23 +201,23 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (Default: '').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{activated} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{activated} !~ /true/i').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 

@@ -132,12 +132,12 @@ Can be: 'node', 'cluster' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'failed', 'pre-failed'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'failed', 'pre-failed'.
 
 =back

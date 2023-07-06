@@ -170,17 +170,17 @@ Filter clusters by serial number (Can be a regexp).
 
 =item B<--unknown-chassis-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--warning-chassis-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--critical-chassis-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--unknown-psu-status>

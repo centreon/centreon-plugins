@@ -103,11 +103,11 @@ Check system memory usage (SW.mib).
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

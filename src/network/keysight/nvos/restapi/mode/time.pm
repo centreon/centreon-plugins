@@ -158,30 +158,32 @@ Check time offset of server with ntp server. Use local time if ntp-host option i
 
 =item B<--unknown-ntp-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-ntp-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-ntp-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /in_reach|in_sync/i')
-
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /in_reach|in_sync/i')
 You can use the following variables: %{status}
 
 =item B<--warning-offset>
 
-Time offset warning threshold (in seconds).
+Define the time offset (in seconds) that will trigger a WARNING status.
 
 =item B<--critical-offset>
 
-Time offset critical Threshold (in seconds).
+Define the time offset (in seconds) that will trigger a CRITICAL status.
 
 =item B<--ntp-hostname>
 
-Set the ntp hostname (if not set, localtime is used).
+Set the NTP hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the NTP port (Default: 123).
 
 =item B<--timezone>
 

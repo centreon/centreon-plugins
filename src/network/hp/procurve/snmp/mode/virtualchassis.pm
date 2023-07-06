@@ -323,47 +323,47 @@ Filter members by serial (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /active/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /active/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i').
 You can use the following variables: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

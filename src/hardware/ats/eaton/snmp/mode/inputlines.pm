@@ -159,7 +159,7 @@ Example: --filter-counters='^voltage$'
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'voltage', 'frequence'.
 
 =back

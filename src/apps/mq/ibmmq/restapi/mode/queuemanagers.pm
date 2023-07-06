@@ -146,17 +146,17 @@ Filter queue managers by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{mgr_status}, %{channel_initiator_status}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{mgr_status}, %{channel_initiator_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{mgr_status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{mgr_status} !~ /running/i').
 You can use the following variables: %{mgr_status}, %{channel_initiator_status}
 
 =item B<--warning-*> B<--critical-*>

@@ -175,12 +175,12 @@ Filter phone by description (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}, %{description}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^registered/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^registered/').
 You can use the following variables: %{status}, %{name}, %{description}
 
 =item B<--warning-*> B<--critical-*>

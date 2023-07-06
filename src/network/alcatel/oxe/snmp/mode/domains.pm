@@ -262,7 +262,7 @@ Filter by domain (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cac-usage' (%), 'conference-usage' (%), 
 'cac-overrun' (absolute),  conf-outoforder (absolute),
 'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
@@ -270,7 +270,7 @@ Can be: 'cac-usage' (%), 'conference-usage' (%),
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cac-usage' (%), 'conference-usage' (%), 
 'cac-overrun' (absolute),  conf-outoforder (absolute),
 'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
