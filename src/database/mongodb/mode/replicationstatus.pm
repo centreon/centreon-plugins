@@ -187,7 +187,7 @@ sub manage_selection {
 
     my $ismaster = $options{custom}->run_command(
         database => 'admin',
-        command => $options{custom}->ordered_hash(ismaster => 1),
+        command => $options{custom}->ordered_hash(ismaster => 1)
     );
 
     if (!defined($ismaster->{me})) {
@@ -204,12 +204,12 @@ sub manage_selection {
 
     my %config;
     foreach my $member (sort @{$repl_conf->{config}->{members}}) {
-        $config{$member->{host}} = { priority => $member->{priority}, slaveDelay => $member->{slaveDelay} }
+        $config{ $member->{host} } = { priority => $member->{priority}, slaveDelay => $member->{slaveDelay} };
     }
 
     my $repl_status = $options{custom}->run_command(
         database => 'admin',
-        command => $options{custom}->ordered_hash(replSetGetStatus => 1),
+        command => $options{custom}->ordered_hash(replSetGetStatus => 1)
     );
 
     $self->{global}->{myState} = $repl_status->{myState};
@@ -217,19 +217,19 @@ sub manage_selection {
     $self->{global}->{syncSourceHost} = '-' if (!defined($self->{global}->{syncSourceHost}));
 
     foreach my $member (sort @{$repl_status->{members}}) {
-        $self->{members}->{$member->{name}} = {
+        $self->{members}->{ $member->{name} } = {
             name => $member->{name},
             stateStr => $member->{stateStr},
             health => $member->{health},
             optimeDate => $member->{optime}->{ts}->{seconds},
-            slaveDelay => $config{$member->{name}}->{slaveDelay},
-            priority => $config{$member->{name}}->{priority}
+            slaveDelay => $config{ $member->{name} }->{slaveDelay},
+            priority => $config{ $member->{name} }->{priority}
         }
     }
 
     foreach my $member (keys %{$self->{members}}) {
         next if ($self->{members}->{$member}->{stateStr} !~ /SECONDARY/);
-        $self->{members}->{$member}->{lag} = $self->{members}->{$ismaster->{primary}}->{optimeDate} - $self->{members}->{$member}->{optimeDate} - $self->{members}->{$member}->{slaveDelay};
+        $self->{members}->{$member}->{lag} = $self->{members}->{ $ismaster->{primary} }->{optimeDate} - $self->{members}->{$member}->{optimeDate} - $self->{members}->{$member}->{slaveDelay};
     }
 
     if (scalar(keys %{$self->{members}}) <= 0) {
@@ -250,33 +250,29 @@ Check replication status.
 
 =item B<--warning-status>
 
-Set warning threshold for checked instance status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--critical-status>
 
-Set critical threshold for checked instance status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{sync_host}.
 
 =item B<--warning-member-status>
 
-Set warning threshold for members status (default: '%{state} !~ /PRIMARY|SECONDARY/').
+Define the conditions to match for the status to be WARNING (default: '%{state} !~ /PRIMARY|SECONDARY/').
 You can use the following variables: %{name}, %{state}, %{health}, %{slave_delay}, %{priority}.
 
 =item B<--critical-member-status>
 
-Set critical threshold for members status (default: '%{health} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} !~ /up/').
 You can use the following variables: %{name}, %{state}, %{health}, %{slave_delay}, %{priority}.
 
-=item B<--warning-instance-replication-lag-seconds>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold for replication lag between primary and secondary members.
-Must not be over 0 (between minus slaveDelay and 0).
-
-=item B<--critical-instance-replication-lag-seconds>
-
-Critical threshold for replication lag between primary and secondary members.
-Must not be over 0 (between minus slaveDelay and 0).
+Thresholds.
+Can be: 'members-primary', 'members-secondary', 'members-arbiter', 'members-down',
+'replication-lag'.
 
 =back
 

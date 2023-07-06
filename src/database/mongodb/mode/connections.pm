@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "Connections ";
+    return 'Connections ';
 }
 
 sub set_counters {
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'active: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'conn' }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'current: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'conn' }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'totalCreated', per_second => 1 } ],
                 output_template => 'created: %.2f/s',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'conn/s' }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         }
@@ -110,35 +110,14 @@ __END__
 
 =head1 MODE
 
-Check connections statistics
+Check connections statistics.
 
 =over 8
 
-=item B<--warning-connections-*-count>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'active', 'current'.
-
-=item B<--critical-connections-*-count>
-
-Critical threshold.
-Can be: 'active', 'current'.
-
-=item B<--warning-connections-usage-percentage>
-
-Warning threshold for connections usage (current over available)
-
-=item B<--critical-connections-usage-percentage>
-
-Critical threshold for connections usage (current over available)
-
-=item B<--warning-connections-created-persecond>
-
-Warning threshold for connections created per second.
-
-=item B<--critical-connections-created-persecond>
-
-Critical threshold for connections created per second.
+Thresholds.
+Can be: 'active', 'current', 'usage', 'total-created'.
 
 =back
 
