@@ -47,7 +47,7 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{state} = $mapping_states{$options{new_datas}->{$self->{instance} . '_myState'}};
+    $self->{result_values}->{state} = $mapping_states{ $options{new_datas}->{ $self->{instance} . '_myState' } };
     $self->{result_values}->{sync_host} = $options{new_datas}->{$self->{instance} . '_syncSourceHost'};
     return 0;
 }
@@ -122,14 +122,6 @@ sub set_counters {
                     { template => '%s', min => 0 }
                 ]
             }
-        },
-        { label => 'members-down', nlabel => 'members.down.count', display_ok => 0, set => {
-                key_values => [  { name => 'down' } ],
-                output_template => 'down: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
         }
     ];
 
@@ -196,6 +188,7 @@ sub manage_selection {
     }
 
     $self->{global} = {};
+    $self->{members_counters} = { primary => 0, secondary => 0, arbiter => 0 };
     $self->{members} = {};
     my $repl_conf = $options{custom}->run_command(
         database => 'admin',
@@ -217,6 +210,9 @@ sub manage_selection {
     $self->{global}->{syncSourceHost} = '-' if (!defined($self->{global}->{syncSourceHost}));
 
     foreach my $member (sort @{$repl_status->{members}}) {
+        $self->{members_counters}->{ lc($member->{stateStr}) }++
+            if (!defined($self->{members_counters}->{ lc($member->{stateStr}) }));
+
         $self->{members}->{ $member->{name} } = {
             name => $member->{name},
             stateStr => $member->{stateStr},
@@ -271,7 +267,7 @@ You can use the following variables: %{name}, %{state}, %{health}, %{slave_delay
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'members-primary', 'members-secondary', 'members-arbiter', 'members-down',
+Can be: 'members-primary', 'members-secondary', 'members-arbiter',
 'replication-lag'.
 
 =back
