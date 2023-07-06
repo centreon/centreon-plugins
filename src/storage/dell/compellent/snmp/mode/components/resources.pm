@@ -32,7 +32,7 @@ our @EXPORT_OK = qw(%map_sc_status);
 %map_sc_status = (
     1 => 'up',
     2 => 'down',
-    3 => 'degraded',
+    3 => 'degraded'
 );
 
 1;

@@ -29,12 +29,12 @@ use POSIX;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "warning:s"       => { name => 'warning', },
-        "critical:s"      => { name => 'critical', },
+        'warning:s'  => { name => 'warning', },
+        'critical:s' => { name => 'critical' }
     });
 
     return $self;
@@ -45,12 +45,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -87,7 +87,7 @@ sub run {
             min => 0
         );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -104,11 +104,11 @@ Check database connection time.
 
 =item B<--warning>
 
-Threshold warning in milliseconds.
+Warning threshold in milliseconds.
 
 =item B<--critical>
 
-Threshold critical in milliseconds.
+Critical threshold in milliseconds.
 
 =back
 

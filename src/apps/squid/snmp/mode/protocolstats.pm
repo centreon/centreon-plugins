@@ -223,14 +223,14 @@ Example: --filter-counters='http'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'http-hits-rate', 'http-errors', 'http-traffic-in', 'http-traffic-out',
 'icp-traffic-in', 'icp-traffic-out', 'server-traffic-in', 'server-traffic-out',
 'clients'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'http-hits-rate', 'http-errors', 'http-traffic-in', 'http-traffic-out',
 'icp-traffic-in', 'icp-traffic-out', 'server-traffic-in', 'server-traffic-out',
 'clients'.

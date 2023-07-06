@@ -232,32 +232,32 @@ Check pdu environmental sensors.
 
 =item B<--unknown-temperature-status>
 
-Set unknon threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-humidity-status>
 
-Set unknon threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-humidity-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-humidity-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

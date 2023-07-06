@@ -91,6 +91,19 @@ sub custom_cast_perfdata {
             min => 0,
             max => 100
         );
+    } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'deltaps') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/count$/persecond/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            instances => $self->{result_values}->{display},
+            value => sprintf('%.2f', $self->{result_values}->{used_ps}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            unit => '/s',
+            min => 0
+        );
     } else {
         $self->{output}->perfdata_add(
             force_new_perfdata => 1,
@@ -111,6 +124,8 @@ sub custom_cast_threshold {
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_cast} =~ /percent/) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'deltaps') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used_ps}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
@@ -119,6 +134,18 @@ sub custom_cast_threshold {
 
 sub custom_cast_output {
     my ($self, %options) = @_;
+
+    if ($self->{instance_mode}->{option_results}->{units_cast} eq 'deltaps') {
+        return sprintf(
+            '%s %s : %.2f/s (%.2f%% - %s on %s)',
+            $self->{result_values}->{cast_going} eq 'i' ? 'In' : 'Out',
+            ucfirst($self->{result_values}->{cast_test}),
+            $self->{result_values}->{used_ps},
+            $self->{result_values}->{prct},
+            $self->{result_values}->{used},
+            $self->{result_values}->{total}
+        );
+    }
 
     return sprintf(
         '%s %s : %.2f%% (%s on %s)',
@@ -163,6 +190,10 @@ sub custom_cast_calc {
     } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'delta') {
         $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $cast_diff;
+    } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'deltaps') {
+        $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
+        $self->{result_values}->{used} = $cast_diff;
+        $self->{result_values}->{used_ps} = $cast_diff / $options{delta_time};
     } else {
         $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $cast;
@@ -296,6 +327,19 @@ sub custom_errors_perfdata {
             min => 0,
             max => 100
         );
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/count$/persecond/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            unit => '/s',
+            instances => $self->{result_values}->{display},
+            value => sprintf('%.2f', $self->{result_values}->{used_ps}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0
+        );
     } else {
         $self->{output}->perfdata_add(
             label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1},
@@ -316,6 +360,8 @@ sub custom_errors_threshold {
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used_ps}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
@@ -324,6 +370,17 @@ sub custom_errors_threshold {
 
 sub custom_errors_output {
     my ($self, %options) = @_;
+
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
+        return sprintf(
+            'Packets %s : %.2f/s (%.2f%% - %s on %s)',
+            $self->{result_values}->{label},
+            $self->{result_values}->{used_ps},
+            $self->{result_values}->{prct},
+            $self->{result_values}->{used},
+            $self->{result_values}->{total}
+        );
+    }
 
     return sprintf(
         'Packets %s : %.2f%% (%s on %s)',
@@ -362,6 +419,10 @@ sub custom_errors_calc {
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
         $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $errors_diff;
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+        $self->{result_values}->{used} = $errors_diff;
+        $self->{result_values}->{used_ps} = $errors_diff / $options{delta_time};
     } else {
         $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
@@ -954,7 +1015,7 @@ sub check_options {
                 $self->{option_results}->{units_errors} eq '' ||
                 $self->{option_results}->{units_errors} eq '%');
         $self->{option_results}->{units_errors} = 'delta' if ($self->{option_results}->{units_errors} eq 'absolute'); # compat
-        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|deltaps|counter)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
             $self->{output}->option_exit();
         }
@@ -962,7 +1023,7 @@ sub check_options {
     if (defined($self->{option_results}->{add_cast})) {
         $self->{option_results}->{units_cast} = 'percent_delta'
             if (!defined($self->{option_results}->{units_cast}) || $self->{option_results}->{units_cast} eq '');
-        if ($self->{option_results}->{units_cast} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+        if ($self->{option_results}->{units_cast} !~ /^(?:percent|percent_delta|delta|deltaps|counter)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong option --units-cast.');
             $self->{output}->option_exit();
         }
@@ -1584,12 +1645,12 @@ If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -1606,11 +1667,11 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -1618,11 +1679,11 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
 
 =item B<--speed>
 
@@ -1658,11 +1719,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 

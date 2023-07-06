@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -35,7 +35,7 @@ sub new {
         'critical:s'       => { name => 'critical', },
         'seconds:s'        => { name => 'seconds', default => 60 },
         'filter-user:s'    => { name => 'filter_user' },
-        'filter-command:s' => { name => 'filter_command', default => '^(?!(sleep)$)' },
+        'filter-command:s' => { name => 'filter_command', default => '^(?!(sleep)$)' }
     });
 
     return $self;
@@ -61,7 +61,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
@@ -98,7 +97,7 @@ sub run {
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
         min => 0
     );
-    
+
     for (my $i = 0; $i < 10 && $i < scalar(@queries); $i++) {
         $queries[$i]->{query} =~ s/\|/-/mg if (defined($queries[$i]->{query}));
         $self->{output}->output_add(long_msg =>
@@ -126,11 +125,11 @@ Check current number of long queries.
 
 =item B<--warning>
 
-Threshold warning (number of long queries).
+Warning threshold (number of long queries).
 
 =item B<--critical>
 
-Threshold critical (number of long queries).
+Critical threshold (number of long queries).
 
 =item B<--seconds>
 

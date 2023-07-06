@@ -119,13 +119,13 @@ Check writes statistics to the data node.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'points-written', 'writes-ok', 'writes-error',
 'writes-drop', 'writes-timeout'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'points-written', 'writes-ok', 'writes-error',
 'writes-drop', 'writes-timeout'.
 

@@ -26,7 +26,7 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scScStatus    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.29.1.3', map => \%map_sc_status },
-    scScName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.29.1.4' },
+    scScName      => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.29.1.4' }
 };
 my $oid_scScEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.29.1';
 
@@ -48,17 +48,22 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_scScEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'sc', instance => $instance));
+        next if ($self->check_filter(section => 'sc', instance => $instance, name => $result->{scScName}));
         $self->{components}->{sc}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("storage center '%s' status is '%s' [instance = %s]",
-                                    $result->{scScName}, $result->{scScStatus}, $instance, 
-                                    ));
-        
-        my $exit = $self->get_severity(label => 'default', section => 'sc', value => $result->{scScStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "storage center '%s' status is '%s' [instance: %s]",
+                $result->{scScName}, $result->{scScStatus}, $instance
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'sc', name => $result->{scScName}, value => $result->{scScStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Storage center '%s' status is '%s'", $result->{scScName}, $result->{scScStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Storage center '%s' status is '%s'", $result->{scScName}, $result->{scScStatus})
+            );
         }
     }
 }

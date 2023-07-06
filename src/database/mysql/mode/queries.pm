@@ -26,11 +26,17 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "Requests ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
    
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
    
     $self->{maps_counters}->{global} = [
@@ -38,10 +44,10 @@ sub set_counters {
                 key_values => [ { name => 'Queries', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { label => 'total_requests', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'total_requests', template => '%d', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     foreach ('update', 'delete', 'insert', 'truncate', 'select', 'commit', 'begin') {
@@ -66,15 +72,9 @@ sub set_counters {
     }
 }
 
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return "Requests ";
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -91,7 +91,7 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.0.76').");
         $self->{output}->option_exit();
     }
-    
+
     $options{sql}->query(query => q{
         SHOW /*!50000 global */ STATUS WHERE Variable_name IN ('Queries', 'Com_update', 'Com_delete', 'Com_insert', 'Com_truncate', 'Com_select', 'Com_commit', 'Com_begin')
     });
@@ -118,13 +118,13 @@ Check average number of queries executed.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'update', 'insert', 'delete', 'truncate',
 'select', 'begin', 'commit'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'update', 'insert', 'delete', 'truncate',
 'select', 'begin', 'commit'.
 

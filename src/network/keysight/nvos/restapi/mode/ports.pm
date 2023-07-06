@@ -252,32 +252,32 @@ Filter ports by name (can be a regexp).
 
 =item B<--unknown-license-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-license-status>
 
-Set warning threshold for status (Default: '%{status} =~ /invalid_software_version/').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /invalid_software_version/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-license-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{adminStatus}, %{operationalStatus}, %{name}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{adminStatus}, %{operationalStatus}, %{name}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"').
 You can use the following variables: %{adminStatus}, %{operationalStatus}, %{name}
 
 =item B<--warning-*> B<--critical-*>

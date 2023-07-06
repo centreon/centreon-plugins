@@ -254,19 +254,19 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =item B<--warning-entries>
 
-Threshold warning (number of results)
+Warning threshold (number of results)
 
 =item B<--critical-entries>
 
-Threshold critical (number of results)
+Critical threshold (number of results)
 
 =back
 

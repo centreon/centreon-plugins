@@ -189,27 +189,27 @@ Check AIX swap memory.
 
 =item B<--warning-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-usage>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--warning-total-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-total-usage>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--warning-total-active>
 
-Threshold warning total page space active.
+Warning threshold total page space active.
 
 =item B<--critical-total-active>
 
-Threshold critical total page space active.
+Critical threshold total page space active.
 
 =item B<--paging-state-buggy>
 

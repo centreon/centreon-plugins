@@ -87,7 +87,7 @@ Can be: 'switch', 'sensor'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=sensor,1.1
+You can also exclude items from specific instances: --filter=sensor,1.1
 
 =item B<--absent-problem>
 
@@ -96,13 +96,12 @@ Can be specific or global: --absent-problem=sensor,1.2
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='sensor,OK,unknown'
 
 =item B<--warning>

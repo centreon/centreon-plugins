@@ -66,7 +66,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -210,12 +210,12 @@ Check user password expiration.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{expire} ne "never" and %{expire_time} == 0').
+Define the conditions to match for the status to be CRITICAL (Default: '%{expire} ne "never" and %{expire_time} == 0').
 You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =back

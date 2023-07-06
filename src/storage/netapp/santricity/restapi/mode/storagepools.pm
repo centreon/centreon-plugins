@@ -199,17 +199,17 @@ Filter pool name (can be a regexp).
 
 =item B<--unknown-pool-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-pool-status>
 
-Set warning threshold for status (Default: '%{raid_status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{raid_status} =~ /degraded/i').
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--critical-pool-status>
 
-Set critical threshold for status (Default: '%{raid_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{raid_status} =~ /failed/i').
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

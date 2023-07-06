@@ -435,12 +435,12 @@ Time in minutes before reloading cache file (default: 60).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{op_mode}, %{ha_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{op_mode}, %{ha_state}
 
 =item B<--warning-*> B<--critical-*>

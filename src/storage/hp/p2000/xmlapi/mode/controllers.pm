@@ -391,77 +391,77 @@ Filter controllers by controller name (can be a regexp).
 
 =item B<--unknown-controller-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-controller-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-controller-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-network-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-network-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-network-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-expander-port-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-expander-port-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-expander-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-compact-flash-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-compact-flash-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-compact-flash-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

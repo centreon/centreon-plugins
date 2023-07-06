@@ -155,22 +155,22 @@ Filter database name (Can use regexp).
 
 =item B<--warning-subinstance-collection-size-*-bytes>
 
-Threshold warning.
+Warning threshold.
 Can be: 'storage', 'index'.
 
 =item B<--critical-subinstance-collection-size-*-bytes>
 
-Threshold critical.
+Critical threshold.
 Can be: 'storage', 'index'.
 
 =item B<--warning-subinstance-collection-*-count>
 
-Threshold warning.
+Warning threshold.
 Can be: 'documents', 'indexes'.
 
 =item B<--critical-subinstance-collection-*-count>
 
-Threshold critical.
+Critical threshold.
 Can be: 'documents', 'indexes'.
 
 =back

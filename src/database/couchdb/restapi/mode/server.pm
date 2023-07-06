@@ -209,32 +209,32 @@ Filter database name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^ok/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^ok/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-compaction-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--warning-compaction-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--critical-compaction-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{compaction_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -150,12 +150,12 @@ Example : --filter-counters='^idle$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'user', 'sys', 'idle', 'wait'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'user', 'sys', 'idle', 'wait'.
 
 =back

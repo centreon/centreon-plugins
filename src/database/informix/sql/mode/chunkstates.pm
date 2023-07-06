@@ -131,11 +131,11 @@ xxxx --chunk-state="is_offline" --warning="@1:1" --error-msg="Chunk %s is down"
 
 =item B<--warning>
 
-Threshold warning (can check 1 or 0).
+Warning threshold (can check 1 or 0).
 
 =item B<--critical>
 
-Threshold critical (can check 1 or 0).
+Critical threshold (can check 1 or 0).
 
 =item B<--chunk-state>
 

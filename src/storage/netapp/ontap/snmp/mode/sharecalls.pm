@@ -109,12 +109,12 @@ If you are in cluster mode, the following mode doesn't work. Ask to netapp to ad
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cifs', 'nfs'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cifs', 'nfs'.
 
 =back

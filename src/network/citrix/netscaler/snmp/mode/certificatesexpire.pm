@@ -112,11 +112,11 @@ Filter by name (can be a regexp).
 
 =item B<--warning-days>
 
-Threshold warning in days.
+Warning threshold in days.
 
 =item B<--critical-days>
 
-Threshold critical in days.
+Critical threshold in days.
 
 =back
 

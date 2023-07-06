@@ -28,15 +28,15 @@ use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "lookback"                => { name => 'lookback', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'lookback'   => { name => 'lookback' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -64,7 +64,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    
+
     if (!($self->{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
@@ -94,8 +94,10 @@ sub run {
         $self->{output}->option_exit();
     }
     if ($have_query_cache !~ /^yes$/i || $query_cache_size == 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Query cache is turned off.");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Query cache is turned off."
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -117,29 +119,36 @@ sub run {
         $prcts{qcache_hitrate} = (($new_datas->{Qcache_hits} + $new_datas->{Com_select}) == 0) ? 100 : ($new_datas->{Qcache_hits}) * 100 / ($new_datas->{Qcache_hits} + $new_datas->{Com_select});
         
         my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("query cache hitrate at %.2f%%", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
-                                    );
-        $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
-                                      nlabel => 'database.qcache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
-                                      unit => '%',
-                                      value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
-                                      nlabel => 'database.qcache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
-                                      unit => '%',
-                                      value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("query cache hitrate at %.2f%%", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
+        );
+        $self->{output}->perfdata_add(
+            label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
+            nlabel => 'database.qcache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
+            unit => '%',
+            value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->perfdata_add(
+            label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
+            nlabel => 'database.qcache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
+            unit => '%',
+            value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+            min => 0
+        );
     }
     
     $self->{statefile_cache}->write(data => $new_datas); 
     if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Buffer creation..."
+        );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -156,11 +165,11 @@ Check hitrate in the Query Cache.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--lookback>
 

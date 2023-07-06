@@ -28,15 +28,15 @@ use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "lookback"                => { name => 'lookback', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning', },
+        'critical:s' => { name => 'critical', },
+        'lookback'   => { name => 'lookback' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -101,29 +101,37 @@ sub run {
         $prcts{keycache_hitrate} = ($new_datas->{Key_read_requests} == 0) ? 100 : ($new_datas->{Key_read_requests} - $new_datas->{Key_reads}) * 100 / $new_datas->{Key_read_requests};
         
         my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("myisam keycache hitrate at %.2f%%", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
-                                    );
-        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
-                                      nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
-                                      unit => '%',
-                                      value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
-                                      nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
-                                      unit => '%',
-                                      value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("myisam keycache hitrate at %.2f%%", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
+        );
+
+        $self->{output}->perfdata_add(
+            label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
+            nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
+            unit => '%',
+            value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->perfdata_add(
+            label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
+            nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
+            unit => '%',
+            value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+            min => 0
+        );
     }
-    
+
     $self->{statefile_cache}->write(data => $new_datas); 
     if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Buffer creation..."
+        );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -140,11 +148,11 @@ Check hitrate in the Myisam Key Cache.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--lookback>
 

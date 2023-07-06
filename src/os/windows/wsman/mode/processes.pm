@@ -153,11 +153,11 @@ name (with option --process-name).
 
 =item B<--warning>
 
-Threshold warning of matching processes detected.
+Warning threshold of matching processes detected.
 
 =item B<--critical>
 
-Threshold critical of matching processes detected.
+Critical threshold of matching processes detected.
 
 =back
 

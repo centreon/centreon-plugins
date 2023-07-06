@@ -149,12 +149,12 @@ Filter by name (regexp can be used).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-iops', 'write-iops', 'read-traffic', 'write-traffic'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-iops', 'write-iops', 'read-traffic', 'write-traffic'.
 
 =back

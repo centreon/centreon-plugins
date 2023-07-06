@@ -113,12 +113,12 @@ Filter devices by device name (can be a regexp).
 
 =item B<--warning-health-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{health_state}, %{cluster_name}, %{device_name}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_state} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_state} ne "ok"').
 You can use the following variables: %{health_state}, %{cluster_name}, %{device_name}
 
 =back

@@ -148,12 +148,12 @@ Check device cpu, memory and state.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /error/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

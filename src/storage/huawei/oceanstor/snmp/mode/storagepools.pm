@@ -236,17 +236,17 @@ Filter storage pool by domain name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{health_status}, %{running_status}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{health_status} =~ /degraded|partially broken/i').
+Define the conditions to match for the status to be WARNING (Default: '%{health_status} =~ /degraded|partially broken/i').
 You can use the following variables: %{health_status}, %{running_status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /fault|fail/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /fault|fail/i').
 You can use the following variables: %{health_status}, %{running_status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

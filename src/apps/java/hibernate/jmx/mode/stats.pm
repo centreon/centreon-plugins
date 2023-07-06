@@ -173,13 +173,13 @@ Filter application name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connect-count', 'query-count', 'insert-count',
 'update-count' 'close-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connect-count', 'query-count', 'insert-count',
 'update-count' 'close-count'.
 

@@ -139,17 +139,17 @@ Filter signaling group instance (can be a regexp).
 
 =item B<--unknown-sig-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--warning-sig-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--critical-sig-status>
 
-Set critical threshold for status (Default: '%{state} =~ /out-of-service/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /out-of-service/').
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =back

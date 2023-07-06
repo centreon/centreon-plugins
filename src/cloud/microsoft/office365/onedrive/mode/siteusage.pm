@@ -363,7 +363,7 @@ Can be: 'url', 'owner' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-sites',
 'total-usage-active' (count), 'total-usage-inactive' (count),
 'total-file-count-active' (count), 'total-file-count-inactive' (count),
@@ -372,7 +372,7 @@ Can be: 'active-sites',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-sites',
 'total-usage-active' (count), 'total-usage-inactive' (count),
 'total-file-count-active' (count), 'total-file-count-inactive' (count),

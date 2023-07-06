@@ -200,11 +200,11 @@ Critical threshold if the answer changed between two checks.
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

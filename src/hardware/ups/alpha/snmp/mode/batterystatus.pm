@@ -160,27 +160,27 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /batteryLow/i').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /batteryDepleted/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /batteryDepleted/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'temperature'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'temperature'.
 
 =back

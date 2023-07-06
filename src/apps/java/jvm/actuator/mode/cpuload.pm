@@ -86,19 +86,19 @@ WARN : Probably not work for java -version < 7.
 
 =item B<--warning-system>
 
-Threshold warning of System cpuload
+Warning threshold of System cpuload
 
 =item B<--critical-system>
 
-Threshold critical of System cpuload
+Critical threshold of System cpuload
 
 =item B<--warning-process>
 
-Threshold warning of Process cpuload
+Warning threshold of Process cpuload
 
 =item B<--critical-process>
 
-Threshold critical of Process cpuload
+Critical threshold of Process cpuload
 
 =back
 

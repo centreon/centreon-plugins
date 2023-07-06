@@ -139,17 +139,17 @@ Check output lines metrics.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /rebooting|onBypass/i').
+Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /rebooting|onBypass/i').
 You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /onBattery/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /onBattery/i').
 You can use the following variables: %{status}.
 
 =item B<--warning-*> B<--critical-*>

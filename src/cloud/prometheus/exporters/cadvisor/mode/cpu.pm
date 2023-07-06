@@ -170,12 +170,12 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'throttled'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'throttled'.
 
 =item B<--extra-filter>

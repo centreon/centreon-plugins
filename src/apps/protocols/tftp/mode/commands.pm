@@ -235,21 +235,21 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "ok"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-time>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-time>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--command>
 

@@ -140,11 +140,11 @@ Command used: '/usr/sbin/raidctl -S 2>&1'
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

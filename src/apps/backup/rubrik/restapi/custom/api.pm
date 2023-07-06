@@ -287,48 +287,91 @@ sub credentials {
     return $creds;
 }
 
+sub request_api_paginate {
+    my ($self, %options) = @_;
+
+    my $endpoint = $options{endpoint};
+    if ($endpoint !~ /^\/api/) {
+        $endpoint = '/api/internal' . $endpoint;
+    }
+
+    my $full_url;
+    my $items = [];
+    $options{get_param} = [] if (!defined($options{get_param}));
+    my $get_param = $options{get_param};
+    while (1) {
+        my $content = $self->{http}->request(
+            method => $options{method},
+            full_url => $full_url,
+            url_path => $endpoint,
+            get_param => $get_param,
+            %{$options{creds}}
+        );
+
+        if (!defined($content) || $content eq '') {
+            $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+            $self->{output}->option_exit();
+        }
+
+        return $decoded if (ref($decoded) ne 'HASH');
+
+        return $decoded if (!defined($decoded->{hasMore}) || !defined($options{label}));
+
+        push @$items, @{$decoded->{ $options{label} }};
+
+        last if ($decoded->{hasMore} !~ /true|1/i);
+
+        if (defined($decoded->{cursor})) {
+            $get_param = [@{$options{get_param}}, 'cursor=' . $decoded->{cursor}];
+        } elsif (defined($decoded->{afterId})) {
+            $get_param = [@{$options{get_param}}, 'after_id=' . $decoded->{afterId}];
+        } elsif (defined($decoded->{links}->{next})) {
+            $full_url = $decoded->{links}->{next}->{href};
+        }
+    }
+
+    return $items;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
     my $creds = $self->credentials();
-    my ($content) = $self->{http}->request(
+    my $result = $self->request_api_paginate(
+        label => $options{label},
         method => 'GET',
-        url_path => '/api/internal' . $options{endpoint},
+        endpoint => $options{endpoint},
         get_param => $options{get_param},
-        %$creds
+        creds => $creds
     );
 
     # Maybe token is invalid. so we retry
     if (defined($self->{token}) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_token();
         $creds = $self->credentials();
-        $content = $self->{http}->request(
+        $creds->{unknown_status} = $self->{unknown_http_status};
+        $creds->{warning_status} = $self->{warning_status};
+        $creds->{critical_http_status} = $self->{critical_http_status};
+        $result = $self->request_api_paginate(
+            label => $options{label},
             method => 'GET',
-            url_path => '/api/internal' . $options{endpoint},
+            endpoint => $options{endpoint},
             get_param => $options{get_param},
-            %$creds,
-            unknown_status => $self->{unknown_http_status},
-            warning_status => $self->{warning_http_status},
-            critical_status => $self->{critical_http_status}
+            creds => $creds
         );
     }
 
-    if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
-    }
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
+    return $result;
 }
 
 1;

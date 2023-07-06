@@ -462,12 +462,12 @@ If the expression is true, metrics are checked (Default: '%{opstatus} eq "enable
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
 You can use the following variables: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -483,11 +483,11 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -495,11 +495,11 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
 
 =item B<--speed>
 
@@ -519,11 +519,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-extra-display>
 

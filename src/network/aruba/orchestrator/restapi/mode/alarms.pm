@@ -173,12 +173,12 @@ Set timezone for creation time (Default is 'UTC').
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /minor|warning/i')
+Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /minor|warning/i')
 You can use the following variables: %{severity}, %{hostname}, %{name}, %{timeraised}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /major|critical/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /major|critical/i').
 You can use the following variables: %{severity}, %{hostname}, %{name}, %{timeraised}
 
 =item B<--warning-*> B<--critical-*>

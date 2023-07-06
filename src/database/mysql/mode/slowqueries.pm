@@ -31,11 +31,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -53,7 +53,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{statefile_cache}->check_options(%options);
 }
 
@@ -68,7 +68,7 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
-    
+
     $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
     my ($name, $result) = $self->{sql}->fetchrow_array();
     if (!defined($result)) {
@@ -97,9 +97,10 @@ sub run {
             severity => $exit_code,
             short_msg => sprintf("%d slow queries since last check.", $value)
         );
+
         $self->{output}->perfdata_add(
             label => 'slow_queries_delta',
-            nlabel => 'database.slowqueries.delta',
+            nlabel => 'database.slowqueries.delta.count',
             value => $value,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -109,8 +110,10 @@ sub run {
     
     $self->{statefile_cache}->write(data => $new_datas); 
     if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Buffer creation..."
+        );
     }
 
     $self->{output}->display();

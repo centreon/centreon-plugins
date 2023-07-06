@@ -251,17 +251,17 @@ Check email security usage.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
+Define the conditions to match for the status to be WARNING (Default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-*> B<--critical-*> 

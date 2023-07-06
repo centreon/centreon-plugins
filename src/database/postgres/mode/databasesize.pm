@@ -109,11 +109,11 @@ Filter database to checks (Can use regexp).
 
 =item B<--warning-size>
 
-Threshold warning in bytes, maximum size allowed.
+Warning threshold in bytes, maximum size allowed.
 
 =item B<--critical-size>
 
-Threshold critical in bytes, maximum size allowed.
+Critical threshold in bytes, maximum size allowed.
 
 =back
 

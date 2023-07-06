@@ -167,12 +167,12 @@ Check Output lines metrics (load, voltage, current).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
 
 =back

@@ -2,5 +2,5 @@
     "dependencies": [
         "perl(SNMP)"
     ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-Storage-Oracle-Zfs-Snmp"
+    "replaces": ["centreon-plugin-Hardware-Storage-Oracle-Zfs-Snmp"]
 }

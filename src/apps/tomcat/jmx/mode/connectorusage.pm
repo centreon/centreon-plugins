@@ -228,12 +228,12 @@ Filter connector name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
 
 =item B<--units>

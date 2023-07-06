@@ -90,12 +90,6 @@ The following files are included by default:
 * centreon/plugins/templates/hardware.pm,
 * centreon/plugins/values.pm.
 
-Extra entries can be used, for example to make a package obsoleting another one:
-
-```bash
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Old-Plugin",
-```
-
 #### Create package dependencies management files
 
 In the previously created directory, create two new JSON files named *rpm.json* and *deb.json*.
@@ -124,6 +118,14 @@ Example of *deb.json* file:
         "libdatetime-perl"
     ]
 }
+```
+
+Extra entries can be used in *rpm.json* and *deb.json*, for example to make a package obsoleting another one:
+
+```bash
+    "conflicts": "centreon-plugin-Old-Plugin",
+    "replaces": "centreon-plugin-Old-Plugin",
+    "provides": "centreon-plugin-Old-Plugin",
 ```
 
 ### Commit and push changes

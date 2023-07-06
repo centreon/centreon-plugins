@@ -244,13 +244,13 @@ Check AP ESSID and BSSID statistics (WLSX-WLAN-MIB, WLSX-SWITCH-MIB).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'stations-associated' (ESSID and BSSID),
 'channel-noise', 'signal-noise-ratio' (BSSID).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'stations-associated' (ESSID and BSSID),
 'channel-noise', 'signal-noise-ratio' (BSSID).
 

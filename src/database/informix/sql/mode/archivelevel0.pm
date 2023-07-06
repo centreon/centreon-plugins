@@ -129,11 +129,11 @@ Check archive level0 backup last execution.
 
 =item B<--warning>
 
-Threshold warning in seconds since last execution.
+Warning threshold in seconds since last execution.
 
 =item B<--critical>
 
-Threshold critical in seconds since last execution.
+Critical threshold in seconds since last execution.
 
 =item B<--name>
 

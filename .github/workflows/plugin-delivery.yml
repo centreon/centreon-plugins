@@ -46,10 +46,11 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - uses: actions/cache@v3
+      - uses: actions/cache/restore@v3
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
 
       - name: Deliver sources
         uses: ./.github/actions/release-sources
@@ -66,7 +67,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distrib: [el7, el8, el9]
+        distrib: [el7]
 
     steps:
       - name: Checkout sources
@@ -82,11 +83,12 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-rpm-legacy:
+    if: ${{ inputs.stability == 'stable' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
       matrix:
-        distrib: [el7, el8]
+        distrib: [el7]
         major_version: ["21.10", "22.04", "22.10"]
 
     steps:
@@ -107,6 +109,7 @@ jobs:
           stability: ${{ inputs.stability }}
 
   deliver-deb:
+    if: ${{ inputs.stability == 'REMOVE-LINE' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -126,6 +129,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb-legacy:
+    if: ${{ inputs.stability == 'RESET-TO-STABLE' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false

@@ -107,17 +107,17 @@ Filter vdom by name.
 
 =item B<--unknown-health>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-health>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-health>
 
-Set critical threshold for status (Default: '%{status} !~ /success/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /success/i').
 You can use the following variables: %{status}, %{name}
 
 =back

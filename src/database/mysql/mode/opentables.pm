@@ -27,14 +27,13 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -81,15 +80,21 @@ sub run {
     my $prct_open = int(100 * $open_tables / $open_tables_limit);
     my $exit_code = $self->{perfdata}->threshold_check(value => $prct_open, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%.2f%% of the open files limit reached (%d of max. %d)",
-                                $prct_open, $open_tables, $open_tables_limit));
-    $self->{output}->perfdata_add(label => 'open_tables',
-                                  nlabel => 'database.open.tables.count',
-                                  value => $open_tables,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $open_tables_limit, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $open_tables_limit, cast_int => 1),
-                                  min => 0);
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf(
+            "%.2f%% of the open files limit reached (%d of max. %d)",
+            $prct_open, $open_tables, $open_tables_limit
+        )
+    );
+    $self->{output}->perfdata_add(
+        label => 'open_tables',
+        nlabel => 'database.open.tables.count',
+        value => $open_tables,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $open_tables_limit, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $open_tables_limit, cast_int => 1),
+        min => 0
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -107,11 +112,11 @@ Check number of open tables.
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

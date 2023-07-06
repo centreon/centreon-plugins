@@ -141,32 +141,32 @@ Filter replication name (can be a regexp).
 
 =item B<--unknown-health-status>
 
-Set unknown threshold for status (Default: '%{health_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{health_status} =~ /unknown/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-health-status>
 
-Set warning threshold for status (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
+Define the conditions to match for the status to be WARNING (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
-Set unknown threshold for status (Default: '%{repl_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{repl_status} =~ /unknown/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
 
-Set warning threshold for status (Default: '%{repl_status} =~ /syncing/i').
+Define the conditions to match for the status to be WARNING (Default: '%{repl_status} =~ /syncing/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>
 
-Set critical threshold for status (Default: '%{repl_status} =~ /inconsistent/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{repl_status} =~ /inconsistent/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =back

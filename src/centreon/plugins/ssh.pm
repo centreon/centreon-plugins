@@ -113,19 +113,21 @@ It can be: sshcli (default), plink and libssh.
 
 =item B<--ssh-username>
 
-Connect with specified username.
+Define the user name to log in to the host.
 
 =item B<--ssh-password>
 
-Login with specified password. Cannot be used with sshcli backend.
+Define the password associated with the user name.
+Cannot be used with the sshcli backend.
+Warning: using a password is not recommended. Use --ssh-priv-key instead.
 
 =item B<--ssh-port>
 
-Connect to specified port.
+Define the TCP port on which SSH is listening.
 
 =item B<--ssh-priv-key>
 
-Private key file for user authentication.
+Define the private key file to use for user authentication.
 
 =back
 

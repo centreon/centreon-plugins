@@ -29,7 +29,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'global-status'    => 'storage::dell::compellent::snmp::mode::globalstatus',
         'hardware'         => 'storage::dell::compellent::snmp::mode::hardware',

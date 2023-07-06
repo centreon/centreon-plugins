@@ -171,23 +171,23 @@ Check replication status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{sync_status} =~ /in progress/i').
+Define the conditions to match for the status to be WARNING (Default: '%{sync_status} =~ /in progress/i').
 You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{link_status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} =~ /down/i').
 You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 

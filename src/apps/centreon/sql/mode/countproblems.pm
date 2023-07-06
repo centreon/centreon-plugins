@@ -164,11 +164,11 @@ Centreon storage database name (default: 'centreon_storage').
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

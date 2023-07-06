@@ -198,14 +198,14 @@ Check controller status (WLSX-SYSTEMEXT-MIB).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
 %{status}, %{ip}, %{role}, %{location} (Default: '')
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
 %{status}, %{ip}, %{role}, %{location} (Default: '%{status} !~ /active/i')

@@ -301,23 +301,23 @@ Filter volume name (can be a regexp).
 
 =item B<--warning-replication-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-replication-status>
 
-Set critical threshold for status (Default: '%{status} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /normal/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read' (b/s), 'write' (b/s), 'read-iops', 'write-iops',
 'read-latency', 'write-latency', 'usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read' (b/s), 'write' (b/s), 'read-iops', 'write-iops',
 'read-latency', 'write-latency', 'usage'.
 

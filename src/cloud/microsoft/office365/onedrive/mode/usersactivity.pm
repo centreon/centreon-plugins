@@ -281,7 +281,7 @@ Filter users.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),
@@ -290,7 +290,7 @@ Can be: 'active-users',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),

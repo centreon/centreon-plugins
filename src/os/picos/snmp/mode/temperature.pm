@@ -107,27 +107,27 @@ Check temperature.
 
 =item B<--warning-switch-temperature>
 
-Threshold warning in celsius degrees for Pica switch.
+Warning threshold in celsius degrees for Pica switch.
 
 =item B<--critical-switch-temperature>
 
-Threshold critical in celsius degrees for Pica switch.
+Critical threshold in celsius degrees for Pica switch.
 
 =item B<--warning-chip-temperature>
 
-Threshold warning in celsius degrees for chip.
+Warning threshold in celsius degrees for chip.
 
 =item B<--critical-chip-temperature>
 
-Threshold critical in celsius degrees for chip.
+Critical threshold in celsius degrees for chip.
 
 =item B<--warning-cpu-temperature>
 
-Threshold warning in celsius degrees for CPU.
+Warning threshold in celsius degrees for CPU.
 
 =item B<--critical-cpu-temperature>
 
-Threshold critical in celsius degrees for CPU.
+Critical threshold in celsius degrees for CPU.
 
 =back
 

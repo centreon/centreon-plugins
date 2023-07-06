@@ -29,12 +29,14 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_signal_perfdata {
     my ($self) = @_;
 
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => [
-            $self->{result_values}->{cellId},
-            $self->{result_values}->{operator}
-        ],
+        instances => $instances,
         value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -57,8 +59,9 @@ sub cell_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking cellular radio module '%s' [operator: %s]",
+        "checking cellular radio module '%s' [icci: %s, operator: %s]",
         $options{instance_value}->{cellId}, 
+        $options{instance_value}->{icci}, 
         $options{instance_value}->{operator}
     );
 }
@@ -67,8 +70,9 @@ sub prefix_cell_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "cellular radio module '%s' [operator: %s] ",
-        $options{instance_value}->{cellId}, 
+        "cellular radio module '%s' [icci: %s, operator: %s] ",
+        $options{instance_value}->{cellId},
+        $options{instance_value}->{icci},
         $options{instance_value}->{operator}
     );
 }
@@ -112,7 +116,7 @@ sub set_counters {
             critical_default => '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'operator' }, { name => 'imsi' },
+                    { name => 'cellId' }, { name => 'operator' }, { name => 'imsi' }, { name => 'icci' },
                     { name => 'simStatus' }, { name => 'signalQuality' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -124,19 +128,25 @@ sub set_counters {
 
     $self->{maps_counters}->{signal} = [
         { label => 'module-cellradio-rsrp', nlabel => 'module.cellradio.rsrp.dbm', set => {
-                key_values => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'operator' } ],
+                key_values => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'icci' }, { name => 'operator' } ],
                 output_template => 'rsrp: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
+        { label => 'module-cellradio-rsrq', nlabel => 'module.cellradio.rsrq.dbm', set => {
+                key_values => [ { name => 'rsrq' }, { name => 'cellId' }, { name => 'icci' }, { name => 'operator' } ],
+                output_template => 'rsrq: %s dBm',
+                closure_custom_perfdata => $self->can('custom_signal_perfdata')
+            }
+        },
         { label => 'module-cellradio-rssi', nlabel => 'module.cellradio.rssi.dbm', set => {
-                key_values => [ { name => 'rssi' }, { name => 'cellId' }, { name => 'operator' } ],
+                key_values => [ { name => 'rssi' }, { name => 'cellId' }, { name => 'icci' }, { name => 'operator' } ],
                 output_template => 'rssi: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-snr', nlabel => 'module.cellradio.snr.db', set => {
-                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'operator' } ],
+                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'icci' }, { name => 'operator' } ],
                 output_template => 'snr: %s dB',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
@@ -150,10 +160,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-cell-id:s'  => { name => 'filter_cell_id' }
+        'filter-cell-id:s'            => { name => 'filter_cell_id' },
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
+        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(operator)';
+    }
+
+    $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances',
+        instances => $self->{option_results}->{custom_perfdata_instances},
+        labels => { cellId => 1, operator => 1, icci => 1 }
+    );
 }
 
 my $mapping_id = {
@@ -163,8 +189,10 @@ my $mapping_id = {
 my $mapping = {
     simStatus => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.20' }, # oacCellSIMStatus
     imsi      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.21' }, # oacCellIMSI
+    icci      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.22' }, # oacCellICCI
     operator  => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.40' }, # oacCellSelectedOperator
     rssi      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.41' }, # oacCellSignalStrength
+    rsrq      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.43' }, # oacCellRSRQ
     rsrp      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.44' }, # oacCellRSRP
     snr       => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.45' }, # oacCellSNR
     techno    => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.46' }  # oacCellRadioAccessTechnology
@@ -245,7 +273,7 @@ sub manage_selection {
     }
 
     return if (scalar(keys %{$self->{cells}}) <= 0);
-    
+
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
         instances => [ map($_, keys %{$self->{cells}}) ],
@@ -256,10 +284,13 @@ sub manage_selection {
     foreach (keys %{$self->{cells}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
+        $self->{cells}->{$_}->{icci} = $result->{icci};
         $self->{cells}->{$_}->{operator} = $result->{operator};
         $self->{cells}->{$_}->{status}->{operator} = $result->{operator};
+        $self->{cells}->{$_}->{status}->{icci} = $result->{icci};
         $self->{cells}->{$_}->{status}->{imsi} = defined($result->{imsi}) && $result->{imsi} =~ /^(?:[0-9]+)$/ ? $result->{imsi} : '-';
         $self->{cells}->{$_}->{signal}->{operator} = $result->{operator};
+        $self->{cells}->{$_}->{signal}->{icci} = $result->{icci};
 
         $self->{cells}->{$_}->{status}->{simStatus} = $result->{simStatus} =~ /is present/ ? 'present' : 'notPresent';
         $self->{cells}->{$_}->{status}->{signalQuality} = $self->get_signal_quality(
@@ -271,6 +302,7 @@ sub manage_selection {
         if ($self->{cells}->{$_}->{status}->{simStatus} eq 'present') {
             $self->{cells}->{$_}->{signal}->{rssi} = $result->{rssi};
             $self->{cells}->{$_}->{signal}->{rsrp} = $result->{rsrp};
+            $self->{cells}->{$_}->{signal}->{rsrq} = $result->{rsrq};
             $self->{cells}->{$_}->{signal}->{snr} = $result->{snr};
         }
 
@@ -292,25 +324,29 @@ Check cellular radio modules.
 
 Filter cell modules by id (IMEI or MEID).
 
+=item B<--custom-perfdata-instances>
+
+Define perfdatas instance (default: '%(cellId) %(operator)')
+
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{signalQuality} =~ /poor/').
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
+Define the conditions to match for the status to be WARNING (default: '%{signalQuality} =~ /poor/').
+You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
+Define the conditions to match for the status to be CRITICAL (default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
+You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{icci}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'modules-cellradio-detected', 'module-cellradio-rsrp', 
+Can be: 'modules-cellradio-detected', 'module-cellradio-rsrp', ''module-cellradio-rsrq',
 'module-cellradio-rssi', 'module-cellradio-snr'.
 
 =back

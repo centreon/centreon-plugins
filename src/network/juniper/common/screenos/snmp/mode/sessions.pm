@@ -111,12 +111,12 @@ Example: --filter-counters='^usage$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage' (%), 'failed'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage' (%), 'failed'.
 
 =back

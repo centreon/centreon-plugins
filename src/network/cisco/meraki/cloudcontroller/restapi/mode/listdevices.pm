@@ -84,7 +84,9 @@ sub manage_selection {
             status => $devices_statuses->{ $devices->{$_}->{serial} }->{status},
             public_ip => $devices_statuses->{ $devices->{$_}->{serial} }->{publicIp},
             network_name => $networks->{ $devices->{$_}->{networkId} }->{name},
-            organization_name => $organization_name
+            organization_name => $organization_name,
+            model => $devices->{$_}->{model},
+            serial => $_
         };
     }
 
@@ -97,11 +99,13 @@ sub run {
     my $devices = $self->manage_selection(%options);
     foreach (values %$devices) {
         $self->{output}->output_add(long_msg => sprintf(
-                '[name: %s][status: %s][network name: %s][organization name: %s]',
+                '[name: %s][status: %s][network name: %s][organization name: %s][model: %s][serial: %s]',
                 $_->{name},
                 $_->{status},
                 $_->{network_name},
-                $_->{organization_name}
+                $_->{organization_name},
+                $_->{model},
+                $_->{serial}
             )
         );
     }
@@ -118,7 +122,7 @@ sub disco_format {
     my ($self, %options) = @_;
 
     $self->{output}->add_disco_format(elements => [
-        'name', 'status', 'tags', 'organization_name', 'network_id', 'network_name'
+        'name', 'status', 'tags', 'organization_name', 'network_id', 'network_name', 'model', 'serial'
     ]);
 }
 
@@ -133,7 +137,9 @@ sub disco_show {
             network_name => $_->{network_name},
             network_id => $_->{networkId},
             organization_name => $_->{organization_name},
-            tags => defined($_->{tags}) ? join(',', @{$_->{tags}}) : ''
+            tags => defined($_->{tags}) ? join(',', @{$_->{tags}}) : '',
+            model => $_->{model},
+            serial => $_->{serial}
         );
     }
 }

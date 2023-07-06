@@ -124,12 +124,12 @@ Example: --filter-counters='ssid$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'ssid'
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'ssid'
 
 =item B<--filter-ssid>

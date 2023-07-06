@@ -266,47 +266,47 @@ Check virtual switching system.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{mode}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{mode}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{mode}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{role_last}').
+Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{role_last}').
 You can use the following variables: %{role}, %{role_last}, %{switch_id}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

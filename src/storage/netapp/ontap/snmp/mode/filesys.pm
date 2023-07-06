@@ -368,27 +368,27 @@ Check filesystem usage (volumes, snapshots and aggregates also).
 
 =item B<--unknown-vserver-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-vserver-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--critical-vserver-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--units>

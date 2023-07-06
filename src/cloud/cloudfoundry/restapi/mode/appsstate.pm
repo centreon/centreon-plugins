@@ -154,20 +154,20 @@ Filter apps name (can be a regexp).
 
 =item B<--warning-state>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-state>
 
-Threshold critical (Default: '%{state} !~ /STARTED/i').
+Critical threshold (Default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-*>
 
-Threshold warning for apps count based 
+Warning threshold for apps count based 
 on state (Can be: 'started', 'stopped')
 
 =item B<--critical-*>
 
-Threshold critical for apps count based 
+Critical threshold for apps count based 
 on state (Can be: 'started', 'stopped').
 
 =back

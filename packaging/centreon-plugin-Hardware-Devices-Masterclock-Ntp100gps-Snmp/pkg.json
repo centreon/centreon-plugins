@@ -7,6 +7,5 @@
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/uptime.pm",
         "hardware/devices/masterclock/ntp100gps/snmp/"
-    ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Hardware-Devices-Masterclock-Ntpserver-Snmp"
+    ]
 }

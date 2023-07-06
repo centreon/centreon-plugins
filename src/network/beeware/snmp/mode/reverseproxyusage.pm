@@ -181,22 +181,22 @@ Filter reverse proxy (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i').
 You can use the following variables: %{display}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu', 'memory' (B), 'nbchilds'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu', 'memory' (B), 'nbchilds'.
 
 =back

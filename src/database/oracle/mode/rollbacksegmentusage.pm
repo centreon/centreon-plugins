@@ -170,13 +170,13 @@ Check Oracle rollback segment usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'header-contention', 'block-contention', 'hit-ratio',
 'extends', 'wraps'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'header-contention', 'block-contention', 'hit-ratio',
 'extends', 'wraps'.
 

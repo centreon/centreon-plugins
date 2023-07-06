@@ -143,8 +143,7 @@ Retention in days (default : 1).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: status,regexp).
 Example: --threshold-overload='CRITICAL,^(?!(1)$)'
 
 =back

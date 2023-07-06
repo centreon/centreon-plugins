@@ -360,17 +360,17 @@ Filter paths by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
 You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{maintenance}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-adapter-status>

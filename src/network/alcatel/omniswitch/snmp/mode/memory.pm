@@ -165,11 +165,11 @@ Check memory usage (AlcatelIND1Health.mib).
 
 =item B<--warning>
 
-Threshold warning in percent (1m,1h).
+Warning threshold in percent (1m,1h).
 
 =item B<--critical>
 
-Threshold critical in percent (1m,1h).
+Critical threshold in percent (1m,1h).
 
 =back
 

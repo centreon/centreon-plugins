@@ -196,13 +196,13 @@ Check database statistics: commit, rollback, insert, delete, update.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'commit', 'rollback', 'insert', 'delete', 'update',
 'total-commit', 'total-rollback', 'total-insert', 'total-delete', 'total-update'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'commit', 'rollback', 'insert', 'delete', 'update',
 'total-commit', 'total-rollback', 'total-insert', 'total-delete', 'total-update'.
 

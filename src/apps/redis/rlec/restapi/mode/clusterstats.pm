@@ -306,7 +306,7 @@ Thresholds are on free space left.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 
@@ -315,7 +315,7 @@ Can be: 'cpu-system', 'cpu-user',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 

@@ -145,17 +145,17 @@ Display failed hosts list in verbose output.
 
 =item B<--unknown-job-status>
 
-Set unknown threshold for status (Default: '%{last_job_status} =~ /default/').
+Define the conditions to match for the status to be UNKNOWN (Default: '%{last_job_status} =~ /default/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-job-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--critical-job-status>
 
-Set critical threshold for status (Default: '%{last_job_status} =~ /failed/').
+Define the conditions to match for the status to be CRITICAL (Default: '%{last_job_status} =~ /failed/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-*> B<--critical-*> 

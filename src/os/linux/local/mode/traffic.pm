@@ -289,33 +289,33 @@ Command used: /sbin/ip -s addr 2>&1
 
 =item B<--warning-in>
 
-Threshold warning in percent for 'in' traffic.
+Warning threshold in percent for 'in' traffic.
 
 =item B<--critical-in>
 
-Threshold critical in percent for 'in' traffic.
+Critical threshold in percent for 'in' traffic.
 
 =item B<--warning-out>
 
-Threshold warning in percent for 'out' traffic.
+Warning threshold in percent for 'out' traffic.
 
 =item B<--critical-out>
 
-Threshold critical in percent for 'out' traffic.
+Critical threshold in percent for 'out' traffic.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "RU"').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "RU"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--units>

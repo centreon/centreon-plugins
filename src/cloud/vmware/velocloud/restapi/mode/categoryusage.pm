@@ -25,6 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_edge_output {
+    my ($self, %options) = @_;
+
+    return "Edge '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_category_output {
+    my ($self, %options) = @_;
+
+    return "Category '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -86,24 +104,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_edge_output {
-    my ($self, %options) = @_;
-
-    return "Edge '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_category_output {
-    my ($self, %options) = @_;
-
-    return "Category '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
-sub long_output {
-    my ($self, %options) = @_;
-
-    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -137,8 +137,12 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} } = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => { category_count => 0 },
+            categories => {}
+        };
 
         my $categories = $options{custom}->get_categories_metrics(
             edge_id => $edge->{id},
@@ -153,14 +157,14 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{category_count}++;
-            $self->{edges}->{$edge->{name}}->{categories}->{$category->{name}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{category_count}++;
+            $self->{edges}->{ $edge->{name} }->{categories}->{$category->{name}} = {
                 id => $category->{category},
                 display => $category->{name},
                 traffic_out => int($category->{bytesTx} * 8 / $self->{timeframe}),
                 traffic_in => int($category->{bytesRx} * 8 / $self->{timeframe}),
                 packets_out => $category->{packetsTx} / $self->{timeframe},
-                packets_in => $category->{packetsRx} / $self->{timeframe},
+                packets_in => $category->{packetsRx} / $self->{timeframe}
             };
         }
     }

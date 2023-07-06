@@ -77,13 +77,13 @@ Check swap also.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'swap', 'buffer' (absolute),
 'cached' (absolute), 'shared' (absolute).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'swap', 'buffer' (absolute),
 'cached' (absolute), 'shared' (absolute).
 

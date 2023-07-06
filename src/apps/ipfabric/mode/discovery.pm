@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "prettify" => { name => 'prettify' },
+        'prettify' => { name => 'prettify' }
     });
 
     return $self;
@@ -88,17 +88,17 @@ sub manage_selection {
     }
 
     my $snmp_req_data_raw = {
-        "columns" => [
-            "id",
-            "hostname",
-            "name"
+        columns => [
+            'id',
+            'hostname',
+            'name'
         ],
-        "filters" => {},
-        "pagination" => {
-            "limit" => undef,
-            "start" => 0
+        filters => {},
+        pagination => {
+            limit => undef,
+            start => 0
         },
-        "reports" => "/technology/management/snmp/communities"
+        reports => '/technology/management/snmp/communities'
     }; 
 
     my $snmp_community_api_results = $options{custom}->request_api(

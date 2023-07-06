@@ -318,17 +318,17 @@ Filter job with end time greater than current time less value in seconds (Defaul
 
 =item B<--ok-status>
 
-Set ok threshold for status.
+Define the conditions to match for the status to be OK.
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
 You can use the following variables: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-long>

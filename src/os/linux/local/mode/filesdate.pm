@@ -143,11 +143,11 @@ Files/Directories to check. (Shell expansion is ok)
 
 =item B<--warning>
 
-Threshold warning in seconds for each files/directories (diff time).
+Warning threshold in seconds for each files/directories (diff time).
 
 =item B<--critical>
 
-Threshold critical in seconds for each files/directories (diff time).
+Critical threshold in seconds for each files/directories (diff time).
 
 =item B<--separate-dirs>
 

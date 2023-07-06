@@ -156,13 +156,13 @@ Check queries statistics on current database.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total', 'seq-reads', 'inserts', 'updates',
 'deletes', 'backouts', 'purges', 'expunges'. 
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total', 'seq-reads', 'inserts', 'updates',
 'deletes', 'backouts', 'purges', 'expunges'.
 

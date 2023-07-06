@@ -101,13 +101,15 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_appliance_id}) && $self->{option_results}->{filter_appliance_id} ne '' &&
             $appliance_id !~ /$self->{option_results}->{filter_appliance_id}/);
 
-        my $free = $appliances->{$appliance_id}->{last_physical_total} - $appliances->{$appliance_id}->{last_physical_used};
+        my $total = defined($appliances->{$appliance_id}->[-1]->{last_physical_total}) ? $appliances->{$appliance_id}->[-1]->{last_physical_total} : $appliances->{$appliance_id}->[-1]->{physical_total};
+        my $used =  defined($appliances->{$appliance_id}->[-1]->{last_physical_used}) ? $appliances->{$appliance_id}->[-1]->{last_physical_used} : $appliances->{$appliance_id}->[-1]->{physical_used};
+        my $free = $total - $used;
         $self->{memory}->{ $appliance_id } = {
-            total => $appliances->{$appliance_id}->{last_physical_total},
-            used => $appliances->{$appliance_id}->{last_physical_used},
+            total => $total,
+            used => $used,
             free => $free,
-            prct_used => $appliances->{$appliance_id}->{last_physical_used} * 100 / $appliances->{$appliance_id}->{last_physical_total},
-            prct_free => $free * 100 / $appliances->{$appliance_id}->{last_physical_total}
+            prct_used => $used * 100 / $total,
+            prct_free => $free * 100 / $total
         };
     }
 }

@@ -30,11 +30,10 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "%s:%s_%s:%s [State: %s], [Expected State: %s]",
-        $self->{result_values}->{src_ip},
-        $self->{result_values}->{src_port},
-        $self->{result_values}->{dest_ip},
-        $self->{result_values}->{dest_port},
+        "source %s destination %s [protocol: %s] state: %s [expected state: %s]",
+        $self->{result_values}->{src_ip} . ($self->{result_values}->{src_port} ne '' ? ':' . $self->{result_values}->{src_port} : ''),
+        $self->{result_values}->{dst_ip} . ($self->{result_values}->{dst_port} ne '' ? ':' . $self->{result_values}->{dst_port} : ''),
+        $self->{result_values}->{protocol},
         $self->{result_values}->{state},
         $self->{result_values}->{expected_state}
     );
@@ -44,72 +43,72 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0,cb_prefix_output => undef, cb_init => undef },
-        { name => 'status', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All paths are OK. ' }
+        { name => 'global', type => 0  },
+        { name => 'paths', type => 1, message_multiple => 'All paths are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-path', nlabel => 'total.path.count', set => {
-                key_values => [ { name => 'total_path' }],
-                output_template => 'Total number of paths: %s',
+        { label => 'paths-detected', nlabel => 'paths.detected.count', set => {
+                key_values => [ { name => 'detected' }],
+                output_template => 'Number of paths detected: %s',
                 perfdatas => [
-                    { label => 'total_path', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'total-mismatch', nlabel => 'total.path.mismatch.count', set => {
+        { label => 'paths-mismatch', nlabel => 'paths.mismatch.count', set => {
                 key_values => [ { name => 'total_mismatch' } ],
-                output_template => 'Total mismatch: %s',
+                output_template => 'mismatch: %s',
                 perfdatas => [
-                    { label => 'total_mismatch', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-       { label => 'all-path', nlabel => 'total.path.all.count', set => {
+       { label => 'paths-state-all', nlabel => 'paths.state.all.count', set => {
                 key_values => [ { name => 'all_path' } ],
-                output_template => 'Number of paths in All state: %s',
+                output_template => 'all state: %s',
                 perfdatas => [
-                    { label => 'all_path', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'part-path', nlabel => 'total.path.part.count', set => {
+        { label => 'paths-state-part', nlabel => 'paths.state.part.count', set => {
                 key_values => [ { name => 'part_path' } ],
-                output_template => 'Number of paths in Part state: %s',
+                output_template => 'part state: %s',
                 perfdatas => [
-                    { label => 'part_path', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'none-path', nlabel => 'total.path.none.count', set => {
+        { label => 'paths-state-none', nlabel => 'paths.state.none.count', set => {
                 key_values => [ { name => 'none_path' } ],
-                output_template => 'Number of paths in None state: %s',
+                output_template => 'none state: %s',
                 perfdatas => [
-                    { label => 'none_path', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'error-path', nlabel => 'total.path.error.count', set => {
+        { label => 'paths-state-error', nlabel => 'paths.state.error.count', set => {
                 key_values => [ { name => 'error_path' } ],
-                output_template => 'Number of paths in Error state: %s',
+                output_template => 'error state: %s',
                 perfdatas => [
-                    { label => 'error_path', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
     ];
 
-    $self->{maps_counters}->{status} = [ 
+    $self->{maps_counters}->{paths} = [ 
         {
             label => 'status',
             type => 2,
             critical_default => '%{expected_state} ne %{state}',
             set => {
                 key_values => [
-                    { name => 'src_ip' },
-                    { name => 'src_port' }, { name => 'dest_ip' },
-                    { name => 'dest_port' }, { name => 'state' },
-                    { name => 'expected_state' }
+                    { name => 'src_ip' }, { name => 'src_port' },
+                    { name => 'dst_ip' }, { name => 'dst_port' },
+                    { name => 'protocol' },
+                    { name => 'state' }, { name => 'expected_state' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; }, 
@@ -125,6 +124,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-src-ip:s'   => { name => 'filter_src_ip' },
+        'filter-src-port:s' => { name => 'filter_src_port' },
+        'filter-dst-ip:s'   => { name => 'filter_dst_ip' },
+        'filter-dst-port:s' => { name => 'filter_dst_port' }
     });
 
     return $self;
@@ -133,30 +136,23 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $path_state;
-
-    $self->{global}->{all_path} = 0;
-    $self->{global}->{error_path} = 0;
-    $self->{global}->{none_path} = 0;
-    $self->{global}->{part_path} = 0;
-    $self->{global}->{total_mismatch} = 0;
-
     my $path_raw_form_post = {
-        "columns" => [
+        columns => [
             "id",
             "src",
             "srcPorts",
             "dst",
             "dstPorts",
+            "protocol",
             "expectedPassingTraffic",
             "passingTraffic"
         ],
-        "filters" => {},
-        "pagination" => {
-            "limit" => undef,
-            "start" => 0
+        filters => {},
+        pagination => {
+            limit => undef,
+            start => 0
         },
-        "reports" => "/technology/routing/path-verifications"
+        reports => "/technology/routing/path-verifications"
     };  
 
     my $path_state_results = $options{custom}->request_api(
@@ -165,56 +161,50 @@ sub manage_selection {
         query_form_post => $path_raw_form_post
     );
 
+    $self->{global} = { detected => 0, all_path => 0, error_path => 0, none_path => 0, part_path => 0, total_mismatch => 0 };
+
+    my $path_state = {};
+    $self->{paths} = {};
     foreach my $route (@{$path_state_results->{data}}) {
-        $path_state->{$route->{id}} = {
-            id => $route->{id},
-            dest_ip => $route->{dst},
-            dest_port => $route->{dstPorts},
+        my $dst_port = (defined($route->{dstPorts})) ? $route->{dstPorts} : '-';
+        my $src_port = (defined($route->{srcPorts})) ? $route->{srcPorts} : '-';
+
+        next if (defined($self->{option_results}->{filter_src_ip}) && $self->{option_results}->{filter_src_ip} ne '' &&
+            $route->{src}  !~ /$self->{option_results}->{filter_src_ip}/);
+        next if (defined($self->{option_results}->{filter_src_port}) && $self->{option_results}->{filter_src_port} ne '' &&
+            $src_port !~ /$self->{option_results}->{filter_src_port}/);
+        next if (defined($self->{option_results}->{filter_dst_ip}) && $self->{option_results}->{filter_dst_ip} ne '' &&
+            $route->{dst} !~ /$self->{option_results}->{filter_dst_ip}/);
+        next if (defined($self->{option_results}->{filter_dst_port}) && $self->{option_results}->{filter_dst_port} ne '' &&
+            $dst_port !~ /$self->{option_results}->{filter_dst_port}/);
+
+        $self->{paths}->{ $route->{id} } = {
+            dst_ip => $route->{dst},
+            dst_port => $dst_port,
             expected_state => $route->{expectedPassingTraffic},
             src_ip => $route->{src},
-            src_port => $route->{srcPorts},
+            src_port => $src_port,
+            protocol => $route->{protocol},
             state => $route->{passingTraffic}->{data}
         };
-        if ($path_state->{$route->{id}}->{expected_state} ne $path_state->{$route->{id}}->{state}){
+
+        $self->{global}->{detected}++;
+        if ($route->{passingTraffic}->{data} eq 'none') {
+            $self->{global}->{none_path}++;
+        }
+        if ($route->{passingTraffic}->{data} eq 'all') {
+            $self->{global}->{all_path}++;
+        }
+        if ($route->{passingTraffic}->{data} eq 'part') {
+            $self->{global}->{part_path}++;
+        }
+        if ($route->{passingTraffic}->{data} eq 'error') {
+            $self->{global}->{error_path}++;
+        }
+        if ($route->{expectedPassingTraffic} ne $route->{passingTraffic}->{data}) {
             $self->{global}->{total_mismatch}++;
         }
     }
-
-    if (scalar(keys %$path_state) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No path found.");
-        $self->{output}->option_exit();
-    }
-    
-    foreach my $id (keys %$path_state) {
-
-        my $dest_port = (defined($path_state->{$id}->{dest_port})) ? $path_state->{$id}->{dest_port} : 'empty';
-        my $src_port = (defined($path_state->{$id}->{src_port})) ? $path_state->{$id}->{src_port} : 'empty';
-
-        my $instance = $path_state->{$id}->{src_ip} . ":" . $src_port . "_" . $path_state->{$id}->{dest_ip} . ":" . $dest_port;
-
-        $self->{status}->{$instance} = {
-            dest_ip => $path_state->{$id}->{dest_ip},
-            dest_port => $dest_port,
-            expected_state => $path_state->{$id}->{expected_state},
-            src_ip => $path_state->{$id}->{src_ip},
-            src_port => $src_port,
-            state => $path_state->{$id}->{state}
-        };
-        $self->{global}->{total_path}++;
-        if ($path_state->{$id}->{state} eq "none"){
-            $self->{global}->{none_path}++;
-        }
-        if ($path_state->{$id}->{state} eq "all"){
-            $self->{global}->{all_path}++;
-        }
-        if ($path_state->{$id}->{state} eq "part"){
-            $self->{global}->{part_path}++;
-        }
-        if ($path_state->{$id}->{state} eq "error"){
-            $self->{global}->{error_path}++;
-        }       
-    }
-
 }
 
 1;
@@ -227,9 +217,25 @@ Check end-to-end path's result against predefined expected state in IP Fabric.
 
 =over 8
 
+=item B<--filter-src-ip>
+
+Filter paths by source ip (regexp can be used).
+
+=item B<--filter-src-port>
+
+Filter paths by source port (regexp can be used).
+
+=item B<--filter-dst-ip>
+
+Filter paths by destionation ip (regexp can be used).
+
+=item B<--filter-dst-port>
+
+Filter paths by destionation port (regexp can be used).
+
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{state}, %{expected_state}
 
 For example, if you want a warning alert when the path state is in 'error' then
@@ -238,7 +244,7 @@ the option would be:
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{expected_state} ne %{state}').
+Define the conditions to match for the status to be CRITICAL. (Default: '%{expected_state} ne %{state}').
 Can use special variables like: %{state}, %{expected_state}
 
 For example, if you want a critical alert when the path state is in 'error' then
@@ -248,9 +254,8 @@ the option would be:
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-path', 'total-mismatch',
-'error-path', 'none-path', 'part-path',
-'all-path'
+Can be: 'paths-detected', 'paths-mismatch', 'paths-state-all',
+'paths-state-part', 'paths-state-none', 'paths-state-error'.
 
 =back
 

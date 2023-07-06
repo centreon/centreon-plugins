@@ -360,7 +360,7 @@ Thresholds are on free space left.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
@@ -368,7 +368,7 @@ You can use the following variables: %{status}, %{shard_list},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
@@ -376,7 +376,7 @@ You can use the following variables: %{status}, %{shard_list},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 
@@ -385,7 +385,7 @@ Can be: 'cpu-system', 'cpu-user',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 

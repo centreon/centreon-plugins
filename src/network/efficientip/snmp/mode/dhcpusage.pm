@@ -154,13 +154,13 @@ Example: --filter-counters='^request$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ack', 'nack', 'offer', 'inform', 'decline',
 'release', 'request', 'discover'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ack', 'nack', 'offer', 'inform', 'decline',
 'release', 'request', 'discover'.
 

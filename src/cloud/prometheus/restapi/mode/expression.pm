@@ -69,7 +69,7 @@ sub custom_status_calc {
     foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{result_values}->{$key} = $options{new_datas}->{ $self->{instance} . '_' . $key };
     }
-    
+
     return 0;
 }
 
@@ -186,16 +186,16 @@ sub manage_selection {
             push @$instances, { name => $_, value => $result->{metric}->{$_} };
         }
 
-        my $instance_key = join('_', @$instances);
+        my $instance_key = join('_',  map { $_->{value} } @$instances);
         next if (!defined($instance_key) || $instance_key eq '');
 
         my $value;
         $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
         $value = $result->{value}->[1] if (defined($result->{value}));
-        $self->{expressions}->{$instance_key} = {
-            instances => $instances,
-            $result->{metric}->{__name__} => $value
-        };
+        if (!defined($self->{expressions}->{$instance_key})) {
+            $self->{expressions}->{$instance_key} = { instances => $instances };
+        }
+        $self->{expressions}->{$instance_key}->{ $result->{metric}->{__name__} } = $value;
     }
 
     if (scalar(keys %{$self->{expressions}}) <= 0) {
@@ -261,14 +261,14 @@ Set the global output in case everything is fine for multiple instances
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Define the conditions to match for the status to be WARNING (Default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL (Default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.

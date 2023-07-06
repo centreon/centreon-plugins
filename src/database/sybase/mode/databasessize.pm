@@ -184,12 +184,12 @@ Check MSSQL Database usage
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'data', 'log'.
 
 =item B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'data', 'log'.
 
 =item B<--filter-database>

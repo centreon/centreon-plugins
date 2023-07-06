@@ -115,11 +115,11 @@ Set IMAP folder (Default: 'INBOX')
 
 =item B<--warning>
 
-Threshold warning of number messages found
+Warning threshold of number messages found
 
 =item B<--critical>
 
-Threshold critical of number message found
+Critical threshold of number message found
 
 =back
 

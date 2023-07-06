@@ -165,7 +165,7 @@ Check SSDs usage.
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning (number of iops)
+Warning threshold (number of iops)
 Can be: 'total', 'total-read', 'total-write',
 'global', 'read', 'write'.
 
