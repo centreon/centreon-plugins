@@ -115,7 +115,8 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'filter-robot-name:s'    => { name => 'filter_robot_name' },
-        'filter-scenario-name:s' => { name => 'filter_scenario_name' }
+        'filter-scenario-name:s' => { name => 'filter_scenario_name' },
+        'timeframe:s'            => { name => 'timeframe' }
     });
 
     return $self;
@@ -130,11 +131,17 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_scenario_name}) ? md5_hex($self->{option_results}->{filter_scenario_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 5;
+    if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} =~ /^(\d+)$/) {
+        $timespan = $1 / 60;
+    }
+
     if (defined($last_timestamp)) {
         $timespan = POSIX::ceil((time() - $last_timestamp) / 60);
     } else {
-        $last_timestamp = time() - (60 * 5);
+        $last_timestamp = time() - (60 * $timespan);
     }
+    
+    
 
     my $instances = $options{custom}->request_api(endpoint => '/api/instances');
     $self->{robots} = {};
@@ -298,6 +305,10 @@ Filter robots (can be a regexp).
 =item B<--filter-scenario-name>
 
 Filter scenarios (can be a regexp).
+
+=item B<--timeframe>
+
+Define timeframe in seconds (by default it's the time between two executions).
 
 =item B<--warning-*> B<--critical-*>
 
