@@ -30,7 +30,7 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Status is '%s', New Pods Schedulable : %s",
+        "Status is '%s', New Pods Schedulable: %s",
         $self->{result_values}->{status},
         $self->{result_values}->{schedulable}
     );
@@ -157,7 +157,7 @@ sub new {
         'node:s'             => { name => 'node', default => 'node=~".*"' },
         'extra-filter:s@'    => { name => 'extra_filter' },
         'metric-overload:s@' => { name => 'metric_overload' },
-        'units:s'            => { name => 'units', default => ''  }
+        'units:s'            => { name => 'units', default => '' }
     });
 
     return $self;
@@ -170,10 +170,11 @@ sub check_options {
     $self->{metrics} = {
         'status' => '^kube_node_status_condition$',
         'unschedulable' => '^kube_node_spec_unschedulable$',
-        'capacity' => '^kube_node_status_capacity_pods$',
-        'allocatable' => '^kube_node_status_allocatable_pods$',
-        'allocated' => '^kubelet_running_pod_count$',
+        'capacity' => '^kube_node_status_capacity_pods$', # now it's kube_node_status_capacity with unit pods
+        'allocatable' => '^kube_node_status_allocatable_pods$', # it's kube_node_status_allocatable with unit pods
+        'allocated' => '^kubelet_running_pod_count|kubelet_running_pods$',
     };
+
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
@@ -196,7 +197,7 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $results = $options{custom}->query(
         queries => [
             'label_replace({__name__=~"' . $self->{metrics}->{status} . '",' .
