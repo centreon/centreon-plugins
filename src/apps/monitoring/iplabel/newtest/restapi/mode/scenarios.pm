@@ -140,8 +140,6 @@ sub manage_selection {
     } else {
         $last_timestamp = time() - (60 * $timespan);
     }
-    
-    
 
     my $instances = $options{custom}->request_api(endpoint => '/api/instances');
     $self->{robots} = {};
