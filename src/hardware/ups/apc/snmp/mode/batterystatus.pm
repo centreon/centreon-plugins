@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime::Format::Strptime;
 use DateTime;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -187,13 +188,29 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'replace-lasttime-format:s' => { name => 'replace_lasttime_format' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    my $pattern = '%m/%d/%Y';
+    if (defined($self->{option_results}->{replace_lasttime_format}) && $self->{option_results}->{replace_lasttime_format} ne '') {
+        $pattern = $self->{option_results}->{replace_lasttime_format};
+    }
+
+    $self->{strp} = DateTime::Format::Strptime->new(
+        pattern  => $pattern,
+        on_error => 'undef'
+    );
 }
 
 my $map_battery_status = {
@@ -313,10 +330,17 @@ sub manage_selection {
         if (defined($result->{upsBasicBatteryTimeOnBattery}));
     $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60)
         if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
+    $result2->{upsAdvBatteryReplaceIndicator} = 'n/a'
+        if (!defined($result2->{upsAdvBatteryReplaceIndicator}));
     $self->{global} = { %$result, %$result2 };
-    if (defined($result->{upsBasicBatteryLastReplaceDate}) && $result->{upsBasicBatteryLastReplaceDate} =~ /(\d{2})\/(\d{2})\/(\d{4})/) {
-        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => 0, minute => 0, second => 0);
-        $self->{global}->{last_replace_time} = time() - $dt->epoch;
+
+    if (defined($result->{upsBasicBatteryLastReplaceDate}) && $result->{upsBasicBatteryLastReplaceDate} ne '') {
+        my $dt = $self->{strp}->parse_datetime($result->{upsBasicBatteryLastReplaceDate});
+        if (defined($dt)) {
+            $self->{global}->{last_replace_time} = time() - $dt->epoch();
+        } else {
+            $self->{output}->output_add(long_msg => "cannot parse date: " . $result->{upsBasicBatteryLastReplaceDate} . ' (please use option --replace-lasttime-format)');
+        }
     }
 
     $self->add_battery_pack(snmp_result => $snmp_result);
@@ -337,6 +361,10 @@ Check battery status and battery charge remaining.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^status|load$'
+
+=item B<--replace-lasttime-format>
+
+Define the date format (default: '%m/%d/%Y').
 
 =item B<--unknown-status>
 
