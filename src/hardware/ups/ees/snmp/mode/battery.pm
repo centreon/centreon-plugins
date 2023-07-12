@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::mode::battery;
+package hardware::ups::ees::snmp::mode::battery;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $map_battery_mode = {
     1  => 'unknown',
@@ -39,7 +39,7 @@ my $map_battery_mode = {
     10 => 'AutoBoostCharging',
     11 => 'CyclicBoostCharging',
     12 => 'MasterBoostCharging',
-    13 => 'MasterBateryTesting',
+    13 => 'MasterBateryTesting'
 };
 
 sub battery_mode_custom_output {
@@ -52,7 +52,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'battery', type => 0 },
+        { name => 'battery', type => 0 }
     ];
 
     $self->{maps_counters}->{battery} = [
@@ -60,52 +60,47 @@ sub set_counters {
             label => 'voltage', nlabel => 'battery.voltage.volt',
             set   => {
                 key_values      => [ { name => 'voltage' } ],
-                output_template => 'Voltage: %.2fV',
-                perfdatas       => [ { label => 'voltage', template => '%.2f', unit => 'V' } ],
+                output_template => 'voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ],
             }
         },
         {
             label => 'current', nlabel => 'battery.current.ampere',
             set   => {
                 key_values      => [ { name => 'current' } ],
-                output_template => 'Current: %.2fA',
-                perfdatas       => [ { label => 'current', template => '%.2f', unit => 'A' } ],
+                output_template => 'current: %.2fA',
+                perfdatas       => [ { template => '%.2f', unit => 'A' } ],
             }
         },
         {
             label => 'capacity', nlabel => 'battery.capacity.percent',
             set   => {
                 key_values      => [ { name => 'capacity' } ],
-                output_template => 'Capacity: %.2f%%',
-                perfdatas       => [ { label => 'capacity', template => '%.2f', min => 0, max => 100, unit => '%' } ],
+                output_template => 'capacity: %.2f%%',
+                perfdatas       => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ],
             }
         },
         {
             label => 'nominal-capacity', nlabel => 'battery.nominal.capacity.amperehour',
             set   => {
                 key_values      => [ { name => 'nominal_capacity' } ],
-                output_template => 'Used capacity: %.2fAh',
-                perfdatas       => [ { label => 'nominal_capacity', template => '%.2f', unit => 'Ah' } ],
+                output_template => 'used capacity: %.2fAh',
+                perfdatas       => [ { template => '%.2f', unit => 'Ah' } ],
             }
         },
         {
             label            => 'battery-mode',
-            unknown_default  =>
-                '%{battery_mode} =~ /unknown/i',
-            warning_default  =>
-                '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i',
-            critical_default =>
-                '%{battery_mode} =~ /ACFailTesting|ACFail/i',
+            unknown_default  => '%{battery_mode} =~ /unknown/i',
+            warning_default  => '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i',
+            critical_default => '%{battery_mode} =~ /ACFailTesting|ACFail/i',
             type             => 2,
             set              => {
                 key_values                     => [ { name => 'battery_mode' } ],
-                closure_custom_calc            => \&catalog_status_calc,
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata        => sub {return 0;},
-                closure_custom_output          => $self->can('battery_mode_custom_output'),
+                closure_custom_output          => $self->can('battery_mode_custom_output')
             }
-        },
-
+        }
     ];
 }
 
@@ -129,12 +124,12 @@ sub manage_selection {
     my $oid_psBatteryNominalCapacity = '.1.3.6.1.4.1.6302.2.1.2.5.4.0';
 
     my $snmp_result = $options{snmp}->get_leef(
-        oids         => [
+        oids => [
             $oid_psStatusBatteryMode,
             $oid_psBatteryVoltage,
             $oid_psTotalBatteryCurrent,
             $oid_psBatteryCapacity,
-            $oid_psBatteryNominalCapacity,
+            $oid_psBatteryNominalCapacity
         ],
         nothing_quit => 1
     );
@@ -154,7 +149,7 @@ __END__
 
 =head1 MODE
 
-Check system
+Check battery.
 
 =over 8
 
@@ -164,17 +159,17 @@ Thresholds: voltage (V), current (A), capacity (%), nominal-capacity (Ah)
 
 =item B<--unknown-battery-mode>
 
-Set unknown threshold for status (Default: '%{battery_mode} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{battery_mode} =~ /unknown/i').
 You can use the following variables: %{battery_mode}
 
 =item B<--warning-battery-mode>
 
-Set warning threshold for status (Default: '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i').
+Define the conditions to match for the status to be WARNING (default: '%{battery_mode} =~ /ShortTest|BoostChargingForTest|ManualTesting|PlanTesting|ManualBoostCharging|AutoBoostCharging|CyclicBoostCharging|MasterBoostCharging|MasterBateryTesting/i').
 You can use the following variables: %{battery_mode}
 
 =item B<--critical-battery-mode>
 
-Set critical threshold for status (Default: '%{battery_mode} =~ /ACFailTesting|ACFail/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{battery_mode} =~ /ACFailTesting|ACFail/i').
 You can use the following variables: %{battery_mode}
 
 =back

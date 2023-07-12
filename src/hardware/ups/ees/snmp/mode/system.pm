@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::mode::system;
+package hardware::ups::ees::snmp::mode::system;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $map_system_status = {
     1  => 'unknown',
@@ -36,14 +36,24 @@ my $map_system_status = {
     7  => 'unmanaged',
     8  => 'restricted',
     9  => 'testing',
-    10 => 'disabled',
+    10 => 'disabled'
 };
 
 my $map_communication_status = {
     1 => 'unknown',
     2 => 'normal',
-    3 => 'interrupt',
+    3 => 'interrupt'
 };
+
+sub status_custom_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "system status: '%s' - communication status: '%s'",
+        $self->{result_values}->{system_status},
+        $self->{result_values}->{communication_status}
+    );
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -54,56 +64,45 @@ sub set_counters {
 
     $self->{maps_counters}->{system} = [
         {
-            label            =>
-                'status',
-            unknown_default  =>
-                '%{system_status} =~ /unknown|unmanaged|restricted|testing|disabled/i || %{communication_status} =~ /unknown/i',
-            warning_default  =>
-                '%{system_status} =~ /warning|minor/i',
-            critical_default =>
-                '%{system_status} =~ /major|critical/i || %{communication_status} =~ /interrupt/i',
-            type             =>
-                2,
-            set              =>
-                {
-                    key_values                     =>
-                        [
-                            { name => 'system_status' },
-                            { name => 'communication_status' }
-                        ],
-                    closure_custom_calc            => \&catalog_status_calc,
-                    closure_custom_threshold_check => \&catalog_status_threshold_ng,
-                    closure_custom_perfdata        => sub {return 0;},
-                    closure_custom_output          => $self->can('status_custom_output'),
-                }
+            label            => 'status',
+            unknown_default  => '%{system_status} =~ /unknown|unmanaged|restricted|testing|disabled/i || %{communication_status} =~ /unknown/i',
+            warning_default  => '%{system_status} =~ /warning|minor/i',
+            critical_default => '%{system_status} =~ /major|critical/i || %{communication_status} =~ /interrupt/i',
+            type             => 2,
+            set              => {
+                key_values => [
+                    { name => 'system_status' },
+                    { name => 'communication_status' }
+                ],
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_perfdata        => sub {return 0;},
+                closure_custom_output          => $self->can('status_custom_output')
+            }
         },
         {
             label => 'voltage', nlabel => 'system.voltage.volt',
             set   => {
                 key_values      => [ { name => 'voltage' } ],
-                output_template => 'Voltage: %.2fV',
-                perfdatas       => [ { label => 'voltage', template => '%.2f', unit => 'V' } ],
+                output_template => 'voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ]
             }
         },
         {
             label => 'current', nlabel => 'system.current.ampere',
             set   => {
                 key_values      => [ { name => 'current' } ],
-                output_template => 'Current: %.2fA',
-                perfdatas       => [ { label => 'current', template => '%.2f', unit => 'A' } ],
+                output_template => 'current: %.2fA',
+                perfdatas       => [ { template => '%.2f', unit => 'A' } ]
             }
         },
         {
             label => 'used-capacity', nlabel => 'system.used.capacity.percent',
             set   => {
-                key_values      =>
-                    [ { name => 'used_capacity' } ],
-                output_template =>
-                    'Used capacity: %.2f%%',
-                perfdatas       =>
-                    [ { label => 'used_capacity', template => '%.2f', min => 0, max => 100, unit => '%' } ],
+                key_values      => [ { name => 'used_capacity' } ],
+                output_template => 'used capacity: %.2f%%',
+                perfdatas       => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ]
             }
-        },
+        }
     ];
 }
 
@@ -130,7 +129,7 @@ sub manage_selection {
             $oid_systemVoltage,
             $oid_systemCurrent,
             $oid_systemUsedCapacity,
-            $oid_psStatusCommunication,
+            $oid_psStatusCommunication
         ],
         nothing_quit => 1
     );
@@ -140,17 +139,8 @@ sub manage_selection {
         communication_status => $map_communication_status->{$snmp_result->{$oid_psStatusCommunication}},
         voltage              => $snmp_result->{$oid_systemVoltage} / 1000,
         current              => $snmp_result->{$oid_systemCurrent} / 1000,
-        used_capacity        => $snmp_result->{$oid_systemUsedCapacity},
+        used_capacity        => $snmp_result->{$oid_systemUsedCapacity}
     };
-}
-
-sub status_custom_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "System status: '%s' - Communication status: '%s'",
-        $self->{result_values}->{system_status},
-        $self->{result_values}->{communication_status});
 }
 
 1;
@@ -159,28 +149,28 @@ __END__
 
 =head1 MODE
 
-Check system
+Check system.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
-
-Thresholds: voltage (V), current (A), used-capacity (%)
-
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{system_status} =~ /unknown|unmanaged|restricted|testing|disabled/i || %{communication_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{system_status} =~ /unknown|unmanaged|restricted|testing|disabled/i || %{communication_status} =~ /unknown/i').
 You can use the following variables: %{system_status}, %{communication_status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{system_status} =~ /warning|minor/i').
+Define the conditions to match for the status to be WARNING (default: '%{system_status} =~ /warning|minor/i').
 You can use the following variables: %{system_status}, %{communication_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{system_status} =~ /major|critical/i || %{communication_status} =~ /interrupt/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{system_status} =~ /major|critical/i || %{communication_status} =~ /interrupt/i').
 You can use the following variables: %{system_status}, %{communication_status}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds: voltage (V), current (A), used-capacity (%)
 
 =back
 

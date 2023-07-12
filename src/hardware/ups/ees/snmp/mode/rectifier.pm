@@ -18,19 +18,30 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::mode::rectifier;
+package hardware::ups::ees::snmp::mode::rectifier;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub rectifier_custom_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "installed: %d, communicating: %d, used capacity: %.2f%%",
+        $self->{result_values}->{installed},
+        $self->{result_values}->{communicating},
+        $self->{result_values}->{used_capacity}
+    );
+}
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'rectifier', type => 0 },
+        { name => 'rectifier', type => 0 }
     ];
 
     $self->{maps_counters}->{rectifier} = [
@@ -44,38 +55,34 @@ sub set_counters {
                     { name => 'installed' },
                     { name => 'communicating' }
                 ],
-                closure_custom_calc            => \&catalog_status_calc,
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata        => sub {return 0;},
-                closure_custom_output          => $self->can('rectifier_custom_output'),
+                closure_custom_output          => $self->can('rectifier_custom_output')
             }
         },
         {
             label => 'used-capacity', display_ok => 0, nlabel => 'capacity.used.percentage',
             set   => {
                 key_values      => [ { name => 'used_capacity' } ],
-                output_template => 'Used capacity: %.2f%%',
-                perfdatas       =>
-                    [ { label => 'used_capacity', template => '%.2f', min => 0, max => 100, unit => '%' } ],
-            },
+                output_template => 'used capacity: %.2f%%',
+                perfdatas       => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ]
+            }
         },
         {
             label => 'installed', display_ok => 0, nlabel => 'rectifier.installed.count',
             set   => {
                 key_values      => [ { name => 'installed' } ],
-                output_template => 'Installed: %d',
-                perfdatas       =>
-                    [ { label => 'installed', template => '%d', min => 0 } ],
-            },
+                output_template => 'installed: %d',
+                perfdatas       => [ { template => '%d', min => 0 } ]
+            }
         },
         {
             label => 'communicating', display_ok => 0, nlabel => 'rectifier.communicating.count',
             set   => {
                 key_values      => [ { name => 'communicating' } ],
                 output_template => 'communicating: %d',
-                perfdatas       =>
-                    [ { label => 'communicating', template => '%d', min => 0 } ],
-            },
+                perfdatas       => [ { template => '%d', min => 0 } ]
+            }
         }
     ];
 }
@@ -101,7 +108,7 @@ sub manage_selection {
         oids         => [
             $oid_numberOfInstalledRectifiers,
             $oid_numberOfRectifiersCommunicating,
-            $oid_rectifiersUsedCapacity,
+            $oid_rectifiersUsedCapacity
         ],
         nothing_quit => 1
     );
@@ -109,19 +116,8 @@ sub manage_selection {
     $self->{rectifier} = {
         installed     => $snmp_result->{$oid_numberOfInstalledRectifiers},
         communicating => $snmp_result->{$oid_numberOfRectifiersCommunicating},
-        used_capacity => $snmp_result->{$oid_rectifiersUsedCapacity},
+        used_capacity => $snmp_result->{$oid_rectifiersUsedCapacity}
     };
-}
-
-sub rectifier_custom_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "Installed: %d, Communicating: %d, Used capacity: %.2f%%",
-        $self->{result_values}->{installed},
-        $self->{result_values}->{communicating},
-        $self->{result_values}->{used_capacity},
-    );
 }
 
 1;
@@ -130,23 +126,23 @@ __END__
 
 =head1 MODE
 
-Check system
+Check rectifier.
 
 =over 8
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{installed},  %{communicating},  %{used_capacity}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{installed} != %{communicating}').
+Define the conditions to match for the status to be WARNING (default: '%{installed} != %{communicating}').
 You can use the following variables: %{installed},  %{communicating},  %{used_capacity}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{installed},  %{communicating},  %{used_capacity}
 
 =item B<--warning-*> B<--critical-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,8 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::plugin;
+package hardware::ups::ees::snmp::plugin;
+
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_snmp);
@@ -28,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'system'      => 'hardware::ups::ees::vertiv::snmp::mode::system',
-        'battery'     => 'hardware::ups::ees::vertiv::snmp::mode::battery',
-        'input'       => 'hardware::ups::ees::vertiv::snmp::mode::input',
-        'temperature' => 'hardware::ups::ees::vertiv::snmp::mode::temperature',
-        'rectifier'   => 'hardware::ups::ees::vertiv::snmp::mode::rectifier',
-        'uptime'      => 'hardware::ups::ees::vertiv::snmp::mode::uptime'
+        'system'      => 'hardware::ups::ees::snmp::mode::system',
+        'battery'     => 'hardware::ups::ees::snmp::mode::battery',
+        'input'       => 'hardware::ups::ees::snmp::mode::input',
+        'temperature' => 'hardware::ups::ees::snmp::mode::temperature',
+        'rectifier'   => 'hardware::ups::ees::snmp::mode::rectifier',
+        'uptime'      => 'hardware::ups::ees::snmp::mode::uptime'
     };
 
     return $self;
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Emerson Vertiv in SNMP.
+Check Emerson Energy Systems (Vertiv) in SNMP.
 
 =cut

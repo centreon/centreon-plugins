@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::mode::input;
+package hardware::ups::ees::snmp::mode::input;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,34 +29,34 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'input', type => 0 },
+        { name => 'input', type => 0 }
     ];
 
     $self->{maps_counters}->{input} = [
         {
-            label => 'line-A', nlabel => 'line.input.voltage.volt',
+            label => 'line-a', nlabel => 'lineA.input.voltage.volt',
             set   => {
                 key_values      => [ { name => 'lineA' } ],
-                output_template => 'Line A voltage: %.2fV',
-                perfdatas       => [ { label => 'line-A', template => '%.2f', unit => 'V' } ],
-            },
+                output_template => 'line A voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ]
+            }
         },
         {
-            label => 'line-B', nlabel => 'line.input.voltage.volt',
+            label => 'line-b', nlabel => 'lineB.input.voltage.volt',
             set   => {
                 key_values      => [ { name => 'lineB' } ],
-                output_template => 'Line B voltage: %.2fV',
-                perfdatas       => [ { label => 'line-B', template => '%.2f', unit => 'V' } ],
-            },
+                output_template => 'line B voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ]
+            }
         },
         {
-            label => 'line-C', nlabel => 'line.input.voltage.volt',
+            label => 'line-c', nlabel => 'lineC.input.voltage.volt',
             set   => {
                 key_values      => [ { name => 'lineC' } ],
-                output_template => 'Line C voltage: %.2fV',
-                perfdatas       => [ { label => 'line-C', template => '%.2f', unit => 'V' } ],
-            },
-        },
+                output_template => 'line C voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ]
+            }
+        }
     ];
 }
 
@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-Check system
+Check input lines.
 
 =over 8
 
@@ -107,7 +107,7 @@ Check system
 
 Input thresholds in V
 
-Thresholds: line-A, line-B, line-C
+Thresholds: line-a, line-c, line-c.
 
 =back
 

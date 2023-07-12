@@ -18,42 +18,38 @@
 # limitations under the License.
 #
 
-package hardware::ups::ees::vertiv::snmp::mode::temperature;
+package hardware::ups::ees::snmp::mode::temperature;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $map_alarm_status = {
-    0 => 'high',
-    1 => 'low',
-    2 => 'fail',
-    3 => 'none',
-};
+sub status_custom_output {
+    my ($self, %options) = @_;
 
-my $map_type = {
-    0 => 'none',
-    1 => 'ambient',
-    2 => 'battery',
-};
+    return sprintf(
+        "alarm status %s [type: %s]",
+        $self->{result_values}->{alarm_status},
+        $self->{result_values}->{type}
+    );
+}
 
-my $mapping = {
-    temperature  => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.2' },
-    alarm_status => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.5', map => $map_alarm_status },
-    name         => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.3' },
-    type         => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.4', map => $map_type },
-};
+sub prefix_temperature_output {
+    my ($self, %options) = @_;
+
+    return "Probe '" . $options{instance_value}->{name} . "' ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 1, message_multiple => 'All temperatures are ok', skipped_code => { -10 => 1 } },
+        { name => 'temperatures', type => 1, cb_prefix_output => 'prefix_temperature_output', message_multiple => 'All temperatures are ok', skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{temperatures} = [
         {
             label            => 'alarm-status',
             unknown_default  => '%{alarm_status} =~ /fail/i',
@@ -62,22 +58,19 @@ sub set_counters {
             type             => 2,
             set              => {
                 key_values                     => [
-                    { name => 'alarm_status' },
-                    { name => 'type' },
-                    { name => 'name' }
+                    { name => 'alarm_status' }, { name => 'type' }, { name => 'name' }
                 ],
-                closure_custom_calc            => \&catalog_status_calc,
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata        => sub {return 0;},
-                closure_custom_output          => $self->can('status_custom_output'),
+                closure_custom_output          => $self->can('status_custom_output')
             }
         },
         {
-            label => 'temperature', nlabel => 'temperature.celsius',
+            label => 'temperature', nlabel => 'probe.temperature.celsius',
             set   => {
-                key_values      => [ { name => 'temperature' } ],
-                output_template => 'Temperature: %.2fC',
-                perfdatas       => [ { label => 'temperature', template => '%.2f', unit => 'C' } ],
+                key_values      => [ { name => 'temperature' }, { name => 'name' } ],
+                output_template => 'temperature: %.2fC',
+                perfdatas       => [ { template => '%.2f', unit => 'C', label_extra_instance => 1, instance_use => 'name' } ]
             }
         }
     ];
@@ -91,6 +84,26 @@ sub new {
     return $self;
 }
 
+my $map_alarm_status = {
+    0 => 'high',
+    1 => 'low',
+    2 => 'fail',
+    3 => 'none'
+};
+
+my $map_type = {
+    0 => 'none',
+    1 => 'ambient',
+    2 => 'battery'
+};
+
+my $mapping = {
+    temperature  => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.2' },
+    alarm_status => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.5', map => $map_alarm_status },
+    name         => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.3' },
+    type         => { oid => '.1.3.6.1.4.1.6302.2.1.2.7.3.1.4', map => $map_type }
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -99,36 +112,25 @@ sub manage_selection {
             { oid => $mapping->{temperature}->{oid} },
             { oid => $mapping->{alarm_status}->{oid} },
             { oid => $mapping->{name}->{oid} },
-            { oid => $mapping->{type}->{oid} },
+            { oid => $mapping->{type}->{oid} }
         ],
         return_type  => 1,
         nothing_quit => 1
     );
 
-    $self->{global} = {};
+    $self->{temperatures} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{temperature}->{oid}\.(.*)$/);
         my $instance = $1;
         my $data = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{global}->{$instance} = {
+        $self->{temperatures}->{$instance} = {
             temperature  => $data->{temperature} / 1000,
             alarm_status => $data->{alarm_status},
             name         => $data->{name},
-            type         => $data->{type},
+            type         => $data->{type}
         };
     }
-}
-
-sub status_custom_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "'%s': Alarm status %s [type: %s]",
-        $self->{result_values}->{name},
-        $self->{result_values}->{alarm_status},
-        $self->{result_values}->{type},
-    );
 }
 
 1;
@@ -137,28 +139,28 @@ __END__
 
 =head1 MODE
 
-Check temperature
+Check temperature.
 
 =over 8
+
+=item B<--unknown-alarm-status>
+
+Define the conditions to match for the status to be UNKNOWN (default: '%{alarm_status} =~ /fail/i').
+You can use the following variables: %{alarm_status}, %{type}, %{name}
+
+=item B<--warning-alarm-status>
+
+Define the conditions to match for the status to be WARNING (default: '%{alarm_status} =~ /low/i').
+You can use the following variables: %{alarm_status}, %{type}, %{name}
+
+=item B<--critical-alarm-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{alarm_status} =~ /high/i').
+You can use the following variables: %{alarm_status}, %{type}, %{name}
 
 =item B<--warning-temperature> B<--critical-temperature>
 
 Thresholds: temperature (C)
-
-=item B<--unknown-alarm-status>
-
-Set unknown threshold for status (Default: '%{alarm_status} =~ /fail/i').
-You can use the following variables: %{alarm_status}
-
-=item B<--warning-alarm-status>
-
-Set warning threshold for status (Default: '%{alarm_status} =~ /low/i').
-You can use the following variables: %{alarm_status}
-
-=item B<--critical-alarm-status>
-
-Set critical threshold for status (Default: '%{alarm_status} =~ /high/i').
-You can use the following variables: %{alarm_status}
 
 =back
 
