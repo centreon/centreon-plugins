@@ -230,7 +230,8 @@ sub manage_selection {
 
     my $jobs_exec = $options{custom}->request_api(
         endpoint => '/api/v1/job_monitoring',
-        label => 'jobMonitoringInfoList'
+        label => 'jobMonitoringInfoList',
+        get_param => ['limit=1000']
     );
 
     $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' . 
