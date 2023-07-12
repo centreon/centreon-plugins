@@ -1,0 +1,53 @@
+name: "veracode-generate-binary"
+description: "Prepare binary to be analyzed"
+inputs:
+  module_directory:
+    description: Path to the module
+    required: true
+  cache_key:
+    description: key used to identify the cache
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check inputs validity
+      run : |
+        if [[ -z "${{ inputs.cache_key }}" ]]; then
+          echo "[FATAL] - Cache key is empty. killing process"
+          echo "[INFO] - cache key = ${{ inputs.cache_key }}"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Exclude development files
+      run: |
+        if [[ -f ".veracode-exclusions" ]]; then
+          for LINE in $( cat .veracode-exclusions | sed 's/[^a-zA-Z0-9_./-]//g' | sed -r 's/\.\./\./g' ); do
+            if [[ -d "$LINE" ]]; then
+              rm -rf "$LINE"
+              echo "[INFO] - folder removed from analysis = '$LINE'"
+            elif [[ -e "$LINE" ]]; then
+              rm -f "$LINE"
+              echo "[INFO] - file removed from analysis = '$LINE'"
+            elif [[ -z "$LINE" ]]; then
+              echo "[INFO] - empty directive. Skipping this line"
+            else
+              echo "[WARN] - target to exclude not found. Skipping = '$LINE'"
+            fi
+          done
+        else
+          echo "[WARN] - No '.veracode-exclusions' file found for this module. Skipping exclusion step"
+        fi
+      shell: bash
+
+    - name: Create ZIP file
+      run: |
+        cd ${{ inputs.module_directory }}
+        zip -rq "${{ inputs.cache_key }}.zip" *
+      shell: bash
+
+    - uses: actions/cache/save@v3
+      with:
+        path: "${{ inputs.module_directory }}/${{ inputs.cache_key }}.zip"
+        key: ${{ inputs.cache_key }}

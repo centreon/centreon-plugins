@@ -26,6 +26,7 @@ jobs:
     with:
       version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
 
+
   package:
     needs:
       - get-environment

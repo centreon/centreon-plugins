@@ -1,0 +1,232 @@
+# Veracode scans
+on:
+  workflow_call:
+    inputs:
+      module_name:
+        required: true
+        type: string
+      major_version:
+        required: true
+        type: string
+      minor_version:
+        required: true
+        type: string
+      stability:
+        required: true
+        type: string
+
+    secrets:
+      veracode_api_id:
+        required: true
+      veracode_api_key:
+        required: true
+      veracode_srcclr_token:
+        required: true
+
+jobs:
+  build:
+    name: Binary preparation
+    runs-on: ubuntu-22.04
+    outputs:
+      fail_build: ${{ steps.routing-mode.outputs.fail_build }}
+      development_stage: ${{ steps.routing-mode.outputs.development_stage }}
+      display_summary: ${{ steps.routing-mode.outputs.display_summary }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate binary file
+        uses: ./.github/actions/veracode-generate-binary
+        with:
+          module_directory: "${{ inputs.module_directory }}"
+          cache_key: "${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary"
+
+      - name: Set routing mode
+        id: routing-mode
+        run: |
+          if [[ '${{ github.event_name }}' != 'pull_request' && '${{ inputs.stability }}' == 'stable' ]]; then
+            echo "fail_build=false" >> $GITHUB_OUTPUT
+            echo "development_stage=Release" >> $GITHUB_OUTPUT
+            echo "display_summary=false" >> $GITHUB_OUTPUT
+          elif [[ '${{ github.event_name }}' != 'pull_request' && '${{ inputs.stability }}' == 'unstable' ]]; then
+            echo "fail_build=${{ vars.VERACODE_QUALITY_GATE }}" >> $GITHUB_OUTPUT
+            echo "development_stage=Testing" >> $GITHUB_OUTPUT
+            echo "display_summary=false" >> $GITHUB_OUTPUT
+          else
+            echo "fail_build=${{ vars.VERACODE_QUALITY_GATE }}" >> $GITHUB_OUTPUT
+            echo "development_stage=Development" >> $GITHUB_OUTPUT
+            echo "display_summary=true" >> $GITHUB_OUTPUT
+          fi
+
+  pipeline-scan:
+    needs: [build]
+    name: Run a pipeline scan
+    runs-on: [self-hosted, veracode]
+
+    steps:
+      - name: Get build binary
+        uses: actions/cache/restore@v3
+        with:
+          path: "${{ inputs.module_name }}/${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary.zip"
+          key: "${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary"
+
+      - name: Get baseline files
+        run: |
+          BUCKET="s3://centreon-veracode-reports/${{ inputs.module_name }}"
+          aws s3 ls "$BUCKET/${{ github.base_ref || github.ref_name }}/results.json" || RESULT=$( echo $? )
+          if [[ $RESULT -eq 0 ]]; then
+            echo "[INFO] - Baseline file found on ${{ inputs.module_name }} / ${{ github.base_ref || github.ref_name }}"
+            aws s3 cp "$BUCKET/${{ github.base_ref || github.ref_name }}/results.json" "/tmp/results.json"
+            echo "baseline_file=/tmp/results.json" >> $GITHUB_ENV
+            echo "create_baseline_from=standard" >> $GITHUB_ENV
+          else
+            RESULT=0
+            echo "[WARN] - Baseline file not found for branch ${{ github.base_ref || github.ref_name }}"
+            echo "[INFO] - Trying with develop's Baseline file"
+            aws s3 ls "$BUCKET/develop/results.json" || RESULT=$( echo $? )
+            if [[ $RESULT -eq 0 ]]; then
+              echo "[INFO] - Baseline file found on ${{ inputs.module_name }} / default"
+              aws s3 cp "$BUCKET/develop/results.json" "/tmp/results.json"
+              echo "baseline_file=/tmp/results.json" >> $GITHUB_ENV
+              echo "create_baseline_from=standard" >> $GITHUB_ENV
+            else
+              echo "[WARN] - develop's baseline file not found in the bucket"
+              echo "baseline_file=" >> $GITHUB_ENV
+              echo "create_baseline_from=" >> $GITHUB_ENV
+            fi
+          fi
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 8
+
+      - name: Pipeline scan
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.8
+        continue-on-error: ${{ vars.VERACODE_CONTINUE_ON_ERROR == 'true' && true || false }}
+        with:
+          vid: "vera01ei-${{ secrets.veracode_api_id }}"
+          vkey: "vera01es-${{ secrets.veracode_api_key }}"
+          file: "${{ inputs.module_name }}/${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary.zip"
+          baseline_file: "${{ env.baseline_file }}"
+          create_baseline_from: "${{ env.create_baseline_from }}"
+          fail_build: '${{ needs.build.outputs.fail_build }}'
+          fail_on_severity: "'Very High','High'"
+          timeout: 60
+          development_stage: '${{ needs.build.outputs.development_stage }}'
+          summary_display: '${{ needs.build.outputs.display_summary }}'
+          issue_details: '${{ needs.build.outputs.display_summary }}'
+
+      - name: Save baseline files
+        # only baseline files not generated from a development branch are saved
+        ## if: success() && needs.build.outputs.development_stage != 'Development'
+        if: success()
+        run: |
+          #BRANCHES=(develop master dev-${{ inputs.major_version }}.x ${{ inputs.major_version }}.x)
+          #for BRANCH in "${BRANCHES[@]}"; do
+          #  if [[ "${{ github.ref_name }}" == "$BRANCH" ]]; then
+          #    mv *results.json /tmp
+          #    BUCKET="s3://centreon-veracode-reports/${{ inputs.module_name }}/${{ github.base_ref || github.ref_name }}"
+          #    aws s3 cp "/tmp/filtered_results.json" "$BUCKET/filtered_results.json"
+          #    aws s3 cp "/tmp/results.json" "$BUCKET/results.json"
+          #  fi
+          #done
+
+          mv *results.json /tmp
+          BUCKET="s3://centreon-veracode-reports/${{ inputs.module_name }}/develop"
+          aws s3 cp "/tmp/filtered_results.json" "$BUCKET/filtered_results.json"
+          aws s3 cp "/tmp/results.json" "$BUCKET/results.json"
+
+      - uses: geekyeggo/delete-artifact@v2
+        with:
+          name: "Veracode Pipeline-Scan Results"
+
+  policy-scan:
+    needs: [build]
+    name: Run a sandbox scan
+    # only stable and unstable maintenances branches will produce a report
+    ## if: needs.build.outputs.development_stage != 'Development'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get build binary
+        uses: actions/cache/restore@v3
+        with:
+          path: "${{ inputs.module_name }}/${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary.zip"
+          key: "${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary"
+
+      - name: Sandbox scan
+        uses: veracode/veracode-uploadandscan-action@0.2.6
+        continue-on-error: ${{ vars.VERACODE_CONTINUE_ON_ERROR == 'true' && true || false }}
+        with:
+          appname: "${{ inputs.module_name }}"
+          version: "${{ inputs.major_version }}.${{ inputs.minor_version }}_runId-${{ github.run_id }}"
+          filepath: "${{ inputs.module_name }}/${{ inputs.module_name }}-${{ github.sha }}-${{ github.run_id }}-veracode-binary.zip"
+          vid: "vera01ei-${{ secrets.veracode_api_id }}"
+          vkey: "vera01es-${{ secrets.veracode_api_key }}"
+          createprofile: true
+          createsandbox: true
+          #sandboxname: "${{ github.ref_name }}"
+          sandboxname: "develop"
+          criticality: "Low"
+          scantimeout: 120
+          includenewmodules: true
+          scanallnonfataltoplevelmodules: true
+          deleteincompletescan: 1
+          scanpollinginterval: 120 # time between two checks in seconds / [30 to 120]
+
+      - name: Promote Scan
+        # only develop will be promoted to policy scan
+        #if: success() && github.ref_name == 'develop'
+        if: success()
+        env:
+          VERACODE_API_ID: "${{ secrets.veracode_api_id }}"
+          VERACODE_API_SECRET: "${{ secrets.veracode_api_key }}"
+
+        # Action forked as API call hardcode '.com' route
+        uses: sc979/veracode-sandboxes-helper@v0.2
+        with:
+          activity: "promote-latest-scan"
+          app-name: "${{ inputs.module_name }}"
+          #sandbox-name: "${{ github.ref_name }}"
+          sandbox-name: "develop"
+          delete-on-promote: false
+
+  sca-scan:
+    needs: [build]
+    name: Run a SCA scan
+    # only stable and unstable maintenance branches will produce a report
+    #if: needs.build.outputs.development_stage != 'Development'
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ vars.VERACODE_CONTINUE_ON_ERROR == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Removing pnpm dependencies
+        run: |
+          echo "[DEBUG] - package-lock.json scan disabled"
+          find ./build -type f -not \( -name "package-lock.json" -o -name "package.json" \) -delete
+          COMPOSER_PATH=find ./build -type f -name "composer.json"
+
+          TARGETS=$( find ./ -name "composer.lock" )
+          if [[ -z TARGETS ]]; do
+            echo "trigger_sca_scan=true" >> $GITHUB_ENV
+          fi
+
+      - name: SCA scan
+        if: env.trigger_sca_scan == 'true'
+        env:
+          SRCCLR_API_TOKEN: ${{ secrets.veracode_srcclr_token }}
+          SRCCLR_REGION: "ER"
+
+        uses: sc979/veracode-sca@v1.10
+        # This action is based on the following command:
+        # curl -sSL https://download.sourceclear.com/ci.sh | sh -s -- scan "./${{ inputs.module_name }}" --debug
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          create-issues: false
+          fail-on-cvss: 9
+          allow-dirty: true
+          recursive: true
