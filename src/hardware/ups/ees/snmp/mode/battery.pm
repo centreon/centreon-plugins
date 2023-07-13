@@ -73,7 +73,7 @@ sub set_counters {
             }
         },
         {
-            label => 'capacity', nlabel => 'battery.capacity.percent',
+            label => 'capacity', nlabel => 'battery.capacity.percentage',
             set   => {
                 key_values      => [ { name => 'capacity' } ],
                 output_template => 'capacity: %.2f%%',

@@ -61,7 +61,7 @@ sub set_counters {
             }
         },
         {
-            label => 'used-capacity', display_ok => 0, nlabel => 'capacity.used.percentage',
+            label => 'used-capacity', display_ok => 0, nlabel => 'rectifier.capacity.used.percentage',
             set   => {
                 key_values      => [ { name => 'used_capacity' } ],
                 output_template => 'used capacity: %.2f%%',
