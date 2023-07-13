@@ -206,7 +206,8 @@ sub new {
         'filter-job-name:s'      => { name => 'filter_job_name' },
         'filter-job-type:s'      => { name => 'filter_job_type' },
         'filter-location-name:s' => { name => 'filter_location_name' },
-        'unit:s'                 => { name => 'unit', default => 's' }
+        'unit:s'                 => { name => 'unit', default => 's' },
+        'limit:s'                => { name => 'limit' }
     });
 
     $self->{cache_exec} = centreon::plugins::statefile->new(%options);
@@ -222,20 +223,21 @@ sub check_options {
         $self->{option_results}->{unit} = 's';
     }
 
+    if (!defined($self->{option_results}->{limit}) || $self->{option_results}->{limit} !~ /\d+/) {
+        $self->{option_results}->{limit} = 500;
+    }
+
     $self->{cache_exec}->check_options(option_results => $self->{option_results}, default_format => 'json');
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs_exec = $options{custom}->request_api(
-        endpoint => '/api/v1/job_monitoring',
-        label => 'jobMonitoringInfoList',
-        get_param => ['limit=1000']
-    );
+    my $jobs_exec = $options{custom}->get_jobs_monitoring(limit => $self->{option_results}->{limit});
 
-    $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' . 
+    $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
         Digest::MD5::md5_hex(
+            $options{custom}->get_connection_info() . '_' .
             (defined($self->{option_results}->{filter_job_id}) ? $self->{option_results}->{filter_job_id} : '') . '_' .
             (defined($self->{option_results}->{filter_job_name}) ? $self->{option_results}->{filter_job_name} : '') . '_' .
             (defined($self->{option_results}->{filter_job_type}) ? $self->{option_results}->{filter_job_type} : '')
@@ -354,6 +356,10 @@ Filter jobs by location name.
 Select the unit for last execution time threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
+=item B<--limit>
+
+Define the number of entries to retrieve for the pagination (default: 500). 
+
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last job execution status.
@@ -366,7 +372,7 @@ You can use the following variables: %{status}, %{jobName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last job execution status (Default: %{status} =~ /Failure/i).
+Set critical threshold for last job execution status (default: %{status} =~ /Failure/i).
 You can use the following variables: %{status}, %{jobName}
 
 =item B<--warning-*> B<--critical-*>
