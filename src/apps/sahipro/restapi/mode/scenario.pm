@@ -506,7 +506,7 @@ Define the number of retries to get scenario status (if we fail to get the statu
 
 =item B<--interval-scenario-status>
 
-Define time interval to get scenario status in seconds (Default: 10).
+Define time interval to get scenario status in seconds (default: 10).
 
 =item B<--unknown-run-status>
 
