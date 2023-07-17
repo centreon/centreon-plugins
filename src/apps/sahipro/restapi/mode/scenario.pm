@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'time_taken' } ],
                 output_template => 'execution time: %s ms',
                 perfdatas => [
-                    { label => 'total_time', template => '%s', min => 0, unit => 'ms' }
+                    { template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'total_steps' } ],
                 output_template => 'total steps: %s',
                 perfdatas => [
-                    { label => 'total_steps', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'failures' } ],
                 output_template => 'failures: %s',
                 perfdatas => [
-                    { label => 'failures', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
@@ -114,10 +114,10 @@ sub set_counters {
                 key_values => [ { name => 'errors' } ],
                 output_template => 'errors: %s',
                 perfdatas => [
-                    { label => 'errors', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{steps} = [
@@ -125,8 +125,7 @@ sub set_counters {
                 key_values => [ { name => 'time_taken' }, { name => 'step' } ],
                 output_template => 'execution time: %s ms',
                 perfdatas => [
-                    { label => 'step_time', template => '%s',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' }
+                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' }
                 ]
             }
         }
@@ -135,7 +134,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -156,8 +155,8 @@ sub new {
         'warning-run-status:s'       => { name => 'warning_run_status' },
         'critical-run-status:s'      => { name => 'critical_run_status', default => '' }
     });
-    
-    $self->{http} = centreon::plugins::http->new(%options);
+
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->set_signal_handlers();
     return $self;
 }
@@ -203,12 +202,12 @@ sub check_options {
         $self->{option_results}->{retries_scenario_status} < 0) {
         $self->{option_results}->{retries_scenario_status} = 0;
     }
-    
+
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
         $self->{option_results}->{timeout} > 0) {
         alarm($self->{option_results}->{timeout});
     }
-    
+
     $self->{http}->set_options(port => $self->{option_results}->{sahi_port}, proto => $self->{option_results}->{sahi_proto});
 }
 
@@ -229,7 +228,7 @@ sub decode_xml_response {
 
 sub generate_user_defined_id {
     my ($self, %options) = @_;
-    
+
     my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
     my $user_defined_id = strftime('%d%B%Y__%H_%M_%S_', localtime($seconds));
     $user_defined_id .= $microseconds;
@@ -463,19 +462,19 @@ IP Addr/FQDN of the host
 
 =item B<--sahi-port>
 
-Port used (Default: 9999)
+Port used (default: 9999)
 
 =item B<--sahi-proto>
 
-Specify https if needed (Default: 'http')
+Define HTTPS if needed (default: 'http')
 
 =item B<--sahi-endpoint>
 
-Specify endpoint (Default: '/_s_/dyn/')
+Define endpoint (default: '/_s_/dyn/')
 
 =item B<--sahi-suite>
 
-Full path to scenario and scenario name (Required)
+Define path for scenario files (required. Example: 'sahitests/small.suite')
 
 =item B<--sahi-http-timeout>
 
@@ -483,35 +482,35 @@ Timeout for each HTTP requests (Default: 5)
 
 =item B<--sahi-threads>
 
-Number of simultaneous browser instances that can be executed (Default: 1)
+Number of simultaneous browser instances that can be executed (default: 1)
 
 =item B<--sahi-startwith>
 
-Specify the start mode (Default: BROWSER)
+Define the start mode (Default: BROWSER)
 
 =item B<--sahi-browsertype>
 
-Browser on which scripts will be executed (Default: chrome)
+Browser used for script executions (Default: chrome)
 
 =item B<--sahi-baseurl>
 
-Url where the script should start
+Define default Start URL for scripts
 
 =item B<--timeout>
 
-Specify the global script timeout. If timeout is reached, scenario is killed.
+Define the global script timeout. If timeout is reached, scenario is killed.
 
 =item B<--retries-scenario-status>
 
-Specify the number of retries to get scenario status (if we fail to get the status).
+Define the number of retries to get scenario status (if we fail to get the status).
 
 =item B<--interval-scenario-status>
 
-Specify time interval to get scenario status in seconds (Default: 10).
+Define time interval to get scenario status in seconds (Default: 10).
 
 =item B<--unknown-run-status>
 
-Threshold unknown for running scenario rest api response.
+Unknown threshold for running scenario rest api response.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-run-status>
@@ -524,17 +523,17 @@ Critical threshold for running scenario rest api response.
 
 =item B<--warning-status>
 
-Set warning threshold for scenario status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
-Set critical threshold for scenario status (Default: '%{status} ne "SUCCESS"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "SUCCESS"').
 You can use the following variables: %{status}.
 
 =item B<--warning-*> B<--critical-*>
 
-Set thresholds.
+Thresholds.
 Can be: 'total-time', 'total-steps', 'failures', 'errors', 'step-time'.
 
 =back
