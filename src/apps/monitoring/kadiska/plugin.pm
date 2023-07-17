@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'alerts'                => 'apps::monitoring::kadiska::mode::alerts',
         'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
         'list-runners'          => 'apps::monitoring::kadiska::mode::listrunners',
         'list-targets'          => 'apps::monitoring::kadiska::mode::listtargets',
