@@ -44,14 +44,6 @@ sub get_metrics_mapping {
             'unit'    => 'B',
             'min'     => '0',
             'max'     => '',
-        },
-        'privatebytes' => {
-            'output'  => 'Private Bytes',
-            'label'   => 'app-private-bytes',
-            'nlabel'  => 'appservice.memory.privatebytes.usage.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => '',
         }
     };
 
@@ -146,12 +138,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+'app-average-memory', 'app-memory'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+'app-average-memory', 'app-memory'.
 
 =back
 
