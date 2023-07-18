@@ -2,8 +2,6 @@
 Documentation       OS Linux SNMP plugin
 
 Library             OperatingSystem
-# Library    Process
-# Library    String
 Library             XML
 
 
@@ -153,5 +151,8 @@ Linux SNMP list diskio devices
         ${nb_results} =    Get Element Count
         ...    ${output}
         ...    label
-        Should Be Equal As Integers    ${list_diskio_test.nbresults}    ${nb_results}      msg=Wrong output result for list diskio devices: ${list_diskio_test}
+        Should Be Equal As Integers
+        ...    ${list_diskio_test.nbresults}
+        ...    ${nb_results}
+        ...    msg=Wrong output result for list diskio devices: ${list_diskio_test}
     END
