@@ -8,8 +8,10 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/tests-functional.yml'
       - 'src/**'
       - 'tests/functional/**'
+      - 'tests/resources/mockoon/**'
 
 jobs:
   functional-tests-with-robot:

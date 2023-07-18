@@ -147,7 +147,7 @@ ${CMD}                          perl ${CENTREON_PLUGINS} --plugin=cloud::aws::cl
 
 *** Test Cases ***
 AWS CloudTrail check trail status
-    [Documentation]    Chek AWS CloudTrail trail status
+    [Documentation]    Check AWS CloudTrail trail status
     [Tags]    cloud    aws    cloudtrail
     FOR    ${checktrailstatus_value}    IN    @{checktrailstatus_values}
         ${output} =    Run
@@ -159,7 +159,7 @@ AWS CloudTrail check trail status
     END
 
 AWS CloudTrail count events
-    [Documentation]    Chek AWS CloudTrail count events
+    [Documentation]    Check AWS CloudTrail count events
     [Tags]    cloud    aws    cloudtrail
     FOR    ${countevents_value}    IN    @{countevents_values}
         ${command} =    Catenate

@@ -45,7 +45,7 @@ ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=cloud::azure::policyin
 
 *** Test Cases ***
 Azure PolicyInsights PolicyStates compliance
-    [Documentation]    Chek Azure PolicyInsights PolicyStates compliance
+    [Documentation]    Check Azure PolicyInsights PolicyStates compliance
     [Tags]    cloud    azure    policyinsights policystates
     FOR    ${compliance_value}    IN    @{compliance_values}
         ${command} =    Catenate
