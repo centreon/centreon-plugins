@@ -49,7 +49,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'ping-latency', nlabel => 'ping.jitter.milliseconds', set => {
+        { label => 'ping-jitter', nlabel => 'ping.jitter.milliseconds', set => {
                 key_values => [ { name => 'jitter' } ],
                 output_template => 'jitter: %.3f',
                 perfdatas => [
