@@ -26,28 +26,40 @@ use strict;
 use warnings;
 use JSON::XS;
 
-sub prefix_global_output {
+sub prefix_ping_output {
     my ($self, %options) = @_;
 
-    return 'speedtest ';
+    return 'ping ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
+        { name => 'ping', type => 0, cb_prefix_output => 'prefix_ping_output', skipped_code => { -10 => 1 } },
+        { name => 'bandwidth', type => 0, skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'ping-time', nlabel => 'ping.time.milliseconds', set => {
-                key_values => [ { name => 'ping' } ],
-                output_template => 'ping time: %d ms',
+    $self->{maps_counters}->{ping} = [
+        { label => 'ping-latency', nlabel => 'ping.latency.milliseconds', set => {
+                key_values => [ { name => 'latency' } ],
+                output_template => 'latency: %.3f ms',
                 perfdatas => [
                     { template => '%.3f', unit => 'ms', min => 0 }
                 ]
             }
         },
+        { label => 'ping-jitter', nlabel => 'ping.jitter.milliseconds', set => {
+                key_values => [ { name => 'jitter' } ],
+                output_template => 'jitter: %.3f',
+                perfdatas => [
+                    { template => '%.3f', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{bandwidth} = [
         { label => 'bandwidth-download', nlabel => 'internet.bandwidth.download.bitspersecond', set => {
                 key_values => [ { name => 'download' } ],
                 output_template => 'download: %s %s/s',
@@ -83,8 +95,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my ($output) = $options{custom}->execute_command(
-        command => 'speedtest-cli',
-        command_options => '--json'
+        command => 'speedtest',
+        command_options => '--format=json'
     );
 
     my $decoded;
@@ -95,10 +107,15 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => 'Cannot decode response');
         $self->{output}->option_exit();
     }
-    $self->{global} = {
-        ping => $decoded->{ping},
-        download => $decoded->{download},
-        upload => $decoded->{upload}
+
+    $self->{ping} = {
+        latency => $decoded->{ping}->{latency},
+        jitter  => $decoded->{ping}->{jitter}
+    };
+
+    $self->{bandwidth} = {
+        download => $decoded->{download}->{bytes},
+        upload => $decoded->{upload}->{bytes}
     };
 }
 
@@ -110,14 +127,14 @@ __END__
 
 Check internet bandwidth. 
 
-Command used: speedtest-cli --json
+Command used: speedtest --format=json
 
 =over 8
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'ping-time', 'bandwidth-download', 'bandwidth-upload'.
+Can be: 'ping-jitter', 'ping-latency', 'bandwidth-download', 'bandwidth-upload'.
 
 =back
 
