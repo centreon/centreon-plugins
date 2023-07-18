@@ -200,7 +200,7 @@ sub manage_selection {
         };
 
         if ($item->{provisioned} > 0) {
-            $self->{volumes}->{ $item->{name} }->{space} => {
+            $self->{volumes}->{ $item->{name} }->{space} = {
                 total => $item->{provisioned},
                 used => $item->{space}->{total_physical},
                 free => $item->{provisioned} - $item->{space}->{total_physical},
