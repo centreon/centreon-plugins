@@ -30,10 +30,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    $self->{trunks} = {};
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -43,13 +41,15 @@ sub check_options {
 }
 
 my %map_deactivate = (0 => 'notAvailable', 1 => 'deActivated', 2 => 'activated');
-my %map_alarm = (0 => 'greyDisabled', 1 => 'greenActive', 2 => 'redLosLof', 
-3 => 'blueAis', 4 => 'yellowRai', 5 => 'orangeDChannel', 6 => 'purpleLowerLayerDown', 7 => 'darkOrangeNFASAlarm');
+my %map_alarm = (
+    0 => 'greyDisabled', 1 => 'greenActive', 2 => 'redLosLof', 
+    3 => 'blueAis', 4 => 'yellowRai', 5 => 'orangeDChannel', 6 => 'purpleLowerLayerDown', 7 => 'darkOrangeNFASAlarm'
+);
 
 my $mapping = {
     acTrunkStatusAlarm      => { oid => '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1.7', map => \%map_alarm },
     acTrunkDeactivate       => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.11', map => \%map_deactivate },
-    acTrunkName             => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.13' },
+    acTrunkName             => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.13' }
 };
 
 sub manage_selection {
@@ -58,10 +58,12 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $mapping->{acTrunkStatusAlarm}->{oid} },
             { oid => $mapping->{acTrunkDeactivate}->{oid} },
-            { oid => $mapping->{acTrunkName}->{oid} },
+            { oid => $mapping->{acTrunkName}->{oid} }
         ],
-        return_type => 1, nothing_quit => 1);
+        return_type => 1, nothing_quit => 1
+    );
 
+    my $results = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{acTrunkName}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -72,24 +74,35 @@ sub manage_selection {
             next;
         }
         
-        $self->{trunks}->{$instance} = 
-            { name => $result->{acTrunkName}, status => $result->{acTrunkStatusAlarm}, state => $result->{acTrunkDeactivate} };
+        $results->{$instance} = {
+            name => $result->{acTrunkName},
+            status => $result->{acTrunkStatusAlarm},
+            state => $result->{acTrunkDeactivate}
+        };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
   
-    $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{trunks}}) { 
-        $self->{output}->output_add(long_msg => '[name = ' . $self->{trunks}->{$instance}->{name} . 
-            "] [status = '" . $self->{trunks}->{$instance}->{status} . "'] [state = '" .
-            $self->{trunks}->{$instance}->{state} . "']"
-            );
+    my $results = $self->manage_selection(%options);
+    foreach my $instance (sort keys %$results) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name: %s] [status: %s] [state: %s]',
+                $results->{$instance}->{name},
+                $results->{$instance}->{status},
+                $results->{$instance}->{state}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List trunks:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List trunks:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -103,10 +116,9 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{trunks}}) {             
-        $self->{output}->add_disco_entry(name => $self->{trunks}->{$instance}->{name}, 
-            status => $self->{trunks}->{$instance}->{status}, state => $self->{trunks}->{$instance}->{state});
+    my $results = $self->manage_selection(%options);
+    foreach my $instance (sort keys %$results) {
+        $self->{output}->add_disco_entry(%{$results->{$instance}});
     }
 }
 
@@ -123,4 +135,3 @@ List trunks.
 =back
 
 =cut
-    
