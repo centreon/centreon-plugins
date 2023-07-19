@@ -25,101 +25,78 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'alarm status : ' . $self->{result_values}->{alarm} . ' [state: ' . $self->{result_values}->{state} . ']';
-    return $msg;
+
+    return 'alarm status : ' . $self->{result_values}->{alarm} . ' [state: ' . $self->{result_values}->{state} . ']';
 }
 
-sub custom_status_calc {
+sub prefix_trunk_output {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{alarm} = $options{new_datas}->{$self->{instance} . '_alarm'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{dchannel} = $options{new_datas}->{$self->{instance} . '_dchannel'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return "Trunk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'trunk', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All trunks are ok' }
+        { name => 'trunk', type => 1, cb_prefix_output => 'prefix_trunk_output', message_multiple => 'All trunks are ok' }
     ];
-    
+
     $self->{maps_counters}->{trunk} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i', set => {
                 key_values => [ { name => 'display' }, { name => 'dchannel' }, { name => 'alarm' }, { name => 'state' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'avg-calls', set => {
+        { label => 'avg-calls', nlabel => 'trunk.calls.average.count', set => {
                 key_values => [ { name => 'acPMTrunkUtilizationAverage' }, { name => 'display' } ],
-                output_template => 'Average calls : %s',
+                output_template => 'average calls: %s',
                 perfdatas => [
-                    { label => 'avg_calls', value => 'acPMTrunkUtilizationAverage', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
         },
-        { label => 'max-calls', set => {
+        { label => 'max-calls', nlabel => 'trunk.calls.max.count', set => {
                 key_values => [ { name => 'acPMTrunkUtilizationMax' }, { name => 'display' } ],
-                output_template => 'Max calls : %s',
+                output_template => 'max calls: %s',
                 perfdatas => [
-                    { label => 'max_calls', value => 'acPMTrunkUtilizationMax', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
         },
-        { label => 'count-calls', set => {
+        { label => 'count-calls', nlabel => 'trunk.calls.total.count', set => {
                 key_values => [ { name => 'acPMTrunkUtilizationTotal', diff => 1 }, { name => 'display' } ],
-                output_template => 'Count calls : %s',
+                output_template => 'count calls: %s',
                 perfdatas => [
-                    { label => 'count_calls', value => 'acPMTrunkUtilizationTotal', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'count_calls', template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'       => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_vpn_output {
-    my ($self, %options) = @_;
-    
-    return "Trunk '" . $options{instance_value}->{display} . "' ";
-}
-
-my %map_alarm = (0 => 'greyDisabled', 1 => 'greenActive', 2 => 'redLosLof', 
-3 => 'blueAis', 4 => 'yellowRai', 5 => 'orangeDChannel', 6 => 'purpleLowerLayerDown', 7 => 'darkOrangeNFASAlarm');
+my %map_alarm = (
+    0 => 'greyDisabled', 1 => 'greenActive', 2 => 'redLosLof', 
+    3 => 'blueAis', 4 => 'yellowRai', 5 => 'orangeDChannel', 6 => 'purpleLowerLayerDown', 7 => 'darkOrangeNFASAlarm'
+);
 my %map_dchannel = (0 => 'dChannelEstablished', 1 => 'dChannelNotEstablished', 10 => 'dChannelNotApplicable');
 my %map_deactivate = (0 => 'notAvailable', 1 => 'deActivated', 2 => 'activated');
 
@@ -128,12 +105,12 @@ my $mapping = {
         acTrunkStatusDChannel   => { oid => '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1.6', map => \%map_dchannel },
         acTrunkStatusAlarm      => { oid => '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1.7', map => \%map_alarm },
         acTrunkDeactivate       => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.11', map => \%map_deactivate },
-        acTrunkName             => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.13' },
+        acTrunkName             => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.13' }
     },
     usage => {
         acPMTrunkUtilizationAverage => { oid => '.1.3.6.1.4.1.5003.10.10.2.21.1.4' },
         acPMTrunkUtilizationMax     => { oid => '.1.3.6.1.4.1.5003.10.10.2.21.1.5' },
-        acPMTrunkUtilizationTotal   => { oid => '.1.3.6.1.4.1.5003.10.10.2.21.1.12' },
+        acPMTrunkUtilizationTotal   => { oid => '.1.3.6.1.4.1.5003.10.10.2.21.1.12' }
     }
 };
 
@@ -155,33 +132,32 @@ sub manage_selection {
             $datas->{$_} = { %{$datas->{$_}}, %{$snmp_result->{ $mapping->{$_}->{$name}->{oid} }} };
         }
     }
+
     foreach (keys %{$snmp_result->{ $mapping->{status}->{acTrunkStatusAlarm}->{oid} }}) {
         /\.(\d+)$/;
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping->{status}, results => $datas->{status}, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping->{usage}, results => $datas->{usage}, instance => $instance . '.0');
-        
+
         my $display = defined($result->{acTrunkName}) && $result->{acTrunkName} ne '' ? $result->{acTrunkName} : $instance;
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $display !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
-            next;
-        }
-        
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $display !~ /$self->{option_results}->{filter_name}/);
+
         $self->{trunk}->{$instance} = { 
             display => $display, 
             alarm => $result->{acTrunkStatusAlarm},
             state => $result->{acTrunkDeactivate},
             dchannel => $result->{acTrunkStatusDChannel},
-            %$result2 };
+            %$result2
+        };
     }
-    
+
     if (scalar(keys %{$self->{trunk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No trunk found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "audiocodes_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+
+    $self->{cache_name} = 'audiocodes_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
@@ -207,19 +183,13 @@ You can use the following variables: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i').
 You can use the following variables: %{display}, %{alarm}, %{dchannel}, %{state}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'avg-calls', 'max-calls', 'count-calls'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'avg-calls', 'max-calls', 'count-calls'.
-
 
 =back
 
