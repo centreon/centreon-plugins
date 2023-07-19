@@ -244,12 +244,28 @@ sub collect_snmp_tables {
         foreach (keys %$snmp_result) {
             /$used_instance/;
             next if (defined($self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}));
-            $self->{snmp_collected}->{tables}->{ $table->{name} }->{$1} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+            my $instance = $1;
+    
+            $self->{snmp_collected}->{tables}->{ $table->{name} }->{$instance} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
             foreach my $sample_name (keys %$sampling) {
                 $self->{snmp_collected_sampling}->{tables}->{ $table->{name} } = {}
                     if (!defined($self->{snmp_collected_sampling}->{tables}->{ $table->{name} }));
-                $self->{snmp_collected_sampling}->{tables}->{ $table->{name} }->{$1}->{$sample_name} = 
-                    $self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}->{$sample_name};
+                $self->{snmp_collected_sampling}->{tables}->{ $table->{name} }->{$instance}->{$sample_name} = 
+                    $self->{snmp_collected}->{tables}->{ $table->{name} }->{$instance}->{$sample_name};
+            }
+
+            if (defined($table->{instance_entries})) {
+                my @matches = ($_ =~ /$table->{instance_entries}->{re}/);
+                foreach my $entry (@{$table->{instance_entries}->{entries}}) {
+                    next if ($entry->{capture} !~ /^[0-9]+$/);
+                    
+                    my $value = '';
+                    if (defined($matches[ $entry->{capture} - 1])) {
+                        $value = $matches[ $entry->{capture} - 1];
+                    }
+
+                    $self->{snmp_collected}->{tables}->{ $table->{name} }->{$instance}->{ $entry->{name} } = $value;
+                }
             }
         }
     }
@@ -387,6 +403,27 @@ sub collect_snmp_sampling {
     $self->{snmp_cache}->write(data => { snmp_collected_sampling => $self->{snmp_collected_sampling} });
 }
 
+sub display_variables {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(long_msg => '======> variables', debug => 1);
+    foreach my $tbl_name (keys %{$self->{snmp_collected}->{tables}}) {
+        my $expr = 'snmp.tables.' . $tbl_name;
+        foreach my $instance (keys %{$self->{snmp_collected}->{tables}->{$tbl_name}}) {
+            foreach my $attr (keys %{$self->{snmp_collected}->{tables}->{$tbl_name}->{$instance}}) {
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        '    %s = %s',
+                        $expr . ".[$instance].$attr",
+                        $self->{snmp_collected}->{tables}->{$tbl_name}->{$instance}->{$attr}
+                    ),
+                    debug => 1
+                );
+            }
+        }
+    }
+}
+
 sub collect_snmp {
     my ($self, %options) = @_;
 
@@ -411,7 +448,13 @@ sub collect_snmp {
     }
 
     $self->collect_snmp_sampling(snmp => $options{snmp});
+
+    if ($self->{output}->is_debug()) {
+        $self->display_variables();
+    }
 }
+
+
 
 sub exist_table_name {
     my ($self, %options) = @_;
