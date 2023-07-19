@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'cache'      => 'apps::backup::rubrik::restapi::mode::cache',
         'cluster'    => 'apps::backup::rubrik::restapi::mode::cluster',
         'compliance' => 'apps::backup::rubrik::restapi::mode::compliance',
         'disks'      => 'apps::backup::rubrik::restapi::mode::disks',
