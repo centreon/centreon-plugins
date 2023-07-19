@@ -30,13 +30,14 @@ sub new {
     bless $self, $class;
 
     %{$self->{modes}} = (
-        'cpu'              => 'network::audiocodes::snmp::mode::cpu',
-        'hardware'         => 'network::audiocodes::snmp::mode::hardware',
-        'interfaces'       => 'network::audiocodes::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-trunks'      => 'network::audiocodes::snmp::mode::listtrunks',
-        'memory'           => 'network::audiocodes::snmp::mode::memory',
-        'trunk-status'     => 'network::audiocodes::snmp::mode::trunkstatus',
+        'cpu'             => 'network::audiocodes::snmp::mode::cpu',
+        'hardware'        => 'network::audiocodes::snmp::mode::hardware',
+        'interfaces'      => 'network::audiocodes::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-trunks'     => 'network::audiocodes::snmp::mode::listtrunks',
+        'memory'          => 'network::audiocodes::snmp::mode::memory',
+        'sbc-calls'       => 'network::audiocodes::snmp::mode::sbccalls',
+        'trunk-status'    => 'network::audiocodes::snmp::mode::trunkstatus',
     );
 
     return $self;
