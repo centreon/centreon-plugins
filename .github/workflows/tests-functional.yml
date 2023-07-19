@@ -22,7 +22,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install libs
-        run: sudo apt-get install libcurl4-openssl-dev
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt-get install libcurl4-openssl-dev
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -48,25 +51,6 @@ jobs:
             URI::Encode
             XML::LibXML
 
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Robot Framework and SNMP Simulator
-        uses: insightsengineering/pip-action@v2
-        with:
-          packages: |
-            robotframework
-            snmpsim-lextudio
-
-      - name: Run SNMP Simulator
-        run: |
-          sudo useradd -m snmpsim
-          sudo usermod -a -G snmpsim snmpsim
-          snmpsim-command-responder --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmpsim --process-group=snmpsim &
-        shell: bash
-
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
@@ -74,6 +58,28 @@ jobs:
 
       - name: Install Mockoon CLI
         run: npm install -g -D @mockoon/cli
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Robot Framework and SNMP Simulator
+        run: |
+          pip install --upgrade pip
+          pip install robotframework
+          pip install snmpsim-lextudio
+        shell: bash
+
+      - name: Add user to run SNMP Simulator
+        run: |
+          sudo useradd -m snmpsim
+          sudo usermod -a -G snmpsim snmpsim
+        shell: bash
+
+      - name: Run SNMP Simulator
+        run: snmpsim-command-responder --data-dir=./tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmpsim --process-group=snmpsim
+        shell: bash
 
       - name: Run Robot Framework tests
         run: |
