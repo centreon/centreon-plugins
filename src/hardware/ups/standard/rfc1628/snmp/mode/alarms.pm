@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc;
 
 sub custom_test_status_output {
     my ($self, %options) = @_;
@@ -83,6 +84,32 @@ my $map_test = {
     1 => 'donePass', 2 => 'doneWarning', 3 => 'doneError',
     4 => 'aborted', 5 => 'inProgress', 6 => 'noTestsInitiated'
 };
+my $map_alarm_desc = {
+    '.1.3.6.1.2.1.33.1.6.3.1' => 'batteryBad',
+    '.1.3.6.1.2.1.33.1.6.3.2' => 'onBattery',
+    '.1.3.6.1.2.1.33.1.6.3.3' => 'lowBattery',
+    '.1.3.6.1.2.1.33.1.6.3.4' => 'depletedBattery',
+    '.1.3.6.1.2.1.33.1.6.3.5' => 'tempBad',
+    '.1.3.6.1.2.1.33.1.6.3.6' => 'inputBad',
+    '.1.3.6.1.2.1.33.1.6.3.7' => 'outputBad',
+    '.1.3.6.1.2.1.33.1.6.3.8' => 'outputOverload',
+    '.1.3.6.1.2.1.33.1.6.3.9' => 'onBypass',
+    '.1.3.6.1.2.1.33.1.6.3.10' => 'bypassBad',
+    '.1.3.6.1.2.1.33.1.6.3.11' => 'outputOffAsRequested',
+    '.1.3.6.1.2.1.33.1.6.3.12' => 'upsOffAsRequested',
+    '.1.3.6.1.2.1.33.1.6.3.13' => 'chargerFailed',
+    '.1.3.6.1.2.1.33.1.6.3.14' => 'upsOutputOff',
+    '.1.3.6.1.2.1.33.1.6.3.15' => 'upsSystemOff',
+    '.1.3.6.1.2.1.33.1.6.3.16' => 'fanFailure',
+    '.1.3.6.1.2.1.33.1.6.3.17' => 'fuseFailure',
+    '.1.3.6.1.2.1.33.1.6.3.18' => 'generalFault',
+    '.1.3.6.1.2.1.33.1.6.3.19' => 'diagnosticTestFailed',
+    '.1.3.6.1.2.1.33.1.6.3.20' => 'communicationsLost',
+    '.1.3.6.1.2.1.33.1.6.3.21' => 'awaitingPower',
+    '.1.3.6.1.2.1.33.1.6.3.22' => 'shutdownPending',
+    '.1.3.6.1.2.1.33.1.6.3.23' => 'shutdownImminent',
+    '.1.3.6.1.2.1.33.1.6.3.24' => 'testInProgress'
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -111,13 +138,14 @@ sub manage_selection {
 
         $snmp_result = $options{snmp}->get_table(oid => $oid_upsAlarmEntry);
         foreach my $oid (keys %$snmp_result) {
-            next if ($oid !~ /^$oid_upsAlarmEntry\.(.*)$/);
-            if (defined($self->{option_results}->{display_messages})) {
+            next if ($oid !~ /^$oid_upsAlarmDescr\.(.*)$/);
+
+            if (defined($self->{option_results}->{display_alarms})) {
                 $self->{output}->output_add(
                     long_msg => sprintf(
-                        'alarm [date: %s]: %s',
-                        $snmp_result->{$oid_upsAlarmTime . '.' . $1},
-                        $snmp_result->{$oid_upsAlarmDescr . '.' . $1}
+                        'alarm [since: %s]: %s',
+                        centreon::plugins::misc::change_seconds(value => $snmp_result->{$oid_upsAlarmTime . '.' . $1}),
+                        $map_alarm_desc->{ $snmp_result->{$oid_upsAlarmDescr . '.' . $1} }
                     )
                 );
             }
