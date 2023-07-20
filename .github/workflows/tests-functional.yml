@@ -51,14 +51,6 @@ jobs:
             URI::Encode
             XML::LibXML
 
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "16.x"
-
-      - name: Install Mockoon CLI
-        run: npm install -g -D @mockoon/cli
-
       - name: Install Python
         uses: actions/setup-python@v4
         with:
@@ -75,8 +67,16 @@ jobs:
           mkdir -p /opt/snmpsim
           cd /opt/snmpsim/
           pip3.9 install snmpsim
-          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup
+          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=0.0.0.0:2024 --process-user=root --process-group=nogroup &
         shell: bash
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+
+      - name: Install Mockoon CLI
+        run: npm install -g -D @mockoon/cli
 
       - name: Run Robot Framework tests
         run: |
