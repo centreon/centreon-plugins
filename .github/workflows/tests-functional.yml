@@ -66,19 +66,13 @@ jobs:
 
       - name: Install Robot Framework and SNMP Simulator
         run: |
-          pip install --upgrade pip
-          pip install robotframework
-          pip install snmpsim-lextudio
-        shell: bash
-
-      - name: Add user to run SNMP Simulator
-        run: |
-          sudo useradd -m snmpsim
-          sudo usermod -a -G snmpsim snmpsim
+          pip3.11 install --upgrade pip
+          pip3.11 install robotframework
+          pip3.11 install snmpsim-lextudio
         shell: bash
 
       - name: Run SNMP Simulator
-        run: snmpsim-command-responder --data-dir=./tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmpsim --process-group=snmpsim
+        run: snmpsim-command-responder --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup
         shell: bash
 
       - name: Run Robot Framework tests
