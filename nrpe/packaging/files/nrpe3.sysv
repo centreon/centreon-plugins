@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Init file for Nagios NRPE
+#
+# Written by Dag Wieers <dag@wieers.com>.
+#
+# chkconfig: - 80 20
+# description: Nagios NRPE daemon
+#
+# processname: nrpe
+# config: %{_sysconfdir}/nagios/nrpe.cfg
+# pidfile: /var/run/nrpe
+
+source /etc/init.d/functions
+
+### Default variables
+CONFIG="/etc/nrpe/centreon-nrpe3.cfg"
+
+[ -x /usr/sbin/centreon-nrpe3 ] || exit 1
+[ -r "$CONFIG" ] || exit 1
+
+RETVAL=0
+prog="centreon-nrpe3"
+desc="Nagios NRPE daemon"
+
+start() {
+        echo -n $"Starting $desc ($prog): "
+        daemon $prog -c "$CONFIG" -d
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+        return $RETVAL
+}
+
+stop() {
+        echo -n $"Shutting down $desc ($prog): "
+        killproc $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+        return $RETVAL
+}
+
+restart() {
+        stop
+        start
+}
+
+reload() {
+        echo -n $"Reloading $desc ($prog): "
+        killproc $prog -HUP
+        RETVAL=$?
+        echo
+        return $RETVAL
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  reload)
+        reload
+        ;;
+  condrestart)
+        [ -e /var/lock/subsys/$prog ] && restart
+        RETVAL=$?
+        ;;
+  status)
+        status $prog
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|condrestart|status}"
+        RETVAL=1
+esac
+
+exit $RETVAL

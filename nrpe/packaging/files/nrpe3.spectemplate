@@ -1,0 +1,111 @@
+%define real_name nrpe
+
+Name:		centreon-nrpe3
+Version:	@VERSION@
+Release:	@RELEASE@%{?dist}
+Summary:	Nagios Remote Plug-ins Execution daemon
+
+Group:		System/Management
+License:	GPLv2+
+URL:	        http://www.nagios.org/
+Source0:	nrpe-%{version}.tar.gz
+Source1:	nrpe3.xinetd.dag
+Source2:	nrpe3.sysv
+Source3:	nrpe3.service
+Source4:	nrpe3.sysconfig
+Source5:        nrpe3_add_centreon_cmd.patch
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
+
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:	make
+BuildRequires:  cmake
+BuildRequires:	gcc
+BuildRequires:  openssl
+BuildRequires:  openssl-devel
+BuildRequires:  patch
+
+Requires:	centreon-plugin-Operatingsystems-Linux-Local
+
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+
+%description
+
+%package -n centreon-nrpe3-plugin
+Summary:        Nagios plug-in for NRPE
+Group:          System/Management
+
+%description -n centreon-nrpe3-plugin
+Plug-in for Centreon monitoring system.
+The centreon-nrpe packages contains the Nagios Remote Plug-ins Executor v4.0.2
+
+%package -n centreon-nrpe3-daemon
+Summary:        Nagios Remote Plug-ins Execution daemon
+Group:          System/Management
+
+%description -n centreon-nrpe3-daemon
+The centreon-nrpe packages contains the Nagios Remote Plug-ins Executor v4.0.2
+-- daemon which can execute predefined commands on the remote host.
+
+%prep
+%setup -q -n %{real_name}-%{version}
+patch -p1 < %{SOURCE5}
+
+%build
+CFLAGS="$RPM_OPT_FLAGS" CXXFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?__global_ldflags}" \
+%configure \
+	--datadir="%{_datadir}/nrpe" \
+	--libexecdir="%{_libdir}/nagios/plugins" \
+	--localstatedir="%{_localstatedir}/log/nrpe" \
+	--sysconfdir="%{_sysconfdir}/nrpe" \
+	--enable-command-args \
+	--with-init-dir="%{_initrddir}" \
+	--with-nrpe-user="centreon-engine" \
+	--with-nrpe-group="centreon-engine" \
+	--with-nrpe-port="5666" \
+	--with-nagios-user="centreon-engine" \
+	--with-nagios-group="centreon-engine"
+%{__make} %{?_smp_mflags} all
+
+%install
+%{__rm} -rf %{buildroot}
+%{__install} -Dp -m0755 src/nrpe %{buildroot}%{_sbindir}/centreon-nrpe3
+%{__install} -Dp -m0755 src/check_nrpe %{buildroot}%{_libdir}/nagios/plugins/check_centreon_nrpe3
+%{__install} -Dp -m0644 sample-config/nrpe.cfg %{buildroot}%{_sysconfdir}/nrpe/centreon-nrpe3.cfg
+%{__install} -Dp -m0644 %{SOURCE4} %{buildroot}/%{_sysconfdir}/sysconfig/centreon-nrpe3
+%{__install} -Dp -m0644 %{SOURCE3} %{buildroot}%{_unitdir}/centreon-nrpe3.service
+mkdir -p %{buildroot}%{_localstatedir}/log/nrpe/centplugins
+
+
+%pre daemon
+    %{_bindir}/getent group centreon-engine &>/dev/null || %{_sbindir}/groupadd -r centreon-engine
+    %{_bindir}/getent passwd centreon-engine &>/dev/null || %{_sbindir}/useradd -g centreon-engine -m -d %{_localstatedir}/lib/centreon-engine -r centreon-engine 2> /dev/null
+
+%post daemon
+systemctl enable centreon-nrpe3.service
+
+%preun
+%systemd_preun centreon-nrpe3.service
+
+%clean
+%{__rm} -rf %{buildroot}
+
+%files -n centreon-nrpe3-daemon
+%defattr(-, root, root, 0755)
+%doc CHANGELOG.md LEGAL README.md README.SSL.md SECURITY.md LICENSE.md
+%config(noreplace) %{_sysconfdir}/nrpe/
+%{_unitdir}/centreon-nrpe3.service
+%config(noreplace) %{_sysconfdir}/sysconfig/centreon-nrpe3
+%{_sbindir}/centreon-nrpe3
+%defattr(-, centreon-engine, centreon-engine, 0755)
+%{_localstatedir}/log/nrpe
+
+%files -n centreon-nrpe3-plugin
+%defattr(-, root, root, 0755)
+%doc CHANGELOG.md LEGAL README.md README.SSL.md SECURITY.md LICENSE.md
+%{_libdir}/nagios/plugins/check_centreon_nrpe3
+
+%changelog

@@ -1,0 +1,17 @@
+# default: off
+# description: NRPE (Nagios Remote Plugin Executor)
+service centreon-nrpe3
+{
+        flags           = REUSE
+        type            = UNLISTED
+        port            = 5666
+        socket_type     = stream
+        wait            = no
+        user            = centreon-engine
+        group           = centreon-engine
+        server          = %{_sbindir}/centreon-nrpe3
+        server_args     = -c %{_sysconfdir}/nrpe/centreon-nrpe.cfg --inetd
+        log_on_failure  += USERID
+        disable         = yes
+        only_from       = 127.0.0.1
+}

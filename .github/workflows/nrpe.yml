@@ -56,11 +56,14 @@ jobs:
       - name: Download nrpe sources
         run: |
           curl -Lo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
+          mv nrpe-${{ needs.get-environment.outputs.version }} nrpe-src
         shell: bash
 
       - name: Compile sources
         run: |
-          cd nrpe-${{ needs.get-environment.outputs.version }}
+          cd nrpe-src
+
+          patch -p1 < ../nrpe/packaging/files/nrpe3_add_centreon_cmd.patch
 
           if [ "${{ matrix.package_extension }}" = "deb" ]; then
             NAGIOS_PLUGINS_PATH="/usr/lib/nagios/plugins"

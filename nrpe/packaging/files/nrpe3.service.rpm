@@ -1,0 +1,23 @@
+[Unit]
+Description=Nagios Remote Program Executor
+Documentation=http://www.nagios.org/documentation
+After=var-run.mount nss-lookup.target network.target local-fs.target time-sync.target
+Before=getty@tty1.service plymouth-quit.service xdm.service
+Conflicts=nrpe.socket
+Requires=network.target
+
+[Service]
+Type=forking
+User=centreon-engine
+Group=centreon-engine
+EnvironmentFile=/etc/sysconfig/centreon-nrpe3
+ExecStart=/usr/sbin/centreon-nrpe3 -c /etc/nrpe/centreon-nrpe3.cfg -d $NRPE_OPT
+Restart=on-abort
+PIDFile=/var/log/nrpe/nrpe3.pid
+ExecStopPost=/bin/rm -f /var/log/nrpe/nrpe3.pid
+TimeoutStopSec=60
+PrivateTmp=false
+OOMScoreAdjust=-500
+
+[Install]
+WantedBy=multi-user.target

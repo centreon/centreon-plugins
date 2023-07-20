@@ -26,74 +26,71 @@ provides:
   - centreon-plugin-Virtualisation-VMWare-daemon
 
 contents:
-  - src: "../src/centreon/vmware"
-    dst: "/usr/share/perl5/vendor_perl/centreon/vmware"
-    packager: rpm
-  - src: "../src/centreon/vmware"
-    dst: "/usr/share/perl5/centreon/vmware"
-    packager: deb
+  - src: "../nrpe-src/src/nrpe"
+    dst: "/usr/sbin/centreon-nrpe3"
 
-  - src: "../src/centreon/script/centreon_vmware.pm"
-    dst: "/usr/share/perl5/vendor_perl/centreon/script/centreon_vmware.pm"
-    packager: rpm
-  - src: "../src/centreon/script/centreon_vmware.pm"
-    dst: "/usr/share/perl5/centreon/script/centreon_vmware.pm"
-    packager: deb
-
-  - src: "../src/centreon_vmware.pl"
-    dst: "/usr/bin/centreon_vmware.pl"
+  - src: "../nrpe-src/src/check_nrpe"
+    dst: "/usr/lib64/nagios/plugins/check_centreon_nrpe3"
+    package: rpm
+    file_info:
+      mode: 0755
+  - src: "../nrpe-src/src/check_nrpe"
+    dst: "/usr/lib/nagios/plugins/check_centreon_nrpe3"
+    package: deb
     file_info:
       mode: 0755
 
-  - src: "redhat/centreon_vmware-systemd"
-    dst: "/etc/systemd/system/centreon_vmware.service"
-    file_info:
-      mode: 0755
-    packager: rpm
-  - src: "debian/centreon_vmware-systemd"
-    dst: "/lib/systemd/system/centreon_vmware.service"
-    file_info:
-      mode: 0755
-    packager: deb
-
-  - src: "redhat/centreon_vmware-sysconfig"
-    dst: "/etc/sysconfig/centreon_vmware"
-    packager: rpm
-  - src: "debian/centreon_vmware-default"
-    dst: "/etc/default/centreon_vmware"
-    packager: deb
-
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm"
+  - src: "../nrpe-src/sample-config/nrpe.cfg"
+    dst: "/etc/nrpe/centreon-nrpe3.cfg"
     type: config|noreplace
+    file_info:
+      mode: 0644
+
+  - src: "files/nrpe3.sysconfig"
+    dst: "/etc/sysconfig/centreon-nrpe3"
     packager: rpm
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm.new"
+    file_info:
+      mode: 0644
+  - src: "files/nrpe3.sysconfig"
+    dst: "/etc/default/centreon-nrpe3"
     packager: deb
+    file_info:
+      mode: 0644
+
+  - src: "files/nrpe3.service.rpm"
+    dst: "/lib/systemd/system/centreon-nrpe3.service"
+    packager: rpm
+    file_info:
+      mode: 0644
+  - src: "files/nrpe3.service.deb"
+    dst: "/lib/systemd/system/centreon-nrpe3.service"
+    packager: deb
+    file_info:
+      mode: 0644
 
 scripts:
-  postinstall: ./scripts/postinstall.sh
+  preinstall: ./scripts/centreon-nrpe3-daemon-preinstall.sh
+  postinstall: ./scripts/centreon-nrpe3-daemon-postinstall.sh
+  preremove: ./scripts/centreon-nrpe3-daemon-preremove.sh
 
 overrides:
   rpm:
-    depends:
-      - perl-VMware-vSphere >= 5.1
-      - perl(ZMQ::LibZMQ4)
-      - perl(ZMQ::Constants)
-      - perl(LWP::Protocol::https)
-      - perl(IO::Socket::INET6)
-      - perl(JSON::XS)
-      - perl-Net-Curl
+    replaces:
+      - centreon-nrpe3-daemon-debuginfo
+      - centreon-nrpe3-daemon-debugsource
+    conflicts:
+      - centreon-nrpe3-daemon-debuginfo
+      - centreon-nrpe3-daemon-debugsource
+    provides:
+      - centreon-nrpe3-daemon-debuginfo
+      - centreon-nrpe3-daemon-debugsource
   deb:
-    depends:
-      - perl-vmware-vsphere
-      - libzmq-libzmq4-perl
-      - libzmq-constants-perl
-      - liblwp-protocol-https-perl
-      - libio-socket-inet6-perl
-      - libjson-xs-perl
-      - libnet-curl-perl
-      - libtext-template-perl
+    replaces:
+      - centreon-nrpe3-daemon-dbgsym
+    conflicts:
+      - centreon-nrpe3-daemon-dbgsym
+    provides:
+      - centreon-nrpe3-daemon-dbgsym
 
 rpm:
   summary: Nagios Remote Plugins Execution daemon
