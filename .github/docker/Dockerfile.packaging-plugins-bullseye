@@ -33,6 +33,7 @@ apt-get install -y \
   devscripts \
   fakeroot \
   curl \
+  gcc \
   git \
   python3 \
   libjson-perl \

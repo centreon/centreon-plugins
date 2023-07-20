@@ -28,6 +28,7 @@ jobs:
     needs: [get-environment]
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         include:
           - package_extension: rpm
