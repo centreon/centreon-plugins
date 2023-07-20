@@ -57,7 +57,7 @@ jobs:
           elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
             VERSION=$(grep 'version: ' ${{ inputs.version_file }} | cut -d' ' -f2 | tr -d '"')
           else
-            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
+            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2 | tr -d '"')
           fi
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
 
