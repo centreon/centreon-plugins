@@ -62,13 +62,13 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.9'
 
       - name: Install Robot Framework and SNMP Simulator
         run: |
-          pip3.11 install --upgrade pip
-          pip3.11 install robotframework
-          pip3.11 install snmpsim-lextudio
+          pip install pip wheel --upgrade
+          pip install robotframework
+          pip install snmpsim-lextudio
         shell: bash
 
       - name: Run SNMP Simulator
