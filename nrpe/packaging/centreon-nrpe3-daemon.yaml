@@ -48,15 +48,17 @@ contents:
       mode: 0644
 
   - dst: "/var/log/nrpe"
+    type: dir
     file_info:
       mode: 0755
-      user: centreon-engine
+      owner: centreon-engine
       group: centreon-engine
 
   - dst: "/var/log/nrpe/centplugins"
+    type: dir
     file_info:
       mode: 0755
-      user: centreon-engine
+      owner: centreon-engine
       group: centreon-engine
 
 scripts:
