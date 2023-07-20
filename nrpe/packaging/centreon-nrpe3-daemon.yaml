@@ -31,12 +31,12 @@ contents:
 
   - src: "../nrpe-src/src/check_nrpe"
     dst: "/usr/lib64/nagios/plugins/check_centreon_nrpe3"
-    package: rpm
+    packager: rpm
     file_info:
       mode: 0755
   - src: "../nrpe-src/src/check_nrpe"
     dst: "/usr/lib/nagios/plugins/check_centreon_nrpe3"
-    package: deb
+    packager: deb
     file_info:
       mode: 0755
 
