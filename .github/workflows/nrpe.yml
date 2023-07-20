@@ -95,6 +95,16 @@ jobs:
           done
         shell: bash
 
+      - name: Generate debug files
+        run: |
+          cd src
+          for file in "nrpe" "check_nrpe"; do
+            objcopy --only-keep-debug $file $file.debug
+            objcopy --strip-debug $file
+            objcopy --add-gnu-debuglink $file.debug $file
+          done
+        shell: bash
+
       - name: Package
         uses: ./.github/actions/package
         with:
