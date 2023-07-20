@@ -83,7 +83,6 @@ jobs:
             --with-nagios-group="centreon-engine"
 
           make all
-          ls -l src
         shell: bash
 
       - name: Generate debug files
