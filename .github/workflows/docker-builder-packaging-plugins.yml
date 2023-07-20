@@ -12,10 +12,10 @@ on:
     paths:
       - ".github/workflows/docker-builder-packaging-plugins.yml"
       - ".github/docker/*"
-  # pull_request:
-  #   paths:
-  #     - ".github/workflows/docker-builder-packaging-plugins.yml"
-  #     - ".github/docker/*"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-builder-packaging-plugins.yml"
+      - ".github/docker/*"
 
 jobs:
   create-and-push-docker:
