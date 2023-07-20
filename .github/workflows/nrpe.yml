@@ -97,7 +97,7 @@ jobs:
 
       - name: Generate debug files
         run: |
-          cd src
+          cd nrpe-src/src
           for file in "nrpe" "check_nrpe"; do
             objcopy --only-keep-debug $file $file.debug
             objcopy --strip-debug $file
