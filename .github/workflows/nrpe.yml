@@ -85,7 +85,8 @@ jobs:
             # --with-init-dir="%{_initrddir}"
 
           make all
-          ls -l
+          ls -l src
+          cat startup/*
         shell: bash
 
       - name: Package
