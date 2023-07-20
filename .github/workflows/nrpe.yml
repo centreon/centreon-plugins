@@ -80,6 +80,9 @@ jobs:
             --with-nagios-group="centreon-engine"
 
             # --with-init-dir="%{_initrddir}"
+
+          make all
+          ls -l
         shell: bash
 
       - name: Package
