@@ -64,15 +64,18 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install Robot Framework and SNMP Simulator
+      - name: Install Robot Framework
         run: |
-          pip install pip wheel --upgrade
-          pip install robotframework
-          pip install snmpsim-lextudio
+          pip3.9 install pip wheel --upgrade
+          pip3.9 install robotframework
         shell: bash
 
-      - name: Run SNMP Simulator
-        run: snmpsim-command-responder --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup
+      - name: Install and run SNMP Simulator
+        run: |
+          mkdir -p /opt/snmpsim
+          cd /opt/snmpsim/
+          pip3.9 install snmpsim
+          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup
         shell: bash
 
       - name: Run Robot Framework tests
