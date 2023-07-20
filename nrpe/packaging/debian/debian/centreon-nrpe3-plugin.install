@@ -1,7 +1,0 @@
-src/check_centreon_nrpe3    usr/lib64/nagios/plugins
-CHANGELOG.md                usr/share/doc/centreon-nrpe3-plugin
-LEGAL                       usr/share/doc/centreon-nrpe3-plugin
-README.md                   usr/share/doc/centreon-nrpe3-plugin
-README.SSL.md               usr/share/doc/centreon-nrpe3-plugin
-SECURITY.md                 usr/share/doc/centreon-nrpe3-plugin
-LICENSE.md                  usr/share/doc/centreon-nrpe3-plugin
