@@ -25,6 +25,7 @@ apt-get install -y \
   dh-make \
   aptitude \
   ca-certificates \
+  libssh-dev \
   lintian \
   pbuilder \
   quilt \
