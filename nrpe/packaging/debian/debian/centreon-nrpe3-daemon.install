@@ -1,0 +1,8 @@
+src/centreon-nrpe3  usr/sbin
+centreon-nrpe3      etc/default
+CHANGELOG.md        usr/share/doc/centreon-nrpe3-daemon
+LEGAL               usr/share/doc/centreon-nrpe3-daemon
+README.md           usr/share/doc/centreon-nrpe3-daemon
+README.SSL.md       usr/share/doc/centreon-nrpe3-daemon
+SECURITY.md         usr/share/doc/centreon-nrpe3-daemon
+LICENSE.md          usr/share/doc/centreon-nrpe3-daemon

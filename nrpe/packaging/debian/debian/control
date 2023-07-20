@@ -1,0 +1,23 @@
+Source: centreon-nrpe3
+Section: net
+Priority: optional
+Maintainer: Luiz Costa <me@luizgustavo.pro.br>
+Build-Depends:
+  debhelper-compat (=12),
+  lsb-base,
+  make,
+  gcc,
+  automake,
+  autoconf
+Standards-Version: 4.5.0
+Homepage: https://wwww.centreon.com
+
+Package: centreon-nrpe3-plugin
+Architecture: amd64
+Description: Plug-in for Centreon monitoring system.
+  The centreon-nrpe packages contains the Nagios Remote Plug-ins Executor v4.0.2
+
+Package: centreon-nrpe3-daemon
+Architecture: amd64
+Description: The centreon-nrpe packages contains the Nagios Remote Plug-ins Executor v4.0.2
+  -- daemon which can execute predefined commands on the remote host.
