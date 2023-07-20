@@ -82,11 +82,8 @@ jobs:
             --with-nagios-user="centreon-engine" \
             --with-nagios-group="centreon-engine"
 
-            # --with-init-dir="%{_initrddir}"
-
           make all
           ls -l src
-          cat startup/*
         shell: bash
 
       - name: Package

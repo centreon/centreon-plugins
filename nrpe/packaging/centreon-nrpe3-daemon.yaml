@@ -26,21 +26,21 @@ provides:
   - centreon-plugin-Virtualisation-VMWare-daemon
 
 contents:
-  - src: "../nrpe-src/src/nrpe"
+  - src: "../../nrpe-src/src/nrpe"
     dst: "/usr/sbin/centreon-nrpe3"
 
-  - src: "../nrpe-src/src/check_nrpe"
+  - src: "../../nrpe-src/src/check_nrpe"
     dst: "/usr/lib64/nagios/plugins/check_centreon_nrpe3"
     packager: rpm
     file_info:
       mode: 0755
-  - src: "../nrpe-src/src/check_nrpe"
+  - src: "../../nrpe-src/src/check_nrpe"
     dst: "/usr/lib/nagios/plugins/check_centreon_nrpe3"
     packager: deb
     file_info:
       mode: 0755
 
-  - src: "../nrpe-src/sample-config/nrpe.cfg"
+  - src: "../../nrpe-src/sample-config/nrpe.cfg"
     dst: "/etc/nrpe/centreon-nrpe3.cfg"
     type: config|noreplace
     file_info:
