@@ -1,0 +1,69 @@
+{
+    "constants": {
+        "okState": "active",
+        "criticalState": "disabled",
+        "warningConn": null,
+        "criticalConn": 100
+    },
+    "mapping": {
+        "poolState": {
+            "1": "active",
+            "2": "disabled",
+            "3": "draining",
+            "4": "unused",
+            "5": "unknown"
+        }
+    },
+    "snmp": {
+        "tables": [
+            {
+                "name": "poolEntry",
+                "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1",
+                "used_instance": "\\.1\\.3\\.6\\.1\\.4\\.1\\.7146\\.1\\.2\\.3\\.2\\.1\\.\\d+\\.(\\d+(\\.\\d+)+)",
+                "entries": [
+                    {
+                        "name": "poolName",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.1"
+                    },
+                    {
+                        "name": "poolState",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.14",
+                        "map": "poolState"
+                    },
+                    {
+                        "name": "poolTotalConn",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.10"
+                    }
+                ]
+            }
+        ]
+    },
+    "selection_loop": [
+        {
+            "name": "Pool ZXTM",
+            "source": "%(snmp.tables.poolEntry)",
+            "expand_table": {
+                "poolEntry": "%(snmp.tables.poolEntry.[%(poolEntry.instance)])"
+            },
+            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ || %(poolEntry.poolTotalConn) > %(constants.criticalConn)",
+            "perfdatas": [
+                {
+                    "nlabel": "connTotal",
+                    "instances": ["%(poolEntry.poolName)"],
+                    "value": "%(poolEntry.poolTotalConn)",
+                    "warning": "%(constants.warningConn)",
+                    "critical": "%(constants.criticalConn)",
+                    "min": 0
+                }
+            ],
+            "formatting": {
+                "printf_msg": "Device '%s' state is '%s'",
+                "printf_var": [
+                    "%(poolEntry.poolName)",
+                    "%(poolEntry.poolState)"
+                ],
+                "display_ok": true
+            }
+        }
+    ]
+}
