@@ -29,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'check-plugin'          => 'os::linux::local::mode::checkplugin',
         'cpu'                   => 'os::linux::local::mode::cpu',
         'cpu-detailed'          => 'os::linux::local::mode::cpudetailed',
         'cmd-return'            => 'os::linux::local::mode::cmdreturn',
         'connections'           => 'os::linux::local::mode::connections',
-        'directlvm-usage'       => 'os::linux::local::mode::directlvmusage',
+        'lvm'                   => 'os::linux::local::mode::lvm',
         'discovery-snmp'        => 'os::linux::local::mode::discoverysnmp',
         'discovery-snmpv3'      => 'os::linux::local::mode::discoverysnmpv3',
         'diskio'                => 'os::linux::local::mode::diskio',
