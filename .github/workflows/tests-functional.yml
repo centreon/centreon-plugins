@@ -25,7 +25,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install libcurl4-openssl-dev
+          sudo apt-get install -y libcurl4-openssl-dev libnet-snmp-perl
+#          libsnmp-perl
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -51,25 +52,6 @@ jobs:
             URI::Encode
             XML::LibXML
 
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install Robot Framework
-        run: |
-          pip3.9 install pip wheel --upgrade
-          pip3.9 install robotframework
-        shell: bash
-
-      - name: Install and run SNMP Simulator
-        run: |
-          mkdir -p /opt/snmpsim
-          cd /opt/snmpsim/
-          pip3.9 install snmpsim
-          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=0.0.0.0:2024 --process-user=root --process-group=nogroup &
-        shell: bash
-
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
@@ -78,8 +60,28 @@ jobs:
       - name: Install Mockoon CLI
         run: npm install -g -D @mockoon/cli
 
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Robot Framework and SNMP Simulator
+        run: |
+          pip3.9 install pip wheel --upgrade
+          pip3.9 install robotframework
+          pip3.9 install snmpsim-lextudio
+        shell: bash
+
+      - name: Run SNMP Simulator
+        run: |
+          cd tests/resources/snmp/
+          snmpsim-command-responder --data-dir=. --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup &
+          sleep 5
+        shell: bash
+
       - name: Run Robot Framework tests
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
+          perl /home/sdepassio/Git/centreon-plugins/src/centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=list-diskio --hostname=127.0.0.1 --snmp-version=2 --snmp-community=os_linux_snmp_plugin --snmp-port=2024 --diskiodevice=sda --name --regexp --disco-show
           robot tests/functional/
