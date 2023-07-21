@@ -230,6 +230,10 @@ Filter databases by name (Can use regexp).
 
 Filter shards by name (Can use regexp).
 
+=item B<--add-shards>
+
+Add collection statistics by shards.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
