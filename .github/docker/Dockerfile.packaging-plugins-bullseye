@@ -25,6 +25,7 @@ apt-get install -y \
   dh-make \
   aptitude \
   ca-certificates \
+  libssh-dev \
   lintian \
   pbuilder \
   quilt \
@@ -33,6 +34,7 @@ apt-get install -y \
   devscripts \
   fakeroot \
   curl \
+  gcc \
   git \
   python3 \
   libjson-perl \
