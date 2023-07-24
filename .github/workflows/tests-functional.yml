@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev libnet-snmp-perl
+          sudo apt-get install -y libcurl4-openssl-dev snmp libnet-snmp-perl
 #          libsnmp-perl
 
       - name: Install perl dependencies
@@ -69,13 +69,12 @@ jobs:
         run: |
           pip3.9 install pip wheel --upgrade
           pip3.9 install robotframework
-          pip3.9 install snmpsim-lextudio
+          pip3.9 install snmpsim
         shell: bash
 
       - name: Run SNMP Simulator
         run: |
-          cd tests/resources/snmp/
-          snmpsim-command-responder --data-dir=. --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup &
+          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=0.0.0.0:2024 --process-user=root --process-group=nogroup &
           sleep 5
         shell: bash
 
@@ -83,5 +82,5 @@ jobs:
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          perl /home/sdepassio/Git/centreon-plugins/src/centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=list-diskio --hostname=127.0.0.1 --snmp-version=2 --snmp-community=os_linux_snmp_plugin --snmp-port=2024 --diskiodevice=sda --name --regexp --disco-show
+          perl src/centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=list-diskio --hostname=127.0.0.1 --snmp-version=2 --snmp-community=os_linux_snmp_plugin --snmp-port=2024 --diskiodevice=sda --name --regexp --disco-show
           robot tests/functional/
