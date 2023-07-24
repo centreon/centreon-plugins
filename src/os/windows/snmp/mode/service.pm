@@ -40,45 +40,51 @@ sub prefix_services_output {
     return "Service '" . $options{instance_value}->{name} . "' ";
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return 'Number of services ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'services', type => 1, cb_prefix_output => 'prefix_services_output',
           message_multiple => 'All services are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active', nlabel => 'service.active.count', display_ok => 0, set => {
+        { label => 'active', nlabel => 'services.active.count', display_ok => 0, set => {
                 key_values => [ { name => 'active' } ],
-                output_template => 'Service active: %d',
+                output_template => 'active: %d',
                 perfdatas => [
-                    { label => 'active', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'continue-pending', nlabel => 'service.continue.pending.count', display_ok => 0, set => {
+        { label => 'continue-pending', nlabel => 'services.continue.pending.count', display_ok => 0, set => {
                 key_values => [ { name => 'continue-pending' } ],
-                output_template => 'Service continue pending: %d',
+                output_template => 'continue pending: %d',
                 perfdatas => [
-                    { label => 'continue-pending', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'pause-pending', nlabel => 'service.pause.pending.count', display_ok => 0, set => {
+        { label => 'pause-pending', nlabel => 'services.pause.pending.count', display_ok => 0, set => {
                 key_values => [ { name => 'pause-pending' } ],
-                output_template => 'Service pause pending: %d',
+                output_template => 'pause pending: %d',
                 perfdatas => [
-                    { label => 'pause-pending', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'paused', nlabel => 'service.paused.count', display_ok => 0, set => {
+        { label => 'paused', nlabel => 'services.paused.count', display_ok => 0, set => {
                 key_values => [ { name => 'paused' } ],
                 output_template => 'Service paused: %d',
                 perfdatas => [
-                    { label => 'paused', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -122,18 +128,26 @@ sub check_options {
     if (defined($options{option_results}->{critical}) && $options{option_results}->{critical} ne '') {
         $options{option_results}->{'critical-service-active-count'} = $options{option_results}->{critical};
     }
+
     my $delimiter = '';
     if (defined($options{option_results}->{service})) {
+        $options{option_results}->{'filter_name'} = '';
         for my $filter_service (@{$options{option_results}->{service}}) {
             next if ($filter_service eq '');
             if (defined($options{option_results}->{use_regexp})) {
                 $options{option_results}->{'filter_name'} .= $delimiter . $filter_service;
             } else {
-                $options{option_results}->{'filter_name'} .= $delimiter . '^' . $filter_service . '$';
+                $options{option_results}->{'filter_name'} .= $delimiter . quotemeta($filter_service);
             }
+
             $delimiter = '|';
         }
+
+        if ($options{option_results}->{'filter_name'} ne '' && !defined($options{option_results}->{use_regexp})) {
+            $options{option_results}->{'filter_name'} = '^(' . $options{option_results}->{'filter_name'} . ')$';
+        }
     }
+
     if (defined($options{option_results}->{state}) && $options{option_results}->{state} ne '') {
         $options{option_results}->{'critical-status'} = "%{operating_state} !~ /$options{option_results}->{state}/";
     }
@@ -162,7 +176,6 @@ sub manage_selection {
         installed_state  => { oid => '.1.3.6.1.4.1.77.1.2.3.1.2', map => $map_installed_state }, # svSvcInstalledState
         operating_state  => { oid => '.1.3.6.1.4.1.77.1.2.3.1.3', map => $map_operating_state } # svSvcOperatingState
     };
-
     my $table_svSvcEntry = '.1.3.6.1.4.1.77.1.2.3.1';
 
     my $snmp_result = $options{snmp}->get_table(
@@ -202,7 +215,7 @@ sub manage_selection {
             installed_state => $result->{installed_state}
         };
         
-        $self->{global}->{$result->{operating_state}}++;
+        $self->{global}->{ $result->{operating_state} }++;
     }
 
     if (scalar(keys %{$self->{services}}) <= 0) {
@@ -227,7 +240,7 @@ Filter by service name (can be a regexp).
 
 =item B<--warning-status> B<--critical-status>
 
-Set warning or critical threshold for status.
+Set WARNING or CRITICAL threshold for status.
 You can use the following variables: %{operating_state}, %{installed_state}.
 
 =item B<--warning-*> B<--critical-*>
