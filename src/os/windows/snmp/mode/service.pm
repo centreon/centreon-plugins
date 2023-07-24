@@ -131,20 +131,24 @@ sub check_options {
 
     my $delimiter = '';
     if (defined($options{option_results}->{service})) {
-        $options{option_results}->{'filter_name'} = '';
+        my $filter = '';
         for my $filter_service (@{$options{option_results}->{service}}) {
             next if ($filter_service eq '');
             if (defined($options{option_results}->{use_regexp})) {
-                $options{option_results}->{'filter_name'} .= $delimiter . $filter_service;
+                $filter.= $delimiter . $filter_service;
             } else {
-                $options{option_results}->{'filter_name'} .= $delimiter . quotemeta($filter_service);
+                $filter .= $delimiter . quotemeta($filter_service);
             }
 
             $delimiter = '|';
         }
 
-        if ($options{option_results}->{'filter_name'} ne '' && !defined($options{option_results}->{use_regexp})) {
-            $options{option_results}->{'filter_name'} = '^(' . $options{option_results}->{'filter_name'} . ')$';
+        if ($filter ne '' && !defined($options{option_results}->{use_regexp})) {
+            $filter = '^(' . $filter . ')$';
+        }
+
+        if (!defined($options{option_results}->{'filter_name'}) || $options{option_results}->{'filter_name'} eq '') {
+            $options{option_results}->{'filter_name'} = $filter;
         }
     }
 
