@@ -25,8 +25,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev snmp libnet-snmp-perl
-#          libsnmp-perl
+          sudo apt-get install -y libcurl4-openssl-dev libdatetime-perl libnet-ntp-perl libsnmp-perl snmp
+          sudo apt update
+          sudo apt upgrade -y
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -47,6 +48,7 @@ jobs:
             Net::Curl::Easy
             Paws
             POSIX
+            Alien::SNMP
             Storable
             URI
             URI::Encode
@@ -74,7 +76,7 @@ jobs:
 
       - name: Run SNMP Simulator
         run: |
-          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=0.0.0.0:2024 --process-user=root --process-group=nogroup &
+          snmpsimd.py --data-dir=tests/resources/snmp/ --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup &
           sleep 5
         shell: bash
 
