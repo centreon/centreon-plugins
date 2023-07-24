@@ -196,15 +196,18 @@ sub manage_selection {
             name => $item->{name},
             reduction => {
                 data => $item->{space}->{data_reduction}
-            },
-            space => {
+            }
+        };
+
+        if ($item->{provisioned} > 0) {
+            $self->{volumes}->{ $item->{name} }->{space} = {
                 total => $item->{provisioned},
                 used => $item->{space}->{total_physical},
                 free => $item->{provisioned} - $item->{space}->{total_physical},
                 prct_used => $item->{space}->{total_physical} * 100 / $item->{provisioned},
                 prct_free => (100 - ($item->{space}->{total_physical} * 100 / $item->{provisioned}))
-            }
-        };
+            };
+        }
     }
     
     foreach my $perf (@$perfs) {
