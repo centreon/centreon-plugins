@@ -2,8 +2,7 @@
     "constants": {
         "okState": "active",
         "criticalState": "disabled",
-        "warningConn": null,
-        "criticalConn": 100
+        "criticalConn": null
     },
     "mapping": {
         "poolState": {
@@ -45,22 +44,22 @@
             "expand_table": {
                 "poolEntry": "%(snmp.tables.poolEntry.[%(poolEntry.instance)])"
             },
-            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ || %(poolEntry.poolTotalConn) > %(constants.criticalConn)",
+            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ || (defined(%(constants.criticalConn)) and %(poolEntry.poolTotalConn) >= %(constants.criticalConn))",
             "perfdatas": [
                 {
                     "nlabel": "connTotal",
                     "instances": ["%(poolEntry.poolName)"],
                     "value": "%(poolEntry.poolTotalConn)",
-                    "warning": "%(constants.warningConn)",
                     "critical": "%(constants.criticalConn)",
                     "min": 0
                 }
             ],
             "formatting": {
-                "printf_msg": "Device '%s' state is '%s'",
+                "printf_msg": "Device '%s' state is '%s' with Totalconn '%d'",
                 "printf_var": [
                     "%(poolEntry.poolName)",
-                    "%(poolEntry.poolState)"
+                    "%(poolEntry.poolState)",
+                    "%(poolEntry.poolTotalConn)"
                 ],
                 "display_ok": true
             }
