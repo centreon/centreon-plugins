@@ -5,7 +5,7 @@
 *******
 Table of contents (1)
 1. [Plugins introduction](#introduction)
-2. [PLugins development](#plugin_development)
+2. [Plugins development](#plugin_development)
 3. [Plugins guidelines and good practices](#guidelines)
 4. [List of shared libraries in centreon directory](#librairies)
 *******
@@ -275,7 +275,7 @@ section.
 Table of content (3)
 1. [Set up your environment](#set_up_tuto)
 2. [Create directory for the new plugin](#make_dir_tuto)
-3. [Create the plugin.pm file](#create_plugin_tuto)
+3. [lugin.pm](#create_plugin_tuto)
 4. [Understand the data](#understand_data_tuto)
 5. [Input](#input_tuto)
 6. [API]
@@ -352,40 +352,55 @@ Go to your centreon-plugins local git and create the appropriate directories and
 mkdir -p src/apps/myawesomeapp/api/mode/
 # path to the main plugin file
 touch src/apps/myawesomeapp/api/plugin.pm
-# path to the specific mode(s) file(s)
+# path to the specific mode(s) file(s) => for example appsmetrics.pm
 touch src/apps/myawesomeapp/api/mode/appsmetrics.pm
 ```
 
 <div id='create_plugin_tuto'/>
 
-### plugin.pm
+<div id='architecture_mode'/>
+
+### 3.Create the plugin.pm file
 
 [Table of content (3)](#table_of_content_3)
 
-This file must contain : 
-* license / copyright
-* package name
-* libraries
-* new constructor
+The `plugin.pm` is the first thing to create, it contains:
 
-First this file contains the Copyright section. At the end of it, you can add your author informations like this :
+- A set of instructions to load required libraries and compilation options
+- A list of all **mode(s)** and path(s) to their associated files/perl packages
+- A description that will display when you list all plugins or display this plugin's help.
 
+#### 3.1.plugin.pm layout
+
+In this file you can always find : 
+* **license / copyright**
+
+First this file contains the Copyright section. At the end of it, you can add 
+your author informations like this :
 ```
 # ...
 # Authors : <your name> <<your email>>
 ```
-Then the **package** name : path to your package. '::' instead of '/', and no .pm at the end.
+
+* **package name**
+
+Path to your package. '::' instead of '/', and no .pm 
+at the end.
 
 ```perl
 package path::to::plugin;
 ```
-Used libraries (strict and warnings are mandatory). 
+
+* **libraries**
+
+Strict and warnings are mandatory
 
 ```perl
 use strict;
 use warnings;
 ```
-Centreon library :
+
+One of the centreon libraries :
 
 ```perl
 use base qw(**centreon_library**);
@@ -397,39 +412,32 @@ There are five kinds of centreon libraries access here :
 * centreon::plugins::script_sql : If DB acess is needed for this plugin
 * centreon::plugins::script_wsman : Concern Windows specific protocols
 
+
+* **new constructor**
+
 The plugin need a new constructor to instantiate the object:
-
 ```perl
-
 sub new {
       my ($class, %options) = @_;
       my $self = $class->SUPER::new(package => __PACKAGE__, %options);
       bless $self, $class;
 
-      ...
+      # Plugin version declaration is in the new constructor:
+      $self->{version} = '0.1';
 
-      return $self;
-}
-```
-Plugin version declaration is in the new constructor:
-
-```perl
-$self->{version} = '0.1';
-```
-Several modes can be declared in the new constructor:
-
-```perl
-%{$self->{modes}} = (
+      # Several modes can be declared in the new constructor:
+      %{$self->{modes}} = (
                       'mode1'    => '<plugin_path>::mode::mode1',
                       'mode2'    => '<plugin_path>::mode::mode2',
                       ...
                       );
-```
-Then, the module is declared:
 
-```perl
-1;
+      return $self;
+}
 ```
+
+* **documentation section**
+
 A description of the plugin is needed to generate the documentation:
 
 ```perl
@@ -444,33 +452,25 @@ __END__
 > **TIP** : You can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
  The plugin has ".pm" extension because it's a Perl module. So don't forget to add 1; at the end of the file.
 
-<div id='architecture_mode'/>
+#### 3.2.plugin.pm example
 
-### 3.Create the plugin.pm file
-
-[Table of content (3)](#table_of_content_3)
-
-The `plugin.pm` is the first thing to create, it contains:
-
-- A set of instructions to load required libraries and compilation options
-- A list of all **mode(s)** and path(s) to their associated files/perl packages
-- A description that will display when you list all plugins or display this plugin's help.
-
-Here is the commented version of the plugin.pm file:
+Here is the commented example version of the plugin.pm file:
 
 ```perl title="my-awesome-app plugin.pm file"
-[.. license and copyright things ..]
+# Copyrigths section
 
-# Name of your perl package
+# Then the package name :
 package apps::myawesomeapp::api::plugin;
 
 # Always use strict and warnings, will guarantee that your code is clean and help debugging it
 use strict;
 use warnings;
+
 # Load the base for your plugin, here we don't do SNMP, SQL or have a custom directory, so we use the _simple base
 use base qw(centreon::plugins::script_simple);
 
-# Global sub to create and return the perl object. Don't bother understand what each instruction is doing. 
+# Global sub to create and return the perl object. 
+# Don't bother understand what each instruction is doing. 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -2310,8 +2310,6 @@ The following example show 4 new attributes:
 
 [Table of content (1)](#table_of_content_1)
 
-<div id='guidelines'/>
-
 <div id='commit'/>
 
 ### 9. Service discovery
@@ -2333,6 +2331,10 @@ and push your work:
   git commit -m "Add new plugin for XXXX refs #<ticked_id>"
   git push
 ```
+
+[Table of content (1)](#table_of_content_1)
+
+<div id='guidelines'/>
 
 ## III. Plugins guidelines
 
@@ -2786,9 +2788,7 @@ Table of content (5)
 
 This library allows you to build output of your plugin.
 
---------------
 #### 1.1 output_add
---------------
 
 **Description**
 
@@ -2823,9 +2823,8 @@ Output displays :
 CRITICAL - There is a critical problem
 Port 1 is disconnected
 ```
---------------
+
 #### 1.2 perfdata_add
---------------
 
 **Description**
 
@@ -2876,9 +2875,7 @@ OK - Memory is ok | 'memory_used'=30000000B;80000000;90000000;0;100000000
 
 This library allows you to manage performance data.
 
---------------
 #### 2.1 get_perfdata_for_output
---------------
 
 **Description**
 Manage thresholds of performance data for output.
@@ -2914,9 +2911,7 @@ $self->{output}->perfdata_add(label    => 'memory_used',
 **tip**
 In this example, instead of print warning and critical thresholds in 'percent', the function calculates and prints these in 'bytes'.
 
---------------
 #### 2.2 threshold_validate
---------------
 
 **Description**
 
@@ -2943,12 +2938,9 @@ if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{
 **tip**
 You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
---------------
 #### 2.3 threshold_check
---------------
 
 **Description**
-
 
 Check performance data value with threshold to determine status.
 
@@ -2979,9 +2971,8 @@ Output displays :
 ```
   WARNING - Used memory is 85% |
 ```
---------------
+
 #### 2.4 change_bytes
---------------
 
 **Description**
 
@@ -3025,9 +3016,7 @@ To use it, add the following line at the beginning of your **plugin.pm**:
 use base qw(centreon::plugins::script_snmp);
 ```
 
---------------
 #### 3.1 get_leef
---------------
 
 **Description**
 
@@ -3049,9 +3038,8 @@ my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTi
 print $result->{$oid_hrSystemUptime}."\n";
 print $result->{$oid_sysUpTime}."\n";
 ```
---------------
+
 #### 3.2 load
---------------
 
 **Description**
 
@@ -3099,9 +3087,8 @@ my $result2 = $self->{snmp}->get_leef();
 use Data::Dumper;
 print Dumper($result2);
 ```
---------------
+
 #### 3.3 get_table
---------------
 
 **Description**
 
@@ -3131,9 +3118,8 @@ my $results = $self->{snmp}->get_table(oid => $oid_rcDeviceError, start => $oid_
 use Data::Dumper;
 print Dumper($results);
 ```
---------------
+
 #### 3.4 get_multiple_table
---------------
 
 **Description**
 
@@ -3165,9 +3151,8 @@ my $results = $self->{snmp}->get_multiple_table(oids => [
 use Data::Dumper;
 print Dumper($results);
 ```
---------------
+
 #### 3.5 get_hostname
---------------
 
 **Description**
 
@@ -3184,9 +3169,8 @@ This is an example of how to get hostname parameter:
 ```perl
 my $hostname = $self->{snmp}->get_hostname();
 ```
---------------
+
 #### 3.6 get_port
---------------
 
 **Description**
 
@@ -3204,9 +3188,8 @@ This is an example of how to get port parameter:
 ```perl
 my $port = $self->{snmp}->get_port();
 ```
---------------
+
 #### 3.7 oid_lex_sort
---------------
 
 **Description**
 
@@ -3242,7 +3225,6 @@ centreon::plugins::misc::<my_method>;
 ```
 --------------
 #### 4.1 trim
---------------
 
 **Description**
 
@@ -3270,9 +3252,8 @@ Output displays :
 ```
 Hello world !
 ```
---------------
+
 #### 4.2 change_seconds
---------------
 
 **Description**
 
@@ -3299,9 +3280,8 @@ Output displays :
 ```
 Human readable time : 1h 2m 30s
 ```
---------------
+
 #### 4.3 backtick
---------------
 
 **Description**
 
@@ -3332,9 +3312,8 @@ print $stdout."\n";
 ```
 Output displays files in '/home' directory.
 
---------------
+
 #### 4.4 execute
---------------
 
 **Description**
 
@@ -3366,9 +3345,7 @@ my $stdout = centreon::plugins::misc::execute(output => $self->{output},
 ```
 Output displays files in /home using ssh on a remote host.
 
---------------
 #### 4.5 windows_execute
----------------
 
 **Description**
 
@@ -3412,9 +3389,7 @@ To use it, add the following line at the beginning of your **mode**:
 use centreon::plugins::statefile;
 ```
 
---------------
 #### 5.1 read
---------------
 
 **Description**
 
@@ -3444,9 +3419,7 @@ print Dumper($self->{statefile_value});
 ```
 Output displays cache file and its parameters.
 
---------------
 #### 5.2 get
---------------
 
 **Description**
 
@@ -3474,9 +3447,7 @@ print $value."\n";
 ```
 Output displays value for 'property1' of the cache file.
 
---------------
 #### 5.3 write
---------------
 
 **Description**
 
@@ -3532,9 +3503,7 @@ Some options must be set in **plugin.pm**:
 | proxyurl     | String | Proxy to use.                                           |
 | url_path     | String | URL to connect (start to '/').                          |
 
---------------
 #### 6.1 connect
---------------
 
 **Description**
 
@@ -3576,9 +3545,7 @@ To use it, add the following line at the beginning of your **plugin.pm**:
 use base qw(centreon::plugins::script_sql);
 ```
 
---------------
 #### 7.1 connect
---------------
 
 **Description**
 
@@ -3615,9 +3582,7 @@ my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
 ```
 Then, you are connected to the MySQL database.
 
---------------
 #### 7.2 query
---------------
 
 **Description**
 
@@ -3642,9 +3607,7 @@ print 'Value : '.$value."\n";
 ```
 Output displays count of MySQL slow queries.
 
---------------
 #### 7.3 fetchrow_array
---------------
 
 **Description**
 
@@ -3666,9 +3629,7 @@ print 'Uptime : '.$result."\n";
 ```
 Output displays MySQL uptime.
 
---------------
 #### 7.4 fetchall_arrayref
---------------
 
 **Description**
 
@@ -3701,9 +3662,7 @@ print $physical_reads."\n";
 ```
 Output displays physical reads on Oracle database.
 
---------------
 #### 7.5 fetchrow_hashref
---------------
 
 **Description**
 
@@ -3730,9 +3689,8 @@ Output displays Postgres databases.
 
 <div id='model_class_usage'/>
 
---------------
 ### 8. Model Classes Usage
---------------
+
 **Introduction**
 
 With the experience of plugin development, we have created two classes:
