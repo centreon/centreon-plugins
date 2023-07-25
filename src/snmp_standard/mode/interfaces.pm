@@ -1743,12 +1743,6 @@ Modify the interface name displayed by using a regular expression.
 
 Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
-Regexp src to transform display value.
-
-=item 
-
-Regexp dst to transform display value.
-
 =item B<--show-cache>
 
 Display cache interface datas.
