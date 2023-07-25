@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'interfaces'      => 'snmp_standard::mode::interfaces', 
+        'interfaces'      => 'network::teltonika::snmp::mode::interfaces', 
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'system'          => 'network::teltonika::snmp::mode::system'
+        'modem'           => 'network::teltonika::snmp::mode::modem'
     };
 
     return $self;
