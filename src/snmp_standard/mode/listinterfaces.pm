@@ -227,7 +227,7 @@ sub get_additional_information {
 sub get_display_value {
     my ($self, %options) = @_;
 
-    our $assign_var = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
+    our $assign_var = $self->{datas}->{$self->{option_results}->{oid_display} . '_' . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
 
@@ -374,6 +374,7 @@ sub disco_show {
             $extra_values->{type} = defined($result->{ $self->{oid_iftype} . '.' . $_ }) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ? 
                 $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } : 'unknown';
         }
+
         $self->{output}->add_disco_entry(
             name => $display_value,
             total => $interface_speed,
