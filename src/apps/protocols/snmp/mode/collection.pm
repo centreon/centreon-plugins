@@ -59,7 +59,7 @@ sub custom_select_perfdata {
 
     return if (!defined($self->{result_values}->{config}->{perfdatas}));
     foreach (@{$self->{result_values}->{config}->{perfdatas}}) {
-        next if (!defined($_->{value}) || $_->{value} !~ /^\d+(?:\.\d+)?$/);
+        next if (!defined($_->{value}) || $_->{value} !~ /^[+-]?\d+(?:\.\d+)?$/);
         $self->{output}->perfdata_add(%$_);
     }
 }
