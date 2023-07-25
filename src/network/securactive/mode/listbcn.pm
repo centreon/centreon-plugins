@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Safe;
 
 my $oid_spvBCNName = '.1.3.6.1.4.1.36773.3.2.2.1.1.1';
 
@@ -41,6 +42,9 @@ sub new {
     });
 
     $self->{bcn_id_selected} = [];
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -104,13 +108,18 @@ sub run {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $options{value};
 
+    our $assign_var = $options{value};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 sub disco_format {
@@ -157,15 +166,12 @@ Allows to use bcn name with option --bcn instead of bcn oid index.
 
 Allows to use regexp to filter bcn (with option --name).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the storage name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
 
 =back
 
 =cut
-    

@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use Safe;
 
 #########################
 # Calc functions
@@ -987,6 +988,9 @@ sub new {
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
+
     return $self;
 }
 
@@ -1059,12 +1063,16 @@ sub check_options {
 sub get_display_value {
     my ($self, %options) = @_;
 
-    my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
+    our $assign_var = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+    return $assign_var;
 }
 
 sub check_oids_options_change {
@@ -1729,11 +1737,15 @@ Define the OID that will be used to name the interfaces (default: ifName) (value
 
 Add an OID to display.
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
+
+Modify the interface name displayed by using a regular expression.
+
+Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 Regexp src to transform display value.
 
-=item B<--display-transform-dst>
+=item 
 
 Regexp dst to transform display value.
 

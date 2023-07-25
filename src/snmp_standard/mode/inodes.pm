@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Safe;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -67,6 +68,9 @@ sub new {
         'display-transform-dst:s' => { name => 'display_transform_dst' },
     });
 
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
+
     return $self;
 }
 
@@ -79,10 +83,15 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $results = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping->{dskPath}->{oid} }, 
-                                                              { oid => $mapping->{dskDevice}->{oid} }, 
-                                                              { oid => $mapping->{dskPercentNode}->{oid} } ],
-                                                    return_type => 1, nothing_quit => 1);
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{dskPath}->{oid} }, 
+            { oid => $mapping->{dskDevice}->{oid} }, 
+            { oid => $mapping->{dskPercentNode}->{oid} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
     $self->{disk} = {};
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$results})) {
         next if ($oid !~ /^$mapping->{dskPath}->{oid}\.(.*)/);
@@ -90,9 +99,9 @@ sub manage_selection {
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         $result->{dskPath} = $self->get_display_value(value => $result->{dskPath});
-        
+
         $self->{output}->output_add(long_msg => sprintf("disk path : '%s', device : '%s'", $result->{dskPath}, $result->{dskDevice}), debug => 1);
-        
+
         if (!defined($result->{dskPercentNode})) {
             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : no inode usage value", $result->{dskPath}), debug => 1);
             next;
@@ -131,8 +140,7 @@ sub manage_selection {
                 next;
             }
         }
-        
-        
+
         $self->{disk}->{$result->{dskPath}} = {
             display => $result->{dskPath}, 
             usage => $result->{dskPercentNode}
@@ -147,13 +155,18 @@ sub manage_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $options{value};
 
+    our $assign_var = $options{value};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 1;
@@ -191,13 +204,11 @@ Allows to use regexp to filter diskpath (with option --name).
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the storage name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-device>
 
