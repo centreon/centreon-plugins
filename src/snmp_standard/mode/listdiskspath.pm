@@ -226,7 +226,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--display-transform-src> B<--display-transform-dst>
 
-Modify the storage name displayed by using a regular expression.
+Modify the disk path name displayed by using a regular expression.
 
 Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 

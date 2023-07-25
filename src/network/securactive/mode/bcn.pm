@@ -179,19 +179,19 @@ Check BCN status.
 
 =item B<--bcn>
 
-Set the bcn (number expected) ex: 1, 2,... (empty means 'check all bcn').
+Set the BCN (number expected) ex: 1, 2,... (empty means 'check all bcn').
 
 =item B<--name>
 
-Allows to use bcn name with option --bcn instead of bcn oid index.
+Allows to use BCN name with option --bcn instead of bcn oid index.
 
 =item B<--regexp>
 
-Allows to use regexp to filter bcn (with option --name).
+Allows to use regexp to filter BCN (with option --name).
 
 =item B<--display-transform-src> B<--display-transform-dst>
 
-Modify the storage name displayed by using a regular expression.
+Modify the BCN name displayed by using a regular expression.
 
 Eg: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
 
