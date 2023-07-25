@@ -31,21 +31,6 @@ sub prefix_global_output {
     return 'Rules: ';
 }
 
-sub prefix_warning_output {
-    my ($self, %options) = @_;
-    return 'Warnings: ';
-}
-
-sub prefix_critical_output {
-    my ($self, %options) = @_;
-    return 'Criticals: ';
-}
-
-sub prefix_nodata_output {
-    my ($self, %options) = @_;
-    return 'No data: ';
-}
-
 sub prefix_rules_output {
     my ($self, %options) = @_;
     return sprintf('Rule id: "%s", Rule name: "%s" ',
@@ -57,10 +42,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'total_critical', type => 0, cb_prefix_output => 'prefix_critical_output'},
-        { name => 'total_warning', type => 0, cb_prefix_output => 'prefix_warning_output'},
-        { name => 'total_nodata', type => 0, cb_prefix_output => 'prefix_nodata_output'},
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output'},
         { name => 'rules', type => 1, cb_prefix_output => 'prefix_rules_output' }
     ];
 
@@ -70,29 +52,20 @@ sub set_counters {
                 output_template => 'total rules: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{total_critical} = [
+        },
         { label => 'criticals-total', nlabel => 'criticals.total.count', set
                 => {
                 key_values => [ { name => 'total_critical' }  ],
                 output_template => 'total critical: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{total_warning} = [
+        },
         { label => 'warnings-total', nlabel => 'warnings.total.count', set => {
                 key_values => [ { name => 'total_warning' }  ],
                 output_template => 'total warning: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{total_nodata} = [
+        },
         { label => 'no-data-total', nlabel => 'no.data.total.count', set => {
                 key_values => [ { name => 'total_nodata' }  ],
                 output_template => 'total no data: %s',
@@ -221,9 +194,9 @@ sub manage_selection {
             critical_count => $rule->{'critical:count'},
             nodata_count   => $rule->{'nodata:count'}
         };
-        $self->{total_critical}->{total_critical}+=$rule->{'critical:count'};
-        $self->{total_warning}->{total_warning}+=$rule->{'warning:count'};
-        $self->{total_nodata}->{total_nodata}+=$rule->{'nodata:count'};
+        $self->{global}->{total_critical}+=$rule->{'critical:count'};
+        $self->{global}->{total_warning}+=$rule->{'warning:count'};
+        $self->{global}->{total_nodata}+=$rule->{'nodata:count'};
     }
     $self->{global}->{total} = scalar (keys %{$self->{rules}});
 
