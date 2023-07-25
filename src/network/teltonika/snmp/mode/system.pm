@@ -24,19 +24,19 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("connection state is '%s' [pin state: '%s'] [net state: '%s'][sim state: '%s']", 
+    return sprintf(
+        "connection state is '%s' [pin state: '%s'] [net state: '%s'][sim state: '%s']", 
         $self->{result_values}->{connection_state},
         $self->{result_values}->{pin_state},
         $self->{result_values}->{net_state},
         $self->{result_values}->{sim_state},
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -46,19 +46,18 @@ sub set_counters {
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, set => {
+         { label => 'status', type => 2, critical_default => '%{connection_state} !~ /connected/i', set => {
                 key_values => [ { name => 'sim_state' }, { name => 'pin_state' }, { name => 'net_state' }, { name => 'connection_state' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'signal-strength', nlabel => 'system.signal.strength.dbm', display_ok => 0, set => {
                 key_values => [ { name => 'signal' } ],
                 output_template => 'signal strength: %s Dbm',
                 perfdatas => [
-                    { template => '%s', min => 0 , unit => 'Dbm' },
+                    { template => '%s', min => 0 , unit => 'Dbm' }
                 ]
             }
         },
@@ -66,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { template => '%s', min => 0 , unit => 'C' },
-                ],
+                    { template => '%s', min => 0 , unit => 'C' }
+                ]
             }
         },
         { label => 'traffic-in', nlabel => 'system.traffic.in.bitspersecond', display_ok => 0, set => {
@@ -75,8 +74,8 @@ sub set_counters {
                 output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s' },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s' }
+                ]
             }
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', display_ok => 0, set => {
@@ -84,26 +83,26 @@ sub set_counters {
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s' },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s' }
+                ]
             }
         },
         { label => 'signal-receive-power', nlabel => 'system.signal.receive.power.dbm', display_ok => 0, set => {
                 key_values => [ { name => 'rsrp' } ],
                 output_template => 'signal receive power: %s Dbm',
                 perfdatas => [
-                    { template => '%s', min => 0 , unit => 'Dbm' },
-                ],
+                    { template => '%s', min => 0 , unit => 'Dbm' }
+                ]
             }
         },
         { label => 'signal-receive-quality', nlabel => 'system.signal.receive.quality.dbm', display_ok => 0, set => {
                 key_values => [ { name => 'rsrq' } ],
                 output_template => 'signal receive quality: %s Dbm',
                 perfdatas => [
-                    { template => '%s', min => 0 , unit => 'Dbm' },
-                ],
+                    { template => '%s', min => 0 , unit => 'Dbm' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -112,19 +111,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{connection_state} !~ /connected/i' },
-    });
+    $options{options}->add_options(arguments => {});
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -149,7 +138,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{cache_name} = "teltonika_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'teltonika_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     $self->{global} = { 
@@ -162,7 +151,7 @@ sub manage_selection {
         traffic_in => $result->{$oid_Received} * 8,
         traffic_out => $result->{$oid_Sent} * 8,
         rsrp => $result->{$oid_RSRP},
-        rsrq => $result->{$oid_RSRQ},
+        rsrq => $result->{$oid_RSRQ}
     };
 }
 
@@ -183,12 +172,12 @@ Example: --filter-counters='status'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /connected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /connected/i').
 You can use the following variables:  %{sim_state}, %{pin_state}, %{net_state}, %{connection_state}
 
 =item B<--warning-*> B<--critical-*>
