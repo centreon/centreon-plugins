@@ -29,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'container-status' => 'cloud::docker::local::mode::containerstatus',
         'container-usage' => 'cloud::docker::local::mode::containerusage',
         'list-containers' => 'cloud::docker::local::mode::listcontainers'
     };
 
-    $self->{custom_modes}->{cli} = 'cloud::docker::local::custom::cli';
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

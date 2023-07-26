@@ -30,9 +30,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -55,12 +54,12 @@ sub manage_selection {
     # CONTAINER ID   IMAGE                   COMMAND                  CREATED        STATUS       PORTS                                       NAMES
     # 543c8edfea2b   registry/mariadb:10.7   "docker-entrypoint.s…"   5 months ago   Up 12 days   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp   db
 
-    shift @lines;
+    shift(@lines);
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(\S+)$/);
 
         my ($id, $image, $command, $created, $status, $ports, $name) = ($1, $2, $3, $4, $5, $6, $7);
-        
+
         $self->{containers}->{$id} = {
             name => $name,
             status => $status
@@ -73,20 +72,23 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $id (sort keys %{$self->{containers}}) { 
-        $self->{output}->output_add(long_msg => '[id = ' . $id . "] [name = " . $self->{containers}->{$id}->{name} . "]" .
-            " [status = " . $self->{containers}->{$id}->{status} . "]"
+        $self->{output}->output_add(
+            long_msg => '[id: ' . $id . "] [name: " . $self->{containers}->{$id}->{name} . "]" .
+                " [status: " . $self->{containers}->{$id}->{status} . "]"
         );
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List containers:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List containers:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['id', 'name', 'status']);
 }
 
@@ -98,7 +100,7 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             id => $id,
             name => $self->{containers}->{$id}->{name},
-            status => $self->{containers}->{$id}->{status},
+            status => $self->{containers}->{$id}->{status}
         );
     }
 }
@@ -110,6 +112,7 @@ __END__
 =head1 MODE
 
 List containers.
+
 Command used: docker ps -a
 
 =over 8
@@ -117,4 +120,3 @@ Command used: docker ps -a
 =back
 
 =cut
-    

@@ -30,7 +30,6 @@ sub custom_memory_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'memory_used',
         nlabel => 'container.memory.usage.bytes',
         unit => 'B',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
@@ -45,13 +44,12 @@ sub custom_memory_perfdata {
 sub custom_memory_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(
+    return $self->{perfdata}->threshold_check(
         value => $self->{result_values}->{prct_used}, threshold => [
             { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
             { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
         ]
     );
-    return $exit;
 }
 
 sub custom_memory_output {
@@ -102,8 +100,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_prct' }, { name => 'name' } ],
                 output_template => 'cpu usage: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
@@ -120,8 +117,7 @@ sub set_counters {
                 output_template => 'disk read throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_throughput', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
@@ -130,8 +126,7 @@ sub set_counters {
                 output_template => 'disk write throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write_throughput', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
@@ -140,8 +135,7 @@ sub set_counters {
                 output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%d', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
@@ -150,8 +144,7 @@ sub set_counters {
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%d', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
@@ -191,7 +184,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
-        'filter-id:s' => { name => 'filter_id' }
+        'filter-id:s'   => { name => 'filter_id' }
     });
 
     return $self;
@@ -211,7 +204,7 @@ sub manage_selection {
     # CONTAINER ID   NAME                 CPU %     MEM USAGE / LIMIT    MEM %     NET I/O           BLOCK I/O         PIDS
     # fe954c63d9ba   portainer            4.82%     72.14MiB / 7.79GiB   0.90%     387MB / 261MB     4.1kB / 0B        11
 
-    shift @lines;
+    shift(@lines);
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(\S+)\s{3,}(\S+)\s\/\s(\S+)\s{3,}\S+\s{3,}(\S+)\s\/\s(\S+)\s{3,}(\S+)\s\/\s(\S+).*$/);
 
@@ -252,6 +245,7 @@ __END__
 =head1 MODE
 
 Check container usage.
+
 Command used: docker stats -a --no-stream
 
 Because values are scaled, statistics are not very

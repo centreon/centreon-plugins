@@ -28,7 +28,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub prefix_containers_output {
     my ($self, %options) = @_;
-    
+
     return "Container '" . $options{instance_value}->{name} . "' ";
 }
 
@@ -38,6 +38,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok' }
     ];
+
     $self->{maps_counters}->{containers} = [
          { label => 'status', type => 2, critical_default => '%{status} !~ /up/i', set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
@@ -53,10 +54,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
-        'filter-id:s' => { name => 'filter_id' }
+        'filter-id:s'   => { name => 'filter_id' }
     });
 
     return $self;
@@ -76,7 +77,7 @@ sub manage_selection {
     # CONTAINER ID   IMAGE                   COMMAND                  CREATED        STATUS       PORTS                                       NAMES
     # 543c8edfea2b   registry/mariadb:10.7   "docker-entrypoint.s…"   5 months ago   Up 12 days   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp   db
 
-    shift @lines;
+    shift(@lines);
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(\S+)$/);
 
@@ -86,7 +87,7 @@ sub manage_selection {
             $name !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $id !~ /$self->{option_results}->{filter_id}/);
-        
+
         $self->{containers}->{$id} = {
             name => $name,
             status => $status
@@ -106,6 +107,7 @@ __END__
 =head1 MODE
 
 Check container status.
+
 Command used: docker ps -a
 
 =over 8
@@ -120,13 +122,13 @@ Filter by container ID (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for each container
-status (Default: none).
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for each container
-status (Default: '%{status} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /up/i').
+You can use the following variables: %{status}, %{name}
 
 =back
 
