@@ -126,7 +126,7 @@ Examples:
 
 Look for sent emails by Postfix:
 
-# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=journal --unit=postfix.service
+# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=systemd-journal --unit=postfix.service
 --filter-message='status=sent' --since=10 --change-short-output='Journal entries~Emails sent'
 --change-perfdata='journal.entries.count,emails.sent.count'
 
@@ -134,14 +134,14 @@ OK: Emails sent: 17 | 'emails.sent.count'=17;;;0;
 
 Look for Puppet errors:
 
-# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=journal
+# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=systemd-journal
 --unit=puppet.service --filter-message='error' --since=30
 
 OK: Journal entries: 1 | 'journal.entries.count'=1;;;0;
 
 Look for the number of Centreon Engine reloads
 
-# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=journal
+# perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=systemd-journal
 --unit=centengine.service --filter-message='Reloaded.*Engine' --since=60
 --change-short-output='Journal entries~Centreon Engine reloads over the last hour'
 --change-perfdata='journal.entries.count,centreon.engine.reload.count'
