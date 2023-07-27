@@ -59,6 +59,7 @@ sub new {
         'quota'                 => 'os::linux::local::mode::quota',
         'storage'               => 'os::linux::local::mode::storage',
         'swap'                  => 'os::linux::local::mode::swap',
+        'systemd-journal'       => 'os::linux::local::mode::systemdjournal',
         'systemd-sc-status'     => 'os::linux::local::mode::systemdscstatus',
         'traffic'               => 'os::linux::local::mode::traffic',
         'uptime'                => 'os::linux::local::mode::uptime'
