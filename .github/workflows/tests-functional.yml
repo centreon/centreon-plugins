@@ -18,6 +18,14 @@ jobs:
   functional-tests-with-robot:
     runs-on: ubuntu-22.04
 
+    services:
+      snmpsim:
+        image: vklidu/snmpsim
+        volumes:
+          - /$(pwd)/tests/resources/snmp:/usr/local/snmpsim/data
+        ports:
+          - 127.0.0.1:2024:161/udp
+
     steps:
       - uses: actions/checkout@v3
 
@@ -26,8 +34,10 @@ jobs:
           sudo apt update
           sudo apt upgrade -y
           sudo apt-get install -y libcurl4-openssl-dev libdatetime-perl libnet-ntp-perl libsnmp-perl snmp
-          sudo apt update
-          sudo apt upgrade -y
+
+      - name: Test SNMP Simulator
+        run: snmpwalk -v2c -c os_linux_snmp_plugin 127.0.0.1:2024
+        shell: bash
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -71,19 +81,10 @@ jobs:
         run: |
           pip3.11 install pip wheel --upgrade
           pip3.11 install robotframework
-          pip3.11 install https://github.com/inexio/snmpsim/archive/master.zip
-        shell: bash
-
-      - name: Run SNMP Simulator
-        run: |
-          cd tests/resources/snmp/
-          snmpsim-command-responder --data-dir=. --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=root --process-group=nogroup &
-          sleep 5
         shell: bash
 
       - name: Run Robot Framework tests
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          perl src/centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=list-diskio --hostname=127.0.0.1 --snmp-version=2 --snmp-community=os_linux_snmp_plugin --snmp-port=2024 --diskiodevice=sda --name --regexp --disco-show
           robot tests/functional/
