@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "perl(DBD::Pg)",
         "perl(DBI)",
         "perl(Time::HiRes)",
         "perl(POSIX)"
