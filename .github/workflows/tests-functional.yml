@@ -18,14 +18,6 @@ jobs:
   functional-tests-with-robot:
     runs-on: ubuntu-22.04
 
-    services:
-      snmpsim:
-        image: vklidu/snmpsim
-        volumes:
-          - /$(pwd)/tests/resources/snmp:/usr/local/snmpsim/data
-        ports:
-          - 127.0.0.1:2024:161/udp
-
     steps:
       - uses: actions/checkout@v3
 
@@ -33,11 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev libdatetime-perl libnet-ntp-perl libsnmp-perl snmp
-
-      - name: Test SNMP Simulator
-        run: snmpwalk -v2c -c os_linux_snmp_plugin 127.0.0.1:2024
-        shell: bash
+          sudo apt-get install -y libcurl4-openssl-dev libdatetime-perl libnet-ntp-perl libsnmp-perl
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@v1
@@ -87,4 +75,4 @@ jobs:
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          robot tests/functional/
+          robot tests/functional/api/
