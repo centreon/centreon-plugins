@@ -7,6 +7,7 @@ Library             String
 
 Suite Setup         Start Mockoon
 Suite Teardown      Stop Mockoon
+Test Timeout        120s
 
 
 *** Variables ***
