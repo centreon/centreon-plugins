@@ -31,7 +31,8 @@
                     },
                     {
                         "name": "poolTotalConn",
-                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.10"
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.10",
+                        "sampling": 1
                     }
                 ]
             }
@@ -44,22 +45,23 @@
             "expand_table": {
                 "poolEntry": "%(snmp.tables.poolEntry.[%(poolEntry.instance)])"
             },
-            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ || (defined(%(constants.criticalConn)) and %(poolEntry.poolTotalConn) >= %(constants.criticalConn))",
+            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ || (defined(%(constants.criticalConn)) and %(poolEntry.poolTotalConnPerSeconds) >= %(constants.criticalConn))",
             "perfdatas": [
                 {
                     "nlabel": "connTotal",
                     "instances": ["%(poolEntry.poolName)"],
-                    "value": "%(poolEntry.poolTotalConn)",
+                    "value": "%(poolEntry.poolTotalConnPerSeconds)",
                     "critical": "%(constants.criticalConn)",
+                    "unit": "c/s",
                     "min": 0
                 }
             ],
             "formatting": {
-                "printf_msg": "Device '%s' state is '%s' with Totalconn '%d'",
+                "printf_msg": "Device '%s' state is '%s' with Totalconn/s '%.2f'",
                 "printf_var": [
                     "%(poolEntry.poolName)",
                     "%(poolEntry.poolState)",
-                    "%(poolEntry.poolTotalConn)"
+                    "%(poolEntry.poolTotalConnPerSeconds)"
                 ],
                 "display_ok": true
             }
