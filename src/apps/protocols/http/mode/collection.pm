@@ -1256,6 +1256,68 @@ sub exec_func_scale {
     }
 }
 
+sub exec_func_second2human {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "second2human",
+    #    "src": "%(duration)",
+    #    "save_value": "%(humanDuration)",
+    #    "start": "d",
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my ($str, $str_append) = ('', '');
+    my $periods = [
+        { unit => 'y', value => 31556926 },
+        { unit => 'M', value => 2629743 },
+        { unit => 'w', value => 604800 },
+        { unit => 'd', value => 86400 },
+        { unit => 'h', value => 3600 },
+        { unit => 'm', value => 60 },
+        { unit => 's', value => 1 },
+    ];
+    my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
+    my $sign = '';
+    if ($data < 0) {
+        $sign = '-';
+        $data = abs($data);
+    }
+    
+    foreach (@$periods) {
+        next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
+        my $count = int($data / $_->{value});
+
+        next if ($count == 0);
+        $str .= $str_append . $count . $_->{unit};
+        $data = $data % $_->{value};
+        $str_append = ' ';
+    }
+
+    if ($str eq '') {
+        $str = $data;
+        $str .= $options{start} if (defined($options{start}));
+    }
+
+    if (defined($options{save_value}) && $options{save_value} ne '') {
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $sign . $str, %$var_save_value);
+    }
+}
+
 sub exec_func_date2epoch {
     my ($self, %options) = @_;
 
@@ -1591,6 +1653,8 @@ sub set_functions {
             $self->exec_func_map(%$_);
         } elsif ($_->{type} eq 'scale') {
             $self->exec_func_scale(%$_);
+        } elsif ($_->{type} eq 'second2human') {
+            $self->exec_func_second2human(%$_);
         } elsif (lc($_->{type}) eq 'date2epoch') {
             $self->exec_func_date2epoch(%$_);
         } elsif (lc($_->{type}) eq 'epoch2date') {
@@ -1766,7 +1830,6 @@ sub add_selection_loop {
             $self->{output}->option_exit();
         }
         next if (!defined($self->{http_collected}->{tables}->{ $result->{table} }));
-
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{ $result->{table} }}) {
             $self->{expand} = $self->set_constants();
             $self->set_builtin();
