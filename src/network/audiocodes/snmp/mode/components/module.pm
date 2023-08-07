@@ -30,16 +30,16 @@ my %map_status = (
     4 => 'moduleBackToServiceStart',
     5 => 'moduleMismatch',
     6 => 'moduleFaulty',
-    7 => 'notApplicable',
+    7 => 'notApplicable'
 );
 my %map_existence = (
     1 => 'present',
-    2 => 'missing',
+    2 => 'missing'
 );
 
 my $mapping = {
     acSysModulePresence     => { oid => '.1.3.6.1.4.1.5003.9.10.10.4.21.1.4', map => \%map_existence },
-    acSysModuleFRUstatus    => { oid => '.1.3.6.1.4.1.5003.9.10.10.4.21.1.14', map => \%map_status },
+    acSysModuleFRUstatus    => { oid => '.1.3.6.1.4.1.5003.9.10.10.4.21.1.14', map => \%map_status }
 };
 my $oid_acSysModuleEntry = '.1.3.6.1.4.1.5003.9.10.10.4.21.1';
 
@@ -60,18 +60,24 @@ sub check {
         next if ($oid !~ /^$mapping->{acSysModuleFRUstatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_acSysModuleEntry}, instance => $instance);
-        
+
         next if ($result->{acSysModulePresence} eq 'missing' &&
-                 $self->absent_problem(section => 'module', instance => $instance));
+            $self->absent_problem(section => 'module', instance => $instance));
         next if ($self->check_filter(section => 'module', instance => $instance));
 
         $self->{components}->{module}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("module '%s' status is '%s' [instance = %s]",
-                                                        $instance, $result->{acSysModuleFRUstatus}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "module '%s' status is '%s' [instance: %s]",
+                $instance, $result->{acSysModuleFRUstatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'module', value => $result->{acSysModuleFRUstatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Module '%s' status is '%s'", $instance, $result->{acSysModuleFRUstatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Module '%s' status is '%s'", $instance, $result->{acSysModuleFRUstatus})
+            );
         }
     }
 }

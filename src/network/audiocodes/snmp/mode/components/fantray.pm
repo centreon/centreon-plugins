@@ -29,11 +29,11 @@ my %map_status = (
     2 => 'warning',
     3 => 'minor',
     4 => 'major',
-    5 => 'critical',
+    5 => 'critical'
 );
 my %map_existence = (
     1 => 'present',
-    2 => 'missing',
+    2 => 'missing'
 );
 
 my $mapping = {
@@ -59,18 +59,25 @@ sub check {
         next if ($oid !~ /^$mapping->{acSysFanTraySeverity}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_acSysFanTrayEntry}, instance => $instance);
-        
+
         next if ($result->{acSysFanTrayExistence} eq 'missing' &&
-                 $self->absent_problem(section => 'fantray', instance => $instance));
+            $self->absent_problem(section => 'fantray', instance => $instance));
         next if ($self->check_filter(section => 'fantray', instance => $instance));
 
         $self->{components}->{fantray}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan tray '%s' status is '%s' [instance = %s]",
-                                                        $instance, $result->{acSysFanTraySeverity}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan tray '%s' status is '%s' [instance: %s]",
+                $instance, $result->{acSysFanTraySeverity}, $instance
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'fantray', value => $result->{acSysFanTraySeverity});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan tray '%s' status is '%s'", $instance, $result->{acSysFanTraySeverity}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan tray '%s' status is '%s'", $instance, $result->{acSysFanTraySeverity})
+            );
         }
     }
 }

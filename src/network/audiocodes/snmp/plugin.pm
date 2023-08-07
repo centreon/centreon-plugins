@@ -29,15 +29,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'              => 'network::audiocodes::snmp::mode::cpu',
-        'hardware'         => 'network::audiocodes::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-trunks'      => 'network::audiocodes::snmp::mode::listtrunks',
-        'memory'           => 'network::audiocodes::snmp::mode::memory',
-        'trunk-status'     => 'network::audiocodes::snmp::mode::trunkstatus',
+        'cpu'             => 'network::audiocodes::snmp::mode::cpu',
+        'hardware'        => 'network::audiocodes::snmp::mode::hardware',
+        'interfaces'      => 'network::audiocodes::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-trunks'     => 'network::audiocodes::snmp::mode::listtrunks',
+        'memory'          => 'network::audiocodes::snmp::mode::memory',
+        'sbc-calls'       => 'network::audiocodes::snmp::mode::sbccalls',
+        'trunk-status'    => 'network::audiocodes::snmp::mode::trunkstatus',
     );
 
     return $self;
