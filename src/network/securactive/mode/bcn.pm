@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Safe;
 
 my $oid_spvBCNName = '.1.3.6.1.4.1.36773.3.2.2.1.1.1';
 my $oid_spvBCNGlobalStatus = '.1.3.6.1.4.1.36773.3.2.2.1.1.4';
@@ -42,15 +43,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "bcn:s"                   => { name => 'bcn' },
-                                  "name"                    => { name => 'use_name' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                });
+    $options{options}->add_options(arguments => {
+        "bcn:s"                   => { name => 'bcn' },
+        "name"                    => { name => 'use_name' },
+        "regexp"                  => { name => 'use_regexp' },
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' }
+    });
+
     $self->{bcn_id_selected} = [];
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -102,28 +106,38 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_spvBCNGlobalStatus], 
-                        instances => $self->{bcn_id_selected});
+    $self->{snmp}->load(
+        oids => [$oid_spvBCNGlobalStatus], 
+        instances => $self->{bcn_id_selected}
+    );
     my $result = $self->{snmp}->get_leef();
     
     if (!defined($self->{option_results}->{bcn}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All BCN are ok.');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'All BCN are ok.'
+        );
     }
-    
+
     foreach my $instance (sort @{$self->{bcn_id_selected}}) {
         my $name = $self->{result_names}->{$oid_spvBCNName . '.' . $instance};
         $name = $self->get_display_value(value => $name);
         my $status = $result->{$oid_spvBCNGlobalStatus . '.' . $instance};
         my $exit_from_snmp = ${$bcn_status{$status}}[1];
         
-        $self->{output}->output_add(long_msg => sprintf("BCN '%s' global status is '%s'", 
-                                                        $name, ${$bcn_status{$status}}[0]));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "BCN '%s' global status is '%s'", 
+                $name, ${$bcn_status{$status}}[0]
+            )
+        );
         if (!$self->{output}->is_status(value => $exit_from_snmp, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{bcn}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit_from_snmp,
-                                        short_msg => sprintf("BCN '%s' global status is '%s'", $name, ${$bcn_status{$status}}[0]));
+            $self->{output}->output_add(
+                severity => $exit_from_snmp,
+                short_msg => sprintf("BCN '%s' global status is '%s'", $name, ${$bcn_status{$status}}[0])
+            );
         }
-        
+
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{bcn}) || defined($self->{option_results}->{use_regexp}));
         #$self->{output}->perfdata_add(label => 'eurt' . $extra_label,
@@ -132,20 +146,25 @@ sub run {
         #                              critical => $critth,
         #                              min => 0);
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $options{value};
 
+    our $assign_var = $options{value};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 1;
@@ -160,25 +179,22 @@ Check BCN status.
 
 =item B<--bcn>
 
-Set the bcn (number expected) ex: 1, 2,... (empty means 'check all bcn').
+Set the BCN (number expected) ex: 1, 2,... (empty means 'check all bcn').
 
 =item B<--name>
 
-Allows to use bcn name with option --bcn instead of bcn oid index.
+Allows to use BCN name with option --bcn instead of bcn oid index.
 
 =item B<--regexp>
 
-Allows to use regexp to filter bcn (with option --name).
+Allows to use regexp to filter BCN (with option --name).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the BCN name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
 
 =back
 
 =cut
-    

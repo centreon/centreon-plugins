@@ -102,13 +102,11 @@ Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDe
 
 Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the storage name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 
