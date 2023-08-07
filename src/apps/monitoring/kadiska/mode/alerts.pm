@@ -47,26 +47,32 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'rules-total', nlabel => 'rules.total.count', set => {
+        { label => 'rules-total-count', nlabel => 'rules.total.count', set => {
                 key_values => [ { name => 'total' }  ],
                 output_template => 'total rules: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'criticals-total', nlabel => 'criticals.total.count', set
+        { label => 'rules-criticals-total-count', nlabel => 'criticals.total
+        .count',
+            set
                 => {
                 key_values => [ { name => 'total_critical' }  ],
-                output_template => 'total critical: %s',
+                output_template => 'total criticals: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'warnings-total', nlabel => 'warnings.total.count', set => {
+        { label => 'rules-warnings-total-count', nlabel => 'warnings.total
+        .count',
+            set => {
                 key_values => [ { name => 'total_warning' }  ],
-                output_template => 'total warning: %s',
+                output_template => 'total warnings: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'no-data-total', nlabel => 'no.data.total.count', set => {
+        { label => 'rules-nodata-total-count', nlabel => 'no.data.total.count',
+            set
+                => {
                 key_values => [ { name => 'total_nodata' }  ],
                 output_template => 'total no data: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
