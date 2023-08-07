@@ -307,7 +307,8 @@ Filter scenarios (can be a regexp).
 
 =item B<--timeframe>
 
-Define timeframe in seconds (by default it's the time between two executions).
+Define timeframe (duration to go back in time) in seconds (default value: 300 ).
+The first range is calculated with this value then it's calculated from the last execution (stored in the cache file).
 
 =item B<--warning-*> B<--critical-*>
 
