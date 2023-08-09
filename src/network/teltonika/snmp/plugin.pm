@@ -29,12 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'interfaces'      => 'snmp_standard::mode::interfaces', 
+    $self->{modes} = {
+        'interfaces'      => 'network::teltonika::snmp::mode::interfaces', 
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'system'          => 'network::teltonika::snmp::mode::system',
-    );
+        'modem'           => 'network::teltonika::snmp::mode::modem'
+    };
 
     return $self;
 }
