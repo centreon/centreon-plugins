@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use POSIX;
 use DateTime;
 
 sub robot_long_output {
@@ -115,7 +114,8 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'filter-robot-name:s'    => { name => 'filter_robot_name' },
-        'filter-scenario-name:s' => { name => 'filter_scenario_name' }
+        'filter-scenario-name:s' => { name => 'filter_scenario_name' },
+        'timeframe:s'            => { name => 'timeframe' }
     });
 
     return $self;
@@ -129,11 +129,17 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_robot_name}) ? md5_hex($self->{option_results}->{filter_robot_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_scenario_name}) ? md5_hex($self->{option_results}->{filter_scenario_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
-    my $timespan = 5;
-    if (defined($last_timestamp)) {
-        $timespan = POSIX::ceil((time() - $last_timestamp) / 60);
+
+    my $timespan = 300;
+    if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} =~ /^(\d+)$/) {
+        $timespan = $1;
+        $last_timestamp = time() - $timespan;
     } else {
-        $last_timestamp = time() - (60 * 5);
+        if (defined($last_timestamp)) {
+            $timespan = time() - $last_timestamp;
+        } else {
+            $last_timestamp = time() - $timespan;
+        }
     }
 
     my $instances = $options{custom}->request_api(endpoint => '/api/instances');
@@ -298,6 +304,11 @@ Filter robots (can be a regexp).
 =item B<--filter-scenario-name>
 
 Filter scenarios (can be a regexp).
+
+=item B<--timeframe>
+
+Define timeframe (duration to go back in time) in seconds (default value: 300 ).
+The first range is calculated with this value then it's calculated from the last execution (stored in the cache file).
 
 =item B<--warning-*> B<--critical-*>
 

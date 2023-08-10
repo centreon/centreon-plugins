@@ -1,0 +1,153 @@
+name: nrpe
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'nrpe/packaging/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'nrpe/packaging/**'
+    tags:
+      - centreon-nrpe-*
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: nrpe/packaging/centreon-nrpe3-daemon.yaml
+
+  package:
+    needs: [get-environment]
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    name: package ${{ matrix.distrib }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Download nrpe sources
+        run: |
+          curl -Lo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
+          mv nrpe-${{ needs.get-environment.outputs.version }} nrpe-src
+        shell: bash
+
+      - name: Compile sources
+        run: |
+          cd nrpe-src
+
+          patch -p1 < ../nrpe/packaging/files/nrpe3_add_centreon_cmd.patch
+
+          if [ "${{ matrix.package_extension }}" = "deb" ]; then
+            NAGIOS_PLUGINS_PATH="/usr/lib/nagios/plugins"
+          else
+            NAGIOS_PLUGINS_PATH="/usr/lib64/nagios/plugins"
+          fi
+
+          CXXFLAGS="-Wall -Wextra" ./configure \
+            --libexecdir="$NAGIOS_PLUGINS_PATH" \
+            --localstatedir="/var/log/nrpe" \
+            --sysconfdir="/etc/nrpe" \
+            --enable-command-args \
+            --with-nrpe-user="centreon-engine" \
+            --with-nrpe-group="centreon-engine" \
+            --with-nrpe-port="5666" \
+            --with-nagios-user="centreon-engine" \
+            --with-nagios-group="centreon-engine"
+
+          make all
+        shell: bash
+
+      - name: Generate debug files
+        run: |
+          cd nrpe-src/src
+          for file in "nrpe" "check_nrpe"; do
+            objcopy --only-keep-debug $file $file.debug
+            objcopy --strip-debug $file
+            objcopy --add-gnu-debuglink $file.debug $file
+          done
+        shell: bash
+
+      - name: Package
+        uses: ./.github/actions/package
+        with:
+          nfpm_file_pattern: "nrpe/packaging/*.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          version: ${{ needs.get-environment.outputs.version }}
+          release: ${{ needs.get-environment.outputs.release }}
+          commit_hash: ${{ github.sha }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+
+  deliver-rpm:
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: nrpe
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  deliver-deb:
+    needs: [get-environment ,package]
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [bullseye]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}

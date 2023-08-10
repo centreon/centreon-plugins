@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "libdbd-pg-perl",
         "libdbi-perl"
     ]
 }

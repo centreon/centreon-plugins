@@ -299,13 +299,11 @@ Define the OID that will be used to name the interfaces (default: ifName) (value
 
 Add an OID to display.
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value.
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value.
+Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

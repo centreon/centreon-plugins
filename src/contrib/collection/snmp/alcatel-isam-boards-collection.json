@@ -1,0 +1,258 @@
+{
+	"mapping": {
+		"eqptSlotPowerStatus": {
+			"1": "powerUp",
+			"2": "powerDown"
+		},
+		"eqptBoardAdminStatus": {
+			"1": "unlock",
+			"2": "lock"
+		},
+		"eqptBoardOperStatus": {
+			"1": "operUp",
+			"2": "operDown"
+		},
+		"eqptBoardOperError": {
+			"1": "no-error",
+			"2": "type-mismatch",
+			"3": "board-missing",
+			"4": "board-installation-missing",
+			"5": "no-planned-board",
+			"6": "waiting-for-sw",
+			"7": "init-boot-failed",
+			"8": "init-download-failed",
+			"9": "init-connection-failed",
+			"10": "init-configuration-failed",
+			"11": "board-reset-protection",
+			"12": "invalid-parameter",
+			"13": "temperature-alarm",
+			"14": "tempshutdown",
+			"15": "defense",
+			"16": "board-not-licensed",
+			"17": "sem-power-fail",
+			"18": "sem-ups-fail",
+			"19": "board-in-incompatible-slot",
+			"21": "download-ongoing",
+			"255": "unknown-error"
+		},
+		"eqptBoardAvailStatus": {
+			"1": "available",
+			"2": "inTest",
+			"3": "failed",
+			"4": "powerOff",
+			"5": "notInstalled",
+			"6": "offLine",
+			"7": "dependency"
+		},
+		"eqptBoardRestart": {
+			"1": "with-selftest",
+			"2": "without-selftest",
+			"5": "hot-restart",
+			"255": "initialValue"
+		},
+		"eqptBoardLastRestartCause": {
+			"1": "poweron",
+			"2": "unknown",
+			"3": "watchdog",
+			"4": "coldreset",
+			"5": "warmreset",
+			"6": "hotreset",
+			"7": "hotreload",
+			"8": "cleandata",
+			"9": "emergencybuild",
+			"10": "poweronreset",
+			"11": "commitfailure",
+			"12": "timezonemodified"
+		},
+		"eqptBoardContainerOffset": {
+			"0": "iont:1/1",
+			"1": "nt-a",
+			"2": "nt-b",
+			"3": "lt:1/1/1",
+			"4": "lt:1/1/2",
+			"5": "lt:1/1/3",
+			"6": "lt:1/1/4",
+			"7": "lt:1/1/5",
+			"8": "lt:1/1/6",
+			"9": "lt:1/1/7",
+			"10": "lt:1/1/8",
+			"11": "lt:1/1/12",
+			"12": "lt:1/1/13",
+			"13": "lt:1/1/14",
+			"14": "lt:1/1/15",
+			"15": "lt:1/1/16",
+			"16": "lt:1/1/17",
+			"17": "lt:1/1/18",
+			"18": "lt:1/1/19"
+		}
+	},
+	"constants": {
+		"warningStatus": "operDown",
+		"filtereqptSlotPlannedType": "NOT_PLANNED"
+	},
+	"snmp": {
+		"tables": [
+			{
+				"name": "eqptBoardEntry",
+				"oid": ".1.3.6.1.4.1.637.61.1.23.3.1",
+				"used_instance": "\\.(\\d+)$",
+				"entries" :[
+					{ "name": "eqptSlotPlannedType", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.2" },
+					{ "name": "eqptSlotActualType", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.3" },
+					{ "name": "eqptSlotPowerStatus", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.4", "map": "eqptSlotPowerStatus" },
+					{ "name": "eqptBoardAdminStatus", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.5", "map": "eqptBoardAdminStatus" },
+					{ "name": "eqptBoardOperStatus", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.6", "map": "eqptBoardOperStatus" },
+					{ "name": "eqptBoardOperError", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.7", "map": "eqptBoardOperError" },
+					{ "name": "eqptBoardAvailStatus", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.8", "map": "eqptBoardAvailStatus" },
+					{ "name": "eqptBoardRestart", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.9", "map": "eqptBoardRestart" },
+					{ "name": "eqptBoardContainerOffset", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.12", "map": "eqptBoardContainerOffset" },
+					{ "name": "eqptBoardInventoryTypeName", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.14" },
+					{ "name": "eqptBoardInventoryPBACode", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.15" },
+					{ "name": "eqptBoardInventorySerialNumber", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.19" },
+					{ "name": "eqptBoardLastRestartCause", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.24", "map": "eqptBoardLastRestartCause" },
+					{ "name": "eqptBoardLastRestartTime", "oid": ".1.3.6.1.4.1.637.61.1.23.3.1.25" }
+				]
+			},
+			{
+				"name": "eqptBoardThermalSensorEntry",
+				"oid": ".1.3.6.1.4.1.637.61.1.23.10.1",
+				"used_instance": "\\.(\\d+\\.\\d+)$",
+				"entries" :[
+					{ "name": "eqptBoardThermalSensorId", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.1" },
+					{ "name": "eqptBoardThermalSensorActualTemperature", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.2" },
+					{ "name": "eqptBoardThermalSensorTcaThresholdLow", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.3" },
+					{ "name": "eqptBoardThermalSensorTcaThresholdHigh", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.4" },
+					{ "name": "eqptBoardThermalSensorShutdownThresholdLow", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.5" },
+					{ "name": "eqptBoardThermalSensorShutdownThresholdHigh", "oid": ".1.3.6.1.4.1.637.61.1.23.10.1.6" }
+				],
+                "instance_entries": {
+                    "re": "\\.(\\d+)\\.(\\d+)$",
+                    "entries": [
+                        { "name": "slotId", "capture": "1" },
+                        { "name": "thermalSensorId", "capture": "2" }
+                    ]
+                }
+			}
+		]
+
+	},
+	"selection": [
+		{
+			"name": "operUp",
+			"functions": [
+				{
+					"type": "count",
+					"src": "%(snmp.tables.eqptBoardEntry)",
+					"filter": "%(src.eqptBoardOperStatus) eq %(name)",
+					"save": "%(numOperUp)"
+				}
+			],
+			"perfdatas": [
+				{
+					"nlabel": "isam.device.%(name).count",
+					"value": "%(numOperUp)",
+					"min": 0
+
+				}
+			],
+			"formatting": {
+				"printf_msg": "Number of %s cards: %d",
+				"printf_var": [
+					"%(name)",
+					"%(numOperUp)"
+				],
+				"display_ok": false
+			}
+		},
+		{
+			"name": "operDown",
+			"functions": [
+				{
+					"type": "count",
+					"src": "%(snmp.tables.eqptBoardEntry)",
+					"filter": "%(src.eqptSlotPlannedType) ne %(constants.filtereqptSlotPlannedType) and %(src.eqptBoardOperStatus) eq %(name)",
+					"save": "%(numOperDown)"
+				}
+			],
+			"perfdatas": [
+				{
+					"nlabel": "isam.device.%(name).count",
+					"value": "%(numOperDown)",
+					"min": 0
+
+				}
+			],
+			"formatting": {
+				"printf_msg": "Number of %s cards: %d",
+				"printf_var": [
+					"%(name)",
+					"%(numOperDown)"
+				],
+				"display_ok": false
+			}
+		}
+	],
+	"selection_loop": [
+		{
+			"name": "eqptBoardTable",
+			"source": "%(snmp.tables.eqptBoardEntry)",
+			"expand_table": {
+				"eqptBoardEntry": "%(snmp.tables.eqptBoardEntry.[%(eqptBoardEntry.instance)])"
+            },
+			"warning": "%(eqptBoardEntry.eqptSlotPlannedType) ne %(constants.filtereqptSlotPlannedType) and %(eqptBoardEntry.eqptBoardOperStatus) eq %(constants.warningStatus)",
+			"filter": "%(eqptBoardEntry.eqptSlotPlannedType) ne %(constants.filtereqptSlotPlannedType)",
+			"formatting": {
+				"printf_msg": "Card %s (%s): status is %s (%s), power status is %s, planned is %s",
+				"printf_var": [
+					"%(eqptBoardEntry.eqptSlotActualType)",
+					"%(eqptBoardEntry.eqptBoardContainerOffset)",
+					"%(eqptBoardEntry.eqptBoardOperStatus)",
+					"%(eqptBoardEntry.eqptBoardOperError)",
+					"%(eqptBoardEntry.eqptSlotPowerStatus)",
+					"%(eqptBoardEntry.eqptSlotPlannedType)"
+				],
+				"display_ok": true
+			}
+		},
+		{
+			"name": "eqptBoardThermalSensorTable",
+            "source": "%(snmp.tables.eqptBoardThermalSensorEntry)",
+            "expand_table": {
+                "eqptBoardThermalSensorEntry": "%(snmp.tables.eqptBoardThermalSensorEntry.[%(eqptBoardThermalSensorEntry.instance)])",
+                "eqptBoardEntry": "%(snmp.tables.eqptBoardEntry.[%(eqptBoardThermalSensorEntry.slotId)])"
+            },
+            "perfdatas": [
+                {
+                	"nlabel": "%(eqptBoardEntry.eqptBoardContainerOffset).%(eqptBoardThermalSensorEntry.thermalSensorId).temp",
+                	"instances":
+                		[
+                			"%(eqptBoardEntry.eqptBoardContainerOffset)",
+                			"%(eqptBoardThermalSensorEntry.thermalSensorId)"
+                		],
+                	"value": "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorActualTemperature)",
+                	"warning": "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorTcaThresholdLow)",
+                	"critical": "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow)",
+            		"min": 0,
+            		"unit": "°C"
+        		}
+            ],
+			"warning": "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorActualTemperature) > (%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow) - %(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow) * 0.10)",
+			"critical": "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorActualTemperature) > (%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow) - %(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow) * 0.05)",
+            "formatting": {
+                "printf_msg": "Card %s (%s): sensor #%s temperature is %s°C (shutdown at %s°C)\n",
+                "printf_var": [
+                    "%(eqptBoardEntry.eqptSlotActualType)",
+                    "%(eqptBoardEntry.eqptBoardContainerOffset)",
+                    "%(eqptBoardThermalSensorEntry.thermalSensorId)",
+                    "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorActualTemperature)",
+                    "%(eqptBoardThermalSensorEntry.eqptBoardThermalSensorShutdownThresholdLow)"
+				],
+				"display_ok": false
+			}
+		}
+	],
+	"formatting": {
+		"custom_message_global": "All ISAM Boards are OK",
+		"separator": "-"
+	}
+}

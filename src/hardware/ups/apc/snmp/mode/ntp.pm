@@ -26,6 +26,14 @@ use strict;
 use warnings;
 use Date::Parse;
 
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    return $self;
+}
+
 sub get_target_time {
     my ($self, %options) = @_;
 

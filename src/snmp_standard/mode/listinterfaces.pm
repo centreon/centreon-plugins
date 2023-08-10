@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Safe;
 use snmp_standard::mode::resources::types qw($map_iftype);
 
 my $oid_speed32 = '.1.3.6.1.2.1.2.2.1.5'; # in b/s
@@ -112,6 +113,9 @@ sub new {
     });
 
     $self->{interface_id_selected} = [];
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -223,12 +227,17 @@ sub get_additional_information {
 sub get_display_value {
     my ($self, %options) = @_;
 
-    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . '_' . $options{id}};
+    our $assign_var = $self->{datas}->{$self->{option_results}->{oid_display} . '_' . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 sub manage_selection {
@@ -365,6 +374,7 @@ sub disco_show {
             $extra_values->{type} = defined($result->{ $self->{oid_iftype} . '.' . $_ }) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ? 
                 $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } : 'unknown';
         }
+
         $self->{output}->add_disco_entry(
             name => $display_value,
             total => $interface_speed,
@@ -415,13 +425,11 @@ Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc
 
 Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--add-extra-oid>
 

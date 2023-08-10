@@ -5,6 +5,8 @@
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "hardware/ups/apc/snmp/"
+        "snmp_standard/mode/ntp.pm",
+        "snmp_standard/mode/uptime.pm",
+	"hardware/ups/apc/snmp/"
     ]
 }

@@ -55,13 +55,15 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
-            'token:s'                => { name => 'token' }
+            'token:s'                => { name => 'token' },
+            'cache-use'              => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
+    $self->{cache_connect} = centreon::plugins::statefile->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -91,12 +93,14 @@ sub check_options {
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
     $self->{token} = $self->{option_results}->{token};
 
+    $self->{cache}->check_options(option_results => $self->{option_results});
+
     if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
     if (defined($self->{token})) {
-        $self->{cache}->check_options(option_results => $self->{option_results});
+        $self->{cache_connect}->check_options(option_results => $self->{option_results});
         return 0 if ($self->{token} ne '');
     }
 
@@ -105,7 +109,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => 'Need to specify --secret option.');
             $self->{output}->option_exit();
         }
-        $self->{cache}->check_options(option_results => $self->{option_results});
+        $self->{cache_connect}->check_options(option_results => $self->{option_results});
         return 0;
     }
 
@@ -140,9 +144,9 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{api_username}));
-    my $token = $self->{cache}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{api_username}));
+    my $token = $self->{cache_connect}->get(name => 'token');
+    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 ||
@@ -177,7 +181,7 @@ sub get_token {
             token => $decoded->{token},
             md5_secret => $md5_secret
         };
-        $self->{cache}->write(data => $datas);
+        $self->{cache_connect}->write(data => $datas);
     }
 
     return $token;
@@ -186,9 +190,9 @@ sub get_token {
 sub get_service_account_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
-    my $token = $self->{cache}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
+    my $token = $self->{cache_connect}->get(name => 'token');
+    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{service_account} . $self->{secret});
 
     if ($has_cache_file == 0 ||
@@ -235,7 +239,7 @@ sub get_service_account_token {
             token => $decoded->{token},
             md5_secret => $md5_secret
         };
-        $self->{cache}->write(data => $datas);
+        $self->{cache_connect}->write(data => $datas);
     }
 
     return $token;
@@ -245,7 +249,7 @@ sub clean_token {
     my ($self, %options) = @_;
 
     my $datas = { updated => time() };
-    $self->{cache}->write(data => $datas);
+    $self->{cache_connect}->write(data => $datas);
 }
 
 sub credentials {
@@ -374,6 +378,54 @@ sub request_api {
     return $result;
 }
 
+sub write_cache_file {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . md5_hex($self->get_connection_info()));
+    $self->{cache}->write(data => {
+        update_time => time(),
+        response => $options{response}
+    });
+}
+
+sub get_cache_file_response {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . md5_hex($self->get_connection_info()));
+    my $response = $self->{cache}->get(name => 'response');
+    if (!defined($response)) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->option_exit();
+    }
+
+    return $response;
+}
+
+sub cache_jobs_monitoring {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_jobs_monitoring(disable_cache => 1, limit => $options{limit});
+    $self->write_cache_file(
+        statefile => 'jobs_monitoring',
+        response => $datas
+    );
+
+    return $datas;
+}
+
+sub get_jobs_monitoring {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'jobs_monitoring')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+
+    return $self->request_api(
+        endpoint => '/api/v1/job_monitoring',
+        label => 'jobMonitoringInfoList',
+        get_param => ['limit=' . $options{limit}]
+    );
+}
+
 1;
 
 __END__
@@ -427,6 +479,10 @@ Use token authentication. If option is empty, token is created.
 =item B<--timeout>
 
 Set timeout in seconds (Default: 30).
+
+=item B<--cache-use>
+
+Use the cache file (created with cache mode). 
 
 =back
 
