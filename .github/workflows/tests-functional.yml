@@ -25,7 +25,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev
+          sudo apt-get install -y libcurl4-openssl-dev snmp libsnmp-perl
+          sudo apt-get install -qqy snmpsim
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -41,6 +42,7 @@ jobs:
           perl-version: '5.34'
           install-modules-with: cpm
           install-modules: |
+            Alien::SNMP
             DateTime
             Digest::MD5
             Encode
@@ -57,18 +59,30 @@ jobs:
             Storable
             URI
             URI::Encode
+            XML::LibXML
 
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install Robot Framework
-        run: pip3 install robotframework
+        run: |
+          pip3.11 install pip wheel --upgrade
+          pip3.11 install robotframework
         shell: bash
 
-      - name: Run Robot Framework tests
+      - name: Run Robot Framework API tests
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          robot tests/functional/
+          robot tests/functional/api
+
+      - name: Run Robot Framework SNMP tests
+        run: |
+          sudo useradd snmp
+          sudo mkdir -p /usr/snmpsim/data
+          sudo cp tests/resources/snmp/* /usr/snmpsim/data/
+          snmpsimd --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
+          snmpwalk -v2c -c linux 127.0.0.1:2024
+          robot tests/functional/snmp

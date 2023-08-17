@@ -82,7 +82,7 @@ ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugi
 ...                     display_transform_src=
 ...                     display_transform_dst=
 ...                     nbresults=2
-&{list_diskio_test8}
+&{list_diskio_test10}
 ...                     diskiodevice=SDA
 ...                     name=true
 ...                     regexp=true
@@ -90,7 +90,7 @@ ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugi
 ...                     display_transform_src=
 ...                     display_transform_dst=
 ...                     nbresults=5
-&{list_diskio_test9}
+&{list_diskio_test11}
 ...                     diskiodevice=sda
 ...                     name=true
 ...                     regexp=true
@@ -108,6 +108,8 @@ ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugi
 ...                     &{list_diskio_test7}
 ...                     &{list_diskio_test8}
 ...                     &{list_diskio_test9}
+...                     &{list_diskio_test10}
+...                     &{list_diskio_test11}
 
 
 *** Test Cases ***
@@ -121,7 +123,7 @@ Linux SNMP list diskio devices
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2
         ...    --snmp-community=os_linux_snmp_plugin
-        ...    --snmp-port=161
+        ...    --snmp-port=2024
         ...    --disco-show
         ${length} =    Get Length    ${list_diskio_test.diskiodevice}
         IF    ${length} > 0
