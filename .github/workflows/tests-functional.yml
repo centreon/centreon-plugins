@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev snmp libsnmp-perl
+          sudo apt-get install -y libcurl4-openssl-dev snmp
           sudo apt-get install -qqy snmpsim
 
       - name: Install Node.js
@@ -44,20 +44,9 @@ jobs:
           install-modules: |
             Alien::SNMP
             DateTime
-            Digest::MD5
-            Encode
-            ExtUtils::PkgConfig
-            HTTP::ProxyPAC
-            IO::Socket::SSL
-            JSON::XS
-            LWP::Protocol::https
-            LWP::UserAgent
-            MIME::Base64
             Net::Curl::Easy
             Paws
-            POSIX
-            Storable
-            URI
+            Net::SNMP
             URI::Encode
             XML::LibXML
 
@@ -84,5 +73,4 @@ jobs:
           sudo mkdir -p /usr/snmpsim/data
           sudo cp tests/resources/snmp/* /usr/snmpsim/data/
           snmpsimd --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
-          snmpwalk -v2c -c linux 127.0.0.1:2024
           robot tests/functional/snmp
