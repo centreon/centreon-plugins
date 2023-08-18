@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::kadiska::mode::listrules;
+package apps::monitoring::kadiska::mode::listalertrules;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -113,7 +113,7 @@ sub run {
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List rules:');
+                                short_msg => 'List alert rules:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

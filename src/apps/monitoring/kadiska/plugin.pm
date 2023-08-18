@@ -31,7 +31,7 @@ sub new {
 
     $self->{modes} = {
         'alerts'                => 'apps::monitoring::kadiska::mode::alerts',
-        'list-rules'            => 'apps::monitoring::kadiska::mode::listrules',
+        'list-alertrules'       => 'apps::monitoring::kadiska::mode::listalertrules',
         'list-runners'          => 'apps::monitoring::kadiska::mode::listrunners',
         'list-targets'          => 'apps::monitoring::kadiska::mode::listtargets',
         'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
