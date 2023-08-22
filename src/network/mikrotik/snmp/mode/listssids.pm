@@ -73,7 +73,7 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    my $mktFrequenOid = '.1.3.6.1.4.1.14988.1.1.1.3.1.4';
+    my $mktFrequenOid = '.1.3.6.1.4.1.14988.1.1.1.3.1.4.';
 
     foreach (sort @{$self->{datas}->{all_ids}}) {
         my $display_value = $self->get_display_value(id => $_);
