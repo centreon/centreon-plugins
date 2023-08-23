@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -115,8 +115,11 @@ sub run {
                 short_msg => sprintf('%s: %s seconds (time: %s)', $name, $diff_time, scalar(localtime($time)))
             );
         }
+
         $self->{output}->perfdata_add(
-            label => $name, unit => 's',
+            nlabel => 'file.mtime.last.seconds',
+            instances => $name,
+            unit => 's',
             value => $diff_time,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')

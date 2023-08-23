@@ -30,11 +30,11 @@ use JSON::XS;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'entries', nlabel => 'journal.entries.count', set => {
                 key_values => [ { name => 'entries' } ],
@@ -51,7 +51,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'unit:s'           => { name => 'unit' },
         'filter-message:s' => { name => 'filter_message' },
