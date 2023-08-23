@@ -235,6 +235,21 @@ Command used: /sbin/ip -s addr 2>&1
 
 =over 8
 
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{display}
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{display}
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "RU"').
+You can use the following variables: %%{status}, %{display}
+
 =item B<--warning-*>
 
 Warning threshold in percent of total packets. Can be:
