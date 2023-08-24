@@ -204,12 +204,12 @@ Start Mockoon
     ...    --port
     ...    3000
     ...    --pname
-    ...    azure-policyinsights
+    ...    aws-cloudtrail
     Should Be Empty    ${executionresult.stderr}
 
 Stop Mockoon
     ${executionresult} =    Run Process
     ...    mockoon-cli
     ...    stop
-    ...    mockoon-azure-policyinsights
+    ...    mockoon-aws-cloudtrail
     Should Be Empty    ${executionresult.stderr}

@@ -121,7 +121,7 @@ Linux SNMP list diskio devices
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2
         ...    --snmp-community=os_linux_snmp_plugin
-        ...    --snmp-port=2024
+        ...    --snmp-port=161
         ...    --disco-show
         ${length} =    Get Length    ${list_diskio_test.diskiodevice}
         IF    ${length} > 0
