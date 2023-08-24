@@ -130,7 +130,7 @@ Linux SNMP list diskio devices
     [Documentation]    List Linux diskio devices
     [Tags]    os    linux    snmp
     FOR    ${list_diskio_test}    IN    @{list_diskio_tests}
-        ${command} =    Catenate
+        ${command}    Catenate
         ...    ${CMD}
         ...    --mode=list-diskio
         ...    --hostname=127.0.0.1
@@ -138,44 +138,44 @@ Linux SNMP list diskio devices
         ...    --snmp-community=os_linux_snmp_plugin
         ...    --snmp-port=2024
         ...    --disco-show
-        ${length} =    Get Length    ${list_diskio_test.diskiodevice}
+        ${length}    Get Length    ${list_diskio_test.diskiodevice}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --diskiodevice=${list_diskio_test.diskiodevice}
+            ${command}    Catenate    ${command}    --diskiodevice=${list_diskio_test.diskiodevice}
         END
-        ${length} =    Get Length    ${list_diskio_test.name}
+        ${length}    Get Length    ${list_diskio_test.name}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --name
+            ${command}    Catenate    ${command}    --name
         END
-        ${length} =    Get Length    ${list_diskio_test.regexp}
+        ${length}    Get Length    ${list_diskio_test.regexp}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --regexp
+            ${command}    Catenate    ${command}    --regexp
         END
-        ${length} =    Get Length    ${list_diskio_test.regexp_isensitive}
+        ${length}    Get Length    ${list_diskio_test.regexp_isensitive}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --regexp-isensitive
+            ${command}    Catenate    ${command}    --regexp-isensitive
         END
-        ${length} =    Get Length    ${list_diskio_test.display_transform_src}
+        ${length}    Get Length    ${list_diskio_test.display_transform_src}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --display-transform-src=${list_diskio_test.display_transform_src}
+            ${command}    Catenate    ${command}    --display-transform-src=${list_diskio_test.display_transform_src}
         END
-        ${length} =    Get Length    ${list_diskio_test.display_transform_dst}
+        ${length}    Get Length    ${list_diskio_test.display_transform_dst}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --display-transform-dst=${list_diskio_test.display_transform_dst}
+            ${command}    Catenate    ${command}    --display-transform-dst=${list_diskio_test.display_transform_dst}
         END
-        ${output} =    Run    ${command}
-        ${length} =    Get Length    ${list_diskio_test.nbresults}
+        ${output}    Run    ${command}
+        ${length}    Get Length    ${list_diskio_test.nbresults}
         IF    ${length} > 0
-            ${nb_results} =    Get Element Count
+            ${nb_results}    Get Element Count
             ...    ${output}
             ...    label
             Should Be Equal As Integers
             ...    ${list_diskio_test.nbresults}
             ...    ${nb_results}
-            ...    msg=Wrong output result for list diskio devices: ${list_diskio_test}.{\n}Command output:{\n}${output}
+            ...    Wrong output result for list diskio devices: ${list_diskio_test}.{\n}Command output:{\n}${output}
         END
-        ${length} =    Get Length    ${list_diskio_test.result_match}
+        ${length}    Get Length    ${list_diskio_test.result_match}
         IF    ${length} > 0
-            @{labels} =    Get Elements    ${output}    label
+            @{labels}    Get Elements    ${output}    label
             FOR    ${label}    IN    @{labels}
                 Element Attribute Should Match    ${label}    name    ${list_diskio_test.result_match}
             END
