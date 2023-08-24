@@ -23,8 +23,6 @@ jobs:
 
       - name: Install libs
         run: |
-          sudo apt update
-          sudo apt upgrade -y
           sudo apt-get install -y libcurl4-openssl-dev
           sudo apt-get install -qqy snmpsim
 
@@ -56,9 +54,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Robot Framework
-        run: |
-          pip3.11 install pip wheel --upgrade
-          pip3.11 install robotframework
+        run: pip3.11 install robotframework
         shell: bash
 
       - name: Run Robot Framework API tests
