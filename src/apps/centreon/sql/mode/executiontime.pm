@@ -46,12 +46,12 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'count', nlabel => 'service.execution.exceed.count', set => {
+        { label => 'count', nlabel => 'services.execution.exceed.count', set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of services exceeding execution time: %s',
                 perfdatas => [
-                    { value => 'count', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         }
     ];
@@ -62,7 +62,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_value_output'),
                 closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
@@ -74,7 +74,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-poller:s'             => { name => 'filter_poller' },
         'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
-        'execution-time:s'            => { name => 'execution_time', default => '20' },
+        'execution-time:s'            => { name => 'execution_time', default => '20' }
     });
 
     return $self;
