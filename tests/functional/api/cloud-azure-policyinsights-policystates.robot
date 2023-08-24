@@ -69,13 +69,13 @@ Azure PolicyInsights PolicyStates compliance
         Should Be Equal As Strings
         ...    ${output}
         ...    ${compliance_value.result}
-        ...    msg=Wrong output result for compliance of ${compliance_value}
+        ...    msg=Wrong output result for compliance of ${compliance_value}.{\n}Command output:{\n}${output}
     END
 
 
 *** Keywords ***
 Start Mockoon
-    ${executionresult} =    Run Process
+    ${process} =    Start Process
     ...    mockoon-cli
     ...    start
     ...    --data
@@ -84,11 +84,11 @@ Start Mockoon
     ...    3000
     ...    --pname
     ...    azure-policyinsights
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}
 
 Stop Mockoon
-    ${executionresult} =    Run Process
+    ${process} =    Start Process
     ...    mockoon-cli
     ...    stop
     ...    mockoon-azure-policyinsights
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}

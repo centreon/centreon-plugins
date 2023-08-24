@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt upgrade -y
-          sudo apt-get install -y libcurl4-openssl-dev snmp
+          sudo apt-get install -y libcurl4-openssl-dev
           sudo apt-get install -qqy snmpsim
 
       - name: Install Node.js

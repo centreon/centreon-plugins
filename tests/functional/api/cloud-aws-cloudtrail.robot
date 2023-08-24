@@ -156,7 +156,7 @@ AWS CloudTrail check trail status
         Should Be Equal As Strings
         ...    ${output}
         ...    ${checktrailstatus_value.result}
-        ...    msg=Wrong output result for check trail status of ${checktrailstatus_value}
+        ...    msg=Wrong output result for check trail status of ${checktrailstatus_value}.{\n}Command output:{\n}${output}
     END
 
 AWS CloudTrail count events
@@ -191,13 +191,13 @@ AWS CloudTrail count events
         Should Be Equal As Strings
         ...    ${output}
         ...    ${countevents_value.result}
-        ...    msg=Wrong output result for count events of ${countevents_value}
+        ...    msg=Wrong output result for count events of ${countevents_value}.{\n}Command output:{\n}${output}
     END
 
 
 *** Keywords ***
 Start Mockoon
-    ${executionresult} =    Run Process
+    ${process} =    Start Process
     ...    mockoon-cli
     ...    start
     ...    --data
@@ -206,11 +206,11 @@ Start Mockoon
     ...    3000
     ...    --pname
     ...    aws-cloudtrail
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}
 
 Stop Mockoon
-    ${executionresult} =    Run Process
+    ${process} =    Start Process
     ...    mockoon-cli
     ...    stop
     ...    mockoon-aws-cloudtrail
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}
