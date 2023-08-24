@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
