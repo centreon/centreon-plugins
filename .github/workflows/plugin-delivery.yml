@@ -151,7 +151,7 @@ jobs:
   #         stability: ${{ inputs.stability }}
 
   release-tag:
-    if: ${{ inputs.stability == 'stable' && github.event_name != 'pull_request' }}
+    #if: ${{ inputs.stability == 'stable' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-22.04
 
     steps:
