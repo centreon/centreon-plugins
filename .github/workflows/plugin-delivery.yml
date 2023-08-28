@@ -166,17 +166,15 @@ jobs:
           set -x
           RELEASE=plugins-$(date '+%Y%m%d')
 
-          EXISTING_TAG=$(git tag --sort=-v:refname --list "$RELEASE" | head -n 1)
+          EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
 
           git config --global user.email "release@centreon.com"
           git config --global user.name "Centreon"
 
-          if [ -z "$OLDV" ]; then
-            echo "ok"
+          if [ -z "$EXISTING_TAG" ]; then
             git tag -a "$RELEASE" -m "release $RELEASE"
             git push --follow-tags
           else
-            echo "nok"
             echo "::warning::Release tag $RELEASE already exists"
           fi
         shell: bash
