@@ -16,6 +16,7 @@ on:
       - develop
       - master
       - MON-20486-release-tag
+    
     paths:
       - '.github/workflows/plugins.yml'
       - 'src/**'
