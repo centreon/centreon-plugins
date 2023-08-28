@@ -151,15 +151,14 @@ jobs:
   #         stability: ${{ inputs.stability }}
 
   release-tag:
-    # if: ${{ inputs.stability == 'stable' }}
+    if: ${{ inputs.stability == 'stable' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          #ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+        # with:
+        #   fetch-depth: 0
 
       - name: Push git release tag
         run: |
