@@ -158,7 +158,8 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+          #ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Push git release tag
         run: |
