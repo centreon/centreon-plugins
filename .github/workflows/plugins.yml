@@ -6,15 +6,16 @@ concurrency:
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/plugins.yml'
-      - 'src/**'
-      - 'packaging/**'
+  # pull_request:
+  #   paths:
+  #     - '.github/workflows/plugins.yml'
+  #     - 'src/**'
+  #     - 'packaging/**'
   push:
     branches:
       - develop
       - master
+      - MON-20486-release-tag
     paths:
       - '.github/workflows/plugins.yml'
       - 'src/**'
