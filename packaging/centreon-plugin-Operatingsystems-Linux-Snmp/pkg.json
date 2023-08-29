@@ -13,6 +13,7 @@
         "snmp_standard/mode/inodes.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/listdiskio.pm",
         "snmp_standard/mode/listdiskspath.pm",
         "snmp_standard/mode/listinterfaces.pm",
         "snmp_standard/mode/resources/",
