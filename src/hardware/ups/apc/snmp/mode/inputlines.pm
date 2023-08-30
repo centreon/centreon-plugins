@@ -90,7 +90,6 @@ sub set_counters {
         },
         { label => 'status', type => 2, set => {
                 key_values => [ { name => 'last_cause' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
