@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-         'cmd-return'     => 'os::windows::local::mode::cmdreturn',
-         'list-storages'  => 'os::windows::local::mode::liststorages',
-         'pending-reboot' => 'os::windows::local::mode::pendingreboot',
-         'sessions'       => 'os::windows::local::mode::sessions',
-         'time'           => 'os::windows::local::mode::ntp',
-         'updates'        => 'os::windows::local::mode::updates'
+         'certificates'      => 'os::windows::local::mode::certificates',
+         'cmd-return'        => 'os::windows::local::mode::cmdreturn',
+         'list-certificates' => 'os::windows::local::mode::listcertificates',
+         'list-storages'     => 'os::windows::local::mode::liststorages',
+         'pending-reboot'    => 'os::windows::local::mode::pendingreboot',
+         'sessions'          => 'os::windows::local::mode::sessions',
+         'time'              => 'os::windows::local::mode::ntp',
+         'updates'           => 'os::windows::local::mode::updates'
     };
 
     return $self;
