@@ -43,10 +43,13 @@ sub prefix_device_output {
     );
 }
 
-sub prefix_traffic_output {
+sub prefix_network_output {
     my ($self, %options) = @_;
 
-    return 'traffic ';
+    return sprintf(
+        "network '%s' ",
+        $options{instance_value}->{ipAddress}
+    );
 }   
 
 sub set_counters {
@@ -56,14 +59,14 @@ sub set_counters {
         { name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output',
           indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } }
+                { name => 'networks', type => 1, cb_prefix_output => 'prefix_network_output', message_multiple => 'all networks are ok', skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
-    $self->{maps_counters}->{traffic} = [
+    $self->{maps_counters}->{networks} = [
         { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'trafficIn' }, { name => 'deviceName' } ],
+                key_values => [ { name => 'trafficIn' }, { name => 'deviceName' }, { name => 'ipAddress' } ],
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -72,7 +75,7 @@ sub set_counters {
                     $self->{output}->perfdata_add(
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
-                        instances => $self->{result_values}->{deviceName},
+                        instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{ipAddress}],
                         value => $self->{result_values}->{trafficIn},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -82,7 +85,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'trafficOut' }, { name => 'deviceName' } ],
+                key_values => [ { name => 'trafficOut' }, { name => 'deviceName' }, { name => 'ipAddress' } ],
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -91,7 +94,7 @@ sub set_counters {
                     $self->{output}->perfdata_add(
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
-                        instances => $self->{result_values}->{deviceName},
+                        instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{ipAddress}],
                         value => $self->{result_values}->{trafficOut},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -134,7 +137,8 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_deviceTable,
         start => $mapping_device->{serial}->{oid},
-        end => $mapping_device->{userLabel2}->{oid}
+        end => $mapping_device->{userLabel2}->{oid},
+        nothing_quit => 1
     );
 
     $self->{devices} = {};
@@ -147,7 +151,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_device_name}/);
 
-        $self->{devices}->{$instance} = { deviceName => $name, traffic => { deviceName => $name } };
+        $self->{devices}->{$instance} = { deviceName => $name, networks => {} };
     }
 
     my $oid_networkTable = '.1.3.6.1.4.1.17534.2.2.1.4.1'; # optcNetworkSettingsEntry
@@ -164,8 +168,12 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_network, results => $snmp_result, instance => $deviceIndex . '.' . $netIndex);
 
-        $self->{devices}->{$deviceIndex}->{traffic}->{trafficIn} = $result->{trafficIn};
-        $self->{devices}->{$deviceIndex}->{traffic}->{trafficOut} = $result->{trafficOut};
+        $self->{devices}->{$deviceIndex}->{networks}->{$netIndex} = {
+            deviceName => $self->{devices}->{$deviceIndex}->{deviceName},
+            ipAddress => $result->{ipAddress},
+            trafficIn => $result->{trafficIn} * 1000,
+            trafficOut => $result->{trafficOut} * 1000
+        };
     }
 }
 

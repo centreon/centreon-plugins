@@ -66,7 +66,7 @@ sub set_counters {
         { name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output',
           indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'temperatures', type => 1, cb_prefix_output => 'prefix_temperature_output', message_multiple => 'All temperatures are ok', skipped_code => { -10 => 1 } }
+                { name => 'temperatures', type => 1, cb_prefix_output => 'prefix_temperature_output', message_multiple => 'all temperatures are ok', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -93,7 +93,7 @@ sub set_counters {
             label => 'alarm-status',
             type => 2,
             critical_default => '%{alarm} eq "enabled"',
-            nlabel => 'probe.temperature.alarm.count',
+            nlabel => 'probe.temperature.alarm.enabled.count',
             set => {
                 key_values => [
                     { name => 'alarm' }, { name => 'alarmValue' }, { name => 'probeIndex' }, { name => 'deviceName' }
@@ -106,9 +106,7 @@ sub set_counters {
                     $self->{output}->perfdata_add(
                         nlabel => $self->{nlabel},
                         instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{probeIndex}],
-                        value => sprintf('%s', $self->{result_values}->{alarmValue}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+                        value => sprintf('%s', $self->{result_values}->{alarmValue})
                     );
                 },
             }
@@ -146,7 +144,8 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_deviceTable,
         start => $mapping_device->{serial}->{oid},
-        end => $mapping_device->{userLabel2}->{oid}
+        end => $mapping_device->{userLabel2}->{oid},
+        nothing_quit => 1
     );
 
     $self->{devices} = {};
