@@ -1,7 +1,5 @@
 {
     "dependencies": [
-        "perl(SNMP)",
-	"perl(DateTime)",
-	"perl(Net::NTP)"
+        "perl(SNMP)"
     ]
 }
