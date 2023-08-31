@@ -93,7 +93,6 @@ sub set_counters {
             label => 'alarm-status',
             type => 2,
             critical_default => '%{alarm} eq "enabled"',
-            nlabel => 'probe.temperature.alarm.enabled.count',
             set => {
                 key_values => [
                     { name => 'alarm' }, { name => 'alarmValue' }, { name => 'probeIndex' }, { name => 'deviceName' }
@@ -104,11 +103,11 @@ sub set_counters {
                     my ($self, %options) = @_;
 
                     $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
+                        nlabel => 'probe.temperature.alarm.enabled.count',
                         instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{probeIndex}],
                         value => sprintf('%s', $self->{result_values}->{alarmValue})
                     );
-                },
+                }
             }
         }
     ];

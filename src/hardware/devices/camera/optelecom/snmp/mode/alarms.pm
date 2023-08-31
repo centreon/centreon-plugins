@@ -57,7 +57,7 @@ sub custom_alarm_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel => 'alarm.enabled.count',
         instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{alarmName}],
         value => sprintf('%s', $self->{result_values}->{alarmValue})
     );
@@ -86,7 +86,6 @@ sub set_counters {
             label => 'alarm-status',
             type => 2,
             critical_default => '%{alarm} eq "enabled"',
-            nlabel => 'alarm.enabled.count',
             set => {
                 key_values => [
                     { name => 'alarm' }, { name => 'alarmValue' }, { name => 'alarmName' }, { name => 'deviceName' }
