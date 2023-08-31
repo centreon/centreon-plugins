@@ -194,7 +194,7 @@ Filter devices by name (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'probe-temperature'.
+Can be: 'traffic-in', 'traffic-out'.
 
 =back
 
