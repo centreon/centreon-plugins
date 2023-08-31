@@ -131,10 +131,10 @@ sub check_options {
     
     # Compatibility for deprecated options
     if (defined($options{option_results}->{warning}) && $options{option_results}->{warning} ne '') {
-        $options{option_results}->{'warning-service-active-count'} = $options{option_results}->{warning};
+        $options{option_results}->{'warning-services-active-count'} = $options{option_results}->{warning};
     }
     if (defined($options{option_results}->{critical}) && $options{option_results}->{critical} ne '') {
-        $options{option_results}->{'critical-service-active-count'} = $options{option_results}->{critical};
+        $options{option_results}->{'critical-services-active-count'} = $options{option_results}->{critical};
     }
 
     my $delimiter = '';
