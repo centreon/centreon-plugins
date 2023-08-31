@@ -18,22 +18,12 @@
 # limitations under the License.
 #
 
-package hardware::devices::camera::optelecom::snmp::mode::temperature;
+package hardware::devices::camera::optelecom::snmp::mode::networks;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_alarm_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "alarm: %s",
-        $self->{result_values}->{alarm}
-    );
-}
 
 sub device_long_output {
     my ($self, %options) = @_;
@@ -53,10 +43,10 @@ sub prefix_device_output {
     );
 }
 
-sub prefix_temperature_output {
+sub prefix_traffic_output {
     my ($self, %options) = @_;
 
-    return "temperature probe '" . $options{instance_value}->{probeIndex} . "' ";
+    return 'traffic ';
 }   
 
 sub set_counters {
@@ -66,51 +56,48 @@ sub set_counters {
         { name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output',
           indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'temperatures', type => 1, cb_prefix_output => 'prefix_temperature_output', message_multiple => 'All temperatures are ok', skipped_code => { -10 => 1 } }
+                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
-    $self->{maps_counters}->{temperatures} = [
-        { label => 'probe-temperature', nlabel => 'probe.temperature.celsius', set => {
-                key_values => [ { name => 'actual' }, { name => 'probeIndex' }, { name => 'deviceName' } ],
-                output_template => 'temperature: %.2f C',
+    $self->{maps_counters}->{traffic} = [
+        { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'trafficIn' }, { name => 'deviceName' } ],
+                output_template => 'in: %s %s/s',
+                output_change_bytes => 2,
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
 
                     $self->{output}->perfdata_add(
                         nlabel => $self->{nlabel},
-                        unit => 'C',
-                        instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{probeIndex}],
-                        value => sprintf('%.2f', $self->{result_values}->{actual}),
+                        unit => 'b/s',
+                        instances => $self->{result_values}->{deviceName},
+                        value => $self->{result_values}->{trafficIn},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
                     );
                 }
             }
         },
-        {
-            label => 'alarm-status',
-            type => 2,
-            critical_default => '%{alarm} eq "enabled"',
-            nlabel => 'probe.temperature.alarm.count',
-            set => {
-                key_values => [
-                    { name => 'alarm' }, { name => 'alarmValue' }, { name => 'probeIndex' }, { name => 'deviceName' }
-                ],
-                closure_custom_output => $self->can('custom_alarm_output'),
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+        { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'trafficOut' }, { name => 'deviceName' } ],
+                output_template => 'out: %s %s/s',
+                output_change_bytes => 2,
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
 
                     $self->{output}->perfdata_add(
                         nlabel => $self->{nlabel},
-                        instances => [$self->{result_values}->{deviceName}, $self->{result_values}->{probeIndex}],
-                        value => sprintf('%s', $self->{result_values}->{alarmValue}),
+                        unit => 'b/s',
+                        instances => $self->{result_values}->{deviceName},
+                        value => $self->{result_values}->{trafficOut},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
                     );
-                },
+                }
             }
         }
     ];
@@ -134,9 +121,10 @@ my $mapping_device = {
     userLabel2 => { oid => '.1.3.6.1.4.1.17534.2.2.1.1.1.9' }  # optcUserLabel2
 };
 
-my $mapping_temperature = {
-    actual => { oid => '.1.3.6.1.4.1.17534.2.2.1.3.1.1.2' }, # optcActualTemperature
-    alarm  => { oid => '.1.3.6.1.4.1.17534.2.2.1.3.1.1.5' }, # optcTemperatureAlarm
+my $mapping_network = {
+    ipAddress  => { oid => '.1.3.6.1.4.1.17534.2.2.1.4.1.4' }, # optcIPAddress
+    trafficOut => { oid => '.1.3.6.1.4.1.17534.2.2.1.5.1.1' }, # optcTotalTxBitrate
+    trafficIn  => { oid => '.1.3.6.1.4.1.17534.2.2.1.5.1.2' }  # optcTotalRxBitrate
 };
 
 sub manage_selection {
@@ -159,26 +147,25 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_device_name}/);
 
-        $self->{devices}->{$instance} = { deviceName => $name, temperatures => {} };
+        $self->{devices}->{$instance} = { deviceName => $name, traffic => { deviceName => $name } };
     }
 
-    my $oid_temperatureTable = '.1.3.6.1.4.1.17534.2.2.1.3.1.1'; # optcTemperatureEntry
-    $snmp_result = $options{snmp}->get_table(oid => $oid_temperatureTable);
+    my $oid_networkTable = '.1.3.6.1.4.1.17534.2.2.1.4.1'; # optcNetworkSettingsEntry
+    my $oid_networkStatsTable = '.1.3.6.1.4.1.17534.2.2.1.5.1'; # optcNetworkStatisticsEntry
+    $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ { oid => $oid_networkTable }, { oid => $oid_networkStatsTable } ],
+        return_type => 1
+    );
     foreach (keys %$snmp_result) {
-        next if (! /^$mapping_temperature->{actual}->{oid}\.(\d+).(\d+)$/);
-        my ($deviceIndex, $probeIndex) = ($1, $2);
+        next if (! /^$mapping_network->{ipAddress}->{oid}\.(\d+).(\d+)$/);
+        my ($deviceIndex, $netIndex) = ($1, $2);
 
         next if (!defined($self->{devices}->{$deviceIndex}));
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping_temperature, results => $snmp_result, instance => $deviceIndex . '.' . $probeIndex);
+        my $result = $options{snmp}->map_instance(mapping => $mapping_network, results => $snmp_result, instance => $deviceIndex . '.' . $netIndex);
 
-        $self->{devices}->{$deviceIndex}->{temperatures}->{$probeIndex} = {
-            probeIndex => $probeIndex,
-            deviceName => $self->{devices}->{$deviceIndex}->{deviceName},
-            actual => $result->{actual},
-            alarmValue => $result->{alarm} =~ /1|true/i ? 1 : 0,
-            alarm => $result->{alarm} =~ /1|true/i ? 'enabled' : 'disabled'
-        };
+        $self->{devices}->{$deviceIndex}->{traffic}->{trafficIn} = $result->{trafficIn};
+        $self->{devices}->{$deviceIndex}->{traffic}->{trafficOut} = $result->{trafficOut};
     }
 }
 
@@ -188,28 +175,13 @@ __END__
 
 =head1 MODE
 
-Check temperatures.
+Check networks traffic.
 
 =over 8
 
 =item B<--filter-device-name>
 
 Filter devices by name (can be a regexp).
-
-=item B<--unknown-alarm-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{alarm}, %{probeIndex}, %{deviceName}
-
-=item B<--warning-alarm-status>
-
-Define the conditions to match for the status to be WARNING.
-You can use the following variables:  %{alarm}, %{probeIndex}, %{deviceName}
-
-=item B<--critical-alarm-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{alarm} eq "enabled"').
-You can use the following variables:  %{alarm}, %{probeIndex}, %{deviceName}
 
 =item B<--warning-*> B<--critical-*>
 

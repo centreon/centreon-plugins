@@ -30,9 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'alarms'          => 'hardware::devices::camera::optelecom::snmp::mode::alarms',
         'interfaces'      => 'hardware::devices::camera::optelecom::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'temperature'     => 'hardware::devices::camera::optelecom::snmp::mode::temperature',
+        'networks'        => 'hardware::devices::camera::optelecom::snmp::mode::networks',
+        'temperatures'    => 'hardware::devices::camera::optelecom::snmp::mode::temperatures',
         'uptime'          => 'hardware::devices::camera::optelecom::snmp::mode::uptime'
     };
 
