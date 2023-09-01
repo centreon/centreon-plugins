@@ -53,7 +53,7 @@ sub custom_string_output {
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$self->{instance_mode}->{option_results}->{printf_format}", eval $self->{instance_mode}->{option_results}->{printf_value});
+            $msg = sprintf("$self->{instance_mode}->{option_results}->{printf_format}", $self->{result_values}->{ $self->{instance_mode}->{printf_value} });
         };
     } else {
         $msg = sprintf("'%s'", $self->{result_values}->{value_field});
@@ -62,6 +62,7 @@ sub custom_string_output {
     if (defined($message)) {
         $self->{output}->output_add(long_msg => 'output value issue: ' . $message);
     }
+
     return $msg;
 }
 
@@ -90,6 +91,16 @@ sub check_options {
     if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
         $self->{output}->option_exit();
+    }
+
+    $self->{printf_value} = 'value_field';
+    if (defined($self->{option_results}->{printf_value}) && $self->{option_results}->{printf_value} ne '') {
+        $self->{printf_value} = $1
+            if ($self->{option_results}->{printf_value} =~ /\$self->{result_values}->{(value_field|key_field)}/);
+        $self->{printf_value} = $1
+            if ($self->{option_results}->{printf_value} =~ /\%{(value_field|key_field)}/);
+        $self->{printf_value} = $1
+            if ($self->{option_results}->{printf_value} =~ /\%\((value_field|key_field)\)/);
     }
 }
 
@@ -160,7 +171,7 @@ Specify a custom output message relying on printf formatting
 =item B<--printf-value>
 
 Specify scalar used to replace in printf
-(Can be: $self->{result_values}->{key_field}, $self->{result_values}->{value_field})
+(Can be: %{key_field}, %{value_field})
 
 =item B<--warning-string>
 
