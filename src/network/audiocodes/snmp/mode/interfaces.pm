@@ -167,11 +167,11 @@ Add an OID to display.
 
 =item B<--display-transform-src>
 
-Regexp src to transform display value.
+Modify the disk name displayed by using a regular expression (pattern matching).
 
 =item B<--display-transform-dst>
 
-Regexp dst to transform display value.
+Modify the disk name displayed by using a regular expression (pattern substitution).
 
 =item B<--show-cache>
 
