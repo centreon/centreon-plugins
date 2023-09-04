@@ -20,7 +20,7 @@
 
 package apps::monitoring::kadiska::mode::listalertrules;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
