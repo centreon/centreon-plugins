@@ -28,7 +28,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
-    
+
     foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{output}->perfdata_add(
             label => $key,
@@ -61,13 +61,13 @@ sub custom_status_calc {
         $self->{result_values}->{$key} = $options{new_datas}->{$self->{instance} . '_' . $key};
     }
     $self->{result_values}->{time} = time();
-    
+
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'queries_results', type => 1, 
             message_multiple => 'All queries results are ok', skipped_code => { -11 => 1 } }
@@ -89,7 +89,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'query:s@'          => { name => 'query' },
         'instance:s'        => { name => 'instance' },
@@ -104,27 +104,27 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     if (!defined($self->{option_results}->{output}) || $self->{option_results}->{output} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --output option.");
         $self->{output}->option_exit();
     }
-    
+
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option.");
         $self->{output}->option_exit();
     }
-    
+
     if (!defined($self->{option_results}->{query})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --query option.");
         $self->{output}->option_exit();
     }
 
     $self->{custom_keys} = [];
-    $self->{queries} = {};
+    $self->{queries} = [];
     foreach my $query (@{$self->{option_results}->{query}}) {
         next if ($query !~ /^(.*?),(.*)$/);
-        $self->{queries}->{$1} = $2;
+        push @{$self->{queries}}, { label => $1, value => $2 };
         push @{$self->{maps_counters}->{queries_results}->[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
     }
@@ -136,25 +136,31 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{queries_results} = {};
-    my (@results, @queries);
 
-    my $query_index = -1;
-    foreach my $label (keys %{$self->{queries}}) {
-        $query_index++;
-        @queries = ();
-        push @queries, $self->{queries}->{$label};
+    my $query_index = 0;
+    foreach my $query (@{$self->{queries}}) {
+        my $queries_results = $options{custom}->query(queries => [$query->{value}]);
 
-        my $queries_results = $options{custom}->query(queries => \@queries);
-    
         foreach my $result (@$queries_results) {
             next if (!defined($result->{tags}->{ $self->{option_results}->{instance} }));
 
-            my ($column_index) = grep { $result->{columns}->[$_] eq $self->{custom_keys}->[$query_index] } (0 .. @{$result->{columns}} - 1);
-            my $value;
-            $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
-            $self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } }->{instance} = $result->{tags}->{ $self->{option_results}->{instance} };
+            my $column_index = 0;
+            foreach (@{$result->{columns}}) {
+                last if ($_ eq $self->{custom_keys}->[$query_index]);
+                $column_index++;
+            }
+
+            my $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
+            if (!defined($self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } })) {
+                $self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } } = {
+                    instance => $result->{tags}->{ $self->{option_results}->{instance} }
+                };
+            }
+
             $self->{queries_results}->{ $result->{tags}->{ $self->{option_results}->{instance} } }->{ $result->{columns}->[$column_index] } = $value;
         }
+
+        $query_index++;
     }
 
     if (scalar(keys %{$self->{queries_results}}) <= 0) {
