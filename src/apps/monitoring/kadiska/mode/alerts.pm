@@ -53,24 +53,19 @@ sub set_counters {
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-criticals-total-count', nlabel => 'rules.criticals.count',
-            set
-                => {
+        { label => 'rules-criticals-total-count', nlabel => 'rules.criticals.count', set => {
                 key_values => [ { name => 'total_critical' }  ],
                 output_template => 'total criticals: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-warnings-total-count', nlabel => 'rules.warnings.count',
-            set => {
+        { label => 'rules-warnings-total-count', nlabel => 'rules.warnings.count', set => {
                 key_values => [ { name => 'total_warning' }  ],
                 output_template => 'total warnings: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-nodata-total-count', nlabel => 'rules.nodata.count',
-            set
-                => {
+        { label => 'rules-nodata-total-count', nlabel => 'rules.nodata.count', set => {
                 key_values => [ { name => 'total_nodata' }  ],
                 output_template => 'total no data: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
@@ -180,9 +175,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{total_critical}->{total_critical}=0;
-    $self->{total_warning}->{total_warning}=0;
-    $self->{total_nodata}->{total_nodata}=0;
+    $self->{global} = { total_critical => 0, total_warning => 0, total_nodata => 0 };
 
     foreach (@{$results->{data}}) {
         my $rule = $_;
