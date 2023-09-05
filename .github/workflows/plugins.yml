@@ -19,8 +19,6 @@ on:
       - '.github/workflows/plugins.yml'
       - 'src/**'
       - 'packaging/**'
-    tags:
-      - centreon-plugins-*
 
 jobs:
   get-environment:
