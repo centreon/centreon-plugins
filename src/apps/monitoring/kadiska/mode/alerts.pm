@@ -75,39 +75,39 @@ sub set_counters {
 
     $self->{maps_counters}->{rules} = [
         { label => 'rule-ok-count',
-            type => 1,
             set => {
                 key_values => [ { name => 'ok_count' } ],
                 output_template => 'ok count: %s',
                 display_ok => 0,
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
         { label => 'rule-warning-count',
-            type => 1,
             set => {
                 key_values => [ { name => 'warning_count' } ],
                 output_template => 'warning count: %s',
                 display_ok => 0,
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
         { label => 'rule-critical-count',
-            type => 1,
             set => {
                 key_values => [ { name => 'critical_count' } ],
                 output_template => 'critical count: %s',
                 display_ok => 0,
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
         { label => 'rule-nodata-count',
-            type => 1,
             set => {
                 key_values => [ { name => 'nodata_count' } ],
                 output_template => 'no data count: %s',
                 display_ok => 0,
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         }
     ];
