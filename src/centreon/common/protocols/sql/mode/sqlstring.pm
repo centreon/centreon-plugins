@@ -166,11 +166,11 @@ Value column (must be one of the selected field). MANDATORY
 
 =item B<--printf-format>
 
-Specify a custom output message relying on printf formatting
+Specify a custom output message relying on printf formatting. If this option is set --printf-value is mandatory.
 
 =item B<--printf-value>
 
-Specify scalar used to replace in printf
+Specify scalar used to replace in printf. If this option is set --printf-format is mandatory.
 (Can be: %{key_field}, %{value_field})
 
 =item B<--warning-string>
