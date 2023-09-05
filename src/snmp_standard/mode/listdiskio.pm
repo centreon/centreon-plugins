@@ -33,10 +33,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'diskiodevice:s'          => { name => 'diskiodevice' },
         'name'                    => { name => 'use_name' },
-        'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
-        'display-transform-src:s' => { name => 'display_transform_src' },
-        'display-transform-dst:s' => { name => 'display_transform_dst' }
+        'regexp'                  => { name => 'use_regexp' }
     });
 
     return $self;
@@ -59,8 +56,8 @@ sub manage_selection {
 
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_diskioEntry,
-        start => $mapping->{index}->{oid}, # First oid of the mapping => here : 3
-        end => $mapping->{name}->{oid} # Last oid of the mapping => here : 16
+        start => $mapping->{index}->{oid}, # First oid of the mapping
+        end => $mapping->{name}->{oid} # Last oid of the mapping
     );
 
     my $results = {};
@@ -77,11 +74,7 @@ sub manage_selection {
             my $filter = $self->{option_results}->{diskiodevice};
             if (length($self->{option_results}->{use_name})) {
                 if (length($self->{option_results}->{use_regexp})) {
-                    if (length($self->{option_results}->{use_regexpi})) {
-                        if ($result->{name} !~ /$filter/i) {
-                            $add = 0;
-                        }
-                    } elsif ($result->{name} !~ /$filter/) {
+                    if ($result->{name} !~ /$filter/) {
                         $add = 0;
                     }
                 } elsif ($result->{name} ne $filter) {
@@ -92,14 +85,9 @@ sub manage_selection {
             }
         }
         if ($add) {
-            my $name = $result->{name};
-            if (length($self->{option_results}->{display_transform_src})) {
-                $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-                eval "\$name =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
-            }
             $results->{$oid_path} = {
                 index => $result->{index},
-                name  => $name
+                name  => $result->{name}
             };
         }
     }
@@ -124,7 +112,7 @@ sub run {
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List aps'
+        short_msg => 'List disk IO device'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
