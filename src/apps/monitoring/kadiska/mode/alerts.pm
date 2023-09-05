@@ -53,7 +53,7 @@ sub set_counters {
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-criticals-total-count', nlabel => 'criticals.total.count',
+        { label => 'rules-criticals-total-count', nlabel => 'rules.criticals.count',
             set
                 => {
                 key_values => [ { name => 'total_critical' }  ],
@@ -61,14 +61,14 @@ sub set_counters {
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-warnings-total-count', nlabel => 'warnings.total.count',
+        { label => 'rules-warnings-total-count', nlabel => 'rules.warnings.count',
             set => {
                 key_values => [ { name => 'total_warning' }  ],
                 output_template => 'total warnings: %s',
                 perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
-        { label => 'rules-nodata-total-count', nlabel => 'no.data.total.count',
+        { label => 'rules-nodata-total-count', nlabel => 'rules.nodata.count',
             set
                 => {
                 key_values => [ { name => 'total_nodata' }  ],
