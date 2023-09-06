@@ -159,18 +159,6 @@ Allows to use disk IO device name with option --diskiodevice instead of disk IO 
 
 Allows to use regexp to filter diskiodevice (with option --name).
 
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--display-transform-src>
-
-Regexp src to transform display value. (security risk!!!)
-
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
-
 =back
 
 =cut
