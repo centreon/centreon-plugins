@@ -47,8 +47,8 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - run: |
-          dnf install -y selinux-policy-devel
+      - name: Generate selinux binary
+        run: |
           cd selinux/src
           sed -i "s/@VERSION@/${{ needs.get-environment.outputs.version }}/g" centreon-plugins.te
           make -f /usr/share/selinux/devel/Makefile

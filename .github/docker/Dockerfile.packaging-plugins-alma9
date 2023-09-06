@@ -10,7 +10,7 @@ baseurl=https://repo.goreleaser.com/yum/
 enabled=1
 gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
 
-dnf -y install gcc git gettext rpm-build dos2unix python3 epel-release nfpm openssl-devel jq zstd
+dnf -y install gcc git gettext rpm-build dos2unix python3 epel-release nfpm openssl-devel jq zstd selinux-policy-devel
 dnf -y install perl-App-cpanminus perl-JSON
 cpanm App::FatPacker
 cpanm File::Copy::Recursive
