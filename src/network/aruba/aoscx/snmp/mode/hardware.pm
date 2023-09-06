@@ -36,6 +36,7 @@ sub set_system {
         default => [
             ['^ok$', 'OK'],
             ['normal', 'OK'],
+            ['ready', 'OK'],
             ['.*', 'CRITICAL']
         ]
     };
