@@ -15,6 +15,9 @@ license: "Apache-2.0"
 
 depends:
   - policycoreutils
+  - centreon-common-selinux
+  - centreon-engine-selinux
+  - centreon-broker-selinux
 replaces:
   - centreon-plugins-selinux-debuginfo
 conflicts:
@@ -27,6 +30,10 @@ contents:
     dst: "/usr/share/selinux/packages/centreon/centreon-plugins.pp"
     file_info:
       mode: 0655
+
+scripts:
+  postinstall: ./scripts/centreon-plugins-selinux-postinstall.sh
+  preremove: ./scripts/centreon-plugins-selinux-preremove.sh
 
 rpm:
   summary: SELinux context for centreon-plugins
