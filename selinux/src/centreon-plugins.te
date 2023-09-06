@@ -1,0 +1,23 @@
+policy_module(centreon-plugins, @VERSION@)
+
+########################################
+#
+# Declarations
+#
+require {
+	type centreon_engine_t;
+	type centreon_broker_t;
+	type snmpd_t;
+	type fixed_disk_device_t;
+}
+
+########################################
+#
+# Centreon local policy
+#
+
+# centreon_centreon_central.pl
+allow centreon_engine_t centreon_broker_t:fifo_file { open read getattr };
+
+#============= snmpd_t ==============
+allow snmpd_t fixed_disk_device_t:blk_file { open read getattr setattr };
