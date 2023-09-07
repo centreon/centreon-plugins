@@ -23,6 +23,7 @@ jobs:
 
       - name: Install libs
         run: |
+          sudo apt update
           sudo apt-get install -y libcurl4-openssl-dev
           sudo apt-get install -qqy snmpsim
 

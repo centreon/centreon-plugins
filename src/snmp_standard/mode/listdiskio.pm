@@ -30,12 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'diskiodevice:s'          => { name => 'diskiodevice' },
-        'name'                    => { name => 'use_name' },
-        'regexp'                  => { name => 'use_regexp' }
-    });
-
     return $self;
 }
 
@@ -65,31 +59,12 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{index}->{oid}\.(.*)$/);
         my $oid_path = $1;
-        my $add = 1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $oid_path);
-
-        # Filter results by device index, name or regex
-        if (length($self->{option_results}->{diskiodevice})) {
-            my $filter = $self->{option_results}->{diskiodevice};
-            if (length($self->{option_results}->{use_name})) {
-                if (length($self->{option_results}->{use_regexp})) {
-                    if ($result->{name} !~ /$filter/) {
-                        $add = 0;
-                    }
-                } elsif ($result->{name} ne $filter) {
-                    $add = 0;
-                }
-            } elsif ($result->{index} != $filter) {
-                $add = 0;
-            }
-        }
-        if ($add) {
-            $results->{$oid_path} = {
-                index => $result->{index},
-                name  => $result->{name}
-            };
-        }
+        $results->{$oid_path} = {
+            index => $result->{index},
+            name  => $result->{name}
+        };
     }
 
     return $results;
@@ -146,18 +121,6 @@ List disk IO device (UCD-DISKIO-MIB).
 Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
-
-=item B<--diskiodevice>
-
-Set the disk IO device (number expected) ex: 1, 2,... (empty means 'check all disks IO device').
-
-=item B<--name>
-
-Allows to use disk IO device name with option --diskiodevice instead of disk IO device oid index.
-
-=item B<--regexp>
-
-Allows to use regexp to filter diskiodevice (with option --name).
 
 =back
 
