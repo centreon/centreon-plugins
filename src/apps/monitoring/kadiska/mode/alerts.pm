@@ -74,28 +74,28 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{rules} = [
-        { label => 'rule-ok-count', nlabel => 'rule-ok-count', set => {
+        { label => 'rule-ok-count', nlabel => 'rule.ok.count', set => {
                 key_values => [ { name => 'ok_count' } ],
                 output_template => 'ok count: %s',
                 display_ok => 0,
                 perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
-        { label => 'rule-warning-count', nlabel => 'rule-warning-count', set => {
+        { label => 'rule-warning-count', nlabel => 'rule.warning.count', set => {
                 key_values => [ { name => 'warning_count' } ],
                 output_template => 'warning count: %s',
                 display_ok => 0,
                 perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
-        { label => 'rule-critical-count', nlabel => 'rule-critical-count', set => {
+        { label => 'rule-critical-count', nlabel => 'rule.critical.count', set => {
                 key_values => [ { name => 'critical_count' } ],
                 output_template => 'critical count: %s',
                 display_ok => 0,
                 perfdatas => [ {template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
-        { label => 'rule-nodata-count', nlabel => 'rule-nodata-count', set => {
+        { label => 'rule-nodata-count', nlabel => 'rule.nodata.count', set => {
                 key_values => [ { name => 'nodata_count' } ],
                 output_template => 'no data count: %s',
                 display_ok => 0,
