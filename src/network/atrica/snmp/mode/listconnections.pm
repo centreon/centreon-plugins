@@ -85,8 +85,7 @@ sub default_oid_display_name {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, 
-                                  no_speed => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_speed => 1);
     bless $self, $class;    
     return $self;
 }
@@ -131,13 +130,11 @@ Define the OID to be used to filter interfaces (default: atrConnCepGenDescr) (va
 
 Define the OID that will be used to name the interfaces (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--add-extra-oid>
 

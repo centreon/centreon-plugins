@@ -41,12 +41,6 @@ sub custom_radio_channel_util_calc {
     return 0;
 }
 
-sub skip_global {
-    my ($self, %options) = @_;
-
-    scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
@@ -75,7 +69,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global', },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'ap', type => 3, cb_prefix_output => 'prefix_ap_output', cb_long_output => 'ap_long_output', indent_long_output => '    ', message_multiple => 'All access points are ok',
             group => [
                 { name => 'ap_global', type => 0 },

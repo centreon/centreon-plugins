@@ -41,12 +41,20 @@ sub set_counters {
                     { label => 'stdev', template => '%.2f' }
                 ]
             }
+        },
+        { label => 'frequence', nlabel => 'lines.output.frequence.hertz', set => {
+                key_values => [ { name => 'frequency' } ],
+                output_template => 'frequence: %.2f Hz',
+                perfdatas => [
+                    { template => '%.2f', unit => 'Hz' }
+                ]
+            }
         }
     ];
 
     $self->{maps_counters}->{oline} = [
         { label => 'load', nlabel => 'line.output.load.percentage', set => {
-                key_values => [ { name => 'upsOutputPercentLoad' } ],
+                key_values => [ { name => 'outputPercentLoad' } ],
                 output_template => 'load: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -54,7 +62,7 @@ sub set_counters {
             }
         },
         { label => 'current', nlabel => 'line.output.current.ampere', set => {
-                key_values => [ { name => 'upsOutputCurrent' } ],
+                key_values => [ { name => 'outputCurrent' } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
                     { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
@@ -62,7 +70,7 @@ sub set_counters {
             }
         },
         { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
-                key_values => [ { name => 'upsOutputVoltage' } ],
+                key_values => [ { name => 'outputVoltage' } ],
                 output_template => 'voltage: %.2f V',
                 perfdatas => [
                     { template => '%.2f', unit => 'V', label_extra_instance => 1 }
@@ -70,7 +78,7 @@ sub set_counters {
             }
         },
         { label => 'power', nlabel => 'line.output.power.watt', set => {
-                key_values => [ { name => 'upsOutputPower' } ],
+                key_values => [ { name => 'outputPower' } ],
                 output_template => 'power: %.2f W',
                 perfdatas => [
                     { template => '%.2f', unit => 'W', label_extra_instance => 1 }
@@ -105,38 +113,41 @@ sub stdev {
     my $total = 0;
     my $num_present = scalar(keys %{$self->{oline}});
     foreach my $instance (keys %{$self->{oline}}) {
-        next if (!defined($self->{oline}->{$instance}->{upsOutputPercentLoad}));
-        $total += $self->{oline}->{$instance}->{upsOutputPercentLoad};
+        next if (!defined($self->{oline}->{$instance}->{outputPercentLoad}));
+        $total += $self->{oline}->{$instance}->{outputPercentLoad};
     }
     
     my $mean = $total / $num_present;
     $total = 0;
     foreach my $instance (keys %{$self->{oline}}) {
-        next if (!defined($self->{oline}->{$instance}->{upsOutputPercentLoad}));
-        $total += ($mean - $self->{oline}->{$instance}->{upsOutputPercentLoad}) ** 2; 
+        next if (!defined($self->{oline}->{$instance}->{outputPercentLoad}));
+        $total += ($mean - $self->{oline}->{$instance}->{outputPercentLoad}) ** 2; 
     }
     my $stdev = sqrt($total / $num_present);
-    $self->{global} = { stdev => $stdev };
+    $self->{global}->{stdev} = $stdev;
 }
 
 my $mapping = {
-    upsOutputVoltage        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.2' }, # in Volt 
-    upsOutputCurrent        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.3' },  # in dA 
-    upsOutputPower          => { oid => '.1.3.6.1.2.1.33.1.4.4.1.4' }, # in Watt 
-    upsOutputPercentLoad    => { oid => '.1.3.6.1.2.1.33.1.4.4.1.5' }
+    outputVoltage     => { oid => '.1.3.6.1.2.1.33.1.4.4.1.2' }, # in Volt 
+    outputCurrent     => { oid => '.1.3.6.1.2.1.33.1.4.4.1.3' }, # in dA 
+    outputPower       => { oid => '.1.3.6.1.2.1.33.1.4.4.1.4' }, # in Watt 
+    outputPercentLoad => { oid => '.1.3.6.1.2.1.33.1.4.4.1.5' }
 };
-my $oid_upsOutputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
+my $oid_outputFrequency = '.1.3.6.1.2.1.33.1.4.2.0'; # upsOutputFrequency
+my $oid_outputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
+my $oid_output = '.1.3.6.1.2.1.33.1.4'; # upsOutput
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{oline} = {};
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_upsOutputEntry,
+        oid => $oid_output,
         nothing_quit => 1
     );
+
     foreach my $oid (keys %$snmp_result) {
-        $oid =~ /^$oid_upsOutputEntry\.\d+\.(.*)$/;
+        next if ($oid !~ /^$oid_outputEntry\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{oline}->{$instance}));
 
@@ -146,13 +157,15 @@ sub manage_selection {
                 delete $result->{$_} if ($result->{$_} == 0);
             }
         }
-        $result->{upsOutputCurrent} *= 0.1 if (defined($result->{upsOutputCurrent}));
+        $result->{outputCurrent} *= 0.1 if (defined($result->{outputCurrent}));
 
         if (scalar(keys %$result) > 0) {
             $self->{oline}->{$instance} = { display => $instance, %$result };
         }
     }
 
+    $self->{global} = {};
+    $self->{global}->{frequency} = $snmp_result->{$oid_outputFrequency} * 0.1 if (defined($snmp_result->{$oid_outputFrequency}));
     if (scalar(keys %{$self->{oline}}) > 1) {
         $self->stdev();
     }
@@ -172,15 +185,10 @@ Check Output lines metrics (load, voltage, current and true power).
 
 Ignore counters equals to 0.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'load', 'voltage', 'current', 'power'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'load', 'voltage', 'current', 'power'.
+Threshold.
+Can be: 'frequency', 'load', 'voltage', 'current', 'power'.
 
 =item B<--warning-stdev-3phases>
 

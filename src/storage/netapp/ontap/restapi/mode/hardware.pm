@@ -96,7 +96,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'shelf', 'bay', 'fru'.
+Can be: 'bay', 'disk', 'fru', 'shelf'.
 
 =item B<--filter>
 

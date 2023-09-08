@@ -295,7 +295,7 @@ sub add_memory {
         next if ($options{content} !~ /==>\s*\/proc\/$pid\/statm.*?\n(.*?)(?:==>|\Z)/ms);
         my @values = split(/\s+/, $1);
 
-        my $memory_used = ($values[1] * $self->{option_results}->{page_size}) + ($values[5] * $self->{option_results}->{page_size});
+        my $memory_used = ($values[1] * $self->{option_results}->{page_size});
         $self->{processes}->{$pid}->{memory_used} = $memory_used;
         $self->{global}->{memory_used} += $memory_used;
     }
@@ -343,7 +343,7 @@ sub add_extra_metrics {
     $self->set_timestamp(timestamp => Time::HiRes::time());
     my ($content) = $options{custom}->execute_command(
         command => 'bash',
-        command_options => "-c 'tail -n +1 /proc/$proc_arg/$files_arg'",
+        command_options => "-c 'tail -vn +1 /proc/$proc_arg/$files_arg'",
         no_quit => 1
     );
 

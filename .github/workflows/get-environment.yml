@@ -54,6 +54,8 @@ jobs:
 
           if [[ "${{ inputs.version_file }}" == "" ]]; then
             VERSION=$(date '+%Y%m%d')
+          elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
+            VERSION=$(grep 'version: ' ${{ inputs.version_file }} | cut -d' ' -f2 | tr -d '"')
           else
             VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
           fi

@@ -119,14 +119,14 @@ my $mapping = {
     uioSensorStatusSensorName       => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.3' },
     uioSensorStatusTemperatureDegC  => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.6' },
     uioSensorStatusHumidity         => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.7' },
-    uioSensorStatusAlarmStatus      => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.9', map => $map_alarm_status },
+    uioSensorStatusAlarmStatus      => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.9', map => $map_alarm_status }
 };
 my $mapping_iem = {
     iemStatusProbeName         => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.2' },
     iemStatusProbeStatus       => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.3', map => $map_iem_status },
     iemStatusProbeCurrentTemp  => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.4' },
     iemStatusProbeTempUnits    => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.5', map => $map_iem_unit },
-    iemStatusProbeCurrentHumid => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.6' },
+    iemStatusProbeCurrentHumid => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.6' }
 };
 my $oid_uioSensorStatusEntry = '.1.3.6.1.4.1.318.1.1.25.1.2.1';
 my $oid_iemStatusProbesEntry = '.1.3.6.1.4.1.318.1.1.10.2.3.2.1';
@@ -179,9 +179,10 @@ sub check_uoi {
                     )
                 );
             }
+
             $self->{output}->perfdata_add(
-                label => 'universal_temp', unit => 'C',
-                nlabel => 'sensor.universal.temperature.celsius', 
+                nlabel => 'sensor.universal.temperature.celsius',
+                unit => 'C',
                 instances => $result->{uioSensorStatusSensorName},
                 value => $result->{uioSensorStatusTemperatureDegC},
                 warning => $warn,
@@ -202,9 +203,10 @@ sub check_uoi {
                 )
             );
         }
+
         $self->{output}->perfdata_add(
-            label => 'universal_humidity', unit => '%',
             nlabel => 'sensor.universal.humidity.percentage',
+            unit => '%',
             instances => $result->{uioSensorStatusSensorName},
             value => $result->{uioSensorStatusHumidity},
             warning => $warn,
@@ -259,8 +261,8 @@ sub check_iem {
                     )
                 );
             }
+
             $self->{output}->perfdata_add(
-                label => 'integrated_temp',
                 unit => $result->{iemStatusProbeTempUnits} eq 'celsius' ? 'C' : 'F',
                 nlabel => 'sensor.integrated.temperature.' . $result->{iemStatusProbeTempUnits}, 
                 instances => $result->{iemStatusProbeName},
@@ -283,9 +285,10 @@ sub check_iem {
                 )
             );
         }
+
         $self->{output}->perfdata_add(
-            label => 'integrated_humidity', unit => '%',
             nlabel => 'sensor.integrated.humidity.percentage',
+            unit => '%',
             instances => $result->{iemStatusProbeName},
             value => $result->{iemStatusProbeCurrentHumid},
             warning => $warn,

@@ -580,6 +580,8 @@ sub service_message {
     my $img;
     if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
         $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
+    } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
+        $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Cannot retrieve graph: ' . $content . '</h2>';
     } else {
         $self->{payload_attachment}->{png} = $content;
         $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
@@ -948,7 +950,7 @@ sub run {
 
     my $email;
 
-    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '' && $self->{payload_attachment}->{png} ne 'Resource not found' ) {
+    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '') {
         my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
         
         $email = Email::MIME->create(

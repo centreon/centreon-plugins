@@ -39,7 +39,7 @@ sub custom_last_exec_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        instances => $self->{result_values}->{name},
+        instances => [$self->{result_values}->{jobName}, $self->{result_values}->{jobType}],
         unit => $self->{instance_mode}->{option_results}->{unit},
         value => $self->{result_values}->{lastExecSeconds} >= 0 ? floor($self->{result_values}->{lastExecSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }) : $self->{result_values}->{lastExecSeconds},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -66,7 +66,7 @@ sub custom_duration_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        instances => $self->{result_values}->{name},
+        instances => [$self->{result_values}->{jobName}, $self->{result_values}->{jobType}],
         unit => $self->{instance_mode}->{option_results}->{unit},
         value => floor($self->{result_values}->{durationSeconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -151,18 +151,29 @@ sub set_counters {
 
     $self->{maps_counters}->{failed} = [
         { label => 'job-executions-failed-prct', nlabel => 'job.executions.failed.percentage', set => {
-                key_values => [ { name => 'failedPrct' } ],
+                key_values => [ { name => 'failedPrct' }, { name => 'jobName' }, { name => 'jobType' } ],
                 output_template => 'number of failed executions: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => '%',
+                        instances => [$self->{result_values}->{jobName}, $self->{result_values}->{jobType}],
+                        value => sprintf('%.2f', $self->{result_values}->{failedPrct}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0,
+                        max => 100
+                    );
+                }
             }
         }
     ];
 
     $self->{maps_counters}->{timers} = [
          { label => 'job-execution-last', nlabel => 'job.execution.last', set => {
-                key_values  => [ { name => 'lastExecSeconds' }, { name => 'lastExecHuman' }, { name => 'name' } ],
+                key_values  => [ { name => 'lastExecSeconds' }, { name => 'lastExecHuman' }, { name => 'jobName' }, { name => 'jobType' } ],
                 output_template => 'last execution %s',
                 output_use => 'lastExecHuman',
                 closure_custom_perfdata => $self->can('custom_last_exec_perfdata'),
@@ -170,7 +181,7 @@ sub set_counters {
             }
         },
         { label => 'job-running-duration', nlabel => 'job.running.duration', set => {
-                key_values  => [ { name => 'durationSeconds' }, { name => 'durationHuman' }, { name => 'name' } ],
+                key_values  => [ { name => 'durationSeconds' }, { name => 'durationHuman' }, { name => 'jobName' }, { name => 'jobType' } ],
                 output_template => 'running duration %s',
                 output_use => 'durationHuman',
                 closure_custom_perfdata => $self->can('custom_duration_perfdata'),
@@ -206,7 +217,8 @@ sub new {
         'filter-job-name:s'      => { name => 'filter_job_name' },
         'filter-job-type:s'      => { name => 'filter_job_type' },
         'filter-location-name:s' => { name => 'filter_location_name' },
-        'unit:s'                 => { name => 'unit', default => 's' }
+        'unit:s'                 => { name => 'unit', default => 's' },
+        'limit:s'                => { name => 'limit' }
     });
 
     $self->{cache_exec} = centreon::plugins::statefile->new(%options);
@@ -222,19 +234,21 @@ sub check_options {
         $self->{option_results}->{unit} = 's';
     }
 
+    if (!defined($self->{option_results}->{limit}) || $self->{option_results}->{limit} !~ /\d+/) {
+        $self->{option_results}->{limit} = 500;
+    }
+
     $self->{cache_exec}->check_options(option_results => $self->{option_results}, default_format => 'json');
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs_exec = $options{custom}->request_api(
-        endpoint => '/api/v1/job_monitoring',
-        label => 'jobMonitoringInfoList'
-    );
+    my $jobs_exec = $options{custom}->get_jobs_monitoring(limit => $self->{option_results}->{limit});
 
-    $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' . 
+    $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
         Digest::MD5::md5_hex(
+            $options{custom}->get_connection_info() . '_' .
             (defined($self->{option_results}->{filter_job_id}) ? $self->{option_results}->{filter_job_id} : '') . '_' .
             (defined($self->{option_results}->{filter_job_name}) ? $self->{option_results}->{filter_job_name} : '') . '_' .
             (defined($self->{option_results}->{filter_job_type}) ? $self->{option_results}->{filter_job_type} : '')
@@ -256,10 +270,12 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
             $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
+        $job_exec->{jobType} = lc($job_exec->{jobType});
+
         if (!defined($self->{jobs}->{ $job_exec->{objectId} })) {
             $self->{jobs}->{ $job_exec->{objectId} } = {
                 name => $job_exec->{objectName},
-                jobType => lc($job_exec->{jobType}),
+                jobType => $job_exec->{jobType},
                 timers => {},
                 executions => {}
             };
@@ -284,6 +300,8 @@ sub manage_selection {
         }
 
         $self->{jobs}->{ $job_exec->{objectId} }->{failed} = {
+            jobName => $job_exec->{objectName},
+            jobType => $job_exec->{jobType},
             failedPrct => $total > 0 ? $failed * 100 / $total : 0
         };
 
@@ -296,16 +314,21 @@ sub manage_selection {
 
             $last_exec->{startTime} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
-            $last_exec_times->{ $job_exec->{objectId} } = $dt->epoch();
+            $last_exec_times->{ $job_exec->{objectId} } = {
+                jobName => $job_exec->{objectName},
+                jobType => $job_exec->{jobType},
+                epoch => $dt->epoch()
+            };
         }
 
         $self->{jobs}->{ $job_exec->{objectId} }->{timers} = {
-            name => $job_exec->{objectName},
-            lastExecSeconds => defined($last_exec_times->{ $job_exec->{objectId} }) ? $ctime - $last_exec_times->{ $job_exec->{objectId} } : -1,
+            jobName => $job_exec->{objectName},
+            jobType => $job_exec->{jobType},
+            lastExecSeconds => defined($last_exec_times->{ $job_exec->{objectId} }) ? $ctime - $last_exec_times->{ $job_exec->{objectId} }->{epoch} : -1,
             lastExecHuman => 'never'
         };
         if (defined($last_exec_times->{ $job_exec->{objectId} })) {
-            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime -  $last_exec_times->{ $job_exec->{objectId} });
+            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime - $last_exec_times->{ $job_exec->{objectId} }->{epoch});
         }
 
         if (defined($older_running_exec)) {
@@ -315,6 +338,21 @@ sub manage_selection {
             $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationSeconds} = $duration;
             $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
         }
+    }
+
+    foreach my $objectId (keys %$last_exec_times) {
+        next if (defined($self->{jobs}->{$objectId}));
+
+        $self->{jobs}->{$objectId} = {
+            name => $last_exec_times->{$objectId}->{jobName},
+            jobType => $last_exec_times->{$objectId}->{jobType},
+            timers => {
+                jobName => $last_exec_times->{$objectId}->{jobName},
+                jobType => $last_exec_times->{$objectId}->{jobType},
+                lastExecSeconds => $ctime - $last_exec_times->{$objectId}->{epoch},
+                lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $last_exec_times->{$objectId}->{epoch})
+            }
+        };
     }
 
     $self->{cache_exec}->write(data => {
@@ -353,6 +391,10 @@ Filter jobs by location name.
 Select the unit for last execution time threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
+=item B<--limit>
+
+Define the number of entries to retrieve for the pagination (default: 500). 
+
 =item B<--unknown-execution-status>
 
 Set unknown threshold for last job execution status.
@@ -365,7 +407,7 @@ You can use the following variables: %{status}, %{jobName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last job execution status (Default: %{status} =~ /Failure/i).
+Set critical threshold for last job execution status (default: %{status} =~ /Failure/i).
 You can use the following variables: %{status}, %{jobName}
 
 =item B<--warning-*> B<--critical-*>

@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use Safe;
 
 my %oids_hrStorageTable = (
     'hrstoragedescr'    => '.1.3.6.1.2.1.25.2.3.1.3',
@@ -269,6 +270,9 @@ sub new {
 
     $self->{storage_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -577,13 +581,18 @@ sub get_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
 
+    our $assign_var = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 1;
@@ -655,13 +664,11 @@ Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDe
 
 Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the storage name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 

@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use Safe;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -131,6 +132,9 @@ sub new {
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -343,13 +347,17 @@ sub get_selection {
 sub get_display_value {
     my ($self, %options) = @_;
 
-    my $value = $options{value};
+    our $assign_var = $options{value};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
 
-    return $value;
+    return $assign_var;
 }
 
 1;
@@ -383,13 +391,11 @@ Filter disks according to their device name.
 
 Time in minutes before reloading cache file (default: 180).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the disk name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 

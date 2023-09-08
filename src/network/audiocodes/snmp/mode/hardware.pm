@@ -63,7 +63,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -77,7 +77,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware.
+Check hardware.
 
 =over 8
 
@@ -99,7 +99,6 @@ Can be specific or global: --absent-problem=psu,1
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
-
 
 =item B<--threshold-overload>
 
