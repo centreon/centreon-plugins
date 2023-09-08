@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -123,7 +123,9 @@ sub run {
             );
         }
         $self->{output}->perfdata_add(
-            label => $name, unit => 'B',
+            nlabel => 'file.size.bytes',
+            instances => $name,
+            unit => 'B',
             value => $size,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_one'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_one'),
@@ -145,7 +147,8 @@ sub run {
         );
     }
     $self->{output}->perfdata_add(
-        label => 'total', unit => 'B',
+        nlabel => 'files.size.bytes',
+        unit => 'B',
         value => $total_size,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_total'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_total'),

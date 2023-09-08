@@ -41,7 +41,7 @@ my $maps = [
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -50,7 +50,7 @@ sub new {
     foreach (@{$maps}) {
         $options{options}->add_options(arguments => {
             'warning-' . $_->{counter} . ':s'    => { name => 'warning_' . $_->{counter} },
-            'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
+            'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} }
         });
     }
 
@@ -108,6 +108,7 @@ sub run {
                 $new_datas->{$cpu_number} = { total => 0 };
                 $old_datas->{$cpu_number} = { total => 0 };
             }
+
             $new_datas->{$cpu_number}->{$_->{counter}} = $values[$_->{position}];
             $save_datas->{'cpu' . $cpu_number . '_' . $_->{counter}} = $values[$_->{position}];
             my $tmp_value = $self->{statefile_cache}->get(name => 'cpu' . $cpu_number . '_' . $_->{counter});
@@ -115,6 +116,7 @@ sub run {
                 $buffer_creation = 1;
                 next;
             }
+
             if ($new_datas->{$cpu_number}->{$_->{counter}} < $tmp_value) {
                 $buffer_creation = 1;
                 next;
@@ -129,24 +131,30 @@ sub run {
 
     $self->{statefile_cache}->write(data => $save_datas);
     if ($buffer_creation == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Buffer creation..."
+        );
         if ($exit == 0) {
             $self->{output}->display();
             $self->{output}->exit();
         }
     }
 
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "CPUs usages are ok.");
+    $self->{output}->output_add(
+        severity => 'OK', 
+        short_msg => "CPUs usages are ok."
+    );
 
     foreach my $cpu_number (sort keys(%$new_datas)) {
         # In buffer creation. New cpu
         next if (scalar(keys %{$old_datas->{$cpu_number}}) <= 1);
         
         if ($new_datas->{$cpu_number}->{total} - $old_datas->{$cpu_number}->{total} == 0) {
-            $self->{output}->output_add(severity => 'OK',
-                                        short_msg => "Counter not moved. Have to wait.");
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => "Counter not moved. Have to wait."
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
@@ -175,25 +183,36 @@ sub run {
             my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $_->{counter});
             my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $_->{counter});
 
-            $self->{output}->perfdata_add(label => 'cpu' . $cpu_number . '_' . $_->{counter}, unit => '%',
-                                          value => sprintf("%.2f", $value),
-                                          warning => $warning,
-                                          critical => $critical,
-                                          min => 0, max => 100);
+            $self->{output}->perfdata_add(
+                nlabel => 'core.cpu.utilization.percentage',
+                unit => '%',
+                instances => [$cpu_number, $_->{counter}],
+                value => sprintf("%.2f", $value),
+                warning => $warning,
+                critical => $critical,
+                min => 0, max => 100
+            );
         }
+
         $self->{output}->output_add(long_msg => $str_output);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => $str_output);
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => $str_output
+            );
         }
     }
     
     # We can display a total (some buffer creation and counters have moved)
     if ($total_cpu_num != 0) {
         foreach my $counter (sort keys %{$total_datas}) {
-            $self->{output}->perfdata_add(label => 'total_cpu_' . $counter . '_avg', unit => '%',
-                                          value => sprintf("%.2f", $total_datas->{$counter} / $total_cpu_num),
-                                          min => 0, max => 100);
+            $self->{output}->perfdata_add(
+                nlabel => 'cpu.utilization.percentage',
+                instances => $counter,
+                unit => '%',
+                value => sprintf("%.2f", $total_datas->{$counter} / $total_cpu_num),
+                min => 0, max => 100
+            );
         }
     }
  

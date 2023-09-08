@@ -75,46 +75,46 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'in-discard', set => {
+        { label => 'in-discard', nlabel => 'interface.packets.in.discard.percentage', set => {
                 key_values => [ { name => 'discard_in', diff => 1 }, { name => 'total_in', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_packet_calc'), closure_custom_calc_extra_options => { type => 'discard', label_ref => 'in' },
                 closure_custom_output => $self->can('custom_packet_output'), output_error_template => 'Discard In : %s',
                 threshold_use => 'result_prct',
                 perfdatas => [
-                    { label => 'packets_discard_in', value => 'result_prct', template => '%.2f', min => 0, max => 100,
+                    { value => 'result_prct', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'out-discard', set => {
+        { label => 'out-discard', nlabel => 'interface.packets.out.discard.percentage', set => {
                 key_values => [ { name => 'discard_out', diff => 1 }, { name => 'total_out', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_packet_calc'), closure_custom_calc_extra_options => { type => 'discard', label_ref => 'out' },
                 closure_custom_output => $self->can('custom_packet_output'), output_error_template => 'Discard Out : %s',
                 threshold_use => 'result_prct',
                 perfdatas => [
-                    { label => 'packets_discard_out', value => 'result_prct', template => '%.2f', min => 0, max => 100,
+                    { value => 'result_prct', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'in-error', set => {
+        { label => 'in-error', nlabel => 'interface.packets.in.error.percentage', set => {
                 key_values => [ { name => 'error_in', diff => 1 }, { name => 'total_in', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_packet_calc'), closure_custom_calc_extra_options => { type => 'error', label_ref => 'in' },
                 closure_custom_output => $self->can('custom_packet_output'), output_error_template => 'Error In : %s',
                 threshold_use => 'result_prct',
                 perfdatas => [
-                    { label => 'packets_error_in', value => 'result_prct', template => '%.2f', min => 0, max => 100,
+                    { value => 'result_prct', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'out-error', set => {
+        { label => 'out-error', nlabel => 'interface.packets.out.error.percentage', set => {
                 key_values => [ { name => 'error_out', diff => 1 }, { name => 'total_out', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_packet_calc'), closure_custom_calc_extra_options => { type => 'error', label_ref => 'out' },
                 closure_custom_output => $self->can('custom_packet_output'), output_error_template => 'Error In : %s',
                 threshold_use => 'result_prct',
                 perfdatas => [
-                    { label => 'packets_error_out', value => 'result_prct', template => '%.2f', min => 0, max => 100,
+                    { value => 'result_prct', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -124,7 +124,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -234,6 +234,21 @@ Check packets errors and discards on interfaces.
 Command used: /sbin/ip -s addr 2>&1
 
 =over 8
+
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{display}
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{display}
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "RU"').
+You can use the following variables: %%{status}, %{display}
 
 =item B<--warning-*>
 
