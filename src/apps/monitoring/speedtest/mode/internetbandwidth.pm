@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'jitter' } ],
                 output_template => 'jitter: %.3f',
                 perfdatas => [
-                    { template => '%.3f', min => 0 }
+                    { template => '%.3f', unit => 'ms', min => 0 }
                 ]
             }
         }
