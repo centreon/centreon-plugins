@@ -135,6 +135,15 @@ sub read_config {
         <header_sessionname>NOMESESSIONE</header_sessionname>
         <header_state>STATO</header_state>
     </qwinsta>
+    <qwinsta language="de">
+        <created>Erstellte Sitzungen gesamt</created>
+        <disconnected>Getrennte Sitzungen gesamt</disconnected>
+        <reconnected>Erneut verbundene Sitzungen gesamt</reconnected>
+        <activestate>Aktiv</activestate>
+        <disconnectedstate>Getr\.</disconnectedstate>
+        <header_sessionname>SITZUNGSNAME</header_sessionname>
+        <header_state>STATUS</header_state>
+    </qwinsta>
 </root>
 END_FILE
 
