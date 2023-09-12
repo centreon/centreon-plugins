@@ -26,6 +26,24 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_vs_output {
+    my ($self, %options) = @_;
+
+    return "Virtual server '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub vs_long_output {
+    my ($self, %options) = @_;
+
+    return "checking virtual server '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+
+    return "access profile '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -91,24 +109,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub prefix_vs_output {
-    my ($self, %options) = @_;
-
-    return "Virtual server '" . $options{instance_value}->{display} . "' : ";
-}
-
-sub vs_long_output {
-    my ($self, %options) = @_;
-
-    return "checking virtual server '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_ap_output {
-    my ($self, %options) = @_;
-
-    return "access profile '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
