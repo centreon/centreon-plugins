@@ -701,7 +701,7 @@ Display statistics for watchers used by work-from-anywhere users.
 =item B<--warning-[country|isp|watcher]-*> B<--critical-[country|isp|watcher]-*> 
 
 Thresholds. Can be:
-'dtt-spent', 'errors-prct', 'full-time-network-spent',
+'dtt-spent', 'errors-prct', 'full-network-time-spent',
 'sessions', 'srt-spent', 'requests', 'redirect-time-avg',
 'loading-page', 'pages', 'processing', 'users', 'waiting-time-avg'.
 
