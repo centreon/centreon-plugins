@@ -29,14 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'check-plugin'          => 'os::linux::local::mode::checkplugin',
         'cpu'                   => 'os::linux::local::mode::cpu',
         'cpu-detailed'          => 'os::linux::local::mode::cpudetailed',
         'cmd-return'            => 'os::linux::local::mode::cmdreturn',
         'connections'           => 'os::linux::local::mode::connections',
-        'directlvm-usage'       => 'os::linux::local::mode::directlvmusage',
         'discovery-snmp'        => 'os::linux::local::mode::discoverysnmp',
         'discovery-snmpv3'      => 'os::linux::local::mode::discoverysnmpv3',
         'diskio'                => 'os::linux::local::mode::diskio',
@@ -44,6 +42,7 @@ sub new {
         'files-date'            => 'os::linux::local::mode::filesdate',
         'inodes'                => 'os::linux::local::mode::inodes',
         'load'                  => 'os::linux::local::mode::loadaverage',
+        'lvm'                   => 'os::linux::local::mode::lvm',
         'list-interfaces'       => 'os::linux::local::mode::listinterfaces',
         'list-partitions'       => 'os::linux::local::mode::listpartitions',
         'list-storages'         => 'os::linux::local::mode::liststorages',
@@ -59,6 +58,7 @@ sub new {
         'quota'                 => 'os::linux::local::mode::quota',
         'storage'               => 'os::linux::local::mode::storage',
         'swap'                  => 'os::linux::local::mode::swap',
+        'systemd-journal'       => 'os::linux::local::mode::systemdjournal',
         'systemd-sc-status'     => 'os::linux::local::mode::systemdscstatus',
         'traffic'               => 'os::linux::local::mode::traffic',
         'uptime'                => 'os::linux::local::mode::uptime'

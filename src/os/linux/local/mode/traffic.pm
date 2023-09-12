@@ -46,8 +46,9 @@ sub custom_traffic_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        label => $self->{nlabel},
+        unit => 'b/s',
+        instances => $self->{result_values}->{display},
         value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
         warning => $warning,
         critical => $critical,
@@ -117,7 +118,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'in', set => {
+        { label => 'in', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
@@ -125,7 +126,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'out', set => {
+        { label => 'out', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
@@ -138,7 +139,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {

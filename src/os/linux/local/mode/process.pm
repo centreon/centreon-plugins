@@ -343,7 +343,7 @@ sub add_extra_metrics {
     $self->set_timestamp(timestamp => Time::HiRes::time());
     my ($content) = $options{custom}->execute_command(
         command => 'bash',
-        command_options => "-c 'tail -n +1 /proc/$proc_arg/$files_arg'",
+        command_options => "-c 'tail -vn +1 /proc/$proc_arg/$files_arg'",
         no_quit => 1
     );
 

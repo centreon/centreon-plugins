@@ -39,7 +39,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{inodes} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
                 output_template => 'used: %s %%',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {

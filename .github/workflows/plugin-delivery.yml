@@ -149,3 +149,28 @@ jobs:
           nexus_password: ${{ secrets.nexus_password }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ inputs.stability }}
+
+  release-tag:
+    if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Push git release tag
+        run: |
+          RELEASE=plugins-$(date '+%Y%m%d')
+
+          EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
+
+          git config --global user.email "release@centreon.com"
+          git config --global user.name "Centreon"
+
+          if [ -z "$EXISTING_TAG" ]; then
+            git tag -a "$RELEASE" -m "release $RELEASE"
+            git push --follow-tags
+          else
+            echo "::warning::Release tag $RELEASE already exists"
+          fi
+        shell: bash

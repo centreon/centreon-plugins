@@ -7,11 +7,12 @@ Library             String
 
 Suite Setup         Start Mockoon
 Suite Teardown      Stop Mockoon
+Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSON}         ${CURDIR}${/}..${/}resources${/}mockoon${/}cloud-azure-policyinsights-policystates.json
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}cloud-azure-policyinsights-policystates.json
 
 ${LOGIN_ENDPOINT}       http://localhost:3000/login
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --login-endpoint=${LOGIN_ENDPOINT}
@@ -48,33 +49,33 @@ Azure PolicyInsights PolicyStates compliance
     [Documentation]    Check Azure PolicyInsights PolicyStates compliance
     [Tags]    cloud    azure    policyinsights policystates
     FOR    ${compliance_value}    IN    @{compliance_values}
-        ${command} =    Catenate
+        ${command}    Catenate
         ...    ${CMD}
         ...    --mode=compliance
         ...    --management-endpoint=${compliance_value.endpoint}
-        ${length} =    Get Length    ${compliance_value.policyname}
+        ${length}    Get Length    ${compliance_value.policyname}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --policy-name=${compliance_value.policyname}
+            ${command}    Catenate    ${command}    --policy-name=${compliance_value.policyname}
         END
-        ${length} =    Get Length    ${compliance_value.resourcelocation}
+        ${length}    Get Length    ${compliance_value.resourcelocation}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --resource-location=${compliance_value.resourcelocation}
+            ${command}    Catenate    ${command}    --resource-location=${compliance_value.resourcelocation}
         END
-        ${length} =    Get Length    ${compliance_value.resourcetype}
+        ${length}    Get Length    ${compliance_value.resourcetype}
         IF    ${length} > 0
-            ${command} =    Catenate    ${command}    --resource-type=${compliance_value.resourcetype}
+            ${command}    Catenate    ${command}    --resource-type=${compliance_value.resourcetype}
         END
-        ${output} =    Run    ${command}
+        ${output}    Run    ${command}
         Should Be Equal As Strings
         ...    ${output}
         ...    ${compliance_value.result}
-        ...    msg=Wrong output result for compliance of ${compliance_value}
+        ...    Wrong output result for compliance of ${compliance_value}.{\n}Command output:{\n}${output}
     END
 
 
 *** Keywords ***
 Start Mockoon
-    ${executionresult} =    Run Process
+    ${process}    Start Process
     ...    mockoon-cli
     ...    start
     ...    --data
@@ -83,11 +84,11 @@ Start Mockoon
     ...    3000
     ...    --pname
     ...    azure-policyinsights
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}
 
 Stop Mockoon
-    ${executionresult} =    Run Process
+    ${process}    Start Process
     ...    mockoon-cli
     ...    stop
     ...    mockoon-azure-policyinsights
-    Should Be Empty    ${executionresult.stderr}
+    Wait For Process    ${process}

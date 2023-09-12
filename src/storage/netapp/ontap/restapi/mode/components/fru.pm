@@ -43,8 +43,21 @@ sub check {
         next if ($self->check_filter(section => 'shelf', instance => $shelf_instance));
 
         foreach my $fru (@{$shelf->{frus}}) {
-            my $instance = $fru->{serial_number};
             my $name = $fru->{type} . ':' . $fru->{id};
+
+            if ($fru->{installed} !~ /true|1/i) {
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        "fru '%s' shelf '%s' is uninstalled",
+                        $name,
+                        $shelf_name
+                    )
+                );
+                next;
+            }
+
+            my $instance = $fru->{serial_number};
+            
 
             next if ($self->check_filter(section => 'fru', instance => $instance));
             $self->{components}->{fru}->{total}++;

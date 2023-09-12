@@ -28,13 +28,13 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my ($extra_label, $unit) = ('', '');
+    my $unit = '';
     $unit = 'B' if ($self->{result_values}->{label_ref} eq 'data');
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
+
     $self->{output}->perfdata_add(
-        label => $self->{result_values}->{label_ref} . '_used' . $extra_label, unit => $unit,
+        nlabel => $self->{nlabel}, 
+        unit => $unit,
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{warn_label}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{crit_label}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -72,7 +72,7 @@ sub custom_usage_output {
     }
 
     return sprintf(
-        "%s Used: %s%s%s",
+        "%s used: %s%s%s",
         ucfirst($self->{result_values}->{label_ref}),
         $value,
         $limit_soft, $limit_hard
@@ -120,7 +120,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{quota} = [
-        { label => 'data-usage', set => {
+        { label => 'data-usage', nlabel => 'quota.data.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'data_used' }, { name => 'data_soft' }, { name => 'data_hard' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'data' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -128,7 +128,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
-        { label => 'inode-usage', set => {
+        { label => 'inode-usage', nlabel => 'quota.files.usage.count', set => {
                 key_values => [ { name => 'display' }, { name => 'inode_used' }, { name => 'inode_soft' }, { name => 'inode_hard' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'inode' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -141,7 +141,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {

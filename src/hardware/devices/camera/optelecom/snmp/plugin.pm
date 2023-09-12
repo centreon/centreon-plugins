@@ -18,28 +18,26 @@
 # limitations under the License.
 #
 
-package apps::monitoring::kadiska::plugin;
+package hardware::devices::camera::optelecom::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
-    my ( $class, %options ) = @_;
+    my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{modes} = {
-        'alerts'                => 'apps::monitoring::kadiska::mode::alerts',
-        'list-alert-rules'      => 'apps::monitoring::kadiska::mode::listalertrules',
-        'list-runners'          => 'apps::monitoring::kadiska::mode::listrunners',
-        'list-targets'          => 'apps::monitoring::kadiska::mode::listtargets',
-        'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
-        'nettracer-statistics'  => 'apps::monitoring::kadiska::mode::nettracerstatistics',
-        'watcher-statistics'    => 'apps::monitoring::kadiska::mode::watcherstatistics'
+        'alarms'          => 'hardware::devices::camera::optelecom::snmp::mode::alarms',
+        'interfaces'      => 'hardware::devices::camera::optelecom::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'networks'        => 'hardware::devices::camera::optelecom::snmp::mode::networks',
+        'temperatures'    => 'hardware::devices::camera::optelecom::snmp::mode::temperatures',
+        'uptime'          => 'hardware::devices::camera::optelecom::snmp::mode::uptime'
     };
 
-    $self->{custom_modes}->{api} = 'apps::monitoring::kadiska::custom::api';
     return $self;
 }
 
@@ -49,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Monitor Kadiska metrics through Rest API.
+Check Optelecom camera (TKH Group siqura) in SNMP.
 
 =cut

@@ -190,6 +190,7 @@ sub add_members {
     my $oid_status = $options{map} eq 'new' ? '.1.3.6.1.4.1.3375.2.2.5.6.2.1.5' : '.1.3.6.1.4.1.3375.2.2.5.3.2.1.15';
     my $snmp_result = $options{snmp}->get_table(oid => $oid_status);
 
+    my $loaded = 0;
     foreach my $oid (keys %$snmp_result) {
         $oid =~ /^$oid_status\.(.*)$/;
         my $instance = $1;
@@ -202,6 +203,7 @@ sub add_members {
 
         next if (!defined($self->{pools}->{$poolInstance}));
 
+        $loaded = 1;
         $options{snmp}->load(
             oids => [ map($_->{oid}, values(%{$mapping_members->{ $options{map} }})) ], 
             instances => [$instance], 
@@ -215,6 +217,8 @@ sub add_members {
             status => $map_pool_status->{ $snmp_result->{$oid} }
         };
     }
+
+    return if ($loaded == 0);
 
     $snmp_result = $options{snmp}->get_leef();
     foreach (keys %$snmp_result) {
