@@ -42,7 +42,8 @@ sub new {
         'warning-regexp:s'        => { name => 'warning_regexp' },
         'critical-regexp:s'       => { name => 'critical_regexp' },
         'unknown-regexp:s'        => { name => 'unknown_regexp' },
-        'regexp-isensitive'       => { name => 'use_iregexp' },
+        'regexp-isensitive'       => { name => 'use_iregexp' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_iregexp' },
 
         'warning-absent:s@'       => { name => 'warning_absent' },
         'critical-absent:s@'      => { name => 'critical_absent' },
@@ -360,7 +361,7 @@ Return Warning if an oid value match the regexp.
 
 Return Critical if an oid value match the regexp.
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive.
 

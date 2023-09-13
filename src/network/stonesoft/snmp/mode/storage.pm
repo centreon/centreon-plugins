@@ -34,16 +34,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
-                                  "storage:s"               => { name => 'storage' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'          => { name => 'warning' },
+        'critical:s'         => { name => 'critical' },
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'storage:s'          => { name => 'storage' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
+    });
 
     $self->{storage_id_selected} = [];
     
@@ -98,17 +98,25 @@ sub run {
         my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
         my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $total_used));
 
-        $self->{output}->output_add(long_msg => sprintf("Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
+                $total_size_value . " " . $total_size_unit,
+                $total_used_value . " " . $total_used_unit, $prct_used,
+                $total_free_value . " " . $total_free_unit, $prct_free
+            )
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{storage}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
-        }    
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
+                    $total_size_value . " " . $total_size_unit,
+                    $total_used_value . " " . $total_used_unit, $prct_used,
+                    $total_free_value . " " . $total_free_unit, $prct_free
+                )
+            );
+        }
 
         my $label = 'used';
         my $value_perf = $total_used;
@@ -123,21 +131,29 @@ sub run {
             $total_options{total} = $total_size;
             $total_options{cast_int} = 1; 
         }
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                      value => $value_perf,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                      min => 0, max => $total_size);
+
+        $self->{output}->perfdata_add(
+            label => $label . $extra_label,
+            unit => 'B',
+            value => $value_perf,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
+            min => 0, max => $total_size
+        );
     }
 
     if (!defined($self->{option_results}->{storage}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All partitions are ok.');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'All partitions are ok.'
+        );
     } elsif ($num_disk_check == 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'No usage for partition.');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'No usage for partition.'
+        );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -145,12 +161,15 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                                { oid => $oid_fwMountPointName },
-                                                                { oid => $oid_fwPartitionSize },
-                                                                { oid => $oid_fwPartitionUsed }
-                                                              ],
-                                                              nothing_quit => 1);
+    $self->{results} = $self->{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_fwMountPointName },
+            { oid => $oid_fwPartitionSize },
+            { oid => $oid_fwPartitionUsed }
+        ],
+        nothing_quit => 1
+    );
+
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fwMountPointName}})) {
         $key =~ /\.([0-9]+)$/;
         my $instance = $1;
@@ -222,7 +241,7 @@ Set the storage name (empty means 'check all storage').
 
 Allows to use regexp to filter storage.
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 

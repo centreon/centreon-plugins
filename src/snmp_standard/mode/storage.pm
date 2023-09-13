@@ -252,7 +252,8 @@ sub new {
         'name'                    => { name => 'use_name' },
         'storage:s'               => { name => 'storage' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_regexpi' },
         'path-best-match'         => { name => 'use_path_best_match' },
         'oid-filter:s'            => { name => 'oid_filter', default => 'hrStorageDescr'},
         'oid-display:s'           => { name => 'oid_display', default => 'hrStorageDescr'},
@@ -644,7 +645,7 @@ Allows to use storage name with option --storage instead of storage oid index.
 
 Allows to use regexp to filter storage (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 

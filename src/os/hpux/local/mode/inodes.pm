@@ -57,10 +57,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-fs:s'       => { name => 'filter_fs', },
-        'name:s'            => { name => 'name' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }
+        'filter-fs:s'        => { name => 'filter_fs', },
+        'name:s'             => { name => 'name' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
     });
 
     return $self;
@@ -138,7 +139,7 @@ Set the storage mount point (empty means 'check all storages')
 
 Allows to use regexp to filter storage mount point (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
