@@ -34,7 +34,8 @@ sub set_system {
     
     $self->{thresholds} = {
         fan => [
-            ['active', 'OK'],
+            ['Good', 'OK'],
+            ['Not installed', 'OK'],
             ['.*', 'CRITICAL'],
         ],
         module => [

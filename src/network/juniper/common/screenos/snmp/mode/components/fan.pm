@@ -24,8 +24,9 @@ use strict;
 use warnings;
 
 my %map_status = (
-    1 => 'active',
-    2 => 'inactive',
+    0 => 'Fail',
+    1 => 'Good',
+    2 => 'Not installed',
 );
 
 my $mapping = {
