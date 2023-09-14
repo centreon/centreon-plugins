@@ -214,7 +214,7 @@ sub manage_selection {
 
     foreach my $member (sort @{$repl_status->{members}}) {
         $self->{members_counters}->{ lc($member->{stateStr}) }++
-            if (!defined($self->{members_counters}->{ lc($member->{stateStr}) }));
+            if (defined($self->{members_counters}->{ lc($member->{stateStr}) }));
 
         $self->{members}->{ $member->{name} } = {
             name => $member->{name},
