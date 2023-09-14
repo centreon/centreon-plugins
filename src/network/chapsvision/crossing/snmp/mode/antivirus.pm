@@ -265,7 +265,7 @@ You can use the following variables: %{version}, %{name}
 
 =item B<--critical-version>
 
-Define the conditions to match for the version to be CRITICAL.
+Define the conditions the version must match for the status to be CRITICAL.
 You can use the following variables: %{version}, %{name}
 
 =item B<--unit>
