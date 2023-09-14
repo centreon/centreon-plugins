@@ -255,7 +255,7 @@ Define the date format for the second antivirus (default: '%Y/%m/%d').
 
 =item B<--unknown-version>
 
-Define the conditions to match for the version to be UNKNOWN.
+Define the conditions the version must match for the status to be UNKNOWN.
 You can use the following variables: %{version}, %{name}
 
 =item B<--warning-version>
