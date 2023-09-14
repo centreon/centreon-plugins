@@ -260,7 +260,7 @@ You can use the following variables: %{version}, %{name}
 
 =item B<--warning-version>
 
-Define the conditions to match for the version to be WARNING.
+Define the conditions the version must match for the status to be WARNING.
 You can use the following variables: %{version}, %{name}
 
 =item B<--critical-version>
