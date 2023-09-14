@@ -197,7 +197,10 @@ sub manage_selection {
 
     my %config;
     foreach my $member (sort @{$repl_conf->{config}->{members}}) {
-        $config{ $member->{host} } = { priority => $member->{priority}, slaveDelay => $member->{slaveDelay} };
+        $config{ $member->{host} } = {
+            priority => $member->{priority}, 
+            slaveDelay => defined($member->{secondaryDelaySecs}) ? $member->{secondaryDelaySecs} : $member->{slaveDelay}
+        };
     }
 
     my $repl_status = $options{custom}->run_command(
