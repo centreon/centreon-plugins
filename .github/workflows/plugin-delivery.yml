@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v3
         with:
@@ -71,7 +71,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -93,7 +93,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery-legacy
@@ -117,7 +117,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
@@ -138,7 +138,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery-legacy
@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Push git release tag
         run: |

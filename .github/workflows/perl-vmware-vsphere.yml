@@ -73,7 +73,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Import source files
         uses: actions/cache/restore@v3
@@ -107,7 +107,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -131,7 +131,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
