@@ -275,11 +275,11 @@ section.
 Table of content (3)
 1. [Set up your environment](#set_up_tuto)
 2. [Create directory for the new plugin](#make_dir_tuto)
-3. [lugin.pm](#create_plugin_tuto)
-4. [Understand the data](#understand_data_tuto)
-5. [Input](#input_tuto)
-6. [API]
-7. [SNMP]
+3. [Plugin.pm](#create_plugin_tuto)
+4. [Mode.pm](#create_mode_tuto)
+5. [Understand the data](#understand_data_tuto)
+6. [API Tutorial](#api_tuto)
+7. [SNMP Tutorial](#snmp_tuto)
 8. [Other example]
 9. [Service discovery]
 10. [Host discovery]
@@ -535,81 +535,9 @@ Modes Available:
 
 <div id='create_mode_tuto'/>
 
-### 4.Understand the data
+### 4.Create the mode.pm file
 
 [Table of content (3)](#table_of_content_3)
-
-Understanding the data is very important as it will drive the way you will design
-the **mode** internals. This is the **first thing to do**, no matter what protocol you
-are using.
-
-There are several important properties for a piece of data:
-
-- Type of the data to process: string, int... There is no limitation in the kind of data you can process
-- Dimensions of the data, is it **global** or linked to an **instance**?
-- Data layout, in other words anticipate the kind of **data structure** to manipulate.
-
-In our example, the most common things are present. We can summarize it like that:
-
-- the `health` node is **global** data and is a string. Structure is a simple *key/value* pair
-- the `db_queries` node is a collection of **global** integer values about the database. Structure is a hash containing multiple key/value pairs
-- the `connections` node contains integer values (`122`, `92`) referring to specific **instances** (`my-awesome-frontend`, `my-awesome-db`). The structure is an array of hashes
-- `errors` is the same as `connections` except the data itself tracks errors instead of connections.
-
-Understanding this will be important to code it correctly.
-
-<div id='input_tuto'/>
-
-### 5.Input
-
-[Table of content (3)](#table_of_content_3)
-
-**Context: simple JSON health API**
-
-In this tutorial, we will create a very simple probe checking an application's health
-displayed in JSON through a simple API.
-
-You can mockup an API with the free [mocky](https://designer.mocky.io/) tool.
-We created one for this tutorial, test it with `curl https://run.mocky.io/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656`
-
-It returns the following output: 
-
-```json title="my-awesome-app health JSON" 
-{
-    "health": "yellow",
-    "db_queries":{
-         "select": 1230,
-         "update": 640,
-         "delete": 44
-    },
-    "connections":[
-      {
-        "component": "my-awesome-frontend",
-        "value": 122
-      },
-      {
-        "component": "my-awesome-db",
-        "value": 92
-      }
-    ],
-    "errors":[
-      {
-        "component": "my-awesome-frontend",
-        "value": 32
-      },
-      {
-        "component": "my-awesome-db",
-        "value": 27
-      }
-    ]
-}
-```
-
-### 6.API
-
-###  Mode.pm file
-
-[Table of content (2)](#table_of_content_2)
 
 Mode.pm as plugin.pm has also :
 * license / copyright
@@ -742,11 +670,82 @@ A description of the mode and its arguments is needed to generate the documentat
 
 ```
 
+
 <div id='understand_data_tuto'/>
 
-### Create the appmetrics.pm file
+### 5.Understand the data
 
-[Table of content (4)](#table_of_content_4)
+[Table of content (3)](#table_of_content_3)
+
+Understanding the data is very important as it will drive the way you will design
+the **mode** internals. This is the **first thing to do**, no matter what protocol you
+are using.
+
+There are several important properties for a piece of data:
+
+- Type of the data to process: string, int... There is no limitation in the kind of data you can process
+- Dimensions of the data, is it **global** or linked to an **instance**?
+- Data layout, in other words anticipate the kind of **data structure** to manipulate.
+
+<div id='api_tuto'/>
+
+### 6.API Tutorial
+
+[Table of content (3)](#table_of_content_3)
+
+**Context: simple JSON health API**
+
+In this tutorial, we will create a very simple probe checking an application's health
+displayed in JSON through a simple API.
+
+You can mockup an API with the free [mocky](https://designer.mocky.io/) tool.
+We created one for this tutorial, test it with `curl https://run.mocky.io/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656`
+
+It returns the following output: 
+
+```json title="my-awesome-app health JSON" 
+{
+    "health": "yellow",
+    "db_queries":{
+         "select": 1230,
+         "update": 640,
+         "delete": 44
+    },
+    "connections":[
+      {
+        "component": "my-awesome-frontend",
+        "value": 122
+      },
+      {
+        "component": "my-awesome-db",
+        "value": 92
+      }
+    ],
+    "errors":[
+      {
+        "component": "my-awesome-frontend",
+        "value": 32
+      },
+      {
+        "component": "my-awesome-db",
+        "value": 27
+      }
+    ]
+}
+```
+
+####  6.1 Understand the data
+
+In our example, the most common things are present. We can summarize it like that:
+
+- the `health` node is **global** data and is a string. Structure is a simple *key/value* pair
+- the `db_queries` node is a collection of **global** integer values about the database. Structure is a hash containing multiple key/value pairs
+- the `connections` node contains integer values (`122`, `92`) referring to specific **instances** (`my-awesome-frontend`, `my-awesome-db`). The structure is an array of hashes
+- `errors` is the same as `connections` except the data itself tracks errors instead of connections.
+
+Understanding this will be important to code it correctly.
+
+#### 6.2 Create the mode file : appmetrics.pm
 
 The `appmetrics.pm` file will contain your code, in other words, all the instructions to:
 
@@ -760,7 +759,7 @@ Let's build it iteratively.
 > Important note: function (sub) names must not be modified. For example, you cannot 
 > choose to rename `check_options` to `option_check`. 
 
-#### Common declarations and subs
+##### Common declarations and subs
 
 ```perl
 # Path to your package. '::' instead of '/', and no .pm at the end.
@@ -846,7 +845,7 @@ outputs this message:
 
 Now let's do some monitoring thanks to centreon-plugins.
 
-#### Declare your counters
+##### Declare your counters
 
 This part essentially maps the data you want to get from the API with the internal
 counter mode structure.
@@ -968,7 +967,7 @@ OK: status : skipped (no value(s)) - select : skipped (no value(s)), update : sk
 You can see some of your counters with the `skipped (no value(s))`, it's normal, this is because we
 just created the counters definition and structure but didn't push any values into it.
 
-#### Create prefix callback functions
+##### Create prefix callback functions
 
 These functions are not mandatory but help to make the output more readable for a human. We will create
 it now but as you have noticed the mode compiles so you can choose to keep those for the polishing moment.
@@ -1014,7 +1013,7 @@ OK: My-awesome-app: status : skipped (no value(s)) - Queries: select : skipped (
 
 The output is easier to read and separators are visible between global counters.
 
-#### Get raw data from API and understand the data structure
+##### Get raw data from API and understand the data structure
 
 It's the moment to write the main sub (`manage_selection`) - the most complex, but also the one that
 will transform your mode to something useful and alive.
@@ -1151,7 +1150,7 @@ $VAR1 = {
 My App health is 'yellow'
 ```
 
-#### Push data to global counters (type => 0)
+##### Push data to global counters (type => 0)
 
 Now that we know our data structure and how to access the values, we have to assign this
 value to the counters we initially defined. Pay attention to the comments above
@@ -1223,7 +1222,7 @@ Behind the scenes, it manages a lot of things for you:
 
 Now, you probably understand better why the preparation work about understanding collected data and the counter definition part is essential: simply because it's the bigger part of the job.
 
-#### Push data to counters having an instance (type => 1)
+##### Push data to counters having an instance (type => 1)
 
 Now let's deal with counters with instances. That means that the same counters will
 receive multiple data, each of these data refering to a specific dimension.
@@ -1322,7 +1321,7 @@ You now get metrics displayed for both components `'my-awesome-db'` and `'my-awe
 for your graphs. Note how the counter template automatically added the instance dimension on the left of the `nlabel` defined 
 for each counters: `**my-awesome-frontend#**myawesomeapp.errors.count'=32;;;0;`
 
-#### Help section and assistant to build your centreon objects
+##### Help section and assistant to build your centreon objects
 
 Last but not least, you need to write a help section to explain users what your mode is
 doing and what options they can use.
@@ -1421,11 +1420,7 @@ Mode:
             Warning and critical threshold for errors
 ```
 
-<div id='custom_mode_tuto'/>
-
-### Convert in custom mode
-
-[Table of content (3)](#table_of_content_3)
+#### 6.3 Convert in custom mode
 
 Custom mode is a well established type of plugin. Then it can be usefull to understand the way to build and use it.
 Custom is a mode thinking for when you may have different way to collect plugin input. More broadly, build plugins using custom mode afford flexibility if later you have to add a new way to give input in a plugin. This is the main reason why most of latest plugins are in custom mode baseline.
@@ -1435,7 +1430,7 @@ There are also cli file for command line or tcp, etc.
 
 In our example case of tutoral it's an api case. 
 
-#### 7.1 Create custom file 
+##### Create custom file 
 
 First we need to create the custom file : api.pm
 
@@ -1443,7 +1438,7 @@ First we need to create the custom file : api.pm
 mkdir -p src/apps/myawesomeapp/api/custom/
 touch src/apps/myawesomeapp/api/custom/api.pm
 ```
-#### 7.2 Change in pulgin.pm
+##### Change in pulgin.pm
 
 First we need to change plugins script libraririe :
 ```perl
@@ -1465,7 +1460,7 @@ sub new {
     return $self;
 }
 ```
-#### 7.3 Change in mode.pm
+##### Change in mode.pm
 
 Custom mode allows to change the way to obtain input, thus all that concern input and the way to process it is push to the custom file. The mode file will contain all needed functions for processing input to give the output needed.
 
@@ -1525,7 +1520,7 @@ sub manage_selection {
 }
 ```
 
-#### 7.4 New file : api.pm
+##### New file : api.pm
 
 As explained in the previous section, the custom file will contain all needed functions about input and the way to process it.
 
@@ -1549,7 +1544,7 @@ It also contains the following functions :
 * settings
 * request_api
 
-##### new constructor
+###### new constructor
 
 ```perl
 sub new {
@@ -1590,7 +1585,7 @@ sub new {
     return $self;
 }
 ```
-##### set_options
+###### set_options
 
 This function overwrite the set_options function in http module
 
@@ -1601,14 +1596,14 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 ```
-##### set_defaults
+###### set_defaults
 
 This function is empty and is call remain unclear
 
 ```perl
 sub set_defaults {}
 ```
-##### check_options
+###### check_options
 
 
 
@@ -1634,7 +1629,7 @@ sub check_options {
     return 0;
 }
 ```
-##### settings
+###### settings
 
 This function allows initialize api object options structure and feed it calling set_options
 
@@ -1655,7 +1650,7 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 ```
-##### request_api
+###### request_api
 
 ```perl
 sub request_api {
@@ -1686,6 +1681,8 @@ sub request_api {
 
 <div id='tutoriel_2'/>
 
+<div id='snmp_tuto'/>
+
 ### 7.SNMP
 
 Tutorial : How to create a plugin - Using SNMP
@@ -1696,7 +1693,7 @@ This example explains how to check a single SNMP value on a PfSense firewall (me
 We use cache file because it's a SNMP counter. So we need to get the value between 2 checks.
 We get the value and compare it to warning and critical thresholds.
 
-#### 1. Plugin file
+#### 7.1. Plugin file
 
 First, create the plugin directory and the plugin file:
 
@@ -1779,7 +1776,7 @@ Add a description to the plugin:
 ```
 > **TIP** : This description is printed with '--help' option.
 
-#### 2.Mode file
+#### 7.2.Mode file
 
 Then, create the mode directory and the mode file:
 
@@ -1978,7 +1975,7 @@ Add a description of the mode options:
   =cut
 ```
 
-#### 3.Command line
+#### 7.3.Command line
 
 This is an example of command line:
 
@@ -1999,7 +1996,7 @@ Output may display:
 
 ---
 
-#### 1. Example 1
+#### 8.1. Example 1
 
 We want to develop the following SNMP plugin:
 
@@ -2101,7 +2098,7 @@ As you can see, we create two arrays of hash tables in **set_counters** method. 
       * *label_extra_instance*: if we set the value to 1, perhaps we'll have a suffix concat with *label*.
       * *instance_use*: which value from *keys_values* to be used. To be used if *label_extra_instance* is 1.
 
-#### 2. Example 2
+#### 8.2. Example 2
 
 We want to add the current number of sessions by virtual servers.
 
@@ -2212,7 +2209,7 @@ If we have at least 2 virtual servers:
   Virtual server 'foo2' current sessions : 13, current ssl sessions : 80
 ```
 
-#### 3. Example 3
+#### 8.3. Example 3
 
 The model can also be used to check strings (not only counters). So we want to check the status of a virtualserver.
 
