@@ -33,7 +33,7 @@
     },
     "selection_loop": [
         {
-            "name": "Virtual SErver ZXTM",
+            "name": "Virtual Server ZXTM",
             "source": "%(snmp.tables.virtualserverEntry)",
             "expand_table": {
                 "virtualserverEntry": "%(snmp.tables.virtualserverEntry.[%(virtualserverEntry.instance)])"
@@ -50,7 +50,7 @@
                 }
             ],
             "formatting": {
-                "printf_msg": "Device '%s' current connetions are '%d', max connections are '%d', total HTTP requests are '%d'",
+                "printf_msg": "Device '%s' current connections are '%d', max connections are '%d', total HTTP requests are '%d'",
                 "printf_var": [
                     "%(virtualserverEntry.virtualserverName)",
                     "%(virtualserverEntry.virtualserverCurrentConn)",
