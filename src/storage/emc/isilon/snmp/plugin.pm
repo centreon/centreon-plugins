@@ -33,6 +33,8 @@ sub new {
     %{$self->{modes}} = (
         'cluster-usage'    => 'storage::emc::isilon::snmp::mode::clusterusage',
         'hardware'         => 'storage::emc::isilon::snmp::mode::hardware',
+        'list-quotas'      => 'storage::emc::isilon::snmp::mode::listquotas',
+        'quota-usage'      => 'storage::emc::isilon::snmp::mode::quotausage',
     );
 
     return $self;
