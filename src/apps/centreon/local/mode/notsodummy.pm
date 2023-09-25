@@ -46,6 +46,8 @@ sub new {
         "show-sequence"             => { name => 'show_sequence' },
         "show-index"                => { name => 'show_index' },
         "restart-sequence"          => { name => 'restart_sequence' },
+        "min-duration:s"            => { name => 'min_duration' },
+        "max-duration:s"            => { name => 'max_duration' },
     });
 
     $self->{cache} = centreon::plugins::statefile->new(%options);
@@ -100,6 +102,27 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --metrics-values-range where range start is lower than range end.");
         $self->{output}->option_exit();
     }
+
+    if (defined($self->{option_results}->{min_duration})) {
+        if (!defined($self->{option_results}->{max_duration}) || $self->{option_results}->{max_duration} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --max-duration option if --min_duration is set.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{option_results}->{min_duration} !~ /^[0-9]*\.?[0-9]*$/) {
+            $self->{output}->add_option_msg(short_msg => "--min-duration should be a number.");
+            $self->{output}->option_exit();
+        }
+    }
+    if (defined($self->{option_results}->{max_duration})){
+        if (!defined($self->{option_results}->{min_duration}) || $self->{option_results}->{min_duration} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --min-duration option if --max_duration is set.");
+            $self->{output}->option_exit();
+        }
+        if ($self-> {option_results}->{max_duration} !~ /^[0-9]*\.?[0-9]*$/){
+            $self->{output}->add_option_msg(short_msg => "--max-duration should be a number.");
+            $self->{output}->option_exit();
+        }
+    }
     
     $self->{cache}->check_options(option_results => $self->{option_results});
 }
@@ -153,6 +176,16 @@ sub get_sequence_output {
 
 sub run {
     my ($self, %options) = @_;
+
+    # Adding duration
+    # my $x = $minimum + int(rand($maximum - $minimum));
+    # rand(n) returns a random number between 0 and n-1
+    if (defined($self->{option_results}->{min_duration}) && defined($self->{option_results}->{max_duration})) {
+        my $sleep_duration = $self->{option_results}->{min_duration} + rand($self->{option_results}->{max_duration} + 1 - $self->{option_results}->{min_duration});
+        use Data::Dumper;
+        print Dumper($sleep_duration);
+        sleep($sleep_duration)
+    }
 
     my ($status, $index) = $self->get_next_status(statefile => $self->{cache});
     my $status_label = $status;
@@ -274,6 +307,14 @@ Show the index as a metric (in addition to the defined metrics count).
 =item B<--restart-sequence>
 
 Restart the sequence from the beginning (ie. reset the sequence in cache file).
+
+=item B<--min-duration>
+
+Min duration (in secondes) randomly choose to simulate the execution of a plugin. If this option is set, max-duration is mandatory.
+
+=item B<--max-duration>
+
+Max duration (in secondes) randomly choose to simulate the execution of a plugin. If this option is set, min-duration is mandatory.
 
 =back
 
