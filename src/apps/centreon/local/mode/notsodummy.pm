@@ -177,12 +177,10 @@ sub get_sequence_output {
 sub run {
     my ($self, %options) = @_;
 
-    # Adding duration
+    # Adding plugin simulated duration
     # rand(n) returns a random number between 0 and n-1
     if (defined($self->{option_results}->{min_duration}) && defined($self->{option_results}->{max_duration})) {
         my $sleep_duration = $self->{option_results}->{min_duration} + rand($self->{option_results}->{max_duration} + 1 - $self->{option_results}->{min_duration});
-        use Data::Dumper;
-        print Dumper($sleep_duration);
         sleep($sleep_duration)
     }
 
