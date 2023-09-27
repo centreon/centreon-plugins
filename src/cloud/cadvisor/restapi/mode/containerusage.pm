@@ -156,6 +156,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+
         my $first_index = 0;
         my $first_stat = $result->{$container_id}->{Stats}[$first_index];
         my $first_ts = $first_stat->{timestamp};
