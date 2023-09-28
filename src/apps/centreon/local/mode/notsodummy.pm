@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Time::HiRes;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
@@ -122,6 +123,10 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "--max-duration should be a number.");
             $self->{output}->option_exit();
         }
+        if ($self-> {option_results}->{max_duration} <= $self->{option_results}->{min_duration} ){
+            $self->{output}->add_option_msg(short_msg => "--max-duration should be higher than min-duration .");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -178,10 +183,10 @@ sub run {
     my ($self, %options) = @_;
 
     # Adding plugin simulated duration
-    # rand(n) returns a random number between 0 and n-1
+    # rand(n) returns a random number between 0 and n value is exclude.
     if (defined($self->{option_results}->{min_duration}) && defined($self->{option_results}->{max_duration})) {
-        my $sleep_duration = $self->{option_results}->{min_duration} + rand($self->{option_results}->{max_duration} + 1 - $self->{option_results}->{min_duration});
-        sleep($sleep_duration)
+        my $sleep_duration = $self->{option_results}->{min_duration} + rand($self->{option_results}->{max_duration} - $self->{option_results}->{min_duration});
+        Time::HiRes::sleep($sleep_duration);
     }
 
     my ($status, $index) = $self->get_next_status(statefile => $self->{cache});
@@ -250,15 +255,15 @@ to defined the way cache file is managed.
 
 Examples:
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='ok,warning,ok,critical,critical,critical'
 --output='Not so dummy service' --show-sequence --statefile-dir='/tmp'
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='up,down,down' --host
 --output='Not so dummy host'
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='ok,ok,ok' --output='Not so dummy'
 --metrics-count=5 --metrics-name='met.rics' --metrics-values-range='-15:42'
 
@@ -307,11 +312,14 @@ Restart the sequence from the beginning (ie. reset the sequence in cache file).
 
 =item B<--min-duration>
 
-Min duration (in secondes) randomly choose to simulate the execution of a plugin. If this option is set, max-duration is mandatory.
+Min duration thresholds (in secondes) use to set the range used to randomly simulate the execution of a plugin.
+If this option is set, max-duration is mandatory.
 
 =item B<--max-duration>
 
-Max duration (in secondes) randomly choose to simulate the execution of a plugin. If this option is set, min-duration is mandatory.
+Max duration thresholds (in secondes) use to set the range used to randomly simulate the execution of a plugin.
+If this option is set, min-duration is mandatory.
+Max duration value is not include in the range.
 
 =back
 
