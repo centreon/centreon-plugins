@@ -320,7 +320,7 @@ The duration is chosen in the [min,max) range.
 
 Max duration thresholds (in seconds) use to set the range used to randomly simulate the execution of a plugin.
 If this option is set, min-duration is mandatory.
-The duration is chosen in the [min,max) range (max is exclude).
+The duration is chosen in the [min,max) range (max is excluded).
 
 =back
 
