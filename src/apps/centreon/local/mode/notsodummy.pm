@@ -124,7 +124,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
         if ($self-> {option_results}->{max_duration} <= $self->{option_results}->{min_duration} ){
-            $self->{output}->add_option_msg(short_msg => "--max-duration should be higher than min-duration .");
+            $self->{output}->add_option_msg(short_msg => "--max-duration should be higher than min-duration.");
             $self->{output}->option_exit();
         }
     }
@@ -312,14 +312,15 @@ Restart the sequence from the beginning (ie. reset the sequence in cache file).
 
 =item B<--min-duration>
 
-Min duration thresholds (in secondes) use to set the range used to randomly simulate the execution of a plugin.
+Min duration thresholds (in seconds) use to set the range used to randomly simulate the execution of a plugin.
 If this option is set, max-duration is mandatory.
+The duration is chosen in the [min,max) range.
 
 =item B<--max-duration>
 
-Max duration thresholds (in secondes) use to set the range used to randomly simulate the execution of a plugin.
+Max duration thresholds (in seconds) use to set the range used to randomly simulate the execution of a plugin.
 If this option is set, min-duration is mandatory.
-Max duration value is not include in the range.
+The duration is chosen in the [min,max) range (max is exclude).
 
 =back
 
