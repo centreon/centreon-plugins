@@ -140,6 +140,11 @@ jobs:
 
     steps:
       - name: Checkout sources
+        if: ${{ matrix.distrib == 'el7' }}
+        uses: actions/checkout@v3
+
+      - name: Checkout sources
+        if: ${{ matrix.distrib != 'el7' }}
         uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v3
