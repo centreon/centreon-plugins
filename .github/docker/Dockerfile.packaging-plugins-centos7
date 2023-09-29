@@ -13,7 +13,8 @@ gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
 yum -y install gcc-c++ make sudo git gettext rpm-build dos2unix python3 epel-release nfpm
 yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON jq zstd
 
-curl -sL https://rpm.nodesource.com/setup_20.x | sudo -E bash -
+sudo yum install https://rpm.nodesource.com/pub_20.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+sudo yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
 
 yum clean all
 
