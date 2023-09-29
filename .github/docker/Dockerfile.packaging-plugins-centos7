@@ -10,8 +10,8 @@ baseurl=https://repo.goreleaser.com/yum/
 enabled=1
 gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
 
-yum -y install git gettext rpm-build dos2unix python3 epel-release nfpm
-yum -y install gcc-c++ make perl-App-FatPacker perl-File-Copy-Recursive perl-JSON jq zstd
+yum -y install gcc-c++ make sudo git gettext rpm-build dos2unix python3 epel-release nfpm
+yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON jq zstd
 
 curl -sL https://rpm.nodesource.com/setup_20.x | sudo -E bash -
 
