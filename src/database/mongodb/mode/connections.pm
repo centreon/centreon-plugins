@@ -26,53 +26,53 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return 'Connections ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'active', nlabel => 'connections.active.count', set => {
                 key_values => [ { name => 'active' } ],
-                output_template => 'Active: %d',
+                output_template => 'active: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'conn' },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'current', nlabel => 'connections.current.count', set => {
                 key_values => [ { name => 'current' } ],
-                output_template => 'Current: %d',
+                output_template => 'current: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'conn' },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'usage', nlabel => 'connections.usage.percentage', set => {
                 key_values => [ { name => 'usage' } ],
-                output_template => 'Usage: %.2f %%',
+                output_template => 'usage: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'total-created', nlabel => 'connections.created.persecond', set => {
                 key_values => [ { name => 'totalCreated', per_second => 1 } ],
-                output_template => 'Created: %.2f/s',
+                output_template => 'created: %.2f/s',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'conn/s' },
-                ],
+                    { template => '%.2f', min => 0 }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return "Connections ";
 }
 
 sub new {
@@ -99,8 +99,8 @@ sub manage_selection {
     $self->{global}->{current} = $server_stats->{connections}->{current};
     $self->{global}->{usage} = $server_stats->{connections}->{current} / ($server_stats->{connections}->{current} + $server_stats->{connections}->{available});
     $self->{global}->{totalCreated} = $server_stats->{connections}->{totalCreated};
-    
-    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+
+    $self->{cache_name} = 'mongodb_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -110,35 +110,14 @@ __END__
 
 =head1 MODE
 
-Check connections statistics
+Check connections statistics.
 
 =over 8
 
-=item B<--warning-connections-*-count>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'active', 'current'.
-
-=item B<--critical-connections-*-count>
-
-Critical threshold.
-Can be: 'active', 'current'.
-
-=item B<--warning-connections-usage-percentage>
-
-Warning threshold for connections usage (current over available)
-
-=item B<--critical-connections-usage-percentage>
-
-Critical threshold for connections usage (current over available)
-
-=item B<--warning-connections-created-persecond>
-
-Warning threshold for connections created per second.
-
-=item B<--critical-connections-created-persecond>
-
-Critical threshold for connections created per second.
+Thresholds.
+Can be: 'active', 'current', 'usage', 'total-created'.
 
 =back
 
