@@ -49,9 +49,9 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'vdoms', type => 3, cb_prefix_output => 'prefix_vdom_output', cb_long_output => 'vdom_long_output', indent_long_output => '    ', message_multiple => 'All vdom systems are ok',
             group => [
-                { name => 'cpu', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'memory', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'session', type => 0, display_short => 0, skipped_code => { -10 => 1 } }
+                { name => 'cpu', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'memory', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'session', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -109,6 +109,10 @@ sub manage_selection {
         endpoint => '/api/v2/monitor/system/vdom-resource/select/',
         get_param => ['global=1']
     );
+
+    if (ref($resources) ne 'ARRAY') {
+        $resources = [$resources];
+    }
 
     $self->{vdoms} = {};
     foreach my $resource (@$resources) {
