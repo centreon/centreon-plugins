@@ -232,7 +232,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = 'docker_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'docker_local_' . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')). '_' .
         (defined($self->{option_results}->{filter_id}) ? md5_hex($self->{option_results}->{filter_id}) : md5_hex('all'));
