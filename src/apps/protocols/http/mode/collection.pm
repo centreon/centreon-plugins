@@ -337,6 +337,10 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
+    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
+    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
+
     return ($http->get_header(), $content, $http);
 }
 
