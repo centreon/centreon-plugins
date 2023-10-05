@@ -5,25 +5,23 @@
 *******
 Table of contents
 1. [Overview](#overview)
-2. [Directories layout](#architecture_layout)
-3. [Code Style Guidelines](#code-style-guidelines)
-4. [Set up your environment](#set_up_tuto)
-5. [Create directory for the new plugin](#make_dir_tuto)
-6. [Plugin.pm](#create_plugin_tuto)
-7. [Mode.pm](#create_mode_tuto)
-8. [Understand the data](#understand_data_tuto)
-9. [Commit and push](#commit)
-10. [Outputs](#outputs)
-11. [Options](#options)
-12. [Discovery](#discovery)
-13. [Performances](#performances)
-14. [Security](#security)
-15. [Help and documentation](#help_doc)
+2. [Understand the data](#understand_data)
+3. [Directories layout](#architecture_layout)
+4. [Set up your environment](#set_up)
+5. [Code Style Guidelines](#code-style-guidelines)
+6. [plugin.pm](#create_plugin)
+7. [mode.pm](#create_mode)
+8. [Plugin outputs](#outputs)
+9. [Plugins options](#options)
+10. [Discovery](#discovery)
+11. [Performances](#performances)
+12. [Security](#security)
+13. [Help and documentation](#help_doc)
 *******
 
 <div id='overview'/>
 
-### 1. Overview
+## 1. Overview
 
 Centreon plugins are a free and open source way to monitor systems. The project 
 can be used with Centreon and all monitoring softwares compatible with Nagios 
@@ -60,11 +58,29 @@ https://github.com/centreon/centreon-plugins.git
 
 [Table of contents](#table_of_contents)
 
+<div id='understand_data'/>
+
+## 2.Understand the data
+
+First of any development, understanding the data is very important as it will drive the way you will design
+the **mode** internals. This is the **first thing to do**, no matter what protocol you
+are using.
+
+There are several important properties for a piece of data:
+
+- Type of the data to process: string, int... There is no limitation in the kind of data you can process
+- Dimensions of the data, is it **global** or linked to an **instance**?
+- Data layout, in other words anticipate the kind of **data structure** to manipulate.
+
+Coming soon : A mindmap of what type of plugins is adequate
+
+[Table of contents](#table_of_contents)
+
 <div id='architecture_layout'/>
 
-### 2. Directories layout
+## 3. Directories layout
 
-#### 2.1 Plugins directories layout
+### 3.1 Plugins directories layout
 
 The project content is made of a main binary (`centreon_plugins.pl`), and a 
 logical directory structure allowing to separate plugins and modes files across 
@@ -104,9 +120,7 @@ Root directories are organized by section:
 * Operating System  : os
 * Storage equipment : storage
 
-[Table of contents](#table_of_contents)
-
-#### 2.2 Single plugin directory layout
+### 3.2 Single plugin directory layout
 
 According to the monitored object, it exists an organization which can use:
 
@@ -139,14 +153,12 @@ Now, let's see how these concepts combine to build a command line:
 perl centreon_plugins.pl --plugin=os::linux::local::plugin --mode=cpu
 ```
 
-[Table of contents](#table_of_contents)
-
-#### 2.3 Shared directories
+### 3.3 Shared directories
 
 Some specific directories are not related to a domain (os, cloud...) and are 
 used across all plugins.
 
-##### 2.3.1 The centreon directory
+#### 3.3.1 The centreon directory
 
 The centreon directory is specific, it contains:
 
@@ -158,9 +170,9 @@ chance that you would have to modify anything in it.
 * **Common files shared by multiple plugins**. This is to avoid duplicating 
 code across the directory tree and ease the maintenance of the project.
 
-An more detailed desception of this libraries is availible [here](#librairies)
+An more detailed description of this libraries is availible [here](plugins_advanced.md)
 
-##### 2.3.2 The snmp_standard/mode directory
+#### 3.3.2 The snmp_standard/mode directory
 
 The snmp_standard/mode exists since the beginning when SNMP monitoring was much 
 more used than it is today. All the modes it contains use standard OIDs, which 
@@ -169,88 +181,9 @@ standard MIBs on their devices.
 
 [Table of contents](#table_of_contents)
 
-<div id='code-style-guidelines'/>
+<div id='set_up'/>
 
-### 3. Code Style Guidelines
-
-**Introduction**
-
-Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
-
-#### 3.1 Indentation
-
-Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
-Please use 4 for indentation space width.
-
-```perl
-    if ($1 > 1) {
-    ....return 1;
-    } else {
-        if ($i == -1) {
-        ....return 0;
-        }
-        return -1
-    }
-```
-
-#### 3.2 Comments
-
-There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
-
-```perl
-    # Good comment
-    #Wrong comment
-```
-
-#### 3.3 Subroutine & Variable Names
-
-Whenever possible, use underscore to seperator words and don't use uppercase characters:
-
-```perl
-    sub get_logs {}
-    my $start_time;
-```
-Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
-
-```perl
-    $dogs->{meapolitan_mastiff} = 10;
-```
-
-#### 3.4 Curly Brackets, Parenthesis
-
-There should be a space between every control/loop keyword and the opening parenthesis:
-
-```perl
-    if ($i == 1) {
-        ...
-    }
-    while ($i == 2) {
-        ...
-    }
-```
-
-#### 3.5 If/Else Statements
-
-'else', 'elsif' should be on the same line after the previous closing curly brace:
-
-```perl
-    if ($i == 1) {
-        ...
-    } else {
-        ...
-    }
-```
-You can use single line if conditional:
-
-```perl
-    next if ($i == 1);
-```
-
-[Table of contents](#table_of_contents)
-
-<div id='set_up_tuto'/>
-
-### 4.Set up your environment
+## 4.Set up your environment
 
 [Table of contents](#table_of_contents)
 
@@ -260,9 +193,9 @@ To use the centreon-plugins framework, you'll need the following:
 - The [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command line utility
 - A [GitHub](https://github.com/) account.
 
-#### Enable our standard repositories
+### Enable our standard repositories
 
-##### Debian
+#### Debian
 
 If you have not already install lsb-release, first you need to follow this steps :
 
@@ -286,7 +219,7 @@ apt-get install 'libpod-parser-perl' 'libnet-curl-perl' 'liburi-encode-perl' 'li
     'libhttp-proxypac-perl' 'libcryptx-perl' 'libjson-xs-perl' 'libjson-path-perl' \
     'libcrypt-argon2-perl' 'libkeepass-reader-perl' 
 ```
-##### RHEL 8 and alike
+#### RHEL 8 and alike
 Create access to centreon repository (note you may need to change the version in example it's 22.04 but you can select one most up to date)
 ```shell
 dnf install -y https://yum.centreon.com/standard/22.04/el8/stable/noarch/RPMS/centreon-release-22.04-3.el8.noarch.rpm
@@ -299,40 +232,113 @@ dnf install 'perl(Digest::MD5)' 'perl(Pod::Find)' 'perl-Net-Curl' 'perl(URI::Enc
     'perl-KeePass-Reader' 'perl(Storable)' 'perl(POSIX)' 'perl(Encode)'
 ```
 
-<div id='make_dir_tuto'/>
+#### Fork and clone the centreon-plugins repository
 
-### 2.Create directories for a new plugin
+Within GitHub UI, on the top left, click on the **Fork** button.
 
-[Table of contents](#table_of_contents)
-
-Create directories and files required for your **plugin** and **modes**. 
-
-Go to your centreon-plugins local git and create the appropriate directories and files:
+Use the git utility to fetch your repository fork:
 
 ```shell
-# path to the main directory and the subdirectory containing modes
-mkdir -p src/apps/myawesomeapp/api/mode/
-# path to the main plugin file
-touch src/apps/myawesomeapp/api/plugin.pm
-# path to the specific mode(s) file(s) => for example appsmetrics.pm
-touch src/apps/myawesomeapp/api/mode/appsmetrics.pm
+git clone https://<githubusername>@github.com/<githubusername>/centreon-plugins
 ```
 
-<div id='create_plugin_tuto'/>
+Create a branch:
 
-<div id='architecture_mode'/>
-
-### 3.Create the plugin.pm file
+```shell
+cd centreon-plugins
+git checkout -b 'my-first-plugin'
+```
 
 [Table of contents](#table_of_contents)
+
+<div id='code-style-guidelines'/>
+
+## 5. Code Style Guidelines
+
+**Introduction**
+
+Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
+
+### 5.1 Indentation
+
+Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
+Please use 4 for indentation space width.
+
+```perl
+    if ($1 > 1) {
+    ....return 1;
+    } else {
+        if ($i == -1) {
+        ....return 0;
+        }
+        return -1
+    }
+```
+
+### 5.2 Comments
+
+There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
+
+```perl
+    # Good comment
+    #Wrong comment
+```
+
+### 5.3 Subroutine & Variable Names
+
+Whenever possible, use underscore to seperator words and don't use uppercase characters:
+
+```perl
+    sub get_logs {}
+    my $start_time;
+```
+Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
+
+```perl
+    $dogs->{meapolitan_mastiff} = 10;
+```
+
+### 5.4 Curly Brackets, Parenthesis
+
+There should be a space between every control/loop keyword and the opening parenthesis:
+
+```perl
+    if ($i == 1) {
+        ...
+    }
+    while ($i == 2) {
+        ...
+    }
+```
+
+### 5.5 If/Else Statements
+
+'else', 'elsif' should be on the same line after the previous closing curly brace:
+
+```perl
+    if ($i == 1) {
+        ...
+    } else {
+        ...
+    }
+```
+You can use single line if conditional:
+
+```perl
+    next if ($i == 1);
+```
+
+[Table of contents](#table_of_contents)
+
+<div id='create_plugin'/>
+
+## 6.plugin.pm
 
 The `plugin.pm` is the first thing to create, it contains:
 
 - A set of instructions to load required libraries and compilation options
 - A list of all **mode(s)** and path(s) to their associated files/perl packages
 - A description that will display when you list all plugins or display this plugin's help.
-
-#### 3.1.plugin.pm layout
 
 In this file you can always find : 
 * **license / copyright**
@@ -368,8 +374,8 @@ One of the centreon libraries :
 use base qw(**centreon_library**);
 ```
 There are five kinds of centreon libraries access here :
-* centreon::plugins::script_simple : Previously the general use case if no custom is needed, more explainations [here](#custom_mode_tuto) in this section.
-* centreon::plugins::script_custom : Need custom directory - More explainations [here](#custom_mode_tuto) in this section.
+* centreon::plugins::script_simple : Previously the general use case if no custom is needed, more explainations [here](tutorial-api.md) in this section.
+* centreon::plugins::script_custom : Need custom directory - More explainations [here](tutorial-api.md) in this section.
 * centreon::plugins::script_snmp : If SNMP protocol is needed for this plugin
 * centreon::plugins::script_sql : If DB acess is needed for this plugin
 * centreon::plugins::script_wsman : Concern Windows specific protocols
@@ -414,92 +420,11 @@ __END__
 > **TIP** : You can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
  The plugin has ".pm" extension because it's a Perl module. So don't forget to add 1; at the end of the file.
 
-#### 3.2.plugin.pm example
-
-Here is the commented example version of the plugin.pm file:
-
-```perl title="my-awesome-app plugin.pm file"
-# Copyrigths section
-
-# Then the package name :
-package apps::myawesomeapp::api::plugin;
-
-# Always use strict and warnings, will guarantee that your code is clean and help debugging it
-use strict;
-use warnings;
-
-# Load the base for your plugin, here we don't do SNMP, SQL or have a custom directory, so we use the _simple base
-use base qw(centreon::plugins::script_simple);
-
-# Global sub to create and return the perl object. 
-# Don't bother understand what each instruction is doing. 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-
-    # A version, we don't really use it but could help if your want to version your code
-    $self->{version} = '0.1';
-    # Important part! 
-    #    On the left, the name of the mode as users will use it in their command line
-    #    On the right, the path to the file (note that .pm is not present at the end)
-    $self->{modes} = {
-        'app-metrics' => 'apps::myawesomeapp::api::mode::appmetrics'
-    };
-
-    return $self;
-}
-
-# Declare this file as a perl module/package
-1;
-
-# Beginning of the documenation/help. `__END__` Specify to the interpreter that instructions below don't need to be compiled
-# =head1 [..] Specify the section level and the label when using the plugin with --help
-# Check my-awesome [..] Quick overview of wath the plugin is doing
-# =cut Close the head1 section
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check my-awesome-app health and metrics through its custom API
-
-=cut
-```
-
-Your first dummy plugin is working, congrats!
-
-Run this command:
-
-`perl centreon_plugins.pl --plugin=apps::myawesomeapp::api::plugin --list-mode`
-
-It already outputs a lot of things. Ellipsized lines are basically all standard capabilities
-inherited from the **script_custom** base.
-
-You probably already recognized things you've previsously defined in your **plugin.pm** module.
-
-```perl
-
-Plugin Description:
-    Check my-awesome-app health and metrics through its custom API
-
-Global Options:
-    --mode  Choose a mode.
-[..]
-    --version
-            Display plugin version.
-[..]
-
-Modes Available:
-   app-metrics
-```
-
-
-<div id='create_mode_tuto'/>
-
-### 4.Create the mode.pm file
-
 [Table of contents](#table_of_contents)
+
+<div id='create_mode'/>
+
+## 7.mode.pm
 
 Mode.pm as plugin.pm has also :
 * license / copyright
@@ -632,50 +557,13 @@ A description of the mode and its arguments is needed to generate the documentat
 
 ```
 
-
-<div id='understand_data_tuto'/>
-
-### 5.Understand the data
-
-[Table of contents](#table_of_contents)
-
-Understanding the data is very important as it will drive the way you will design
-the **mode** internals. This is the **first thing to do**, no matter what protocol you
-are using.
-
-There are several important properties for a piece of data:
-
-- Type of the data to process: string, int... There is no limitation in the kind of data you can process
-- Dimensions of the data, is it **global** or linked to an **instance**?
-- Data layout, in other words anticipate the kind of **data structure** to manipulate.
-
-<div id='commit'/>
-
-### 11. Commit and push
-
-[Table of contents](#table_of_contents)
-
-Before committing a plugin, you need to create an **enhancement ticket** on the 
-centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
-
-Once plugin and modes are developed, you can commit (commit messages in english)
-and push your work:
-
-```shell
-  git add path/to/plugin
-  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
-  git push
-```
-
 [Table of contents](#table_of_contents)
 
 <div id='outputs'/>
 
-### 1. Outputs
+## 8. Plugin outputs
 
-[Table of contents](#table_of_contents)
-
-#### 1.1 Formatting
+### 8.1 Formatting
 
 The output of a monitoring probe must always be:
 
@@ -692,7 +580,7 @@ Let’s identify and name its three main parts:
 * Performance data and Metrics: everything after the pipe (`|`)
 * Extended output: Everything after the first carriage return (`\n`), splitting each detail line is the best practice.
 
-#### 1.2 Short output
+### 8.2 Short output
 
 This part is the one users will more likely see in their monitoring tool or obtain as part of a push/alert message. The information should be straightforward and help identify what is going on quickly.
 
@@ -714,7 +602,7 @@ STATUS: Information text
 * showing only the bits of information that led to the NOT-OK state when an alarm is active
 * keeping it short. When checking a large number of a single component (e.g. all partitions on a filer), try to construct a global message, then switch to the format above when an alarm arises.
 
-##### Centreon Plugin example
+#### Centreon Plugin example
 
 The output when checking several storage partitions on a server, when everything is OK:
 
@@ -724,7 +612,7 @@ The output of the same plugin, when one of the storage partition space usages tr
 
 `WARNING: Storage '/var/lib' Usage Total: 9.30 GB Used: 956.44 MB (10.04%) Free: 8.37 GB (89.96%) |`
 
-#### 1.3 Performance data and metrics
+### 8.3 Performance data and metrics
 
 This part is not mandatory. However, if you want to benefit from Centreon or Nagios©-like tools with built-in metrology features, you will need to adopt this format:
 
@@ -749,7 +637,7 @@ Frequently, you have to manage the case where you have to display the same metri
 
 Less frequently, you may want to add even more context; that’s why we created a sub-instance concept following the same principles. Append it to the instance of your metric and use a splitting character to clarify that it is another dimension and not confuse it with the primary instance. We use the `~` sign; once again, we strongly advise you to stick with it whenever it is possible.
 
-##### Centreon Plugin Performance Data / Metrics examples
+#### Centreon Plugin Performance Data / Metrics examples
 
 A **system boot partition**
 
@@ -785,7 +673,7 @@ A **cloud metric**
 
 `%` is the legacy metric’s unit
 
-#### 1.4 Extended output
+### 8.4 Extended output
 
 The extended output's primary purpose is to display each bit of collected information separately on a single line. It will only print if the user adds a `--verbose` flag to its command.
 
@@ -795,7 +683,7 @@ Overall, you should use it to:
 * print items the check excludes because plugin options have filtered them out
 * organize how the information is displayed using groups that follow the logic of the check.
 
-##### Centreon Plugin example
+#### Centreon Plugin example
 
 Here is an example of a Cisco device environment check:
 
@@ -828,11 +716,12 @@ Checking sensors
   sensor 'GigabitEthernet1/1/1 Transmit Power Sensor' status is 'ok' [instance: 1118] [value: -4.5 dBm]
   sensor 'GigabitEthernet1/1/1 Receive Power Sensor' status is 'ok' [instance: 1119] [value: -1.2 dBm]
 ```
-<div id='options'/>
-
-### 2. Options
 
 [Table of contents](#table_of_contents)
+
+<div id='options'/>
+
+## 9. Plugins Options
 
 Option management is a central piece of a successful plugin. You should:
 
@@ -841,11 +730,11 @@ Option management is a central piece of a successful plugin. You should:
 * Always **check** for values supplied by the user and print a **clear message** when they do not fit with plugin requirements
 * Set default option value when relevant
 
+[Table of contents](#table_of_contents)
+
 <div id='discovery'/>
 
-###  3. Discovery
-
-[Table of contents](#table_of_contents)
+## 10. Discovery
 
 This section describes how you should format your data to comply with the requirements of Centreon Discovery UI modules.
 
@@ -856,7 +745,7 @@ In a nutshell:
 
 There's no choice here; you should stick with the guidelines described hereafter if you want your code to be fully compliant with our modules.
 
-#### 3.1 Hosts
+### 10.1 Hosts
 
 The discovery plugin can be a specific script or a particular execution mode enabled with an option. In centreon-plugins, we do it through dedicated `discovery*.pm` modes.
 
@@ -954,7 +843,7 @@ Using these structures is convenient when you need to group object properties be
 On the users' side, it allows using these values to filter in or out some of the results or make a better choice 
 about the host template for a given discovered host.
 
-#### 3.2 Services
+### 10.2 Services
 
 Service discovery relies on XML to return information that will be parsed and used by the UI module to 
 create new services efficiently.
@@ -1001,11 +890,11 @@ Executing exactly the same command, substituting `--disco-format` with `--disco-
 The result contains one line per interface and each line contains each set of properties as a `key="value"` pair. Note that even if
 no data is obtained for a given key, it still has to be displayed (e.g `total=""`).
 
+[Table of contents](#table_of_contents)
+
 <div id='performances'/>
 
-### 4. Performances
-
-[Table of contents](#table_of_contents)
+## 11. Performances
 
 A monitoring plugin has to do one thing and do it right - it's important to code your plugin with the idea to make
 it as efficient as possible. Keep in mind that your Plugin might run every minute, against a large
@@ -1014,12 +903,12 @@ number of devices, so a minor optimization can result in important benefits at s
 Also think about the 'thing' you're monitoring, it's important to always try to reduce the overhead of a check
 from the monitored object point of view.
 
-#### 4.1 Execution time
+### 11.1 Execution time
 
 The most basic way to bench a plugin performance is its execution time. Use the
 `time` command utility to run your check and measure over several runs how it behaves.
 
-#### 4.2 Cache
+### 11.2 Cache
 
 In some cases, it can be interesting to cache some information.
 
@@ -1030,30 +919,30 @@ authentication endpoint when it's absolutely necessary.
 More generally, when an identifier, name or anything that would never change across different executions requires a
 request against the third-party system, cache it to optimize single-check processing time.
 
-#### 4.3 Algorithm
+### 11.3 Algorithm
 
 Optimizing the number of requests against a third-party system can also lie in the check algorithm. Prefer scraping
 the maximum of data in one check and then filter the results programmatically instead of issuing multiple very specific
 requests that would result in longer execution time and greater load on the target system.
 
-#### 4.3 Timeout
+### 11.4 Timeout
 
 A Plugin must always include a timeout to avoid never ending checks that might overload your monitoring
 system when something is broken and that, for any reason, the plugin cannot obtain the information.
 
-<div id='security'/>
-
-### 5. Security
-
 [Table of contents](#table_of_contents)
 
-#### 5.1 System commands
+<div id='security'/>
+
+## 12. Security
+
+### 12.1 System commands
 
 If the plugin requires to execute a command at the operating system level, and users can modify the command name or
 its parameters, make sure that nobody can leverage your plugin's capabilities to break the underlying
 system or access sensitive information.
 
-#### 5.2 Dependencies
+#### 12.2 Dependencies
 
 There is no need to re-invent the wheel: standard centreon-plugins dependencies provide you with the most common
 external libraries that might be required to write a new plugin.
@@ -1061,11 +950,11 @@ external libraries that might be required to write a new plugin.
 Don't overuse large libraries that might end being unsupported or where some governance modification might lead to
 security problems.
 
+[Table of contents](#table_of_contents)
+
 <div id='help_doc'/>
 
-### 6. Help and documentation
-
-[Table of contents](#table_of_contents)
+## 13. Help and documentation
 
 For each plugin, the minimum documentation is the help, you have to explain to users what the plugin
 is doing and how they can use the built-in options to achieve their own alerting scenario.

@@ -1,4 +1,4 @@
-Update coming soon
+# API plugin tutorial
 
 All files showed in this section can be found on the centreon-plugins GitHub in 
 the [tutorial](https://github.com/centreon/centreon-plugins/tree/develop/src/contrib/tutorial) **contrib** 
@@ -7,10 +7,6 @@ section.
 > You have to move the contents of `contrib/tutorial/apps/` to `apps/` if you want to run it for testing purposes.
 >
 > `cp -R src/contrib/tutorial/apps/* src/apps/`
-
-### 6.API Tutorial
-
-[Table of content (3)](#table_of_content_3)
 
 **Context: simple JSON health API**
 
@@ -53,7 +49,17 @@ It returns the following output:
 }
 ```
 
-####  6.1 Understand the data
+## 1. Understand the data
+
+Understanding the data is very important as it will drive the way you will design
+the **mode** internals. This is the **first thing to do**, no matter what protocol you
+are using.
+
+There are several important properties for a piece of data:
+
+- Type of the data to process: string, int... There is no limitation in the kind of data you can process
+- Dimensions of the data, is it **global** or linked to an **instance**?
+- Data layout, in other words anticipate the kind of **data structure** to manipulate.
 
 In our example, the most common things are present. We can summarize it like that:
 
@@ -64,7 +70,100 @@ In our example, the most common things are present. We can summarize it like tha
 
 Understanding this will be important to code it correctly.
 
-#### 6.2 Create the mode file : appmetrics.pm
+## 2. Create directories for a new plugin
+
+Create directories and files required for your **plugin** and **modes**. 
+
+Go to your centreon-plugins local git and create the appropriate directories and files:
+
+```shell
+# path to the main directory and the subdirectory containing modes
+mkdir -p src/apps/myawesomeapp/api/mode/
+# path to the main plugin file
+touch src/apps/myawesomeapp/api/plugin.pm
+# path to the specific mode(s) file(s) => for example appsmetrics.pm
+touch src/apps/myawesomeapp/api/mode/appsmetrics.pm
+```
+
+## 3. Create the plugin file : plugin.pm
+
+Here is the commented version of the plugin.pm file:
+
+```perl title="my-awesome-app plugin.pm file"
+[.. license and copyright things ..]
+
+# Name of your perl package
+package apps::myawesomeapp::api::plugin;
+
+# Always use strict and warnings, will guarantee that your code is clean and help debugging it
+use strict;
+use warnings;
+# Load the base for your plugin, here we don't do SNMP, SQL or have a custom directory, so we use the _simple base
+use base qw(centreon::plugins::script_simple);
+
+# Global sub to create and return the perl object. Don't bother understand what each instruction is doing. 
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+
+    # A version, we don't really use it but could help if your want to version your code
+    $self->{version} = '0.1';
+    # Important part! 
+    #    On the left, the name of the mode as users will use it in their command line
+    #    On the right, the path to the file (note that .pm is not present at the end)
+    $self->{modes} = {
+        'app-metrics' => 'apps::myawesomeapp::api::mode::appmetrics'
+    };
+
+    return $self;
+}
+
+# Declare this file as a perl module/package
+1;
+
+# Beginning of the documenation/help. `__END__` Specify to the interpreter that instructions below don't need to be compiled
+# =head1 [..] Specify the section level and the label when using the plugin with --help
+# Check my-awesome [..] Quick overview of wath the plugin is doing
+# =cut Close the head1 section
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check my-awesome-app health and metrics through its custom API
+
+=cut
+```
+
+Your first dummy plugin is working, congrats!
+
+Run this command:
+
+`perl centreon_plugins.pl --plugin=apps::myawesomeapp::api::plugin --list-mode`
+
+It already outputs a lot of things. Ellipsized lines are basically all standard capabilities
+inherited from the **script_custom** base.
+
+You probably already recognized things you've previsously defined in your **plugin.pm** module.
+
+```perl
+
+Plugin Description:
+    Check my-awesome-app health and metrics through its custom API
+
+Global Options:
+    --mode  Choose a mode.
+[..]
+    --version
+            Display plugin version.
+[..]
+
+Modes Available:
+   app-metrics
+```
+
+## 4. Create the mode file : appmetrics.pm
 
 The `appmetrics.pm` file will contain your code, in other words, all the instructions to:
 
@@ -78,7 +177,7 @@ Let's build it iteratively.
 > Important note: function (sub) names must not be modified. For example, you cannot 
 > choose to rename `check_options` to `option_check`. 
 
-##### Common declarations and subs
+### 4.1 Common declarations and subs
 
 ```perl
 # Path to your package. '::' instead of '/', and no .pm at the end.
@@ -164,7 +263,7 @@ outputs this message:
 
 Now let's do some monitoring thanks to centreon-plugins.
 
-##### Declare your counters
+### 4.2 Declare your counters
 
 This part essentially maps the data you want to get from the API with the internal
 counter mode structure.
@@ -286,7 +385,7 @@ OK: status : skipped (no value(s)) - select : skipped (no value(s)), update : sk
 You can see some of your counters with the `skipped (no value(s))`, it's normal, this is because we
 just created the counters definition and structure but didn't push any values into it.
 
-##### Create prefix callback functions
+### 4.3 Create prefix callback functions
 
 These functions are not mandatory but help to make the output more readable for a human. We will create
 it now but as you have noticed the mode compiles so you can choose to keep those for the polishing moment.
@@ -332,7 +431,7 @@ OK: My-awesome-app: status : skipped (no value(s)) - Queries: select : skipped (
 
 The output is easier to read and separators are visible between global counters.
 
-##### Get raw data from API and understand the data structure
+### 4.4 Get raw data from API and understand the data structure
 
 It's the moment to write the main sub (`manage_selection`) - the most complex, but also the one that
 will transform your mode to something useful and alive.
@@ -469,7 +568,7 @@ $VAR1 = {
 My App health is 'yellow'
 ```
 
-##### Push data to global counters (type => 0)
+### 4.5 Push data to global counters (type => 0)
 
 Now that we know our data structure and how to access the values, we have to assign this
 value to the counters we initially defined. Pay attention to the comments above
@@ -541,7 +640,7 @@ Behind the scenes, it manages a lot of things for you:
 
 Now, you probably understand better why the preparation work about understanding collected data and the counter definition part is essential: simply because it's the bigger part of the job.
 
-##### Push data to counters having an instance (type => 1)
+### 4.6 Push data to counters having an instance (type => 1)
 
 Now let's deal with counters with instances. That means that the same counters will
 receive multiple data, each of these data refering to a specific dimension.
@@ -640,7 +739,7 @@ You now get metrics displayed for both components `'my-awesome-db'` and `'my-awe
 for your graphs. Note how the counter template automatically added the instance dimension on the left of the `nlabel` defined 
 for each counters: `**my-awesome-frontend#**myawesomeapp.errors.count'=32;;;0;`
 
-##### Help section and assistant to build your centreon objects
+### 4.7 Help section and assistant to build your centreon objects
 
 Last but not least, you need to write a help section to explain users what your mode is
 doing and what options they can use.
@@ -739,7 +838,7 @@ Mode:
             Warning and critical threshold for errors
 ```
 
-#### 6.3 Convert in custom mode
+## 5. Convert in custom mode
 
 Custom mode is a well established type of plugin. Then it can be usefull to understand the way to build and use it.
 Custom is a mode thinking for when you may have different way to collect plugin input. More broadly, build plugins using custom mode afford flexibility if later you have to add a new way to give input in a plugin. This is the main reason why most of latest plugins are in custom mode baseline.
@@ -747,9 +846,9 @@ Custom is a mode thinking for when you may have different way to collect plugin 
 Most of the time the way to collect input use api and this is the most common custom mode you will find in plugins.
 There are also cli file for command line or tcp, etc.
 
-In our example case of tutoral it's an api case. 
+In our example case of tutoral it's an api case.
 
-##### Create custom file 
+### 5.1 Create custom file 
 
 First we need to create the custom file : api.pm
 
@@ -757,7 +856,7 @@ First we need to create the custom file : api.pm
 mkdir -p src/apps/myawesomeapp/api/custom/
 touch src/apps/myawesomeapp/api/custom/api.pm
 ```
-##### Change in pulgin.pm
+### 5.2 Changes in plugin.pm
 
 First we need to change plugins script libraririe :
 ```perl
@@ -779,7 +878,7 @@ sub new {
     return $self;
 }
 ```
-##### Change in mode.pm
+### 5.3 Changes in mode.pm
 
 Custom mode allows to change the way to obtain input, thus all that concern input and the way to process it is push to the custom file. The mode file will contain all needed functions for processing input to give the output needed.
 
@@ -839,11 +938,12 @@ sub manage_selection {
 }
 ```
 
-##### New file : api.pm
+### 5.4 New file : api.pm
 
 As explained in the previous section, the custom file will contain all needed functions about input and the way to process it.
 
 This new file needs to contains the packages and libraries declarations :
+
 ```perl
 package apps::myawesomeapp::api::custom::api;
 
@@ -863,7 +963,7 @@ It also contains the following functions :
 * settings
 * request_api
 
-###### new constructor
+#### new constructor
 
 ```perl
 sub new {
@@ -904,7 +1004,8 @@ sub new {
     return $self;
 }
 ```
-###### set_options
+
+#### set_options
 
 This function overwrite the set_options function in http module
 
@@ -915,16 +1016,16 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 ```
-###### set_defaults
 
-This function is empty and is call remain unclear
+#### set_defaults
+
+This function is empty.
 
 ```perl
 sub set_defaults {}
 ```
-###### check_options
 
-
+#### check_options
 
 ```perl
 sub check_options {
@@ -948,7 +1049,8 @@ sub check_options {
     return 0;
 }
 ```
-###### settings
+
+#### settings
 
 This function allows initialize api object options structure and feed it calling set_options
 
@@ -969,7 +1071,8 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 ```
-###### request_api
+
+#### request_api
 
 ```perl
 sub request_api {
@@ -998,6 +1101,16 @@ sub request_api {
 }
 ```
 
-<div id='tutoriel_2'/>
+### 6. Commit and push
 
-<div id='snmp_tuto'/>
+When you have finish your plugins development, before committing a plugin, you need to create an **enhancement ticket** on the 
+centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
+
+Once plugin and modes are developed, you can commit (commit messages in english)
+and push your work:
+
+```shell
+  git add path/to/plugin
+  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
+  git push
+```
