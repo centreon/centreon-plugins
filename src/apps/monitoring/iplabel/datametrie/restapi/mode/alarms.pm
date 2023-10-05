@@ -27,17 +27,17 @@ use warnings;
 
 sub prefix_alarm_output {
     my ($self, %options) = @_;
-
+    
     return 'current alarms ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-
+    
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } }
     ];
-
+    
     $self->{maps_counters}->{global} = [
         { label => 'black', nlabel => 'alarms.black.count', set => {
                 key_values => [ { name => 'black' } ],
@@ -70,10 +70,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
+    
     $options{options}->add_options(arguments => {
     });
-
+    
     return $self;
 }
 
