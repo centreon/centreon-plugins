@@ -40,7 +40,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-
+    
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'api-username:s'         => { name => 'api_username' },
@@ -59,7 +59,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-
+    
     return $self;
 }
 
@@ -185,7 +185,7 @@ sub authenticate {
             $self->{output}->add_option_msg(short_msg => 'error retrieving session_token');
             $self->{output}->option_exit();
         }
-
+        
         $session_token = $decoded->{Ipln_WS_REST_datametrie}->{Get_Token}->{response}->{TOKEN};
 
         my $datas = { last_timestamp => time(), session_token => $session_token };
@@ -218,7 +218,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
     }
-
+    
     if ($decoded->{Ipln_WS_REST_datametrie}->{ $options{label} }->{status} ne 'success') {
         $self->clean_session_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
