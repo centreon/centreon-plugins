@@ -42,6 +42,6 @@ runs:
           DISTRIB=$(echo $FILE | cut -d '_' -f2 | cut -d '-' -f2)
           ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
 
-          jf rt upload "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
+          jf rt upload --dry-run "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
         done
       shell: bash

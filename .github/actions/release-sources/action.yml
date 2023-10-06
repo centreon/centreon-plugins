@@ -30,15 +30,15 @@ runs:
         sudo ./aws/install
       shell: bash
 
-    - run: |
-        SRC_FILE="${{ inputs.module_name }}-${{ inputs.version }}.tar.gz"
+    # - run: |
+    #     SRC_FILE="${{ inputs.module_name }}-${{ inputs.version }}.tar.gz"
 
-        mv "${{ inputs.module_directory }}" "${{ inputs.module_name }}-${{ inputs.version }}"
-        tar czf $SRC_FILE "${{ inputs.module_name }}-${{ inputs.version }}"
+    #     mv "${{ inputs.module_directory }}" "${{ inputs.module_name }}-${{ inputs.version }}"
+    #     tar czf $SRC_FILE "${{ inputs.module_name }}-${{ inputs.version }}"
 
-        SRC_HASH=$(md5sum $SRC_FILE | cut -d ' ' -f 1)
-        SRC_SIZE=$(stat -c '%s' $SRC_FILE)
+    #     SRC_HASH=$(md5sum $SRC_FILE | cut -d ' ' -f 1)
+    #     SRC_SIZE=$(stat -c '%s' $SRC_FILE)
 
-        aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
-        curl --fail "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
-      shell: bash
+    #     aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
+    #     curl --fail "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
+    #   shell: bash

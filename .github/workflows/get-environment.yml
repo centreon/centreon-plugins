@@ -46,7 +46,7 @@ jobs:
               STABILITY="stable"
               ;;
             *)
-              STABILITY="canary"
+              STABILITY="unstable"
               ;;
           esac
 
