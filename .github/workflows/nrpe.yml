@@ -15,8 +15,6 @@ on:
       - master
     paths:
       - 'nrpe/packaging/**'
-    tags:
-      - centreon-nrpe-*
 
 jobs:
   get-environment:

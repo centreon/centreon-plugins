@@ -17,8 +17,6 @@ on:
     paths:
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
-    tags:
-      - centreon-connector-vmware-*
 
 jobs:
   get-environment:

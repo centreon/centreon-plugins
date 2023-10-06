@@ -15,8 +15,6 @@ on:
       - master
     paths:
       - 'dependencies/perl-vmware-vsphere/**'
-    tags:
-      - perl-vmware-vsphere-*
 
 jobs:
   get-environment:
