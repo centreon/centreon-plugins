@@ -42,12 +42,12 @@ runs:
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
 
         if [ -z "${{ inputs.module_name }}" ]; then
-          echo "module name is required"
+          echo "::error::Module name is required"
           exit 1
         fi
 
         if [ -z "${{ inputs.distrib }}" ]; then
-          echo "distrib is required"
+          echo "::error::Distrib is required"
           exit 1
         fi
 
