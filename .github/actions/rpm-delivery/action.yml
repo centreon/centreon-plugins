@@ -63,9 +63,9 @@ runs:
         for ARCH in "noarch" "x86_64"; do
           if [ "$(ls -A $ARCH)" ]; then
             if [ "${{ inputs.stability }}" == "stable" ]; then
-              jf rt --dry-run upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/RPMS/${{ inputs.module_name }}/" --flat
+              jf rt upload --dry-run "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/RPMS/${{ inputs.module_name }}/" --flat
             else
-              jf rt --dry-run upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat
+              jf rt upload --dry-run "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat
             fi
           fi
         done
