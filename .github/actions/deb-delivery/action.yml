@@ -39,7 +39,6 @@ runs:
         for FILE in $FILES; do
           echo "[DEBUG] - File: $FILE"
 
-          DISTRIB=$(echo $FILE | cut -d '_' -f2 | cut -d '-' -f2)
           ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
 
           jf rt upload "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
