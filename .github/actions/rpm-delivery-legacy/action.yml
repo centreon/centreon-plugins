@@ -35,7 +35,7 @@ runs:
         JF_URL: https://centreon.jfrog.io
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
-    - name: Publish RPMs to plugins repository
+    - name: Publish RPMs to standard repository
       run: |
         FILES="*.rpm"
 
