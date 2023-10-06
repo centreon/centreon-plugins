@@ -65,7 +65,7 @@ runs:
             if [ "${{ inputs.stability }}" == "stable" ]; then
               jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/RPMS/${{ inputs.module_name }}/" --flat --dry-run
             else
-              jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat --dry-run
+              jf rt upload "$ARCH/*.rpm" "rpm-plugins-toto/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat --dry-run
             fi
           fi
         done
