@@ -1,6 +1,6 @@
-Thanks for using Centreon plugins!
+Thank you for using Centreon plugins!
 
-> Please use this form only for actual **bugs** whenever possible. See **Other requests** for more details.
+Please use this form only for actual **bugs** whenever possible. See **[Other requests](#other-requests)** for more details.
 
 # Bug report
 
@@ -8,11 +8,11 @@ If you are certain it's a bug, make sure that there aren't any similar issues al
 You can ensure this by searching the [issue list](https://github.com/centreon/centreon-plugins/issues).
 If the same bug has already been logged, please close your issue and add a comment to the existing one instead.
 
-> **For the sake of clarity, please remove the explanations from the issue template before submitting your issue.**
+**For the sake of clarity, please remove the explanations from the issue template before submitting your issue.**
 
 ## Quick description
 
-*In one or two sentences, what it your bug about,*
+*In one or two sentences, what it your bug about?*
 
 ## How to reproduce
 
