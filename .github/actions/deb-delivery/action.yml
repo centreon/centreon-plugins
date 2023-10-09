@@ -1,14 +1,11 @@
 name: "deb-delivery"
 description: "Deliver DEB packages"
 inputs:
+  module_name:
+    description: "The package module name"
+    required: true
   distrib:
     description: "The distribution used for packaging"
-    required: true
-  nexus_username:
-    description: The nexus username
-    required: true
-  nexus_password:
-    description: The nexus password
     required: true
   cache_key:
     description: "The cached package key"
@@ -37,5 +34,13 @@ runs:
 
     - name: Publish DEBs to artifactory
       run: |
-        jf rt upload "*.deb" "apt-plugins-${{ inputs.stability }}/pool/" --deb "${{ inputs.distrib }}/main/all"
+        FILES="*.deb"
+
+        for FILE in $FILES; do
+          echo "[DEBUG] - File: $FILE"
+
+          ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
+
+          jf rt upload "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
+        done
       shell: bash

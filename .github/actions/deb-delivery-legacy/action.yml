@@ -1,23 +1,23 @@
 name: "deb-delivery-legacy"
 description: "Deliver legacy DEB packages"
 inputs:
+  module_name:
+    description: "The package module name"
+    required: true
   distrib:
     description: "The distribution used for packaging"
     required: true
   major_version:
     description: "The major version"
     required: true
-  nexus_username:
-    description: The nexus username
-    required: true
-  nexus_password:
-    description: The nexus password
-    required: true
   cache_key:
     description: "The cached package key"
     required: true
   stability:
     description: "The package stability (stable, testing, unstable)"
+    required: true
+  artifactory_token:
+    description: "token for artifactory"
     required: true
 
 runs:
@@ -30,18 +30,20 @@ runs:
         key: ${{ inputs.cache_key }}
         fail-on-cache-miss: true
 
-    - name: Publish DEBs to Nexus
+    - uses: jfrog/setup-jfrog-cli@v3
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+
+    - name: Publish DEBs to artifactory
       run: |
-        echo "Delivering to ${{ inputs.major_version }} ${{ inputs.stability }}"
+        FILES="*.deb"
 
-        FOLDER_SUFFIX="-${{ inputs.stability }}"
-        if [[ "${{ inputs.stability }}" == "stable" ]]; then
-          FOLDER_SUFFIX=""
-        fi
+        for FILE in $FILES; do
+          echo "[DEBUG] - File: $FILE"
 
-        for FILE in *.deb; do
-          sleep 2
-          echo "Delivering $FILE"
-          curl --connect-timeout 10 --retry 2 --retry-max-time 30 --fail --silent --show-error -u '${{ inputs.nexus_username }}':'${{ inputs.nexus_password }}' -H 'Content-Type: multipart/form-data' --data-binary "@./$FILE" https://apt.centreon.com/repository/${{ inputs.major_version }}$FOLDER_SUFFIX/ || echo "::error::Fail to deliver $FILE ${{ inputs.major_version }}"
+          ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
+
+          jf rt upload "$FILE" "apt-standard-${{ inputs.major_version }}-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
         done
       shell: bash

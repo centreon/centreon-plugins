@@ -63,7 +63,7 @@ runs:
         for ARCH in "noarch" "x86_64"; do
           if [ "$(ls -A $ARCH)" ]; then
             if [ "${{ inputs.stability }}" == "stable" ]; then
-              jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/" --flat
+              jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/RPMS/${{ inputs.module_name }}/" --flat
             else
               jf rt upload "$ARCH/*.rpm" "rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/${{ inputs.module_name }}/" --flat
             fi
