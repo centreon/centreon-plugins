@@ -1,7 +1,7 @@
 Thank you for using Centreon plugins!
 
 Please use this form for actual **bugs** only. See **[Other requests](#other-requests)** for more details.
-All existing and future issues related to Questions, New plugins or Enhancement will be closed.
+All existing and future issues related to questions, new plugins or enhancements will be closed.
 
 # Bug report
 
