@@ -1,11 +1,10 @@
 Thank you for using Centreon plugins!
 
-Please use this form only for actual **bugs** whenever possible. See **[Other requests](#other-requests)** for more details.
+Please use this form only for actual **bugs** only. See **[Other requests](#other-requests)** for more details.
 
 # Bug report
 
-If you are certain it's a bug, make sure that there aren't any similar issues already open. 
-You can ensure this by searching the [issue list](https://github.com/centreon/centreon-plugins/issues).
+If you are certain it's a bug, please ensure that there aren't any [similar issues already open](https://github.com/centreon/centreon-plugins/issues) on the same bug. 
 If the same bug has already been logged, please close your issue and add a comment to the existing one instead.
 
 **For the sake of clarity, please remove the explanations from the issue template before submitting your issue.**
@@ -33,6 +32,10 @@ If the same bug has already been logged, please close your issue and add a comme
 
 # Other requests
 
+## Questions
+
+If you have trouble using our plugins, but are not sure whether it's a bug or a misuse, please take the time to ask for help on [The Watch Data Collection section](https://thewatch.centreon.com/data-collection-6) and become certain that it's a bug before submitting it here.
+
 ## New Plugins and modes
 
 There is high demand for new plugins and new functionalities on existing plugins, so we have to rely on our community to help us prioritize them.
@@ -45,12 +48,7 @@ To develop a Plugin/mode, we need the following information depending on the pro
 * **SQL**: queries + results + column types or [SQL collections](https://thewatch.centreon.com/product-how-to-21/sql-collection-tutorial-134).
 * **JMX**: mbean names and attributes.
 
-If some parts of information are confidential, such as logins, IP addresses, obfuscate them in what is available publicly and we'll get in touch with you to privately.
+If some information are confidential, such as logins, IP addresses, obfuscate them in what is sent publicly and we'll get in touch with you by private message if these information are needed..
 
-Please note that all the developments are open-source. We can't give a date for the development, achievement or release. If it's a priority for you,
-please contact [Centreon's sales team](https://www.centreon.com/contact/).
-
-## Questions
-
-If you have trouble using our plugins, but are not sure whether it's a bug or a misuse, please take the time to ask for help on [The Watch Data Collection section](https://thewatch.centreon.com/data-collection-6) and become certain that it's a bug before submitting it here.
+Please note that all the developments are open-source, we won't commit on a release date. If it's an emergency for you, please contact [Centreon's sales team](https://www.centreon.com/contact/).
 
