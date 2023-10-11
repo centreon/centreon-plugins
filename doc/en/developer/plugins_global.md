@@ -11,12 +11,14 @@ Table of contents
 5. [Code Style Guidelines](#code-style-guidelines)
 6. [plugin.pm](#create_plugin)
 7. [mode.pm](#create_mode)
-8. [Plugin outputs](#outputs)
-9. [Plugins options](#options)
-10. [Discovery](#discovery)
-11. [Performances](#performances)
-12. [Security](#security)
-13. [Help and documentation](#help_doc)
+8. [Tutorials](#tutorials)
+9. [Commit and Fatpack generation](#fatpack)
+10. [Plugin outputs](#outputs)
+11. [Plugins options](#options)
+12. [Discovery](#discovery)
+13. [Performances](#performances)
+14. [Security](#security)
+15. [Help and documentation](#help_doc)
 *******
 
 <div id='overview'/>
@@ -482,7 +484,10 @@ Here is the description of arguments used in this example:
 * option2 : String value with default value "value1"
 * option3 : Boolean value
 
-> **TIP** : You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
+> **TIP 1** : Options are boolean as default and string if set ":s", no other type are allowed in this argument descriptions. 
+The actual type of the argument, if it is other than a string, can be checked and interpreted in ```check_option()``` function defined below.
+
+> **TIP 2** : You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
 
 The mode can have a **check_options** method to validate options:
 
@@ -518,7 +523,7 @@ thresholds, display output and format performance datas.
 Since this method had been split in at least two methods :
 * **set_counters** : describe data structure and their properties
   (like  thresholds and how they will be displayed to the users). This 
-  method is split in twofunctions
+  method is split in two functions
 
 ```perl
 
@@ -559,11 +564,117 @@ A description of the mode and its arguments is needed to generate the documentat
 
 [Table of contents](#table_of_contents)
 
+<div id='tutorials'/>
+
+## 8. Tutorials
+
+To help users to understand the most popular plugins you can find several tutorials to help you to develop your first plugin.
+
+* [API plugin tutorial](tutorial-api.md)
+* [SNMP plugin tutorial](tutorial-snmp.md)
+* [Service discovery tutorial](tutorial-service_discovery.md)
+
+[Table of contents](#table_of_contents)
+
+<div id='fatpack'/>
+
+## 9. Commit and Fatpack generation
+
+### 9.1. Commit and push
+
+When you have finish your plugins development, before committing a plugin, you need to create an **enhancement ticket** on the 
+centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
+
+Once plugin and modes are developed, you can commit (commit messages in english)
+and push your work:
+
+```shell
+  git add path/to/plugin
+  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
+  git push
+```
+
+### 9.2 FatPack generation
+
+Centreon plugin-pack use plugins through FatPack format.
+To convert your plugin into Fatpack format follow this steps :
+
+Install libapp-fatpacker-perl
+```shell
+sudo apt install libapp-fatpacker-perl
+```
+
+Create a shell script ```plugin_generator.sh```
+
+```shell
+#!/bin/bash
+
+BuildDir=/home/<user_name>/fatpack_generator #Directory path where build the fatpack
+GitPluginBranch=my-first-plugin #Branch you have create in "Set up your environment" section
+PluginPath=cloud/docker/local #Path from src to your plugin directory
+PluginPathMode=cloud/docker/local/mode #Path from src to your plugin mode directory
+ScriptName=centreon_docker_ssh #Set the name of your Fatpack.pl / This name is the one used in plugin-pack
+
+if [ ! -d "$BuildDir" ]; then
+    echo 'Create BuildDir'
+    mkdir $BuildDir
+fi
+cd $BuildDir
+
+if [ -d "centreon-plugins" ]; then
+    echo 'Update centreon-plugins'
+    cd centreon-plugins
+    git checkout develop -f
+	git fetch
+    git checkout $GitPluginBranch -f
+	git pull
+    cd ..
+else
+    echo 'Clone centreon-plugins'
+    git clone --branch $GitPluginBranch https://github.com/centreon/centreon-plugins.git
+fi
+
+if [ -d "plugin" ]; then
+    echo 'Remove plugin'
+    rm -R plugin
+fi
+echo 'Create plugin/lib'
+mkdir -p plugin/lib
+cd $BuildDir/centreon-plugins/src
+echo $PWD
+echo 'Find pm'
+find . -name "*.pm" -exec sed -i ' /__END__/d' {} \;
+
+echo 'Copy common plugins files'
+cp -R --parent centreon/plugins/{http,misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/backend/ centreon/plugins/templates/ centreon/plugins/alternative/ ../../plugin/lib/
+echo 'Copy centreon_plugins.pl'
+cp centreon_plugins.pl ../../plugin
+echo 'Prepare fatpacker'
+cp -R --parent $PluginPathMode ../../plugin/lib/
+sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../../plugin/lib/centreon/plugins/script.pm
+
+echo 'Copy plugin files'
+cp -R --parent centreon/plugins/{script_snmp,snmp}.pm $PluginPath snmp_standard/mode/{cpu,cpudetailed,diskio,diskusage,inodes,interfaces,loadaverage,listdiskspath,listinterfaces,liststorages,memory,processcount,storage,swap,ntp,tcpcon,uptime}.pm snmp_standard/mode/resources/ ../../plugin/lib/
+
+cd ../../plugin
+echo 'Generate fatpack'
+fatpack file centreon_plugins.pl > $ScriptName.pl
+```
+
+Execute plugin_generator.sh
+```shell
+sudo ./plugin_generator.sh
+```
+
+You can find your FatPack plugin in the folder plugin in ```BuildDir/plugin```
+
+[Table of contents](#table_of_contents)
+
 <div id='outputs'/>
 
-## 8. Plugin outputs
+## 10. Plugin outputs
 
-### 8.1 Formatting
+### 10.1 Formatting
 
 The output of a monitoring probe must always be:
 
@@ -580,7 +691,7 @@ Let’s identify and name its three main parts:
 * Performance data and Metrics: everything after the pipe (`|`)
 * Extended output: Everything after the first carriage return (`\n`), splitting each detail line is the best practice.
 
-### 8.2 Short output
+### 10.2 Short output
 
 This part is the one users will more likely see in their monitoring tool or obtain as part of a push/alert message. The information should be straightforward and help identify what is going on quickly.
 
@@ -612,7 +723,7 @@ The output of the same plugin, when one of the storage partition space usages tr
 
 `WARNING: Storage '/var/lib' Usage Total: 9.30 GB Used: 956.44 MB (10.04%) Free: 8.37 GB (89.96%) |`
 
-### 8.3 Performance data and metrics
+### 10.3 Performance data and metrics
 
 This part is not mandatory. However, if you want to benefit from Centreon or Nagios©-like tools with built-in metrology features, you will need to adopt this format:
 
@@ -673,7 +784,7 @@ A **cloud metric**
 
 `%` is the legacy metric’s unit
 
-### 8.4 Extended output
+### 10.4 Extended output
 
 The extended output's primary purpose is to display each bit of collected information separately on a single line. It will only print if the user adds a `--verbose` flag to its command.
 
@@ -721,7 +832,7 @@ Checking sensors
 
 <div id='options'/>
 
-## 9. Plugins Options
+## 11. Plugins Options
 
 Option management is a central piece of a successful plugin. You should:
 
@@ -734,7 +845,7 @@ Option management is a central piece of a successful plugin. You should:
 
 <div id='discovery'/>
 
-## 10. Discovery
+## 12. Discovery
 
 This section describes how you should format your data to comply with the requirements of Centreon Discovery UI modules.
 
@@ -743,9 +854,9 @@ In a nutshell:
 * [host discovery](/docs/monitoring/discovery/hosts-discovery) allows you to return a JSON list the autodiscovery module will understand so the user can choose to automatically or manually add to its monitoring configuration. Optionally, it can use one of the discovered items properties to make some decisions (filter in or out, create or assign a specific host group, etc.)
 * [service discovery](/docs/monitoring/discovery/services-discovery) allows you to return XML data to help users configure unitary checks and link them to a given host (e.g. each VPN definition in AWS VPN, each network interface on a router...).
 
-There's no choice here; you should stick with the guidelines described hereafter if you want your code to be fully compliant with our modules.
+There's no choice here; you should stick with the guidelines described here after if you want your code to be fully compliant with our modules.
 
-### 10.1 Hosts
+### 12.1 Hosts
 
 The discovery plugin can be a specific script or a particular execution mode enabled with an option. In centreon-plugins, we do it through dedicated `discovery*.pm` modes.
 
@@ -843,7 +954,7 @@ Using these structures is convenient when you need to group object properties be
 On the users' side, it allows using these values to filter in or out some of the results or make a better choice 
 about the host template for a given discovered host.
 
-### 10.2 Services
+### 12.2 Services
 
 Service discovery relies on XML to return information that will be parsed and used by the UI module to 
 create new services efficiently.
@@ -894,7 +1005,7 @@ no data is obtained for a given key, it still has to be displayed (e.g `total=""
 
 <div id='performances'/>
 
-## 11. Performances
+## 13. Performances
 
 A monitoring plugin has to do one thing and do it right - it's important to code your plugin with the idea to make
 it as efficient as possible. Keep in mind that your Plugin might run every minute, against a large
@@ -903,12 +1014,12 @@ number of devices, so a minor optimization can result in important benefits at s
 Also think about the 'thing' you're monitoring, it's important to always try to reduce the overhead of a check
 from the monitored object point of view.
 
-### 11.1 Execution time
+### 13.1 Execution time
 
 The most basic way to bench a plugin performance is its execution time. Use the
 `time` command utility to run your check and measure over several runs how it behaves.
 
-### 11.2 Cache
+### 13.2 Cache
 
 In some cases, it can be interesting to cache some information.
 
@@ -919,13 +1030,13 @@ authentication endpoint when it's absolutely necessary.
 More generally, when an identifier, name or anything that would never change across different executions requires a
 request against the third-party system, cache it to optimize single-check processing time.
 
-### 11.3 Algorithm
+### 13.3 Algorithm
 
 Optimizing the number of requests against a third-party system can also lie in the check algorithm. Prefer scraping
 the maximum of data in one check and then filter the results programmatically instead of issuing multiple very specific
 requests that would result in longer execution time and greater load on the target system.
 
-### 11.4 Timeout
+### 13.4 Timeout
 
 A Plugin must always include a timeout to avoid never ending checks that might overload your monitoring
 system when something is broken and that, for any reason, the plugin cannot obtain the information.
@@ -934,15 +1045,15 @@ system when something is broken and that, for any reason, the plugin cannot obta
 
 <div id='security'/>
 
-## 12. Security
+## 14. Security
 
-### 12.1 System commands
+### 14.1 System commands
 
 If the plugin requires to execute a command at the operating system level, and users can modify the command name or
 its parameters, make sure that nobody can leverage your plugin's capabilities to break the underlying
 system or access sensitive information.
 
-#### 12.2 Dependencies
+#### 14.2 Dependencies
 
 There is no need to re-invent the wheel: standard centreon-plugins dependencies provide you with the most common
 external libraries that might be required to write a new plugin.
@@ -954,7 +1065,7 @@ security problems.
 
 <div id='help_doc'/>
 
-## 13. Help and documentation
+## 15. Help and documentation
 
 For each plugin, the minimum documentation is the help, you have to explain to users what the plugin
 is doing and how they can use the built-in options to achieve their own alerting scenario.

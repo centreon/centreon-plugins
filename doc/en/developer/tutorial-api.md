@@ -1100,17 +1100,3 @@ sub request_api {
     return $decoded;
 }
 ```
-
-### 6. Commit and push
-
-When you have finish your plugins development, before committing a plugin, you need to create an **enhancement ticket** on the 
-centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
-
-Once plugin and modes are developed, you can commit (commit messages in english)
-and push your work:
-
-```shell
-  git add path/to/plugin
-  git commit -m "Add new plugin for XXXX refs #<ticked_id>"
-  git push
-```
