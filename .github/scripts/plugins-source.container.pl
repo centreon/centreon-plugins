@@ -103,7 +103,7 @@ foreach my $plugin (@plugins) {
         # Fatpack plugin.
         my $fatpacker = App::FatPacker->new();
         $fatpacker->trace(
-            args => "centreon_plugins.pl"
+            args => "centreon_plugins.pl",
             output => '/tmp/fatpack_trace.txt',
         );
         my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
