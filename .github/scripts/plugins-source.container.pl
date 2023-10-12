@@ -105,10 +105,10 @@ foreach my $plugin (@plugins) {
         $fatpacker->trace(
             args => ["centreon_plugins.pl"],
         );
-        my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
-        open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
-        print $fh $content;
-        close($fh);
-        chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
+        #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
+        #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
+        #print $fh $content;
+        #close($fh);
+        #chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
     }
 }
