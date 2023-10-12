@@ -102,9 +102,10 @@ foreach my $plugin (@plugins) {
 
         # Fatpack plugin.
         my $fatpacker = App::FatPacker->new();
-        my $content = $fatpacker->trace(
-            args => ["centreon_plugins.pl"],
-        );
+        #my $content = $fatpacker->trace(
+        #    args => ["centreon_plugins.pl"],
+        #);
+        my $content = $fatpacker->packlists_containing(["centreon_plugins.pl"]);
         print $content;
         #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
         #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
