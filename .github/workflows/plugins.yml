@@ -102,9 +102,10 @@ jobs:
       - name: Run FatPacker
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
-          ls .github/scripts
-          cat .github/scripts/fatpacker.trace
+          cd .github/scripts/
+          perl plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          ls
+          cat fatpacker.trace
 
       - uses: actions/cache/save@v3
         with:
