@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 
+
 package blockchain::parity::ethpoller::plugin;
 
 use strict;
