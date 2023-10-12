@@ -117,7 +117,7 @@ foreach my $plugin (@plugins) {
         my @dirs = $fatpacker->collect_dirs();
         my %files;
         $fatpacker->collect_files($_, \%files) for @dirs;
-        print \%files;
+        print $files;
         #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
         #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
         #print $fh $content;
