@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use POSIX;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use Safe;
@@ -449,6 +450,55 @@ sub custom_speed_calc {
     return 0;
 }
 
+##############
+# Last change
+sub custom_last_change_threshold_output {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+
+
+    if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+             $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
+        $status = 'warning';
+    }
+
+    $self->{instance_mode}->{last_status} = 1;
+    if (defined($self->{instance_mode}->{option_results}->{check_metrics}) && $self->{instance_mode}->{option_results}->{check_metrics} ne '' &&
+        !$self->eval(value => $self->{instance_mode}->{option_results}->{check_metrics})) {
+        $self->{instance_mode}->{last_status} = 0;
+    }
+
+    return $status;
+}
+
+sub custom_last_change_status_output {
+    my ($self, %options) = @_;
+
+    # use Data::Dumper;
+
+    # my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
+    # if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
+    #     $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
+    # }
+
+    # return $msg;
+# 
+    # return sprintf("%s", )
+    return "test ";
+}
+
+sub custom_last_change_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{last_change} = $options{new_datas}->{$self->{instance} . '_last_change'};
+    $self->{result_values}->{uptime} = floor($options{new_datas}->{$self->{instance} . '_uptime'} / 100);
+
+    return 0;
+}
+
 #########################
 # OIDs mapping functions
 #########################
@@ -700,6 +750,26 @@ sub set_counters_volume {
     ;
 }
 
+sub set_counters_last_change {
+    my ($self, %options) = @_;
+
+    return if ($self->{no_last_change} != 0 && $self->{no_set_last_change} != 0);
+
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'last-change', filter => 'add_last_change', nlabel => 'interface.lastchange.second', set => {
+                key_values => [ { name => 'last_change' }, { name => 'uptime' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_last_change_status_calc'),
+                output_template => 'Last change : %s s',#, output_error_template => 'Speed : %s%s/s',
+                # output_change_bytes => 2,
+                # output_use => 'speed',  threshold_use => 'speed',
+                perfdatas => [
+                    { label => 'last_change', template => '%s', unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -708,7 +778,7 @@ sub set_counters {
         { name => 'int', type => 1, cb_init => 'skip_interface', cb_init_counters => 'skip_counters', cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
     ];
 
-    foreach (('traffic', 'errors', 'cast', 'speed', 'volume')) {
+    foreach (('traffic', 'errors', 'cast', 'speed', 'volume', 'last_change')) {
         $self->{'no_' . $_} = defined($options{'no_' . $_}) && $options{'no_' . $_} =~ /^[01]$/ ? $options{'no_' . $_} : 0;
         $self->{'no_set_' . $_} = defined($options{'no_set_' . $_}) && $options{'no_set_' . $_} =~ /^[01]$/ ? $options{'no_set_' . $_} : 0;
     }
@@ -721,6 +791,7 @@ sub set_counters {
     $self->set_counters_cast();
     $self->set_counters_speed();
     $self->set_counters_volume();
+    $self->set_counters_last_change();
 }
 
 sub prefix_interface_output {
@@ -738,7 +809,7 @@ sub skip_global {
 sub skip_interface {
     my ($self, %options) = @_;
 
-    return ($self->{checking} =~ /cast|errors|traffic|status|volume/ ? 0 : 1);
+    return ($self->{checking} =~ /cast|errors|traffic|status|volume|last_change/ ? 0 : 1);
 }
 
 sub skip_counters {
@@ -843,6 +914,13 @@ sub set_oids_speed {
 
     $self->{oid_speed32} = '.1.3.6.1.2.1.2.2.1.5'; # in b/s
     $self->{oid_speed64} = '.1.3.6.1.2.1.31.1.1.1.15'; # need multiple by '1000000'
+}
+
+sub set_oids_last_change {
+    my ($self, %options) = @_;
+
+    $self->{oid_iflast_change} = '.1.3.6.1.2.1.2.2.1.9';
+    $self->{oid_sysUpTimeInstance} = '.1.3.6.1.2.1.1.3.0';
 }
 
 sub check_oids_label {
@@ -958,6 +1036,7 @@ sub new {
         'force-counters64'         => { name => 'force_counters64' },
         'map-speed-dsl:s@'         => { name => 'map_speed_dsl' }
     });
+    
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { 'add-traffic' => { name => 'add_traffic' } });
     }
@@ -973,6 +1052,10 @@ sub new {
     if ($self->{no_volume} == 0) {
         $options{options}->add_options(arguments => { 'add-volume' => { name => 'add_volume' }, });
     }
+    if ($self->{no_last_change} == 0) {
+        $options{options}->add_options(arguments => { 'add-last-change' => { name => 'add_last_change' } });
+    }
+
     if ($self->{no_oid_options} == 0) {
         $options{options}->add_options(arguments => {
             'oid-filter:s'        => { name => 'oid_filter', default => $self->default_oid_filter_name() },
@@ -1050,7 +1133,7 @@ sub check_options {
         $self->{option_results}->{add_status} = 1;
     }
     $self->{checking} = '';
-    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_last_change')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
@@ -1352,6 +1435,15 @@ sub load_volume {
     }
 }
 
+sub load_last_change {
+    my ($self, %options) = @_;
+
+    $self->set_oids_last_change();
+    $self->{snmp}->load(oids => [$self->{oid_iflast_change}], instances => $self->{array_interface_selected});
+    $self->{snmp}->load(oids => [$self->{oid_sysUpTimeInstance}]);
+
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
@@ -1367,6 +1459,7 @@ sub manage_selection {
     $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
     $self->load_speed() if (defined($self->{option_results}->{add_speed}));
     $self->load_volume() if (defined($self->{option_results}->{add_volume}));
+    $self->load_last_change() if (defined($self->{option_results}->{add_last_change}));
     $self->$custom_load_method() if ($custom_load_method);
 
     $self->{results} = $self->{snmp}->get_leef();
@@ -1380,6 +1473,7 @@ sub manage_selection {
         $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_speed(instance => $_) if (defined($self->{option_results}->{add_speed}));
         $self->add_result_volume(instance => $_) if (defined($self->{option_results}->{add_volume}));
+        $self->add_result_last_change(instance => $_) if (defined($self->{option_results}->{add_last_change}));
         $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
     }
 
@@ -1603,6 +1697,38 @@ sub add_result_volume {
             $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
         }
     }
+}
+
+sub add_result_last_change {
+    my ($self, %options) = @_;
+    
+    $self->{int}->{$options{instance}}->{last_change} = $self->{results}->{$self->{oid_iflast_change} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{uptime} = $self->{results}->{$self->{oid_sysUpTimeInstance}};
+    
+    my $current_time = floor(time() * 100);
+    $self->{new_datas} = { last_time => $current_time, uptime => $self->{int}->{$options{instance}}->{uptime} };
+    $self->{statefile_cache}->read(statefile => 'cache_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
+    my $old_uptime = $self->{statefile_cache}->get(name => 'uptime');
+    my $last_time = $self->{statefile_cache}->get(name => 'last_time');
+    $self->{new_datas}->{overload} = $self->{statefile_cache}->get(name => 'overload') || 0;
+    
+    if (defined($old_uptime) && $self->{int}->{$options{instance}}->{uptime} < $old_uptime) {
+        my $diff_time = $current_time - $last_time;
+        my $overflow = ($old_uptime + $diff_time) % 4294967296;
+        my $division = ($old_uptime + $diff_time) / 4294967296;
+        if ($division >= 1 && 
+            # $overflow >= ($self->{int}->{$options{instance}}->{uptime} - ($self->{option_results}->{reboot_window} / 2)) &&
+            # $overflow <= ($self->{int}->{$options{instance}}->{uptime} + ($self->{option_results}->{reboot_window} / 2))) {
+            $overflow >= ($self->{int}->{$options{instance}}->{uptime} - (5000 / 2)) &&
+            $overflow <= ($self->{int}->{$options{instance}}->{uptime} + (5000 / 2))) {
+            $self->{new_datas}->{overload}++;
+        } else {
+            $self->{new_datas}->{overload} = 0;
+        }
+    }
+
+    $self->{int}->{$options{instance}}->{last_change} += ($self->{new_datas}->{overload} * 4294967296);
+    $self->{statefile_cache}->write(data => $self->{new_datas});
 }
 
 1;
