@@ -106,7 +106,7 @@ foreach my $plugin (@plugins) {
         #    args => ["centreon_plugins.pl"],
         #);
         #my $content = $fatpacker->packlists_containing(["centreon_plugins.pl"]);
-        my $content = $fatpacker->packlists_to_tree(catdir(cwd,'fatlib'), ["centreon_plugins.pl"]);
+        my $content = $fatpacker->packlists_to_tree('toto', ["centreon_plugins.pl"]);
         print $content;
         #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
         #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
