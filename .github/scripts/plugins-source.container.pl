@@ -102,8 +102,12 @@ foreach my $plugin (@plugins) {
 
         # Fatpack plugin.
         my $fatpacker = App::FatPacker->new();
-        $fatpacker->fatpack_trace("centreon_plugins.pl");
-        my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
+        $fatpacker->fat
+        $fatpacker->fatpack_trace(
+            args => "centreon_plugins.pl"
+            output => '/tmp/fatpack_trace.txt',
+        );
+        my $content = $fatpacker->trace("centreon_plugins.pl");
         open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
         print $fh $content;
         close($fh);
