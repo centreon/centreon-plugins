@@ -117,7 +117,7 @@ foreach my $plugin (@plugins) {
         my @dirs = $fatpacker->collect_dirs();
         my %files;
         $fatpacker->collect_files($_, \%files) for @dirs;
-        print "impacted files of plugin $plugin"
+        print "impacted files of plugin $plugin";
         while (my ($k,$v)=each %files){print "$k\n"}
         #use Data::Dumper;
         #print Dumper(\%files);
