@@ -106,8 +106,18 @@ foreach my $plugin (@plugins) {
         #    args => ["centreon_plugins.pl"],
         #);
         #my $content = $fatpacker->packlists_containing(["centreon_plugins.pl"]);
-        my $content = $fatpacker->packlists_to_tree('/tmp/toto', ["centreon_plugins.pl"]);
-        print $content;
+        #my $content = $fatpacker->packlists_to_tree('/tmp/toto', ["centreon_plugins.pl"]);
+        my $file = "centreon_plugins.pl";
+        my $shebang = "";
+        my $script = "";
+        if ( defined $file and -r $file ) {
+            ($shebang, $script) = $fatpacker->load_main_script($file);
+        }
+
+        my @dirs = $fatpacker->collect_dirs();
+        my %files;
+        $fatpacker->collect_files($_, \%files) for @dirs;
+        print \%files;
         #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
         #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
         #print $fh $content;
