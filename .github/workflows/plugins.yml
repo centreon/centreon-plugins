@@ -105,6 +105,7 @@ jobs:
           touch /tmp/fatpacker.trace
           chmod 777 /tmp/fatpacker.trace
           perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          cat /tmp/fatpacker.trace
 
       - uses: actions/cache/save@v3
         with:
