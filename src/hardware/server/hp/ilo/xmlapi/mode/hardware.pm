@@ -41,6 +41,7 @@ sub set_system {
             ['NOT APPLICABLE', 'OK'],
             ['n/a', 'OK'],
             ['Unknown', 'UNKNOWN'],
+            ['Warning', 'WARNING'],
             ['.*', 'CRITICAL']
         ],
         nic => [
