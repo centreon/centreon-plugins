@@ -268,7 +268,7 @@ Now let's do some monitoring thanks to centreon-plugins.
 This part essentially maps the data you want to get from the API with the internal
 counter mode structure.
 
-Remember how we categorized the data in a previous [section](#understand-the-data).
+Remember how we categorized the data in the previous section understand-the-data.
 
 The `$self->{maps_counters_type}` data structure describes these data while the `$self->{maps_counters}->{global}` one defines
 their properties like thresholds and how they will be displayed to the users.
