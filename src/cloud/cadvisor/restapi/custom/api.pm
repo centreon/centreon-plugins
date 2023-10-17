@@ -111,11 +111,13 @@ sub get_port {
 
 sub internal_api_list_nodes {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
@@ -139,7 +141,9 @@ sub internal_api_info {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . '/machine/',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
@@ -157,12 +161,13 @@ sub internal_api_info {
 
 sub internal_api_list_containers {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => ''
     );
+
     my $containers = [];
     my $containers_ids;
     eval {
@@ -209,10 +214,13 @@ sub internal_api_list_containers {
 
 sub internal_api_get_machine_stats {
     my ($self, %options) = @_;
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . '/machine',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $machine_stats;
     my $full_machine_stats;
     eval {
@@ -239,6 +247,7 @@ sub internal_api_get_container_stats {
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path} . '/' . $options{container_id},
         unknown_status => '', critical_status => '', warning_status => ''
     );
+
     my $container_stats;
     my $full_container_stats;
     eval {
@@ -251,8 +260,15 @@ sub internal_api_get_container_stats {
             short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
         );
     } else {
-        $container_stats->[0] = $full_container_stats->{stats}[0];
-        $container_stats->[1] = $full_container_stats->{stats}[scalar(@{$full_container_stats->{stats}}) - 1];
+        my $stats;
+        if (defined($full_container_stats->{stats})) {
+            $stats = $full_container_stats->{stats};
+        } else {
+            my @keys = keys(%$full_container_stats);
+            $stats = $full_container_stats->{ $keys[0] }->{stats};
+        }
+        $container_stats->[0] = $stats->[0];
+        $container_stats->[1] = $stats->[scalar(@$stats) - 1];
     }
     return $container_stats;
 }

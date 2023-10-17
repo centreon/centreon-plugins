@@ -36,12 +36,12 @@ contents:
     file_info:
       mode: 0644
 
-  - src: "files/nrpe3.service.rpm"
+  - src: "files/nrpe3.rpm.service"
     dst: "/lib/systemd/system/centreon-nrpe3.service"
     packager: rpm
     file_info:
       mode: 0644
-  - src: "files/nrpe3.service.deb"
+  - src: "files/nrpe3.deb.service"
     dst: "/lib/systemd/system/centreon-nrpe3.service"
     packager: deb
     file_info:

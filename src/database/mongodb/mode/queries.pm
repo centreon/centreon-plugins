@@ -26,22 +26,28 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return 'Requests ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
                 key_values => [ { name => 'total', per_second => 1 } ],
-                output_template => 'Total : %d',
+                output_template => 'total: %d',
                 perfdatas => [
-                    { template => '%d', unit => '/s', min => 0 },
-                ],
+                    { template => '%d', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     foreach ('insert', 'query', 'update', 'delete', 'getmore', 'command') {
@@ -54,6 +60,7 @@ sub set_counters {
                 ]
             }
         };
+
         push @{$self->{maps_counters}->{global}}, {
             label => $_ . '-count', , nlabel => 'queries.' . $_ . '.count', display_ok => 0, set => {
                 key_values => [ { name => $_, diff => 1 } ],
@@ -64,12 +71,6 @@ sub set_counters {
             }
         };
     }
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return 'Requests ';
 }
 
 sub new {
@@ -85,15 +86,15 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
     my $server_stats = $options{custom}->run_command(
         database => 'admin',
-        command => $options{custom}->ordered_hash(serverStatus => 1),
+        command => $options{custom}->ordered_hash(serverStatus => 1)
     );
-    
-    foreach my $querie (keys %{$server_stats->{opcounters}}) {
-        $self->{global}->{$querie} = $server_stats->{opcounters}->{$querie};
-        $self->{global}->{total} += $server_stats->{opcounters}->{$querie};
+
+    $self->{global} = {};
+    foreach my $query (keys %{$server_stats->{opcounters}}) {
+        $self->{global}->{$query} = $server_stats->{opcounters}->{$query};
+        $self->{global}->{total} += $server_stats->{opcounters}->{$query};
     }
 
     $self->{cache_name} = 'mongodb_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
@@ -110,29 +111,11 @@ Check number of queries executed (absolute and per second).
 
 =over 8
 
-=item B<--warning-queries-*-persecond>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'total', 'insert', 'query', 'update',
-'delete', 'getmore', 'command'
-
-=item B<--critical-queries-*-persecond>
-
-Critical threshold.
-Can be: 'total', 'insert', 'query', 'update',
-'delete', 'getmore', 'command'
-
-=item B<--warning-queries-*-count>
-
-Warning threshold.
-Can be: 'insert', 'query', 'update',
-'delete', 'getmore', 'command'
-
-=item B<--critical-queries-*-count>
-
-Critical threshold.
-Can be: 'insert', 'query', 'update',
-'delete', 'getmore', 'command'
+Thresholds.
+Can be: 'total', 'insert', 'query', 'update', 'delete', 'getmore', 'command',
+'insert-count', 'query-count', 'update-count', 'delete-count', 'getmore-count', 'command-count'.
 
 =back
 

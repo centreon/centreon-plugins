@@ -14,22 +14,6 @@ on:
         type: string
         required: true
     secrets:
-      nexus_username:
-        required: true
-      nexus_password:
-        required: true
-      update_repo_path:
-        description: "The update repo script path"
-        required: true
-      cloudfront_id:
-        description: "The cloudfront ID for repo url"
-        required: true
-      yum_repo_address:
-        description: "The legacy yum repo address"
-        required: true
-      yum_repo_key:
-        description: "The repo key"
-        required: true
       artifactory_token:
         description: "The artifactory token"
         required: true
@@ -44,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v3
         with:
@@ -71,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -93,7 +77,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery-legacy
@@ -102,11 +86,8 @@ jobs:
           major_version: ${{ matrix.major_version }}
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          update_repo_path: ${{ secrets.update_repo_path }}
-          cloudfront_id: ${{ secrets.cloudfront_id }}
-          yum_repo_address: ${{ secrets.yum_repo_address }}
-          yum_repo_key: ${{ secrets.yum_repo_key }}
           stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
     runs-on: [self-hosted, common]
@@ -117,11 +98,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
+          module_name: plugins
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ inputs.stability }}
@@ -138,17 +120,17 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery-legacy
         with:
+          module_name: plugins
           distrib: ${{ matrix.distrib }}
           major_version: ${{ matrix.major_version }}
-          nexus_username: ${{ secrets.nexus_username }}
-          nexus_password: ${{ secrets.nexus_password }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ inputs.stability }}
+          artifactory_token: ${{ secrets.artifactory_token }}
 
   release-tag:
     if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
@@ -156,7 +138,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Push git release tag
         run: |

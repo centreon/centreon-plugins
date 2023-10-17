@@ -30,7 +30,8 @@ runs:
         sudo ./aws/install
       shell: bash
 
-    - run: |
+    - name: Publish on download.centreon.com
+      run: |
         SRC_FILE="${{ inputs.module_name }}-${{ inputs.version }}.tar.gz"
 
         mv "${{ inputs.module_directory }}" "${{ inputs.module_name }}-${{ inputs.version }}"

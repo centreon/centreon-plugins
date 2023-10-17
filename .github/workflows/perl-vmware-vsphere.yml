@@ -15,8 +15,6 @@ on:
       - master
     paths:
       - 'dependencies/perl-vmware-vsphere/**'
-    tags:
-      - perl-vmware-vsphere-*
 
 jobs:
   get-environment:
@@ -73,7 +71,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Import source files
         uses: actions/cache/restore@v3
@@ -107,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -131,11 +129,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
+          module_name: perl-vmware-vsphere
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}

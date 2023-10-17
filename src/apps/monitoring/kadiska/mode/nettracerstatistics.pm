@@ -211,7 +211,7 @@ Warning threshold for path length to reach targets.
 
 Critical threshold for path length to reach targets. 
 
-item B<--warning-packets-loss-prct>
+=item B<--warning-packets-loss-prct>
 
 Warning threshold for packets' loss in percentage. 
 

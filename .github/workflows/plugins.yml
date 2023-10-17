@@ -29,7 +29,7 @@ jobs:
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -140,7 +140,12 @@ jobs:
 
     steps:
       - name: Checkout sources
+        if: ${{ matrix.distrib == 'el7' }}
         uses: actions/checkout@v3
+
+      - name: Checkout sources
+        if: ${{ matrix.distrib != 'el7' }}
+        uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v3
         with:
@@ -230,11 +235,5 @@ jobs:
       release: ${{ needs.get-environment.outputs.release }}
       stability: ${{ needs.get-environment.outputs.stability }}
     secrets:
-      nexus_username: ${{ secrets.NEXUS_USERNAME }}
-      nexus_password: ${{ secrets.NEXUS_PASSWORD }}
-      update_repo_path: ${{ secrets.UPDATE_REPO_PATH }}
-      cloudfront_id: ${{ secrets.CLOUDFRONT_ID }}
-      yum_repo_address: ${{ secrets.YUM_REPO_ADDRESS }}
-      yum_repo_key: ${{ secrets.YUM_REPO_KEY }}
       artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
       token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}

@@ -25,82 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
+sub custom_shard_perfdata {
     my ($self, %options) = @_;
 
-    $self->{maps_counters_type} = [
-        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output',
-          message_multiple => 'All databases statistics are ok' },
-    ];
-
-    $self->{maps_counters}->{databases} = [
-        { label => 'storage-size', nlabel => 'database.size.storage.bytes', set => {
-                key_values => [ { name => 'storageSize' }, { name => 'display' } ],
-                output_template => 'Storage Size: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { value => 'storageSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'data-size', nlabel => 'database.size.data.bytes', set => {
-                key_values => [ { name => 'dataSize' }, { name => 'display' } ],
-                output_template => 'Data Size: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { value => 'dataSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'index-size', nlabel => 'database.size.index.bytes', set => {
-                key_values => [ { name => 'indexSize' }, { name => 'display' } ],
-                output_template => 'Index Size: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { value => 'indexSize', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'collections', nlabel => 'database.collections.count', set => {
-                key_values => [ { name => 'collections' }, { name => 'display' } ],
-                output_template => 'Collections: %s',
-                perfdatas => [
-                    { value => 'collections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'views', nlabel => 'database.views.count', set => {
-                key_values => [ { name => 'views' }, { name => 'display' } ],
-                output_template => 'Views: %s',
-                perfdatas => [
-                    { value => 'views', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'documents', nlabel => 'database.documents.count', set => {
-                key_values => [ { name => 'documents' }, { name => 'display' } ],
-                output_template => 'Documents: %s',
-                perfdatas => [
-                    { value => 'documents', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'indexes', nlabel => 'database.indexes.count', set => {
-                key_values => [ { name => 'indexes' }, { name => 'display' } ],
-                output_template => 'Indexes: %s',
-                perfdatas => [
-                    { value => 'indexes', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        instances => [$self->{result_values}->{dbName}, $self->{result_values}->{shardName}],
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub prefix_database_output {
@@ -109,13 +45,146 @@ sub prefix_database_output {
     return "Database '" . $options{instance_value}->{display} . "' ";
 }
 
+sub prefix_shard_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Database '%s' shard '%s' ",
+        $options{instance_value}->{dbName},
+        $options{instance_value}->{shardName}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output',
+          message_multiple => 'All databases statistics are ok' },
+        { name => 'shards', type => 1, cb_prefix_output => 'prefix_shard_output',
+          message_multiple => 'All shards databases statistics are ok' }, 
+    ];
+
+    $self->{maps_counters}->{databases} = [
+        { label => 'storage-size', nlabel => 'database.size.storage.bytes', set => {
+                key_values => [ { name => 'storageSize' } ],
+                output_template => 'storage size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'data-size', nlabel => 'database.size.data.bytes', set => {
+                key_values => [ { name => 'dataSize' } ],
+                output_template => 'data size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'index-size', nlabel => 'database.size.index.bytes', set => {
+                key_values => [ { name => 'indexSize' } ],
+                output_template => 'index size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'collections', nlabel => 'database.collections.count', set => {
+                key_values => [ { name => 'collections' } ],
+                output_template => 'collections: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'views', nlabel => 'database.views.count', set => {
+                key_values => [ { name => 'views' } ],
+                output_template => 'views: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'documents', nlabel => 'database.documents.count', set => {
+                key_values => [ { name => 'documents' } ],
+                output_template => 'documents: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'indexes', nlabel => 'database.indexes.count', set => {
+                key_values => [ { name => 'indexes' } ],
+                output_template => 'indexes: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{shards} = [
+        { label => 'shard-storage-size', nlabel => 'database.size.storage.bytes', set => {
+                key_values => [ { name => 'storageSize' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'storage size: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-data-size', nlabel => 'database.size.data.bytes', set => {
+                key_values => [ { name => 'dataSize' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'data size: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-index-size', nlabel => 'database.size.index.bytes', set => {
+                key_values => [ { name => 'indexSize' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'index size: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-collections', nlabel => 'database.collections.count', set => {
+                key_values => [ { name => 'collections' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'collections: %s',
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-views', nlabel => 'database.views.count', set => {
+                key_values => [ { name => 'views' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'views: %s',
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-documents', nlabel => 'database.documents.count', set => {
+                key_values => [ { name => 'documents' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'documents: %s',
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        },
+        { label => 'shard-indexes', nlabel => 'database.indexes.count', set => {
+                key_values => [ { name => 'indexes' }, { name => 'dbName' }, { name => 'shardName' } ],
+                output_template => 'indexes: %s',
+                closure_custom_perfdata => $self->can('custom_shard_perfdata')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-database:s' => { name => 'filter_database' }
+        'filter-database:s' => { name => 'filter_database' },
+        'filter-shard:s'    => { name => 'filter_shard' },
+        'add-shards'        => { name => 'add_shards' }
     });
     return $self;
 }
@@ -125,6 +194,7 @@ sub manage_selection {
 
     my $databases = $options{custom}->list_databases();
 
+    $self->{shards} = {};
     $self->{databases} = {};
     foreach my $database (sort @{$databases}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
@@ -132,18 +202,37 @@ sub manage_selection {
 
         my $db_stats = $options{custom}->run_command(
             database => $database,
-            command => $options{custom}->ordered_hash(dbStats => 1),
+            command => $options{custom}->ordered_hash(dbStats => 1)
         );
 
-        $self->{databases}->{$db_stats->{db}} = {
-            display => $db_stats->{db},
+        $self->{databases}->{$database} = {
+            display => $database,
             collections => $db_stats->{collections},
             views => $db_stats->{views},
             documents => $db_stats->{objects},
             storageSize => $db_stats->{storageSize},
             indexSize => $db_stats->{indexSize},
             dataSize => $db_stats->{dataSize},
-            indexes => $db_stats->{indexes},
+            indexes => $db_stats->{indexes}
+        };
+
+        if (defined($self->{option_results}->{add_shards}) && defined($db_stats->{raw})) {
+            foreach my $shard_name (keys %{$db_stats->{raw}}) {
+                next if (defined($self->{option_results}->{filter_shard}) && $self->{option_results}->{filter_shard} ne '' 
+                    && $shard_name !~ /$self->{option_results}->{filter_shard}/);
+
+                $self->{shards}->{$database . $shard_name} = {
+                    dbName => $database,
+                    shardName => $shard_name,
+                    collections => $db_stats->{raw}->{$shard_name}->{collections},
+                    views => $db_stats->{raw}->{$shard_name}->{views},
+                    documents => $db_stats->{raw}->{$shard_name}->{objects},
+                    storageSize => $db_stats->{raw}->{$shard_name}->{storageSize},
+                    indexSize => $db_stats->{raw}->{$shard_name}->{indexSize},
+                    dataSize => $db_stats->{raw}->{$shard_name}->{dataSize},
+                    indexes => $db_stats->{raw}->{$shard_name}->{indexes}
+                };
+            }
         }
     }
 
@@ -165,29 +254,21 @@ Check databases statistics
 
 =item B<--filter-database>
 
-Filter database name (Can use regexp).
+Filter databases by name (Can use regexp).
 
-=item B<--warning-instance-database-size-*-bytes>
+=item B<--filter-shard>
 
-Warning threshold.
-Can be: 'storage', 'data', 'index'.
+Filter shards by name (Can use regexp).
 
-=item B<--critical-instance-database-size-*-bytes>
+=item B<--add-shards>
 
-Critical threshold.
-Can be: 'storage', 'data', 'index'.
+Add database statistics by shards.
 
-=item B<--warning-instance-database-*-count>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'collections', 'views', 'documents',
-'indexes'.
-
-=item B<--critical-instance-database-*-count>
-
-Critical threshold.
-Can be: 'collections', 'views', 'documents',
-'indexes'.
+Thresholds.
+Can be: 'storage-size', 'data-size', 'index-size', 'collections', 'views', 'documents', 'indexes',
+'shard-storage-size', 'shard-data-size', 'shard-index-size', 'shard-collections', 'shard-views', 'shard-documents', 'shard-indexes'.
 
 =back
 

@@ -29,18 +29,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'collection-statistics' => 'database::mongodb::mode::collectionstatistics',
         'connections'           => 'database::mongodb::mode::connections',
         'connection-time'       => 'database::mongodb::mode::connectiontime',
         'database-statistics'   => 'database::mongodb::mode::databasestatistics',
         'list-databases'        => 'database::mongodb::mode::listdatabases',
         'queries'               => 'database::mongodb::mode::queries',
-        'replication-status'    => 'database::mongodb::mode::replicationstatus',
-    );
-                        
-    $self->{custom_modes}{driver} = 'database::mongodb::custom::driver';
+        'replication-status'    => 'database::mongodb::mode::replicationstatus'
+    };
+
+    $self->{custom_modes}->{driver} = 'database::mongodb::custom::driver';
     return $self;
 }
 

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Ees-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ups_ees_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/ups/ees/snmp/"
+    ]
+}

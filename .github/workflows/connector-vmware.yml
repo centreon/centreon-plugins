@@ -17,8 +17,6 @@ on:
     paths:
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
-    tags:
-      - centreon-connector-vmware-*
 
 jobs:
   get-environment:
@@ -53,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Package
         uses: ./.github/actions/package
@@ -82,7 +80,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -106,11 +104,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
+          module_name: connector-vmware
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
