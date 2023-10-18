@@ -13,7 +13,7 @@ If you can't, you can use [this snmpwalk](https://github.com/centreon/centreon-p
 
 **Description**
 
-This example explains how to check a single SNMP value to check system CPUs.
+This example explains how to check a single SNMP oid value to check system CPUs.
 
 ## 1. Understand the data
 
@@ -27,12 +27,13 @@ There are several important properties for a piece of data:
 - Dimensions of the data, is it **global** or linked to an **instance**?
 - Data layout, in other words anticipate the kind of **data structure** to manipulate.
 
-Here we use a very simple example with only one value 
-
-
-A compléter
-
-
+Here we use a very simple example with only one oid value : `hrProcessorLoad` = `.1.3.6.1.2.1.25.3.3.1.2`
+If you use [this snmpwalk](https://github.com/centreon/centreon-plugins/blob/develop/tests/resources/snmp/os_linux_snmp_plugin.snmpwalk) you have this values :
+```
+.1.3.6.1.2.1.25.3.3.1.2.768 = INTEGER: 6
+.1.3.6.1.2.1.25.3.3.1.2.769 = INTEGER: 16
+```
+- the `cpu` node contains integer values (`6`, `16`) referring to specific **instances** (`768`, `769`). The structure is an array of hashes
 
 ## 2. Create directories for a new plugin
 
@@ -222,11 +223,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # app_metrics groups connections and errors and each will receive value for both instances (my-awesome-frontend and my-awesome-db)
-        
-        A compléter
-        
-        # the type => 1 explicits that
+        # cpu will receive value for both instances (768 and 769) : the type => 1 explicits that
         # You can define a callback (cb) function to manage the output prefix. This function is called 
         # each time a value is passed to the counter and can be shared across multiple counters.
         { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok' }
