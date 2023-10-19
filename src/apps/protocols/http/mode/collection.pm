@@ -204,10 +204,17 @@ sub validate_name {
 
     if (!defined($options{name})) {
         $self->{output}->add_option_msg(short_msg => "name attribute is missing $options{section}");
+
+        # Replace "name attribute is missing $options{section}" => "\"name\" attribute is missing in your http collection (path: http.requests)"
+        #                                                    or => "\"name\" attribute is missing in your http collection (path: $options{section}"
+
         $self->{output}->option_exit();
     }
     if ($options{name} !~ /^[a-zA-Z0-9]+$/) {
         $self->{output}->add_option_msg(short_msg => 'incorrect name attribute: ' . $options{name});
+
+        # Explain the path again (see above)
+
         $self->{output}->option_exit();
     }
 }
@@ -219,6 +226,9 @@ sub get_payload {
 
     if ($options{rq}->{payload}->{type} !~ /^(?:file|data|json)$/) {
         $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+
+        # Detail allowed values
+
         $self->{output}->option_exit();
     }
 
@@ -336,6 +346,10 @@ sub call_http {
         $self->{output}->output_add(long_msg => "$@", debug => 1);
         $self->{output}->option_exit();
     }
+
+    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
+    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
 
     return ($http->get_header(), $content, $http);
 }
@@ -915,6 +929,9 @@ sub parse_http_tables {
     }
     if (!$self->exist_table_name(name => $table_label)) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown table '$table_label'");
+
+        # Add error helper to give the list of available keys.
+
         $self->{output}->option_exit();
     }
     if ($options{chars}->[$end] eq ')') {
