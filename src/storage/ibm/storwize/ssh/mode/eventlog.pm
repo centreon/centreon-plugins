@@ -57,10 +57,8 @@ sub check_options {
 
     my $last_timestamp = '';
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} =~ /^\d+$/) {
-        my $epoch = time();
-        $retention_epoch = $epoch - $self->{option_results}->{retention};
         # by default UTC timezone used
-        my $dt = DateTime->from_epoch(epoch => $retention_epoch);
+        my $dt = DateTime->from_epoch(epoch => time() - $self->{option_results}->{retention});
         my $dt_format = sprintf("%d%02d%02d%02d%02d%02d", substr($dt->year(), 2), $dt->month(), $dt->day(), $dt->hour(), $dt->minute(), $dt->second());
         $last_timestamp = 'last_timestamp>=' . $dt_format . ":";
     }
@@ -90,7 +88,7 @@ sub run {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '%s : %s - %s', 
-                scalar(localtime($_->{retention_epoch})),
+                scalar(localtime($_->{last_timestamp})),
                 $_->{event_id}, $_->{description}
             )
         );
