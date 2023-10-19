@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use DateTime;
+use Time::Piece;
 
 sub new {
     my ($class, %options) = @_;
@@ -88,7 +89,7 @@ sub run {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '%s : %s - %s', 
-                scalar(localtime($_->{last_timestamp})),
+                scalar(localtime(Time::Piece->strptime($_->{last_timestamp}, '%y%m%d%H%M%S'))),
                 $_->{event_id}, $_->{description}
             )
         );
