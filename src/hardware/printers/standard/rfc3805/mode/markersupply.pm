@@ -28,6 +28,7 @@ use centreon::plugins::misc;
 
 # 1 means: do percent calc
 my %unit_managed = (
+    1 => 1,  # other(1),
     3 => 1,  # tenThousandthsOfInches(3), -- .0001
     4 => 1,  # micrometers(4),
     7 => 1,  # impressions(7),
@@ -171,7 +172,7 @@ __END__
 
 =head1 MODE
 
-Check marker supply usages.
+Check marker supplies usage.
 
 =over 8
 
@@ -185,7 +186,7 @@ Critical threshold in percent.
 
 =item B<--filter>
 
-Filter maker supply instance.
+Filter marker supply instances.
 
 =back
 
