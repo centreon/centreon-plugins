@@ -204,13 +204,10 @@ sub validate_name {
 
     if (!defined($options{name})) {
         $self->{output}->add_option_msg(short_msg => "name attribute is missing in your http collection (path: $options{section})");
-        # Replace path: $options{section} => path: http.requests
-
         $self->{output}->option_exit();
     }
     if ($options{name} !~ /^[a-zA-Z0-9]+$/) {
         $self->{output}->add_option_msg(short_msg => "name attribute in your http collection (path: $options{section}) is incorrect: " . $options{name});
-
         $self->{output}->option_exit();
     }
 }
@@ -491,7 +488,6 @@ sub parse_structure {
         }
 
         $self->{http_collected}->{tables}->{$name}->{$instance} = $entry;
-
         $local->{$name}->{$instance} = $entry;
         $i++;
     }
@@ -917,7 +913,6 @@ sub parse_http_tables {
         allowed => '[a-zA-Z0-9_]',
         stop => '[).]'
     );
-
     if ($code) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
         $self->{output}->option_exit();
