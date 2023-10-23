@@ -41,6 +41,7 @@ sub set_system {
             ['NOT APPLICABLE', 'OK'],
             ['n/a', 'OK'],
             ['Unknown', 'UNKNOWN'],
+            ['Warning', 'WARNING'],
             ['.*', 'CRITICAL']
         ],
         nic => [
@@ -86,19 +87,19 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Define a regular expression to select which components to check (default: '.*').
 Can be: 'fan', 'temperature', 'vrm', 'psu', 'cpu', 'memory', 'nic', 'battery', 'ctrl',
 'driveencl', 'pdrive', 'ldrive', 'bios'.
 
 =item B<--filter>
 
-Exclude the items given as a comma-separated list (example: --filter=temperature --filter=fan).
+Exclude the given items (example: --filter=temperature --filter=fan).
 You can also exclude items from specific instances: --filter="fan,Fan Block 1"
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping)
-Can be specific or global: --absent-problem="fan,Fan Block 1"
+Return an error if an entity is not 'present' (default is skipping).
+Can be specific or global (example: --absent-problem="fan,Fan Block 1").
 
 =item B<--no-component>
 
@@ -111,12 +112,12 @@ Example: --threshold-overload='fan,OK,degraded'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Define the warning threshold for 'temperature', 'fan'. Syntax: type,regexp,threshold.
 Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Define the critical threshold for 'temperature', 'fan'. Syntax: type,regexp,threshold.
 Example: --critical='temperature,.*,50'
 
 =back
