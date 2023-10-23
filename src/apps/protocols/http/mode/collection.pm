@@ -203,10 +203,8 @@ sub validate_name {
     my ($self, %options) = @_;
 
     if (!defined($options{name})) {
-        $self->{output}->add_option_msg(short_msg => "name attribute is missing $options{section}");
-
-        # Replace "name attribute is missing $options{section}" => "\"name\" attribute is missing in your http collection (path: http.requests)"
-        #                                                    or => "\"name\" attribute is missing in your http collection (path: $options{section}"
+        $self->{output}->add_option_msg(short_msg => "\\name\\ attribute is missing in your http collection (path: $options{section})");
+        # Replace path: $options{section} => path: http.requests
 
         $self->{output}->option_exit();
     }
