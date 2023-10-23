@@ -209,9 +209,7 @@ sub validate_name {
         $self->{output}->option_exit();
     }
     if ($options{name} !~ /^[a-zA-Z0-9]+$/) {
-        $self->{output}->add_option_msg(short_msg => 'incorrect name attribute: ' . $options{name});
-
-        # Explain the path again (see above)
+        $self->{output}->add_option_msg(short_msg => "\\name\\ attribute in your http collection (path: $options{section}) is incorrect: " . $options{name});
 
         $self->{output}->option_exit();
     }
