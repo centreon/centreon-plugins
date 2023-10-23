@@ -203,13 +203,13 @@ sub validate_name {
     my ($self, %options) = @_;
 
     if (!defined($options{name})) {
-        $self->{output}->add_option_msg(short_msg => "\\name\\ attribute is missing in your http collection (path: $options{section})");
+        $self->{output}->add_option_msg(short_msg => "name attribute is missing in your http collection (path: $options{section})");
         # Replace path: $options{section} => path: http.requests
 
         $self->{output}->option_exit();
     }
     if ($options{name} !~ /^[a-zA-Z0-9]+$/) {
-        $self->{output}->add_option_msg(short_msg => "\\name\\ attribute in your http collection (path: $options{section}) is incorrect: " . $options{name});
+        $self->{output}->add_option_msg(short_msg => "name attribute in your http collection (path: $options{section}) is incorrect: " . $options{name});
 
         $self->{output}->option_exit();
     }
