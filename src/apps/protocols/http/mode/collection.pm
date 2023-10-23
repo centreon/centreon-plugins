@@ -491,6 +491,7 @@ sub parse_structure {
         }
 
         $self->{http_collected}->{tables}->{$name}->{$instance} = $entry;
+
         $local->{$name}->{$instance} = $entry;
         $i++;
     }
@@ -916,15 +917,14 @@ sub parse_http_tables {
         allowed => '[a-zA-Z0-9_]',
         stop => '[).]'
     );
+
     if ($code) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
         $self->{output}->option_exit();
     }
     if (!$self->exist_table_name(name => $table_label)) {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown table '$table_label'");
-
-        # Add error helper to give the list of available keys.
-
+        my @names = keys %{$self->{http_collected}->{tables}};
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown table '$table_label'. Availible tables are : @names");
         $self->{output}->option_exit();
     }
     if ($options{chars}->[$end] eq ')') {
