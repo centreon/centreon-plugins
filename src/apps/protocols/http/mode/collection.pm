@@ -221,10 +221,7 @@ sub get_payload {
     return if (!defined($options{rq}->{payload}) || !defined($options{rq}->{payload}->{type}));
 
     if ($options{rq}->{payload}->{type} !~ /^(?:file|data|json)$/) {
-        $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload]");
-
-        # Detail allowed values
-
+        $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload] (allowed types: file / data / json)");
         $self->{output}->option_exit();
     }
 
@@ -236,7 +233,7 @@ sub get_payload {
     my $content;
     if ($options{rq}->{payload}->{type} eq 'file') {
         if (ref($options{rq}->{payload}->{value}) ne '' || $options{rq}->{payload}->{value} eq '') {
-            $self->{output}->add_option_msg(short_msg => "value attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->add_option_msg(short_msg => "value attribute is wrong for file type [http > requests > $options{rq}->{name} > payload]");
             $self->{output}->option_exit();
         }
 
@@ -249,7 +246,7 @@ sub get_payload {
         };
         if ($@) {
             $self->{output}->output_add(long_msg => "json payload error: $@", debug => 1);
-            $self->{output}->add_option_msg(short_msg => "cannot encode json payload [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->add_option_msg(short_msg => "cannot encode json type payload [http > requests > $options{rq}->{name} > payload]");
             $self->{output}->option_exit();
         }
     }
