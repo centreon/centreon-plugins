@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'brokers'      => 'apps::mq::activemq::jmx::mode::brokers',
         'list-brokers' => 'apps::mq::activemq::jmx::mode::listbrokers'
+        'list-queues'  => 'apps::mq::activemq::jmx::mode::listqueues'
     );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
