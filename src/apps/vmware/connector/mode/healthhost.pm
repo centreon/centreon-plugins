@@ -257,9 +257,8 @@ sub manage_selection {
                     $status = lc($1) if ($entry->{status} =~ /(yellow|red)/i);
                     $self->{host}->{$host_name}->{global_problems}->{$status}++;
                     $self->{host}->{$host_name}->{global_problems}->{total}++;
-                    if ($status eq 'ok') {
-                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++ 
-                    } else {
+                    if ($status ne 'ok') {
+                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++;
                         $self->{host}->{$host_name}->{global_summary}->{$i} = {
                             type => defined($entry->{type}) ? $entry->{type} : '',
                             name => $entry->{name},
