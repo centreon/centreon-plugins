@@ -459,11 +459,23 @@ sub parse_structure {
 
             my $ref = ref($value);
             if ($ref eq 'HASH') {
+
                 if (!defined($value->{ $_->{id} })) {
-                    $entry->{ $_->{id} } = '';
-                    next;
+                    # Check and assume in case of hash reference first part is the hash ref and second the hash key
+                    if($_->{id} =~ /^(.+?)\.(.*)$/){
+                        if (!defined($value->{$1}->{$2})) {
+                            $entry->{ $_->{id} } = '';
+                            next;
+                        }else{
+                            $entry->{ $_->{id} } = $value->{$1}->{$2};
+                        }
+                    }else {
+                        $entry->{ $_->{id} } = '';
+                        next;
+                    }
+                }else {
+                    $entry->{ $_->{id} } = $value->{ $_->{id} };
                 }
-                $entry->{ $_->{id} } = $value->{ $_->{id} };
             } elsif (ref($value) eq 'ARRAY') {
                 next;
             } elsif ($ref eq '' || $ref eq 'JSON::PP::Boolean') {
