@@ -780,7 +780,14 @@ sub exist_table_name {
 sub get_local_variable {
     my ($self, %options) = @_;
 
-    return $self->{expand}->{ $options{name} };
+    if (defined( $self->{expand}->{ $options{name} })) {
+        return $self->{expand}->{ $options{name} };
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", keys(%{$self->{expand}})) . "')", debug => 1);
+        return undef;
+    }
+
+
 }
 
 sub set_local_variable {
@@ -792,19 +799,24 @@ sub set_local_variable {
 sub get_table {
     my ($self, %options) = @_;
 
-    return undef if (
-        !defined($self->{http_collected}->{tables}->{ $options{table} })
-    );
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        return undef;
+    }
     return $self->{http_collected}->{tables}->{ $options{table} };
 }
 
 sub get_table_instance {
     my ($self, %options) = @_;
 
-    return undef if (
-        !defined($self->{http_collected}->{tables}->{ $options{table} }) ||
-        !defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })
-    );
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        return undef;
+    }
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
+        return undef;
+    }
     return $self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} };
 }
 
