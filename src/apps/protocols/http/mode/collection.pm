@@ -1700,7 +1700,6 @@ sub check_filter {
     $options{filter} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
-        print "TOTO - \$@".Dumper($@);
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
         $self->{output}->option_exit();
     }
@@ -1727,16 +1726,7 @@ sub check_filter2 {
 
 sub check_filter_option {
     my ($self, %options) = @_;
-
-    print "\nENTREE DANS check_filter_option\n";
-
     foreach (keys %{$self->{option_results}->{filter_selection}}) {
-        use Data::Dumper;
-        print "2 - $_".Dumper($_);
-        print "2 - \$self->{expand}->{$_}".Dumper($self->{expand}->{$_});
-        print "2 - \$self->{option_results}->{filter_selection}->{$_}".Dumper($self->{option_results}->{filter_selection}->{$_});
-        print "2 - \grep {/^src\./} keys(%{\$self->{expand}})".Dumper(grep {/^src\./} keys(%{$self->{expand}}));
-        print "\n2 --- FIN --- \n";
 
         if(!defined($self->{expand}->{$_}) && grep {/^src\./} keys(%{$self->{expand}}) ne '') {
             $self->{output}->add_option_msg(long_msg => "Wrong filter-selection - Available attributes for filtering: " . join(", ", grep {/^src\./} keys(%{$self->{expand}})), debug => 1);
@@ -1812,10 +1802,6 @@ sub add_selection {
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
         next if ($self->check_filter(filter => $_->{filter}, values => $self->{expand}));
-
-        use Data::Dumper;
-        print "\n0 - \$self->check_filter_option()".Dumper($self->check_filter_option())."\nNEXT IF du résultat check_filter_option\n";
-
         next if ($self->check_filter_option());
         $config->{unknown} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
         $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
@@ -1868,10 +1854,6 @@ sub add_selection_loop {
             $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
             $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
             next if ($self->check_filter(filter => $_->{filter}, values => $self->{expand}));
-
-            use Data::Dumper;
-            print "\nICI ? - \$self->check_filter_option()".Dumper($self->check_filter_option())."\nNEXT IF du résultat check_filter_option\n";
-
             next if ($self->check_filter_option());
             $config->{unknown} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
             $config->{warning} = $self->prepare_variables(section => "selection_loop > $i > warning", value => $_->{warning});
