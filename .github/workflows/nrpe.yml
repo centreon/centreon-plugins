@@ -130,7 +130,7 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-deb:
-    needs: [get-environment ,package]
+    needs: [get-environment, package]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
