@@ -8,9 +8,7 @@ on:
   pull_request:
     branches:
       - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
       - master
-      - "[2-9][0-9].[0-9][0-9].x"
       - hotfix-*
       - release-*
     paths:
