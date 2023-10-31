@@ -1,0 +1,68 @@
+name: actionlint
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+      - hotfix-*
+      - release-*
+    paths:
+      - ".github/**"
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+
+      - name: Check workflow files
+        run: |
+          ${{ steps.get_actionlint.outputs.executable }} \
+          -ignore 'label "common" is unknown' \
+          -ignore 'label "veracode" is unknown' \
+          -ignore '"github.head_ref" is potentially untrusted' \
+          -shellcheck= \
+          -pyflakes= \
+          -color
+        shell: bash
+  yaml-lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install Yaml
+        run: |
+          pip install yamllint==1.32.0
+
+      - name: Add Yaml Lint Rules
+        run: |
+          cat <<EOF >>./yamllint_rules.yml
+          extends: default
+
+          rules:
+            document-start: disable
+            line-length: disable
+            truthy:
+              check-keys: false
+              level: error
+            indentation:
+              spaces: 2
+              indent-sequences: true
+              check-multi-line-strings: false
+          EOF
+
+      - name: Lint YAML files
+        run: |
+          yamllint -c ./yamllint_rules.yml ./.github/actions/ ./.github/workflows/
