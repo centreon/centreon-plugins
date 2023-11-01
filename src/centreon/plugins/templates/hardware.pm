@@ -357,6 +357,9 @@ sub check_filter {
     if (defined($self->{option_results}->{exclude})) {
         if (defined($options{instance})) {
             if ($self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+                if (!defined($self->{components}->{$options{section}}->{skip})) {
+                    $self->{components}->{$options{section}}->{skip} = 0;
+                }
                 $self->{components}->{$options{section}}->{skip}++;
                 $self->{output}->output_add(long_msg => sprintf("skipping $options{section} section $options{instance} instance."));
                 return 1;
