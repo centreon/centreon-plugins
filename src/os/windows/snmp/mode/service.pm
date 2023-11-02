@@ -198,10 +198,13 @@ sub manage_selection {
 
     $self->{services} = {};
 
+    my $operating_state_oid_is_present=0;
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %$snmp_result)) {
-        next if ($oid !~ /^$mapping->{operating_state}->{oid}\.(\d+)\.(.*)$/);
-        my $instance = $1 . '.' . $2;
 
+        next if ($oid !~ /^$mapping->{operating_state}->{oid}\.(\d+)\.(.*)$/);
+        $operating_state_oid_is_present=1;
+
+        my $instance = $1 . '.' . $2;
         my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $2))));
         
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -213,6 +216,18 @@ sub manage_selection {
             instance => $instance
         );
 
+        use Data::Dumper;
+        print Dumper($mapping->{operating_state}->{oid});
+        print Dumper($result);
+
+        #1 => 'active',
+        #2 => 'continue-pending',
+        #3 => 'pause-pending',
+        #4 => 'paused'
+        $result->{operating_state} = 'paused';
+        use Data::Dumper;
+        print Dumper($result);
+
         $self->{services}->{$instance} = {
             name => $name,
             operating_state => $result->{operating_state},
@@ -223,8 +238,16 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{services}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No service found.");
-        $self->{output}->option_exit();
+        if ($operating_state_oid_is_present==0) {
+            $self->{output}->add_option_msg(short_msg => "No service found. Mapping oid is missing : ".$mapping->{operating_state}->{oid});
+            $self->{output}->option_exit();
+        }elsif (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''){
+            $self->{output}->add_option_msg(short_msg => "No service found with option --filter-name: ".$self->{option_results}->{filter_name});
+            $self->{output}->option_exit();
+        }else{
+            $self->{output}->add_option_msg(short_msg => "No service found.");
+            $self->{output}->option_exit();
+        }
     }
 }
 
