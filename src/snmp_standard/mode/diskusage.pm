@@ -123,6 +123,7 @@ sub new {
         'diskpath:s'              => { name => 'diskpath' }, # legacy
         'regexp'                  => { name => 'use_regexp' }, # legacy
         'regexp-isensitive'       => { name => 'use_regexpi' }, # legacy
+        'regexp-insensitive'      => { name => 'use_regexpi' }, # legacy
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },

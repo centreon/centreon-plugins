@@ -145,10 +145,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name'              => { name => 'use_name' },
-        'device:s'          => { name => 'device' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }                               
+        'name'               => { name => 'use_name' },
+        'device:s'           => { name => 'device' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
     });
 
     return $self;
@@ -333,7 +334,7 @@ Allows to use device name with option --device instead of devoce oid index.
 
 Allows to use regexp to filter devices (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 

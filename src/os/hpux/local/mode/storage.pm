@@ -134,7 +134,8 @@ sub new {
         'free'                => { name => 'free' },
         'name:s'              => { name => 'name' },
         'regexp'              => { name => 'use_regexp' },
-        'regexp-isensitive'   => { name => 'use_regexpi' },
+        'regexp-isensitive'   => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'  => { name => 'use_regexpi' },
         'space-reservation:s' => { name => 'space_reservation' }
     });
 
@@ -224,7 +225,7 @@ Set the storage mount point (empty means 'check all storages')
 
 Allows to use regexp to filter storage mount point (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 

@@ -71,11 +71,11 @@ sub check_options {
 
     foreach my $status (split(',', $self->{option_results}->{status_sequence})) {
         if (!defined($self->{option_results}->{host}) && $status !~ /^[0-3]$/ && $status !~ /ok|warning|critical|unknown/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case insensitive).");
             $self->{output}->option_exit();
         }
         if (defined($self->{option_results}->{host}) && $status !~ /^[0-1]$/ && $status !~ /up|down/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case insensitive).");
             $self->{output}->option_exit();
         }
         push @{$self->{status_sequence}}, $status;

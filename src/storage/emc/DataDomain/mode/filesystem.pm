@@ -91,10 +91,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name'              => { name => 'use_name' },
-        'filesystem:s'      => { name => 'filesystem' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }
+        'name'               => { name => 'use_name' },
+        'filesystem:s'       => { name => 'filesystem' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
     });
 
     return $self;
@@ -229,7 +230,7 @@ Allows to use filesystem name with option --filesystem instead of devoce oid ind
 
 Allows to use regexp to filter filesystems (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive to filter filesystems (with option --name).
 
