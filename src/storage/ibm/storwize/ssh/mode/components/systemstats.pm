@@ -66,7 +66,6 @@ sub check {
             );
         }
         $self->{output}->perfdata_add(
-            label => "sstat",
             nlabel => 'hardware.systemstats.current.count',
             instances => $_->{stat_name},
             value => $_->{stat_current},
