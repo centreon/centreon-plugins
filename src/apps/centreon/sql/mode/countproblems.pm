@@ -28,13 +28,13 @@ use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
         'warning:s'                   => { name => 'warning' },
         'critical:s'                  => { name => 'critical' },
-        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -68,10 +68,10 @@ sub execute {
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (!defined($total_problems_by_poller->{$row->{name}})) {
             $total_problems_by_poller->{$row->{name}} = {
-                '0_1' => { label_perf => 'host_down', label => 'host down', num => 0 },
-                '1_1' => { label_perf => 'service_warning', label => 'service warning', num => 0 },
-                '1_2' => { label_perf => 'service_critical', label => 'service critical', num => 0 },
-                '1_3' => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }
+                '0_1' => { label_perf => 'hosts.down.count', label => 'host down', num => 0 },
+                '1_1' => { label_perf => 'services.warning.count', label => 'service warning', num => 0 },
+                '1_2' => { label_perf => 'services.critical.count', label => 'service critical', num => 0 },
+                '1_3' => { label_perf => 'services.unknown.count', label => 'service unknown', num => 0 }
             };
         }
 
@@ -98,8 +98,10 @@ sub execute {
                     $poller
                 )
             );
+
             $self->{output}->perfdata_add(
-                label => $total_problems_by_poller->{$poller}->{$id}->{label_perf} . "_" . $poller,
+                label => $total_problems_by_poller->{$poller}->{$id}->{label_perf},
+                instances => $poller,
                 value => $total_problems_by_poller->{$poller}->{$id}->{num},
                 min => 0
             );
@@ -107,21 +109,25 @@ sub execute {
     }
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $total_problems->{total}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%d total problems", $total_problems->{total}));
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf("%d total problems", $total_problems->{total})
+    );
+
     $self->{output}->perfdata_add(
-        label => 'total',
+        nlabel => 'total.outage.count',
         value => $total_problems->{total},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
         min => 0
     );
     $self->{output}->perfdata_add(
-        label => 'total_hosts',
+        nlabel => 'hosts.outage.count',
         value => $total_problems->{hosts},
-        min => 0);
+        min => 0
+    );
     $self->{output}->perfdata_add(
-        label => 'total_services',
+        nlabel => 'services.outage.count',
         value => $total_problems->{services},
         min => 0
     );
@@ -137,8 +143,10 @@ sub run {
     $self->{statefile_cache}->write(data => $new_datas);
     
     if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");   
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Buffer creation..."
+        );
     } else {
         $self->execute(time => $old_timestamp);
     }
