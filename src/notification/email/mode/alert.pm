@@ -129,13 +129,12 @@ sub new {
         'service-attempts:s'     => { name => 'service_attempts'},
         'max-service-attempts:s' => { name => 'max_service_attempts'},
         'service-duration:s'     => { name => 'service_duration' },
+        'centreon-url:s'         => { name => 'centreon_url' },
         'centreon-user:s'        => { name => 'centreon_user' },
-        'centreon-token:s'       => { name => 'centreon_tooken' },
+        'centreon-token:s'       => { name => 'centreon_token' },
         'date:s'                 => { name => 'date' },
         'notif-author:s'         => { name => 'notif_author'},
         'notif-comment:s'        => { name => 'notif_comment' },
-        'centreon-url:s'         => { name => 'centreon_url' },
-        'centreon-token:s'       => { name => 'centreon_token' },
         'type:s'                 => { name => 'type' },
         'timeout:s'              => { name => 'timeout', default => 10 }
     });
@@ -568,23 +567,26 @@ sub service_message {
         }
     }
 
-    my $content = $self->{http}->request(
-        hostname => '',
-        full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
-        timeout => $self->{option_results}->{timeout},
-        unknown_status => '',
-        warning_status => '',
-        critical_status => ''
-    );
-    
-    my $img;
-    if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
-        $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
-    } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
-        $img = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Cannot retrieve graph: ' . $content . '</h2>';
-    } else {
-        $self->{payload_attachment}->{png} = $content;
-        $img = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
+    my $graph_html;
+    if ($self->{option_results}->{centreon_user} && $self->{option_results}->{centreon_user} ne '' 
+        && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
+        my $content = $self->{http}->request(
+            hostname => '',
+            full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
+            timeout => $self->{option_results}->{timeout},
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        );
+        
+        if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
+            $graph_html = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
+        } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
+            $graph_html = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Cannot retrieve graph: ' . $content . '</h2>';
+        } else {
+            $self->{payload_attachment}->{graph_png} = $content;
+            $graph_html = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
+        }
     }
 
     my $details = {
@@ -835,36 +837,42 @@ sub service_message {
 
     if (defined($author_html) && $author_html ne '') {
         $self->{payload_attachment}->{html_message} .= '
-                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                        <tbody>
-                            <tr>
-                                <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                    $author_html. '
-                                </td>
-                            </tr>
-                        </tbody>';
+                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
+                    <tbody>
+                        <tr>
+                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
+                                $author_html. '
+                            </td>
+                        </tr>
+                    </tbody>';
     }
+
     if (defined($comment_html) && $comment_html ne '') {
         $self->{payload_attachment}->{html_message} .= '
-                        <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                        <tbody>
-                            <tr>
-                                <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                    $comment_html. '
-                                </td>
-                            </tr>
-                        </tbody>';
-                    }
-                    $self->{payload_attachment}->{html_message} .= '
+                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
+                    <tbody>
+                        <tr>
+                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
+                                $comment_html. '
+                            </td>
+                        </tr>
+                    </tbody>';
+    }
+
+    if (defined($graph_html) && $graph_html ne '') {
+        $self->{payload_attachment}->{html_message} .= '
                     <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td></tr></tbody>
                     <tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                            <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Service Graph:</h4>
-                            '. $img . '
-                        </td>
-                    </tr>
-                    </tbody>
+                        <tr>
+                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
+                                <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Service Graph:</h4>
+                                '. $graph_html . '
+                            </td>
+                        </tr>
+                    </tbody>';
+    }
+                    
+    $self->{payload_attachment}->{html_message} .= '
                     <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
                     </tr></tbody>
                 <tbody><tr><td style="font-size:16px;vertical-align:top;">&nbsp;</td>
@@ -950,8 +958,8 @@ sub run {
 
     my $email;
 
-    if (defined($self->{payload_attachment}->{png}) && $self->{payload_attachment}->{png} ne '') {
-        my $img_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
+    if (defined($self->{payload_attachment}->{graph_png}) && $self->{payload_attachment}->{graph_png} ne '') {
+        my $graph_png_cid = $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description};
         
         $email = Email::MIME->create(
             header_str => [
@@ -969,7 +977,7 @@ sub run {
                 ),
                 Email::MIME->create(
                     header_str => [
-                        'Content-ID' => "<$img_cid>"
+                        'Content-ID' => "<$graph_png_cid>"
                     ],
                     attributes => {
                         content_type => 'image/png',
@@ -977,7 +985,7 @@ sub run {
                         encoding     => 'base64',
                         name         => $self->{option_results}->{host_name} . ' - ' . $self->{option_results}->{service_description} . '.png'
                     },
-                    body => $self->{payload_attachment}->{png}
+                    body => $self->{payload_attachment}->{graph_png}
                 )
             ]
         );
@@ -1139,11 +1147,12 @@ Duration of the service status.
 
 =item B<--centreon-user>
 
-Username for the Centreon web interface.
+Username for the Centreon web interface to retrieve
+service's graph (leave empty to not retrieve and display graph).
 
 =item B<--centreon-token>
 
-Token for the Centreon web interface (autologin).
+Autologin token for the Centreon web interface (if --centreon-user is defined).
 
 =item B<--date>
 
