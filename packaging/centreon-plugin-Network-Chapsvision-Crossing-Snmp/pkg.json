@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Chapsvision-Crossing-Snmp",
+    "pkg_summary": "Centreon Plugin ChapsVision CrossinG SNMP",
+    "plugin_name": "centreon_chapsvision_crossing_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/interfaces.pm",
+        "network/chapsvision/crossing/snmp/"
+    ]
+}
