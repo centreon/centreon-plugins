@@ -2,6 +2,7 @@
     "dependencies": [
         "perl(Email::MIME)",
         "perl(Email::Simple)",
-        "perl(Email::Sender)"
+        "perl(Email::Sender)",
+	"perl(HTML::Template)"
     ]
 }

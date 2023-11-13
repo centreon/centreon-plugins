@@ -1,6 +1,7 @@
 {
     "dependencies": [
         "libemail-sender-perl",
-        "libemail-mime-perl"
+        "libemail-mime-perl",
+	"libhtml-template-perl"
     ]
 }
