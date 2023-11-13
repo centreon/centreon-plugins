@@ -56,6 +56,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
+        { label => 'total', nlabel => 'services.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %d',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        },
         { label => 'active', nlabel => 'services.active.count', display_ok => 0, set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'active: %d',
@@ -123,10 +131,10 @@ sub check_options {
     
     # Compatibility for deprecated options
     if (defined($options{option_results}->{warning}) && $options{option_results}->{warning} ne '') {
-        $options{option_results}->{'warning-service-active-count'} = $options{option_results}->{warning};
+        $options{option_results}->{'warning-services-active-count'} = $options{option_results}->{warning};
     }
     if (defined($options{option_results}->{critical}) && $options{option_results}->{critical} ne '') {
-        $options{option_results}->{'critical-service-active-count'} = $options{option_results}->{critical};
+        $options{option_results}->{'critical-services-active-count'} = $options{option_results}->{critical};
     }
 
     my $delimiter = '';
@@ -190,10 +198,11 @@ sub manage_selection {
     );
 
     $self->{global} = {
-        'active' => 0,
+        total => 0,
+        active => 0,
         'continue-pending' => 0,
         'pause-pending' => 0,
-        'paused' => 0
+        paused => 0
     };
 
     $self->{services} = {};
@@ -218,13 +227,9 @@ sub manage_selection {
             operating_state => $result->{operating_state},
             installed_state => $result->{installed_state}
         };
-        
-        $self->{global}->{ $result->{operating_state} }++;
-    }
 
-    if (scalar(keys %{$self->{services}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No service found.");
-        $self->{output}->option_exit();
+        $self->{global}->{total}++;
+        $self->{global}->{ $result->{operating_state} }++;
     }
 }
 
@@ -250,7 +255,7 @@ You can use the following variables: %{operating_state}, %{installed_state}.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds on services count.
-Can be: 'active', 'continue-pending',
+Can be: 'total', 'active', 'continue-pending',
 'pause-pending', 'paused'.
 
 =item B<--warning>
