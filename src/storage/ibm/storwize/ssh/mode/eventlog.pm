@@ -28,7 +28,7 @@ use DateTime;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -101,8 +101,9 @@ sub run {
         severity => $exit,
         short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
     );
+
     $self->{output}->perfdata_add(
-        label => 'problems',
+        nlabel => 'eventlogs.problems.count',
         value => $num_errors,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

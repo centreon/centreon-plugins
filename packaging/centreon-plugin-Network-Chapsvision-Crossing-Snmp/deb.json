@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libsnmp-perl",
+        "libdatetime-format-strptime-perl"
+    ]
+}

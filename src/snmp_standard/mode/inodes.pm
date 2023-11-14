@@ -61,7 +61,8 @@ sub new {
         'name'                    => { name => 'use_name' },
         'diskpath:s'              => { name => 'diskpath' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_regexpi' },
         'filter-device:s'         => { name => 'filter_device' },
         'filter-path:s'           => { name => 'filter_path' },
         'display-transform-src:s' => { name => 'display_transform_src' },
@@ -200,7 +201,7 @@ Allows to use disk path name with option --diskpath instead of disk path oid ind
 
 Allows to use regexp to filter diskpath (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
