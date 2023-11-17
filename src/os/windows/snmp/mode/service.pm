@@ -212,6 +212,7 @@ sub manage_selection {
         my $instance = $1 . '.' . $2;
 
         my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $2))));
+        $self->{option_results}->{filter_name} = $self->{output}->decode($self->{option_results}->{filter_name});
         
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/);
