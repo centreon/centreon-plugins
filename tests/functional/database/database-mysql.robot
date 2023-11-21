@@ -2,7 +2,7 @@
 Documentation       Database Mysql plugin
 
 Library             OperatingSystem
-Library             Process
+Library             DBI
 
 Test Timeout        120s
 
