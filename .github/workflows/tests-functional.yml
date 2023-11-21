@@ -49,7 +49,7 @@ jobs:
             URI::Encode
             XML::LibXML
             DBI
-            DBD
+            DBD::mysql
             POSIX
             Time::HiRes
             JSON::XS
