@@ -2,11 +2,7 @@
 Documentation       Database Mysql plugin
 
 Library             OperatingSystem
-Library             DBI
-Library             DBD::mysql
-Library             Time::HiRes
-Library             POSIX
-Library             JSON::XS
+Library             Process
 
 Test Timeout        120s
 
