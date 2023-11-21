@@ -52,6 +52,7 @@ jobs:
             DBD
             POSIX
             Time::HiRes
+            JSON::XS
 
       - name: Install Python
         uses: actions/setup-python@v4
