@@ -44,39 +44,29 @@ return q{
                                                     <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top;width:120px;" ><![endif]-->
                                                     <div class="mj-column-per-20 outlook-group-fix"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:20%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td
-                                                                        style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0"
-                                                                            cellspacing="0" role="presentation"
-                                                                            width="100%"></table>
+                                                                    <td style="vertical-align:top;padding:0px 0px 0px 0px;">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                                                        </table>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                    </div>
-                                                    <!--[if mso | IE]></td><td style="vertical-align:top;width:360px;" ><![endif]-->
+                                                    </div><!--[if mso | IE]></td><td style="vertical-align:top;width:360px;" ><![endif]-->
                                                     <div class="mj-column-per-60 outlook-group-fix font-header"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:60%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td
-                                                                        style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0"
-                                                                            cellspacing="0" role="presentation"
-                                                                            width="100%">
+                                                                    <td style="vertical-align:top;padding:0px 0px 0px 0px;">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
-                                                                                <td align="center"
-                                                                                    style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                                <td align="center" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                     <div
                                                                                         style="font-family:CoconPro-BoldCond, Red Hat Display, Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:center;color:#000000;">
-                                                                                        <TMPL_VAR NAME="type">
-                                                                                    </div>
+                                                                                        <TMPL_VAR NAME="type"></div>
                                                                                 </td>
                                                                             </tr>
                                                                         </table>
@@ -84,19 +74,14 @@ return q{
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                    </div>
-                                                    <!--[if mso | IE]></td><td style="vertical-align:top;width:120px;" ><![endif]-->
-                                                    <div class="mj-column-per-20 outlook-group-fix font-header"
+                                                    </div><!--[if mso | IE]></td><td style="vertical-align:top;width:120px;" ><![endif]-->
+                                                    <div class="mj-column-per-20 outlook-group-fix"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:20%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td
-                                                                        style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0"
-                                                                            cellspacing="0" role="presentation"
-                                                                            width="100%">
+                                                                    <td style="vertical-align:top;padding:0px 0px 0px 0px;">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
                                                                                 <td align="right"
                                                                                     style="font-size:0px;padding:0px 5px;word-break:break-word;">
@@ -129,28 +114,23 @@ return q{
                                                 <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
                                                 <div class="mj-column-per-100 outlook-group-fix"
                                                     style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        role="presentation" width="100%">
+                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tbody>
                                                             <tr>
                                                                 <td style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                                        role="presentation" width="100%">
+                                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                         <tr>
-                                                                            <td align="left"
-                                                                                style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                            <td align="left" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                 <div
                                                                                     style="font-family:CoconPro-BoldCond, Red Hat Display , Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:left;color:#000000;">
                                                                                     <p>Host:</p>
                                                                                     <p class="dynamic">
                                                                                         <TMPL_VAR NAME="hostName">
-                                                                                            <span
-                                                                                                style="font-weight: normal">is</span>
+                                                                                            <span style="font-weight: normal">is</span>
                                                                                             <span class="status">
                                                                                                 <TMPL_VAR NAME="status">
                                                                                             </span>
-                                                                                            <span
-                                                                                                style="font-weight: normal">for:</span>
+                                                                                            <span style="font-weight: normal">for:</span>
                                                                                             <span>
                                                                                                 <TMPL_VAR NAME="duration">
                                                                                             </span>
@@ -224,18 +204,13 @@ return q{
                                                     <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top;width:200px;" ><![endif]-->
                                                     <div class="mj-column-per-33 outlook-group-fix"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:33%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td
-                                                                        style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0"
-                                                                            cellspacing="0" role="presentation"
-                                                                            width="100%">
+                                                                    <td style="vertical-align:top;padding:0px 0px 0px 0px;">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
-                                                                                <td align="left"
-                                                                                    style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                                <td align="left" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                     <div
                                                                                         style="font-family:CoconPro-BoldCond, Red Hat Display , Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:left;color:#000000;">
                                                                                         <p>Host Address:</p>
@@ -280,38 +255,25 @@ return q{
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                    </div>
-                                                    <!--[if mso | IE]></td><td style="vertical-align:top;width:200px;" ><![endif]-->
-                                                    <div class="mj-column-per-33 outlook-group-fix"
-                                                        style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:33%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                    </div><!--[if mso | IE]></td><td style="vertical-align:top;width:200px;" ><![endif]-->
+                                                    <div class="mj-column-per-33 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:33%;">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td
-                                                                        style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0"
-                                                                            cellspacing="0" role="presentation"
-                                                                            width="100%">
+                                                                    <td style="vertical-align:top;padding:0px 0px 0px 0px;">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
-                                                                                <td align="center"
-                                                                                    vertical-align="middle"
-                                                                                    class="button"
+                                                                                <td align="center" vertical-align="middle" class="button"
                                                                                     style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                                                                    <table border="0" cellpadding="0"
-                                                                                        cellspacing="0"
-                                                                                        role="presentation"
+                                                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
                                                                                         style="border-collapse:separate;line-height:100%;">
                                                                                         <tr>
-                                                                                            <td align="center"
-                                                                                                bgcolor="#008CBA"
-                                                                                                role="presentation"
+                                                                                            <td align="center" bgcolor="#008CBA" role="presentation"
                                                                                                 style="border:none;border-radius:3px;cursor:auto;padding:0px;background:#008CBA;"
-                                                                                                valign="middle"><a
-                                                                                                    href="<TMPL_VAR NAME='dynamicHref'>"
+                                                                                                valign="middle">
+                                                                                                <a href="<TMPL_VAR NAME='dynamicHref'>"
                                                                                                     style="background:#008CBA;color:#ffffff;font-family:CoconPro-BoldCond, Red Hat Display, Open Sans , Verdana , sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;"
-                                                                                                    target="_blank">More
-                                                                                                    Information</a></td>
+                                                                                                    target="_blank">More Information</a></td>
                                                                                         </tr>
                                                                                     </table>
                                                                                 </td>
@@ -340,16 +302,13 @@ return q{
                                                     <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
                                                     <div class="mj-column-per-100 outlook-group-fix"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
                                                                     <td style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                                        role="presentation" width="100%">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
-                                                                                <td align="left"
-                                                                                    style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                                <td align="left" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                     <div style="font-family:CoconPro-BoldCond, Red Hat Display, Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:left;color:#000000;">
                                                                                         <p>
                                                                                             <TMPL_VAR NAME="eventType"> by:
@@ -384,16 +343,13 @@ return q{
                                                     <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
                                                     <div class="mj-column-per-100 outlook-group-fix"
                                                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                            role="presentation" width="100%">
+                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tbody>
                                                                 <tr>
                                                                     <td style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                        <table border="0" cellpadding="0" cellspacing="0"
-                                                                        role="presentation" width="100%">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                             <tr>
-                                                                                <td align="left"
-                                                                                    style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                                <td align="left" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                     <div
                                                                                         style="font-family:CoconPro-BoldCond, Red Hat Display, Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:left;color:#000000;">
                                                                                         <p>
@@ -428,16 +384,13 @@ return q{
                                                 <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
                                                 <div class="mj-column-per-100 outlook-group-fix"
                                                     style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        role="presentation" width="100%">
+                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tbody>
                                                             <tr>
                                                                 <td style="vertical-align:top;padding:0px 0px 0px 0px;">
-                                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                                        role="presentation" width="100%">
+                                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                         <tr>
-                                                                            <td align="left"
-                                                                                style="font-size:0px;padding:0px 5px;word-break:break-word;">
+                                                                            <td align="left" style="font-size:0px;padding:0px 5px;word-break:break-word;">
                                                                                 <div
                                                                                     style="font-family:CoconPro-BoldCond, Red Hat Display , Open Sans , Verdana , sans-serif;font-size:15px;line-height:1;text-align:left;color:#000000;">
                                                                                     <p>Status information:</p>

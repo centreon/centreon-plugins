@@ -107,6 +107,7 @@ sub new {
         'host-duration:s'        => { name => 'host_duration' },
         'service-id:s'           => { name => 'service_id' },
         'service-description:s'  => { name => 'service_description' },
+        'service-displayname:s'  => { name => 'service_displayname' },
         'service-state:s'        => { name => 'service_state' },
         'service-output:s'       => { name => 'service_output' },
         'service-longoutput:s'   => { name => 'service_longoutput' },
@@ -432,10 +433,120 @@ sub service_message {
         
 }
 
+sub bam_message {
+    my ($self, %options) = @_;
+
+    my $event_type = '';
+    my $author = '';
+    my $author_alt = '';
+    my $comment = '';
+    my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
+        }
+    }
+    
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
+        }
+    }
+
+    $self->{option_results}->{service_description} =~ /ba_(\d+)/;
+    my $ba_id = $1;
+   
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/main.php?p=20701&o=d&ba_id=' . $ba_id;
+
+    $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' BAM: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
+    $self->{payload_attachment}->{alt_message} = '
+        ***** Centreon BAM *****
+
+        Notification Type: ' . $self->{option_results}->{type} . '
+        Service: ' . $self->{option_results}->{service_displayname} . '
+        State: ' . $self->{option_results}->{service_state} . '
+        Date/Time: ' . $self->{option_results}->{date};
+
+    if(defined($author_alt) && $author_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
+    }
+    if(defined($comment_alt) && $comment_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
+
+        Info:
+        ' .$self->{option_results}->{service_output};
+
+    my $background_color= 'white';
+    my $text_color = 'black';
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $background_color = $color{lc($self->{option_results}->{service_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{service_state})}->{text};
+    } else {
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
+    }
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{service_state})}->{background}
+    );
+  
+    
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_bam_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        serviceDescription => $self->{option_results}->{service_displayname},
+        status => $self->{option_results}->{service_state},
+        duration => $self->{option_results}->{service_duration},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $self->{option_results}->{service_output},
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
+
+    $self->{payload_attachment}->{html_message} = $html_part->output
+
+}
+
 sub set_payload {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
+    if ($self->{option_results}->{host_name} =~ /^_Module_BAM.*/) {
+        $self->bam_message();
+    } elsif ( defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '' ) {
         $self->service_message();
     } else {
         $self->host_message();
@@ -548,7 +659,7 @@ centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-addre
 
 Example for Centreon configuration:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts=''$SERVICEATTEMPT$ --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
 
 =over 8
 
@@ -627,6 +738,10 @@ ID of the service.
 =item B<--service-description>
 
 Description of the service.
+
+=item B<--service-displayname>
+
+Display BA name.
 
 =item B<--service-state>
 
