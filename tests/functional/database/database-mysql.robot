@@ -6,6 +6,7 @@ Library             DBI
 Library             DBD::mysql
 Library             Time::HiRes
 Library             POSIX
+Library             JSON::XS
 
 Test Timeout        120s
 
