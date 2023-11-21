@@ -102,6 +102,7 @@ sub check_options {
         $self->{printf_value} = $1
             if ($self->{option_results}->{printf_value} =~ /\%\((value_field|key_field)\)/);
     }
+
 }
 
 sub manage_selection {
@@ -170,8 +171,8 @@ Specify a custom output message relying on printf formatting. If this option is 
 
 =item B<--printf-value>
 
-Specify scalar used to replace in printf. If this option is set --printf-format is mandatory.
-(Can be: %{key_field}, %{value_field})
+Specify variable used to replace in printf. If this option is set --printf-format is mandatory.
+Can be: %{key_field} (default value) or %{value_field}
 
 =item B<--warning-string>
 
