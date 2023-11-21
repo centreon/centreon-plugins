@@ -48,6 +48,10 @@ jobs:
             Net::SNMP
             URI::Encode
             XML::LibXML
+            DBI
+            DBD
+            POSIX
+            Time::HiRes
 
       - name: Install Python
         uses: actions/setup-python@v4
