@@ -1,6 +1,8 @@
 *** Settings ***
 Documentation       Database Mysql plugin
 
+Library             OperatingSystem
+
 Test Timeout        120s
 
 
