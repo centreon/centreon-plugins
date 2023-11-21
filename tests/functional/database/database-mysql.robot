@@ -3,6 +3,9 @@ Documentation       Database Mysql plugin
 
 Library             OperatingSystem
 Library             DBI
+Library             DBD::mysql
+Library             Time::HiRes
+Library             POSIX
 
 Test Timeout        120s
 
