@@ -28,6 +28,7 @@ Database Mysql sql string mode
         ...    ${CMD}
         ...    --mode=sql-string
         ${output}    Run    ${command}
+        ${output}    Strip String    ${output}
         Should Be Equal As Strings
         ...    ${output}
         ...    ${sql_string_test.result}
