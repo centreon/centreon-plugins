@@ -31,5 +31,5 @@ Database Mysql sql string mode
         Should Be Equal As Strings
         ...    ${output}
         ...    ${sql_string_test.result}
-        ...    Wrong output result for compliance of ${sql_string_test.result}.{\n}Command output:{\n}${output}
+        ...    Wrong output result for compliance of ${sql_string_test.result.strip()}.{\n}Command output:{\n}${output.strip()}
     END
