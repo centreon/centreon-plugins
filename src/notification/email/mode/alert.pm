@@ -541,11 +541,155 @@ sub bam_message {
 
 }
 
+sub metaservice_message {
+    my ($self, %options) = @_;
+
+    my $host_id = $self->{option_results}->{host_id};
+    my $service_id = $self->{option_results}->{service_id};
+
+    my $event_type = '';
+    my $author = '';
+    my $author_alt = '';
+    my $comment = '';
+    my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
+        }
+    }
+    
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
+        }
+    }
+
+    my $graph_html;
+    if ($self->{option_results}->{centreon_user} && $self->{option_results}->{centreon_user} ne '' 
+        && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
+        my $content = $self->{http}->request(
+            hostname => '',
+            full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
+            timeout => $self->{option_results}->{timeout},
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        );
+
+        if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
+            $graph_html = '<p>No graph found</p>';
+        } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
+            $graph_html = '<p>Cannot retrieve graph: ' . $content . '</p>';
+        } else {
+            $self->{payload_attachment}->{graph_png} = $content;
+            $graph_html = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\"  alt=\"Service Graph\" style=\"width:100%; height:auto;\">\n";
+        }
+    }
+
+    my $details = {
+        id => $service_id,
+        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        tab => 'details'
+    };
+
+    my $line_break = '<br />';
+    my $json_data = encode_json($details);
+    my $encoded_data = uri_escape($json_data);
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
+
+    $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' Meta Service: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
+    $self->{payload_attachment}->{alt_message} = '
+        ***** Centreon *****
+
+        Notification Type: ' . $self->{option_results}->{type} . '
+        Meta Service: ' . $self->{option_results}->{service_displayname} . '
+        State: ' . $self->{option_results}->{service_state} . '
+        Date/Time: ' . $self->{option_results}->{date};
+
+    if(defined($author_alt) && $author_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
+    }
+    if(defined($comment_alt) && $comment_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
+
+        Info:
+        ' .$self->{option_results}->{service_output};
+
+    my $background_color= 'white';
+    my $text_color = 'black';
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $background_color = $color{lc($self->{option_results}->{service_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{service_state})}->{text};
+    } else {
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
+    }
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{service_state})}->{background}
+    );
+  
+    
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_metaservice_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        attempts => $self->{option_results}->{service_attempts},
+        maxAttempts => $self->{option_results}->{max_service_attempts},
+        serviceDescription => $self->{option_results}->{service_displayname},
+        status => $self->{option_results}->{service_state},
+        duration => $self->{option_results}->{service_duration},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $self->{option_results}->{service_output},
+        graphHtml => $graph_html,
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
+
+    $self->{payload_attachment}->{html_message} = $html_part->output
+
+}
+
 sub set_payload {
     my ($self, %options) = @_;
 
     if ($self->{option_results}->{host_name} =~ /^_Module_BAM.*/) {
         $self->bam_message();
+    } elsif ($self->{option_results}->{host_name} =~ /^_Module_Meta/ ) {
+        $self->metaservice_message();
     } elsif ( defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '' ) {
         $self->service_message();
     } else {
