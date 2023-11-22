@@ -3,6 +3,7 @@ Documentation       Database Mysql plugin
 
 Library             OperatingSystem
 Library             Process
+Library             String
 
 Test Timeout        120s
 
