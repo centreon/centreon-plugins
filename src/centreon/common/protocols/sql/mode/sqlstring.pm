@@ -96,9 +96,11 @@ sub check_options {
     $self->{printf_value} = 'value_field';
     if (defined($self->{option_results}->{printf_value}) && $self->{option_results}->{printf_value} ne '') {
         $self->{printf_value} = $1
-            if ($self->{option_results}->{printf_value} =~ /\$self->\{result_values}->\{(value_field|key_field)}/);
+            if ($self->{option_results}->{printf_value} =~ /\$self->{result_values}->{(value_field|key_field)}/);
+            #if ($self->{option_results}->{printf_value} =~ /\$self->\{result_values}->\{(value_field|key_field)}/);
         $self->{printf_value} = $1
-            if ($self->{option_results}->{printf_value} =~ /\%\{(value_field|key_field)}/);
+            if ($self->{option_results}->{printf_value} =~ /\%{(value_field|key_field)}/);
+            #if ($self->{option_results}->{printf_value} =~ /\%\{(value_field|key_field)}/);
         $self->{printf_value} = $1
             if ($self->{option_results}->{printf_value} =~ /\%\((value_field|key_field)\)/);
     }
