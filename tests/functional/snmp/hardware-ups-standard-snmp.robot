@@ -14,7 +14,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sta
 
 &{ups_standard_test1}
 ...                         snmpcommunity=hardware-ups-standard/hardware-ups-standard
-...                         results=OK: All input lines are ok | '1#line.input.frequence.hertz'=49.9Hz;;;; '1#line.input.voltage.volt'=233V;;;; '1#line.input.current.ampere'=0A;;;; '1#line.input.power.watt'=0W;;;; '2#line.input.frequence.hertz'=49.9Hz;;;; '2#line.input.voltage.volt'=234V;;;; '2#line.input.current.ampere'=0A;;;; '2#line.input.power.watt'=0W;;;; '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;
+...                         result=OK: All input lines are ok | '1#line.input.frequence.hertz'=49.9Hz;;;; '1#line.input.voltage.volt'=233V;;;; '1#line.input.current.ampere'=0A;;;; '1#line.input.power.watt'=0W;;;; '2#line.input.frequence.hertz'=49.9Hz;;;; '2#line.input.voltage.volt'=234V;;;; '2#line.input.current.ampere'=0A;;;; '2#line.input.power.watt'=0W;;;; '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;
 ...                         warningpower=
 ...                         criticalcurrent=
 ...                         warningvoltage=
@@ -25,7 +25,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sta
 ...                         criticalcurrent='@0:214'
 ...                         warningvoltage='@0:214'
 ...                         warningfrequence='@0:214'
-...                         results=CRITICAL: Input Line '1' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '2' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '3' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W | '1#line.input.frequence.hertz'=0Hz;@0:214;;; '1#line.input.voltage.volt'=0V;@0:214;;; '1#line.input.current.ampere'=0A;;@0:214;; '1#line.input.power.watt'=0W;215:;;; '2#line.input.frequence.hertz'=0Hz;@0:214;;; '2#line.input.voltage.volt'=0V;@0:214;;; '2#line.input.current.ampere'=0A;;@0:214;; '2#line.input.power.watt'=0W;215:;;; '3#line.input.frequence.hertz'=0Hz;@0:214;;; '3#line.input.voltage.volt'=0V;@0:214;;; '3#line.input.current.ampere'=0A;;@0:214;; '3#line.input.power.watt'=0W;215:;;;
+...                         result=CRITICAL: Input Line '1' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '2' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '3' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W | '1#line.input.frequence.hertz'=0Hz;@0:214;;; '1#line.input.voltage.volt'=0V;@0:214;;; '1#line.input.current.ampere'=0A;;@0:214;; '1#line.input.power.watt'=0W;215:;;; '2#line.input.frequence.hertz'=0Hz;@0:214;;; '2#line.input.voltage.volt'=0V;@0:214;;; '2#line.input.current.ampere'=0A;;@0:214;; '2#line.input.power.watt'=0W;215:;;; '3#line.input.frequence.hertz'=0Hz;@0:214;;; '3#line.input.voltage.volt'=0V;@0:214;;; '3#line.input.current.ampere'=0A;;@0:214;; '3#line.input.power.watt'=0W;215:;;;
 @{ups_standard_tests}
 ...                         &{ups_standard_test1}
 ...                         &{ups_standard_test2}
