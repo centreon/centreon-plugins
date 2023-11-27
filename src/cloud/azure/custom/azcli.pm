@@ -646,7 +646,7 @@ Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 
