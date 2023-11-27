@@ -471,7 +471,7 @@ Set Redis database index.
 
 =item B<--failback-file>
 
-Failback on a local file if redis connection failed.
+Failback on a local file if Redis connection fails.
 
 =item B<--memexpiration>
 
