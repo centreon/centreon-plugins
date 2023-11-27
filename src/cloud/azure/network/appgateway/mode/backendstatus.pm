@@ -103,13 +103,13 @@ Check Azure Application Gateway backend response status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=backend-status --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-response-status='1000' --critical-response-status='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=backend-status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'

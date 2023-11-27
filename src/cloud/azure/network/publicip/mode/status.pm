@@ -155,13 +155,13 @@ Check Azure Public IP status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
 --resource=<publicip_id> --resource-group=<resourcegroup_id>
 --critical-provisioning-state='%{state} =~ /Failed/i'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicIPAddresses/<publicip_id>'

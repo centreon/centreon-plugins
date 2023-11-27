@@ -104,13 +104,13 @@ Check Azure App Service Plan CPU statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=cpu --custommode=api
 --resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/serverFarms/<appsvcplan_id>'

@@ -111,13 +111,13 @@ Check Azure SQL Managed Instance CPU.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=cpu --custommode=api
 --resource=<managedInstances_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cpu-average='80'' --critical-cpu-average='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/managedInstances/<managedInstances_id>'

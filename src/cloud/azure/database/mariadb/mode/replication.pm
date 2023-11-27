@@ -114,13 +114,13 @@ Check Azure Database for MariaDB replication status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-slave-latency-seconds='1000' --critical-slave-latency-seconds='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'

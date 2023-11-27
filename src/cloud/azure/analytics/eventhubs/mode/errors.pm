@@ -127,13 +127,13 @@ Check Azure Event Hub errors statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=errors --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='average'
 --warning-active-errors='1000' --critical-active-errors='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhubnamespace_id>'

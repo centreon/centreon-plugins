@@ -105,13 +105,13 @@ Check Azure Traffic Manager endpoint status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=backendhealth --custommode=api
 --resource=<trafficmanagerprofile_id> --resource-group=<resourcegroup_id> --aggregation='Maximum'
 --warning-endpoint-status='1:' --critical-endpoint-status='0.9:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=backendhealth --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/trafficmanagerprofiles/<trafficmanagerprofiles_id>'

@@ -111,13 +111,13 @@ Check Azure App Service bandwith consumed by the app.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=data --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-data-in='80000' --critical-data-in='90000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=data --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'

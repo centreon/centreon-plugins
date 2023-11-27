@@ -128,13 +128,13 @@ Check Azure Disk I/O volume and ops.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::disks::plugin --mode=diskio --custommode=api
 --resource=<disk_name> --resource-group=<resourcegroup_id> --warning-disk-read-ops-persec=10 --critical-disk-read-ops-persec=10
 
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::disks::plugin --mode=diskio --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.computeengine/disks/<disk_name>'

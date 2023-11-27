@@ -227,12 +227,12 @@ Check storage account resources transaction throughput metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-throughput
 --resource=MYFILER --resource-group=MYHOSTGROUP--resource-namespace=Blob --aggregation='total' --critical-egress-total='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-throughput
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'

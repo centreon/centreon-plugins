@@ -127,13 +127,13 @@ Check VPN gateway site traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
 --resource=MyResource --resource-group=MYRGROUP --aggregation='average' --aggregation='total' --critical-bandwidth-average='10' 
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx'

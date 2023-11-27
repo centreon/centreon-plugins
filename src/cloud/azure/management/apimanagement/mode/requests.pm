@@ -104,13 +104,13 @@ Check Azure API Management requests statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=requests --custommode=api
 --resource=<management_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-requests='1000' --critical-requests='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ApiManagement/service/<management_id>'

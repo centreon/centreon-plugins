@@ -104,13 +104,13 @@ Check Azure Container Registry (ACR) service.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storage-usage --custommode=api
 --resource=<acr_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-storage-used='450000000000' --warning-storage-used='470000000000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storage-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft..containerregistry/registries/<acr_id>'

@@ -110,13 +110,13 @@ Check Azure Cosmos DB Accounts throughput statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=throughput --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-provisioned-throughput='800' --critical-provisioned-throughput='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'

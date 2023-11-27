@@ -97,12 +97,12 @@ Check Azure Kubernetes Cluster Autoscaler unneeded nodes.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unneedednodes --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --zeroed --warning-unneeded-nodes=5 --critical-unneeded-nodes=10
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unneedednodes --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 

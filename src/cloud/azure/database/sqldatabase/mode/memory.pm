@@ -112,13 +112,13 @@ Metrics are available with:
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=memory --custommode=api
 --resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='maximum'
 --warning-usage-percent='80'' --critical-usage-percent='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'

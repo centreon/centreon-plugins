@@ -155,12 +155,12 @@ Check storage account resources file share count metric.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-count
 --resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filesharecount-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-count
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'

@@ -105,12 +105,12 @@ Check Azure Kubernetes number of pods by state.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=pod-state --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --zeroed --warning-pod-state-phase=5 --critical-pod-state-phase=10
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=pod-state --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 

@@ -112,13 +112,13 @@ Check Azure Web SignalR errors.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-user-errors='800' --critical-user-errors='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'

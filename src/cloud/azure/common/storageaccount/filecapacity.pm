@@ -156,12 +156,12 @@ Check storage account resources file capacity metric.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
 --resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filecapacity-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'

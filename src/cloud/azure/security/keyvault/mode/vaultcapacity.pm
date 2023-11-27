@@ -104,13 +104,13 @@ Check Azure Security Key Vault capacity.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-capacity --custommode=api
 --resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-vault-saturation-percentage='80' --critical-vault-saturation-percentage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-capacity --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'

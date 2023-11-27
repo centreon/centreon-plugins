@@ -104,13 +104,13 @@ Check Azure Security Key Vault availability.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
 --resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-vault-availability-percentage='100:' --critical-vault-availability-percentage='50:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'

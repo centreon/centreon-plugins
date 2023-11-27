@@ -104,13 +104,13 @@ Check Azure CDN response size.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=response --custommode=api
 --resource=<cdn_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-response-size='8000000' --critical-response-size='9000000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=response --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'

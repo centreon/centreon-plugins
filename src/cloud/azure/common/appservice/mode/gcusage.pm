@@ -119,13 +119,13 @@ Check Azure App Service garbage collector.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=gc-usage --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-gc-gen0='80' --critical-gc-gen0='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=gc-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'

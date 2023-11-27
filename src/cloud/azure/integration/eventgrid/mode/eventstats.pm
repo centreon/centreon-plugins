@@ -185,13 +185,13 @@ Check Azure Event Grid delivery and publish events statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
 --resource=<topic_rsc_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-publish-failed='20' --critical-publish-failed='50'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
 --resource='resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventGrid/<EventGridType>/<topic_rsc_id>''

@@ -117,13 +117,13 @@ Check Azure Automation jobs.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
 --resource=<job_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-jobs-total='20' --critical-jobs-total='50'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Automation/automationAccounts/<job_id>'

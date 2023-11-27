@@ -112,13 +112,13 @@ Check Azure Application Insights CPU utilization.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=cpu --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-nonidle-time-percentage='80' --critical-process='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

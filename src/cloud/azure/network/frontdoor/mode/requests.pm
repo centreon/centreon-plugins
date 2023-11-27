@@ -120,13 +120,13 @@ Check Azure Front Door latency.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=requests --custommode=api
 --resource=<frontdoor_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-total-requests-count='3000' --critical-total-requests-count='4000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/frontdoors/<frontdoor_id>'

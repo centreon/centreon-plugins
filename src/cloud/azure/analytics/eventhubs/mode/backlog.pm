@@ -111,13 +111,13 @@ Check Azure Event Hubs backlog statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=backlog --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
 --warning-backlog-capture='1000' --critical-backlog-capture='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=backlog --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'

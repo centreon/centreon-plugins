@@ -251,13 +251,13 @@ Check Azure SQL Elastic Pool DTU metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=dtu
 --resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
 --critical-dtu-consumption-percent='90' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=dtu
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Sql/servers/xxx/elasticpools/xxx'

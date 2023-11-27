@@ -104,13 +104,13 @@ Check Azure CDN latency.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=latency --custommode=api
 --resource=<cdn_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-total-latency='50' --critical-total-latency='100'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=latency --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'

@@ -113,13 +113,13 @@ Check Azure Database for MySQL IO comsuption usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mysql::plugin --mode=io-consumption --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-ioconsumption-usage='80' --critical-ioconsumption-usage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=io-consumption --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMySQL/servers/<db_id>'

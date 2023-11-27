@@ -110,13 +110,13 @@ Check Azure Web SignalR usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=usage --custommode=api
 --resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-connection-count='800' --critical-connection-count='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'

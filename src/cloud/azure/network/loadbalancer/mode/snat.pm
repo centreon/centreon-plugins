@@ -119,13 +119,13 @@ Check Azure Network Load Balancers SNAT metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=snat --custommode=azcli
 --resource=<loadbalancer_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-snat-connection-count='800' --critical-snat-connection-count=='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/loadBalancers/<loadbalancer_id>'

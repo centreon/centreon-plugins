@@ -103,13 +103,13 @@ Check Azure Redis errors statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=errors --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --critical-errors-count='1'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'

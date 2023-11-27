@@ -111,13 +111,13 @@ Check Azure Functions App.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-execution-count='80' --critical-execution-count='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'

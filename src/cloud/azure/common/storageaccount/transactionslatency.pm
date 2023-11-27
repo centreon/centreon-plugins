@@ -172,13 +172,13 @@ Check storage account resources transaction latency metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-latency
 --resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='average'
 --critical-successserverlatency-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-latency
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'

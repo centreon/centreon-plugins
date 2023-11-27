@@ -110,13 +110,13 @@ Check Azure Cosmos DB Accounts latency statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=latency --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-serverside-latency='800' --critical-serverside-latency='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=latency --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'

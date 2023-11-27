@@ -104,13 +104,13 @@ Check Azure Network Load Balancers Data Path metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
 --resource=<loadbalancer_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-datapath-availability-percentage='100:' --critical-datapath-availability-percentage='50:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/loadBalancers/<loadbalancer_id>'

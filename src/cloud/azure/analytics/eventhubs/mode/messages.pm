@@ -125,13 +125,13 @@ Check Azure Event Hubs messages statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=messages --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
 --warning-eventhub-active-messages='1000' --critical-eventhub-active-messages='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=messages --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'

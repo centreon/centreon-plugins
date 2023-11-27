@@ -120,13 +120,13 @@ Check Azure Application Insights calls made by the application to external resou
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=externalcalls --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-calls-count='800' --critical-calls-count='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=externalcalls --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

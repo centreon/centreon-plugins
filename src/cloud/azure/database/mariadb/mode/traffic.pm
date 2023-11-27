@@ -112,13 +112,13 @@ Check Azure Database for MariaDB network usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=traffic --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-traffic-out='80' --critical-traffic-out='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'

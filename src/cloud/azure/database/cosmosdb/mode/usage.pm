@@ -111,13 +111,13 @@ Check Azure Cosmos DB Accounts usage statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=usage --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-data-usage='80000' --critical-data-usage='90000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'

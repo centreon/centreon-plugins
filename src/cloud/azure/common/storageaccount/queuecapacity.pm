@@ -156,12 +156,12 @@ Check storage account resources queue capacity metric.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-capacity
 --resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-queuecapacity-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-capacity
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/queueServices/default'

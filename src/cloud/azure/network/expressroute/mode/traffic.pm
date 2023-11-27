@@ -115,13 +115,13 @@ Check circuit traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::expressroute::plugin --custommode=azcli --mode=traffic
 --resource=MYCIRCUIT --resource-group=MYHOSTGROUP --aggregation='average' --critical-bitsinpersecond-average='10'
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::expressroute::plugin --custommode=azcli --mode=traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/expressRouteCircuits/xxx'

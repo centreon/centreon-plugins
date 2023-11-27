@@ -104,13 +104,13 @@ Check Azure Redis memory statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=memory --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-memory-usage-percentage='80' --critical-memory-usage-percentage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'

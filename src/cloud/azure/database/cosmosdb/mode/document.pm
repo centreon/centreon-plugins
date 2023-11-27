@@ -110,13 +110,13 @@ Check Azure Cosmos DB Accounts document statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-document-count='80000' --critical-document-count='90000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'

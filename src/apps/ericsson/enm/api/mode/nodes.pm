@@ -248,15 +248,15 @@ Example: --filter-counters='total'
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--filter-fru-id>
 
-Filter field replaceable units by id (can be a regexp).
+Filter field replaceable units by ID (can be a regexp).
 
 =item B<--filter-cell-tdd-id>
 
-Filter tdd cells by id (can be a regexp).
+Filter tdd cells by ID (can be a regexp).
 
 =item B<--unknown-node-sync-status>
 

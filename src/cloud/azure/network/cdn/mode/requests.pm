@@ -104,13 +104,13 @@ Check Azure CDN request count.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource=<cdn_id> --resource-group=<resourcegroup_id> --aggregation='count'
 --warning-requests-count='2000' --critical-requests-count='3000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'

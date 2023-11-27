@@ -136,13 +136,13 @@ Check Azure Database for PostgreSQL connections status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=connections --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-connections-active='1000' --critical-connections-active='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforPostgreSQL/servers/<db_id>'

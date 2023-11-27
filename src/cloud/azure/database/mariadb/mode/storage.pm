@@ -159,13 +159,13 @@ Check Azure Database for MariaDB storage usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=storage --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-storage-used='1000' --critical-storage-used='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon-plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=storage --custommode=api
 --resource='/subscriptions/<subscription-id>/resourceGroups/<resourcegroup-id>/providers/Microsoft.DBforMariaDB/servers/<db-id>'

@@ -305,7 +305,7 @@ Example: --filter-counters='^status$'
 
 =item B<--filter-id>
 
-Filter scenarios by id (can be a regexp).
+Filter scenarios by ID (can be a regexp).
 
 =item B<--filter-display-name>
 

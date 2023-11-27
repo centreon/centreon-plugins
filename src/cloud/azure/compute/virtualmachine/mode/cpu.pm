@@ -125,13 +125,13 @@ Check virtual machine resources CPU metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin 
 --custommode=azcli --mode=cpu --resource=MYVMINSTANCE --resource-group=MYRSCGROUP 
 --filter-metric='Credits' --critical-cpu-credits-remaining='10:' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin 
 --custommode=azcli --mode=cpu --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Compute/virtualMachines/xxx'

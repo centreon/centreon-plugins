@@ -104,12 +104,12 @@ Check Azure Virtual Machine Scale Sets Traffic In and Out.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::vmscalesets::plugin --mode=traffic --custommode=api
 --resource=<vmss_id> --resource-group=<resourcegroup_id> --warning-traffic-out=10000 --critical-traffic-in=15000
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::vmscalesets::plugin --mode=traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Compute/virtualMachineScaleSets/<vmss_id>' 

@@ -166,13 +166,13 @@ Check Azure Database for MySQL storage usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mysql::plugin --mode=storage --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-storage_used='1000' --critical-storage_used='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=storage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMySQL/servers/<db_id>'

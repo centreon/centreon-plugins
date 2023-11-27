@@ -112,13 +112,13 @@ Check Azure App Service Plan queue statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=queue --custommode=api
 --resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-disk-queue-length='8' --critical-disk-queue-length='9'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=queue --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/serverFarms/<appsvcplan_id>'

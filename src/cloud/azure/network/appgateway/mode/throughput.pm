@@ -103,13 +103,13 @@ Check Azure Application Gateway throughput statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=throughput --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-throughput='1000' --critical-throughput='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'

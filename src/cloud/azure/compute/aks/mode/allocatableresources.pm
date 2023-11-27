@@ -104,12 +104,12 @@ Check remaining Azure Kubernetes Cluster Allocatable CPU Cores and Memory in Byt
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 

@@ -104,13 +104,13 @@ Check Azure API Management capacity statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=capacity --custommode=api
 --resource=<management_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-capacity-percentage='80' --critical-capacity-percentage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=capacity --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ApiManagement/service/<management_id>'

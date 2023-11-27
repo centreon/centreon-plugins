@@ -136,13 +136,13 @@ Check Azure Application Insights browser timings.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=browser-timings --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-total-duration='1' --critical-total-duration='2'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=browser-timings --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

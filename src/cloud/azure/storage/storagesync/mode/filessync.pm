@@ -120,13 +120,13 @@ Check Azure Storage Sync Service Files Synced and Errors.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=files-synced --custommode=api
 --resource=<syncservice_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-item-errors='15' --critical-item-errors='20'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=files-synced --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'

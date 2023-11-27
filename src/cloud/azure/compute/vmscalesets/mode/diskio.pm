@@ -106,12 +106,12 @@ Check Azure Virtual Machine Scale Sets I/O operations per second.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::vmscalesets::plugin --mode=diskio --custommode=api
 --resource=<vmss_id> --resource-group=<resourcegroup_id> --warning-disk-read-ops-persec=10 --critical-disk-read-ops-persec=10
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::vmscalesets::plugin --mode=diskio --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Compute/virtualMachineScaleSets/<vmss_id>' 

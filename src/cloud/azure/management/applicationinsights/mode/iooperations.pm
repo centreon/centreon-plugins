@@ -104,13 +104,13 @@ Check Azure Application Insights io-operations status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=io-operations --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-process-bytes-operations='8000' --critical-process-bytes-operations='9000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=io-operations --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

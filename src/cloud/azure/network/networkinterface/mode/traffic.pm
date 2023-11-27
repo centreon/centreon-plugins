@@ -258,13 +258,13 @@ Check network interface resources traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::networkinterface::plugin --custommode=azcli --mode=traffic
 --resource=MYNIC --resource-group=MYHOSTGROUP --aggregation='total' --critical-bytesreceivedrate-total='10'
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::networkinterface::plugin --custommode=azcli --mode=traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/networkInterfaces/xxx'

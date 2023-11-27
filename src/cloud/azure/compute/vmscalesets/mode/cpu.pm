@@ -113,12 +113,12 @@ Check Azure Virtual Machine Scale Sets CPU usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::vmscalesets::plugin --mode=cpu --custommode=api
 --resource=<vmss_id> --resource-group=<resourcegroup_id> --warning-cpu-usage='80' --critical-cpu-usage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::vmscalesets::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Compute/virtualMachineScaleSets/<vmss_id>' 

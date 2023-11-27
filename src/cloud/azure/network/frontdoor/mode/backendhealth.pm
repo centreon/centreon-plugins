@@ -103,13 +103,13 @@ Check Azure Front Door backend health.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=backendhealth --custommode=api
 --resource=<frontdoor_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-backend-health-percentage='100:' --critical-backend-health-percentage='90:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=backendhealth --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/frontdoors/<frontdoor_id>'

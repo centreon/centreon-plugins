@@ -112,13 +112,13 @@ Check Azure Application Insights memory usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=memory --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-memory-available='8000' --critical-memory-available='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

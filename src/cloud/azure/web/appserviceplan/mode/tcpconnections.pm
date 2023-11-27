@@ -144,13 +144,13 @@ Check Azure App Service Plan TCP connections statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=tcp-connections --custommode=api
 --resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-tcp-closewait='1000' --critical-tcp-closewait='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=tcp-connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/serverFarms/<appsvcplan_id>'

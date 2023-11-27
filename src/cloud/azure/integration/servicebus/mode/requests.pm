@@ -117,13 +117,13 @@ Check Azure Service Bus requests statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=requests --custommode=api
 --resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-throttled-requests='300' --critical-throttled-requests='400'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ServiceBus/namespaces/<busnamespace_id>'

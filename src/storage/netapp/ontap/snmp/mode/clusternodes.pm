@@ -382,7 +382,7 @@ Filter nodes by name (can be a regexp).
 
 =item B<--filter-port-id>
 
-Filter ports by id (can be a regexp).
+Filter ports by ID (can be a regexp).
 
 =item B<--filter-port-role>
 

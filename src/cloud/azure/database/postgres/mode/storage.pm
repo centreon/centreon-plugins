@@ -143,13 +143,13 @@ Check Azure Database for PostgreSQL storage usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=storage --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-storage-used='1000' --critical-storage-used='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=storage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforPostgreSQL/servers/<db_id>'

@@ -120,13 +120,13 @@ Check Azure Application Insights availability status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=availability --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-availability='80:' --critical-availability='90:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=availability --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

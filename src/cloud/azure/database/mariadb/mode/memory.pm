@@ -106,13 +106,13 @@ Check Azure Database for MariaDB memory usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=memory --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-memory-usage='80' --critical-memory-usage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'

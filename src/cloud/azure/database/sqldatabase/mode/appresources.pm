@@ -118,13 +118,13 @@ Metrics are only available for:
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=app-resources --custommode=api
 --resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='average'
 --critical-app-cpu='80'' --critical-app-memory='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=app-resources --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'

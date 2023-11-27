@@ -137,13 +137,13 @@ Check Azure App Service Plan socket statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=socket --custommode=api
 --resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-socket-outbound-timewait='10000' --critical-socket-outbound-timewait='20000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=socket --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/serverFarms/<appsvcplan_id>'

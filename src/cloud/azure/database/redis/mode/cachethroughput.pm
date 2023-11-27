@@ -110,13 +110,13 @@ Check Azure Redis cache throughput statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-throughput --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-cache-read-throughput='800000' --critical-cache-read-throughput='900000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'

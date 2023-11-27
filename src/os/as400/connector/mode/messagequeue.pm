@@ -142,7 +142,7 @@ Check only new messages.
 
 =item B<--filter-message-id>
 
-Filter messages by id (can be a regexp).
+Filter messages by ID (can be a regexp).
 
 =item B<--min-severity>
 

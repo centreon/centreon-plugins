@@ -125,13 +125,13 @@ Check Azure Event Hub requests statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=requests --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
 --warning-throttled-requests='800' --critical-throttled-requests='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'

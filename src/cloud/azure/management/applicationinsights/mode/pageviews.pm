@@ -112,13 +112,13 @@ Check Azure Application Insights page views statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=pageviews --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-views-count='800' --critical-views-count='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=pageviews --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'

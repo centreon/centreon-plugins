@@ -124,13 +124,13 @@ Check Azure Application Gateway units statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=units --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-compute-units='1000' --critical-compute-units='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=units --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'

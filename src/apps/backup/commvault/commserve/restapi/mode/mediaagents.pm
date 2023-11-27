@@ -169,7 +169,7 @@ Check media agents.
 
 =item B<--filter-media-agent-id>
 
-Filter media agents by id (can be a regexp).
+Filter media agents by ID (can be a regexp).
 
 =item B<--filter-media-agent-name>
 

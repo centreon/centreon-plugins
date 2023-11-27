@@ -104,13 +104,13 @@ Check Azure Network Firewall health metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode=health --custommode=api
 --resource=<firewall_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-firewall-health='100:' --critical-firewall-health='50:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode=health --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/azurefirewalls/<firewall_id>'

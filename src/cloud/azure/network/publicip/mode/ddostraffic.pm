@@ -139,13 +139,13 @@ Check Azure Public IP DDOS traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=ddos-traffic --custommode=api
 --resource=<publicip_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-ddos-inbound-packets='1000' --critical-ddos-inbound-packets='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=ddos-traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicIPAddresses/<publicip_id>'

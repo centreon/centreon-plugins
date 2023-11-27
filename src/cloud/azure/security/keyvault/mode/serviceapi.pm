@@ -117,13 +117,13 @@ Check Azure Security Key Vault serviceAPI statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=service-api --custommode=api
 --resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-serviceapi-latency='20' --critical-serviceapi-latency='50'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=service-api --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'

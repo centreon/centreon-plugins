@@ -238,7 +238,7 @@ Check vpn.
 
 =item B<--filter-id>
 
-Filter by id (regexp can be used).
+Filter by ID (regexp can be used).
 
 =item B<--filter-src-ip>
 

@@ -183,7 +183,7 @@ Check nodes time offset (use local time if ntp-host option is not set).
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--ntp-hostname>
 

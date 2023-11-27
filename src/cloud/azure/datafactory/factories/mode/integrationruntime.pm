@@ -137,12 +137,12 @@ Check Azure Data Factory for factory integration runtime metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --mode=factoryusage --custommode=api
 --resource=<factory_id> --resource-group=<resourcegroup_id>
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --mode=factoryusage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DataFactory/factories/<factory_id>'

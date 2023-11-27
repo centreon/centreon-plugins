@@ -117,13 +117,13 @@ Check Azure App Configuration HTTP requests.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=http-requests --custommode=api
 --resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='count' 
 --warning-http-requests='1000' --critical-http-requests='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=http-requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.AppConfiguration/configurationStores/<configurationstores_id>'

@@ -103,13 +103,13 @@ Check Azure App Service HTTP response time.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=response-time --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-response-time='80' --critical-response-time='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=response-time --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'

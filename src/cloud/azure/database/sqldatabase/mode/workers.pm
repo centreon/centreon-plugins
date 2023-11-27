@@ -112,13 +112,13 @@ Metrics are available with:
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=workers --custommode=api
 --resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='total'
 --critical-workers='10'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=workers --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'

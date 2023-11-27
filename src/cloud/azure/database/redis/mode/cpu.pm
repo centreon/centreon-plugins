@@ -104,13 +104,13 @@ Check Azure Redis CPU usage statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cpu --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'

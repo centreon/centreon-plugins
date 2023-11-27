@@ -136,13 +136,13 @@ Check Azure Storage Sync Service Files data recalls statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=recalls --custommode=api
 --resource=<syncservice_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-recalls-size='15' --critical-recalls-size='20'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=recalls --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'

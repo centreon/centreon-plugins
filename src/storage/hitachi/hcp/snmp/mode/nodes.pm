@@ -407,7 +407,7 @@ Check nodes.
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--unknown-node-status>
 

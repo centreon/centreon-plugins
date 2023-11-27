@@ -111,13 +111,13 @@ Check Azure App Service app memory usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-app-memory='80' --critical-app-memory='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
