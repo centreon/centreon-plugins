@@ -173,7 +173,7 @@ Adding --verbose will display the item names.
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--exclude-name>
 

@@ -194,7 +194,7 @@ Set budget name (required).
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--lookup-days>
 

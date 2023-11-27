@@ -138,7 +138,7 @@ Example: --resource='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourc
 
 =item B<--name>
 
-(Optional)
+(optional)
 Use only the name of the VM resource rather than the full ID.
 Example: --resource='azure-vm1' --name
 

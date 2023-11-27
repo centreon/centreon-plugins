@@ -165,7 +165,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::resource::plugin --c
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--filter-name>
 
