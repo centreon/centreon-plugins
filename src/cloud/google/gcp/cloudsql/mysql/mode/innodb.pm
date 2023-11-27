@@ -160,7 +160,7 @@ Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 
-Set dimension value (Required).
+Set dimension value (required).
 
 =item B<--filter-metric>
 

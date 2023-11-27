@@ -108,15 +108,15 @@ my tsm cli
 
 =item B<--tsm-hostname>
 
-TSM hostname to query (Required).
+TSM hostname to query (required).
 
 =item B<--tsm-username>
 
-TSM username (Required).
+TSM username (required).
 
 =item B<--tsm-password>
 
-TSM password (Required).
+TSM password (required).
 
 =back
 

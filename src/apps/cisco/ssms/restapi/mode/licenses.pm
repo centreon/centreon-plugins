@@ -190,7 +190,7 @@ Example: --filter-counters='status'
 
 =item B<--account>
 
-Check account name (Required. Multiple option).
+Check account name (required. Multiple option).
 
 =item B<--filter-license-name>
 

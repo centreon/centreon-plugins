@@ -137,7 +137,7 @@ O365 Teams Webhooks API
 
 =item B<--teams-webhook>
 
-Specify the Webhook full URI (Required).
+Specify the Webhook full URI (required).
 
 =item B<--port>
 

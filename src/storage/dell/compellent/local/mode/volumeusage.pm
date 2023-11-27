@@ -305,15 +305,15 @@ Check storage center and volume usages.
 
 =item B<--cem-host>
 
-Compellent Entreprise Manager hostname (Required).
+Compellent Entreprise Manager hostname (required).
 
 =item B<--cem-user>
 
-Compellent Entreprise Manager username (Required).
+Compellent Entreprise Manager username (required).
 
 =item B<--cem-password>
 
-Compellent Entreprise Manager password (Required).
+Compellent Entreprise Manager password (required).
 
 =item B<--cem-port>
 
@@ -321,7 +321,7 @@ Compellent Entreprise Manager port (default: 3033).
 
 =item B<--sdk-path-dll>
 
-Path to 'DellStorage.ApiCommandSet.dll' (Required).
+Path to 'DellStorage.ApiCommandSet.dll' (required).
 
 =item B<--timeout>
 

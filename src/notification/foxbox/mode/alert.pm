@@ -115,7 +115,7 @@ Specify username for API authentification (default: centreon).
 
 =item B<--foxbox-password>
 
-Specify password for API authentification (Required).
+Specify password for API authentification (required).
 
 =item B<--proto>
 
@@ -123,11 +123,11 @@ Specify http or https protocol. (default: http)
 
 =item B<--phonenumber>
 
-Specify phone number (Required).
+Specify phone number (required).
 
 =item B<--texto>
 
-Specify the content of your SMS message (Required).
+Specify the content of your SMS message (required).
 
 =item B<--from>
 

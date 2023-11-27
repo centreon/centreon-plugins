@@ -297,7 +297,7 @@ Execute sftp commands.
 
 =item B<--scenario>
 
-Scenario used (Required).
+Scenario used (required).
 Can be a file or json content.
 
 =item B<--warning-status>

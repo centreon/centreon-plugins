@@ -297,11 +297,11 @@ SCVMM hostname.
 
 =item B<--scvmm-username>
 
-SCVMM username (Required).
+SCVMM username (required).
 
 =item B<--scvmm-password>
 
-SCVMM password (Required).
+SCVMM password (required).
 
 =item B<--scvmm-port>
 

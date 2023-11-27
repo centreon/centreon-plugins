@@ -197,11 +197,11 @@ You can use the following variables: %{result}, %{scenario}
 
 =item B<--mailbox>
 
-Set the mailbox to check (Required).
+Set the mailbox to check (required).
 
 =item B<--password>
 
-Set the password for the mailbox (Required).
+Set the password for the mailbox (required).
 
 =back
 

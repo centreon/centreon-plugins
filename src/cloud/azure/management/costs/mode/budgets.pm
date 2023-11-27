@@ -190,7 +190,7 @@ you may have to increase timeout.
 
 =item B<--budget-name>
 
-Set budget name (Required).
+Set budget name (required).
 
 =item B<--resource-group>
 

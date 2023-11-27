@@ -131,7 +131,7 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/efs-metrics.html' for more inform
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--statistic>
 

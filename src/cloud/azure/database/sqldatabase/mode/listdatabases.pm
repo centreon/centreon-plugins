@@ -139,11 +139,11 @@ List SQL databases.
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--resource-group>
 
-Set SQL erver (Required).
+Set SQL erver (required).
 
 =item B<--filter-name>
 

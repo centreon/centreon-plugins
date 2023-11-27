@@ -130,15 +130,15 @@ Default aggregation: 'total', other are not identified as relevant nor available
 
 =item B<--resource>
 
-Set resource name or id (Required). It is the database name. 
+Set resource name or id (required). It is the database name. 
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--server>
 
-Set server name (Required if resource's name is used).
+Set server name (required if resource's name is used).
 
 =item B<--warning-deadlocks>
 

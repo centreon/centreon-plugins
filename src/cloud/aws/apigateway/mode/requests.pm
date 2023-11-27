@@ -182,7 +182,7 @@ Default statistic: 'sum'
 
 =item B<--api-name>
 
-Set the api name (Required) (can be defined multiple times).
+Set the api name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

@@ -247,7 +247,7 @@ Specify OID for downtime duration (default: '.1.3.6.1.4.1.50000.2.6')
 
 =item B<--centreon-server>
 
-Address of centreon server to send the trap (Required)
+Address of centreon server to send the trap (required)
 
 =item B<--author>
 

@@ -178,7 +178,7 @@ Check failover file retention or temporary is active.
 
 =item B<--broker-config>
 
-Specify the centreon-broker config (Required). Can be multiple.
+Specify the centreon-broker config (required). Can be multiple.
 
 =back
 

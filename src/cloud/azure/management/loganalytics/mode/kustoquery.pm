@@ -141,12 +141,12 @@ Exemple: 'Number of Syslog message collected %d'
 
 =item B<--query>
 
-Set query (Required).
+Set query (required).
 Syntax: https://docs.microsoft.com/en-us/azure/kusto/query/
 
 =item B<--workspace-id>
 
-Set workspace id (Required).
+Set workspace id (required).
 
 =item B<--timespan>
 

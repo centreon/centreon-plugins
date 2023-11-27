@@ -201,7 +201,7 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--queue-name>
 
-Set the SQS queue name (Required) (can be multiple, one instance per --queue-name option).
+Set the SQS queue name (required) (can be multiple, one instance per --queue-name option).
 Example: --queue-name="myqueue1" --queue-name="myqueue2".
 
 =item B<--filter-metric>

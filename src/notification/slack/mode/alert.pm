@@ -246,11 +246,11 @@ centreon_plugins.pl --plugin=notification::slack::plugin --mode=alert --slack-ur
 
 =item B<--slack-url>
 
-Specify slack url (Required).
+Specify slack url (required).
 
 =item B<--slack-channel>
 
-Specify slack channel (Required).
+Specify slack channel (required).
 
 =item B<--slack-username>
 
@@ -258,7 +258,7 @@ Specify slack username.
 
 =item B<--host-name>
 
-Specify host server name for the alert (Required).
+Specify host server name for the alert (required).
 
 =item B<--host-state>
 

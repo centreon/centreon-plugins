@@ -235,7 +235,7 @@ Command used: '/quadstorvtl/bin/vcconfig -l -v %(vtl-name)'
 
 =item B<--vtl-name>
 
-Set VTL name (Required).
+Set VTL name (required).
 
 =item B<--filter-name>
 

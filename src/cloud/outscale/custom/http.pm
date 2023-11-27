@@ -376,7 +376,7 @@ Set Outscale access key.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--port>
 

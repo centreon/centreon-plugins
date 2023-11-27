@@ -127,23 +127,23 @@ Open a service ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =item B<--service-id>
 
-Centreon service ID (Required).
+Centreon service ID (required).
 
 =item B<--service-state>
 
-Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (Required).
+Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (required).
 
 =item B<--service-output>
 
-Service output (Required).
+Service output (required).
 
 =item B<--contact-name>
 

@@ -145,11 +145,11 @@ Check replicated items replication and failover health.
 
 =item B<--vault-name>
 
-Set vault name (Required).
+Set vault name (required).
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--filter-name>
 

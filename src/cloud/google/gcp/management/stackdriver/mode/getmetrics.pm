@@ -203,15 +203,15 @@ perl centreon_plugins.pl --plugin=cloud::google::gcp::management::stackdriver::p
 
 =item B<--api>
 
-Set GCP API (Required).
+Set GCP API (required).
 
 =item B<--metric>
 
-Set stackdriver metric (Required).
+Set stackdriver metric (required).
 
 =item B<--dimension-name>
 
-Set dimension name (Required).
+Set dimension name (required).
 
 =item B<--dimension-operator>
 
@@ -219,7 +219,7 @@ Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 
-Set dimension value (Required).
+Set dimension value (required).
 
 =item B<--instance-key>
 

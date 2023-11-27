@@ -198,7 +198,7 @@ note: Outgoing* metrics are only available when enhanced stats are enabled (paid
 
 =item B<--stream-name>
 
-Set the stream name (Required) (can be defined multiple times).
+Set the stream name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

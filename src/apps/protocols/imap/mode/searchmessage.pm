@@ -103,7 +103,7 @@ Check messages in a mailbox with IMAP filter.
 
 =item B<--search>
 
-Set the search string (Required)
+Set the search string (required)
 
 =item B<--delete>
 

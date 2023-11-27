@@ -134,7 +134,7 @@ Check message queue.
 
 =item B<--message-queue-path>
 
-Specify the message queue (Required. Eg: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
+Specify the message queue (required. Eg: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
 
 =item B<--memory>
 

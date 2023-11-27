@@ -231,7 +231,7 @@ Use 'sudo' to execute the command.
 
 =item B<--broker-stats-file>
 
-Specify the centreon-broker json stats file (Required). Can be multiple.
+Specify the centreon-broker json stats file (required). Can be multiple.
 
 =item B<--filter-name>
 

@@ -239,7 +239,7 @@ Specify host server output message for the alert.
 
 =item B<--host-name>
 
-Specify host server name for the alert (Required).
+Specify host server name for the alert (required).
 
 =item B<--service-description>
 

@@ -246,7 +246,7 @@ Asterisk AMI custom mode
 
 =item B<--ami-hostname>
 
-AMI hostname (Required).
+AMI hostname (required).
 
 =item B<--ami-port>
 

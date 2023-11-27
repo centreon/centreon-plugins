@@ -191,7 +191,7 @@ You can use the following variables: %{result}, %{scenario}
 
 =item B<--mailbox>
 
-Set the mailbox to check (Required).
+Set the mailbox to check (required).
 
 =back
 

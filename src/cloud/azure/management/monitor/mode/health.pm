@@ -137,19 +137,19 @@ Check resource health status. Useful to determine host status (ie UP/DOWN).
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or id (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-namespace>
 
-Set resource namespace (Required if resource's name is used).
+Set resource namespace (required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Required if resource's name is used).
+Set resource type (required if resource's name is used).
 
 =back
 

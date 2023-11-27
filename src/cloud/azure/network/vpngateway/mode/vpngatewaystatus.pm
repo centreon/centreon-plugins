@@ -127,7 +127,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --cu
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--filter-name>
 

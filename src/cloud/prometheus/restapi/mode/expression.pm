@@ -276,17 +276,17 @@ labels you set through --query and --query-range options.
 =item B<--timeframe>
 
 Set timeframe in seconds (i.e. 3600 to check last hour)
-(Required for --query-range queries, Default: '900').
+(required for --query-range queries, Default: '900').
 
 =item B<--step>
 
 Set the step of the metric query (examples: '30s', '1m', '15m', '1h')
-(Required for --query-range queries, Default: '1m').
+(required for --query-range queries, Default: '1m').
 
 =item B<--aggregation>
 
 Set the aggregation on metric values (can be: 'average', 'min', 'max', 'sum')
-(Required for --query-range queries, Default: 'average').
+(required for --query-range queries, Default: 'average').
 
 =back
 

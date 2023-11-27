@@ -414,7 +414,7 @@ Rest API custom mode
 
 =item B<--hostname>
 
-Director hostname (Required)
+Director hostname (required)
 
 =item B<--port>
 

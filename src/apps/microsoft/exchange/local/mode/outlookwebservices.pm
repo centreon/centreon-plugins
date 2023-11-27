@@ -193,7 +193,7 @@ You can use the following variables: %{type}, %{id}, %{message}
 
 =item B<--mailbox>
 
-Set the mailbox to check (Required).
+Set the mailbox to check (required).
 
 =item B<--password>
 

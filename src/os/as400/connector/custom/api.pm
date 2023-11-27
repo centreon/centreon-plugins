@@ -230,15 +230,15 @@ Set timeout in seconds (default: 50)
 
 =item B<--as400-hostname>
 
-AS/400 hostname (Required)
+AS/400 hostname (required)
 
 =item B<--as400-username>
 
-AS/400 username (Required)
+AS/400 username (required)
 
 =item B<--as400-password>
 
-AS/400 password (Required)
+AS/400 password (required)
 
 =back
 

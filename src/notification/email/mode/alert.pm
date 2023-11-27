@@ -1071,11 +1071,11 @@ Enable smtp-debug mode.
 
 =item B<--to-address>
 
-Email address of the recipient (Required).
+Email address of the recipient (required).
 
 =item B<--from-address>
 
-Email address of the sender (Required).
+Email address of the sender (required).
 
 =item B<--host-id>
 

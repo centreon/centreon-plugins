@@ -161,7 +161,7 @@ Check cloudwatch logs.
 
 =item B<--group-name>
 
-Set log group name (Required).
+Set log group name (required).
 
 =item B<--stream-name>
 

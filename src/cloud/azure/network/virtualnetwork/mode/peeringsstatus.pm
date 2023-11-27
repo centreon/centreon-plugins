@@ -145,11 +145,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::virtualnetwork::plugin 
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--resource>
 
-Set virtual network name (Required).
+Set virtual network name (required).
 
 =item B<--filter-name>
 

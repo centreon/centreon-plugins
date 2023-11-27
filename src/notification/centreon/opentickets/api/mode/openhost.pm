@@ -120,19 +120,19 @@ Open a host ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =item B<--host-state>
 
-Host state (Eg: UP, DOWN, UNREACHABLE) (Required).
+Host state (Eg: UP, DOWN, UNREACHABLE) (required).
 
 =item B<--host-output>
 
-Host output (Required).
+Host output (required).
 
 =item B<--contact-name>
 

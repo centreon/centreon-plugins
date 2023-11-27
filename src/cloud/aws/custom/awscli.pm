@@ -1090,7 +1090,7 @@ Override AWS service endpoint URL if necessary.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 

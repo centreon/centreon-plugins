@@ -389,7 +389,7 @@ Rest API custom mode
 
 =item B<--region>
 
-Region (Required). Can be: eu, us, us-west, ap, au.
+Region (required). Can be: eu, us, us-west, ap, au.
 
 =item B<--port>
 

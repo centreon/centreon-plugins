@@ -206,7 +206,7 @@ Default statistic: 'sum', 'average'.
 
 =item B<--name>
 
-Set the function name (Required) (can be defined multiple times).
+Set the function name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

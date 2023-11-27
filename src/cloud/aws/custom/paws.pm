@@ -936,7 +936,7 @@ Set arn of the role to be assumed.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 

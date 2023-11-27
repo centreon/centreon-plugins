@@ -119,11 +119,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=stor
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or id (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-storage-used>
 

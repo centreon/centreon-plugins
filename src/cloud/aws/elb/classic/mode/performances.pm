@@ -222,11 +222,11 @@ Default statistic: 'sum', 'average' / Most useful statistics: RequestCount: 'sum
 
 =item B<--type>
 
-Set the instance type (Required) (can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--availability-zone>
 

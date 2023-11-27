@@ -321,11 +321,11 @@ centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin -
 
 =item B<--notification-type>
 
-Specify the notification type (Required).
+Specify the notification type (required).
 
 =item B<--host-name>
 
-Specify Host server name for the alert (Required).
+Specify Host server name for the alert (required).
 
 =item B<--host-state>
 

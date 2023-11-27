@@ -634,7 +634,7 @@ For futher informations, visit https://docs.microsoft.com/en-us/cli/azure/instal
 
 =item B<--subscription>
 
-Set Azure subscription (Required if logged to several subscriptions).
+Set Azure subscription (required if logged to several subscriptions).
 
 =item B<--timeframe>
 

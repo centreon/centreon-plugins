@@ -465,7 +465,7 @@ Rest API custom mode
 
 =item B<--hostname>
 
-ENM hostname (Required)
+ENM hostname (required)
 
 =item B<--port>
 

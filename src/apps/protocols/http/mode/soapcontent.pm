@@ -329,11 +329,11 @@ SOAP OPTIONS:
 
 =item B<--service-soap>
 
-Service Soap Action (Required)
+Service Soap Action (required)
 
 =item B<--data>
 
-Set file with SOAP request (Required)
+Set file with SOAP request (required)
 
 =item B<--lookup>
 

@@ -1963,7 +1963,7 @@ Collect and compute HTTP datas.
 
 =item B<--config>
 
-config used (Required).
+config used (required).
 Can be a file or json content.
 
 =item B<--filter-selection>

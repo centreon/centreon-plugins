@@ -111,7 +111,7 @@ Execute command and check result.
 
 =item B<--command-name>
 
-Specify the command to execute (Required).
+Specify the command to execute (required).
 
 =item B<--unknown-status>
 

@@ -239,11 +239,11 @@ Default aggregation: 'total' / Only total is valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or id (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-namespace>
 

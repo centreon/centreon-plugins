@@ -158,7 +158,7 @@ Default statistic: 'average' / Valid statistic: 'average'.
 
 =item B<--id>
 
-Set the instance id (Required) (can be defined multiple times).
+Set the instance id (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

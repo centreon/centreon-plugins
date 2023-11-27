@@ -147,7 +147,7 @@ Default statistic: 'sum' / Valid statistics: 'sum'.
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
