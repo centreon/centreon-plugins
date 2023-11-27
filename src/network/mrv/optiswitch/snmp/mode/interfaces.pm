@@ -430,7 +430,7 @@ Check global port statistics.
 
 =item B<--add-status>
 
-Check interface status (By default if no --add-* option is set).
+Check interface status (by default if no --add-* option is set).
 
 =item B<--add-duplex-status>
 

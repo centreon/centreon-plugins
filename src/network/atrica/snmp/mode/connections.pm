@@ -393,7 +393,7 @@ Check connections (A-Series.mib).
 
 =item B<--add-status>
 
-Check interface status (By default if no --add-* option is set).
+Check interface status (by default if no --add-* option is set).
 
 =item B<--add-traffic>
 

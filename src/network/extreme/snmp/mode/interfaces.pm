@@ -85,7 +85,7 @@ Check interfaces.
 
 =item B<--add-global>
 
-Check global port statistics (By default if no --add-* option is set).
+Check global port statistics (by default if no --add-* option is set).
 
 =item B<--add-status>
 

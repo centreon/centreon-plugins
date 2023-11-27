@@ -223,7 +223,7 @@ Set dimension value (required).
 
 =item B<--instance-key>
 
-Set instance key (By default, --dimension-name option is used).
+Set instance key (by default, --dimension-name option is used).
 
 =item B<--timeframe>
 
