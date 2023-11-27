@@ -267,7 +267,7 @@ Check files.
 
 =item B<--directory>
 
-Check directory (Multiple option).
+Check directory (multiple option).
 
 =item B<--max-depth>
 
@@ -275,7 +275,7 @@ Don't check fewer levels (default: '0'. Means current dir only). Used for direct
 
 =item B<--file>
 
-Check file (Multiple option).
+Check file (multiple option).
 
 =item B<--filter-file>
 

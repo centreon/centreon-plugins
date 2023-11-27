@@ -551,7 +551,7 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--get-param>
 
-Set GET params (Multiple option. Example: --get-param='key=value').
+Set GET params (multiple option. Example: --get-param='key=value').
 
 =item B<--header>
 

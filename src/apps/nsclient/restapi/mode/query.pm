@@ -248,7 +248,7 @@ Set command.
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1').
+Set arguments (multiple option. Example: --arg='arg1').
 
 =item B<--unknown-status>
 

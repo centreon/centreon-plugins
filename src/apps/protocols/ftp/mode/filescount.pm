@@ -206,7 +206,7 @@ Critical threshold (number of files)
 
 =item B<--directory>
 
-Check files in the directory (Multiple option)
+Check files in the directory (multiple option)
 
 =item B<--max-depth>
 

@@ -276,7 +276,7 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--get-param>
 
-Set GET params (Multiple option. Example: --get-param='key=value').
+Set GET params (multiple option. Example: --get-param='key=value').
 
 =item B<--header>
 
@@ -284,7 +284,7 @@ Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
 
 =item B<--post-param>
 
-Set POST params (Multiple option. Example: --post-param='key=value').
+Set POST params (multiple option. Example: --post-param='key=value').
 
 =item B<--cookies-file>
 

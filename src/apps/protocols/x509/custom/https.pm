@@ -223,7 +223,7 @@ Threshold for HTTP timeout (default: 5)
 
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers (multiple option)
 
 =item B<--no-follow>
 

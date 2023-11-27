@@ -172,12 +172,12 @@ Check files size.
 
 =item B<--directory>
 
-Check directory size (Multiple option).
+Check directory size (multiple option).
 Can get sub directory size with --max-depth option.
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option)
 
 =item B<--filter-file>
 

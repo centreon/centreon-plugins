@@ -304,7 +304,7 @@ Threshold for HTTP timeout
 
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers (multiple option)
 
 =item B<--units>
 

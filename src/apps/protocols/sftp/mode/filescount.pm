@@ -147,7 +147,7 @@ Count files in a directory (can be recursive).
 
 =item B<--directory>
 
-Check files in the directory (Multiple option)
+Check files in the directory (multiple option)
 
 =item B<--max-depth>
 

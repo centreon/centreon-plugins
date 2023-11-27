@@ -198,11 +198,11 @@ Check modified time of files.
 
 =item B<--directory>
 
-Check files in the directory (no recursive) (Multiple option)
+Check files in the directory (no recursive) (multiple option)
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option)
 
 =item B<--timezone>
 
