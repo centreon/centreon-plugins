@@ -128,7 +128,7 @@ Default aggregation: 'maximum' / 'total', 'minimum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 

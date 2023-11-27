@@ -137,7 +137,7 @@ Check resource health status. Useful to determine host status (ie UP/DOWN).
 
 =item B<--resource>
 
-Set resource name or id (required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 

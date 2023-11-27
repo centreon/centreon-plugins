@@ -113,7 +113,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=unne
 
 =item B<--resource>
 
-Set resource name or id (required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 

@@ -130,7 +130,7 @@ Default aggregation: 'maximum', other are not identified as relevant nor availab
 
 =item B<--resource>
 
-Set resource name or id (required). It is the database name. 
+Set resource name or ID (required). It is the database name. 
 
 =item B<--resource-group>
 

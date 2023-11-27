@@ -152,7 +152,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --m
 
 =item B<--resource>
 
-Set resource name or id (required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
