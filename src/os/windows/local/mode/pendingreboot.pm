@@ -163,7 +163,7 @@ __END__
 
 =head1 MODE
 
-Check pending windows reboot.
+Check pending Windows reboot.
 
 =over 8
 

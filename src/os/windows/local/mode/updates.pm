@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'pending-updates', nlabel => 'windows.pending.updates.count', set => {
                 key_values => [ { name => 'num' } ],
-                output_template => 'pending windows updates: %s',
+                output_template => 'pending Windows updates: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -149,7 +149,7 @@ __END__
 
 =head1 MODE
 
-Check pending windows updates.
+Check pending Windows updates.
 
 =over 8
 
@@ -184,11 +184,11 @@ Print powershell output.
 
 =item B<--filter-title>
 
-Filter windows updates by title (can be a regexp).
+Filter Windows updates by title (can be a regexp).
 
 =item B<--exclude-title>
 
-Exclude windows updates by title (regexp can be used).
+Exclude Windows updates by title (can be a regexp).
 
 =item B<--display-updates>
 
