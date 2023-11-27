@@ -247,7 +247,7 @@ Check node status.
 
 =item B<--node>
 
-Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
+Filter on a specific node (must be a PromQL filter, Default: 'node=~".*"')
 
 =item B<--warning-status>
 

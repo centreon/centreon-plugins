@@ -235,7 +235,7 @@ Check daemonset status.
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".*"')
+Filter on a specific daemonset (must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--warning-status>
 

@@ -197,7 +197,7 @@ Check instances traffic usage.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PVQL object, Default: 'layer')
+Filter on a specific instance (must be a PVQL object, Default: 'layer')
 
 (Object 'application' will be mapped with applications name)
 

@@ -207,11 +207,11 @@ Check container status.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container=~".*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container=~".*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
 
 =item B<--warning-status>
 

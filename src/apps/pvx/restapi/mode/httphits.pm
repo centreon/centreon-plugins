@@ -156,7 +156,7 @@ Check http hits.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PVQL object, Default: 'host')
+Filter on a specific instance (must be a PVQL object, Default: 'host')
 
 (Object 'application' will be mapped with applications name)
 

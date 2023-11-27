@@ -196,7 +196,7 @@ Timeout defaults to 120 seconds.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (mandatory).
+resources (must be <ip>/<cidr> format) (mandatory).
 
 =item B<--nmap-options>
 

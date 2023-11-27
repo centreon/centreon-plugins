@@ -184,11 +184,11 @@ Check namespace status phase.
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--phase>
 
-Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
+Filter on a specific phase (must be a PromQL filter, Default: 'phase=~".*"')
 
 =item B<--warning-status>
 

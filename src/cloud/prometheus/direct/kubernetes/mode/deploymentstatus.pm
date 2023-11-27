@@ -210,7 +210,7 @@ Check deployment status.
 
 =item B<--deployment>
 
-Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
+Filter on a specific deployment (must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--warning-status>
 

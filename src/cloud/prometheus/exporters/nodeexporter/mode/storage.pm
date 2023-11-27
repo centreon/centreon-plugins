@@ -249,15 +249,15 @@ Check storages usage.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--mountpoint>
 
-Filter on a specific mountpoint (Must be a PromQL filter, Default: 'mountpoint=~".*"')
+Filter on a specific mountpoint (must be a PromQL filter, Default: 'mountpoint=~".*"')
 
 =item B<--fstype>
 
-Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
+Filter on a specific fstype (must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
 
 =item B<--units>
 
