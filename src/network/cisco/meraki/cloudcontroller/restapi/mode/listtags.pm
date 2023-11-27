@@ -138,15 +138,15 @@ List tags.
 
 =item B<--filter-network-id>
 
-Filter tags by network id (Can be a regexp).
+Filter tags by network id (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter tags by organization id (Can be a regexp).
+Filter tags by organization id (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter tags by organization name (Can be a regexp).
+Filter tags by organization name (can be a regexp).
 
 =back
 

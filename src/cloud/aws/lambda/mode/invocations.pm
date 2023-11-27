@@ -210,18 +210,18 @@ Set the function name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Duration', 'Invocations', 'Errors',
+Filter metrics (can be: 'Duration', 'Invocations', 'Errors',
 'DeadLetterErrors', 'Throttles', 'IteratorAge') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*>
 
-Thresholds warning (Can be: 'invocations', 'errors',
+Thresholds warning (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =item B<--critical-*>
 
-Thresholds critical (Can be: 'invocations', 'errors',
+Thresholds critical (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =back

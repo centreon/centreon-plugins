@@ -201,19 +201,19 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--queue-name>
 
-Set the SQS queue name (Required) (Can be multiple, one instance per --queue-name option).
+Set the SQS queue name (Required) (can be multiple, one instance per --queue-name option).
 Example: --queue-name="myqueue1" --queue-name="myqueue2".
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ApproximateAgeOfOldestMessage', 'ApproximateNumberOfMessagesDelayed',
+Filter metrics (can be: 'ApproximateAgeOfOldestMessage', 'ApproximateNumberOfMessagesDelayed',
 'ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessagesVisible', 'NumberOfEmptyReceives',
 'NumberOfMessagesDeleted', 'NumberOfMessagesReceived', 'NumberOfMessagesSent').
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be 'messages-oldest-age', 'messages-delayed',
+Thresholds warning (can be 'messages-oldest-age', 'messages-delayed',
 'messages-notvisible', 'messages-visible', 'messages-empty-receives',
 'messages-deleted', 'messages-received', 'messages-sent').
 

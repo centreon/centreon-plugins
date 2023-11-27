@@ -217,11 +217,11 @@ Check hosts.
 
 =item B<--filter-host-sn>
 
-Filter hosts by serial number (Can be a regexp).
+Filter hosts by serial number (can be a regexp).
 
 =item B<--filter-host-name>
 
-Filter hosts by name (Can be a regexp).
+Filter hosts by name (can be a regexp).
 
 =item B<--unknown-host-status>
 

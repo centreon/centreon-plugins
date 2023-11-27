@@ -216,11 +216,11 @@ Check links QOE before and global QOE after VeloCloud Enhancements.
 
 =item B<--filter-edge-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--filter-link-name>
 
-Filter link by name (Can be a regexp).
+Filter link by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

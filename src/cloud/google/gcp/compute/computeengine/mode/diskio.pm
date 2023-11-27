@@ -202,9 +202,9 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/disk/read_bytes_count', 'instance/disk/throttled_read_bytes_count',
+Filter metrics (can be: 'instance/disk/read_bytes_count', 'instance/disk/throttled_read_bytes_count',
 'instance/disk/write_bytes_count', 'instance/disk/throttled_write_bytes_count',
-'instance/disk/read_ops_count', 'instance/disk/write_ops_count') (Can be a regexp).
+'instance/disk/read_ops_count', 'instance/disk/write_ops_count') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -218,7 +218,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'read-volume', 'throttled-read-volume',
+Thresholds (can be: 'read-volume', 'throttled-read-volume',
 'write-volume', 'throttled-write-volume', 'read-ops', 'write-ops').
 
 =item B<--per-second>

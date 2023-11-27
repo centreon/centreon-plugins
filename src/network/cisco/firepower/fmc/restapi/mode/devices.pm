@@ -182,11 +182,11 @@ Check devices.
 
 =item B<--filter-domain-name>
 
-Filter devices by domain name (Can be a regexp).
+Filter devices by domain name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--unknown-device-status>
 

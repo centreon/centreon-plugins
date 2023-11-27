@@ -186,7 +186,7 @@ Set the api name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Count', '4XXError', '5XXError') 
+Filter metrics (can be: 'Count', '4XXError', '5XXError') 
 
 =item B<--warning-*> B<--critical-*>
 

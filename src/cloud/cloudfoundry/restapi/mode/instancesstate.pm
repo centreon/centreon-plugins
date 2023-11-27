@@ -184,12 +184,12 @@ Critical threshold for instances state (default: '%{state} !~ /RUNNING/i').
 =item B<--warning-*>
 
 Warning threshold for instances count based 
-on state (Can be: 'running', 'stopped', 'crashed')
+on state (can be: 'running', 'stopped', 'crashed')
 
 =item B<--critical-*>
 
 Critical threshold for instances count based 
-on state (Can be: 'running', 'stopped', 'crashed').
+on state (can be: 'running', 'stopped', 'crashed').
 
 =back
 

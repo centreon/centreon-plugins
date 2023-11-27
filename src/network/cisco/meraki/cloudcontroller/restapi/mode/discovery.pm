@@ -204,23 +204,23 @@ Prettify JSON output.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'device', 'network').
+Choose the type of resources to discover (can be: 'device', 'network').
 
 =item B<--filter-network-id>
 
-Filter by network id (Can be a regexp).
+Filter by network id (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter by organization id (Can be a regexp).
+Filter by organization id (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter by organization name (Can be a regexp).
+Filter by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter by tags (Can be a regexp).
+Filter by tags (can be a regexp).
 
 =back
 

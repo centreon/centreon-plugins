@@ -189,7 +189,7 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (Required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
@@ -197,10 +197,10 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Queries', 'InsertThroughput', 'DeleteThroughput', 'SelectThroughput', 'UpdateThroughput',
+Filter metrics (can be: 'Queries', 'InsertThroughput', 'DeleteThroughput', 'SelectThroughput', 'UpdateThroughput',
 'DMLThroughput', 'DDLThroughput', 'InsertLatency', 'DeleteLatency', 'SelectLatency', 'UpdateLatency',
 'DMLLatency', 'DDLLatency') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

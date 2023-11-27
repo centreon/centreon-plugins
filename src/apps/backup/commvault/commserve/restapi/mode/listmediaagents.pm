@@ -111,7 +111,7 @@ List media agents.
 
 =item B<--filter-media-agent-name>
 
-Filter media agents by name (Can be a regexp).
+Filter media agents by name (can be a regexp).
 
 =back
 

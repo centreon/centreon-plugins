@@ -83,7 +83,7 @@ Resources discovery.
 =item B<--resource-type>
 
 Choose the type of resources
-to discover (Can be: 'esx', 'vm') (Mandatory).
+to discover (can be: 'esx', 'vm') (Mandatory).
 
 =item B<--prettify>
 

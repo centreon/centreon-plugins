@@ -224,9 +224,9 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CasHits', 'CasMisses', 'DecrHits', 'DecrMisses', 'DeleteHits', 'DeleteMisses',
+Filter metrics (can be: 'CasHits', 'CasMisses', 'DecrHits', 'DecrMisses', 'DeleteHits', 'DeleteMisses',
 'GetHits', 'GetMisses', 'IncrHits', 'IncrMisses', 'TouchHits', 'TouchMisses') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

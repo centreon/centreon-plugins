@@ -141,7 +141,7 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Network In', 'Network Out') (Can be a regexp).
+Filter metrics (can be: 'Network In', 'Network Out') (Can be a regexp).
 
 =item B<--warning-$label$>
 

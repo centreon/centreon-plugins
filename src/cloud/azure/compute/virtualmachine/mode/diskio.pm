@@ -156,8 +156,8 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Disk Read Bytes', 'Disk Write Bytes',
-'Disk Read Operations/Sec', 'Disk Write Operations/Sec') (Can be a regexp).
+Filter metrics (can be: 'Disk Read Bytes', 'Disk Write Bytes',
+'Disk Read Operations/Sec', 'Disk Write Operations/Sec') (can be a regexp).
 
 =item B<--warning-$label$>
 

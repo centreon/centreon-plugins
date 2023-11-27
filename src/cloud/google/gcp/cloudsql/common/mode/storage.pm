@@ -139,8 +139,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/disk/bytes_used',
-'database/disk/read_ops_count', 'databse/disk/write_ops_count') (Can be a regexp).
+Filter metrics (can be: 'database/disk/bytes_used',
+'database/disk/read_ops_count', 'databse/disk/write_ops_count') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -154,7 +154,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'space-usage', 'read-operations', 'write-operations').
+Thresholds (can be: 'space-usage', 'read-operations', 'write-operations').
 
 =item B<--per-second>
 

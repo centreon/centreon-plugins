@@ -97,11 +97,11 @@ Check connected users.
 
 =item B<--filter-appl-name>
 
-Filter users by application name (Can be a regex).
+Filter users by application name (can be a regex).
 
 =item B<--exclude-appl-name>
 
-Exclude users by application name (Can be a regex).
+Exclude users by application name (can be a regex).
 
 =item B<--warning-*> B<--critical-*>
 

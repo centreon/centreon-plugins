@@ -184,7 +184,7 @@ Critical threshold.
 
 =item B<--filter-name>
 
-Filter disk name. (Can be a regex)
+Filter disk name. (can be a regex)
 
 =item B<--units>
 

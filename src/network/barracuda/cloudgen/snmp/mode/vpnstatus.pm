@@ -160,7 +160,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--filter-name>
 
-Filter by VPN name (Can be a regexp).
+Filter by VPN name (can be a regexp).
 
 =back
 

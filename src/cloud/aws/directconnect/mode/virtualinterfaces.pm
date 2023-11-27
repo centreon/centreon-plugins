@@ -220,9 +220,9 @@ Filter virtual interface id (can be a regexp).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'VirtualInterfaceBpsEgress', 'VirtualInterfaceBpsIngress', 
+Filter metrics (can be: 'VirtualInterfaceBpsEgress', 'VirtualInterfaceBpsIngress', 
 'VirtualInterfacePpsEgress', 'VirtualInterfacePpsIngress') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-status>
 

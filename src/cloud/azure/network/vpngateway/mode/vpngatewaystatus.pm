@@ -131,7 +131,7 @@ Set resource group (Required).
 
 =item B<--filter-name>
 
-Filter vpn name (Can be a regexp).
+Filter vpn name (can be a regexp).
 
 =item B<--warning-status>
 

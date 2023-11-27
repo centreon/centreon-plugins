@@ -118,7 +118,7 @@ Check databases statistics
 
 =item B<--filter-database>
 
-Filter database name (Can use regexp).
+Filter database name (can use regexp).
 
 =item B<--warning-*>
 

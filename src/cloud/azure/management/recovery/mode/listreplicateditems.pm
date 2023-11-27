@@ -145,7 +145,7 @@ Set resource group (Mandatory).
 
 =item B<--filter-name>
 
-Filter on item name (Can be a regexp).
+Filter on item name (can be a regexp).
 
 =back
 

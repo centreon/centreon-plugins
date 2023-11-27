@@ -202,7 +202,7 @@ Set the stream name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords',
+Filter metrics (can be: 'IncomingBytes', 'IncomingRecords',
 'OutgoingBytes', 'OutgoingRecords') 
 
 =item B<--warning-*> B<--critical-*>

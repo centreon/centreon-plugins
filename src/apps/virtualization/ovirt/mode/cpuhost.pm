@@ -117,11 +117,11 @@ Check host cpu utilization.
 
 =item B<--filter-name>
 
-Filter host name (Can be a regexp).
+Filter host name (can be a regexp).
 
 =item B<--filter-id>
 
-Filter host id (Can be a regexp).
+Filter host id (can be a regexp).
 
 =item B<--warning-*>
 

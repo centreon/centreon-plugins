@@ -341,7 +341,7 @@ Default statistic: 'average' / All statistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (Required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 

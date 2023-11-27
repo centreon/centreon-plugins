@@ -184,7 +184,7 @@ Critical threshold.
 
 =item B<--filter-name>
 
-Filter volume name. (Can be a regex)
+Filter volume name. (can be a regex)
 
 =item B<--units>
 

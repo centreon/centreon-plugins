@@ -191,11 +191,11 @@ Check channels.
 
 =item B<--filter-name>
 
-Filter channel name (Can use regexp).
+Filter channel name (can use regexp).
 
 =item B<--filter-type>
 
-Filter channel type (Can use regexp, insensitive search).
+Filter channel type (can use regexp, insensitive search).
 
 Here is the IBM - Perl mapping about Channel types: 
 

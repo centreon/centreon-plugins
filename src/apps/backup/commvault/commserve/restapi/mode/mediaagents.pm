@@ -169,11 +169,11 @@ Check media agents.
 
 =item B<--filter-media-agent-id>
 
-Filter media agents by id (Can be a regexp).
+Filter media agents by id (can be a regexp).
 
 =item B<--filter-media-agent-name>
 
-Filter media agents by name (Can be a regexp).
+Filter media agents by name (can be a regexp).
 
 =item B<--unknown-device-status>
 

@@ -241,8 +241,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ReplicationBytes', 'ReplicationLag') 
-(Can be a regexp).
+Filter metrics (can be: 'ReplicationBytes', 'ReplicationLag') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

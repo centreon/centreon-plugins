@@ -187,7 +187,7 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (Required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
@@ -195,8 +195,8 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ActiveTransactions', 'BlockedTransactions', 'CommitThroughput', 'CommitLatency') 
-(Can be a regexp).
+Filter metrics (can be: 'ActiveTransactions', 'BlockedTransactions', 'CommitThroughput', 'CommitLatency') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

@@ -223,7 +223,7 @@ Default statistic: 'sum', 'maximum' / Most useful statistics: SpilloverCount: 's
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (Required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
@@ -235,12 +235,12 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'SpilloverCount', 'SurgeQueueLength') 
-(Can be a regexp).
+Filter metrics (can be: 'SpilloverCount', 'SurgeQueueLength') 
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'spillovercount', 'surgequeuelength').
+Thresholds warning (can be: 'spillovercount', 'surgequeuelength').
 
 =back
 

@@ -166,7 +166,7 @@ Check chassis.
 
 =item B<--filter-chassis-sn>
 
-Filter clusters by serial number (Can be a regexp).
+Filter clusters by serial number (can be a regexp).
 
 =item B<--unknown-chassis-status>
 

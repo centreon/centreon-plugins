@@ -224,8 +224,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Evictions', 'Reclaimed') 
-(Can be a regexp).
+Filter metrics (can be: 'Evictions', 'Reclaimed') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

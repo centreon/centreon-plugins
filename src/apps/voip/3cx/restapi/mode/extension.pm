@@ -179,7 +179,7 @@ You can use the following variables: %{extension}, %{registered}, %{dnd}, %{prof
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'count').
+Thresholds (can be: 'count').
 
 =back
 

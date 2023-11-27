@@ -247,7 +247,7 @@ Default statistic: 'sum' / Most useful statistics: 'sum'.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (Required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
@@ -259,13 +259,13 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX',
+Filter metrics (can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX',
 'HTTPCode_Backend_5XX', 'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX', 'BackendConnectionErrors') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+Thresholds warning (can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
 'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
 'httpcode-elb-5xx', 'backendconnectionerrors')
 

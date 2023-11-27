@@ -527,7 +527,7 @@ Legacy used: cat /proc/drbd
 
 =item B<--filter-resource-name>
 
-Filter resource name (Can be a regexp).
+Filter resource name (can be a regexp).
 
 =item B<--legacy-proc>
 

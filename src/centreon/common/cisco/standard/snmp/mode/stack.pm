@@ -274,7 +274,7 @@ Check Cisco Stack (CISCO-STACKWISE-MIB).
 =item B<--warning-*> B<--critical-*>
 
 Set thresholds on members count for each states.
-(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+(can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
 'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
 
 =item B<--warning-stack-status>

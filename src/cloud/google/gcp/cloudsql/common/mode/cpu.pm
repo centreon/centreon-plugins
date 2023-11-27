@@ -121,8 +121,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/cpu/utilization',
-'database/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (can be: 'database/cpu/utilization',
+'database/cpu/reserved_cores') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -136,7 +136,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'utilization', 'cores-reserved').
+Thresholds (can be: 'utilization', 'cores-reserved').
 
 =back
 

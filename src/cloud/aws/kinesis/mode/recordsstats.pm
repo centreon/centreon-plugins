@@ -225,7 +225,7 @@ Set the stream name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes', ) 
+Filter metrics (can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes', ) 
 
 =item B<--warning-*> B<--critical-*>
 

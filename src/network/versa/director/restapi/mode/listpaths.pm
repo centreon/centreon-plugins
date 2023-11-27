@@ -135,11 +135,11 @@ List paths by devices.
 
 =item B<--filter-device-name>
 
-Filter device by name (Can be a regexp).
+Filter device by name (can be a regexp).
 
 =item B<--filter-device-type>
 
-Filter device by type (Can be a regexp).
+Filter device by type (can be a regexp).
 
 =back
 

@@ -187,15 +187,15 @@ Check BGP peer state (BGP4-V2-MIB-JUNIPER)
 
 =item B<--filter-peer>
 
-Filter by peer identifier (Can be regexp)
+Filter by peer identifier (can be regexp)
 
 =item B<--filter-remote-ip>
 
-Filter by remote ip address (Can be regexp)
+Filter by remote ip address (can be regexp)
 
 =item B<--filter-local-as>
 
-Filter by local AS (Can be regexp)
+Filter by local AS (can be regexp)
 
 =item B<--warning-status>
 

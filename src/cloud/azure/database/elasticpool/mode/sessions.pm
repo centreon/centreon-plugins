@@ -271,7 +271,7 @@ Set resource group (Required if resource's name is used).
 =item B<--filter-metric>
 
 Filter on specific metrics. The Azure format must be used, for example: 'sessions_percent'
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*>
 

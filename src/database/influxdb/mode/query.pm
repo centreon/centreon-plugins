@@ -236,7 +236,7 @@ labels you set through --query.
 
 =item B<--aggregation>
 
-Set the aggregation on metric values (Can be: 'average', 'min', 'max', 'sum')
+Set the aggregation on metric values (can be: 'average', 'min', 'max', 'sum')
 (default: 'average').
 
 =over 8

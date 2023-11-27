@@ -153,7 +153,7 @@ Set resource group (Required).
 
 =item B<--filter-name>
 
-Filter item name (Can be a regexp).
+Filter item name (can be a regexp).
 
 =item B<--warning-replication-status>
 

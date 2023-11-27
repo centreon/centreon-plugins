@@ -137,7 +137,7 @@ Check hosts.
 
 =item B<--filter-name>
 
-Filter host name (Can use regexp).
+Filter host name (can use regexp).
 
 =item B<--display-failed-hosts>
 

@@ -105,7 +105,7 @@ Check databases size
 
 =item B<--filter-database>
 
-Filter database to checks (Can use regexp).
+Filter database to checks (can use regexp).
 
 =item B<--warning-size>
 

@@ -160,9 +160,9 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'IntegrationRuntimeAvailableMemory', 'IntegrationRuntimeAvailableNodeNumber',
+Filter metrics (can be: 'IntegrationRuntimeAvailableMemory', 'IntegrationRuntimeAvailableNodeNumber',
 'IntegrationRuntimeAverageTaskPickupDelay', 'IntegrationRuntimeCpuPercentage', 'IntegrationRuntimeQueueLength')
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$>
 

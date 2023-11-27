@@ -203,7 +203,7 @@ Set resource group (Required).
 
 =item B<--filter-name>
 
-Filter job name (Can be a regexp).
+Filter job name (can be a regexp).
 
 =item B<--filter-counters>
 

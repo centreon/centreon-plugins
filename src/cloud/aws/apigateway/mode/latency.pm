@@ -185,7 +185,7 @@ Set the API name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Latency', 'IntegrationLatency') 
+Filter metrics (can be: 'Latency', 'IntegrationLatency') 
 
 =item B<--warning-*> B<--critical-*>
 

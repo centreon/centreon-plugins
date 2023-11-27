@@ -236,8 +236,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CurrConnections', 'NewConnections') 
-(Can be a regexp).
+Filter metrics (can be: 'CurrConnections', 'NewConnections') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

@@ -171,18 +171,18 @@ Specify a custom output message relying on printf formatting. If this option is 
 =item B<--printf-value>
 
 Specify scalar used to replace in printf. If this option is set --printf-format is mandatory.
-(Can be: %{key_field}, %{value_field})
+(can be: %{key_field}, %{value_field})
 
 =item B<--warning-string>
 
 Define the conditions to match for the status to be WARNING.
-(Can be: %{key_field}, %{value_field})
+(can be: %{key_field}, %{value_field})
 e.g --warning-string '%{key_field} eq 'Central' && %{value_field} =~ /127.0.0.1/'
 
 =item B<--critical-string>
 
 Define the conditions to match for the status to be CRITICAL
-(Can be: %{key_field} or %{value_field})
+(can be: %{key_field} or %{value_field})
 
 =item B<--dual-table>
 

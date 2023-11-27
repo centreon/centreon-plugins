@@ -374,7 +374,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--filter-counters>
 
-Filter counters to be displayed (Can be: 'usage', 'count', 'inodes').
+Filter counters to be displayed (can be: 'usage', 'count', 'inodes').
 
 =item B<--disk-index>
 
@@ -417,7 +417,7 @@ Force to use 32 bits counters. Should be used when 64 bits high/low components a
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
+Thresholds (can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
 
 =back
 

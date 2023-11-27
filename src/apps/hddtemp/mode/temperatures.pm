@@ -142,7 +142,7 @@ Check drive temperatures.
 
 =item B<--filter-name>
 
-Filter drive name (Can use regexp).
+Filter drive name (can use regexp).
 
 =item B<--unknown-status>
 

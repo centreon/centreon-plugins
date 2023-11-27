@@ -164,8 +164,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
-'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
+Filter metrics (can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
+'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -179,7 +179,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
+Thresholds (can be: 'fsyncs-calls', 'fsync-calls-logfile',
 'pages-read', 'pages-written').
 
 =item B<--per-second>

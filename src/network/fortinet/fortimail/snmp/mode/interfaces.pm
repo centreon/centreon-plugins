@@ -119,7 +119,7 @@ Set the interface (number expected) ex: 1,2,... (empty means 'check all interfac
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows to use interface name with option --interface instead of interface oid index (can be a regexp)
 
 =item B<--speed>
 

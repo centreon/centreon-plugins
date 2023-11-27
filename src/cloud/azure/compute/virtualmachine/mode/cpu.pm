@@ -151,8 +151,8 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
-'Percentage CPU') (Can be a regexp).
+Filter metrics (can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
+'Percentage CPU') (can be a regexp).
 
 =item B<--warning-$label$>
 

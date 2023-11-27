@@ -192,7 +192,7 @@ Default statistic: 'average' / Only valid statistic: 'average'.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'asg', 'instance').
+Set the instance type (Required) (can be: 'asg', 'instance').
 
 =item B<--name>
 

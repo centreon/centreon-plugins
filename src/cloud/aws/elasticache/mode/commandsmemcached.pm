@@ -223,8 +223,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CmdFlush', 'CmdGet', 'CmdSet', 'CmdConfigGet', 'CmdConfigSet', 'CmdTouch') 
-(Can be a regexp).
+Filter metrics (can be: 'CmdFlush', 'CmdGet', 'CmdSet', 'CmdConfigGet', 'CmdConfigSet', 'CmdTouch') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

@@ -179,7 +179,7 @@ Check job templates.
 
 =item B<--filter-name>
 
-Filter job template name (Can use regexp).
+Filter job template name (can use regexp).
 
 =item B<--launch-job-template-id>
 

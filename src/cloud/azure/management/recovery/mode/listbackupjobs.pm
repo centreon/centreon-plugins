@@ -148,7 +148,7 @@ Set resource group (Mandatory).
 
 =item B<--filter-name>
 
-Filter job name (Can be a regexp).
+Filter job name (can be a regexp).
 
 =back
 

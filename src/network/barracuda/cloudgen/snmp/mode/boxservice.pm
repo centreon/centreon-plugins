@@ -162,7 +162,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--filter-name>
 
-Filter by service name (Can be a regexp).
+Filter by service name (can be a regexp).
 
 =back
 

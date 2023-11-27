@@ -147,7 +147,7 @@ Set SQL erver (Required).
 
 =item B<--filter-name>
 
-Filter resource name (Can be a regexp).
+Filter resource name (can be a regexp).
 
 =back
 

@@ -153,7 +153,7 @@ Set virtual network name (Required).
 
 =item B<--filter-name>
 
-Filter peering name (Can be a regexp).
+Filter peering name (can be a regexp).
 
 =item B<--warning-status>
 

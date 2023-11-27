@@ -222,7 +222,7 @@ Default statistic: 'sum', 'average' / Most useful statistics: RequestCount: 'sum
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (Required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
@@ -234,12 +234,12 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'RequestCount', 'Latency') 
-(Can be a regexp).
+Filter metrics (can be: 'RequestCount', 'Latency') 
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'requestcount', 'latency').
+Thresholds warning (can be: 'requestcount', 'latency').
 
 =back
 

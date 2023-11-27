@@ -171,9 +171,9 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngressPackets',
+Filter metrics (can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngressPackets',
 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$label$>
 

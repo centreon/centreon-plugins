@@ -150,8 +150,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/network/received_bytes_count',
-'database/network/sent_bytes_count', 'database/network/connections') (Can be a regexp).
+Filter metrics (can be: 'database/network/received_bytes_count',
+'database/network/sent_bytes_count', 'database/network/connections') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -165,7 +165,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'received-volume', 'sent-volume',
+Thresholds (can be: 'received-volume', 'sent-volume',
 'connections').
 
 =item B<--per-second>

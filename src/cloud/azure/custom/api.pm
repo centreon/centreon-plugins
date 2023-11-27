@@ -1295,7 +1295,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--interval>
 
-Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--aggregation>
 

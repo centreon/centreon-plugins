@@ -233,7 +233,7 @@ Check interfaces.
 
 =item B<--filter-port-name>
 
-Filter port name (Can be a regexp).
+Filter port name (can be a regexp).
 
 =item B<--unknown-port-status>
 

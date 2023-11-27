@@ -131,7 +131,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'device').
+Choose the type of resources to discover (can be: 'device').
 
 =back
 

@@ -949,7 +949,7 @@ Set timeframe in seconds.
 =item B<--statistic>
 
 Set cloudwatch statistics
-(Can be: 'minimum', 'maximum', 'average', 'sum').
+(can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 

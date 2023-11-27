@@ -137,7 +137,7 @@ Check node usage.
 
 =item B<--filter-name>
 
-Filter node name (Can use regexp).
+Filter node name (can use regexp).
 
 =item B<--warning-status>
 

@@ -150,8 +150,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'storage/object_count', 'network/received_bytes_count',
-'network/sent_bytes_count') (Can be a regexp).
+Filter metrics (can be: 'storage/object_count', 'network/received_bytes_count',
+'network/sent_bytes_count') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -165,7 +165,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'bucket-objects', 'received-volume', 'sent-volume').
+Thresholds (can be: 'bucket-objects', 'received-volume', 'sent-volume').
 
 =item B<--per-second>
 

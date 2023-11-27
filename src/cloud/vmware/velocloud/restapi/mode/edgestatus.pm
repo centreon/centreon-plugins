@@ -123,7 +123,7 @@ Check edge status.
 
 =item B<--filter-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--unknown-status>
 

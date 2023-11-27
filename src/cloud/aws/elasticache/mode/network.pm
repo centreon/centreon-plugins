@@ -226,8 +226,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NetworkBytesIn', 'NetworkBytesOut') 
-(Can be a regexp).
+Filter metrics (can be: 'NetworkBytesIn', 'NetworkBytesOut') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

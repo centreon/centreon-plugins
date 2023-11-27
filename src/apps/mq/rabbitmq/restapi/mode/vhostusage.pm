@@ -137,7 +137,7 @@ Check vhost usage.
 
 =item B<--filter-name>
 
-Filter vhost name (Can use regexp).
+Filter vhost name (can use regexp).
 
 =item B<--warning-status>
 

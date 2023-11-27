@@ -225,9 +225,9 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'GetTypeCmds', 'HashBasedCmds', 'KeyBasedCmds', 'ListBasedCmds',
+Filter metrics (can be: 'GetTypeCmds', 'HashBasedCmds', 'KeyBasedCmds', 'ListBasedCmds',
 'SetBasedCmds', 'SetTypeCmds', 'SortedSetBasedCmds', 'StringBasedCmds', 'HyperLogLogBasedCmds') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

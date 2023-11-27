@@ -223,12 +223,12 @@ Add target group dimension.
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HealthyHostCount', 'UnHealthyHostCount') 
-(Can be a regexp).
+Filter metrics (can be: 'HealthyHostCount', 'UnHealthyHostCount') 
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'healthyhostcount', 'unhealthyhostcount').
+Thresholds warning (can be: 'healthyhostcount', 'unhealthyhostcount').
 
 =back
 

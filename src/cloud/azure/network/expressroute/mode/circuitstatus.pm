@@ -136,7 +136,7 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter circuit name (Can be a regexp).
+Filter circuit name (can be a regexp).
 
 =item B<--warning-status>
 

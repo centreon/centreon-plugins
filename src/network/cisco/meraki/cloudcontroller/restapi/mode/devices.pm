@@ -579,23 +579,23 @@ Check devices.
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter devices by network id (Can be a regexp).
+Filter devices by network id (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (Can be a regexp).
+Filter devices by organization id (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter devices by organization name (Can be a regexp).
+Filter devices by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter devices by tags (Can be a regexp).
+Filter devices by tags (can be a regexp).
 
 =item B<--add-switch-ports>
 
@@ -603,7 +603,7 @@ Add switch port statuses and traffic.
 
 =item B<--filter-switch-port>
 
-Filter switch port (Can be a regexp).
+Filter switch port (can be a regexp).
 
 =item B<--skip-clients>
 

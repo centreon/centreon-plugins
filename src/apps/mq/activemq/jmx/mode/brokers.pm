@@ -308,15 +308,15 @@ Check brokers.
 
 =item B<--filter-broker-name>
 
-Filter broker name (Can be a regexp).
+Filter broker name (can be a regexp).
 
 =item B<--filter-destination-name>
 
-Filter destination name (Can be a regexp).
+Filter destination name (can be a regexp).
 
 =item B<--filter-destination-type>
 
-Filter destination type (Can be a regexp).
+Filter destination type (can be a regexp).
 
 =item B<--warning-status>
 

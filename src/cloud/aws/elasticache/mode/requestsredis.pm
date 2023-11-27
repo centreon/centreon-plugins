@@ -222,8 +222,8 @@ Set the node id (Optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CacheHits', 'CacheMisses') 
-(Can be a regexp).
+Filter metrics (can be: 'CacheHits', 'CacheMisses') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

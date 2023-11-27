@@ -130,7 +130,7 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/mysql/questions', 'database/mysql/queries') (Can be a regexp).
+Filter metrics (can be: 'database/mysql/questions', 'database/mysql/queries') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -144,7 +144,7 @@ Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'queries', 'questions').
+Thresholds (can be: 'queries', 'questions').
 
 =item B<--per-second>
 

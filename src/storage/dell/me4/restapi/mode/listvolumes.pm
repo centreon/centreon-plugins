@@ -103,7 +103,7 @@ List volumes.
 
 =item B<--filter-name>
 
-Filter volume name (Can be a regexp).
+Filter volume name (can be a regexp).
 
 =back
 

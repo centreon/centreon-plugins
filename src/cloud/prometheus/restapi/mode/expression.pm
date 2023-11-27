@@ -285,7 +285,7 @@ Set the step of the metric query (Examples: '30s', '1m', '15m', '1h')
 
 =item B<--aggregation>
 
-Set the aggregation on metric values (Can be: 'average', 'min', 'max', 'sum')
+Set the aggregation on metric values (can be: 'average', 'min', 'max', 'sum')
 (Required for --query-range queries, Default: 'average').
 
 =back

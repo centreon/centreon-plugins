@@ -151,9 +151,9 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'AllRequests', 'GetRequests', 'PutRequests',
+Filter metrics (can be: 'AllRequests', 'GetRequests', 'PutRequests',
 'DeleteRequests', 'HeadRequests', 'PostRequests', 'ListRequests') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

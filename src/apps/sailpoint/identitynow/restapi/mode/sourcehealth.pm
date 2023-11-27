@@ -138,11 +138,11 @@ Define source ID to retrieve only one source health status (useful with service 
 
 =item B<--filter-name>
 
-Filter source name (Can be a regexp).
+Filter source name (can be a regexp).
 
 =item B<--filter-type>
 
-Filter source type (Can be a regexp).
+Filter source type (can be a regexp).
 
 =item B<--warning-health-status>
 

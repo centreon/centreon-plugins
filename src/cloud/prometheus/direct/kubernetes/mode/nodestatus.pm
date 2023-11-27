@@ -269,7 +269,7 @@ Critical threshold for pods allocation.
 
 =item B<--units>
 
-Units of thresholds (default: '') (Can be '%').
+Units of thresholds (default: '') (can be '%').
 
 =item B<--extra-filter>
 

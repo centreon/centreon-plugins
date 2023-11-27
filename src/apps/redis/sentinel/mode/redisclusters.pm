@@ -235,7 +235,7 @@ Check redis clusters informations.
 
 =item B<--filter-cluster-name>
 
-Filter clusters by name (Can be a regexp).
+Filter clusters by name (can be a regexp).
 
 =item B<--unknown-status>
 

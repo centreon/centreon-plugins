@@ -203,11 +203,11 @@ Default: 'Microsoft.Storage'.
 
 =item B<--storage-type>
 
-Set storage type (Can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
+Set storage type (can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'SuccessServerLatency', 'SuccessE2ELatency') (Can be a regexp).
+Filter metrics (can be: 'SuccessServerLatency', 'SuccessE2ELatency') (Can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 

@@ -109,7 +109,7 @@ List Mulesoft Anypoint Messages Queues.
 
 =item B<--filter-name>
 
-Filter on queue name (Can be a regexp).
+Filter on queue name (can be a regexp).
 
 =item B<--region-id>
 

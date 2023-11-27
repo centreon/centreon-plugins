@@ -139,7 +139,7 @@ Critical threshold (can check 1 or 0).
 
 =item B<--chunk-state>
 
-State to check (Can be: is_offline, is_recovering, is_blobchunk, is_inconsistent).
+State to check (can be: is_offline, is_recovering, is_blobchunk, is_inconsistent).
 
 =item B<--error-msg>
 

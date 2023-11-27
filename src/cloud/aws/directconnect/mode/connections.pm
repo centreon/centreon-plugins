@@ -223,9 +223,9 @@ Filter connection id (can be a regexp).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress', 
+Filter metrics (can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress', 
 'ConnectionPpsEgress', 'ConnectionPpsIngress', 'ConnectionLightLevelTx', 'ConnectionLightLevelRx') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-status>
 

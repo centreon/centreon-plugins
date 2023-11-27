@@ -162,7 +162,7 @@ Check schedules.
 
 =item B<--filter-name>
 
-Filter schedule name (Can use regexp).
+Filter schedule name (can use regexp).
 
 =item B<--unknown-job-status>
 

@@ -153,8 +153,8 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
-(Can be a regexp).
+Filter metrics (can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
+(can be a regexp).
 
 =item B<--warning-$label$>
 

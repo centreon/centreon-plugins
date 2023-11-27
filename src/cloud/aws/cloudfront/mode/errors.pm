@@ -162,17 +162,17 @@ Set the instance id (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
-(Can be a regexp).
+Filter metrics (can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
+(can be a regexp).
 
 =item B<--warning-*>
 
-Thresholds warning (Can be: 'errorrate-total',
+Thresholds warning (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =item B<--critical-*>
 
-Thresholds critical (Can be: 'errorrate-total',
+Thresholds critical (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =back

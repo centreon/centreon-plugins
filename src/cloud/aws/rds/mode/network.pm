@@ -175,7 +175,7 @@ Default statistic: 'average' / All statistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (Required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
@@ -183,8 +183,8 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput') 
-(Can be a regexp).
+Filter metrics (can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 

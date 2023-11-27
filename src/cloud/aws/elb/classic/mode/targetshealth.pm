@@ -223,7 +223,7 @@ Default statistic: 'average' / Most useful statistics: 'average', 'minimum', 'ma
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (Required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
@@ -235,12 +235,12 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HealthyHostCount', 'UnHealthyHostCount') 
-(Can be a regexp).
+Filter metrics (can be: 'HealthyHostCount', 'UnHealthyHostCount') 
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'healthyhostcount', 'unhealthyhostcount').
+Thresholds warning (can be: 'healthyhostcount', 'unhealthyhostcount').
 
 =back
 

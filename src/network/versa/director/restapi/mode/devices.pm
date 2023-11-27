@@ -481,15 +481,15 @@ Check device under an organization name.
 
 =item B<--filter-org-name>
 
-Filter organizations by name (Can be a regexp).
+Filter organizations by name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter device by name (Can be a regexp).
+Filter device by name (can be a regexp).
 
 =item B<--filter-device-type>
 
-Filter device by type (Can be a regexp).
+Filter device by type (can be a regexp).
 
 =item B<--add-paths>
 

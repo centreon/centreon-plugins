@@ -286,7 +286,7 @@ Set HTTP timeout
 
 =item B<--header>
 
-Set HTTP header (Can be multiple, example: --header='Authorization:Bearer ABCD')
+Set HTTP header (can be multiple, example: --header='Authorization:Bearer ABCD')
 
 Useful to access Prometheus API hosted in a specific environment.
 

@@ -201,7 +201,7 @@ Set resource group (Optional).
 =item B<--filter-type>
 
 Filter by virtual machine type (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
+(can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
 
 =item B<--filter-size>
 
