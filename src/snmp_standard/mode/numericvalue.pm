@@ -285,7 +285,7 @@ Output format (default: 'current value is %s')
 =item B<--format-custom>
 
 Apply a custom change on the value 
-(Example to multiply the value: --format-custom='* 8').
+(example to multiply the value: --format-custom='* 8').
 
 =item B<--format-scale>
 

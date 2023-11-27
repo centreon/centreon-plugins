@@ -162,7 +162,7 @@ Check Google workspace service status.
 =item B<--filter-name>
 
 Only display the status for a specific servie
-(Example: --filter-service='gmail')
+(example: --filter-service='gmail')
 
 =item B<--warning-status>
 

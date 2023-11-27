@@ -307,7 +307,7 @@ Set POST params (multiple option. Example: --post-param='key=value')
 
 =item B<--cookies-file>
 
-Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
+Save cookies in a file (example: '/tmp/lwp_cookies.dat')
 
 =item B<--extracted-pattern>
 

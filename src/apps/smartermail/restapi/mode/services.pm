@@ -102,7 +102,7 @@ Check services.
 =item B<--filter-service>
 
 Only display some counters (regexp can be used).
-(Example: --filter-service='spool|smtp|pop')
+(example: --filter-service='spool|smtp|pop')
 
 =item B<--unknown-status>
 

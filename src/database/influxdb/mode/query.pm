@@ -202,23 +202,23 @@ Set a InfluxQL query. Query option must be like --query='label,query'.
 Query must contain an "AS" keyword to rename the column
 of the selected data, and must match the label.
 
-(Example: --query='mymetric,SELECT the_data AS "mymetric" 
+(example: --query='mymetric,SELECT the_data AS "mymetric" 
 FROM "database"."retention"."measurement" GROUP BY "instance"')
 
 =item B<--instance>
 
-Set the instance label on which the results should be calculate for (Example: --instance='name').
+Set the instance label on which the results should be calculate for (example: --instance='name').
 
 The instance label must be the same label as the "GROUP BY" keyword.
 
 =item B<--output>
 
-Set the output for each instances (Example: --output='Object %{instance} value is {label}').
+Set the output for each instances (example: --output='Object %{instance} value is {label}').
 
 =item B<--multiple-output>
 
 Set the global output in case everything is fine for multiple instances
-(Example: --multiple-output='All instance values are ok').
+(example: --multiple-output='All instance values are ok').
 
 =item B<--warning-status>
 

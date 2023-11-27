@@ -195,7 +195,7 @@ Display virtual machine description.
 
 =item B<--device>
 
-Device to check (Required) (Example: --device='VirtualCdrom').
+Device to check (Required) (example: --device='VirtualCdrom').
 
 =item B<--unknown-status>
 

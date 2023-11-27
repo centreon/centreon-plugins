@@ -162,7 +162,7 @@ Filter on a specific instance (Must be a PVQL object, Default: 'host')
 
 =item B<--filter>
 
-Add a PVQL filter (Example: --filter='host = "www.lo.ki"')
+Add a PVQL filter (example: --filter='host = "www.lo.ki"')
 
 =item B<--from>
 

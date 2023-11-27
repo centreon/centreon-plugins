@@ -160,7 +160,7 @@ Check Slack services status.
 =item B<--filter-name>
 
 Only display the status for a specific servie
-(Example: --filter-service='connections')
+(example: --filter-service='connections')
 
 =item B<--warning-status>
 

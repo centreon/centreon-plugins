@@ -293,7 +293,7 @@ Use ssh (with plink) instead of telnet.
 
 =item B<--exclude>
 
-Exclude some slots (comma seperated list) (Example: --exclude=IDO,PS0)
+Exclude some slots (comma seperated list) (example: --exclude=IDO,PS0)
 
 =item B<--no-component>
 

@@ -202,7 +202,7 @@ Check targets status.
 
 =item B<--filter-label>
 
-Set filter on label (regexp, can be defined multiple times) (Example: --filter-label='job,kube.*').
+Set filter on label (regexp, can be defined multiple times) (example: --filter-label='job,kube.*').
 
 =item B<--warning-status>
 

@@ -248,16 +248,16 @@ This query type uses --step, --timeframe and --aggregation options to compute th
 
 =item B<--instance>
 
-Set the instance label on which the results should be calculate for (Example: --instance='name').
+Set the instance label on which the results should be calculate for (example: --instance='name').
 
 =item B<--output>
 
-Set the output for each instances (Example: --output='Container %{instance} value is %{label}').
+Set the output for each instances (example: --output='Container %{instance} value is %{label}').
 
 =item B<--multiple-output>
 
 Set the global output in case everything is fine for multiple instances
-(Example: --multiple-output='Containers are OK').
+(example: --multiple-output='Containers are OK').
 
 =item B<--warning-status>
 
@@ -280,7 +280,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour)
 
 =item B<--step>
 
-Set the step of the metric query (Examples: '30s', '1m', '15m', '1h')
+Set the step of the metric query (examples: '30s', '1m', '15m', '1h')
 (Required for --query-range queries, Default: '1m').
 
 =item B<--aggregation>

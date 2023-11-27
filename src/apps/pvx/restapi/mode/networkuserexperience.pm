@@ -141,11 +141,11 @@ Filter on a specific instance (Must be a PVQL object, Default: 'layer')
 
 =item B<--filter>
 
-Add a PVQL filter (Example: --filter='application = "mysql"')
+Add a PVQL filter (example: --filter='application = "mysql"')
 
 =item B<--from>
 
-Add a PVQL from clause to filter on a specific layer (Example: --from='tcp')
+Add a PVQL from clause to filter on a specific layer (example: --from='tcp')
 
 =item B<--top>
 

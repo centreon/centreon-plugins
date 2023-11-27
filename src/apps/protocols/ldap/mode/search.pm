@@ -238,7 +238,7 @@ Add custom search options (can change the scope for example).
 
 =item B<--display-entry>
 
-Display ldap entries (with --verbose option) (Example: '%{cn} account locked')
+Display ldap entries (with --verbose option) (example: '%{cn} account locked')
 
 =item B<--username>
 

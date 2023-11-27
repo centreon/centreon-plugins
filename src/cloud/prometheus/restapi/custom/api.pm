@@ -242,7 +242,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--step>
 
-Set the step of the metric query (Examples: '30s', '1m', '15m', '1h').
+Set the step of the metric query (examples: '30s', '1m', '15m', '1h').
 
 =item B<--hostname>
 

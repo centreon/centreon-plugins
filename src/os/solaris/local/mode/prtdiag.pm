@@ -344,8 +344,8 @@ Config file with prtdiag output description (default: Directory 'conf/prtdiag.co
 =item B<--exclude>
 
 Exclude some components (multiple) (Syntax: SECTION,INSTANCE,FILTER).
-SECTION  = component type in prtdiag.conf (Example: temperature, fan,... 
-INSTANCE = Set the instance (Example: %Location%)
+SECTION  = component type in prtdiag.conf (example: temperature, fan,... 
+INSTANCE = Set the instance (example: %Location%)
 FILTER   = regexp to filter
 
 =back

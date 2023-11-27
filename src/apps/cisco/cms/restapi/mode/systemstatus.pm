@@ -197,7 +197,7 @@ Check system status.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='rate')
+(example: --filter-counters='rate')
 
 =item B<--warning-status>
 

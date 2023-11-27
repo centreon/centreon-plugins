@@ -92,7 +92,7 @@ Check system.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='cpu')
+(example: --filter-counters='cpu')
 
 =item B<--warning-*> B<--critical-*>
 

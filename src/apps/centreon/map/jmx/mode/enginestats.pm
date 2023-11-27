@@ -130,7 +130,7 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='computation')
+(example: --filter-counters='computation')
 
 =item B<--warning-*>
 

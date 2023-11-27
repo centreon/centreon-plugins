@@ -138,7 +138,7 @@ Check connections statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='blocked')
+(example: --filter-counters='blocked')
 
 =item B<--warning-*>
 

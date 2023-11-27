@@ -168,7 +168,7 @@ Check errors (RUGGEDCOM-SYS-INFO-MIB).
 
 =item B<--exclude>
 
-Exclude some instance (Example: --exclude='#WatchdogReset#CrashLogCreated#')
+Exclude some instance (example: --exclude='#WatchdogReset#CrashLogCreated#')
 
 =item B<--no-errors>
 

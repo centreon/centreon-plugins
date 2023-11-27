@@ -332,7 +332,7 @@ Kubernetes CLI (kubectl)
 =item B<--config-file>
 
 Kubernetes configuration file path (default: '~/.kube/config').
-(Example: --config-file='/root/.kube/config').
+(example: --config-file='/root/.kube/config').
 
 =item B<--context>
 
