@@ -13,14 +13,14 @@ ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugi
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
 
 &{ups_standard_test1}
-...                         snmpcommunity=hardware-ups-standard/hardware-ups-standard
+...                         snmpcommunity=hardware-ups-standard
 ...                         result=OK: All input lines are ok | '1#line.input.frequence.hertz'=49.9Hz;;;; '1#line.input.voltage.volt'=233V;;;; '1#line.input.current.ampere'=0A;;;; '1#line.input.power.watt'=0W;;;; '2#line.input.frequence.hertz'=49.9Hz;;;; '2#line.input.voltage.volt'=234V;;;; '2#line.input.current.ampere'=0A;;;; '2#line.input.power.watt'=0W;;;; '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;
 ...                         warningpower=
 ...                         criticalcurrent=
 ...                         warningvoltage=
 ...                         warningfrequence=
 &{ups_standard_test2}
-...                         snmpcommunity=hardware-ups-standard/hardware-ups-standard_null_val
+...                         snmpcommunity=hardware-ups-standard_null_val
 ...                         warningpower='215:'
 ...                         criticalcurrent='@0:214'
 ...                         warningvoltage='@0:214'
@@ -42,6 +42,7 @@ Hardware UPS Standard SNMP input lines
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2c
         ...    --snmp-port=2024
+        ...    --debug
         ${length}    Get Length    ${ups_standard_test.warningpower}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --warning-power=${ups_standard_test.warningpower}
