@@ -166,7 +166,7 @@ __END__
 
 =head1 MODE
 
-Check processes.
+Monitor processes.
 
 =over 8
 
