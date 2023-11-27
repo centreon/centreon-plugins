@@ -146,7 +146,7 @@ Syntax: https://docs.microsoft.com/en-us/azure/kusto/query/
 
 =item B<--workspace-id>
 
-Set workspace id (required).
+Set workspace ID (required).
 
 =item B<--timespan>
 

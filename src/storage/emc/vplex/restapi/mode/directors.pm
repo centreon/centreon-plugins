@@ -128,7 +128,7 @@ Check directors.
 
 =item B<--filter-engine-id>
 
-Filter directors by engine id (can be a regexp).
+Filter directors by engine ID (can be a regexp).
 
 =item B<--filter-director-name>
 

@@ -245,7 +245,7 @@ Filter jobs by policy name (can be a regexp).
 
 =item B<--filter-policy-id>
 
-Filter jobs by policy id (can be a regexp).
+Filter jobs by policy ID (can be a regexp).
 
 =item B<--filter-type>
 

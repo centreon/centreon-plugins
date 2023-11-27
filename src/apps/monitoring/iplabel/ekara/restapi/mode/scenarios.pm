@@ -255,7 +255,7 @@ Example: --timeframe='3600' will check the last hour
 
 =item B<--filter-id>
 
-Filter by monitor id (can be a regexp).
+Filter by monitor ID (can be a regexp).
 
 =item B<--filter-name>
 

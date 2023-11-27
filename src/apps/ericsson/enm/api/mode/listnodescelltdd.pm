@@ -123,7 +123,7 @@ List nodes cells tdd.
 
 =item B<--filter-node-id>
 
-Filter tdd cells by node id (can be a regexp).
+Filter tdd cells by node ID (can be a regexp).
 
 =item B<--add-extra-attrs>
 

@@ -183,7 +183,7 @@ Filter job template name (can use regexp).
 
 =item B<--launch-job-template-id>
 
-The job_template id to launch.
+The job_template ID to launch.
 
 =item B<--launch-inventory>
 

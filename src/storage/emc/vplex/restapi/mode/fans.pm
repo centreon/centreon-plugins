@@ -103,7 +103,7 @@ Check fans.
 
 =item B<--filter-engine-id>
 
-Filter fans by engine id (can be a regexp).
+Filter fans by engine ID (can be a regexp).
 
 =item B<--filter-fan-name>
 

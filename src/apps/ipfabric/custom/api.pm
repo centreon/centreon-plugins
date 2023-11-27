@@ -161,9 +161,9 @@ Set hostname, it is mandatory.
 
 =item B<--snapshot-id>
 
-Specify snapshot id from which you want to base monitoring.
+Specify snapshot ID from which you want to base monitoring.
 
-If no snapshot id is specified, the last one is set by default.
+If no snapshot ID is specified, the last one is set by default.
 
 =item B<--port>
 

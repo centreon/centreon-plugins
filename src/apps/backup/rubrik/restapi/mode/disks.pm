@@ -173,7 +173,7 @@ Which cluster to check (default: 'me').
 
 =item B<--filter-disk-id>
 
-Filter disks by disk id (can be a regexp).
+Filter disks by disk ID (can be a regexp).
 
 =item B<--unknown-disks-status>
 

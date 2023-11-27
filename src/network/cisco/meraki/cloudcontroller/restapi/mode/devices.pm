@@ -583,11 +583,11 @@ Filter devices by name (can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter devices by network id (can be a regexp).
+Filter devices by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (can be a regexp).
+Filter devices by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 

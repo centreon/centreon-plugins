@@ -181,7 +181,7 @@ Filter network name (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter networks by organization id (can be a regexp).
+Filter networks by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 

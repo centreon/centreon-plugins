@@ -219,7 +219,7 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--filter-connection-id>
 
-Filter connection id (can be a regexp).
+Filter connection ID (can be a regexp).
 
 =item B<--filter-metric>
 

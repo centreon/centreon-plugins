@@ -102,7 +102,7 @@ Check power-supplies.
 
 =item B<--filter-engine-id>
 
-Filter power supplies by engine id (can be a regexp).
+Filter power supplies by engine ID (can be a regexp).
 
 =item B<--filter-psu-name>
 

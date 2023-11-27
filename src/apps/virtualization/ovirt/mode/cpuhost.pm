@@ -121,7 +121,7 @@ Filter host name (can be a regexp).
 
 =item B<--filter-id>
 
-Filter host id (can be a regexp).
+Filter host ID (can be a regexp).
 
 =item B<--warning-*>
 

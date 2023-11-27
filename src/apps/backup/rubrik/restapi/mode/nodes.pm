@@ -178,7 +178,7 @@ Which cluster to check (default: 'me').
 
 =item B<--filter-node-id>
 
-Filter nodes by node id (can be a regexp).
+Filter nodes by node ID (can be a regexp).
 
 =item B<--unknown-node-status>
 

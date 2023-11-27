@@ -123,7 +123,7 @@ List nodes field replaceable units.
 
 =item B<--filter-node-id>
 
-Filter field replaceable units by node id (can be a regexp).
+Filter field replaceable units by node ID (can be a regexp).
 
 =item B<--add-extra-attrs>
 

@@ -227,7 +227,7 @@ Check volumes.
 
 =item B<--filter-node-id>
 
-Filter volumes by node id (can be a regexp).
+Filter volumes by node ID (can be a regexp).
 
 =item B<--unknown-volume-status>
 

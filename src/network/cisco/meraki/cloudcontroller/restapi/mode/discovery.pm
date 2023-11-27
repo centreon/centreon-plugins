@@ -208,11 +208,11 @@ Choose the type of resources to discover (can be: 'device', 'network').
 
 =item B<--filter-network-id>
 
-Filter by network id (can be a regexp).
+Filter by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter by organization id (can be a regexp).
+Filter by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 

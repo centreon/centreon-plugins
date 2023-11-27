@@ -222,7 +222,7 @@ Set the cluster name (required) (can be defined multiple times).
 
 =item B<--node-id>
 
-Set the node id (optional).
+Set the node ID (optional).
 
 =item B<--filter-metric>
 
