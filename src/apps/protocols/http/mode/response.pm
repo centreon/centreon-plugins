@@ -240,11 +240,11 @@ Specify this option if you access a webpage over basic authentication and don't 
 
 Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--ntlmv2>
 
-Specify this option if you access a webpage over ntlmv2 authentication (Use with --credentials and --port options).
+Specify this option if you access a webpage over ntlmv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 

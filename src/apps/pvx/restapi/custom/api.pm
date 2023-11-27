@@ -264,7 +264,7 @@ Specify this option if you access the API over basic authentication and don't wa
 
 Specify this option if you access the API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 

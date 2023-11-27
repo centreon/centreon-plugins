@@ -134,7 +134,7 @@ Specify this option if you access server-status page over basic authentication a
 
 Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 
