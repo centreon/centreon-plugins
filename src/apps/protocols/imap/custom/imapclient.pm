@@ -219,7 +219,7 @@ Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_v
 
 =item B<--insecure>
 
-Allow insecure TLS connection by skipping cert validation (Since redis-cli 6.2.0).
+Allow insecure TLS connection by skipping cert validation (since redis-cli 6.2.0).
 
 =item B<--username>
 

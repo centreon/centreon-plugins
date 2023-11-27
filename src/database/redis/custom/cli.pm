@@ -271,7 +271,7 @@ CA Certificate file to verify with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 
-Allow insecure TLS connection by skipping cert validation (Since redis-cli 6.2.0).
+Allow insecure TLS connection by skipping cert validation (since redis-cli 6.2.0).
 
 =item B<--username>
 
