@@ -241,11 +241,11 @@ Secret of the radius host
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication
 
 =item B<--timeout>
 

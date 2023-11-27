@@ -276,11 +276,11 @@ Set path to get server-status page in auto mode (Default: '/xml/status')
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication
 
 =item B<--timeout>
 

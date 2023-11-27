@@ -187,11 +187,11 @@ Specify https if needed (Default: 'http')
 
 =item B<--api-username>
 
-Specify username for authentication (basic auth)
+Specify the username for authentication (basic auth)
 
 =item B<--api-password>
 
-Specify password for authentication (basic auth)
+Specify the password for authentication (basic auth)
 
 =item B<--timeout>
 

@@ -306,11 +306,11 @@ Specify https if needed (Default: 'http')
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (Mandatory if --credentials is specified)
 
 =item B<--timeout>
 

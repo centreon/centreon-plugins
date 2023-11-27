@@ -274,11 +274,11 @@ Specify https if needed (Default: 'https')
 
 =item B<--username>
 
-Specify username for authentication (If basic authentication)
+Specify the username for authentication (If basic authentication)
 
 =item B<--password>
 
-Specify password for authentication (If basic authentication)
+Specify the password for authentication (If basic authentication)
 
 =item B<--legacy-password>
 
