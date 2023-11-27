@@ -206,35 +206,33 @@ Query NSClient Legacy API.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the host
+IP Addr/FQDN of the host.
 
 =item B<--port>
 
-Port used (Default: 8443)
+Port used (Default: 8443).
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify http if needed (Default: 'https').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you access a webpage with authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify username for authentication (Mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify password for authentication (Mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access a webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error (Use with --credentials).
 
 =item B<--legacy-password>
 
@@ -242,7 +240,7 @@ Specify password for old authentification system.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (Default: 5).
 
 =item B<--command>
 
@@ -250,12 +248,12 @@ Set command.
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1')
+Set arguments (Multiple option. Example: --arg='arg1').
 
 =item B<--unknown-status>
 
 Warning threshold for http response code.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+Default: '%{http_code} < 200 or %{http_code} >= 300'.
 
 =item B<--warning-status>
 

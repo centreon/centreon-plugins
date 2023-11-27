@@ -382,19 +382,19 @@ Specify https if needed (Default: 'http')
 
 =item B<--api-path>
 
-Path used (Default: '/containers/docker')
+Define the path of the endpoint to query  (Default: '/containers/docker')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access a webpage with authentication.
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify the username for authentication (Mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify the password for authentication (Mandatory if --credentials is specified).
 
 =item B<--timeout>
 
@@ -418,7 +418,7 @@ Specify certificate's password
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
+Specify that the type of certificate is PKCS1.
 
 =back
 

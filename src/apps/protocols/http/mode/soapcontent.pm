@@ -410,83 +410,81 @@ HTTP OPTIONS:
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Webserver host
+IP Addr/FQDN of the Webserver host.
 
 =item B<--port>
 
-Port used by Webserver
+Port used by Webserver.
 
 =item B<--proto>
 
-Specify https if needed
+Specify https if needed (Default: 'http').
 
 =item B<--urlpath>
 
-Set path to get Webpage (Default: '/')
+Set path to get the webpage (Default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you access a webpage with authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify username for authentication (Mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify password for authentication (Mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access a webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error (Use with --credentials).
 
 =item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
+Specify this option if you access a webpage over ntlmv2 authentication (Use with --credentials and --port options).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Define the timeout in seconds (Default: 10).
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify certificate to send to the webserver.
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify key to send to the webserver.
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify root certificate to send to the webserver.
 
 =item B<--cert-pwd>
 
-Specify certificate's password
+Specify certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS1
+Specify that the type of certificate is PKCS1.
 
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
 
 =item B<--unknown-status>
 
-Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Unknown conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--warning-status>
 
-Warning threshold for http response code
+Warning conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--critical-status>
 
-Critical threshold for http response code
+Critical conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =back
 

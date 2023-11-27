@@ -318,23 +318,23 @@ Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (Mandatory if --credentials is specified)
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access a webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
 (Use with --credentials)
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (Default: 5).
 
 =back
 

@@ -235,59 +235,59 @@ Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
-Set path to get Webpage (Default: '/')
+Define the path of the webpage to get (Default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you access a webpage with authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (Mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (Mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access a webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
 (Use with --credentials)
 
 =item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
+Specify this option if you access a webpage over ntlmv2 authentication (Use with --credentials and --port options).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (Default: 5).
 
 =item B<--no-follow>
 
-Do not follow http redirect
+Do not follow http redirections.
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify the certificate to send to the webserver.
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify the key to send to the webserver.
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify the root certificate to send to the webserver.
 
 =item B<--cert-pwd>
 
-Specify certificate's password
+Specify the certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
+Specify that the type of certificate is PKCS1.
 
 =item B<--data>
 
@@ -356,7 +356,7 @@ Critical threshold for extracted value
 
 =item B<--unknown-content>
 
-Set warning threshold for content page (Default: '').
+Set warning conditions for content page (Default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--warning-content>
