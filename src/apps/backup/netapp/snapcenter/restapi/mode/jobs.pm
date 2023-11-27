@@ -247,7 +247,7 @@ Filter job with end time greater than current time less value in seconds (defaul
 
 =item B<--timezone>
 
-Set timezone (If not set, we use current server execution timezone).
+Set timezone (if not set, we use current server execution timezone).
 
 =item B<--unknown-status>
 

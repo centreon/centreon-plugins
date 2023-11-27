@@ -226,7 +226,7 @@ Filter job with end time greater than current time less value in seconds (defaul
 
 =item B<--timezone>
 
-Timezone of mssql server (If not set, we use current server execution timezone).
+Timezone of mssql server (if not set, we use current server execution timezone).
 
 =item B<--ok-status>
 

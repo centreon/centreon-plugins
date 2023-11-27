@@ -191,7 +191,7 @@ You can use the following variables: %{username}, %{sql_text}, %{since}, %{statu
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone).
+Timezone of oracle server (if not set, we use current server execution timezone).
 
 =item B<--memory>
 

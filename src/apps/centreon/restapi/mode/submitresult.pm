@@ -130,7 +130,7 @@ Hostname (Mandatory).
 
 =item B<--service>
 
-Service description (If result's for a service).
+Service description (if result's for a service).
 
 =item B<--status>
 

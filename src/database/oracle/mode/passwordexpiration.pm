@@ -158,7 +158,7 @@ You can use the following variables: %{username}, %{account_status}, %{expire}
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone).
+Timezone of oracle server (if not set, we use current server execution timezone).
 
 =back
 
