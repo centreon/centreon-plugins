@@ -155,12 +155,12 @@ City name (e.g London or ISO 3166 code like London,uk)
 
 =item B<--warning-weather>
 
-Set warning threshold for weather string desc (Default: '').
+Set warning threshold for weather string desc (default: '').
 You can use the following variables: %{weather}
 
 =item B<--critical-weather>
 
-Set critical threshold for weather string desc (Default: '').
+Set critical threshold for weather string desc (default: '').
 You can use the following variables:  %{weather}
 Example :
   --critical-weather='%{weather} eq "Clouds'

@@ -227,15 +227,15 @@ Port used by Webserver
 
 =item B<--method>
 
-Specify http method used (Default: 'GET')
+Specify http method used (default: 'GET')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--urlpath>
 
-Define the path of the webpage to get (Default: '/').
+Define the path of the webpage to get (default: '/').
 
 =item B<--credentials>
 
@@ -263,7 +263,7 @@ Specify this option if you access a webpage over ntlmv2 authentication (Use with
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 5).
+Define the timeout in seconds (default: 5).
 
 =item B<--no-follow>
 
@@ -320,7 +320,7 @@ Recommend to use directly --critical-content.
 
 =item B<--unknown-status>
 
-Warning threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Warning threshold for http response code (default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
@@ -356,17 +356,17 @@ Critical threshold for extracted value
 
 =item B<--unknown-content>
 
-Set warning conditions for content page (Default: '').
+Set warning conditions for content page (default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--warning-content>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--critical-content>
 
-Set critical threshold for content page (Default: '').
+Set critical threshold for content page (default: '').
 You can use the following variables: %{content}, %{header}, %{first_header}, %{code}
 
 =back

@@ -245,22 +245,22 @@ Filter data file name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: none).
+Define the conditions to match for the status to be WARNING (default: none).
 You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline|invalid/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /offline|invalid/i').
 You can use the following variables: %{display}, %{status}
 
 =item B<--warning-online-status>
 
-Set warning threshold for online status (Default: '%{online_status} =~ /sysoff/i').
+Set warning threshold for online status (default: '%{online_status} =~ /sysoff/i').
 You can use the following variables: %{display}, %{online_status}
 
 =item B<--critical-online-status>
 
-Set critical threshold for online status (Default: '%{online_status} =~ /offline|recover/i').
+Set critical threshold for online status (default: '%{online_status} =~ /offline|recover/i').
 You can use the following variables: %{display}, %{online_status}
 
 =item B<--warning-*> B<--critical-*> 

@@ -371,7 +371,7 @@ Specify extra information about author and comment (only for ACK and DOWNTIME ty
 
 =item B<--extra-info-format>
 
-Specify the extra info display format (Default: 'Author: %s, Comment: %s').
+Specify the extra info display format (default: 'Author: %s, Comment: %s').
 
 =item B<--legacy>
 

@@ -320,7 +320,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "expired"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "expired"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

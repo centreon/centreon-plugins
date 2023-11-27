@@ -250,15 +250,15 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api/v1')
+API url path (default: '/api/v1')
 
 =item B<--port>
 
-API port (Default: 9090)
+API port (default: 9090)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--credentials>
 

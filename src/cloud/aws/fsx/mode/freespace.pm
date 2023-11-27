@@ -135,7 +135,7 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--statistic>
 
-Set the metric calculation method (Default: Average)
+Set the metric calculation method (default: Average)
 Can be 'minimum', 'average'
 
 =item B<--warning-storage-free-bytes>

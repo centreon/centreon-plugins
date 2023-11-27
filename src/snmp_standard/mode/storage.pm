@@ -627,7 +627,7 @@ Check storage access (readOnly, readWrite).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -678,7 +678,7 @@ Display cache storage datas.
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none) (results like 'df' command).
+The value is in percent of total (default: none) (results like 'df' command).
 
 =item B<--filter-duplicate>
 
@@ -686,7 +686,7 @@ Filter duplicate storages (in used size and total size).
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
+Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 

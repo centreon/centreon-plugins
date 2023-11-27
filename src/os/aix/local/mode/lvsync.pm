@@ -155,7 +155,7 @@ You can use the following variables: %{state}, %{lv}, %{mount}, %{type}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /stale/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /stale/i').
 You can use the following variables: %{state}, %{lv}, %{mount}, %{type}.
 
 =back

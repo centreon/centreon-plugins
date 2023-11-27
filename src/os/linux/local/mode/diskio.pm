@@ -332,11 +332,11 @@ Exclude partition name (regexp can be used).
 
 =item B<--bytes-per-sector>
 
-Bytes per sector (Default: 512)
+Bytes per sector (default: 512)
 
 =item B<--interrupt-frequency>
 
-Linux Kernel Timer Interrupt Frequency (Default: 1000)
+Linux Kernel Timer Interrupt Frequency (default: 1000)
 
 =item B<--skip>
 

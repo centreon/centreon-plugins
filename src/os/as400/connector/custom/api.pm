@@ -206,15 +206,15 @@ Centreon AS400 connector Rest API
 
 =item B<--connector-hostname>
 
-Centreon connector hostname (Default: 127.0.0.1)
+Centreon connector hostname (default: 127.0.0.1)
 
 =item B<--connector-port>
 
-Port used (Default: 8091)
+Port used (default: 8091)
 
 =item B<--connector-proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--connector-username>
 
@@ -226,7 +226,7 @@ API password.
 
 =item B<--connector-timeout>
 
-Set timeout in seconds (Default: 50)
+Set timeout in seconds (default: 50)
 
 =item B<--as400-hostname>
 

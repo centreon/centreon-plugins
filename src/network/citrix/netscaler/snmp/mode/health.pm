@@ -86,7 +86,7 @@ Check System Health Status.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'temperature', 'voltage', 'fanspeed', 'psu'.
 
 =item B<--filter>

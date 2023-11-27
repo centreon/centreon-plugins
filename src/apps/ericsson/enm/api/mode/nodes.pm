@@ -270,7 +270,7 @@ You can use the following variables: %{node_id}, %{sync_status}
 
 =item B<--critical-node-sync-status>
 
-Set critical threshold for synchronization status (Default: '%{sync_status} =~ /unsynchronized/i').
+Set critical threshold for synchronization status (default: '%{sync_status} =~ /unsynchronized/i').
 You can use the following variables: %{node_id}, %{sync_status}
 
 =item B<--unknown-fru-status>

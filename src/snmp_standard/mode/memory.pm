@@ -268,7 +268,7 @@ Check memory usage (UCD-SNMP-MIB).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute') (Deprecated. Please use new counters directly)
+Units of thresholds (default: '%') ('%', 'absolute') (Deprecated. Please use new counters directly)
 
 =item B<--free>
 

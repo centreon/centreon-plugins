@@ -294,15 +294,15 @@ Graylog hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api/')
+API url path (default: '/api/')
 
 =item B<--port>
 
-API port (Default: 9000)
+API port (default: 9000)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--username>
 
@@ -318,7 +318,7 @@ Set HTTP timeout
 
 =item B<--requested-by>
 
-Set request HTTP header (Default: 'cli')
+Set request HTTP header (default: 'cli')
 
 =back
 

@@ -189,7 +189,7 @@ Hostname to query.
 
 =item B<--port>
 
-telnet port (Default: 23).
+telnet port (default: 23).
 
 =item B<--username>
 
@@ -201,7 +201,7 @@ telnet password.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--command-plink>
 
@@ -213,7 +213,7 @@ Use ssh (with plink) instead of telnet.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'temperature', 'si', 'disk', 'fan', 'voltage', 'psu', 'sensors'.
 
 =item B<--filter>

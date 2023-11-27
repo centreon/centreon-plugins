@@ -206,12 +206,12 @@ Set filter on label (Regexp, can be defined multiple times) (Example: --filter-l
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{display}, %{health}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} !~ /up/').
 You can use the following variables: %{display}, %{health}
 
 =item B<--warning-*>

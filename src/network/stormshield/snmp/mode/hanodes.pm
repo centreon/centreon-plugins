@@ -243,7 +243,7 @@ You can use the following variables: %{state}, %{role}
 
 =item B<--critical-state>
 
-Set critical threshold for state. (Default: '%{state} =~ /offline/i').
+Set critical threshold for state. (default: '%{state} =~ /offline/i').
 You can use the following variables: %{state}, %{role}
 
 =item B<--percent>

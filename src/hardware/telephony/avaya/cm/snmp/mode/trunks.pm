@@ -149,7 +149,7 @@ You can use the following variables: %{state}, %{far_node}, %{display}
 
 =item B<--critical-sig-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /out-of-service/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /out-of-service/').
 You can use the following variables: %{state}, %{far_node}, %{display}
 
 =back

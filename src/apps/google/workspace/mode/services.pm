@@ -167,12 +167,12 @@ Only display the status for a specific servie
 =item B<--warning-status>
 
 Set warning threshold for the service status
-(Default: '%{status} eq "disruption"').
+(default: '%{status} eq "disruption"').
 
 =item B<--critical-status>
 
 Set warning threshold for the service status
-(Default: '%{status} eq "outage"').
+(default: '%{status} eq "outage"').
 
 =back
 

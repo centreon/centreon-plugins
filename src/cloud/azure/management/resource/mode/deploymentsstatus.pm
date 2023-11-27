@@ -178,12 +178,12 @@ Example: --filter-counters='^total-succeeded$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "Succeeded"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>

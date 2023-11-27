@@ -257,7 +257,7 @@ Check Himoinsa device status.
 
 =item B<--warning-alarm-status>
 
-Warning threshold for alarm (Default: '%{status} =~ /^alarm/').
+Warning threshold for alarm (default: '%{status} =~ /^alarm/').
 Can use special variables like: %{status}
 
 =item B<--critical-alarm-status>

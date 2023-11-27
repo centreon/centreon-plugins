@@ -179,7 +179,7 @@ Can be a file or json content.
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50)
+Set global execution timeout (default: 50)
 
 =item B<--hostname>
 

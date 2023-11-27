@@ -128,7 +128,7 @@ Check components (Fans, Power Supplies, Temperatures, Chassis alarm, vimm, globa
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'ca', 'vimm', 'lfc', 'gfc', 'temperature'.
 
 =item B<--filter>

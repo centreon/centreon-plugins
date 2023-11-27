@@ -81,7 +81,7 @@ Check brocade operational status and hardware sensors (SW.mib).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'switch', 'sensor'.
 
 =item B<--filter>

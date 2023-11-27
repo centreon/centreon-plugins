@@ -170,7 +170,7 @@ You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
+Define the conditions to match for the status to be CRITICAL (default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
 You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--warning-update-time>

@@ -279,22 +279,22 @@ Set thresholds on members count for each states.
 
 =item B<--warning-stack-status>
 
-Set warning threshold for stack status (Default: '').
+Set warning threshold for stack status (default: '').
 You can use the following variables: %{stack_status}
 
 =item B<--critical-stack-status>
 
-Set critical threshold for stack status (Default: '%{stack_status} =~ /notredundant/').
+Set critical threshold for stack status (default: '%{stack_status} =~ /notredundant/').
 You can use the following variables: %{stack_status}
 
 =item B<--warning-status>
 
-Set warning threshold for members status (Default: '').
+Set warning threshold for members status (default: '').
 You can use the following variables: %{name}, %{role}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for member status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
+Set critical threshold for member status (default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
 You can use the following variables: %{name}, %{role}, %{state}
 
 Role can be: 'master', 'member', 'notMember', 'standby'.

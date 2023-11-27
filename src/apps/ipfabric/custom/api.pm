@@ -167,11 +167,11 @@ If no snapshot id is specified, the last one is set by default.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https')
+Specify http if needed (default: 'https')
 
 =item B<--api-key>
 
@@ -179,7 +179,7 @@ Set API key to request IP Fabric API.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

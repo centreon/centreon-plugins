@@ -207,7 +207,7 @@ IP Addr/FQDN of the imap host
 
 =item B<--port>
 
-Port used (Default: 143).
+Port used (default: 143).
 
 =item B<--ssl>
 
@@ -231,7 +231,7 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =back
 

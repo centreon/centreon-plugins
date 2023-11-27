@@ -155,7 +155,7 @@ Check EAS application EJB transaction status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checktransaction.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checktransaction.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

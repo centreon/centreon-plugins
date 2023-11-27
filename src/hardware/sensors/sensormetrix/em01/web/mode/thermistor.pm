@@ -114,7 +114,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/index.htm?eR')
+Set path to get server-status page in auto mode (default: '/index.htm?eR')
 
 =item B<--credentials>
 

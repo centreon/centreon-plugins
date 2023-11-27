@@ -66,7 +66,7 @@ Check Hardware (Fans, Power supplies, chassis, io cards, blades, fabric extender
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'.
 
 =item B<--filter>

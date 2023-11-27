@@ -215,7 +215,7 @@ resources (Must be <ip>/<cidr> format) (Mandatory).
 
 =item B<--snmp-port>
 
-Specify SNMP port (Default: 161).
+Specify SNMP port (default: 161).
 
 =item B<--snmp-version>
 
@@ -227,7 +227,7 @@ Specify SNMP community (can be defined multiple times) (Mandatory).
 
 =item B<--snmp-timeout>
 
-Specify SNMP timeout in second (Default: 1).
+Specify SNMP timeout in second (default: 1).
 
 =item B<--prettify>
 

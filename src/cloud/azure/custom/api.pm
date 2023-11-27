@@ -1283,11 +1283,11 @@ Set Azure client secret.
 
 =item B<--login-endpoint>
 
-Set Azure login endpoint URL (Default: 'https://login.microsoftonline.com')
+Set Azure login endpoint URL (default: 'https://login.microsoftonline.com')
 
 =item B<--management-endpoint>
 
-Set Azure management endpoint URL (Default: 'https://management.azure.com')
+Set Azure management endpoint URL (default: 'https://management.azure.com')
 
 =item B<--timeframe>
 
@@ -1310,7 +1310,7 @@ undefined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

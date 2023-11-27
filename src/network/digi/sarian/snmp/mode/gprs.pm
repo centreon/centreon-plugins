@@ -185,7 +185,7 @@ You can use the following variables: %{registered}, %{attachement}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{attachement} eq "attached" and %{registered} !~ /registeredHostNetwork|registeredRoaming/'
+Define the conditions to match for the status to be CRITICAL (default: '%{attachement} eq "attached" and %{registered} !~ /registeredHostNetwork|registeredRoaming/'
 You can use the following variables: %{registered}, %{attachement}
 
 =item B<--warning-technology>
@@ -195,7 +195,7 @@ Use special variables %{technology}.
 
 =item B<--critical-technology>
 
-Set critical threshold for technology (Default: '%{technology} !~ /2G|3G|4G/'
+Set critical threshold for technology (default: '%{technology} !~ /2G|3G|4G/'
 Use special variables %{technology}.
 
 =item B<--warning-signal>

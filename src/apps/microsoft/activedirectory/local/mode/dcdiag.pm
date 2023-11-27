@@ -249,7 +249,7 @@ Don't run the dc tests machineaccount
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 30 sec)
+Set timeout time for command execution (default: 30 sec)
 
 =back
 

@@ -264,11 +264,11 @@ Filter on specific logical(s) disk(s).
 
 =item B<--warning-status>
 
-Warning threshold on logical disk status (Default: none).
+Warning threshold on logical disk status (default: none).
 
 =item B<--critical-status>
 
-Critical threshold on logical disk status (Default: '%{status} eq "NOT OK"').
+Critical threshold on logical disk status (default: '%{status} eq "NOT OK"').
 
 =item B<--warning-*>
 

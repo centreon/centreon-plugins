@@ -89,7 +89,7 @@ Check components (humidity, temperature, power supplies).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'humidity', 'temperature'.
 
 =item B<--filter>

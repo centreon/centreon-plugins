@@ -191,7 +191,7 @@ Allows to use regexp to filter process command (with option --process-cmd).
 
 =item B<--process-status>
 
-Check process status (Default: 'run'). Can be a regexp.
+Check process status (default: 'run'). Can be a regexp.
 
 =back
 

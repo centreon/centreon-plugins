@@ -144,12 +144,12 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{processed_packets} < %{received_packets}').
+Define the conditions to match for the status to be CRITICAL. (default: '%{processed_packets} < %{received_packets}').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--warning-*>

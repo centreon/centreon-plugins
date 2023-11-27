@@ -152,11 +152,11 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
+Set dimension name (default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
 
 =item B<--dimension-operator>
 
-Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 

@@ -201,12 +201,12 @@ Example: --filter-counters='^total-completed$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{precheck_status}, %{last_backup_status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
+Define the conditions to match for the status to be CRITICAL (default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
 You can use the following variables: %{precheck_status}, %{last_backup_status}, %{display}
 
 =item B<--warning-*>

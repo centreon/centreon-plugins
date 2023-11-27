@@ -298,7 +298,7 @@ Can be: 'usage', 'working', 'cache' (B), 'rss' (B), 'swap' (B).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--extra-filter>
 

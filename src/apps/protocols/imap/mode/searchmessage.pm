@@ -111,7 +111,7 @@ Delete messages found
 
 =item B<--folder>
 
-Set IMAP folder (Default: 'INBOX')
+Set IMAP folder (default: 'INBOX')
 
 =item B<--warning>
 

@@ -212,12 +212,12 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning--status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /reparing|formatting/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /reparing|formatting/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /abnormal|smartfailed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /abnormal|smartfailed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

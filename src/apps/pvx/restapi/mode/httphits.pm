@@ -166,7 +166,7 @@ Add a PVQL filter (Example: --filter='host = "www.lo.ki"')
 
 =item B<--from>
 
-Add a PVQL from clause to filter on a specific layer (Default: 'http')
+Add a PVQL from clause to filter on a specific layer (default: 'http')
 
 =item B<--top>
 

@@ -240,17 +240,17 @@ Filter disks by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning--status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /noReady|busy|hwFailureOk|hwFailurePerf|Protected|rebuilding/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /noReady|busy|hwFailureOk|hwFailurePerf|Protected|rebuilding/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /^(noAccess|otherDiskSubFailed|failed|notOperational|noUnitControl)$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /^(noAccess|otherDiskSubFailed|failed|notOperational|noUnitControl)$/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

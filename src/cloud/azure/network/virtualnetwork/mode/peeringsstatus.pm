@@ -157,12 +157,12 @@ Filter peering name (Can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{peering_state}, %{provisioning_state}, %{peer}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
 You can use the following variables: %{peering_state}, %{provisioning_state}, %{peer}, %{display}
 
 =back

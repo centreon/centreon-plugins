@@ -237,11 +237,11 @@ Remote hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 80).
+Port used (default: 80).
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http').
+Specify https if needed (default: 'http').
 
 =item B<--username>
 
@@ -263,7 +263,7 @@ Specify this option if you access a webpage over ntlmv2 authentication (Use with
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 10).
+Define the timeout in seconds (default: 10).
 
 =back
 

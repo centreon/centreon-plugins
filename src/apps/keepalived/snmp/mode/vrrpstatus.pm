@@ -148,7 +148,7 @@ You can use the following variables: %{instanceWantedState}, %{instanceStateLast
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}').
+Define the conditions to match for the status to be CRITICAL (default: '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}').
 You can use the following variables: %{instanceWantedState}, %{instanceStateLast}, %{instanceState}, %{instancePrimaryInterface}
 
 =back

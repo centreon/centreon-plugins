@@ -119,12 +119,12 @@ Check GPS status
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{satellites} =~ /No satellites in view/')
+Define the conditions to match for the status to be WARNING (default: '%{satellites} =~ /No satellites in view/')
 You can use the following variables: %{health}, %{satellites}, %{latitude}, %{longitude}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '')
+Define the conditions to match for the status to be CRITICAL (default: '')
 You can use the following variables: %{health}, %{satellites}, %{latitude}, %{longitude}
 
 =back

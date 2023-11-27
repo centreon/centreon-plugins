@@ -190,12 +190,12 @@ Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: -)
+Define the conditions to match for the status to be WARNING (default: -)
 You can use the following variables: %{source}, %{status}, %{error}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
 You can use the following variables: %{source}, %{status}, %{error}.
 
 =back

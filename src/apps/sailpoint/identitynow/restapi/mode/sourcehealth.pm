@@ -146,11 +146,11 @@ Filter source type (Can be a regexp).
 
 =item B<--warning-health-status>
 
-Set warning threshold for each source health status (Default: none).
+Set warning threshold for each source health status (default: none).
 
 =item B<--critical-health-status>
 
-Set critical threshold for each source health status (Default: '%{status} ne "SOURCE_STATE_HEALTHY"').
+Set critical threshold for each source health status (default: '%{status} ne "SOURCE_STATE_HEALTHY"').
 
 =item B<--warning-sources-*> B<--critical-sources-*>
 

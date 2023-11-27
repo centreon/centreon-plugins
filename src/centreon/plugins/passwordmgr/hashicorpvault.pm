@@ -265,17 +265,17 @@ IP address of the HashiCorp Vault server (Mandatory).
 
 =item B<--vault-port>
 
-Port of the HashiCorp Vault server (Default: '8200').
+Port of the HashiCorp Vault server (default: '8200').
 
 =item B<--vault-protocol>
 
 HTTP of the HashiCorp Vault server.
-Can be: 'http', 'https' (Default: http).
+Can be: 'http', 'https' (default: http).
 
 =item B<--auth-method>
 
 Authentication method to log in against the Vault server.
-Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (Default: 'token');
+Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (default: 'token');
 
 =item B<--vault-token>
 

@@ -124,7 +124,7 @@ You can use the following variables: %{state}, %{container_state}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
 You can use the following variables: %{state}, %{container_state}, %{display}
 
 =back

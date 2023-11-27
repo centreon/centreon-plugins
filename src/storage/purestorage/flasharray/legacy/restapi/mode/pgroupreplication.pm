@@ -186,7 +186,7 @@ Can be: 'progress' (%), 'creation' (s), 'duration' (s),
 
 =item B<--timezone>
 
-Timezone of API results (Default: 'GMT').
+Timezone of API results (default: 'GMT').
 
 =back
 

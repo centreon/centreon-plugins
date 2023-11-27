@@ -174,7 +174,7 @@ Example: --filter-counters='node-status'
 
 =item B<--cluster-id>
 
-Which cluster to check (Default: 'me').
+Which cluster to check (default: 'me').
 
 =item B<--filter-node-id>
 
@@ -192,7 +192,7 @@ You can use the following variables: %{status}, %{ip_address}, %{id}
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}, %{ip_address}, %{id}
 
 =item B<--warning-*> B<--critical-*>

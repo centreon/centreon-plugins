@@ -356,7 +356,7 @@ Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /expired|invalid/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired|invalid/i').
 Can use special variables like: %{status}
 
 =item B<--unit>

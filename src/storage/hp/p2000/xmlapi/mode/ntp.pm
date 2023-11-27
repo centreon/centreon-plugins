@@ -194,12 +194,12 @@ Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /deactivated/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /deactivated/i').
 Can use special variables like: %{status}
 
 =item B<--timezone>
 
-Set timezone for ntp contact time (Default is 'UTC').
+Set timezone for ntp contact time (default is 'UTC').
 
 =item B<--unit>
 

@@ -374,7 +374,7 @@ You can use the following variables: %{status}, %{planName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last plan execution status (Default: '{status} =~ /execution_failed/i').
+Set critical threshold for last plan execution status (default: '{status} =~ /execution_failed/i').
 You can use the following variables: %{status}, %{planName}
 
 =item B<--warning-*> B<--critical-*>

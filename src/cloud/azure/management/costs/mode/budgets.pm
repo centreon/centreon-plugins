@@ -198,7 +198,7 @@ Set resource group (Optional).
 
 =item B<--lookup-days>
 
-Days backward to look up (Default: '30').
+Days backward to look up (default: '30').
 
 =item B<--warning-cost>
 
@@ -209,7 +209,7 @@ Set warning threshold for cost).
 Define the conditions to match for the status to be CRITICAL.
 
 =item B<--units>
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

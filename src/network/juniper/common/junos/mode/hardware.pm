@@ -206,7 +206,7 @@ Check Hardware (JUNIPER-MIB) (frus, operating).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fru', 'operating', 'alarm'.
 
 =item B<--add-name-instance>
@@ -245,7 +245,7 @@ Example: --critical='operating-temperature,.*,40'
 
 =item B<--reload-cache-time>
 
-Time in minutes before reloading cache file (Default: 180).
+Time in minutes before reloading cache file (default: 180).
 Use '-1' to disable cache reload.
 
 =back

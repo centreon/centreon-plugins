@@ -191,7 +191,7 @@ Set this option to ensure compatibility with dual table and Oracle.
 =item B<--empty-sql-string>
 
 Set this option to change the output message when the sql statement result is empty.
-(Default: 'No row returned or --key-column/--value-column do not correctly match selected field')
+(default: 'No row returned or --key-column/--value-column do not correctly match selected field')
 
 =back
 

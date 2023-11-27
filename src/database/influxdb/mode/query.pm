@@ -222,14 +222,14 @@ Set the global output in case everything is fine for multiple instances
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query.
@@ -237,7 +237,7 @@ labels you set through --query.
 =item B<--aggregation>
 
 Set the aggregation on metric values (Can be: 'average', 'min', 'max', 'sum')
-(Default: 'average').
+(default: 'average').
 
 =over 8
 

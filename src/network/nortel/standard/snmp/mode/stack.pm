@@ -222,12 +222,12 @@ You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--warning-unit-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--critical-unit-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--unit>

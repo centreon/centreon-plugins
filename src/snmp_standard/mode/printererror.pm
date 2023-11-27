@@ -171,7 +171,7 @@ Use that option if your printer provides big-endian bits ordering.
 
 =item B<--ok-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /ok/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /ok/').
 You can use the following variables: %{status}
 
 =item B<--unknown-status>
@@ -181,7 +181,7 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /.*/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /.*/').
 You can use the following variables: %{status}
 
 =item B<--critical-status>

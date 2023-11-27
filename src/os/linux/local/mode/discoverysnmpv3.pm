@@ -251,7 +251,7 @@ Specify SNMP community (can be defined multiple times) (Mandatory).
 
 =item B<--snmp-timeout>
 
-Specify SNMP timeout in second (Default: 1).
+Specify SNMP timeout in second (default: 1).
 
 =item B<--prettify>
 

@@ -949,7 +949,7 @@ Check RTT Controls (CISCO-RTT-MON)
 
 =item B<--filter-tag>
 
-Filter tag (Default: '.*')
+Filter tag (default: '.*')
 
 =item B<--threshold-overload>
 

@@ -475,7 +475,7 @@ Failback on a local file if redis connection failed.
 
 =item B<--memexpiration>
 
-Time to keep data in seconds (Default: 86400).
+Time to keep data in seconds (default: 86400).
 
 =item B<--statefile-dir>
 
@@ -483,7 +483,7 @@ Define the cache directory (default: '/var/lib/centreon/centplugins').
 
 =item B<--statefile-suffix>
 
-Define a suffix to customize the statefile name (Default: '').
+Define a suffix to customize the statefile name (default: '').
 
 =item B<--statefile-concat-cwd>
 
@@ -501,7 +501,7 @@ Define the key to encrypt/decrypt the cache.
 
 =item B<--statefile-cipher>
 
-Define the cipher algorithm to encrypt the cache (Default: 'AES').
+Define the cipher algorithm to encrypt the cache (default: 'AES').
 
 =back
 

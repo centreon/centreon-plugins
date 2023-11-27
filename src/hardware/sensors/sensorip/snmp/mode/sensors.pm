@@ -84,7 +84,7 @@ Check sensor components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sp', 'temperature', 'humidity', 'switch'.
 
 =item B<--filter>

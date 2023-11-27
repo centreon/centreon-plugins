@@ -211,7 +211,7 @@ Set resource group (Required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Default: 'topics'). Can be 'topics', 
+Set resource type (default: 'topics'). Can be 'topics', 
 'systemTopics', 'partnerTopics', 'partnerNamespaces',
 'extensionTopics', 'extensionTopics', 'domains').
 

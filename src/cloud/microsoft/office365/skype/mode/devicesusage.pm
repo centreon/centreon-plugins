@@ -260,7 +260,7 @@ Example to hide per user counters: --filter-counters='windows'
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

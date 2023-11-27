@@ -234,11 +234,11 @@ Check EAS instance handlers (http and mux).
 
 =item B<--urlpath-httphandler>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkhttphandler.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkhttphandler.jsp')
 
 =item B<--urlpath-muxhandler>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkmuxhandler.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkmuxhandler.jsp')
 
 =item B<--filter-handler>
 

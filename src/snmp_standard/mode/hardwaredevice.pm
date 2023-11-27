@@ -71,7 +71,7 @@ Check hardware devices (HOST-RESOURCES-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'device'.
 
 =item B<--filter>

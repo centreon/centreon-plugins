@@ -143,15 +143,15 @@ State to check (Can be: is_offline, is_recovering, is_blobchunk, is_inconsistent
 
 =item B<--error-msg>
 
-Display message when you have an error. (Default: 'Chunk %s has a problem')
+Display message when you have an error. (default: 'Chunk %s has a problem')
 
 =item B<--ok-msg>
 
-Display message when chunk is ok. (Default: 'Chunk %s is ok')
+Display message when chunk is ok. (default: 'Chunk %s is ok')
 
 =item B<--global-ok-msg>
 
-Display global message when you have no errors. (Default: 'All chunks are ok')
+Display global message when you have no errors. (default: 'All chunks are ok')
 
 =item B<--name>
 

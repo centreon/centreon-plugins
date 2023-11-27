@@ -53,22 +53,22 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Special variables that can be used: %{status}, %{summary}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /^Unavailable$/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /^Unavailable$/').
 Special variables that can be used: %{status}, %{summary}.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /^Unknown$/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /^Unknown$/').
 Special variables that can be used: %{status}, %{summary}.
 
 =item B<--ok-status>
 
-Define the conditions to match for the status to be OK (Default: '%{status} =~ /^Available$/').
+Define the conditions to match for the status to be OK (default: '%{status} =~ /^Available$/').
 Special variables that can be used: %{status}, %{summary}.
 
 =back

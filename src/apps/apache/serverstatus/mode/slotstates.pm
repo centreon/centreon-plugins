@@ -276,7 +276,7 @@ Protocol used http or https
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/server-status/?auto')
+Set path to get server-status page in auto mode (default: '/server-status/?auto')
 
 =item B<--credentials>
 
@@ -308,7 +308,7 @@ Set HTTP headers (Multiple option)
 
 =item B<--units>
 
-Threshold unit (Default: '%'. Can be: '%' or 'absolute')
+Threshold unit (default: '%'. Can be: '%' or 'absolute')
 
 =item B<--warning-*>
 

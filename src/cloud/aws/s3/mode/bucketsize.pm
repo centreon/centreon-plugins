@@ -176,7 +176,7 @@ Set the instance name (Required) (can be defined multiple times).
 
 =item B<--storage-type>
 
-Set the storage type of the bucket (Default: 'StandardStorage')
+Set the storage type of the bucket (default: 'StandardStorage')
 ((can be defined multiple times): 'StandardStorage', 'StandardIAStorage', 'ReducedRedundancyStorage').
 
 =item B<--warning-$metric$-$storagetype$-$statistic$>

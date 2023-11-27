@@ -155,7 +155,7 @@ Warning threshold.
 =item B<--critical-status>
 
 Critical threshold
-(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
+(default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
 
 =back
 

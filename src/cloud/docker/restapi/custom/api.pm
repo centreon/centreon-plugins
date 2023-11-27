@@ -519,11 +519,11 @@ IP Addr/FQDN of the docker node (can be multiple).
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--credentials>
 
@@ -547,7 +547,7 @@ Specify this option if you access server-status page over hidden basic authentic
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Threshold for HTTP timeout (default: 10)
 
 =item B<--cert-file>
 

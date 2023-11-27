@@ -195,12 +195,12 @@ You can use the following variables: %{health_status}, %{running_status}, %{id}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health_status} =~ /degraded|partially broken/i').
+Define the conditions to match for the status to be WARNING (default: '%{health_status} =~ /degraded|partially broken/i').
 You can use the following variables: %{health_status}, %{running_status}, %{id}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /fault|fail/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health_status} =~ /fault|fail/i').
 You can use the following variables: %{health_status}, %{running_status}, %{id}
 
 =item B<--warning-*> B<--critical-*>

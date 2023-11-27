@@ -279,7 +279,7 @@ Check Hardware (Fans, Power Supplies, Module,...).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane',
 'container', 'module', 'port', 'stack', 'cpu'.
 
@@ -327,7 +327,7 @@ Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane',
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (Default: 180).
+Time in seconds before reloading cache file (default: 180).
 Use '-1' to disable cache reload.
 
 =back

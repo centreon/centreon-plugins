@@ -207,19 +207,19 @@ IP Addr/FQDN of the webserver host
 
 =item B<--port>
 
-Port used by Webserver (Default: 443)
+Port used by Webserver (default: 443)
 
 =item B<--method>
 
-Specify http method used (Default: 'GET')
+Specify http method used (default: 'GET')
 
 =item B<--urlpath>
 
-Set path to get webpage (Default: '/')
+Set path to get webpage (default: '/')
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Threshold for HTTP timeout (default: 5)
 
 =item B<--header>
 

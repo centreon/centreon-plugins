@@ -181,7 +181,7 @@ Can be: DataReadIOBytes, DataWriteIOBytes, MetaDataIOBytes, TotalIOBytes, BurstC
 
 =item B<--statistic>
 
-Set the metric calculation method (Default: Average)
+Set the metric calculation method (default: Average)
 Can be 'minimum', 'maximum', 'average', 'sum'
 
 =item B<--warning-$metric$>

@@ -201,12 +201,12 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{activated} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{activated} !~ /true/i').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--warning-*>

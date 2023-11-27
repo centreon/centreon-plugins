@@ -208,7 +208,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-license-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /in compliance/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /in compliance/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

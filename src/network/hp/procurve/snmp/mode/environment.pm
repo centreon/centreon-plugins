@@ -96,7 +96,7 @@ Check sensors (hpicfChassis.mib).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'sensor', 'temperature'.
 
 =item B<--filter>

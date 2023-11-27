@@ -210,11 +210,11 @@ IP Addr/FQDN of the host.
 
 =item B<--port>
 
-Port used (Default: 8443).
+Port used (default: 8443).
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https').
+Specify http if needed (default: 'https').
 
 =item B<--credentials>
 
@@ -240,7 +240,7 @@ Specify password for old authentification system.
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 5).
+Define the timeout in seconds (default: 5).
 
 =item B<--command>
 

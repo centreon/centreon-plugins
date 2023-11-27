@@ -173,7 +173,7 @@ Hostname to query.
 
 =item B<--port>
 
-telnet port (Default: 23).
+telnet port (default: 23).
 
 =item B<--username>
 
@@ -185,7 +185,7 @@ telnet password.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =back
 

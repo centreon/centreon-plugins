@@ -168,11 +168,11 @@ Port used
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 5).
+Set timeout in seconds (default: 5).
 
 =item B<--packets>
 
-Number of packets to send (Default: 5).
+Number of packets to send (default: 5).
 
 =item B<--warning-rta>
 

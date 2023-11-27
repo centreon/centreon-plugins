@@ -124,7 +124,7 @@ Check Shelves hardware (temperatures, voltages, electronics, fan, power supplies
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'communication', 'voltage', 'temperature', 'electronics', 'raid'.
 
 =item B<--filter>

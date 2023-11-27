@@ -157,12 +157,12 @@ Filter PDU name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /normalWithWarning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /normalWithWarning/i').
 You can use the following variables: %{status}, %{display}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /normalWithAlarm|abnormalOperation/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /normalWithAlarm|abnormalOperation/i').
 You can use the following variables: %{status}, %{display}
 
 =back

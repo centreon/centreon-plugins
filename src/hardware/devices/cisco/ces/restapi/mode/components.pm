@@ -135,7 +135,7 @@ Check components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'ad' (audio device), 'aic' (audio input connectors), 'aoc' (audio output connectors),
 'camera', 'st' (speakerTrack), 'software', 'temperature', 'vic' (video input connectors),
 'vis' (video input source), 'voc', (video output connectors), 'webex'.

@@ -133,7 +133,7 @@ Critical threshold (number of long queries).
 
 =item B<--seconds>
 
-The minimum execution time in seconds for a long query (Default: 60).
+The minimum execution time in seconds for a long query (default: 60).
 
 =item B<--filter-user>
 

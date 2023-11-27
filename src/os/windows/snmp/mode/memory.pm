@@ -178,7 +178,7 @@ Check memory usage
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =item B<--free>
 

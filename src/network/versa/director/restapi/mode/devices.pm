@@ -507,7 +507,7 @@ You can use the following variables: %{ping_status}, %{service_sstatus}, %{sync_
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
+Define the conditions to match for the status to be CRITICAL (default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
 You can use the following variables: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

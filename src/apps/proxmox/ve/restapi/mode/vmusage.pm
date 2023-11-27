@@ -349,12 +349,12 @@ Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 
 =item B<--warning-vm-status>
 
-Define the conditions to match for the status to be WARNING (Default: -)
+Define the conditions to match for the status to be WARNING (default: -)
 You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-vm-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: -).
+Define the conditions to match for the status to be CRITICAL (default: -).
 You can use the following variables: %{name}, %{state}.
 
 =back

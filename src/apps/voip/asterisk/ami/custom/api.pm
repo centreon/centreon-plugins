@@ -250,7 +250,7 @@ AMI hostname (Required).
 
 =item B<--ami-port>
 
-AMI port (Default: 5038).
+AMI port (default: 5038).
 
 =item B<--ami-username>
 

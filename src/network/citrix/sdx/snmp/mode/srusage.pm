@@ -232,7 +232,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /good/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /good/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>
@@ -247,7 +247,7 @@ Can be: 'usage'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

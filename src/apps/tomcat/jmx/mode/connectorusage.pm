@@ -238,7 +238,7 @@ Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =back
 

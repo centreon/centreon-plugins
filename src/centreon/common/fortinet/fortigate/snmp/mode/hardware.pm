@@ -89,7 +89,7 @@ It's deprecated. Work only for 'FortiGate-5000 Series Chassis'.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sensors'.
 
 =item B<--add-name-instance>

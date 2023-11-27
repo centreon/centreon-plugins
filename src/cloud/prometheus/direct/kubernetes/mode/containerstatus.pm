@@ -215,12 +215,12 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod=~".*"')
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/ || %{state} !~ /ready/').
 You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>

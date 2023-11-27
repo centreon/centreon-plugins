@@ -185,7 +185,7 @@ Filter link by name (Can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{state}, %{vpn_state}, %{backup_state}.
 
 =item B<--warning-*> B<--critical-*>

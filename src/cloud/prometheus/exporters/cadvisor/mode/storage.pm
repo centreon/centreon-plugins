@@ -251,7 +251,7 @@ Filter on a specific device (Must be a PromQL filter, Default: 'device=~".*"')
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

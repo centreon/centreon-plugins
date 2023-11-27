@@ -190,7 +190,7 @@ Filter volumes by id.
 
 =item B<--vm-tag-name>
 
-Virtual machine tags to used for the name (Default: 'name').
+Virtual machine tags to used for the name (default: 'name').
 
 =item B<--unknown-volume-status>
 

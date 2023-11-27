@@ -109,7 +109,7 @@ Ntp server address or FQDN
 
 =item B<--port>
 
-Port used (Default: 123)
+Port used (default: 123)
 
 =item B<--timeout>
 

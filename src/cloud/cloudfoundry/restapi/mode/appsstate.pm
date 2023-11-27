@@ -158,7 +158,7 @@ Warning threshold.
 
 =item B<--critical-state>
 
-Critical threshold (Default: '%{state} !~ /STARTED/i').
+Critical threshold (default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-*>
 

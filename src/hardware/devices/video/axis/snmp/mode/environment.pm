@@ -97,7 +97,7 @@ Check videos (AXIS-VIDEO-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'video', 'psu', 'fan', 'temperature', 'audio', 'storage', 'casing'.
 
 =item B<--filter>

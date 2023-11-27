@@ -99,7 +99,7 @@ Check hardware (LSI-MegaRAID-SAS-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'alarm', 'fan', 'sim', 'slot', 'psu',
 'temperature', 'pdrive', 'vdrive'.
 

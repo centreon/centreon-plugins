@@ -116,7 +116,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /running/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /running/').
 You can use the following variables: %{state}, %{display}
 
 =back

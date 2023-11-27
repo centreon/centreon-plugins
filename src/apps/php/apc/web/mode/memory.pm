@@ -163,7 +163,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/apc.php')
+Set path to get server-status page in auto mode (default: '/apc.php')
 
 =item B<--credentials>
 
@@ -187,7 +187,7 @@ Specify this option if you access server-status page over hidden basic authentic
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 30)
+Threshold for HTTP timeout (default: 30)
 
 =item B<--warning-*>
 

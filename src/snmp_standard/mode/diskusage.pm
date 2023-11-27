@@ -405,7 +405,7 @@ Display cache disk path datas.
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none) (results like 'df' command).
+The value is in percent of total (default: none) (results like 'df' command).
 
 =item B<--force-use-mib-percent>
 

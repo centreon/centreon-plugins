@@ -272,7 +272,7 @@ Example: --tags='Environment => DEV' --tags='managed_by => automation'
 
 =item B<--lookup-days>
 
-Days backward to look up (Default: '30').
+Days backward to look up (default: '30').
 
 =item B<--warning-subscription-costs>
 

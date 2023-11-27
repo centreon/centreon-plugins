@@ -261,14 +261,14 @@ Set the global output in case everything is fine for multiple instances
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.

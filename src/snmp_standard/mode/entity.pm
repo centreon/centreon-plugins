@@ -76,7 +76,7 @@ Check entity sensors (ENTITY-SENSOR-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sensor'.
 
 =item B<--filter>

@@ -286,7 +286,7 @@ Ignore SSL handshake errors. For example: 'SSL error: SSL wants a read first'.
 
 =item B<--timeout>
 
-Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::SSL >= 1.984).
+Set timeout in seconds for SSL connection (default: '3') (only with IO::Socket::SSL >= 1.984).
 
 =item B<--starttls>
 

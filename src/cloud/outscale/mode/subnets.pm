@@ -185,7 +185,7 @@ Filter subnets by name.
 
 =item B<--subnet-tag-name>
 
-Subnet tags to be used for the name (Default: 'name').
+Subnet tags to be used for the name (default: 'name').
 
 =item B<--unknown-subnet-status>
 

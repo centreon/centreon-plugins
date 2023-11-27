@@ -290,13 +290,13 @@ Number of metrics to generate.
 
 =item B<--metrics-name>
 
-Name of the metrics (Default: 'metrics.number').
+Name of the metrics (default: 'metrics.number').
 
 Metrics are suffixed by a number between 1 and metrics count.
 
 =item B<--metrics-values-range>
 
-Range of values from which metrics values can be picked (Default: '0:100').
+Range of values from which metrics values can be picked (default: '0:100').
 
 =item B<--show-sequence>
 

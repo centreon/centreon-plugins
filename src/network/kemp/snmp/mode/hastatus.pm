@@ -150,22 +150,22 @@ Example: --filter-counters='^ha-status$'
 
 =item B<--warning-ha-status>
 
-Define the conditions to match for the status to be WARNING (Default: none).
+Define the conditions to match for the status to be WARNING (default: none).
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-ha-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: none).
+Define the conditions to match for the status to be CRITICAL (default: none).
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-sync-status>
 
-Define the conditions to match for the status to be WARNING (Default: none).
+Define the conditions to match for the status to be WARNING (default: none).
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-sync-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: none).
+Define the conditions to match for the status to be CRITICAL (default: none).
 You can use the following variables: %{status}, %{display}
 
 =back

@@ -198,12 +198,12 @@ Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{badstatus} =~ /yes/').
+Define the conditions to match for the status to be CRITICAL (default: '%{badstatus} =~ /yes/').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =back

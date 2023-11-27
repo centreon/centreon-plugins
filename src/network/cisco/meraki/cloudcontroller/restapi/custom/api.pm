@@ -566,11 +566,11 @@ Meraki api hostname (default: 'api.meraki.com')
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-token>
 

@@ -81,7 +81,7 @@ Check devices (DEV-CFG-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'psu', 'fan'.
 
 =item B<--filter>

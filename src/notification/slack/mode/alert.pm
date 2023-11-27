@@ -334,7 +334,7 @@ Specify this option if you access a webpage over hidden basic authentication or 
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 5).
+Define the timeout in seconds (default: 5).
 
 =back
 

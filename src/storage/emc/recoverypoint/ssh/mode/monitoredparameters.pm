@@ -120,7 +120,7 @@ Command used: 'get_monitored_parameters min_severity=%(min_severity)'
 
 =item B<--min-severity>
 
-Minimum severity level you want to count (Default: minor).
+Minimum severity level you want to count (default: minor).
 Can be 'minor', 'major' or 'critical'.
 
 =item B<--warning>

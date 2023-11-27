@@ -383,7 +383,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
@@ -392,7 +392,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /offline/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>

@@ -162,11 +162,11 @@ Hostname (can be multiple if you want a failover system).
 
 =item B<--port>
 
-Port used (Default: 1401)
+Port used (default: 1401)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -178,7 +178,7 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 20).
+Set timeout in seconds (default: 20).
 
 =back
 

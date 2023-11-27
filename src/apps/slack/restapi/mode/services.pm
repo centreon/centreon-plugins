@@ -164,11 +164,11 @@ Only display the status for a specific servie
 
 =item B<--warning-status>
 
-Set warning threshold for the service status (Default: '%{status} eq "active" and %{type} eq "incident"').
+Set warning threshold for the service status (default: '%{status} eq "active" and %{type} eq "incident"').
 
 =item B<--critical-status>
 
-Set warning threshold for the service status (Default: '%{status} eq "active" and %{type} eq "outage"').
+Set warning threshold for the service status (default: '%{status} eq "active" and %{type} eq "outage"').
 
 =back
 

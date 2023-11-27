@@ -223,7 +223,7 @@ Hostname to query in ssh.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--sudo>
 
@@ -249,7 +249,7 @@ You can use the following variables: %{queue_file_enabled}, %{state}, %{status},
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
 You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =back

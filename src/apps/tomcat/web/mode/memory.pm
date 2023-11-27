@@ -228,7 +228,7 @@ Threshold for HTTP timeout
 
 =item B<--urlpath>
 
-Path to the Tomcat Manager XML (Default: '/manager/status?XML=true')
+Path to the Tomcat Manager XML (default: '/manager/status?XML=true')
 
 =item B<--warning-*> B<--critical-*>
 

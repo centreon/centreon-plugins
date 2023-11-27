@@ -255,7 +255,7 @@ You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} eq "dead"').
+Define the conditions to match for the status to be WARNING (default: '%{state} eq "dead"').
 You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--critical-status>

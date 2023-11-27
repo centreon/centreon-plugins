@@ -79,7 +79,7 @@ Check hardware (batteries, fan modules, fibre channels, flashcards, power suppli
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (default: 'all').
 Can be: 'battery', 'fan', 'fibrechannel', 'flashcard', 'psu'.
 
 =item B<--filter>

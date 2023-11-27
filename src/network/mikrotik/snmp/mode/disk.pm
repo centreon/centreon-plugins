@@ -65,7 +65,7 @@ Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -97,7 +97,7 @@ Display cache storage datas.
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(?!(hrStorageRam)$)').
+Filter storage types with a regexp (default: '^(?!(hrStorageRam)$)').
 
 =back
 

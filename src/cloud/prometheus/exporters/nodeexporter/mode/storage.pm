@@ -261,7 +261,7 @@ Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype!~"linuxfs
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

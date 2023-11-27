@@ -1111,7 +1111,7 @@ does not return value when not defined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--sudo>
 
@@ -1119,16 +1119,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'aws').
+Command to get information (default: 'aws').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 Only use for testing purpose, when you want to set ALL parameters of a command by yourself.
 
 =item B<--proxyurl>

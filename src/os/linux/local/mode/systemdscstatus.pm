@@ -193,7 +193,7 @@ You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{b
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{active} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{active} =~ /failed/i').
 You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =back

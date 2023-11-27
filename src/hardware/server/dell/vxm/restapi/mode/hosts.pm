@@ -230,12 +230,12 @@ You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--unknown-nic-status>
@@ -265,7 +265,7 @@ You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /OK/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /OK/i').
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-*> B<--critical-*>

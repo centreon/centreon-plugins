@@ -150,7 +150,7 @@ Check memory usage.
 
 =item B<--filter>
 
-Filter operating (Default: 'routing|fpc').
+Filter operating (default: 'routing|fpc').
 
 =item B<--warning-*> B<--critical-*>
 

@@ -126,7 +126,7 @@ Example: centreon_plugins.pl --plugin=apps::vmware::wsman::plugin --mode=hardwar
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'omc_discretesensor', 'omc_fan', 'omc_psu', 'vmware_storageextent', 'vmware_controller',
 'vmware_storagevolume', 'vmware_battery', 'vmware_sassataport', 'cim_card',
 'cim_computersystem', 'cim_numericsensor', 'cim_memory', 'cim_processor', 'cim_recordlog'.

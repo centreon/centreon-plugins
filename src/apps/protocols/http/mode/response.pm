@@ -212,15 +212,15 @@ Port used by Webserver.
 
 =item B<--method>
 
-Specify http method used (Default: 'GET').
+Specify http method used (default: 'GET').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http').
+Specify https if needed (default: 'http').
 
 =item B<--urlpath>
 
-Define the path of the webpage to get (Default: '/').
+Define the path of the webpage to get (default: '/').
 
 =item B<--credentials>
 
@@ -248,7 +248,7 @@ Specify this option if you access a webpage over ntlmv2 authentication (Use with
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 5).
+Define the timeout in seconds (default: 5).
 
 =item B<--no-follow>
 
@@ -292,15 +292,15 @@ Save cookies in a file (Example: '/tmp/lwp_cookies.dat').
 
 =item B<--unknown-status>
 
-Unknown conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--warning-status>
 
-Warning conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Warning conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--critical-status>
 
-Critical conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Critical conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--extra-stats>
 

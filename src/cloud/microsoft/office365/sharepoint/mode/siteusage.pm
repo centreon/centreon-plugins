@@ -399,7 +399,7 @@ https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active-sites|total'
-(Default: 'active-sites|total')
+(default: 'active-sites|total')
 
 =item B<--filter-*>
 
@@ -423,7 +423,7 @@ Can be: 'active-sites',
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

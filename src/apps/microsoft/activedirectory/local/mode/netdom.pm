@@ -102,15 +102,15 @@ Check the secure connection between a workstation and a domain controller (use '
 
 =item B<--workstation>
 
-Set the name of the workstation (Default: current hostname)
+Set the name of the workstation (default: current hostname)
 
 =item B<--domain>
 
-Set the name of the domain (Default: current domain of the workstation)
+Set the name of the domain (default: current domain of the workstation)
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 30 sec)
+Set timeout time for command execution (default: 30 sec)
 
 =back
 

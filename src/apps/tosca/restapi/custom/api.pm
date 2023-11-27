@@ -246,11 +246,11 @@ Tosca hostname.
 
 =item B<--port>
 
-Port used (Default: 80)
+Port used (default: 80)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -262,11 +262,11 @@ Tosca Commander API password.
 
 =item B<--url-path>
 
-API base url path (Default: '/rest/toscacommander').
+API base url path (default: '/rest/toscacommander').
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

@@ -131,7 +131,7 @@ Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Hea
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (default: 'all').
 Can be: 'ambient', 'powermodule', 'fanpack', 'chassisfan', 
 'blower', 'blade', 'systemhealth', 'chassisstatus', 'switchmodule'.
 

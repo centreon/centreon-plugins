@@ -165,7 +165,7 @@ Threshold for HTTP timeout
 
 =item B<--url-path>
 
-Path to the Tomcat Manager List (Default: Tomcat 7 '/manager/text/list')
+Path to the Tomcat Manager List (default: Tomcat 7 '/manager/text/list')
 Tomcat 6: '/manager/list'
 Tomcat 7: '/manager/text/list'
 

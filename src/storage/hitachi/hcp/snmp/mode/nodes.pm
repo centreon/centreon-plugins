@@ -421,7 +421,7 @@ You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} eq "unavailable"').
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} eq "unavailable"').
 You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--unknown-nic-status>
@@ -436,7 +436,7 @@ You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--critical-nic-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{nic_status} eq "failed"').
+Define the conditions to match for the status to be CRITICAL (default: '%{nic_status} eq "failed"').
 You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--unknown-san-path-status>
@@ -451,7 +451,7 @@ You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--critical-san-path-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{san_path_status} eq "error"').
+Define the conditions to match for the status to be CRITICAL (default: '%{san_path_status} eq "error"').
 You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--unknown-bbu-status>
@@ -466,7 +466,7 @@ You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--critical-bbu-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{bbu_status} !~ /healthy/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{bbu_status} !~ /healthy/i').
 You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>

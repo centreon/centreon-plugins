@@ -165,7 +165,7 @@ Specify the message to send.
 
 =item B<--coding>
 
-Sets the Data Coding Scheme bits (Default: 8 (UCS2)).
+Sets the Data Coding Scheme bits (default: 8 (UCS2)).
 Set value to -1 for disable encoding management.
 
 =item B<--dlr-url>

@@ -360,22 +360,22 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: -)
+Define the conditions to match for the status to be WARNING (default: -)
 You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{exit_code} =~ /Error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{exit_code} =~ /Error/i').
 You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--warning-long>
 
-Set warning threshold for long jobs (Default: none)
+Set warning threshold for long jobs (default: none)
 You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
 
 =item B<--critical-long>
 
-Set critical threshold for long jobs (Default: none).
+Set critical threshold for long jobs (default: none).
 You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
 
 =item B<--warning-*> B<--critical-*>

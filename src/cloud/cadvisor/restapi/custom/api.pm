@@ -374,15 +374,15 @@ IP Addr/FQDN of the cadvisor node (can be multiple).
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-path>
 
-Define the path of the endpoint to query  (Default: '/containers/docker')
+Define the path of the endpoint to query  (default: '/containers/docker')
 
 =item B<--credentials>
 
@@ -398,7 +398,7 @@ Specify the password for authentication (Mandatory if --credentials is specified
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Threshold for HTTP timeout (default: 10)
 
 =item B<--cert-file>
 

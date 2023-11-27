@@ -429,7 +429,7 @@ Set your domain expiration date timezone (default: 'UTC').
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /checkError/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /checkError/i').
 You can use the following variables: %{status}, %{domain}
 
 =item B<--warning-status>

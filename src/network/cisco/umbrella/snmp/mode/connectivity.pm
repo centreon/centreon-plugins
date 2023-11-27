@@ -108,14 +108,14 @@ Check connectivity between Umbrella server and DNS, local DNS, Umbrella dashboar
 
 =item B<--warning-*>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /yellow/').
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /yellow/').
 Can be: 'dns-status', 'localdns-status', 'cloud-status', 'ad-status'.
 
 Can use special variables like: %{status}, %{display}
 
 =item B<--critical-*>
 
-Define the conditions to match for the status to be CRITICAL. (Default: %{status} =~ /red/).
+Define the conditions to match for the status to be CRITICAL. (default: %{status} =~ /red/).
 Can be: 'dns-connectivity', 'localdns-connectivity', 'cloud-connectivity', 'ad-connectivity'.
 
 Can use special variables like: %{status}, %{display}

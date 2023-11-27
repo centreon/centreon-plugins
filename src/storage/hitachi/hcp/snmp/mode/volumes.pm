@@ -236,12 +236,12 @@ You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-volume-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--critical-volume-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /broken/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /broken/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-*> B<--critical-*>

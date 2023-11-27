@@ -158,16 +158,16 @@ Set the separator used in --manage-returns (default : #)
 
 =item B<--exec-command>
 
-Command to test (Default: none).
+Command to test (default: none).
 You can use 'sh' to use '&&' or '||'.
 
 =item B<--exec-command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--exec-command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =back
 

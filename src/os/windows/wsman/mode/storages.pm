@@ -174,7 +174,7 @@ Filter storages by name (can be a regexp).
 
 =item B<--filter-type>
 
-Filter storages by type (can be a regexp) (Default: 'localDisk').
+Filter storages by type (can be a regexp) (default: 'localDisk').
 
 =item B<--warning-*> B<--critical-*>
 

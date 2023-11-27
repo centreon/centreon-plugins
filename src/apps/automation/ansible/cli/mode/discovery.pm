@@ -111,7 +111,7 @@ Command used: ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json an
 
 =item B<--host-pattern>
 
-Specify host pattern to look for (Default: 'all').
+Specify host pattern to look for (default: 'all').
 
 =item B<--prettify>
 

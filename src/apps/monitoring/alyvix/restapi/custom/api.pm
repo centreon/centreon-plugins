@@ -171,15 +171,15 @@ Alyvix Server hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/v0/')
+API url path (default: '/v0/')
 
 =item B<--port>
 
-API port (Default: 80)
+API port (default: 80)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--credentials>
 

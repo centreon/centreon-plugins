@@ -160,7 +160,7 @@ Check environment (Power Supplies, Fans, Temperatures, Voltages, Modules, Physic
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'.
 
 =item B<--filter>

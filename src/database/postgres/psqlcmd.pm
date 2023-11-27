@@ -315,7 +315,7 @@ psqlcmd class
 
 =item B<--psql-cmd>
 
-postgres command (Default: '/usr/bin/psql').
+postgres command (default: '/usr/bin/psql').
 
 =item B<--host>
 

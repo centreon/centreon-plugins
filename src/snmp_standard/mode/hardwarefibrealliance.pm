@@ -90,7 +90,7 @@ http://www.emc.com/microsites/fibrealliance/index.htm
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'unit', 'sensors', 'port'.
 
 =item B<--add-name-instance>

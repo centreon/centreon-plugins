@@ -243,7 +243,7 @@ Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
-Filter job with end time greater than current time less value in seconds (Default: 86400).
+Filter job with end time greater than current time less value in seconds (default: 86400).
 
 =item B<--timezone>
 
@@ -256,12 +256,12 @@ You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
 You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>

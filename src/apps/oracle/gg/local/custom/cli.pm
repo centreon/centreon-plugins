@@ -219,7 +219,7 @@ Hostname to query.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 45). Default value can be override by the mode.
+Timeout in seconds for the command (default: 45). Default value can be override by the mode.
 
 =item B<--command>
 

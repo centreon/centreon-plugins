@@ -162,7 +162,7 @@ Kingdee password.
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =back
 

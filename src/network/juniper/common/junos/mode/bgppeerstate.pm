@@ -206,7 +206,7 @@ Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status}
 
 =item B<--critical-status>
 
-Specify critical threshold (Default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
+Specify critical threshold (default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
 Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
 %{local_type}, %{local_ip}, %{local_port}, %{local_as},
 %{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}

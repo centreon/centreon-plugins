@@ -219,15 +219,15 @@ Netdata API hostname (server address)
 
 =item B<--port>
 
-Port used (Default: 19999)
+Port used (default: 19999)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

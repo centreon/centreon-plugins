@@ -80,7 +80,7 @@ Check hardware (RUGGEDCOM-SYS-INFO-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan'.
 
 =item B<--filter>

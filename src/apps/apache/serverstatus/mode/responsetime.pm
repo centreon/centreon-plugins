@@ -116,7 +116,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/server-status/?auto')
+Set path to get server-status page in auto mode (default: '/server-status/?auto')
 
 =item B<--credentials>
 
@@ -156,7 +156,7 @@ Warning threshold for http response code
 
 =item B<--critical-status>
 
-Critical threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Critical threshold for http response code (default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning>
 

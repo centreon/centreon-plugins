@@ -139,7 +139,7 @@ Set resource group (Required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
+Set resource type (default: 'servers'). Can be 'servers', 'flexibleServers'.
 
 =item B<--warning-ioconsumption-usage>
 

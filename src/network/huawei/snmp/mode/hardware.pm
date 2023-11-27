@@ -152,7 +152,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan'.
 
 =item B<--filter>
@@ -187,7 +187,7 @@ Example: --critical='fan,.*,45'
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (Default: 180).
+Time in seconds before reloading cache file (default: 180).
 Use '-1' to disable cache reload.
 
 =back

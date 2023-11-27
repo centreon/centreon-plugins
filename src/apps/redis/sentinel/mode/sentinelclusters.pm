@@ -228,7 +228,7 @@ You can use the following variables: %{status}, %{address}, %{port}, %{cluster_n
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
 You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--unknown-status>
@@ -243,7 +243,7 @@ You can use the following variables: %{status}, %{address}, %{port}, %{cluster_n
 
 =item B<--critical-quorum-status>
 
-Set critical threshold for quorum status (Default: '%{status} =~ /noQuorum/').
+Set critical threshold for quorum status (default: '%{status} =~ /noQuorum/').
 You can use the following variables: %{status}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>

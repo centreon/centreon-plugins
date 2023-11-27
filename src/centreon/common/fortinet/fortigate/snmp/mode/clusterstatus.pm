@@ -275,7 +275,7 @@ You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{r
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
 You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--warning-*> B<--critical-*>

@@ -172,7 +172,7 @@ Check EAS application datasource status.
 
 =item B<--urlpath>
 
-Specify path to get status page. (Default: '/easportal/tools/nagios/checkdatasources.jsp')
+Specify path to get status page. (default: '/easportal/tools/nagios/checkdatasources.jsp')
 
 =item B<--datasource>
 

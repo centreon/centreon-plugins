@@ -226,7 +226,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/server-status/?auto')
+Set path to get server-status page in auto mode (default: '/server-status/?auto')
 
 =item B<--credentials>
 

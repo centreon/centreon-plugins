@@ -271,7 +271,7 @@ Check directory (Multiple option).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only). Used for directory counting files and size.
+Don't check fewer levels (default: '0'. Means current dir only). Used for directory counting files and size.
 
 =item B<--file>
 

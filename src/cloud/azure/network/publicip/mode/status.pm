@@ -183,19 +183,19 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-ddos-status>
 
-Warning threshold for DDOS attack status (Default: '').
+Warning threshold for DDOS attack status (default: '').
 
 =item B<--critical-ddos-status>
 
-Critical threshold for DDOS attack status (Default: '%{status} =~ /DDOS Attack ongoing/i').
+Critical threshold for DDOS attack status (default: '%{status} =~ /DDOS Attack ongoing/i').
 
 =item B<--warning-provisioning-state>
 
-Warning threshold for provisioning state (Default: '').
+Warning threshold for provisioning state (default: '').
 
 =item B<--critical-provisioning-state>
 
-Critical threshold for provisioning state (Default: '%{state} =~ /Failed/i').
+Critical threshold for provisioning state (default: '%{state} =~ /Failed/i').
 
 =back
 

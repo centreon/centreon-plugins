@@ -81,7 +81,7 @@ Check hardware (ALTEON-CHEETAH-SWITCH-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'temperature', 'psu', 'fan'.
 
 =item B<--filter>

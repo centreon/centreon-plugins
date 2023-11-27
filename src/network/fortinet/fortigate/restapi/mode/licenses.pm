@@ -182,7 +182,7 @@ You can use the following variables: %{name}, %{status}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /expired/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired/i').
 You can use the following variables: %{name}, %{status}.
 
 =item B<--unit>

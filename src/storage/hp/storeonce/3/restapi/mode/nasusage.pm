@@ -170,22 +170,22 @@ Filter nas name (can be a regexp).
 
 =item B<--warning-nas-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /warning/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =item B<--critical-nas-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =item B<--warning-share-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /warning/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =item B<--critical-share-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{replication_health}, %{display}
 
 =back

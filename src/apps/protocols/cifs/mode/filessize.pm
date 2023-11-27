@@ -185,7 +185,7 @@ Filter files (can be a regexp. Directory in the name).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Don't check fewer levels (default: '0'. Means current dir only).
 
 =item B<--warning-*> B<--critical-*>
 

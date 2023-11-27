@@ -76,7 +76,7 @@ Check alarms status.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'alarm'.
 
 =item B<--filter>

@@ -347,7 +347,7 @@ FORMAT OPTIONS:
 
 =item B<--format-ok>
 
-Customize the format of the output when the status is OK (Default: '%{count} element(s) found')
+Customize the format of the output when the status is OK (default: '%{count} element(s) found')
 You can use the following variables:
 '%{values}' = display all values (also text string)
 '%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
@@ -355,17 +355,17 @@ You can use the following variables:
 
 =item B<--format-warning>
 
-Customize the format of the output when the status is WARNING (Default: '%{count} element(s) found')
+Customize the format of the output when the status is WARNING (default: '%{count} element(s) found')
 You can use the variables described in --format-ok
 
 =item B<--format-critical>
 
-Customize the format of the output when the status is CRITICAL (Default: '%{count} element(s) found')
+Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found')
 You can use the variables described in --format-ok
 
 =item B<--values-separator>
 
-Separator used for values in format option (Default: ', ')
+Separator used for values in format option (default: ', ')
 
 =back
 
@@ -375,15 +375,15 @@ THRESHOLD OPTIONS:
 
 =item B<--warning-numeric>
 
-Warning threshold (Default: on total matching elements)
+Warning threshold (default: on total matching elements)
 
 =item B<--critical-numeric>
 
-Critical threshold (Default: on total matching elements)
+Critical threshold (default: on total matching elements)
 
 =item B<--threshold-value>
 
-Which value to use (Default: 'count')
+Which value to use (default: 'count')
 Can be: 'values' (only check numeric values)
 
 =item B<--warning-string>
@@ -418,11 +418,11 @@ Port used by Webserver.
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http').
+Specify https if needed (default: 'http').
 
 =item B<--urlpath>
 
-Set path to get the webpage (Default: '/').
+Set path to get the webpage (default: '/').
 
 =item B<--credentials>
 
@@ -448,7 +448,7 @@ Specify this option if you access a webpage over ntlmv2 authentication (Use with
 
 =item B<--timeout>
 
-Define the timeout in seconds (Default: 10).
+Define the timeout in seconds (default: 10).
 
 =item B<--cert-file>
 
@@ -476,15 +476,15 @@ Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
 
 =item B<--unknown-status>
 
-Unknown conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--warning-status>
 
-Warning conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Warning conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--critical-status>
 
-Critical conditions for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300').
+Critical conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =back
 

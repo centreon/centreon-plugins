@@ -216,7 +216,7 @@ Sentinel server.
 
 =item B<--port>
 
-Sentinel port (Default: 26379).
+Sentinel port (default: 26379).
 
 =item B<--tls>
 
@@ -244,7 +244,7 @@ Remote ssh redis-cli execution.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 10).
+Timeout in seconds for the command (default: 10).
 
 =back
 

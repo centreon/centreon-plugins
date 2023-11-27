@@ -488,7 +488,7 @@ Default template for hardware. Should be extended.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'xxx', 'yyy'.
 
 =item B<--filter>

@@ -156,7 +156,7 @@ Check hardware components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure', 
 'health', 'fru', 'memory', 'network', 'pci', 'pdisk', 
 'processor', 'psu', 'punit', 'slot', 'storagebattery', 

@@ -253,7 +253,7 @@ Check SAP QoS usage.
 
 =item B<--display-name>
 
-Display name (Default: '%{SysSwitchId}.%{SvcId}.%{SapPortId}.%{SapEncapValue}').
+Display name (default: '%{SysSwitchId}.%{SvcId}.%{SapPortId}.%{SapEncapValue}').
 Can also be: %{SapDescription}, %{SvcName}
 
 =item B<--filter-name>
@@ -267,7 +267,7 @@ You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for ib status (Default: '%{admin} =~ /up/i and %{status} !~ /up/i').
+Set critical threshold for ib status (default: '%{admin} =~ /up/i and %{status} !~ /up/i').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>

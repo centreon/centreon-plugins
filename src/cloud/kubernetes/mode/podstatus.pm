@@ -304,22 +304,22 @@ Example : --extra-filter='app=mynewapp'
 
 =item B<--warning-pod-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--critical-pod-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/i').
 You can use the following variables: %{status}, %{name}, %{namespace}.
 
 =item B<--warning-container-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{name}.
 
 =item B<--critical-container-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
 You can use the following variables: %{status}, %{state}, %{name}.
 
 =item B<--warning-*>
@@ -334,7 +334,7 @@ Can be: 'containers-ready', 'total-restarts-count' (count), 'restarts-count' (co
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'count').
+Units of thresholds (default: '%') ('%', 'count').
 
 =back
 

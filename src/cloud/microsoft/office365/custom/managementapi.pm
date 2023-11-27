@@ -271,15 +271,15 @@ Set Office 365 client secret.
 
 =item B<--login-endpoint>
 
-Set Office 365 login endpoint URL (Default: 'https://login.windows.net')
+Set Office 365 login endpoint URL (default: 'https://login.windows.net')
 
 =item B<--management-endpoint>
 
-Set Office 365 management endpoint URL (Default: 'https://manage.office.com')
+Set Office 365 management endpoint URL (default: 'https://manage.office.com')
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

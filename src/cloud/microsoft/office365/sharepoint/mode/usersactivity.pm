@@ -324,11 +324,11 @@ Can be: 'active-users',
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active|total'
-(Default: 'active|total')
+(default: 'active|total')
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 
