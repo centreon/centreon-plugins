@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check HTTP or HTTPS webpage.
+Check a HTTP or HTTPS web page.
 
 =cut

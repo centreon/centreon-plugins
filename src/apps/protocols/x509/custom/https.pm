@@ -215,7 +215,7 @@ Specify http method used (default: 'GET')
 
 =item B<--urlpath>
 
-Set path to get webpage (default: '/')
+Define the path of the web page to get (default: '/')
 
 =item B<--timeout>
 

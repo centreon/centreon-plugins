@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Sensormetrix em01 sensors through webpage.
+Check Sensormetrix em01 sensors through a web page.
 
 =cut

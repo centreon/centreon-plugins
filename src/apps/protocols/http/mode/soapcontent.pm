@@ -422,11 +422,11 @@ Specify https if needed (default: 'http').
 
 =item B<--urlpath>
 
-Set path to get the webpage (default: '/').
+Set path to get the web page (default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access a webpage with authentication.
+Specify this option if you access a web page with authentication.
 
 =item B<--username>
 
@@ -438,13 +438,13 @@ Specify the password for authentication (mandatory if --credentials is specified
 
 =item B<--basic>
 
-Specify this option if you access a webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access a web page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
 
-Specify this option if you access a webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
+Specify this option if you access a web page over hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
 
 =item B<--ntlmv2>
 
-Specify this option if you access a webpage over ntlmv2 authentication (use with --credentials and --port options).
+Specify this option if you access a web page over ntlmv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 

@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Apache and Apache 2 Web Servers through server-status webpage
+Check Apache and Apache 2 Web Servers through the server-status web page
 
 =cut
