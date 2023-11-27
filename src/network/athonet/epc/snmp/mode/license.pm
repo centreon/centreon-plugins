@@ -361,8 +361,7 @@ Can use special variables like: %{status}
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is days.
+Select the time unit for the expiration threshold. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is days.
 
 =item B<--warning-*> B<--critical-*>
 
