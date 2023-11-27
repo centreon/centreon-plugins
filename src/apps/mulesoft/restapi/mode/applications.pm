@@ -162,7 +162,7 @@ More information on'https://anypoint.mulesoft.com/exchange/portals/anypoint-plat
 
 =item B<--filter-name>
 
-Filter by application name (Regexp can be used).
+Filter by application name (regexp can be used).
 Example: --filter-name='^application1$'
 
 =item B<--warning-status>

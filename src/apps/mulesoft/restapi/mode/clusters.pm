@@ -154,7 +154,7 @@ More information on'https://anypoint.mulesoft.com/exchange/portals/anypoint-plat
 
 =item B<--filter-name>
 
-Filter by cluster name (Regexp can be used).
+Filter by cluster name (regexp can be used).
 Example: --filter-name='^cluster1$'
 
 =item B<--warning-status>

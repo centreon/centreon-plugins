@@ -190,7 +190,7 @@ More information on 'https://anypoint.mulesoft.com/exchange/portals/anypoint-pla
 
 =item B<--filter-name>
 
-Filter by queue name (Regexp can be used).
+Filter by queue name (regexp can be used).
 Example: --filter-name='^mymessagequeue1$'
 
 =item B<--region-id>

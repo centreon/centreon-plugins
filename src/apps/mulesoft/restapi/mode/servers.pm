@@ -156,7 +156,7 @@ More information on'https://anypoint.mulesoft.com/exchange/portals/anypoint-plat
 
 =item B<--filter-name>
 
-Filter by server name (Regexp can be used).
+Filter by server name (regexp can be used).
 Example: --filter-name='^server1$'
 
 =item B<--warning-status>
