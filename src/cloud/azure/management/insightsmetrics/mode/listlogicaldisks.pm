@@ -127,12 +127,12 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 =over 8
 
 =item B<--workspace-id>
-(Mandatory)
+(mandatory)
 Specify the Azure Log Analytics Workspace ID.
 
 =item B<--resource>
 
-(Mandatory)
+(mandatory)
 Specify the Azure VM Resource ID or name. Short name can be used if the option --name is defined.
 Example: --resource='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourcegroups/my_resourcegroup/providers/microsoft.compute/virtualmachines/azure-vm1'
 

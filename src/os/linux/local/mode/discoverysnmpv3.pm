@@ -245,9 +245,9 @@ Resources discovery.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (Mandatory).
+resources (Must be <ip>/<cidr> format) (mandatory).
 
-Specify SNMP community (can be defined multiple times) (Mandatory).
+Specify SNMP community (can be defined multiple times) (mandatory).
 
 =item B<--snmp-timeout>
 

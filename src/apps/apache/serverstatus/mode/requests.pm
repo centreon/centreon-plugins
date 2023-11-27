@@ -234,11 +234,11 @@ Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify the username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify the password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--basic>
 

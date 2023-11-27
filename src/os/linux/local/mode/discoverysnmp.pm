@@ -211,7 +211,7 @@ Resources discovery.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (Mandatory).
+resources (Must be <ip>/<cidr> format) (mandatory).
 
 =item B<--snmp-port>
 
@@ -219,11 +219,11 @@ Specify SNMP port (default: 161).
 
 =item B<--snmp-version>
 
-Specify SNMP version (can be defined multiple times) (Mandatory).
+Specify SNMP version (can be defined multiple times) (mandatory).
 
 =item B<--snmp-community>
 
-Specify SNMP community (can be defined multiple times) (Mandatory).
+Specify SNMP community (can be defined multiple times) (mandatory).
 
 =item B<--snmp-timeout>
 

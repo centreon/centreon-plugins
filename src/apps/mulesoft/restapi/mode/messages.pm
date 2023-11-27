@@ -195,7 +195,7 @@ Example: --filter-name='^mymessagequeue1$'
 
 =item B<--region-id>
 
-Specify the queue region ID (Mandatory).
+Specify the queue region ID (mandatory).
 Example: --region-id='eu-central-1'
 
 =item B<--timeframe>

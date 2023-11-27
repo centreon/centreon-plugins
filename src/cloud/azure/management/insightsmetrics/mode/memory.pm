@@ -176,7 +176,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 =over 8
 
 =item B<--workspace-id>
-(Mandatory)
+(mandatory)
 Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>

@@ -152,7 +152,7 @@ More information on'https://apidocs.netbiter.net/?page=methods&show=getSystemLog
 
 =item B<--system-id>
 
-Set the Netbiter Argos System ID (Mandatory).
+Set the Netbiter Argos System ID (mandatory).
 
 =item B<--filter-id>
 

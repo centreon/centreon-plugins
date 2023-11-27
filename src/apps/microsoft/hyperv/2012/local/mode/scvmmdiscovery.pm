@@ -226,7 +226,7 @@ Prettify JSON output.
 =item B<--resource-type>
 
 Choose the type of resources
-to discover (can be: 'host', 'vm') (Mandatory).
+to discover (can be: 'host', 'vm') (mandatory).
 
 =item B<--scvmm-hostname>
 

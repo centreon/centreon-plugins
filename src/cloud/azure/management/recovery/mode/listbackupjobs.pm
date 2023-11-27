@@ -140,11 +140,11 @@ List backup jobs.
 
 =item B<--vault-name>
 
-Set vault name (Mandatory).
+Set vault name (mandatory).
 
 =item B<--resource-group>
 
-Set resource group (Mandatory).
+Set resource group (mandatory).
 
 =item B<--filter-name>
 

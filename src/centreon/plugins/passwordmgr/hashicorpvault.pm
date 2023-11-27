@@ -261,7 +261,7 @@ To be used with K/V engines
 
 =item B<--vault-address>
 
-IP address of the HashiCorp Vault server (Mandatory).
+IP address of the HashiCorp Vault server (mandatory).
 
 =item B<--vault-port>
 
@@ -292,7 +292,7 @@ More information here: https://www.vaultproject.io/api-docs/auth
 
 =item B<--secret-path>
 
-Location of the secret in the Vault K/V engine (Mandatory - Can be multiple).
+Location of the secret in the Vault K/V engine (mandatory - Can be multiple).
 Examples:
 for v1 engine: --secret-path='mysecrets/servicecredentials'
 for v2 engine: --secret-path='mysecrets/data/servicecredentials?version=12'
