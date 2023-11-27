@@ -216,7 +216,7 @@ Print powershell output.
 
 =item B<--wsus-server>
 
-Set WSUS hostname/IP (Dafault: localhost).
+Set WSUS hostname/IP (default: localhost).
 
 =item B<--wsus-port>
 
