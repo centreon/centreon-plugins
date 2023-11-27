@@ -280,7 +280,7 @@ __END__
 
 Check mailbox usage (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/mailbox-usage?view=o365-worldwide)
 
 =over 8

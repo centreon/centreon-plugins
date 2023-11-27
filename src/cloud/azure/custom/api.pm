@@ -1257,7 +1257,7 @@ To connect to the Azure Rest API, you must register an application.
 
 Follow the 'How-to guide' at https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
-The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
+The application needs the 'Monitoring Reader' role (see https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 

@@ -246,7 +246,7 @@ __END__
 
 Check users activity (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/SkypeForBusiness/skype-for-business-online-reporting/activity-report)
 
 =over 8
