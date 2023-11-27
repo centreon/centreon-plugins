@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'pending-updates', nlabel => 'windows.pending.updates.count', set => {
                 key_values => [ { name => 'num' } ],
-                output_template => 'windows pending updates: %s',
+                output_template => 'pending windows updates: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -138,7 +138,7 @@ __END__
 
 =head1 MODE
 
-Check windows pending updates.
+Check pending windows updates.
 
 =over 8
 
