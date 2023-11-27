@@ -244,11 +244,11 @@ Set global execution timeout (default: 50)
 
 =item B<--warning>
 
-Warning threshold in seconds (Scenario execution time)
+Warning threshold in seconds (scenario execution time)
 
 =item B<--critical>
 
-Critical threshold in seconds (Scenario execution response time)
+Critical threshold in seconds (scenario execution response time)
 
 =back
 
