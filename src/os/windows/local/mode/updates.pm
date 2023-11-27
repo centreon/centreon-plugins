@@ -182,6 +182,10 @@ Display powershell script.
 
 Print powershell output.
 
+=item B<--filter-mandatory>
+
+Filter only mandatory Windows updates.
+
 =item B<--filter-title>
 
 Filter Windows updates by title (can be a regexp).
