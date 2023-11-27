@@ -54,7 +54,7 @@ __END__
 
 Check Storage Account health status.
 
-(Useful to determine host status)
+(useful to determine host status)
 
 =over 8
 

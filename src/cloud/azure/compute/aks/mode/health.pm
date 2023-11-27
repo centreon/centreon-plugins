@@ -40,7 +40,7 @@ __END__
 =head1 MODE
 
 Check Azure Kubernetes Cluster health status.
-(Useful to determine host status)
+(useful to determine host status)
 
 =over 8
 

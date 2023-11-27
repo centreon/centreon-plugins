@@ -41,7 +41,7 @@ __END__
 
 Check Virtual Machine health status.
 
-(Useful to determine host status)
+(useful to determine host status)
 
 =over 8
 

@@ -41,7 +41,7 @@ __END__
 
 Check Azure Web App Service Plan status.
 
-(Useful to determine host status)
+(useful to determine host status)
 
 =over 8
 
