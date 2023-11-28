@@ -1137,7 +1137,7 @@ Proxy URL if any
 
 =item B<--skip-ssl-check>
 
-Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party. 
+Avoid certificate issuer verification. Useful when AWS resources are hosted by a third party. 
 
 Note that it strips all stderr from the command result. Will be enhanced someday. Debug will only display CLI instead of evreything. 
 
