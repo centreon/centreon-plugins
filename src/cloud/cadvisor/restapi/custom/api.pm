@@ -402,15 +402,15 @@ Threshold for HTTP timeout (default: 10)
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify certificate to send to the web server
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify key to send to the web server
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify root certificate to send to the web server
 
 =item B<--cert-pwd>
 

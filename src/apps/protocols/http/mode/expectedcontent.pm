@@ -271,15 +271,15 @@ Do not follow http redirections.
 
 =item B<--cert-file>
 
-Specify the certificate to send to the webserver.
+Specify the certificate to send to the web server.
 
 =item B<--key-file>
 
-Specify the key to send to the webserver.
+Specify the key to send to the web server.
 
 =item B<--cacert-file>
 
-Specify the root certificate to send to the webserver.
+Specify the root certificate to send to the web server.
 
 =item B<--cert-pwd>
 

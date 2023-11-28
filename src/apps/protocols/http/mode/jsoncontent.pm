@@ -531,15 +531,15 @@ Define the timeout in seconds (default: 10).
 
 =item B<--cert-file>
 
-Specify the path to the certificate to send to the webserver.
+Specify the path to the certificate to send to the web server.
 
 =item B<--key-file>
 
-Specify the path to the key to send to the webserver.
+Specify the path to the key to send to the web server.
 
 =item B<--cacert-file>
 
-Specify the root certificate to send to the webserver.
+Specify the root certificate to send to the web server.
 
 =item B<--cert-pwd>
 
