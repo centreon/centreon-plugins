@@ -175,7 +175,7 @@ Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter on a specific metric 
+Filter on a specific metric. 
 Can be: DataReadBytes, DataWriteBytes, DataReadOperations, DataWriteOperations, MetaDataOperations
 
 =item B<--statistic>
