@@ -211,7 +211,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) ex: 1, 2,... (empty means 'check all disks path').
+Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 

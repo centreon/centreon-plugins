@@ -179,7 +179,7 @@ Check BCN status.
 
 =item B<--bcn>
 
-Set the BCN (number expected) ex: 1, 2,... (empty means 'check all bcn').
+Set the BCN (number expected) example: 1, 2,... (empty means 'check all bcn').
 
 =item B<--name>
 
