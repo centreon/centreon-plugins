@@ -39,6 +39,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=storage::synology:
 Synology SNMP: Checking disk components
     [Documentation]    Monitor the different states of disk health
     [Tags]    storage   synology    snmp
+    Log To Console    Synology SNMP: Checking disk components
     FOR    ${check_components_test}    IN    @{check_components_tests}
         ${command}    Catenate
         ...    ${CMD}
@@ -46,11 +47,10 @@ Synology SNMP: Checking disk components
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2
         ...    --snmp-port=2024
-        ${command}    Catenate    ${command}    --snmp-community=${check_components_test.snmpcommunity}
+        ...    --snmp-community=${check_components_test.snmpcommunity}
         ${output}    Run    ${command}
-        Log To Console    Synology SNMP: Checking disk components
+        Log To Console    ${check_components_test.description}
         Should Be Equal As Strings
-        ...    Log To Console    ${check_components_test.description}
         ...    ${check_components_test.expected_output}
         ...    ${output}
         ...    Wrong output for components mode: ${check_components_test}.{\n}Command output:{\n}${output}
