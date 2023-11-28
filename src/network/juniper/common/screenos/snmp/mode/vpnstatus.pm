@@ -175,11 +175,11 @@ You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--warning-update-time>
 
-Warning threshold for update time (in secondes).
+Warning threshold for update time (in seconds).
 
 =item B<--critical-update-time>
 
-Critical threshold for update time (in secondes).
+Critical threshold for update time (in seconds).
 
 =back
 

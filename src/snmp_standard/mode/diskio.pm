@@ -304,7 +304,7 @@ __END__
 
 =head1 MODE
 
-Check read/write I/O disks (bytes per secondes, IOPs). 
+Check read/write I/O disks (bytes per second, IOPs). 
 
 =over 8
 

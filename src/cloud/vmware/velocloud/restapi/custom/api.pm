@@ -484,7 +484,7 @@ Specify https if needed (default: 'https')
 
 =item B<--cache-expires-in>
 
-Cache (application) expires each X secondes (default: 7200)
+Cache (application) expires each X seconds (default: 7200)
 
 =item B<--username>
 

@@ -447,7 +447,7 @@ Use IPv6 only
 
 =item B<--nrpe-timeout>
 
-Timeout in secondes (default: 10).
+Timeout in seconds (default: 10).
 
 =item B<--ssl-opt>
 

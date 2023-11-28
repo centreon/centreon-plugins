@@ -286,7 +286,7 @@ Filter tags by name (can be a regexp).
 
 =item B<--cache-expires-in>
 
-Cache expires each X secondes (default: 7200)
+Cache expires each X seconds (default: 7200)
 
 =item B<--tag-output-value>
 
