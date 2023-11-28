@@ -188,7 +188,7 @@ Warning threshold.
 
 =item B<--critical-usedcapacity-total>
 
-Thresholds critical
+Critical thresholds.
 
 =back
 

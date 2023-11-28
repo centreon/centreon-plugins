@@ -260,7 +260,7 @@ Warning thresholds.
 
 =item B<--critical-transactions-total>
 
-Thresholds critical.
+Critical thresholds.
 
 =item B<--per-sec>
 

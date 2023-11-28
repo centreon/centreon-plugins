@@ -189,7 +189,7 @@ Warning threshold.
 
 =item B<--critical-blobcount-total>
 
-Thresholds critical
+Critical thresholds.
 
 =back
 

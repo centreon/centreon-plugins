@@ -135,7 +135,7 @@ Warning thresholds.
 
 =item B<--critical-billing>
 
-Thresholds critical.
+Critical thresholds.
 
 =back
 

@@ -162,7 +162,7 @@ Warning thresholds.
 
 =item B<--critical-requests>
 
-Thresholds critical.
+Critical thresholds.
 
 =item B<--per-sec>
 

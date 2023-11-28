@@ -190,7 +190,7 @@ Warning threshold.
 
 =item B<--critical-blobcapacity-total>
 
-Thresholds critical
+Critical thresholds.
 
 =back
 
