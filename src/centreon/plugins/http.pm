@@ -256,7 +256,7 @@ Set the address you want to connect to. Useful if hostname is only a vhost, to a
 
 =item B<--proxyurl>
 
-Proxy URL. Eg: http://my.proxy:3128
+Proxy URL. Example: http://my.proxy:3128
 
 =item B<--proxypac>
 

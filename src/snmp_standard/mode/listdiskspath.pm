@@ -229,7 +229,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 Modify the disk path name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--skip-total-size-zero>
 

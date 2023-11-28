@@ -139,7 +139,7 @@ Centreon service ID (required).
 
 =item B<--service-state>
 
-Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (required).
+Service state (example: CRITICAL, UNKNOWN, WARNING, OK) (required).
 
 =item B<--service-output>
 
@@ -176,12 +176,12 @@ Last service state change.
 =item B<--extra-property>
 
 Add a extra property.
-Eg: --extra-property='custom_message=test my message'
+Example: --extra-property='custom_message=test my message'
 
 =item B<--select>
 
 Add a select property (open-ticket list).
-Eg: --select='list-id=value'
+Example: --select='list-id=value'
 
 =back
 

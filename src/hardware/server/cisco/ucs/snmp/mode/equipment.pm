@@ -86,7 +86,7 @@ Define the expected status if no components are found (default: critical).
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Eg: --threshold-overload='fan.operability,OK,poweredOff|removed' 
+Example: --threshold-overload='fan.operability,OK,poweredOff|removed' 
 --threshold-overload='presence,OK,missing' 
 --threshold-overload='operability,OK,removed'
 

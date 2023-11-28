@@ -128,7 +128,7 @@ Centreon host ID (required).
 
 =item B<--host-state>
 
-Host state (Eg: UP, DOWN, UNREACHABLE) (required).
+Host state (example: UP, DOWN, UNREACHABLE) (required).
 
 =item B<--host-output>
 
@@ -161,12 +161,12 @@ Last host state change.
 =item B<--extra-property>
 
 Add a extra property.
-Eg: --extra-property='custom_message=test my message'
+Example: --extra-property='custom_message=test my message'
 
 =item B<--select>
 
 Add a select property (open-ticket list).
-Eg: --select='list-id=value'
+Example: --select='list-id=value'
 
 =back
 

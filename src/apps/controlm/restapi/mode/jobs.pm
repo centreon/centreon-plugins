@@ -294,7 +294,7 @@ Check exact job name (no regexp).
 
 =item B<--display-extra-attrs>
 
-Display extra job attributes (Eg: --display-extra-attrs=', number of runs: %(numberOfRuns)').
+Display extra job attributes (example: --display-extra-attrs=', number of runs: %(numberOfRuns)').
 
 =item B<--timezone>
 

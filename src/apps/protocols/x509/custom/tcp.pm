@@ -268,7 +268,7 @@ Port used by host.
 
 =item B<--servername>
 
-Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (eg: foo.bar.com).
+Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (example: foo.bar.com).
 
 =item B<--ssl-opt>
 

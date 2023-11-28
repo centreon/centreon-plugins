@@ -318,7 +318,7 @@ Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageD
 
 Modify the storage name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-storage-type>
 

@@ -193,7 +193,7 @@ Allows to use regexp to filter BCN (with option --name).
 
 Modify the BCN name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
+Example: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
 
 =back
 

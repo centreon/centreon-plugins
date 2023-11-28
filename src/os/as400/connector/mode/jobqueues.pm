@@ -201,7 +201,7 @@ Check job queues.
 
 =item B<--jobq>
 
-JOBQ selection. Eg: --jobq="QGPL:QBASE" --jobq="QGPL:QPGMR"
+JOBQ selection. Example: --jobq="QGPL:QBASE" --jobq="QGPL:QPGMR"
 
 =item B<--unknown-status>
 
