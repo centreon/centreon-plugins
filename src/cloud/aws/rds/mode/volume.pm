@@ -255,7 +255,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
+Critical thresholds ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

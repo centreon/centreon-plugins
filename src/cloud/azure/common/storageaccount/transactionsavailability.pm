@@ -208,7 +208,7 @@ Warning thresholds (* can be: 'minimum', 'maximum', 'average').
 
 =item B<--critical-availability-*>
 
-Thresholds critical (* can be: 'minimum', 'maximum', 'average').
+Critical thresholds (* can be: 'minimum', 'maximum', 'average').
 
 =back
 

@@ -221,7 +221,7 @@ Warning thresholds (can be: 'invocations', 'errors',
 
 =item B<--critical-*>
 
-Thresholds critical (can be: 'invocations', 'errors',
+Critical thresholds (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =back

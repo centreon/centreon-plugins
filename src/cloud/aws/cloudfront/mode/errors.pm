@@ -172,7 +172,7 @@ Warning thresholds (can be: 'errorrate-total',
 
 =item B<--critical-*>
 
-Thresholds critical (can be: 'errorrate-total',
+Critical thresholds (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =back

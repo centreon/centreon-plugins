@@ -189,7 +189,7 @@ Warning thresholds (* can be: 'average', 'total').
 
 =item B<--critical-tablecount-*>
 
-Thresholds critical (* can be: 'average', 'total').
+Critical thresholds (* can be: 'average', 'total').
 
 =back
 

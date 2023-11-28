@@ -251,7 +251,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'replicationbytes', 'replicationlag',
+Critical thresholds ($metric$ can be: 'replicationbytes', 'replicationlag',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

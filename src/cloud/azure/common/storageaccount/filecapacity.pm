@@ -190,7 +190,7 @@ Warning thresholds (* can be: 'average', 'total').
 
 =item B<--critical-filecapacity-*>
 
-Thresholds critical (* can be: 'average', 'total').
+Critical thresholds (* can be: 'average', 'total').
 
 =back
 

@@ -237,7 +237,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'gettypecmds', 'hashbasedcmds', 'keybasedcmds', 'listbasedcmds',
+Critical thresholds ($metric$ can be: 'gettypecmds', 'hashbasedcmds', 'keybasedcmds', 'listbasedcmds',
 'setbasedcmds', 'settypecmds', 'sortedsetbasedcmds', 'stringbasedcmds' 'hyperloglogbasedcmds',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

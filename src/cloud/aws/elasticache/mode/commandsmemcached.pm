@@ -234,7 +234,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'cmdflush', 'cmdget', 'cmdset',
+Critical thresholds ($metric$ can be: 'cmdflush', 'cmdget', 'cmdset',
 'cmdconfigget', 'cmdconfigset', 'cmdtouch',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

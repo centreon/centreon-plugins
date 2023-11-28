@@ -236,7 +236,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'networkbytesin', 'networkbytesout',
+Critical thresholds ($metric$ can be: 'networkbytesin', 'networkbytesout',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

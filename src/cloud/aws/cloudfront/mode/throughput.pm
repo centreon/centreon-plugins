@@ -176,7 +176,7 @@ Warning thresholds (can be: 'bytes-downloaded', 'bytes-uploaded').
 
 =item B<--critical-*>
 
-Thresholds critical (can be: 'bytes-downloaded', 'bytes-uploaded')
+Critical thresholds (can be: 'bytes-downloaded', 'bytes-uploaded')
 
 =item B<--per-sec>
 

@@ -188,7 +188,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$storagetype$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'bucketsizebytes',
+Critical thresholds ($metric$ can be: 'bucketsizebytes',
 $storagetype$ can be: 'standardstorage',
 'standardiastorage', 'reducedredundancystorage',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').

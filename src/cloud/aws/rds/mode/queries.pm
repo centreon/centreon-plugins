@@ -210,7 +210,7 @@ Warning thresholds ($metric$ can be: 'queries', 'insertthroughput', 'deletethrou
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'queries', 'insertthroughput', 'deletethroughput', 'selectthroughput',
+Critical thresholds ($metric$ can be: 'queries', 'insertthroughput', 'deletethroughput', 'selectthroughput',
 'updatethroughput', 'dmlthroughput', 'ddlthroughput', 'insertlatency', 'deletelatency', 'selectlatency',
 'updatelatency', 'dmllatency', 'ddllatency', $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

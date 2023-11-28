@@ -188,7 +188,7 @@ Warning thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-r
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Critical thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
 
 =back
 

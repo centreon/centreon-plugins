@@ -205,7 +205,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'cpucreditusage', 'cpucreditbalance', 'cpuutilization', 
+Critical thresholds ($metric$ can be: 'cpucreditusage', 'cpucreditbalance', 'cpuutilization', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

@@ -234,7 +234,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'evictions', 'reclaimed',
+Critical thresholds ($metric$ can be: 'evictions', 'reclaimed',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

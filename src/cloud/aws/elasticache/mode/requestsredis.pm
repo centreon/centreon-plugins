@@ -232,7 +232,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'cachehits', 'cachemisses',
+Critical thresholds ($metric$ can be: 'cachehits', 'cachemisses',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

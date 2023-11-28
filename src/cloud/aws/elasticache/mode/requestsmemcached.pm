@@ -236,7 +236,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'cashits', 'casmisses', 'decrhits', 'decrmisses',
+Critical thresholds ($metric$ can be: 'cashits', 'casmisses', 'decrhits', 'decrmisses',
 'deletehits', 'deletemisses', 'gethits', 'getmisses', 'incrhits', 'incrmisses', 'touchhits', 'touchmisses',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

@@ -190,7 +190,7 @@ Warning thresholds ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
+Critical thresholds ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
 
 =back
 

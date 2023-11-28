@@ -270,7 +270,7 @@ $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'ingress', 'egress',
+Critical thresholds ($metric$ can be: 'ingress', 'egress',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--per-sec>

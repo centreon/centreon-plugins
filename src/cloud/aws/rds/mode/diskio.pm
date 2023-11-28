@@ -233,7 +233,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'readthroughput', 'writethroughput',
+Critical thresholds ($metric$ can be: 'readthroughput', 'writethroughput',
 'readiops', 'writeiops', 'readlatency', 'writelatency', 'diskqueuedepth',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

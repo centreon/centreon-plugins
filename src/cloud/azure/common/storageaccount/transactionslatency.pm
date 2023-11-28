@@ -216,7 +216,7 @@ $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'successserverlatency', 'successe2elatency',
+Critical thresholds ($metric$ can be: 'successserverlatency', 'successe2elatency',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =back

@@ -205,7 +205,7 @@ Warning thresholds ($metric$ can be: 'activetransactions', 'blockedtransactions'
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'activetransactions', 'blockedtransactions', 'committhroughput',
+Critical thresholds ($metric$ can be: 'activetransactions', 'blockedtransactions', 'committhroughput',
 'commitlatency', $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

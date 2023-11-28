@@ -171,7 +171,7 @@ Warning thresholds ($metric$ can be: 'available-memory', 'available-node-number'
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
+Critical thresholds ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
 'cpu-percentage', 'queue-length').
 
 =back

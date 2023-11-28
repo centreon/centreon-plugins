@@ -163,7 +163,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
+Critical thresholds ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
 'deleterequests', 'headrequests', 'postrequests', 'listrequests', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

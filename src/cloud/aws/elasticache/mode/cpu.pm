@@ -173,7 +173,7 @@ Warning thresholds (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-cpuutilization-*>
 
-Thresholds critical (* can be: 'minimum', 'maximum', 'average', 'sum').
+Critical thresholds (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
 

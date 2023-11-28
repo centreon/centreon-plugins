@@ -222,7 +222,7 @@ Warning thresholds ($metric$ can be: 'factory-percentage-usage', 'resource-perce
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
+Critical thresholds ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
 
 =back
 

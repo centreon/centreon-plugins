@@ -164,7 +164,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'numberofobjects', 
+Critical thresholds ($metric$ can be: 'numberofobjects', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

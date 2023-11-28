@@ -294,7 +294,7 @@ Warning thresholds ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'pack
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
+Critical thresholds ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
 'packetsreceivedrate', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--per-sec>

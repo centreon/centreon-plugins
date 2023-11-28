@@ -180,7 +180,7 @@ $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'bytesusedforcache',
+Critical thresholds ($metric$ can be: 'bytesusedforcache',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
