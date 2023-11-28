@@ -236,7 +236,7 @@ Check MySQL databases size and tables.
 
 =item B<--filter-database>
 
-Filter database to checks (can be a regexp).
+Filter the databases to monitor with a regular expression.
 
 =item B<--filter-table>
 
