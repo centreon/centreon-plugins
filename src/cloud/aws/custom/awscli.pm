@@ -1139,7 +1139,7 @@ Proxy URL if any
 
 Avoid certificate issuer verification. Useful when AWS resources are hosted by a third party. 
 
-Note that it strips all stderr from the command result. Will be enhanced someday. Debug will only display CLI instead of evreything. 
+Note that it strips all stderr from the command result. Debug will only display CLI instead of evreything.
 
 =back
 
