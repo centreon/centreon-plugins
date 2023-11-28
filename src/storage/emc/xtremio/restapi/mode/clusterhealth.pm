@@ -209,7 +209,7 @@ You can also exclude items from specific instances: --filter=cluster,CLUSTER-NAM
 
 =item B<--threshold-overload>
 
-Overload a specific threshold, e.g --threshold-overload="consistency-state,Xtremio,CRITICAL,healthy"
+Overload a specific threshold. Example: --threshold-overload="consistency-state,Xtremio,CRITICAL,healthy"
 
 =back
 

@@ -151,7 +151,7 @@ Check city weather
 
 =item B<--city-name>
 
-City name (e.g London or ISO 3166 code like London,uk) 
+City name (example: London or ISO 3166 code like London,uk) 
 
 =item B<--warning-weather>
 

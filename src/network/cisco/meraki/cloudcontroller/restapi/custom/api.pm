@@ -162,7 +162,7 @@ sub request_api {
         $hostname = $options{hostname};
     }
 
-    #400: Bad Request- You did something wrong, e.g. a malformed request or missing parameter.
+    #400: Bad Request- You did something wrong, for example a malformed request or missing parameter.
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
