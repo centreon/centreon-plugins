@@ -240,7 +240,7 @@ Filter metrics (can be: 'SpilloverCount', 'SurgeQueueLength')
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be: 'spillovercount', 'surgequeuelength').
+Warning thresholds (can be: 'spillovercount', 'surgequeuelength').
 
 =back
 

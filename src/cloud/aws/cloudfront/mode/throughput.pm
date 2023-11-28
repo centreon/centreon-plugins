@@ -172,7 +172,7 @@ Filter metrics (can be: 'BytesDownloaded', 'BytesUploaded')
 
 =item B<--warning-*>
 
-Thresholds warning (can be: 'bytes-downloaded', 'bytes-uploaded').
+Warning thresholds (can be: 'bytes-downloaded', 'bytes-uploaded').
 
 =item B<--critical-*>
 

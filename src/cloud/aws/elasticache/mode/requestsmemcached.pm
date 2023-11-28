@@ -230,7 +230,7 @@ Filter metrics (can be: 'CasHits', 'CasMisses', 'DecrHits', 'DecrMisses', 'Delet
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'cashits', 'casmisses', 'decrhits', 'decrmisses',
+Warning thresholds ($metric$ can be: 'cashits', 'casmisses', 'decrhits', 'decrmisses',
 'deletehits', 'deletemisses', 'gethits', 'getmisses', 'incrhits', 'incrmisses', 'touchhits', 'touchmisses',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

@@ -246,7 +246,7 @@ Filter metrics (can be: 'ReplicationBytes', 'ReplicationLag')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'replicationbytes', 'replicationlag',
+Warning thresholds ($metric$ can be: 'replicationbytes', 'replicationlag',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

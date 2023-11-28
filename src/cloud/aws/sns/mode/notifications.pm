@@ -209,7 +209,7 @@ Filter metrics (can be: 'NumberOfMessagesPublished', 'NumberOfNotificationsDeliv
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be 'notifications-published', 'notifications-delivered',
+Warning thresholds (can be 'notifications-published', 'notifications-delivered',
 'notifications-failed', 'notifications-filtered).
 
 =back

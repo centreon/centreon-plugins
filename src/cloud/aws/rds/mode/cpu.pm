@@ -200,7 +200,7 @@ Filter metrics (can be: 'CPUCreditBalance', 'CPUCreditUsage', CPUUtilization')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'cpucreditusage', 'cpucreditbalance', 'cpuutilization', 
+Warning thresholds ($metric$ can be: 'cpucreditusage', 'cpucreditbalance', 'cpuutilization', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

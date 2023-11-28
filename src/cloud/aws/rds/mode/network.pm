@@ -188,12 +188,12 @@ Filter metrics (can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Warning thresholds ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Warning thresholds ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

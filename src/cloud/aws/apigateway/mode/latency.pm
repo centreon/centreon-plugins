@@ -189,8 +189,7 @@ Filter metrics (can be: 'Latency', 'IntegrationLatency')
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning
-star substitution possibilities: client-latency, backend-latency
+Warning threshold (* can be client-latency, backend-latency).
 
 =back
 

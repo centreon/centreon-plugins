@@ -188,12 +188,12 @@ Filter metrics (can be: 'DatabaseConnections')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'databaseconnections'
+Warning thresholds ($metric$ can be: 'databaseconnections'
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'databaseconnections'
+Warning thresholds ($metric$ can be: 'databaseconnections'
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

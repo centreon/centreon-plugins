@@ -169,7 +169,7 @@ Set the node ID (optional).
 
 =item B<--warning-cpuutilization-*>
 
-Thresholds warning (* can be: 'minimum', 'maximum', 'average', 'sum').
+Warning thresholds (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-cpuutilization-*>
 

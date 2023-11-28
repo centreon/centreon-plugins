@@ -216,7 +216,7 @@ Filter metrics (can be: 'Duration', 'Invocations', 'Errors',
 
 =item B<--warning-*>
 
-Thresholds warning (can be: 'invocations', 'errors',
+Warning thresholds (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =item B<--critical-*>

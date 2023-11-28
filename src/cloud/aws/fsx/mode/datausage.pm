@@ -184,7 +184,7 @@ Set the metric calculation method (Only Sum is relevant).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Warning thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
 
 =item B<--critical-$metric$>
 

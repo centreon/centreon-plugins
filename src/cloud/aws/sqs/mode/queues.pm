@@ -213,7 +213,7 @@ Filter metrics (can be: 'ApproximateAgeOfOldestMessage', 'ApproximateNumberOfMes
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be 'messages-oldest-age', 'messages-delayed',
+Warning thresholds (can be 'messages-oldest-age', 'messages-delayed',
 'messages-notvisible', 'messages-visible', 'messages-empty-receives',
 'messages-deleted', 'messages-received', 'messages-sent').
 

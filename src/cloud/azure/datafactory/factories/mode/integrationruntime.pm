@@ -166,7 +166,7 @@ Filter metrics (can be: 'IntegrationRuntimeAvailableMemory', 'IntegrationRuntime
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
+Warning thresholds ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
 'cpu-percentage', 'queue-length').
 
 =item B<--critical-$metric$>

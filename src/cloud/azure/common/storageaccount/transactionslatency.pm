@@ -211,7 +211,7 @@ Filter metrics (can be: 'SuccessServerLatency', 'SuccessE2ELatency') (Can be a r
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'successserverlatency', 'successe2elatency',
+Warning thresholds ($metric$ can be: 'successserverlatency', 'successe2elatency',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>

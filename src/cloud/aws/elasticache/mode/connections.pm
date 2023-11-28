@@ -241,7 +241,7 @@ Filter metrics (can be: 'CurrConnections', 'NewConnections')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'currconnections', 'newconnections',
+Warning thresholds ($metric$ can be: 'currconnections', 'newconnections',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

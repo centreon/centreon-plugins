@@ -185,7 +185,7 @@ Default: 'Microsoft.Storage'.
 
 =item B<--warning-filesharecount-*>
 
-Thresholds warning (* can be: 'average', 'total').
+Warning thresholds (* can be: 'average', 'total').
 
 =item B<--critical-filesharecount-*>
 

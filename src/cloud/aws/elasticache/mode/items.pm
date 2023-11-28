@@ -241,7 +241,7 @@ Filter metrics (can be: 'CurrItems', 'NewItems')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'curritems', 'newitems',
+Warning thresholds ($metric$ can be: 'curritems', 'newitems',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

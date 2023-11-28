@@ -184,7 +184,7 @@ Default: 'Microsoft.Storage'.
 
 =item B<--warning-usedcapacity-total>
 
-Thresholds warning
+Warning threshold.
 
 =item B<--critical-usedcapacity-total>
 

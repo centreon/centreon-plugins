@@ -181,7 +181,7 @@ Set the storage type of the bucket (default: 'StandardStorage')
 
 =item B<--warning-$metric$-$storagetype$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'bucketsizebytes',
+Warning thresholds ($metric$ can be: 'bucketsizebytes',
 $storagetype$ can be: 'standardstorage',
 'standardiastorage', 'reducedredundancystorage',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').

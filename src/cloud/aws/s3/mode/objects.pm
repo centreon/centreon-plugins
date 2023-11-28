@@ -159,7 +159,7 @@ Set the instance name (required) (can be defined multiple times).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'numberofobjects', 
+Warning thresholds ($metric$ can be: 'numberofobjects', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

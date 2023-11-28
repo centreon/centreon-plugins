@@ -175,7 +175,7 @@ Set the node ID (optional).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'bytesusedforcacheitems',
+Warning thresholds ($metric$ can be: 'bytesusedforcacheitems',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

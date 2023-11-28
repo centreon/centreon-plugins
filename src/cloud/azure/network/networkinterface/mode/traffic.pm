@@ -289,7 +289,7 @@ Filter metrics (can be: 'BytesReceivedRate', 'BytesSentRate',
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
+Warning thresholds ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
 'packetsreceivedrate', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>

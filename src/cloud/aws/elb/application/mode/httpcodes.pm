@@ -250,7 +250,7 @@ Filter metrics (can be: 'HTTPCode_Target_2XX_Count', 'HTTPCode_Target_3XX_Count'
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
+Warning thresholds (can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
 'httpcode-target-5xx', 'httpcode-elb-3xx', 'httpcode-elb-4xx', 'http-redirect')
 
 =back

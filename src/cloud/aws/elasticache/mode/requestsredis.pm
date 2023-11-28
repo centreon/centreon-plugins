@@ -227,7 +227,7 @@ Filter metrics (can be: 'CacheHits', 'CacheMisses')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'cachehits', 'cachemisses',
+Warning thresholds ($metric$ can be: 'cachehits', 'cachemisses',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

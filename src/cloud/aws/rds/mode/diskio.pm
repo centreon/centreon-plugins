@@ -227,7 +227,7 @@ Filter metrics (can be: 'ReadThroughput', 'WriteThroughput',
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'readthroughput', 'writethroughput',
+Warning thresholds ($metric$ can be: 'readthroughput', 'writethroughput',
 'readiops', 'writeiops', 'readlatency', 'writelatency', 'diskqueuedepth',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

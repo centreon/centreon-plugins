@@ -200,7 +200,7 @@ Filter metrics (can be: 'ActiveTransactions', 'BlockedTransactions', 'CommitThro
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'activetransactions', 'blockedtransactions', 'committhroughput',
+Warning thresholds ($metric$ can be: 'activetransactions', 'blockedtransactions', 'committhroughput',
 'commitlatency', $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

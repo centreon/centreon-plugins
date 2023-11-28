@@ -167,7 +167,7 @@ Filter metrics (can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate')
 
 =item B<--warning-*>
 
-Thresholds warning (can be: 'errorrate-total',
+Warning thresholds (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =item B<--critical-*>

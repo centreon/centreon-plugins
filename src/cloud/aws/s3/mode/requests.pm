@@ -157,7 +157,7 @@ Filter metrics (can be: 'AllRequests', 'GetRequests', 'PutRequests',
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
+Warning thresholds ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
 'deleterequests', 'headrequests', 'postrequests', 'listrequests', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

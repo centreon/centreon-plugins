@@ -186,7 +186,7 @@ Default: 'Microsoft.Storage'.
 
 =item B<--warning-blobcapacity-total>
 
-Thresholds warning
+Warning threshold.
 
 =item B<--critical-blobcapacity-total>
 

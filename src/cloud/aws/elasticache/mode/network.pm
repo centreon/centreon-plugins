@@ -231,7 +231,7 @@ Filter metrics (can be: 'NetworkBytesIn', 'NetworkBytesOut')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkbytesin', 'networkbytesout',
+Warning thresholds ($metric$ can be: 'networkbytesin', 'networkbytesout',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

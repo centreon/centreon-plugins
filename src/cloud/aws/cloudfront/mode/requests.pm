@@ -158,7 +158,7 @@ Set the instance ID (required) (can be defined multiple times).
 
 =item B<--warning-requests>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-requests>
 

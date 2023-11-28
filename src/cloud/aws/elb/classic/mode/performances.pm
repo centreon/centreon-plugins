@@ -239,7 +239,7 @@ Filter metrics (can be: 'RequestCount', 'Latency')
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be: 'requestcount', 'latency').
+Warning thresholds (can be: 'requestcount', 'latency').
 
 =back
 

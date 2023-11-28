@@ -201,7 +201,7 @@ Filter metrics (can be: 'NetworkIn', 'NetworkOut',
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be 'network-in', 'network-out',
+Warning thresholds (can be 'network-in', 'network-out',
 'network-packets-in', 'network-packets-out'.
 
 =item B<--per-sec>

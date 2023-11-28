@@ -250,7 +250,7 @@ Filter metrics (can be: 'VolumeBytesUsed', 'VolumeReadIOPs', 'VolumeWriteIOPs')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
+Warning thresholds ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

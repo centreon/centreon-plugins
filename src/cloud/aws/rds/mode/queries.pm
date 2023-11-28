@@ -204,7 +204,7 @@ Filter metrics (can be: 'Queries', 'InsertThroughput', 'DeleteThroughput', 'Sele
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'queries', 'insertthroughput', 'deletethroughput', 'selectthroughput',
+Warning thresholds ($metric$ can be: 'queries', 'insertthroughput', 'deletethroughput', 'selectthroughput',
 'updatethroughput', 'dmlthroughput', 'ddlthroughput', 'insertlatency', 'deletelatency', 'selectlatency',
 'updatelatency', 'dmllatency', 'ddllatency', $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

@@ -235,7 +235,7 @@ Filter metrics (can be: ActiveConnectionCount', 'NewConnectionCount',
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be: 'connection-active', 'connection-new',
+Warning thresholds (can be: 'connection-active', 'connection-new',
 'connection-rejected', 'target-connection-error').
 
 =back

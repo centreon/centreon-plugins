@@ -204,7 +204,7 @@ Set storage type (can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--warning-availability-*>
 
-Thresholds warning (* can be: 'minimum', 'maximum', 'average').
+Warning thresholds (* can be: 'minimum', 'maximum', 'average').
 
 =item B<--critical-availability-*>
 

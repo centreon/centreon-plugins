@@ -231,7 +231,7 @@ Filter metrics (can be: 'GetTypeCmds', 'HashBasedCmds', 'KeyBasedCmds', 'ListBas
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'gettypecmds', 'hashbasedcmds', 'keybasedcmds', 'listbasedcmds',
+Warning thresholds ($metric$ can be: 'gettypecmds', 'hashbasedcmds', 'keybasedcmds', 'listbasedcmds',
 'setbasedcmds', 'settypecmds', 'sortedsetbasedcmds', 'stringbasedcmds', 'hyperloglogbasedcmds',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

@@ -224,7 +224,7 @@ Filter metrics (can be: 'HealthyHostCount', 'UnHealthyHostCount')
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be: 'healthyhostcount', 'unhealthyhostcount').
+Warning thresholds (can be: 'healthyhostcount', 'unhealthyhostcount').
 
 =back
 

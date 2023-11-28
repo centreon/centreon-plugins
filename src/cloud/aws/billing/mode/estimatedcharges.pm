@@ -131,7 +131,7 @@ Set the Amazon service (required) (can be defined multiple times).
 
 =item B<--warning-billing>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-billing>
 

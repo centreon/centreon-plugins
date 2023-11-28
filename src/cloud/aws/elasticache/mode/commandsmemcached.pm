@@ -228,7 +228,7 @@ Filter metrics (can be: 'CmdFlush', 'CmdGet', 'CmdSet', 'CmdConfigGet', 'CmdConf
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'cmdflush', 'cmdget', 'cmdset',
+Warning thresholds ($metric$ can be: 'cmdflush', 'cmdget', 'cmdset',
 'cmdconfigget', 'cmdconfigset', 'cmdtouch',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

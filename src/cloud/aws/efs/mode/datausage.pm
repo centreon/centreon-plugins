@@ -186,7 +186,7 @@ Can be 'minimum', 'maximum', 'average', 'sum'
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
+Warning thresholds ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
 
 =item B<--critical-$metric$>
 

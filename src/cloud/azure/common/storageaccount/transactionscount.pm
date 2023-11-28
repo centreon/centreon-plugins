@@ -256,7 +256,7 @@ Set storage type (can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--warning-transactions-total>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-transactions-total>
 

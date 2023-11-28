@@ -206,7 +206,7 @@ Filter metrics (can be: 'CPUCreditBalance', 'CPUCreditUsage',
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (can be 'cpu-credit-usage', 'cpu-credit-balance', 
+Warning thresholds (can be 'cpu-credit-usage', 'cpu-credit-balance', 
 'cpu-credit-surplus-balance', 'cpu-credit-surplus-charged', 'cpu-utilization').
 
 =back

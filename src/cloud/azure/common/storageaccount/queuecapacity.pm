@@ -186,7 +186,7 @@ Default: 'Microsoft.Storage'.
 
 =item B<--warning-queuecapacity-*>
 
-Thresholds warning (* can be: 'average', 'total').
+Warning thresholds (* can be: 'average', 'total').
 
 =item B<--critical-queuecapacity-*>
 

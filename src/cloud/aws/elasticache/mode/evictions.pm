@@ -229,7 +229,7 @@ Filter metrics (can be: 'Evictions', 'Reclaimed')
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'evictions', 'reclaimed',
+Warning thresholds ($metric$ can be: 'evictions', 'reclaimed',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>

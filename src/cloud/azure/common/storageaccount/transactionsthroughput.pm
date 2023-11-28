@@ -265,7 +265,7 @@ Filter metrics (can be: 'Ingress', 'Egress') (Can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'ingress', 'egress',
+Warning thresholds ($metric$ can be: 'ingress', 'egress',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>
