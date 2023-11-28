@@ -149,11 +149,11 @@ Nginx server-status
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host
 
 =item B<--port>
 
-Port used by the webserver (default: 80)
+Port used by the web server (default: 80)
 
 =item B<--proto>
 

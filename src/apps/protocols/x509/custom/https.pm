@@ -203,7 +203,7 @@ http connection
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host
 
 =item B<--port>
 

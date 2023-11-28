@@ -264,7 +264,7 @@ Check Apache WebServer Slots informations
 
 =item B<--hostname>
 
-IP Address or FQDN of the webserver host
+IP Address or FQDN of the web server host
 
 =item B<--port>
 
