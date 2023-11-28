@@ -140,11 +140,11 @@ Can be 'minimum', 'average'
 
 =item B<--warning-storage-free-bytes>
 
-Warning thresholds on remaining available bytes.
+Warning thresholds for remaining available bytes.
 
 =item B<--critical-storage-free-bytes>
 
-Warning thresholds on remaining available bytes.
+Critical thresholds for remaining available bytes.
 
 =back
 
