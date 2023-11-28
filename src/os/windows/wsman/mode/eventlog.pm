@@ -179,7 +179,7 @@ Filter on event log source.
 =item B<--filter-logfile>
 
 Filter on specific logfile.
-Ex: Application, System
+Example: Application, System.
 
 =item B<--filter-type>
 
