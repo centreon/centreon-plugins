@@ -260,7 +260,7 @@ Specify the password for authentication
 
 =item B<--basic>
 
-Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
 Specify this option if you access the API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
