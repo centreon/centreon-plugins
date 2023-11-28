@@ -207,7 +207,7 @@ IP Addr/FQDN of the webserver host
 
 =item B<--port>
 
-Port used by Webserver (default: 443)
+Port used by web server (default: 443)
 
 =item B<--method>
 

@@ -487,11 +487,11 @@ HTTP OPTIONS:
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Webserver host.
+IP Addr/FQDN of the web server host.
 
 =item B<--port>
 
-Port used by Webserver.
+Port used by web server.
 
 =item B<--proto>
 
