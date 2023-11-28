@@ -315,8 +315,8 @@ Set pattern to extracted a number (used --warning-extracted and --critical-extra
 
 =item B<--expected-string>
 
---expected-string='toto' is a shortcut for --critical-content='%{content} !~ /toto/mi'
-Recommend to use directly --critical-content.
+Define the expected expression, where --expected-string='mypattern' is actually a shortcut for --critical-content='%{content} !~ /mypattern/mi'.
+It is recommended to use --critical-content directly.
 
 =item B<--unknown-status>
 
