@@ -383,8 +383,8 @@ Critical threshold (default: on total matching elements)
 
 =item B<--threshold-value>
 
-Which value to use (default: 'count')
-Can be: 'values' (only check numeric values)
+Define the scope to which the numeric thresholds apply.
+Possible values for this option: 'value' to check numeric values, 'count' to check the number of values (default: count).
 
 =item B<--warning-string>
 
