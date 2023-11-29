@@ -503,7 +503,7 @@ Set path to get Webpage (default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access a web page with authentication.
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 

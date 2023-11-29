@@ -314,7 +314,7 @@ Specify the link url (example: %{centreon_url}/main.php?p=20201&o=svc&host_searc
 
 =item B<--credentials>
 
-Specify this option if you access a web page with authentication
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 

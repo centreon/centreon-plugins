@@ -386,7 +386,7 @@ Define the path of the endpoint to query  (default: '/containers/docker')
 
 =item B<--credentials>
 
-Specify this option if you access a web page with authentication.
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
