@@ -276,7 +276,7 @@ Convert counter value on a value per seconds (only with type 'counter').
 
 =item B<--extracted-pattern>
 
-Set pattern to extracted a number.
+Define a pattern to extract a number from the returned string.
 
 =item B<--format>
 

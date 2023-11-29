@@ -291,7 +291,7 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--data>
 
-Set POST data request (For a JSON data, add following option: --header='Content-Type: application/json')
+Define the POST data to send int the body of the request. For JSON data, add the following option: --header='Content-Type: application/json'.
 
 =item B<--header>
 
@@ -311,7 +311,7 @@ Save cookies in a file (example: '/tmp/lwp_cookies.dat')
 
 =item B<--extracted-pattern>
 
-Set pattern to extracted a number (used --warning-extracted and --critical-extracted option).
+Define a pattern to extract a number from the returned page (use --warning-extracted and --critical-extracted option).
 
 =item B<--expected-string>
 
