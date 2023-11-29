@@ -388,11 +388,11 @@ Possible values for this option: 'value' to check numeric values, 'count' to che
 
 =item B<--warning-string>
 
-Warning threshold if the string match
+Returns a WARNING status if the value matches the string.
 
 =item B<--critical-string>
 
-Critical threshold if the string match
+Returns a CRITICAL status if the value matches the string.
 
 =item B<--warning-time>
 
