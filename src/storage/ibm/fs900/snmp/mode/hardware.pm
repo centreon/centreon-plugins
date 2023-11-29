@@ -89,7 +89,7 @@ You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'notAvailable' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'notAvailable' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,2
 
 =item B<--no-component>

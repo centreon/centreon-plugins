@@ -350,7 +350,7 @@ FORMAT OPTIONS:
 Customize the format of the output when the status is OK (default: '%{count} element(s) found')
 You can use the following variables:
 '%{values}' = display all values (also text string)
-'%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
+'%{values_ok}' = values from attributes and text node only (separated by option values-separator)
 '%{values_warning}' and '%{values_critical}'
 
 =item B<--format-warning>

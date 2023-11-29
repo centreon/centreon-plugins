@@ -173,7 +173,7 @@ Check Xenvs state
 
 =item B<--filter>
 
-Filter some parts (comma seperated list)
+Filter some parts (comma separated list)
 You can also exclude items from specific instances: --filter=device,cluster-1_xxxx
 
 =item B<--threshold-overload>

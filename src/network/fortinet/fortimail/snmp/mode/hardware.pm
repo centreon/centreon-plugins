@@ -103,7 +103,7 @@ Add literal description for instance value (used in filter, and threshold option
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 Can also exclude specific instance: --filter=sensors,1
 
 =item B<--no-component>

@@ -86,7 +86,7 @@ Can be: 'cpu', 'temperature', 'psu', 'fan'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=cpu,1
 
 =item B<--no-component>

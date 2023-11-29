@@ -79,7 +79,7 @@ Can be: 'chassis', 'cpu', 'disk', 'fan', 'memory', 'psu', 'slot'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter='disk,hdd 0'
 
 =item B<--no-component>

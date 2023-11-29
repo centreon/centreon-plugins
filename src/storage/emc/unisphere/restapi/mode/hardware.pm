@@ -80,7 +80,7 @@ Can be: 'disk', 'fan', 'iomodule', 'memmodule', 'psu', 'dpe', 'battery', 'ssd', 
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter='disk,dpe_disk_6'
 
 =item B<--no-component>
