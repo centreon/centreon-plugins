@@ -68,6 +68,6 @@ jobs:
         run: |
           sudo useradd snmp
           sudo mkdir -p /usr/snmpsim/data
-          sudo cp tests/resources/snmp/* /usr/snmpsim/data/
+          sudo cp -r tests/resources/snmp/* /usr/snmpsim/data/
           snmpsimd --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
           robot tests/functional/snmp
