@@ -42,7 +42,7 @@ Hardware UPS Standard SNMP input lines
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2c
         ...    --snmp-port=2024
-        ...    --debug
+        ...    --snmp-community=${ups_standard_test.snmpcommunity}
         ${length}    Get Length    ${ups_standard_test.warningpower}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --warning-power=${ups_standard_test.warningpower}
@@ -59,6 +59,7 @@ Hardware UPS Standard SNMP input lines
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --warning-frequence=${ups_standard_test.warningfrequence}
         END
+        Log To Console    ${command}
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
