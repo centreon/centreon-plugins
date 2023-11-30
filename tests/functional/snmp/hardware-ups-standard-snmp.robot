@@ -28,7 +28,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sta
 ...                         warningfrequence='@0:214'
 ...                         excludeid=
 ...                         result=CRITICAL: Input Line '1' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '2' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W - Input Line '3' Frequence : 0.00 Hz, Voltage : 0.00 V, Current : 0.00 A, Power : 0.00 W | '1#line.input.frequence.hertz'=0Hz;@0:214;;; '1#line.input.voltage.volt'=0V;@0:214;;; '1#line.input.current.ampere'=0A;;@0:214;; '1#line.input.power.watt'=0W;215:;;; '2#line.input.frequence.hertz'=0Hz;@0:214;;; '2#line.input.voltage.volt'=0V;@0:214;;; '2#line.input.current.ampere'=0A;;@0:214;; '2#line.input.power.watt'=0W;215:;;; '3#line.input.frequence.hertz'=0Hz;@0:214;;; '3#line.input.voltage.volt'=0V;@0:214;;; '3#line.input.current.ampere'=0A;;@0:214;; '3#line.input.power.watt'=0W;215:;;;
-&{ups_standard_test_with_exclude_option}
+&{ups_standard_test_with_exclude_option_1}
 ...                         snmpcommunity=hardware-ups/hardware-ups-standard
 ...                         warningpower=
 ...                         criticalcurrent=
@@ -36,10 +36,28 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sta
 ...                         warningfrequence=
 ...                         excludeid='1,2'
 ...                         result=OK: Input Line '3' Frequence : 49.90 Hz, Voltage : 234.00 V, Current : 0.00 A, Power : 0.00 W | '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;
+&{ups_standard_test_with_exclude_option_2}
+...                         snmpcommunity=hardware-ups/hardware-ups-standard
+...                         warningpower=
+...                         criticalcurrent=
+...                         warningvoltage=
+...                         warningfrequence=
+...                         excludeid='1, 2'
+...                         result=OK: Input Line '3' Frequence : 49.90 Hz, Voltage : 234.00 V, Current : 0.00 A, Power : 0.00 W | '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;
+&{ups_standard_test_with_exclude_option_3}
+...                         snmpcommunity=hardware-ups/hardware-ups-standard
+...                         warningpower=
+...                         criticalcurrent=
+...                         warningvoltage=
+...                         warningfrequence=
+...                         excludeid='1 ,3'
+...                         result=OK: Input Line '2' Frequence : 49.90 Hz, Voltage : 234.00 V, Current : 0.00 A, Power : 0.00 W | '2#line.input.frequence.hertz'=49.9Hz;;;; '2#line.input.voltage.volt'=234V;;;; '2#line.input.current.ampere'=0A;;;; '2#line.input.power.watt'=0W;;;;
 @{ups_standard_tests}
 ...                         &{ups_standard_test_with_values}
 ...                         &{ups_standard_test_critical_with_null_values}
-...                         &{ups_standard_test_with_exclude_option}
+...                         &{ups_standard_test_with_exclude_option_1}
+...                         &{ups_standard_test_with_exclude_option_2}
+...                         &{ups_standard_test_with_exclude_option_3}
 
 
 *** Test Cases ***
