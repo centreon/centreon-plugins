@@ -134,7 +134,6 @@ jobs:
         with:
           module_name: perl-json-path
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-rpm-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}
@@ -160,7 +159,6 @@ jobs:
         with:
           module_name: perl-json-path
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}

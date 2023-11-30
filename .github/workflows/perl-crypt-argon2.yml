@@ -144,7 +144,6 @@ jobs:
         with:
           module_name: perl-crypt-argon2-amd64
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-rpm-perl-crypt-argon2-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}
@@ -173,7 +172,6 @@ jobs:
         with:
           module_name: perl-crypt-argon2-${{ matrix.arch }}
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-crypt-argon2-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}

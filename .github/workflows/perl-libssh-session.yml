@@ -142,7 +142,6 @@ jobs:
         with:
           module_name: perl-libssh-session-amd64
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-rpm-perl-libssh-session-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}
@@ -171,7 +170,6 @@ jobs:
         with:
           module_name: perl-libssh-session-${{ matrix.arch }}
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-libssh-session-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}

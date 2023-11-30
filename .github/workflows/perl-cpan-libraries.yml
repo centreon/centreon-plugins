@@ -328,7 +328,6 @@ jobs:
         with:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
@@ -351,7 +350,6 @@ jobs:
         with:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
