@@ -32,31 +32,26 @@ jobs:
       matrix:
         include:
           - project: plugins
-          - image: packaging-alma8
+          - image: alma8
             distrib: el8
             package_extension: rpm
             runner: ubuntu-22.04
             arch: amd64
-          - image: packaging-alma9
+          - image: alma9
             distrib: el9
             package_extension: rpm
             runner: ubuntu-22.04
             arch: amd64
-          - image: packaging-bullseye
+          - image: bullseye
             distrib: bullseye
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
-          - image: packaging-bullseye-arm64
-            distrib: bullseye
-            package_extension: deb
-            runner: ["self-hosted", "collect-arm64"]
-            arch: arm64
 
     runs-on: ${{ matrix.runner }}
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}

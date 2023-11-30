@@ -108,13 +108,13 @@ jobs:
           - spec_file: ""
           - distrib: el8
             package_extension: rpm
-            image: packaging-alma8
+            image: alma8
           - distrib: el9
             package_extension: rpm
-            image: packaging-alma9
+            image: alma9
           - distrib: bullseye
             package_extension: deb
-            image: packaging-bullseye
+            image: bullseye
           - name: "BSON"
             build_distribs: "el8,el9"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
@@ -155,7 +155,7 @@ jobs:
             deb_dependencies: "libzmq5"
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
