@@ -29,13 +29,14 @@ jobs:
     strategy:
       matrix:
         include:
+          - project: plugins
           - image: packaging-alma8
             distrib: el8
           - image: packaging-alma9
             distrib: el9
     name: package ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:${{ needs.get-environment.outputs.version }}
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
