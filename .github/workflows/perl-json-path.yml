@@ -30,20 +30,20 @@ jobs:
       matrix:
         include:
           - project: plugins
-          - image: packaging-alma8
+          - image: alma8
             distrib: el8
             package_extension: rpm
-          - image: packaging-alma9
+          - image: alma9
             distrib: el9
             package_extension: rpm
-          - image: packaging-bullseye
+          - image: bullseye
             distrib: bullseye
             package_extension: deb
 
     runs-on: ubuntu-22.04
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
