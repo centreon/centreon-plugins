@@ -29,20 +29,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: alma8
+          - image: packaging-plugins-alma8
             distrib: el8
             package_extension: rpm
-          - image: alma9
+          - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
-          - image: bullseye
+          - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
 
     runs-on: ubuntu-22.04
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
@@ -161,4 +161,24 @@ jobs:
           distrib: ${{ matrix.distrib }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [el8, el9, bullseye]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Promote ${{ matrix.distrib }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
