@@ -98,7 +98,6 @@ jobs:
             "ZMQ::LibZMQ4"
           ]
         include:
-          - project: plugins
           - build_distribs: "el8,el9,bullseye"
           - rpm_dependencies: ""
           - deb_dependencies: ""
@@ -155,7 +154,7 @@ jobs:
             deb_dependencies: "libzmq5"
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}

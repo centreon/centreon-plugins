@@ -29,7 +29,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - project: plugins
           - image: alma8
             distrib: el8
             package_extension: rpm
@@ -54,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
