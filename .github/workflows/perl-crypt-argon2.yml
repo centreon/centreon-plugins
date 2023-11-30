@@ -46,6 +46,11 @@ jobs:
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
+          - image: bullseye-arm64
+            distrib: bullseye
+            package_extension: deb
+            runner: ["self-hosted", "collect-arm64"]
+            arch: arm64
 
     runs-on: ${{ matrix.runner }}
 
