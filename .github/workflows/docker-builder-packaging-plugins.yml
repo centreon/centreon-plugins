@@ -23,9 +23,22 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [centos7, alma8, alma9, bullseye, bullseye-arm64]
         include:
           - project: plugins
+            distrib: centos7
+            image: centos7
+          - project: plugins
+            distrib: alma8
+            image: alma8
+          - project: plugins
+            distrib: alma9
+            image: alma9
+          - project: plugins
+            distrib: bullseye
+            image: bullseye
+          - project: plugins
+            distrib: bullseye
+            image: bullseye-arm64
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -53,4 +66,4 @@ jobs:
           build-args: "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
           pull: true
           push: true
-          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.image }}:latest
