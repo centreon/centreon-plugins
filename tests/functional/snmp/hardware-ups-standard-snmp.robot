@@ -74,7 +74,6 @@ Hardware UPS Standard SNMP input lines
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --exclude-id=${ups_standard_test.excludeid}
         END
-        Log To Console    ${command}
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
