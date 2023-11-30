@@ -24,21 +24,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - project: plugins
+          - image: centos7
+            project: plugins
             distrib: centos7
-            image: centos7
-          - project: plugins
+          - image: alma8
+            project: plugins
             distrib: alma8
-            image: alma8
-          - project: plugins
+          - image: alma9
+            project: plugins
             distrib: alma9
-            image: alma9
-          - project: plugins
+          - image: bullseye
+            project: plugins
             distrib: bullseye
-            image: bullseye
-          - project: plugins
+          - image: bullseye-arm64
+            project: plugins
             distrib: bullseye
-            image: bullseye-arm64
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
