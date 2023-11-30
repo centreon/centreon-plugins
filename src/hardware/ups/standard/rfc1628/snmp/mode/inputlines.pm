@@ -106,7 +106,7 @@ sub manage_selection {
         next if (!defined($oids->{$base}));
         next if ($results->{$oid} !~ /\d/);
         next if (defined($self->{option_results}->{exclude_id}) && $self->{option_results}->{exclude_id} ne '' &&
-                $self->{option_results}->{exclude_id} =~ /$instance(,|\h)/);
+                $self->{option_results}->{exclude_id} =~ /$instance(,|\h|$)/);
 
         $self->{line}->{$instance} = { display => $instance } if (!defined($self->{line}->{$instance}));
         $self->{line}->{$instance}->{$oids->{$base}->{name}} = $results->{$oid} * $oids->{$base}->{factor};
