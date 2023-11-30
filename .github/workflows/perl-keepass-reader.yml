@@ -192,25 +192,3 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
-
-  # promote:
-  #   needs: [get-version]
-  #   if: ${{ contains(fromJson('["stable"]'), needs.get-version.outputs.stability) }}
-  #   runs-on: [self-hosted, common]
-  #   strategy:
-  #     matrix:
-  #       distrib: [el8, el9, bullseye]
-
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v4
-
-  #     - name: Promote ${{ matrix.distrib }} to stable
-  #       uses: ./.github/actions/promote-to-stable
-  #       with:
-  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-  #         module: perl-keepass-reader
-  #         distrib: ${{ matrix.distrib }}
-  #         major_version: ${{ needs.get-version.outputs.major_version }}
-  #         minor_version: ${{ needs.get-version.outputs.minor_version }}
-  #         stability: ${{ needs.get-version.outputs.stability }}
