@@ -173,7 +173,7 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-libssh-session-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}
-     
+
   promote:
     needs: [get-environment]
     if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
