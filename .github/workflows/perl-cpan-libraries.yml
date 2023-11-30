@@ -19,14 +19,12 @@ on:
       - ".github/workflows/perl-cpan-libraries.yml"
 
 jobs:
-  get-version:
-    uses: ./.github/workflows/get-version.yml
-    with:
-      version_file: centreon/www/install/insertBaseConf.sql
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
 
   package:
-    needs: [get-version]
-    if: ${{ needs.get-version.outputs.stability != 'stable' }}
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
     runs-on: ubuntu-22.04
     strategy:
@@ -156,7 +154,7 @@ jobs:
             deb_dependencies: "libzmq5"
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:${{ needs.get-version.outputs.major_version }}
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:${{ needs.get-environment.outputs.version }}
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
@@ -313,10 +311,9 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-deb-bullseye
 
   deliver-rpm:
-    needs: [get-version, sign-rpm]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-version.outputs.stability) }}
+    needs: [get-environment, sign-rpm]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
-    environment: ${{ needs.get-version.outputs.environment }}
 
     strategy:
       matrix:
@@ -331,16 +328,15 @@ jobs:
         with:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-version.outputs.major_version }}
+          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          stability: ${{ needs.get-version.outputs.stability }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-deb:
-    needs: [get-version, download-and-cache-deb]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-version.outputs.stability) }}
+    needs: [get-environment, download-and-cache-deb]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
-    environment: ${{ needs.get-version.outputs.environment }}
 
     strategy:
       matrix:
@@ -355,29 +351,28 @@ jobs:
         with:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-version.outputs.major_version }}
+          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ needs.get-version.outputs.stability }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
-  promote:
-    needs: [get-version]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-version.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [el8, el9, bullseye]
+  # promote:
+  #   needs: [get-environment]
+  #   if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     matrix:
+  #       distrib: [el8, el9, bullseye]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v4
 
-      - name: Promote ${{ matrix.distrib }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-cpan-libraries
-          distrib: ${{ matrix.distrib }}
-          major_version: ${{ needs.get-version.outputs.major_version }}
-          minor_version: ${{ needs.get-version.outputs.minor_version }}
-          stability: ${{ needs.get-version.outputs.stability }}
+  #     - name: Promote ${{ matrix.distrib }} to stable
+  #       uses: ./.github/actions/promote-to-stable
+  #       with:
+  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  #         module: perl-cpan-libraries
+  #         distrib: ${{ matrix.distrib }}
+  #         version: ${{ needs.get-environment.outputs.version }}
+  #         stability: ${{ needs.get-environment.outputs.stability }}

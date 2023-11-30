@@ -19,13 +19,11 @@ on:
       - "dependencies/perl-json-path/**"
 
 jobs:
-  get-version:
-    uses: ./.github/workflows/get-version.yml
-    with:
-      version_file: centreon/www/install/insertBaseConf.sql
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
 
   package:
-    needs: [get-version]
+    needs: [get-environment]
 
     strategy:
       fail-fast: false
@@ -44,7 +42,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:${{ needs.get-version.outputs.major_version }}
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:${{ needs.get-environment.outputs.version }}
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
@@ -117,10 +115,9 @@ jobs:
           retention-days: 1
 
   deliver-rpm:
-    needs: [get-version, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-version.outputs.stability) }}
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
-    environment: ${{ needs.get-version.outputs.environment }}
 
     strategy:
       matrix:
@@ -137,16 +134,15 @@ jobs:
         with:
           module_name: perl-json-path
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-version.outputs.major_version }}
+          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-rpm-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-version.outputs.stability }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-deb:
-    needs: [get-version, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-version.outputs.stability) }}
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
-    environment: ${{ needs.get-version.outputs.environment }}
 
     strategy:
       matrix:
@@ -164,29 +160,29 @@ jobs:
         with:
           module_name: perl-json-path
           distrib: ${{ matrix.distrib }}
-          version: ${{ needs.get-version.outputs.major_version }}
+          version: ${{ needs.get-environment.outputs.version }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-version.outputs.stability }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
-  promote:
-    needs: [get-version]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-version.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [bullseye]
+  # promote:
+  #   needs: [get-environment]
+  #   if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     matrix:
+  #       distrib: [bullseye]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v4
 
-      - name: Promote ${{ matrix.distrib }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-json-path
-          distrib: ${{ matrix.distrib }}
-          major_version: ${{ needs.get-version.outputs.major_version }}
-          minor_version: ${{ needs.get-version.outputs.minor_version }}
-          stability: ${{ needs.get-version.outputs.stability }}
+  #     - name: Promote ${{ matrix.distrib }} to stable
+  #       uses: ./.github/actions/promote-to-stable
+  #       with:
+  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  #         module: perl-json-path
+  #         distrib: ${{ matrix.distrib }}
+  #         major_version: ${{ needs.get-version.outputs.major_version }}
+  #         minor_version: ${{ needs.get-version.outputs.minor_version }}
+  #         stability: ${{ needs.get-version.outputs.stability }}
