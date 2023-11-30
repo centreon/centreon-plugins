@@ -19,26 +19,31 @@ on:
 
 jobs:
   create-and-push-docker:
-    runs-on: ubuntu-22.04
-
     strategy:
       matrix:
         include:
           - image: centos7
+            runner: ubuntu-22.04
             project: plugins
             distrib: centos7
           - image: alma8
+            runner: ubuntu-22.04
             project: plugins
             distrib: alma8
           - image: alma9
+            runner: ubuntu-22.04
             project: plugins
             distrib: alma9
           - image: bullseye
+            runner: ubuntu-22.04
             project: plugins
             distrib: bullseye
           - image: bullseye-arm64
+            runner: ["self-hosted", "collect-arm64"]
             project: plugins
             distrib: bullseye
+
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout sources
