@@ -3,7 +3,7 @@ arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
 version: "0.8"
-release: "2${DIST}"
+release: "3${DIST}"
 section: "default"
 priority: "optional"
 maintainer: "Centreon <contact@centreon.com>"
@@ -47,7 +47,7 @@ overrides:
     depends:
       - perl
       - libc6
-      - libssh2-1
+      - libssh-4
     conflicts:
       - libssh-session-perl-dbgsym
     replaces:
