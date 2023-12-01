@@ -134,7 +134,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye]
+        distrib: [el8, el9]
 
     steps:
       - name: Checkout sources
@@ -144,6 +144,6 @@ jobs:
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-cpan-libraries
+          module: plink
           distrib: ${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}

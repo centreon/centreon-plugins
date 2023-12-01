@@ -201,6 +201,6 @@ jobs:
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-cpan-libraries
+          module: perl-filesys-smbclient
           distrib: ${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
