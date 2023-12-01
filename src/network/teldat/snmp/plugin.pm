@@ -30,7 +30,6 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cells-radio'     => 'network::teldat::snmp::mode::cellsradio',
         'cpu'             => 'network::teldat::snmp::mode::cpu',
         'interfaces'      => 'network::teldat::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
