@@ -181,6 +181,10 @@ jobs:
     strategy:
       matrix:
         include:
+          - distrib: el8
+            arch: amd64
+          - distrib: el9
+            arch: amd64
           - distrib: bullseye
             arch: amd64
           - distrib: bullseye
