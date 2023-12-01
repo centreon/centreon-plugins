@@ -123,8 +123,8 @@ sub settings {
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     if (defined($self->{cookie})) {
         $self->{http}->add_header(key => 'Cookie', value => $self->{cookie});
-        if (defined($self->{xsrf})) {
-            $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+        if (defined($self->{bearer})) {
+            $self->{http}->add_header(key => 'Authorization', value => $self->{bearer});
         }
     }
     $self->{http}->set_options(%{$self->{option_results}});
@@ -135,10 +135,10 @@ sub authenticate {
 
     my $has_cache_file = $options{statefile}->read(statefile => '3cx_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $cookie = $options{statefile}->get(name => 'cookie');
-    my $xsrf = $options{statefile}->get(name => 'xsrf');
+    my $bearer = $options{statefile}->get(name => 'bearer');
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     
-    if ($has_cache_file == 0 || !defined($cookie) || !defined($xsrf) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 || !defined($cookie) || !defined($bearer) || (($expires_on - time()) < 10)) {
         my $post_data = '{"Username":"' . $self->{api_username} . '",' .
             '"Password":"' . $self->{api_password} . '"}';
         
@@ -161,17 +161,36 @@ sub authenticate {
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
-        # 3CX 16.0.5.611 does not use XSRF-TOKEN anymore
-        if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
-            $xsrf = $1;
-        }
 
-        my $datas = { last_timestamp => time(), cookie => $cookie, xsrf => $xsrf, expires_on => time() + (3600 * 24) };
+        $self->{http}->add_header(key => 'Cookie', value => $cookie);
+        $content = $self->{http}->request(
+            method => 'GET',
+            url_path => '/api/Token',
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->option_exit();
+        }
+        if (!defined($decoded)) {
+            $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+        $bearer = $decoded->{token_type} . " " . $decoded->{access_token};
+        $expires_on = time() + ($decoded->{expires_in} * 60);
+
+        my $datas = { last_timestamp => time(), cookie => $cookie, bearer => $bearer, expires_on => $expires_on };
         $options{statefile}->write(data => $datas);
     }
 
     $self->{cookie} = $cookie;
-    $self->{xsrf} = $xsrf;
+    $self->{bearer} = $bearer;
 }
 
 sub request_api {
@@ -274,9 +293,9 @@ sub api_system_status {
 sub internal_update_checker {
     my ($self, %options) = @_;
     
-    my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams', eval_content => 1);
+    my $status = $self->request_api(method => 'GET', url_path =>'/xapi/v1/GetUpdatesStats()');
     if (ref($status) eq 'HASH') {
-        $status = $status->{tcxUpdate};
+        $status = $status->{TcxUpdate};
         if (ref($status) ne 'ARRAY') {
             # See above note about strange content
             $status = JSON::XS->new->decode($status);
