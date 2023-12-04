@@ -81,7 +81,9 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - run: apt-get install -y zstd
+      - run: |
+            apt-get update
+            apt-get install -y zstd
         shell: bash
 
       - uses: actions/checkout@v4
