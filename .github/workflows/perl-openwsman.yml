@@ -70,7 +70,7 @@ jobs:
           else
             dnf install -y wget automake libtool libcurl-devel gcc-c++
           fi
-          
+
           cd /tmp
           wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
           cd sblim-sfcc-SFCC_2_2_8
@@ -91,7 +91,7 @@ jobs:
             fi
             dnf install -y cmake pam-devel swig libxml2-devel openssl-devel
           fi
-          
+
           cd /tmp
           wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v2.7.2.tar.gz|tar zxvf -
           cd openwsman-2.7.2/
