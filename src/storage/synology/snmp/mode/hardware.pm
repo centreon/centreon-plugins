@@ -47,7 +47,7 @@ sub set_system {
 
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
-            ['failing', 'failing']
+            ['failing', 'CRITICAL']
         ],
         raid => [
             ['Normal', 'OK'],
@@ -114,8 +114,8 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (default: '.*').
-Can be: 'psu', 'fan', 'disk', 'raid', 'system'.
+Filter the components to monitor with a regular expression (default: '.*').
+Available components: psu, fan, disk, raid, system.
 
 =item B<--filter>
 
