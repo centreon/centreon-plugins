@@ -173,7 +173,7 @@ sub check_options {
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
         instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { cellId => 1, simId => 1 }
+        labels => { cellId => 1, simId => 1, imsi => 1}
     );
 }
 
@@ -225,7 +225,7 @@ sub manage_selection {
         my $cell_id = $result->{imei} =~ /^(?:[0-9]+)$/ ? $result->{imei} : $result->{simId};
         next if ($cell_id !~ /^(?:[0-9]+)$/);
         next if (defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '' &&
-            $cell_id !~ /$self->{option_results}->{filter_cell_id}/);
+            $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simId} !~ /$self->{option_results}->{filter_cell_id}/);
 
         $self->{cells}->{$instance} = {
             cellId => $cell_id,
