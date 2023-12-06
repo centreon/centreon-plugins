@@ -56,7 +56,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         criticalodulecellradiosnr=
 ...                         result=UNKNOWN: No Cell ID found matching with filter : toto
 
-# Test cellsradio mode with filter-cell-id option set to a real value
+# Test cellsradio mode with filter-cell-id option set to a imei value
 &{teldat_cellsradio_test3}
 ...                         snmpcommunity=network-teldat-snmp
 ...                         filtercellid=359072066403821
@@ -78,10 +78,34 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         criticalodulecellradiosnr=
 ...                         result=CRITICAL: cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
 
+# Test cellsradio mode with filter-cell-id option set to a simId value
+&{teldat_cellsradio_test4}
+...                         snmpcommunity=network-teldat-snmp
+...                         filtercellid=89330122115801091660
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalodulecellradiocsq=
+...                         warningmodulecellradiosnr=
+...                         criticalodulecellradiosnr=
+...                         result=CRITICAL: cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
+
+
 @{teldat_cellsradio_tests}
 ...                         &{teldat_cellsradio_test1}
 ...                         &{teldat_cellsradio_test2}
 ...                         &{teldat_cellsradio_test3}
+...                         &{teldat_cellsradio_test4}
 
 
 *** Test Cases ***
