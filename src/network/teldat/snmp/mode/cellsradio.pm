@@ -167,13 +167,13 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(operator)';
+        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(simId)';
     }
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
         instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { cellId => 1, operator => 1, icci => 1 }
+        labels => { cellId => 1, simId => 1 }
     );
 }
 
@@ -240,7 +240,12 @@ sub manage_selection {
         };
     }
 
-    return if (scalar(keys %{$self->{cells}}) <= 0);
+    if (scalar(keys %{$self->{cells}}) <= 0 && defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '') {
+        $self->{output}->add_option_msg(short_msg => "No Cell ID found matching with filter : ".$self->{option_results}->{filter_cell_id});
+        $self->{output}->option_exit();
+    }
+    # Return : OK:  | 'modules.cellradio.detected.count'=0;;;0;
+    # return if (scalar(keys %{$self->{cells}}) <= 0);
 
     foreach my $instance (keys %{$self->{cells}}) {
         my $result3 = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
@@ -277,22 +282,22 @@ Filter cell modules by id (IMEI or SimID).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(cellId) %(operator)')
+Define perfdatas instance (default: '%(cellId) %(simId)')
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{imsi}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{signalQuality} =~ /poor/').
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{imsi}
+Define the conditions to match for the status to be WARNING (default: ''%{interfaceState} =~ /disconnect/ || %{simStatus} =~ /LOCKED/'').
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
-You can use the following variables: %{simStatus}, %{signalQuality}, %{cellId}, %{imsi}
+Define the conditions to match for the status to be CRITICAL (default: '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/').
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
 
 =item B<--warning-*> B<--critical-*>
 
