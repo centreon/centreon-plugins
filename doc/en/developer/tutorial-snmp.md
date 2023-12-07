@@ -124,7 +124,7 @@ Add a description to the plugin:
 
 To test if this plugin file works you can run this command:
 
-`perl centreon_plugins.pl --plugin=apps::mysnmpplugin:::api::plugin --list-mode`
+`perl centreon_plugins.pl --plugin=apps::mysnmpplugin:::snmp::plugin --list-mode`
 
 It already outputs a lot of things. Ellipsized lines are basically all standard capabilities
 inherited from the **script_custom** base.

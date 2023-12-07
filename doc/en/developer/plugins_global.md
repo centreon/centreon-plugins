@@ -172,7 +172,7 @@ chance that you would have to modify anything in it.
 * **Common files shared by multiple plugins**. This is to avoid duplicating 
 code across the directory tree and ease the maintenance of the project.
 
-An more detailed description of this libraries is availible [here](plugins_advanced.md)
+An more detailed description of this libraries is available [here](plugins_advanced.md)
 
 #### 3.3.2 The snmp_standard/mode directory
 
@@ -288,13 +288,13 @@ There should always be at least 1 space between the # character and the beginnin
 
 ### 5.3 Subroutine & Variable Names
 
-Whenever possible, use underscore to seperator words and don't use uppercase characters:
+Whenever possible, use underscore to seperate words and don't use uppercase characters:
 
 ```perl
     sub get_logs {}
     my $start_time;
 ```
-Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
+Keys of hash table should use alphanumeric and underscore characters only (and no quote!):
 
 ```perl
     $dogs->{meapolitan_mastiff} = 10;
@@ -500,7 +500,7 @@ The mode can have a **check_options** method to validate options:
   }
 
 ```
-For example, Warning and Critical thresholds can be validate in 
+For example, Warning and Critical thresholds can be validated in 
 **check_options** method:
 
 ```perl
@@ -517,7 +517,7 @@ For example, Warning and Critical thresholds can be validate in
 ```
 In this example, help is printed if thresholds do not have a correct format.
 
-Previously went the *run* method, where were perform measurement, check 
+Previously went the *run* method, where were performed measurement, check 
 thresholds, display output and format performance datas.
 
 Since this method had been split in at least two methods :
@@ -582,7 +582,7 @@ To help users to understand the most popular plugins you can find several tutori
 
 ### 9.1. Commit and push
 
-When you have finish your plugins development, before committing a plugin, you need to create an **enhancement ticket** on the 
+When you have finished your plugin development, before committing a plugin, you need to create an **enhancement ticket** on the 
 centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
 
 Once plugin and modes are developed, you can commit (commit messages in english)

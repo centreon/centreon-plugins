@@ -244,7 +244,6 @@ This library allows you to use SNMP protocol in your plugin.
 To use it, add the following line at the beginning of your **plugin.pm**:
 
 ```perl
-
 use base qw(centreon::plugins::script_snmp);
 ```
 
@@ -252,7 +251,7 @@ use base qw(centreon::plugins::script_snmp);
 
 **Description**
 
-Return hash table table of SNMP values for multiple OIDs (do not work with SNMP table).
+Return hash table of SNMP values for multiple OIDs (do not work with SNMP table).
 
 **Parameters**
 

@@ -211,9 +211,9 @@ sub new {
     # All options here stick to what the centreon::plugins::http module needs to establish a connection
     # You don't have to specify all options from the http module, only the one that the user may want to tweak for its needs
     $options{options}->add_options(arguments => {
-        # One the left it's the option name that will be used in the command line. The ':s' at the end is to 
+        # On the left it's the option name that will be used in the command line. The ':s' at the end is to 
         # define that this options takes a value.  
-        # On the right, it's the code name for this option, optionnaly you can define a default value so the user 
+        # On the right, it's the code name for this option, optionally you can define a default value so the user 
         # doesn't have to set it
          'hostname:s'           => { name => 'hostname' },
          'proto:s'              => { name => 'proto', default => 'https' },
@@ -737,7 +737,7 @@ OK: My-awesome-app status: yellow - Queries: select: 1230, update: 640, delete: 
 
 You now get metrics displayed for both components `'my-awesome-db'` and `'my-awesome-frontend'` and also performance data
 for your graphs. Note how the counter template automatically added the instance dimension on the left of the `nlabel` defined 
-for each counters: `**my-awesome-frontend#**myawesomeapp.errors.count'=32;;;0;`
+for each counters: **my-awesome-frontend#** myawesomeapp.errors.count'=32;;;0;
 
 ### 4.7 Help section and assistant to build your centreon objects
 
@@ -751,8 +751,7 @@ Run this command to obtain a summary that will simplify the work of creating Cen
 the mode's help:
 
 ```shell
-perl centreon_plugins.pl --plugin=apps::myawesomeapp::api::plugin --mode=app-metrics --hostname='anyvalue' --list-coun
-ters --verbose
+perl centreon_plugins.pl --plugin=apps::myawesomeapp::api::plugin --mode=app-metrics --hostname='anyvalue' --list-counters --verbose
 ```
 
 Get information from its output (shown below) to start building your mode's help:
@@ -840,8 +839,8 @@ Mode:
 
 ## 5. Convert in custom mode
 
-Custom mode is a well established type of plugin. Then it can be usefull to understand the way to build and use it.
-Custom is a mode thinking for when you may have different way to collect plugin input. More broadly, build plugins using custom mode afford flexibility if later you have to add a new way to give input in a plugin. This is the main reason why most of latest plugins are in custom mode baseline.
+Custom mode is a well established type of plugin. Then it can be useful to understand the way to build and use it.
+Custom is a mode made for when you may have different way to collect plugin input. More broadly, plugins using custom mode afford flexibility if later you have to add a new way to give input in a plugin. This is the main reason why most of latest plugins are in custom mode baseline.
 
 Most of the time the way to collect input use api and this is the most common custom mode you will find in plugins.
 There are also cli file for command line or tcp, etc.
@@ -896,7 +895,7 @@ sub new {
 
 The check_options function is push into the custom file because it was usefull for the input formating
 
-The manage_selection function is update to remove all that concern the input management.
+The manage_selection function is updated to remove all that concern the input management.
 
 ```perl
 sub manage_selection {
@@ -1052,7 +1051,7 @@ sub check_options {
 
 #### settings
 
-This function allows initialize api object options structure and feed it calling set_options
+This function allows to initialize api object options structure and feed it calling set_options
 
 ```perl
 sub settings {
