@@ -29,7 +29,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'apm'                  => 'network::f5::bigip::snmp::mode::apm',
         'connections'          => 'network::f5::bigip::snmp::mode::connections',

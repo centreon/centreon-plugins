@@ -91,7 +91,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pool_connections} = [
-        { label => 'current-server-connections', nlabel => 'pool.connections.server.count', set => {
+        { label => 'current-server-connections', nlabel => 'pool.connections.server.current.count', set => {
                 key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections: %s',
                 perfdatas => [

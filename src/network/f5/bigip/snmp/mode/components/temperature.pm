@@ -48,19 +48,25 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
 	
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %.2f C [instance: %s].", 
-                                    $instance, $result->{sysChassisTempTemperature}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' is %.2f C [instance: %s].", 
+                $instance, $result->{sysChassisTempTemperature}, $instance
+            )
+        );
                                     
         if (defined($result->{sysChassisTempTemperature}) && $result->{sysChassisTempTemperature} =~ /[0-9]/) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{sysChassisTempTemperature});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Temperature '%s' is %.2f C", $instance, $result->{sysChassisTempTemperature}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Temperature '%s' is %.2f C", $instance, $result->{sysChassisTempTemperature})
+                );
             }
+
             $self->{output}->perfdata_add(
-                label => "temp", unit => 'C',
                 nlabel => 'hardware.temperature.celsius',
+                unit => 'C',
                 instances => $instance,
                 value => sprintf("%.2f", $result->{sysChassisTempTemperature}),
                 warning => $warn,

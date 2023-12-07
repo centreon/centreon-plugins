@@ -59,25 +59,37 @@ sub check {
         
         $self->{components}->{fan}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is '%s' [instance: %s, speed: %s].", 
-                                    $instance, $result->{sysChassisFanStatus}, $instance,
-                                    defined($result->{sysChassisFanSpeed}) ? $result->{sysChassisFanSpeed} : '-'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is '%s' [instance: %s, speed: %s].", 
+                $instance, $result->{sysChassisFanStatus}, $instance,
+                defined($result->{sysChassisFanSpeed}) ? $result->{sysChassisFanSpeed} : '-'
+            )
+        );
+
         my $exit = $self->get_severity(section => 'fan', value => $result->{sysChassisFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", 
-                                            $instance, $result->{sysChassisFanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Fan '%s' status is '%s'", 
+                    $instance, $result->{sysChassisFanStatus}
+                )
+            );
         }
         
         if (defined($result->{sysChassisFanSpeed}) && $result->{sysChassisFanSpeed} =~ /[0-9]/) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{sysChassisFanSpeed});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("fan speed '%s' is %s rpm", $instance, $result->{sysChassisFanSpeed}));
+                $self->{output}->output_add(
+                    severity => $exit2,
+                    short_msg => sprintf("fan speed '%s' is %s rpm", $instance, $result->{sysChassisFanSpeed})
+                );
             }
+
             $self->{output}->perfdata_add(
-                label => "fan", unit => 'rpm',
                 nlabel => 'hardware.fan.speed.rpm',
+                unit => 'rpm',
                 instances => $instance,
                 value => $result->{sysChassisFanSpeed},
                 warning => $warn,
