@@ -211,7 +211,7 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--unit>
 
-Select the time unit for modified time thresholds. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for modified time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 
