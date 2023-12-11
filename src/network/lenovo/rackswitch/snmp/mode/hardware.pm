@@ -141,12 +141,12 @@ You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} eq "noncritical"').
+Define the conditions to match for the status to be WARNING (default: '%{status} eq "noncritical"').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "critical"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "critical"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

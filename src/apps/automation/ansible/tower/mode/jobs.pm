@@ -151,7 +151,7 @@ Check jobs.
 
 =item B<--filter-name>
 
-Filter job name (Can use regexp).
+Filter job name (can use regexp).
 
 =item B<--display-failed-jobs>
 

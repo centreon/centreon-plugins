@@ -130,17 +130,17 @@ Check the overall status of Dell Compellent.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /nonCritical|other/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /nonCritical|other/').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|nonRecoverable/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|nonRecoverable/').
 You can use the following variables: %{status}
 
 =back

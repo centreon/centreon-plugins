@@ -175,7 +175,7 @@ Check inventories.
 
 =item B<--filter-inventory>
 
-Filter inventory name (Can use regexp).
+Filter inventory name (can use regexp).
 
 =item B<--warning-*> B<--critical-*> 
 

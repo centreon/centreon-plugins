@@ -130,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check windows pending reboot.
+Check pending Windows reboot.
 
 =over 8
 
@@ -144,13 +144,13 @@ Print powershell output.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{RebootPending} =~ /true/i').
+Define the conditions to match for the status to be WARNING (default: '%{RebootPending} =~ /true/i').
 You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 

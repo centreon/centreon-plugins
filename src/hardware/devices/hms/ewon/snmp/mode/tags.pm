@@ -286,11 +286,11 @@ Filter tags by name (can be a regexp).
 
 =item B<--cache-expires-in>
 
-Cache expires each X secondes (Default: 7200)
+Cache expires each X seconds (default: 7200)
 
 =item B<--tag-output-value>
 
-Change tag output (syntax: [regexp,]output) (Default: 'value: %s').
+Change tag output (syntax: [regexp,]output) (default: 'value: %s').
 E.g: --tag-output-value='tagNameMatch,remaining: %s%%' 
 
 =item B<--tag-threshold-warning> B<--tag-threshold-critical>
@@ -305,7 +305,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /alarm/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alarm/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

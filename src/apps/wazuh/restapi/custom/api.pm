@@ -290,7 +290,7 @@ Use token authentication.
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: 30).
+Set HTTP timeout in seconds (default: 30).
 
 =item B<--proto>
 

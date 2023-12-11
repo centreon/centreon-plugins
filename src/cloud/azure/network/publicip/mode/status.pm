@@ -155,13 +155,13 @@ Check Azure Public IP status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
 --resource=<publicip_id> --resource-group=<resourcegroup_id>
 --critical-provisioning-state='%{state} =~ /Failed/i'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicIPAddresses/<publicip_id>'
@@ -175,27 +175,27 @@ Default aggregation: 'maximum' / 'average', 'total', 'minimum' and 'maximum' are
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-ddos-status>
 
-Warning threshold for DDOS attack status (Default: '').
+Warning threshold for DDOS attack status (default: '').
 
 =item B<--critical-ddos-status>
 
-Critical threshold for DDOS attack status (Default: '%{status} =~ /DDOS Attack ongoing/i').
+Critical threshold for DDOS attack status (default: '%{status} =~ /DDOS Attack ongoing/i').
 
 =item B<--warning-provisioning-state>
 
-Warning threshold for provisioning state (Default: '').
+Warning threshold for provisioning state (default: '').
 
 =item B<--critical-provisioning-state>
 
-Critical threshold for provisioning state (Default: '%{state} =~ /Failed/i').
+Critical threshold for provisioning state (default: '%{state} =~ /Failed/i').
 
 =back
 

@@ -122,12 +122,12 @@ Check system board status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Normal/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Normal/i').
 You can use the following variables: %{name}, %{status}
 
 =back

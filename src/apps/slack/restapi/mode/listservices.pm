@@ -100,7 +100,7 @@ List slack services.
 
 =item B<--filter-name>
 
-Filter service name (Can be a regexp).
+Filter service name (can be a regexp).
 
 =back
 

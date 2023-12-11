@@ -199,7 +199,7 @@ Check network devices by categories.
 
 =item B<--filter-category-name>
 
-Filter categories by name (Can be a regexp).
+Filter categories by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

@@ -111,7 +111,7 @@ List Netbiter log sensors using Argos RestAPI.
 
 =item B<--system-id>
 
-Set the Netbiter Argos System ID (Mandatory).
+Set the Netbiter Argos System ID (mandatory).
 
 =back
 

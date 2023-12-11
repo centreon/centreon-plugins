@@ -100,12 +100,12 @@ Check overall cluster status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warn/i')
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warn/i')
 You can use the following variables: %{status}, %{message}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /error/i').
 You can use the following variables: %{status}, %{message}
 
 =back

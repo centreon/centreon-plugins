@@ -184,20 +184,20 @@ Check namespace status phase.
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--phase>
 
-Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
+Filter on a specific phase (must be a PromQL filter, Default: 'phase=~".*"')
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{display}, %{phase}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{phase} !~ /Active/').
+Define the conditions to match for the status to be CRITICAL (default: '%{phase} !~ /Active/').
 You can use the following variables: %{display}, %{phase}
 
 =item B<--extra-filter>

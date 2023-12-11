@@ -178,11 +178,11 @@ Check CPU usage for nodes and each of their cores.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--cpu>
 
-Filter on a specific cpu (Must be a PromQL filter, Default: 'cpu=~".*"')
+Filter on a specific cpu (must be a PromQL filter, Default: 'cpu=~".*"')
 
 =item B<--warning-*>
 

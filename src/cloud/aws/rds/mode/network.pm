@@ -175,25 +175,25 @@ Default statistic: 'average' / All statistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput') 
-(Can be a regexp).
+Filter metrics (can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Warning thresholds ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Warning thresholds ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

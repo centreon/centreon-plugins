@@ -118,12 +118,12 @@ Check network ports status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Up/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Up/i').
 You can use the following variables: %{name}, %{status}
 
 =back

@@ -124,12 +124,12 @@ Check System Director state and workspaces redistributing count.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{state} !~ /Online/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{state} !~ /Online/i').
 Can use special variables like: %{state}
 
 =item B<--warning-redistributing-count>

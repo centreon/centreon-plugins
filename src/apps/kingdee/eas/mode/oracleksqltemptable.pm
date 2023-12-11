@@ -100,7 +100,7 @@ Check ksql temp table count for specify datasource.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkoraclevt.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkoraclevt.jsp')
 
 =item B<--datasource>
 

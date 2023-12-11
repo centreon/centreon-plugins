@@ -96,7 +96,7 @@ Check components (hardware and service set).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'hardware', 'serviceset'.
 
 =item B<--filter>

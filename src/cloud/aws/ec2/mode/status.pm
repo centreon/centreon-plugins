@@ -192,11 +192,11 @@ Default statistic: 'average' / Only valid statistic: 'average'.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'asg', 'instance').
+Set the instance type (required) (can be: 'asg', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--warning-status>
 
@@ -206,7 +206,7 @@ You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}.
 'status' can be: 'passed', 'failed'.
 

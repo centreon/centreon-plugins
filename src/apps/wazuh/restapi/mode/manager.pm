@@ -199,12 +199,12 @@ Filter log name (can be a regexp).
 
 =item B<--warning-process-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-process-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

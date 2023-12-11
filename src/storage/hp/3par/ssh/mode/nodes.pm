@@ -187,7 +187,7 @@ Check nodes.
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -201,7 +201,7 @@ You can use the following variables: %{status}, %{node_id}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>

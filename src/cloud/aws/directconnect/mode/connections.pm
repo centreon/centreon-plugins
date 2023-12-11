@@ -219,13 +219,13 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--filter-connection-id>
 
-Filter connection id (can be a regexp).
+Filter connection ID (can be a regexp).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress', 
+Filter metrics (can be: 'ConnectionBpsEgress', 'ConnectionBpsIngress', 
 'ConnectionPpsEgress', 'ConnectionPpsIngress', 'ConnectionLightLevelTx', 'ConnectionLightLevelRx') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-status>
 

@@ -157,7 +157,7 @@ Can use special variables like: %{connection_status}, %{link_status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} !~ /^up$/i and %{connection_status} !~ /^connected$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} !~ /^up$/i and %{connection_status} !~ /^connected$/i').
 Can use special variables like: %{connection_status}, %{link_status}
 
 =item B<--unit>

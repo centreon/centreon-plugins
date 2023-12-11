@@ -217,7 +217,7 @@ Default statistic: 'sum' / Most useful statistics: 'sum'.
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
@@ -229,13 +229,13 @@ Add target group dimension.
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: ActiveConnectionCount', 'NewConnectionCount',
+Filter metrics (can be: ActiveConnectionCount', 'NewConnectionCount',
 'RejectedConnectionCount', 'TargetConnectionErrorCount') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'connection-active', 'connection-new',
+Warning thresholds (can be: 'connection-active', 'connection-new',
 'connection-rejected', 'target-connection-error').
 
 =back

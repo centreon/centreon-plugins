@@ -292,7 +292,7 @@ Set resource group.
 
 =item B<--exclude-name>
 
-Exclude resource from check (Can be a regexp).
+Exclude resource from check (can be a regexp).
 
 =item B<--warning-*>
 

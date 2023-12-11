@@ -104,13 +104,13 @@ Check Azure Storage Sync server online status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=server-status --custommode=api
 --resource=<syncservice_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --critical-heartbeat='1:1'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=server-status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'
@@ -122,11 +122,11 @@ Default aggregation: 'maximum' / 'minimum', 'average' and 'total' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-heartbeat>
 

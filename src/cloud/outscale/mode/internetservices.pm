@@ -147,7 +147,7 @@ Filter internet services by name.
 
 =item B<--internet-service-tag-name>
 
-Internet service tag to be used for the name (Default: 'name').
+Internet service tag to be used for the name (default: 'name').
 
 =item B<--unknown-internet-service-status>
 

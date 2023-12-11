@@ -579,23 +579,23 @@ Check devices.
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter devices by network id (Can be a regexp).
+Filter devices by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (Can be a regexp).
+Filter devices by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter devices by organization name (Can be a regexp).
+Filter devices by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter devices by tags (Can be a regexp).
+Filter devices by tags (can be a regexp).
 
 =item B<--add-switch-ports>
 
@@ -603,7 +603,7 @@ Add switch port statuses and traffic.
 
 =item B<--filter-switch-port>
 
-Filter switch port (Can be a regexp).
+Filter switch port (can be a regexp).
 
 =item B<--skip-clients>
 
@@ -633,7 +633,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /alerting/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alerting/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-link-status>
@@ -648,7 +648,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} =~ /failed/i').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
@@ -663,7 +663,7 @@ You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-*> B<--critical-*>

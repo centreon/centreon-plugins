@@ -209,7 +209,7 @@ __END__
 
 =head1 MODE
 
-Check AP connections (Deprecated).
+Check AP connections (deprecated).
 
 =over 8
 

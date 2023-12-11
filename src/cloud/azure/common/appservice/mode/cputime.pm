@@ -103,13 +103,13 @@ Check Azure App Service CPU time consumed by the app.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=cpu-time --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-cpu-time='80' --critical-cpu-time='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=cpu-time --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
@@ -121,11 +121,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-cpu-time>
 

@@ -110,7 +110,7 @@ Check hardware (READYNASOS-MIB, READYNAS-MIB) (Fans, Power Supplies, Disk status
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'disk', 'volume', 'temperature'.
 
 =item B<--filter>

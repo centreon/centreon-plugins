@@ -206,7 +206,7 @@ Check BGP peer prefixes per AFI/SAFI (BGP4-V2-MIB-JUNIPER)
 
 =item B<--filter-peer>
 
-Filter by peer identifier (Can be regexp)
+Filter by peer identifier (can be regexp)
 
 =item B<--warning-*>
 

@@ -356,15 +356,15 @@ SailPoint IdentityNow API tenant.
 
 =item B<--domain>
 
-SailPoint IdentityNow API domain  (Default: identitynow)
+SailPoint IdentityNow API domain  (default: identitynow)
 
 =item B<--port>
 
-SailPoint IdentityNow API port (Default: 443)
+SailPoint IdentityNow API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--client-id>
 

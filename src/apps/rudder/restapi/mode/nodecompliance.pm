@@ -175,12 +175,12 @@ Set critical threshold on node compliance.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING of rule compliance (Default: '').
+Define the conditions to match for the status to be WARNING of rule compliance (default: '').
 You can use the following variables: %{rule}, %{compliance}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL of rule compliance (Default: '').
+Define the conditions to match for the status to be CRITICAL of rule compliance (default: '').
 You can use the following variables: %{rule}, %{compliance}
 
 Example :

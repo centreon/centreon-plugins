@@ -109,17 +109,17 @@ Check status of clustered node.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{node_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{node_status} =~ /unknown/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{node_status} =~ /lockedOnline/i').
+Define the conditions to match for the status to be WARNING (default: '%{node_status} =~ /lockedOnline/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =back

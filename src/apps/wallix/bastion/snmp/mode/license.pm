@@ -310,8 +310,7 @@ Filter licenses by category ('primary', 'secondary', 'resource').
 
 =item B<--unit>
 
-Select the unit for the expired license threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the expired license thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-status>
 
@@ -320,7 +319,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "expired"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "expired"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

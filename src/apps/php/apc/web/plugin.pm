@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check apc php module through the webpage
+Check apc php module through the web page
 
 =cut

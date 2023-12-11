@@ -130,7 +130,7 @@ You can use the following variables: %{health}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /green/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} !~ /green/').
 You can use the following variables: %{health}, %{display}
 
 =back

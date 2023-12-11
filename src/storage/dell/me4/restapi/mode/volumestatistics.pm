@@ -182,7 +182,7 @@ Check volumes statistics.
 
 =item B<--filter-name>
 
-Filter volume name (Can be a regexp).
+Filter volume name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

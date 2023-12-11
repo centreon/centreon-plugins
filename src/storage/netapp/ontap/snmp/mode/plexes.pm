@@ -225,12 +225,12 @@ You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} eq "resyncing"').
+Define the conditions to match for the status to be WARNING (default: '%{status} eq "resyncing"').
 You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status}  eq "offline"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status}  eq "offline"').
 You can use the following variables: %{status}, %{name}, %{aggregate}
 
 =item B<--warning-*> B<--critical-*>

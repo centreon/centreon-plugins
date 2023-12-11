@@ -165,7 +165,7 @@ it does not appear clearly in the MIB).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='dat')
+(example: --filter-counters='dat')
 
 =item B<--warning-*>
 

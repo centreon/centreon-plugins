@@ -322,7 +322,7 @@ Check cellular radio modules.
 
 =item B<--filter-cell-id>
 
-Filter cell modules by id (IMEI or MEID).
+Filter cell modules by ID (IMEI or MEID).
 
 =item B<--custom-perfdata-instances>
 

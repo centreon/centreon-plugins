@@ -112,11 +112,11 @@ List resources groups.
 
 =item B<--location>
 
-Set group location (Can be a regexp).
+Set group location (can be a regexp).
 
 =item B<--filter-name>
 
-Filter group name (Can be a regexp).
+Filter group name (can be a regexp).
 
 =back
 

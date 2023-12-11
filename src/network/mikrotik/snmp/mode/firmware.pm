@@ -100,7 +100,7 @@ Check firmware status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default : '%{firmware_version} ne %{software_version}').
+Define the conditions to match for the status to be WARNING (default : '%{firmware_version} ne %{software_version}').
 You can use the following variables: %{model}, %{software_version}, %{firmware_version}, %{firmware_version_update}
 
 =item B<--critical-status>

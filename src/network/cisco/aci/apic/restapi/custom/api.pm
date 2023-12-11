@@ -256,7 +256,7 @@ Password to connect to ACI APIC
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

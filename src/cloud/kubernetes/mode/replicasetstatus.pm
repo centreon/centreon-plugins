@@ -152,13 +152,13 @@ Filter ReplicaSet namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{name}, %{namespace}, %{desired}, %{current},
 %{ready}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ready} < %{desired}').
+Define the conditions to match for the status to be CRITICAL (default: '%{ready} < %{desired}').
 You can use the following variables: %{name}, %{namespace}, %{desired}, %{current},
 %{ready}.
 

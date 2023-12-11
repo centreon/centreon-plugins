@@ -190,17 +190,17 @@ Check output lines metrics.
 
 =item B<--unknown-source>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{source}.
 
 =item B<--warning-source>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{source}.
 
 =item B<--critical-source>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{source} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{source} !~ /normal/i').
 You can use the following variables: %{source}.
 
 =item B<--warning-*> B<--critical-*>

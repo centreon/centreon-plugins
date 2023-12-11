@@ -137,7 +137,7 @@ Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /degraded/i').
 'status' can be: 'online', 'offline', 'excluded', 'degraded'.
 
 =item B<--warning-vdisk-count>

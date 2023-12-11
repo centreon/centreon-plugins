@@ -154,11 +154,11 @@ Zixi hostname.
 
 =item B<--port>
 
-Port used (Default: 4444)
+Port used (default: 4444)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--username>
 

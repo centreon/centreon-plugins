@@ -225,7 +225,7 @@ Can be: 'num-active', 'num-idle'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =back
 

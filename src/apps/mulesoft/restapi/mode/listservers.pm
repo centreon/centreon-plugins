@@ -98,7 +98,7 @@ List Mulesoft Anypoint Servers.
 
 =item B<--filter-name>
 
-Filter server name (Can be a regexp).
+Filter server name (can be a regexp).
 
 =back
 

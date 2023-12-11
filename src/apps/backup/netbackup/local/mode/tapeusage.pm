@@ -188,11 +188,11 @@ Print command output
 
 =item B<--filter-scratch>
 
-Filter tape scratch (Default: 'scratch').
+Filter tape scratch (default: 'scratch').
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =item B<--free>
 

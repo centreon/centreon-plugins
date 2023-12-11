@@ -122,11 +122,11 @@ url of the HighSMS Server.
 
 =item B<--port>
 
-Port used by HighSMS API. (Default: 443)
+Port used by HighSMS API. (default: 443)
 
 =item B<--proto>
 
-Specify http or https protocol. (Default: https)
+Specify http or https protocol. (default: https)
 
 =item B<--username>
 

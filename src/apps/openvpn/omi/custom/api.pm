@@ -226,7 +226,7 @@ OMI hostname.
 
 =item B<--omi-port>
 
-OMI port (Default: 7505).
+OMI port (default: 7505).
 
 =item B<--omi-password>
 

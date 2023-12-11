@@ -300,7 +300,7 @@ You can use the following variables: %{tbsname}, %{type}, %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /normal/i').
 You can use the following variables: %{tbsname}, %{type}, %{state}
 
 =item B<--warning-*> B<--critical-*>

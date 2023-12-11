@@ -183,7 +183,7 @@ Set the NTP hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the NTP port (Default: 123).
+Set the NTP port (default: 123).
 
 =item B<--timezone>
 

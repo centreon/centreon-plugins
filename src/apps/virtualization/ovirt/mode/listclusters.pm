@@ -96,7 +96,7 @@ List clusters.
 
 =item B<--filter-name>
 
-Filter cluster name (Can be a regexp).
+Filter cluster name (can be a regexp).
 
 =back
 

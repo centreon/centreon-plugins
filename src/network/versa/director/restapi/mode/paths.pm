@@ -274,27 +274,27 @@ Check device under an organization name.
 
 =item B<--filter-org-name>
 
-Filter organizations by name (Can be a regexp).
+Filter organizations by name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--filter-device-type>
 
-Filter devices by type (Can be a regexp).
+Filter devices by type (can be a regexp).
 
 =item B<--filter-local-wan-link>
 
-Filter paths by localWanLink (Can be a regexp).
+Filter paths by localWanLink (can be a regexp).
 
 =item B<--filter-remote-site-name>
 
-Filter paths by remoteSiteName (Can be a regexp).
+Filter paths by remoteSiteName (can be a regexp).
 
 =item B<--filter-remote-wan-link>
 
-Filter paths by remoteWanLink (Can be a regexp).
+Filter paths by remoteWanLink (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

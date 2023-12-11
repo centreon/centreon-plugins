@@ -213,27 +213,27 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ReadThroughput', 'WriteThroughput',
+Filter metrics (can be: 'ReadThroughput', 'WriteThroughput',
 'ReadIOPS', 'WriteIOPS', 'ReadLatency', 'WriteLatency', 'DiskQueueDepth') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'readthroughput', 'writethroughput',
+Warning thresholds ($metric$ can be: 'readthroughput', 'writethroughput',
 'readiops', 'writeiops', 'readlatency', 'writelatency', 'diskqueuedepth',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'readthroughput', 'writethroughput',
+Critical thresholds ($metric$ can be: 'readthroughput', 'writethroughput',
 'readiops', 'writeiops', 'readlatency', 'writelatency', 'diskqueuedepth',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

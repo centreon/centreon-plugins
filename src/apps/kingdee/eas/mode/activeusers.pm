@@ -108,7 +108,7 @@ Check eas active users info.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkclassloading.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkclassloading.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

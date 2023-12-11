@@ -210,17 +210,17 @@ Check deployment status.
 
 =item B<--deployment>
 
-Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
+Filter on a specific deployment (must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{up_to_date} < %{desired}')
+Define the conditions to match for the status to be WARNING (default: '%{up_to_date} < %{desired}')
 You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{available} < %{desired}').
+Define the conditions to match for the status to be CRITICAL (default: '%{available} < %{desired}').
 You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 

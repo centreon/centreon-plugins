@@ -191,15 +191,15 @@ Default: '%'
 
 =item B<--resource-group>
 
-Set resource group from which depends the storage account (Required).
+Set resource group from which depends the storage account (required).
 
 =item B<--storage-account>
 
-Set storage account from which the fileshare to monitor is from (Required).
+Set storage account from which the fileshare to monitor is from (required).
 
 =item B<--fileshare>
 
-Set fileshare to monitor (Required).
+Set fileshare to monitor (required).
 
 =item B<--warning-capacity-usage>
 

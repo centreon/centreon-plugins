@@ -129,7 +129,7 @@ Critical threshold (number of long queries).
 
 =item B<--seconds>
 
-Filter queries over X seconds (Default: 60).
+Filter queries over X seconds (default: 60).
 
 =item B<--filter-user>
 

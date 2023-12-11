@@ -136,16 +136,16 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter circuit name (Can be a regexp).
+Filter circuit name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
+Define the conditions to match for the status to be CRITICAL (default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
 You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =back

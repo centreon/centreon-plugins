@@ -150,12 +150,12 @@ Use old legacy command.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{level} =~ /warning|minor/i')
+Define the conditions to match for the status to be WARNING (default: '%{level} =~ /warning|minor/i')
 You can use the following variables: %{description}, %{level}, %{type}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{level} =~ /critical|major/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{level} =~ /critical|major/i').
 You can use the following variables: %{description}, %{level}, %{type}
 
 =back

@@ -97,7 +97,7 @@ Check hardware (Fans, Power Supplies, Temperatures).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'temperature'.
 
 =item B<--filter>

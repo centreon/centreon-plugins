@@ -80,7 +80,7 @@ Check oracle database version.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkoracleversion.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkoracleversion.jsp')
 
 =item B<--datasource>
 

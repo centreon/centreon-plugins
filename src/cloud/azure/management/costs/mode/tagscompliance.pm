@@ -173,11 +173,11 @@ Adding --verbose will display the item names.
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--exclude-name>
 
-Exclude resource from check (Can be a regexp).
+Exclude resource from check (can be a regexp).
 
 =item B<--skip-vm>
 

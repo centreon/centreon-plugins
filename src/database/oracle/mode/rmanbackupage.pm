@@ -229,7 +229,7 @@ Return ok if no backup found.
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone).
+Timezone of oracle server (if not set, we use current server execution timezone).
 
 =item B<--incremental-level>
 

@@ -1525,7 +1525,7 @@ Display debug messages.
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
-Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
+Example: adding --filter-perfdata='avg' will remove all metrics that do not contain
 'avg' from performance data.
 
 =item B<--filter-perfdata-adv>
@@ -1533,14 +1533,14 @@ Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
 Filter perfdata based on a "if" condition using the following variables:
 label, value, unit, warning, critical, min, max.
 Variables must be written either %{variable} or %(variable).
-Eg: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
+Example: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
 remove all metrics whose value equals 0 and that don't have a maximum value.
 
 =item B<--explode-perfdata-max>
 
 Create a new metric for each metric that comes with a maximum limit. The new
 metric will be named identically with a '_max' suffix). 
-Eg: it will split 'used_prct'=26.93%;0:80;0:90;0;100
+Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
 into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 
 
@@ -1591,12 +1591,12 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 Modify the short/long output that is returned by the plugin.
 Syntax: --change-short-output=pattern~replacement~modifier
 Most commonly used modifiers are i (case insensitive) and g (replace all occurrences).
-Eg: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
+Example: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
 
 =item B<--change-exit>
 
 Replace an exit code with one of your choice.
-Eg: adding --change-exit=unknown=critical will result in a CRITICAL state
+Example: adding --change-exit=unknown=critical will result in a CRITICAL state
 instead of an UNKNOWN state.
 
 =item B<--range-perfdata>
@@ -1624,7 +1624,7 @@ and an output.
 
 Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the 
 beginning of the output.
-Eg: 'OK: Ram Total:...' will become 'Ram Total:...'
+Example: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 

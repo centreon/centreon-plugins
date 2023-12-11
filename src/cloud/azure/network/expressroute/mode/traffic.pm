@@ -115,13 +115,13 @@ Check circuit traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::expressroute::plugin --custommode=azcli --mode=traffic
 --resource=MYCIRCUIT --resource-group=MYHOSTGROUP --aggregation='average' --critical-bitsinpersecond-average='10'
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::expressroute::plugin --custommode=azcli --mode=traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/expressRouteCircuits/xxx'
@@ -133,15 +133,15 @@ Default aggregation: 'average' / 'average', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'BitsInPerSecond', 'BitsOutPerSecond') (Can be a regexp).
+Filter metrics (can be: 'BitsInPerSecond', 'BitsOutPerSecond') (Can be a regexp).
 
 =item B<--warning-traffic-in>
 

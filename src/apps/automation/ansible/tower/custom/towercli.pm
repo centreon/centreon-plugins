@@ -297,15 +297,15 @@ To install the Tower CLI : https://docs.ansible.com/ansible-tower/latest/html/to
 
 =item B<--hostname>
 
-Ansible Tower hostname (Default uses setting in 'tower config').
+Ansible Tower hostname (default uses setting in 'tower config').
 
 =item B<--username>
 
-Ansible Tower username (Default uses setting in 'tower config').
+Ansible Tower username (default uses setting in 'tower config').
 
 =item B<--password>
 
-Ansible Tower password (Default uses setting in 'tower config').
+Ansible Tower password (default uses setting in 'tower config').
 
 =item B<--nossl>
 
@@ -313,7 +313,7 @@ Use http connection.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--sudo>
 
@@ -321,16 +321,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'tower-cli').
+Command to get information (default: 'tower-cli').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =item B<--proxyurl>
 

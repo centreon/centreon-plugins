@@ -278,12 +278,12 @@ Can be: 'nodes-total', 'nodes-data', 'nodes-coordinating',
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i')
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /yellow/i')
 You can use the following variables: %{status}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /red/i').
 You can use the following variables: %{status}.
 
 =back

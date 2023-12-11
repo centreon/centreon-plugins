@@ -178,11 +178,11 @@ Oracle ZFS hostname.
 
 =item B<--port>
 
-Port used (Default: 215)
+Port used (default: 215)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -194,7 +194,7 @@ Oracle ZFS API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

@@ -414,9 +414,9 @@ __END__
 
 =head1 MODE
 
-Mode to play with centreon metrics
-e.g: display two curves of different service on the same graph
-e.g: aggregate multiple metrics (min,max,avg,sum) or custom operation
+Mode to play with centreon metrics.
+Example: display two curves of different service on the same graph.
+Example: aggregate multiple metrics (min,max,avg,sum) or custom operation.
 
 =over 8
 

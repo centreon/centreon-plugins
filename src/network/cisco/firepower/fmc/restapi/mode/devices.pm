@@ -182,11 +182,11 @@ Check devices.
 
 =item B<--filter-domain-name>
 
-Filter devices by domain name (Can be a regexp).
+Filter devices by domain name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--unknown-device-status>
 
@@ -195,12 +195,12 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /yellow/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red|black/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /red|black/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

@@ -238,11 +238,11 @@ Set hostname.
 
 =item B<--port>
 
-Set port (Default: '5392').
+Set port (default: '5392').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--api-username>
 
@@ -254,7 +254,7 @@ Set password.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =back
 

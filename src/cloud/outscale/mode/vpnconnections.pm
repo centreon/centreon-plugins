@@ -187,7 +187,7 @@ Filter virtual connections by name.
 
 =item B<--vpn-tag-name>
 
-Vpn connection tag to be used for the name (Default: 'name').
+Vpn connection tag to be used for the name (default: 'name').
 
 =item B<--unknown-vpn-connection-status>
 

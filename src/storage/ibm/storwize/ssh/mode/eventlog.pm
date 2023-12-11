@@ -120,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check eventlogs.
+Check event logs.
 
 =over 8
 

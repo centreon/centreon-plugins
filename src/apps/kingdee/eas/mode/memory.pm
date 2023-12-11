@@ -107,7 +107,7 @@ Check EAS instance heap & nonheap memory usage.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkmemory.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkmemory.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

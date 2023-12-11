@@ -211,7 +211,7 @@ Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -236,7 +236,7 @@ Filter filesystem (regexp can be used).
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
+The value is in percent of total (default: none).
 
 =back
 

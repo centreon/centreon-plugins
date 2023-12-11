@@ -96,7 +96,7 @@ List datacenters.
 
 =item B<--filter-name>
 
-Filter datacenter name (Can be a regexp).
+Filter datacenter name (can be a regexp).
 
 =back
 

@@ -171,7 +171,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.ht
 
 =item B<--volume-id>
 
-Set the VolumeId (Required).
+Set the VolumeId (required).
 
 =item B<--filter-metric>
 

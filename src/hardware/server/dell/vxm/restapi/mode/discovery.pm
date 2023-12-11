@@ -120,7 +120,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'host').
+Choose the type of resources to discover (can be: 'host').
 
 =back
 

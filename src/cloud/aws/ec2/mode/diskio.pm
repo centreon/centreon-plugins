@@ -233,11 +233,11 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'asg', 'instance').
+Set the instance type (required) (can be: 'asg', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--add-ebs-metrics>
 
@@ -245,13 +245,13 @@ Add EBS metrics ('EBSReadOps', 'EBSWriteOps', 'EBSReadBytes', 'EBSWriteBytes').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'DiskReadBytes', 'DiskWriteBytes',
+Filter metrics (can be: 'DiskReadBytes', 'DiskWriteBytes',
 'DiskReadOps', 'DiskWriteOps') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be 'disk-bytes-read', 'disk-bytes-write', 'disk-ops-read', 'disk-ops-write',
+Thresholds (can be 'disk-bytes-read', 'disk-bytes-write', 'disk-ops-read', 'disk-ops-write',
 'ebs-bytes-read', 'ebs-bytes-write', 'ebs-ops-read', 'ebs-ops-write').
 
 =item B<--per-sec>

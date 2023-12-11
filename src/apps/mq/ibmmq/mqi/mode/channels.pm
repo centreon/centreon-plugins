@@ -191,11 +191,11 @@ Check channels.
 
 =item B<--filter-name>
 
-Filter channel name (Can use regexp).
+Filter channel name (can use regexp).
 
 =item B<--filter-type>
 
-Filter channel type (Can use regexp, insensitive search).
+Filter channel type (can use regexp, insensitive search).
 
 Here is the IBM - Perl mapping about Channel types: 
 
@@ -211,17 +211,17 @@ MQTT - Telemetry
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{channel_status} !~ /running|idle/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{channel_status} !~ /running|idle/i').
 You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>

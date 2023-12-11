@@ -182,7 +182,7 @@ You can use the following variables: %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{opstatus} !~ /init|redundant|operationnal/').
+Define the conditions to match for the status to be CRITICAL (default: '%{opstatus} !~ /init|redundant|operationnal/').
 You can use the following variables: %{opstatus}, %{display}
 
 =item B<--warning-total>

@@ -137,7 +137,7 @@ Check hosts.
 
 =item B<--filter-name>
 
-Filter host name (Can use regexp).
+Filter host name (can use regexp).
 
 =item B<--display-failed-hosts>
 
@@ -145,7 +145,7 @@ Display failed hosts list in verbose output.
 
 =item B<--unknown-job-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{last_job_status} =~ /default/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{last_job_status} =~ /default/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-job-status>
@@ -155,7 +155,7 @@ You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--critical-job-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{last_job_status} =~ /failed/').
+Define the conditions to match for the status to be CRITICAL (default: '%{last_job_status} =~ /failed/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-*> B<--critical-*> 

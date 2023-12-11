@@ -99,7 +99,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'global', 'physicaldrive', 'subsystem', 'component', 'temperature', 'fan'.
 
 =item B<--filter>

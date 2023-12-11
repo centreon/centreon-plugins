@@ -177,8 +177,8 @@ Check size of files/directories.
 
 =item B<--folder>
 
-Folder to check. (No WQL wildcard allowed)
-Ex: 'C:/Users/Administrator/'.
+Folder to check (no WQL wildcard allowed).
+Example: 'C:/Users/Administrator/'.
 
 =item B<--filter-filename>
 

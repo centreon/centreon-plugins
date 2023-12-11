@@ -316,11 +316,11 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 9398)
+Port used (default: 9398)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -332,7 +332,7 @@ Set password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--cache-use>
 

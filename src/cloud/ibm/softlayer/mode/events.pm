@@ -194,7 +194,7 @@ Check events status and number of impacted ressources
 
 =item B<--filter-status>
 
-Filter events status (Default: 'Active')
+Filter events status (default: 'Active')
 
 =item B<--warning-event>
 
@@ -204,7 +204,7 @@ You can use the following variables: %{id}, %{subject}, %{status}, %{items},
 
 =item B<--critical-event>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /Active/ && %{items} > 0').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /Active/ && %{items} > 0').
 You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 

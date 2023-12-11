@@ -201,7 +201,7 @@ Check job queues.
 
 =item B<--jobq>
 
-JOBQ selection. Eg: --jobq="QGPL:QBASE" --jobq="QGPL:QPGMR"
+JOBQ selection. Example: --jobq="QGPL:QBASE" --jobq="QGPL:QPGMR"
 
 =item B<--unknown-status>
 
@@ -215,7 +215,7 @@ You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /HELD/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /HELD/i').
 You can use the following variables: %{status}, %{name}, %{library}
 
 =item B<--warning-*> B<--critical-*>

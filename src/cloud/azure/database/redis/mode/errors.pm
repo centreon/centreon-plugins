@@ -103,13 +103,13 @@ Check Azure Redis errors statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=errors --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --critical-errors-count='1'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'
@@ -121,11 +121,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-errors-count>
 

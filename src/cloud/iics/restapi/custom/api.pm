@@ -257,7 +257,7 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (default: 30).
 
 =back
 

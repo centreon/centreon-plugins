@@ -141,7 +141,7 @@ Critical threshold (number of retention forward days)
 
 =item B<--timezone>
 
-Timezone use for partitioning (If not set, we use current server execution timezone)
+Timezone use for partitioning (if not set, we use current server execution timezone)
 
 =back
 

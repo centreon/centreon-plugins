@@ -80,11 +80,11 @@ Close a host ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =back
 

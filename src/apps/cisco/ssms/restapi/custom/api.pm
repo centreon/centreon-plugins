@@ -247,11 +247,11 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 8443)
+Port used (default: 8443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--client-id>
 
@@ -263,7 +263,7 @@ Set client secret.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 
