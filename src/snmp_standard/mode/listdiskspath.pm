@@ -211,7 +211,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) ex: 1, 2,... (empty means 'check all disks path').
+Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 
@@ -229,7 +229,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 Modify the disk path name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--skip-total-size-zero>
 

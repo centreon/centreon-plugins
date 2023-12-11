@@ -254,7 +254,7 @@ Can be: 'connected-current' (global), 'uptime',
 'controller-bootstrap', 'reboot', 'status' (per AP).
 
 'status' can use special variables like: %{name},
-%{status}, %{ip}, %{group}, %{location} (Default: '')
+%{status}, %{ip}, %{group}, %{location} (default: '')
 
 =item B<--filter-*>
 

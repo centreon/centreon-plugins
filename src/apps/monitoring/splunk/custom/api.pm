@@ -389,11 +389,11 @@ Splunk server address.
 
 =item B<--port>
 
-API port (Default: 8089)
+API port (default: 8089)
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https')
+Specify http if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -409,11 +409,11 @@ Set HTTP timeout.
 
 =item B<--splunk-retries>
 
-How many times we should retry queries to splunk. To use in par with the --splunk-wait paramater (Default: 5) 
+How many times we should retry queries to splunk. To use in par with the --splunk-wait paramater (default: 5) 
 
 =item B<--splunk-wait>
 
-How long (in seconds) should we wait between each retry. To use in par with the --splunk-retries paramater (Default: 2)
+How long (in seconds) should we wait between each retry. To use in par with the --splunk-retries paramater (default: 2)
 
 =back
 

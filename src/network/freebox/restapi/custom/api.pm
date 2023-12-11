@@ -252,7 +252,7 @@ Freebox Rest API custom mode
 
 =item B<--hostname>
 
-Freebox hostname (Default: 'mafreebox.free.fr').
+Freebox hostname (default: 'mafreebox.free.fr').
 
 =item B<--freebox-app-id>
 
@@ -264,15 +264,15 @@ Freebox App Token.
 
 =item B<--freebox-api-version>
 
-Freebox API version (Default: 'v4').
+Freebox API version (default: 'v4').
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =item B<--resolution>
 
-Selected data performance resolution in seconds (Default: '300').
+Selected data performance resolution in seconds (default: '300').
 
 =back
 

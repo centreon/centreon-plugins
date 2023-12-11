@@ -95,7 +95,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /registred/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /registred/i').
 You can use the following variables: %{status}
 
 =back

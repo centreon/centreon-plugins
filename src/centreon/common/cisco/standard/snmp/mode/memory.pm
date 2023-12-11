@@ -372,7 +372,7 @@ Filter pool to check (can use regexp).
 =item B<--check-order>
 
 Check memory in standard cisco mib. If you have some issue (wrong memory information in a specific mib), you can change the order 
-(Default: 'enhanced_pool,pool,process,system_ext').
+(default: 'enhanced_pool,pool,process,system_ext').
 
 =back
 

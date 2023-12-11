@@ -299,8 +299,8 @@ Check sessions.
 
 =item B<--config>
 
-command can be localized by using a configuration file.
-This parameter can be used to specify an alternative location for the configuration file
+The command can be localized by using a configuration file.
+This parameter can be used to specify an alternative location for the configuration file.
 
 =item B<--language>
 
@@ -308,20 +308,20 @@ Set the language used in config file (default: 'en').
 
 =item B<--command>
 
-Command to get information (Default: 'qwinsta').
+Command to get information (default: 'qwinsta').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '/COUNTER').
+Command options (default: '/COUNTER').
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--filter-sessionname>
 

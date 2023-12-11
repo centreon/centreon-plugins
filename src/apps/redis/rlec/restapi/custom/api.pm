@@ -176,7 +176,7 @@ RedisLabs Enterprise Cluster Rest API custom mode
 
 =item B<--interval>
 
-Time interval from which to retrieve statistics (Default: '15min').
+Time interval from which to retrieve statistics (default: '15min').
 Can be : '1sec', '10sec', '5min', '15min', 
 '1hour', '12hour', '1week'.
 
@@ -186,11 +186,11 @@ Cluster hostname.
 
 =item B<--port>
 
-Port used (Default: 9443)
+Port used (default: 9443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 

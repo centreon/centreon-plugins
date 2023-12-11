@@ -123,23 +123,23 @@ Check edge status.
 
 =item B<--filter-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{edge_state} =~ /NEVER_ACTIVATED/').
 You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
+Define the conditions to match for the status to be CRITICAL (default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
 You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 

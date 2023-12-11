@@ -374,7 +374,7 @@ You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "down"').
 You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
 =item B<--warning-*> B<--critical-*>

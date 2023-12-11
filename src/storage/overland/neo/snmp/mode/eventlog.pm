@@ -107,7 +107,7 @@ __END__
 
 =head1 MODE
 
-Check eventlogs.
+Check event logs.
 
 =over 8
 
@@ -117,12 +117,12 @@ Use warning return instead 'critical'.
 
 =item B<--filter-severity>
 
-Filter on severity. (Default: hard|severe)
+Filter on severity. (default: hard|severe)
 Can be: severe, hard, mild, informational. 
 
 =item B<--filter-message>
 
-Filter on event message. (Default: none)
+Filter on event message. (default: none)
 
 =back
 

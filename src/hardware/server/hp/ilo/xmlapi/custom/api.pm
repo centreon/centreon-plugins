@@ -356,11 +356,11 @@ ILO password.
 
 =item B<--port>
 
-ILO Port (Default: 443).
+ILO Port (default: 443).
 
 =item B<--timeout>
 
-Set timeout (Default: 30).
+Set timeout (default: 30).
 
 =item B<--force-ilo3>
 

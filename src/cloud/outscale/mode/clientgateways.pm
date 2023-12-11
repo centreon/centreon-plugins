@@ -170,7 +170,7 @@ Filter client gateways by name.
 
 =item B<--cg-tag-name>
 
-Client gateway tags to be used for the name (Default: 'name').
+Client gateway tags to be used for the name (default: 'name').
 
 =item B<--unknown-cg-status>
 

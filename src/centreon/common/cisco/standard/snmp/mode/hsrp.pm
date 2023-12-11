@@ -136,7 +136,7 @@ Filter VRID (can be a regexp).
 =item B<--role>
 
 If role is 'primary', an error if HSRPs are 'standby' states. 
-If role is 'secondary', an error if HSRPs are 'active' states. (Default: 'primary')
+If role is 'secondary', an error if HSRPs are 'active' states. (default: 'primary')
 
 =back
 

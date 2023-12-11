@@ -310,11 +310,11 @@ Set hostname or IP of 3CX server.
 
 =item B<--port>
 
-Set 3CX Port (Default: '443').
+Set 3CX Port (default: '443').
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https').
+Specify http if needed (default: 'https').
 
 =item B<--api-username>
 
@@ -326,11 +326,11 @@ Set 3CX Password.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =item B<--unknown-http-status>
 Threshold unknown for http response code.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+(default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
 Warning threshold for http response code.

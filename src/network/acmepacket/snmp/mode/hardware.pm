@@ -78,7 +78,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'voltage', 'temperature', 'fan', 'psu'.
 
 =item B<--filter>
@@ -88,7 +88,7 @@ You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=psu,1
 
 =item B<--no-component>

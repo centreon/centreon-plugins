@@ -221,7 +221,7 @@ You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicI
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /up|connect/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /up|connect/').
 You can use the following variables: %{status}, %{type}, %{privateIp}, %{publicIp}
 
 =item B<--warning-*> B<--critical-*>

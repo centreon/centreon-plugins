@@ -104,13 +104,13 @@ Check Azure API Management requests statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=requests --custommode=api
 --resource=<management_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-requests='1000' --critical-requests='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ApiManagement/service/<management_id>'
@@ -122,11 +122,11 @@ Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-requests>
 

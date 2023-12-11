@@ -192,7 +192,7 @@ Filter account consumptions by region.
 
 =item B<--timeframe>
 
-Set timeframe in days (Default: 1).
+Set timeframe in days (default: 1).
 
 =item B<--warning-*> B<--critical-*>
 

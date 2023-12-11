@@ -203,12 +203,12 @@ Filter pool name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /offline/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -218,7 +218,7 @@ Can be: 'usage'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

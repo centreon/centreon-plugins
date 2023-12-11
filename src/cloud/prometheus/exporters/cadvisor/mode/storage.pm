@@ -239,19 +239,19 @@ Check containers storages usage.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--device>
 
-Filter on a specific device (Must be a PromQL filter, Default: 'device=~".*"')
+Filter on a specific device (must be a PromQL filter, Default: 'device=~".*"')
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

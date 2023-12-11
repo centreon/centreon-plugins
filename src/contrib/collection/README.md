@@ -3,7 +3,7 @@ Centreon developed a method to scrap monitoring indicators, and It’s called **
 
 This kind of mode is handy if you are in one of the following situations:
 * You can't find an existing plugin to monitor what you want or fulfill your particular need.
-* You need to gather data from a in-house, black box, or third-party application and transform it to be easier to analyze.
+* You need to gather data from a in-house, black box, or third party application and transform it to be easier to analyze.
 * Writing (or asking for) a dedicated plugin appears overkill because you simply want to monitor values and apply thresholds over them.
 
 You can find more information on [The Watch](https://thewatch.centreon.com/data-collection-6/centreon-plugins-discover-collection-modes-131), the Centreon User Community.

@@ -274,12 +274,12 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-volume-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded|warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded|warning/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-volume-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

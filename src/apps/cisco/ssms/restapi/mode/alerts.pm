@@ -180,7 +180,7 @@ Example: --filter-counters='minor'
 
 =item B<--account>
 
-Check account name (Required. Multiple option).
+Check account name (required. Multiple option).
 
 =item B<--filter-message-type>
 

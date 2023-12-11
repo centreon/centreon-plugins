@@ -174,7 +174,7 @@ Hostname to query.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 45).
+Timeout in seconds for the command (default: 45).
 
 =item B<--command>
 

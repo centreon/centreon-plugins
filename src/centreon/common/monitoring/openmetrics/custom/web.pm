@@ -151,15 +151,15 @@ Endpoint hostname.
 
 =item B<--port>
 
-Port used (Default: 80)
+Port used (default: 80)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--urlpath>
 
-URL to scrape metrics from (Default: '/metrics').
+URL to scrape metrics from (default: '/metrics').
 
 =item B<--username>
 
@@ -171,7 +171,7 @@ Endpoint password.
 
 =item B<--timeout>
 
-Set HTTP timeout (Default: 10).
+Set HTTP timeout (default: 10).
 
 =back
 

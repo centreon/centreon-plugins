@@ -149,11 +149,11 @@ Nginx server-status
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host
 
 =item B<--port>
 
-Port used by the webserver (Default: 80)
+Port used by the web server (default: 80)
 
 =item B<--proto>
 
@@ -161,7 +161,7 @@ Specify https if needed
 
 =item B<--endpoint>
 
-Set path to get server-status page (Default: '/nginx_status')
+Set path to get server-status page (default: '/nginx_status')
 
 =item B<--username>
 

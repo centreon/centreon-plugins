@@ -123,7 +123,7 @@ List links.
 
 =item B<--filter-edge-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =back
 

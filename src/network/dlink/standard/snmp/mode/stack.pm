@@ -244,17 +244,17 @@ Check stack.
 
 =item B<--unknown-member-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--warning-member-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /codeUpdate/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /codeUpdate/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--critical-member-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
 You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--unknown-link-status>
@@ -269,7 +269,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "down"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

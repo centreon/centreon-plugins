@@ -139,15 +139,15 @@ List SQL databases.
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--resource-group>
 
-Set SQL erver (Required).
+Set SQL erver (required).
 
 =item B<--filter-name>
 
-Filter resource name (Can be a regexp).
+Filter resource name (can be a regexp).
 
 =back
 

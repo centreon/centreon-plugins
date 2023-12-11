@@ -212,17 +212,17 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--filter-connection-id>
 
-Filter connection id (can be a regexp).
+Filter connection ID (can be a regexp).
 
 =item B<--filter-virtual-interface-id>
 
-Filter virtual interface id (can be a regexp).
+Filter virtual interface ID (can be a regexp).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'VirtualInterfaceBpsEgress', 'VirtualInterfaceBpsIngress', 
+Filter metrics (can be: 'VirtualInterfaceBpsEgress', 'VirtualInterfaceBpsIngress', 
 'VirtualInterfacePpsEgress', 'VirtualInterfacePpsIngress') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-status>
 

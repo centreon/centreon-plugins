@@ -141,11 +141,11 @@ Check containers load.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--warning-load>
 

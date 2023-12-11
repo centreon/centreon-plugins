@@ -140,12 +140,12 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Define the conditions to match for the status to be UNKNOWN  (Default: '%{replicationStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN  (default: '%{replicationStatus} =~ /unknown/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{replicationStatus} =~ /not_synchronized/i').
+Define the conditions to match for the status to be WARNING (default: '%{replicationStatus} =~ /not_synchronized/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
@@ -160,7 +160,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /disconnected/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /disconnected/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>

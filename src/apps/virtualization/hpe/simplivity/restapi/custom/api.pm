@@ -308,11 +308,11 @@ OmniStack API hostname.
 
 =item B<--port>
 
-OmniStack API port (Default: 443)
+OmniStack API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

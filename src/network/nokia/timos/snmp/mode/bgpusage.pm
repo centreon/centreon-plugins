@@ -207,7 +207,7 @@ You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /outOfService/')
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /outOfService/')
 You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-name>

@@ -140,7 +140,7 @@ Filter nets by name.
 
 =item B<--net-tag-name>
 
-Nets tag to be used for the name (Default: 'name').
+Nets tag to be used for the name (default: 'name').
 
 =item B<--unknown-net-status>
 

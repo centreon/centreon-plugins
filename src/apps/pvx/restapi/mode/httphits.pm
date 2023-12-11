@@ -156,17 +156,17 @@ Check http hits.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PVQL object, Default: 'host')
+Filter on a specific instance (must be a PVQL object, Default: 'host')
 
 (Object 'application' will be mapped with applications name)
 
 =item B<--filter>
 
-Add a PVQL filter (Example: --filter='host = "www.lo.ki"')
+Add a PVQL filter (example: --filter='host = "www.lo.ki"')
 
 =item B<--from>
 
-Add a PVQL from clause to filter on a specific layer (Default: 'http')
+Add a PVQL from clause to filter on a specific layer (default: 'http')
 
 =item B<--top>
 

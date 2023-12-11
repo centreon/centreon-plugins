@@ -159,7 +159,7 @@ Set the query.
 
 =item B<--field>
 
-Set the field to count unique values for (ex: json.host).
+Set the field to count unique values for (example: json.host).
 
 =item B<--filter-field>
 

@@ -529,15 +529,15 @@ Set Office 365 client secret.
 
 =item B<--login-endpoint>
 
-Set Office 365 login endpoint URL (Default: 'https://login.microsoftonline.com')
+Set Office 365 login endpoint URL (default: 'https://login.microsoftonline.com')
 
 =item B<--graph-endpoint>
 
-Set Office 365 graph endpoint URL (Default: 'https://graph.microsoft.com')
+Set Office 365 graph endpoint URL (default: 'https://graph.microsoft.com')
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

@@ -374,7 +374,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--filter-counters>
 
-Filter counters to be displayed (Can be: 'usage', 'count', 'inodes').
+Filter counters to be displayed (can be: 'usage', 'count', 'inodes').
 
 =item B<--disk-index>
 
@@ -396,7 +396,7 @@ Time in minutes before reloading cache file (default: 180).
 
 Modify the disk name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 
@@ -405,7 +405,7 @@ Display cache disk path datas.
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none) (results like 'df' command).
+The value is in percent of total (default: none) (results like 'df' command).
 
 =item B<--force-use-mib-percent>
 
@@ -417,7 +417,7 @@ Force to use 32 bits counters. Should be used when 64 bits high/low components a
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
+Thresholds (can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
 
 =back
 

@@ -411,15 +411,15 @@ Statistics Channels hostname.
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--url-path>
 
-Statistics Channel API Path (Default: '/').
+Statistics Channel API Path (default: '/').
 
 =item B<--timeout>
 

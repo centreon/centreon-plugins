@@ -164,7 +164,7 @@ Check EAS instance orm rpc status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkrpc.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkrpc.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

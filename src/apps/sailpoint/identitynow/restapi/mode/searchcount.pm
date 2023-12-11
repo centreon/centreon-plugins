@@ -102,7 +102,7 @@ object (see documentation).
 =item B<--output>
 
 Output to print after retrieving the count of results
-(Default: "Number of results: %{count}").
+(default: "Number of results: %{count}").
 
 =item B<--warning-results-count> B<--critical-results-count>
 

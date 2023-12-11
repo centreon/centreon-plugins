@@ -195,12 +195,12 @@ Filter wan name (can be a regexp).
 
 =item B<--warning-health-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /fail/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health_status} =~ /fail/').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-*>

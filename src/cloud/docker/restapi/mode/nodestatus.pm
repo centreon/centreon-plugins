@@ -139,12 +139,12 @@ Check node status.
 
 =item B<--warning-node-status>
 
-Define the conditions to match for the status to be WARNING (Default: -)
+Define the conditions to match for the status to be WARNING (default: -)
 You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
 You can use the following variables: %{display}, %{status}, %{manager_status}.
 
 =item B<--warning-*>

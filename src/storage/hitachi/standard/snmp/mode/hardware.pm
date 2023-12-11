@@ -77,7 +77,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'component', 'dkc', 'dku'.
 
 =item B<--filter>

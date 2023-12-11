@@ -223,7 +223,7 @@ Check memory usage.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--warning-*>
 
@@ -237,7 +237,7 @@ Can be: 'usage', 'buffer', 'cached'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--extra-filter>
 

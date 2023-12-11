@@ -132,7 +132,7 @@ Check status of alcatel hardware (AlcatelIND1Chassis.mib).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'other', 'unknown', 'chassis', 'backplane', 'container', 'psu', 'fan', 
 'sensor', 'module', 'port, 'stack'.
 Some not exists ;)

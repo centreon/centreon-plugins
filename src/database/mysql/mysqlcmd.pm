@@ -319,7 +319,7 @@ mysqlcmd class
 
 =item B<--mysql-cmd>
 
-mysql command (Default: '/usr/bin/mysql').
+mysql command (default: '/usr/bin/mysql').
 
 =item B<--host>
 

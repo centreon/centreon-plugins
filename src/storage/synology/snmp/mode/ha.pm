@@ -136,12 +136,12 @@ You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{a
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i').
+Define the conditions to match for the status to be WARNING (default: '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i').
 You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
 You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-*> B<--critical-*>

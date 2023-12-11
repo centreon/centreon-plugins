@@ -79,7 +79,7 @@ Check sensors (Fans, Temperatures, Voltages).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'disk', 'fan', 'global', 'memory', 'power', 'temperature', 'voltage'.
 
 =item B<--filter>

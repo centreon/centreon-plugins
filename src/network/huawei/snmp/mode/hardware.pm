@@ -152,7 +152,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan'.
 
 =item B<--filter>
@@ -162,7 +162,7 @@ You can also exclude items from specific instances: --filter=fan,1.0
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,1.0
 
 =item B<--no-component>
@@ -187,7 +187,7 @@ Example: --critical='fan,.*,45'
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (Default: 180).
+Time in seconds before reloading cache file (default: 180).
 Use '-1' to disable cache reload.
 
 =back

@@ -315,7 +315,7 @@ Password of vpshere/ESX connection (with --vsphere-address).
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50)
+Set global execution timeout (default: 50)
 
 =item B<--sampling-period>
 
@@ -332,17 +332,17 @@ Searchs are case insensitive.
 
 =item B<--unknown-connector-status>
 
-Set unknown threshold for connector status (Default: '%{code} < 0 || (%{code} > 0 && %{code} < 200)').
+Set unknown threshold for connector status (default: '%{code} < 0 || (%{code} > 0 && %{code} < 200)').
 You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =item B<--warning-connector-status>
 
-Set warning threshold for connector status (Default: '').
+Set warning threshold for connector status (default: '').
 You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =item B<--critical-connector-status>
 
-Set critical threshold for connector status (Default: '').
+Set critical threshold for connector status (default: '').
 You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =back

@@ -81,7 +81,7 @@ Look for legacy (prior to RouterOS 6.47) OIDs.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'current', 'fan', 'power', 'status', 'temperature', 'voltage'.
 
 =item B<--filter>

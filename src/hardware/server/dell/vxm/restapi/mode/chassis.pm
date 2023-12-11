@@ -166,7 +166,7 @@ Check chassis.
 
 =item B<--filter-chassis-sn>
 
-Filter clusters by serial number (Can be a regexp).
+Filter clusters by serial number (can be a regexp).
 
 =item B<--unknown-chassis-status>
 
@@ -175,12 +175,12 @@ You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--warning-chassis-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--critical-chassis-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--unknown-psu-status>
@@ -190,12 +190,12 @@ You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--warning-psu-status>
 
-Set warning threshold for power supply status (Default: '%{status} =~ /warning/i').
+Set warning threshold for power supply status (default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--critical-psu-status>
 
-Set critical threshold for power supply status (Default: '%{status} =~ /critical|error/i').
+Set critical threshold for power supply status (default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--warning-*> B<--critical-*>

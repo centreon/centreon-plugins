@@ -86,7 +86,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'domain', 'enclosure', 'module', 'moduleport', 'port', 'physicalserver', 'enet', 'fc', 'profile'.
 
 =item B<--filter>

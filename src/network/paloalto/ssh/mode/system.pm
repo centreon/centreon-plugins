@@ -257,12 +257,12 @@ Timezone options. Default is 'GMT'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{oper_mode}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{oper_mode} !~ /normal/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{oper_mode} !~ /normal/i').
 You can use the following variables: %{oper_mode}
 
 =item B<--warning-*> B<--critical-*>

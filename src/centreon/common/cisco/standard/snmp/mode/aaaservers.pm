@@ -313,7 +313,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /dead/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /dead/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

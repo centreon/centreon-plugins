@@ -158,17 +158,17 @@ Warning threshold.
 
 =item B<--critical-state>
 
-Critical threshold (Default: '%{state} !~ /STARTED/i').
+Critical threshold (default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-*>
 
 Warning threshold for apps count based 
-on state (Can be: 'started', 'stopped')
+on state (can be: 'started', 'stopped')
 
 =item B<--critical-*>
 
 Critical threshold for apps count based 
-on state (Can be: 'started', 'stopped').
+on state (can be: 'started', 'stopped').
 
 =back
 

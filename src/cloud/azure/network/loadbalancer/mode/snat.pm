@@ -119,13 +119,13 @@ Check Azure Network Load Balancers SNAT metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=snat --custommode=azcli
 --resource=<loadbalancer_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-snat-connection-count='800' --critical-snat-connection-count=='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/loadBalancers/<loadbalancer_id>'
@@ -137,16 +137,16 @@ Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
 Filter on specific metrics. The Azure format must be used, for example: 'sessions_percent'
-(Can be a regexp).
+(can be a regexp).
 
 =item B<---warning-*>
 

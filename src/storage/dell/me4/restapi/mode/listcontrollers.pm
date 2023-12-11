@@ -101,7 +101,7 @@ List controllers.
 
 =item B<--filter-name>
 
-Filter controller name (Can be a regexp).
+Filter controller name (can be a regexp).
 
 =back
 

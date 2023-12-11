@@ -275,15 +275,15 @@ Centreon address.
 
 =item B<--url-path>
 
-API url path (Default: '/centreon/api/')
+API url path (default: '/centreon/api/')
 
 =item B<--api-port>
 
-API port (Default: 80)
+API port (default: 80)
 
 =item B<--api-proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 

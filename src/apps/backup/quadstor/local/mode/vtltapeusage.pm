@@ -235,7 +235,7 @@ Command used: '/quadstorvtl/bin/vcconfig -l -v %(vtl-name)'
 
 =item B<--vtl-name>
 
-Set VTL name (Required).
+Set VTL name (required).
 
 =item B<--filter-name>
 
@@ -243,7 +243,7 @@ Filter tape name.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =item B<--free>
 
@@ -256,7 +256,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /active/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /active/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

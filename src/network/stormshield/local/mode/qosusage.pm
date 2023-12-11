@@ -271,7 +271,7 @@ File with speed configurations.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-*> B<--critical-*>
 

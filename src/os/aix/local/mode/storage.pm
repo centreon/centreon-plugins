@@ -181,7 +181,7 @@ Filter mountpoint (regexp can be used).
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
+The value is in percent of total (default: none).
 
 =item B<--warning-*> B<--critical-*>
 

@@ -161,19 +161,19 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the cluster name (Required) (can be defined multiple times).
+Set the cluster name (required) (can be defined multiple times).
 
 =item B<--node-id>
 
-Set the node id (Optional).
+Set the node ID (optional).
 
 =item B<--warning-cpuutilization-*>
 
-Thresholds warning (* can be: 'minimum', 'maximum', 'average', 'sum').
+Warning thresholds (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-cpuutilization-*>
 
-Thresholds critical (* can be: 'minimum', 'maximum', 'average', 'sum').
+Critical thresholds (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
 

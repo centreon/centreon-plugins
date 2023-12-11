@@ -108,7 +108,7 @@ Check hardware (fans, power supplies, temperatures, voltages).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'temperature', 'voltage', 'raiddisk'.
 
 =item B<--add-name-instance>

@@ -160,12 +160,12 @@ Check alerts.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} ne "closed" and %{severity} =~ /warning/i')
+Define the conditions to match for the status to be WARNING (default: '%{state} ne "closed" and %{severity} =~ /warning/i')
 You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "closed" and %{severity} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "closed" and %{severity} =~ /critical/i').
 You can use the following variables: %{code}, %{severity}, %{opened}, %{state}, %{component_name}
 
 =item B<--memory>

@@ -107,7 +107,7 @@ Set the query.
 
 =item B<--output-field>
 
-Set the field to verbose-output from the last matching event (ex: json.message).
+Set the field to verbose-output from the last matching event (example: json.message).
 
 =item B<--warning-*> B<--critical-*>
 

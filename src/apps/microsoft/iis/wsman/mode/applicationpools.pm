@@ -148,7 +148,7 @@ You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
+Define the conditions to match for the status to be CRITICAL (default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
 You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--warning-*> B<--critical-*>

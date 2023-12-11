@@ -174,17 +174,17 @@ Filter name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{state}, %{status}, %{lastOpError}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{status}, %{lastOpError}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} eq "enabled" and %{lastOpError} !~ /-|Success/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "enabled" and %{lastOpError} !~ /-|Success/i').
 You can use the following variables: %{state}, %{status}, %{lastOpError}, %{display}
 
 =back

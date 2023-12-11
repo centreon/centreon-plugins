@@ -120,11 +120,11 @@ Check passthrough bandwidth in both directions (STEELHEAD-MIB and STEELHEAD-EX-M
 
 =item B<--warning-traffic-*>
 
-Warning threshold (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
+Warning threshold (can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
 =item B<--critical-traffic-*>
 
-Critical threshold (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
+Critical threshold (can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
 =over 8
 

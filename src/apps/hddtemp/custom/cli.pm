@@ -210,7 +210,7 @@ Hostname to query (ssh mode).
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 45).
+Timeout in seconds for the command (default: 45).
 
 =item You can override command for drives listing.
 By default, we use 'lsblk -I 8 -d -o NAME -p -n':

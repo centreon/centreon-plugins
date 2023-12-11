@@ -268,15 +268,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/LicenseReportingApplication/rest/powerpath')
+API url path (default: '/LicenseReportingApplication/rest/powerpath')
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

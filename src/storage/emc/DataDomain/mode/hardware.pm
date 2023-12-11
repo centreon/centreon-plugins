@@ -125,7 +125,7 @@ Check components (Fans, Power Supplies, Temperatures, Disks, Nvram Batteries).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'disk', 'temperature', 'battery'.
 
 =item B<--filter>

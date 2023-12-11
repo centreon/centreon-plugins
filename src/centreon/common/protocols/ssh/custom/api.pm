@@ -154,7 +154,7 @@ SSH port.
 
 =item B<--timeout>  
 
-Timeout in seconds for connection (Defaults: 10 seconds)
+Timeout in seconds for connection (default: 10 seconds)
 
 =item B<--ssh-username>
 

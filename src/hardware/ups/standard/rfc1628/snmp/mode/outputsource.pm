@@ -93,17 +93,17 @@ Check output source status.
 
 =item B<--unknown-source-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /other/')
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /other/')
 You can use the following variables: %{status}
 
 =item B<--warning-source-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /bypass|battery|booster|reducer/')
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /bypass|battery|booster|reducer/')
 You can use the following variables: %{status}
 
 =item B<--critical-source-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /none/')
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /none/')
 You can use the following variables: %{status}
 
 =back

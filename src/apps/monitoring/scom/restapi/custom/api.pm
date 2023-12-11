@@ -237,35 +237,33 @@ Remote hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 80)
+Port used (default: 80).
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http').
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication.
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication.
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
 
 =item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
+Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Define the timeout in seconds (default: 10).
 
 =back
 

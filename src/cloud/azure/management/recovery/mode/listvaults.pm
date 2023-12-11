@@ -129,7 +129,7 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter vault name (Can be a regexp).
+Filter vault name (can be a regexp).
 
 =back
 

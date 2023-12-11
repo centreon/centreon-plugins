@@ -122,11 +122,11 @@ List daemonsets.
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".*"')
+Filter on a specific daemonset (must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--extra-filter>
 

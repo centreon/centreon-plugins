@@ -163,7 +163,7 @@ Only display some counters (regexp can be used).
 
 =item B<--timeframe>
 
-Set the timeframe to query in seconds (Default: 900)
+Set the timeframe to query in seconds (default: 900)
 
 =item B<--warning-*>
 

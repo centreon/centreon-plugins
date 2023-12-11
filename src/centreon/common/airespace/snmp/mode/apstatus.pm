@@ -319,7 +319,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-radio-status>
@@ -329,7 +329,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-radio-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>

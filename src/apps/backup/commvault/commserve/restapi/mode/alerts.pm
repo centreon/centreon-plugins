@@ -211,12 +211,12 @@ Filter alerts by type (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /warning/')
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /warning/')
 You can use the following variables: %{severity}, %{status}, %{type}, %{name}, %{since}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /critical/').
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical/').
 You can use the following variables: %{severity}, %{status}, %{type}, %{name}, %{since}
 
 =item B<--memory>

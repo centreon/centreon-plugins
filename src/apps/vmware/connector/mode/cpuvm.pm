@@ -232,17 +232,17 @@ Search in following host(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-*>

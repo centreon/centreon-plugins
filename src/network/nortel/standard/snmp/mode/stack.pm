@@ -222,18 +222,17 @@ You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--warning-unit-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--critical-unit-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
 You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--unit>
 
-Select the unit for detected threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the performance data and thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

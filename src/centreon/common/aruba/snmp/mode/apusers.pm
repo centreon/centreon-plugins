@@ -262,7 +262,7 @@ __END__
 
 =head1 MODE
 
-Check total users connected (Deprecated).
+Check total users connected (deprecated).
 
 =over 8
 

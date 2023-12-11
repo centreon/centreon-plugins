@@ -488,7 +488,7 @@ Default template for hardware. Should be extended.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'xxx', 'yyy'.
 
 =item B<--filter>
@@ -498,7 +498,7 @@ You can also exclude items from specific instances: --filter=xxxxx,instancevalue
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=xxxx,instancevalue
 
 =item B<--no-component>

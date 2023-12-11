@@ -135,7 +135,7 @@ Port used
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 3)
+Connection timeout in seconds (default: 3)
 
 =back
 

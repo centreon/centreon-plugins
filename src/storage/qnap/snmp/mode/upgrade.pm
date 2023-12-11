@@ -98,7 +98,7 @@ Check upgrade status (only works with QTS OS).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default : '%{upgrade} eq "available"').
+Define the conditions to match for the status to be WARNING (default : '%{upgrade} eq "available"').
 You can use the following variables: %{model}, %{version}, %{upgrade}
 
 =item B<--critical-status>

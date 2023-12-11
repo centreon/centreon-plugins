@@ -195,11 +195,11 @@ Check status of the read and write cache.
 
 =item B<--cache-command>
 
-Set cache command (Default: 'getcache').
+Set cache command (default: 'getcache').
 
 =item B<--cache-options>
 
-Set option for cache command (Default: '-pdp -state -mirror').
+Set option for cache command (default: '-pdp -state -mirror').
 
 =item B<--warning>
 

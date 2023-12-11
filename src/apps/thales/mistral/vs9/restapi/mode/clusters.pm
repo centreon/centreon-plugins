@@ -295,12 +295,12 @@ You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwi
 
 =item B<--warning-cluster-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
+Define the conditions to match for the status to be WARNING (default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
 You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--critical-cluster-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
 You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--unknown-member-status>

@@ -80,7 +80,7 @@ Check hardware (RUGGEDCOM-SYS-INFO-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan'.
 
 =item B<--filter>
@@ -90,7 +90,7 @@ You can also exclude items from specific instances: --filter=psu,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,1
 
 =item B<--no-component>

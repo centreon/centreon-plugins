@@ -137,15 +137,15 @@ List replicated items.
 
 =item B<--vault-name>
 
-Set vault name (Mandatory).
+Set vault name (mandatory).
 
 =item B<--resource-group>
 
-Set resource group (Mandatory).
+Set resource group (mandatory).
 
 =item B<--filter-name>
 
-Filter on item name (Can be a regexp).
+Filter on item name (can be a regexp).
 
 =back
 

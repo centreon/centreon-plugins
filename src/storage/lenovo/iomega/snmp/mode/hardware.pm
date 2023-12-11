@@ -81,7 +81,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'raid', 'disk', 'voltage', 'temperature', 'fan'.
 
 =item B<--filter>

@@ -421,7 +421,7 @@ Check SAP QoS usage.
 
 =item B<--display-name>
 
-Display name (Default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
+Display name (default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
 Can also be: %{SapDescription}, %{SapPortId}
 
 =item B<--filter-name>
@@ -446,7 +446,7 @@ Set interface speed for total outgoing traffic (in Mb).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
@@ -455,7 +455,7 @@ You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for ib status (Default: '%{admin} =~ /up/i and %{status} !~ /up/i').
+Set critical threshold for ib status (default: '%{admin} =~ /up/i and %{status} !~ /up/i').
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>

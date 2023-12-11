@@ -273,7 +273,7 @@ perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 
 Comma separated sequence of statuses from which the mode should pick is
 return code from.
-(Example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
+(example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
 (Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown, up, down).
 
 =item B<--host>
@@ -290,13 +290,13 @@ Number of metrics to generate.
 
 =item B<--metrics-name>
 
-Name of the metrics (Default: 'metrics.number').
+Name of the metrics (default: 'metrics.number').
 
 Metrics are suffixed by a number between 1 and metrics count.
 
 =item B<--metrics-values-range>
 
-Range of values from which metrics values can be picked (Default: '0:100').
+Range of values from which metrics values can be picked (default: '0:100').
 
 =item B<--show-sequence>
 

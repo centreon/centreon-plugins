@@ -120,7 +120,7 @@ Check number of calls and participants.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='calls')
+(example: --filter-counters='calls')
 
 =item B<--warning-*>
 

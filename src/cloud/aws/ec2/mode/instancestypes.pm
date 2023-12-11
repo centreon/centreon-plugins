@@ -219,7 +219,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html' fo
 =item B<--filter-family>
 
 Filter by instance family (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
+(can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
 
 =item B<--filter-type>
 

@@ -111,13 +111,13 @@ Check Azure SQL Managed Instance storage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=storage --custommode=api
 --resource=<managedInstances_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-used='80'' --critical-used='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=storage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/managedInstances/<managedInstances_id>'
@@ -129,11 +129,11 @@ Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

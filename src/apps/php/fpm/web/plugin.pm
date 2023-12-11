@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check php-fpm module through the webpage.
+Check php-fpm module through the web page.
 
 =cut

@@ -224,12 +224,12 @@ Filter service set name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/).
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /warning/).
 You can use the following variables: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /critical/').
 You can use the following variables: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--warning-*>
@@ -244,7 +244,7 @@ Can be: 'usage', 'dedup'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

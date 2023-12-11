@@ -121,12 +121,12 @@ Check Memory usage on Azure Kubernetes Cluster.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=memory --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-memory-percent='90' --critical-memory-percent='95'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=storage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
@@ -136,11 +136,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=stor
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-memory-usage>
 

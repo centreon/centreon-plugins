@@ -215,13 +215,13 @@ Filter on one or several SiteLinks (POSIX regexp)
 
 =item B<--warning-sitelink-status>
 
-Custom Warning threshold of the SiteLink state (Default: none)
+Custom Warning threshold of the SiteLink state (default: none)
 Syntax: --warning-sitelink-status='%{sitelink_status} =~ /disabled/i'
 
 =item B<--critical-sitelink-status>
 
 Custom Critical threshold of the SiteLink state
-(Default: '%{sitelink_status} =~ /failed/i' )
+(default: '%{sitelink_status} =~ /failed/i' )
 Syntax: --critical-sitelink-status='%{sitelink_status} =~ /failed/i'
 
 =item B<--warning-* --critical-*>

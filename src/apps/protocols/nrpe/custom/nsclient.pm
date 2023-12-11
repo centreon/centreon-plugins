@@ -266,19 +266,19 @@ Remote hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 8443)
+Port used (default: 8443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 
-Specify username for authentication (If basic authentication)
+Specify the username for authentication (if basic authentication)
 
 =item B<--password>
 
-Specify password for authentication (If basic authentication)
+Specify the password for authentication (if basic authentication)
 
 =item B<--legacy-password>
 
@@ -290,12 +290,12 @@ Use new RestAPI (> 5.2.33).
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--unknown-status>
 
 Warning threshold for http response code.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+(default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 

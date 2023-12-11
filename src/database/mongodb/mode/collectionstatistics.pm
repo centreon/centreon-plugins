@@ -224,11 +224,11 @@ Check collections statistics per databases
 
 =item B<--filter-database>
 
-Filter databases by name (Can use regexp).
+Filter databases by name (can use regexp).
 
 =item B<--filter-shard>
 
-Filter shards by name (Can use regexp).
+Filter shards by name (can use regexp).
 
 =item B<--add-shards>
 

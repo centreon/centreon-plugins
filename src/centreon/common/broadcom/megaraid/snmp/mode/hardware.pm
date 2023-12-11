@@ -99,7 +99,7 @@ Check hardware (LSI-MegaRAID-SAS-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'alarm', 'fan', 'sim', 'slot', 'psu',
 'temperature', 'pdrive', 'vdrive'.
 
@@ -110,7 +110,7 @@ You can also exclude items from specific instances: --filter=fan,3
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,1
 
 =item B<--no-component>

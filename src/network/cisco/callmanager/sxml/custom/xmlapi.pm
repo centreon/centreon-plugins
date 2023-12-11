@@ -304,11 +304,11 @@ API hostname.
 
 =item B<--port>
 
-API port (Default: 8443)
+API port (default: 8443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

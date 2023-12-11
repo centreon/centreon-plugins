@@ -272,15 +272,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/centreon-studio/api/beta')
+API url path (default: '/centreon-studio/api/beta')
 
 =item B<--port>
 
-API port (Default: 8080)
+API port (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -296,7 +296,7 @@ Set HTTP timeout
 
 =item B<--client-version>
 
-Set the client version (Default: '21.04.0')
+Set the client version (default: '21.04.0')
 
 =back
 

@@ -154,7 +154,7 @@ Define the conditions to match for the status to be WARNING.
 =item B<--critical-*>
 
 Can be ('group','node')
-Define the conditions to match for the status to be CRITICAL. (Default: --critical-node '%{state} !~ /up|clean/' --critical-group '%{state} !~ /started|starting/')
+Define the conditions to match for the status to be CRITICAL. (default: --critical-node '%{state} !~ /up|clean/' --critical-group '%{state} !~ /started|starting/')
 
 =back
 

@@ -207,17 +207,17 @@ Filter pool name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /ok_but|degraded|minor/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /ok_but|degraded|minor/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /major|critical|non_recoverable/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /major|critical|non_recoverable/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
