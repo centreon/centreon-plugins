@@ -23,15 +23,15 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         warningmodulescellradiodetected=
 ...                         criticalmodulescellradiodetected=
 ...                         warningmodulecellradiorsrp=
-...                         criticalodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
 ...                         warningmodulecellradiorsrq=
-...                         criticalodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
 ...                         warningmodulecellradiorscp=
-...                         criticalodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
 ...                         warningmodulecellradiocsq=
-...                         criticalodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
 ...                         warningmodulecellradiosnr=
-...                         criticalodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
 ...                         result=CRITICAL: cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
 
 # Test cellsradio mode with filter-cell-id option set to a fake value
@@ -45,15 +45,15 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         warningmodulescellradiodetected=
 ...                         criticalmodulescellradiodetected=
 ...                         warningmodulecellradiorsrp=
-...                         criticalodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
 ...                         warningmodulecellradiorsrq=
-...                         criticalodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
 ...                         warningmodulecellradiorscp=
-...                         criticalodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
 ...                         warningmodulecellradiocsq=
-...                         criticalodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
 ...                         warningmodulecellradiosnr=
-...                         criticalodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
 ...                         result=UNKNOWN: No Cell ID found matching with filter : toto
 
 # Test cellsradio mode with filter-cell-id option set to a imei value
@@ -67,15 +67,15 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         warningmodulescellradiodetected=
 ...                         criticalmodulescellradiodetected=
 ...                         warningmodulecellradiorsrp=
-...                         criticalodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
 ...                         warningmodulecellradiorsrq=
-...                         criticalodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
 ...                         warningmodulecellradiorscp=
-...                         criticalodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
 ...                         warningmodulecellradiocsq=
-...                         criticalodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
 ...                         warningmodulecellradiosnr=
-...                         criticalodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
 ...                         result=CRITICAL: cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
 
 # Test cellsradio mode with filter-cell-id option set to a simId value
@@ -89,23 +89,68 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         warningmodulescellradiodetected=
 ...                         criticalmodulescellradiodetected=
 ...                         warningmodulecellradiorsrp=
-...                         criticalodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
 ...                         warningmodulecellradiorsrq=
-...                         criticalodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
 ...                         warningmodulecellradiorscp=
-...                         criticalodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
 ...                         warningmodulecellradiocsq=
-...                         criticalodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
 ...                         warningmodulecellradiosnr=
-...                         criticalodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
 ...                         result=WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=2;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
+
+# Test cellsradio mode with warning-modules-cellradio-detected option set to a 2
+&{teldat_cellsradio_test5}
+...                         snmpcommunity=network-teldat-snmp
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=2
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
+...                         warningmodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
+...                         result=CRITICAL: cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: Number of cellular radio modules detected: 3 - cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;0:2;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
+
+# Test cellsradio mode with critical-modules-cellradio-detected option set to a 2
+&{teldat_cellsradio_test5}
+...                         snmpcommunity=network-teldat-snmp
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=2
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
+...                         warningmodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
+...                         result=CRITICAL: Number of cellular radio modules detected: 3 - cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;0:2;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
 
 @{teldat_cellsradio_tests}
 ...                         &{teldat_cellsradio_test1}
 ...                         &{teldat_cellsradio_test2}
 ...                         &{teldat_cellsradio_test3}
 ...                         &{teldat_cellsradio_test4}
-
+...                         &{teldat_cellsradio_test5}
+...                         &{teldat_cellsradio_test6}
 
 *** Test Cases ***
 Network Teldat SNMP cells radio
@@ -138,6 +183,14 @@ Network Teldat SNMP cells radio
         ${length}    Get Length    ${teldat_cellsradio_test.criticalstatus}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-status=${teldat_cellsradio_test.criticalstatus}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.warningmodulescellradiodetected}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-modules-cellradio-detected=${teldat_cellsradio_test.warningmodulescellradiodetected}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulescellradiodetected}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-modules-cellradio-detected=${teldat_cellsradio_test.criticalmodulescellradiodetected}
         END
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
