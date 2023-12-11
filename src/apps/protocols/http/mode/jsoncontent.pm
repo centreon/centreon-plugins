@@ -567,7 +567,7 @@ Warning conditions for http response code.
 
 =item B<--critical-status>
 
-Critical conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
+Critical conditions for http response code.
 
 =back
 
