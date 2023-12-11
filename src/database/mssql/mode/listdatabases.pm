@@ -118,7 +118,7 @@ List MSSQL databases
 
 =item B<--filter-database>
 
-Filter database by name (can be a regex).
+Filter the databases to monitor with a regular expression.
 
 =back
 
