@@ -264,7 +264,7 @@ Ask to the connector that an empty response is ok.
 
 =item B<--unit>
 
-Select the time unit for thresholds. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning>
 
