@@ -188,7 +188,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         criticalmodulecellradiosnr=
 ...                         result=CRITICAL: cellular radio module '359072066403821'rsrp: -114 dBm - cellular radio module '359072066403821'rsrp: -114 dBm - cellular radio module '359072066403821'sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: ] WARNING: cellular radio module '359072066403821'sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] [cellular active SIM ID: 89330122115801091660] - cellular radio module '359072066403821'sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] [cellular active SIM ID: 89330122115801091660] | 'modules.cellradio.detected.count'=3;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;0:-100;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0; 'module.cellradio.rsrp.dbm'=-114dBm;;0:-100;0; 'module.cellradio.rsrq.dbm'=-18dBm;;;0; 'module.cellradio.snr.db'=-1dBm;;;0; 'module.cellradio.rscp.dbm'=0dBm;;;0; 'module.cellradio.csq.dbm'=-73dBm;;;0;
 
-# Test cellsradio mode with warning-module-cellradio-rsrq option set to a -100
+# Test cellsradio mode with warning-module-cellradio-rsrq option set to a -10
 &{teldat_cellsradio_test9}
 ...                         snmpcommunity=network-teldat-snmp
 ...                         filtercellid=
