@@ -359,7 +359,7 @@ Time period to get tasks execution informations (in seconds. Default: 86400).
 
 =item B<--unit>
 
-Select the time unit for the last execution time thresholds. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is secondss.
+Select the time unit for the last execution time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is secondss.
 
 =item B<--unknown-execution-status>
 
