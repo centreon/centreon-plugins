@@ -480,7 +480,7 @@ Unknown conditions for http response code (default: '%{http_code} < 200 or %{htt
 
 =item B<--warning-status>
 
-Warning conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
+Warning conditions for http response code.
 
 =item B<--critical-status>
 
