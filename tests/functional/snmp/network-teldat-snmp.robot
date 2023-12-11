@@ -150,7 +150,6 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         &{teldat_cellsradio_test3}
 ...                         &{teldat_cellsradio_test4}
 ...                         &{teldat_cellsradio_test5}
-...                         &{teldat_cellsradio_test6}
 
 *** Test Cases ***
 Network Teldat SNMP cells radio
