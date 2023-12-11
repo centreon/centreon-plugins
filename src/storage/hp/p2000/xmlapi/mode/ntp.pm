@@ -203,7 +203,7 @@ Set timezone for ntp contact time (default is 'UTC').
 
 =item B<--unit>
 
-Select the time unit for the performance data and thresholds. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the performance data and thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 
