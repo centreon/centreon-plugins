@@ -31,12 +31,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'warning:s'           => { name => 'warning', },
-        'critical:s'          => { name => 'critical', },
-        'filter-event-id:s'   => { name => 'filter_event_id'  },
-        'filter-message:s'    => { name => 'filter_message' },
-        'retention:s'         => { name => 'retention' }
+    $options{options}->add_options(arguments => {
+        'warning:s'         => { name => 'warning', },
+        'critical:s'        => { name => 'critical', },
+        'filter-event-id:s' => { name => 'filter_event_id' },
+        'filter-message:s'  => { name => 'filter_message' },
+        'retention:s'       => { name => 'retention' }
     });
 
     return $self;
@@ -85,16 +85,16 @@ sub run {
             next;
         }
 
-    my @array = ( $event->{last_timestamp} =~ m/../g ); # format expected is YYMMDDHHMMSS
-    my $date = DateTime->new(
-	    "year"      => "20" . $array[0], # DateTime expect 4 digit year, as this is log the chance of decade old data is slim.
-	    "month"     => $array[1],
-        "day"       => $array[2],
-        "hour"      => $array[3],
-        "minute"    => $array[4],
-        "second"    => $array[5],
+        my @array = ($event->{last_timestamp} =~ m/../g); # format expected is YYMMDDHHMMSS
+        my $date = DateTime->new(
+            "year"   => "20" . $array[0], # DateTime expect 4 digit year, as this is log the chance of decade old data is slim.
+            "month"  => $array[1],
+            "day"    => $array[2],
+            "hour"   => $array[3],
+            "minute" => $array[4],
+            "second" => $array[5],
 
-);
+        );
 
         $self->{output}->output_add(
             long_msg => sprintf(
@@ -109,16 +109,16 @@ sub run {
     $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
     my $exit = $self->{perfdata}->threshold_check(value => $num_errors, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(
-        severity => $exit,
+        severity  => $exit,
         short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
     );
 
     $self->{output}->perfdata_add(
-        nlabel => 'eventlogs.problems.count',
-        value => $num_errors,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        nlabel   => 'eventlogs.problems.count',
+        value    => $num_errors,
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-        min => 0
+        min      => 0
     );
 
     $self->{output}->display();
