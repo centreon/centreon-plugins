@@ -46,10 +46,26 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
+    # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
+    my ($stdout_version) = $options{custom}->execute_command(
         command => 'systemctl',
-        command_options => '-a --no-pager --no-legend --plain'
+        command_options => '--version'
     );
+
+    $stdout_version =~ /^systemd\s(\d+)\s/;
+    my $systemctl_version=$1;
+
+    my ($stdout) = $options{custom}->execute_command(
+            command         => 'systemctl',
+            command_options => '-a --no-pager --no-legend --plain'
+    );
+
+    if($systemctl_version >= 248){
+        my ($stdout) = $options{custom}->execute_command(
+            command         => 'systemctl',
+            command_options => '-a --no-pager --legend=false --plain'
+        );
+    }
 
     my $results = {};
 
@@ -117,6 +133,7 @@ __END__
 List systemd services.
 
 Command used: systemctl -a --no-pager --no-legend --plain
+Command change for systemctl version > 248 : --no-legend is convert in legend=false
 
 =over 8
 

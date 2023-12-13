@@ -115,10 +115,26 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
+    # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
+    my ($stdout_version) = $options{custom}->execute_command(
         command => 'systemctl',
-        command_options => '-a --no-pager --no-legend --plain'
+        command_options => '--version'
     );
+
+    $stdout_version =~ /^systemd\s(\d+)\s/;
+    my $systemctl_version=$1;
+
+    my ($stdout) = $options{custom}->execute_command(
+            command         => 'systemctl',
+            command_options => '-a --no-pager --no-legend --plain'
+    );
+
+    if($systemctl_version >= 248){
+        my ($stdout) = $options{custom}->execute_command(
+            command         => 'systemctl',
+            command_options => '-a --no-pager --legend=false --plain'
+        );
+    }
 
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
     $self->{sc} = {};
@@ -147,6 +163,13 @@ sub manage_selection {
         command => 'systemctl',
         command_options => 'list-unit-files --no-pager --no-legend --plain'
     );
+
+    if($systemctl_version >= 248){
+        my ($stdout) = $options{custom}->execute_command(
+            command         => 'systemctl',
+            command_options => 'list-unit-files --no-pager --legend=false --plain'
+        );
+    }
     # vendor preset is a new column
     #UNIT FILE                 STATE           VENDOR PRESET
     #runlevel4.target          enabled 
@@ -169,6 +192,7 @@ __END__
 Check systemd services status.
 
 Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-files --no-pager --no-legend'
+Command change for systemctl version > 248 : --no-legend is convert in legend=false
 
 =over 8
 
