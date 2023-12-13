@@ -53,7 +53,7 @@ sub manage_selection {
 
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
     my ($stdout_version) = $options{custom}->execute_command(
-        command => 'systemctl',
+        command         => 'systemctl',
         command_options => '--version'
     );
     $stdout_version =~ /^systemd\s(\d+)\s/;
