@@ -193,22 +193,25 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{containers} = {};
+
     my ($stdout) = $options{custom}->execute_command(
         command => 'docker stats',
         command_options => '-a --no-stream'
     );
 
-    $self->{containers} = {};
-    my @lines = split(/\n/, $stdout);
-    # Header not needed
     # CONTAINER ID   NAME                 CPU %     MEM USAGE / LIMIT    MEM %     NET I/O           BLOCK I/O         PIDS
     # fe954c63d9ba   portainer            4.82%     72.14MiB / 7.79GiB   0.90%     387MB / 261MB     4.1kB / 0B        11
 
-    shift(@lines);
-    foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(\S+)\s{3,}(\S+)\s\/\s(\S+)\s{3,}\S+\s{3,}(\S+)\s\/\s(\S+)\s{3,}(\S+)\s\/\s(\S+).*$/);
+    my @lines = split(/\n/, $stdout);
+    shift(@lines); # Header not needed
 
-        my ($id, $name, $cpu, $mem_usage, $mem_limit, $net_in, $net_out, $block_in, $block_out) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    foreach my $line (@lines) {
+        next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(\S+)\s{3,}(\S+)\s\/\s(\S+)\s{3,}\S+\s{3,}(\S+)\s\/\s(\S+)\s{3,}(\S+)\s\/\s(\S+)\s{3,}(\S+)$/);
+
+        my ($id, $name, $cpu, $mem_usage, $mem_limit, $net_in, $net_out, $block_in, $block_out, $pid) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+
+        next if ($pid == 0);
 
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/);
@@ -250,6 +253,8 @@ Command used: docker stats -a --no-stream
 
 Because values are scaled, statistics are not very
 precise (except for CPU).
+
+Containers with PID equal to 0 are ignored.
 
 =over 8
 
