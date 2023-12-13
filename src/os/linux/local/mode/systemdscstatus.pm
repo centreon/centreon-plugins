@@ -116,8 +116,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my ($stdout) = $options{custom}->execute_command(
-            command         => 'systemctl',
-            command_options => '-a --no-pager --no-legend --plain'
+        command         => 'systemctl',
+        command_options => '-a --no-pager --no-legend --plain'
     );
 
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
@@ -129,7 +129,7 @@ sub manage_selection {
     my $systemctl_version=$1;
 
     if($systemctl_version >= 248){
-        my ($stdout) = $options{custom}->execute_command(
+        ($stdout) = $options{custom}->execute_command(
             command         => 'systemctl',
             command_options => '-a --no-pager --legend=false --plain'
         );
@@ -164,7 +164,7 @@ sub manage_selection {
     );
 
     if($systemctl_version >= 248){
-        my ($stdout) = $options{custom}->execute_command(
+        ($stdout) = $options{custom}->execute_command(
             command         => 'systemctl',
             command_options => 'list-unit-files --no-pager --legend=false --plain'
         );

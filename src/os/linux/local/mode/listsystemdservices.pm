@@ -60,7 +60,7 @@ sub manage_selection {
     my $systemctl_version=$1;
 
     if($systemctl_version >= 248){
-        my ($stdout) = $options{custom}->execute_command(
+        ($stdout) = $options{custom}->execute_command(
             command         => 'systemctl',
             command_options => '-a --no-pager --legend=false --plain'
         );
