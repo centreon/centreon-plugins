@@ -132,7 +132,7 @@ __END__
 List systemd services.
 
 Command used: systemctl -a --no-pager --no-legend --plain
-Command change for systemctl version > 248 : --no-legend is convert in legend=false
+Command change for systemctl version >= 248 : --no-legend is convert in legend=false
 
 =over 8
 

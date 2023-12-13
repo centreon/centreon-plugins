@@ -191,7 +191,7 @@ __END__
 Check systemd services status.
 
 Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-files --no-pager --no-legend'
-Command change for systemctl version > 248 : --no-legend is convert in legend=false
+Command change for systemctl version >= 248 : --no-legend is convert in legend=false
 
 =over 8
 
