@@ -52,7 +52,6 @@ jobs:
             arch: arm64
             version: 2.7.2
 
-
     runs-on: ${{ matrix.runner }}
 
     container:
@@ -124,7 +123,7 @@ jobs:
               PERL_VENDORARCH="/usr/local/lib64/perl5/5.32"
             fi
           fi
-          
+
           NAME="libwsman1"
           sed -i "s/@NAME@/$NAME/g" dependencies/perl-openwsman/libwsman.yaml
           sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/libwsman.yaml
