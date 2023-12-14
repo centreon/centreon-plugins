@@ -124,8 +124,6 @@ jobs:
             fi
           fi
 
-          NAME="libwsman1"
-          sed -i "s/@NAME@/$NAME/g" dependencies/perl-openwsman/libwsman.yaml
           sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/libwsman.yaml
 
           sed -i "s/@NAME@/$NAME_PERL/g" dependencies/perl-openwsman/perl-openwsman.yaml

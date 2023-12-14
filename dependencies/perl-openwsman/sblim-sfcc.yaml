@@ -1,4 +1,4 @@
-name: "@NAME@"
+name: "sblim-sfcc"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"

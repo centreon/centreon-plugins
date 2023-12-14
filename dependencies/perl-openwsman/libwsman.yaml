@@ -1,4 +1,4 @@
-name: "@NAME@"
+name: "libwsman1"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
