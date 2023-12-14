@@ -139,7 +139,7 @@ jobs:
         shell: bash
 
       - name: Package sblim-sfcc
-        if: ${{ matrix.distrib == = 'bullseye' }}
+        if: ${{ matrix.distrib == 'bullseye' }}
         uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "dependencies/perl-openwsman/sblim-sfcc.yaml"
@@ -287,7 +287,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Promote sblim-sfcc ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        if: ${{ matrix.distrib == = 'bullseye' }}
+        if: ${{ matrix.distrib == 'bullseye' }}
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
