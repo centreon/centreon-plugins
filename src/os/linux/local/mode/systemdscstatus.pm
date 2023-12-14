@@ -115,11 +115,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
-        command         => 'systemctl',
-        command_options => '-a --no-pager --no-legend --plain'
-    );
-
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
     my ($stdout_version) = $options{custom}->execute_command(
         command         => 'systemctl',
@@ -127,13 +122,17 @@ sub manage_selection {
     );
     $stdout_version =~ /^systemd\s(\d+)\s/;
     my $systemctl_version=$1;
+    my $command_options = '-a --no-pager --plain';
 
     if($systemctl_version >= 248){
-        ($stdout) = $options{custom}->execute_command(
-            command         => 'systemctl',
-            command_options => '-a --no-pager --legend=false --plain'
-        );
+        $command_options .= ' --legend=false';
+    } else {
+        $command_options .= ' --no-legend';
     }
+    my ($stdout)  = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => $command_options
+    );
 
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
     $self->{sc} = {};
@@ -158,17 +157,18 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    ($stdout) = $options{custom}->execute_command(
-        command         => 'systemctl',
-        command_options => 'list-unit-files --no-pager --no-legend --plain'
-    );
+    my $command_options = 'list-unit-files --no-pager --plain';
 
     if($systemctl_version >= 248){
-        ($stdout) = $options{custom}->execute_command(
-            command         => 'systemctl',
-            command_options => 'list-unit-files --no-pager --legend=false --plain'
-        );
+        $command_options .= ' --legend=false';
+    } else {
+        $command_options .= ' --no-legend';
     }
+    my ($stdout)  = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => $command_options
+    );
+
     # vendor preset is a new column
     #UNIT FILE                 STATE           VENDOR PRESET
     #runlevel4.target          enabled 

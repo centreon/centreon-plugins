@@ -46,11 +46,6 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
-            command         => 'systemctl',
-            command_options => '-a --no-pager --no-legend --plain'
-    );
-
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
     my ($stdout_version) = $options{custom}->execute_command(
         command         => 'systemctl',
@@ -58,13 +53,17 @@ sub manage_selection {
     );
     $stdout_version =~ /^systemd\s(\d+)\s/;
     my $systemctl_version=$1;
+    my $command_options = '-a --no-pager --plain';
 
     if($systemctl_version >= 248){
-        ($stdout) = $options{custom}->execute_command(
-            command         => 'systemctl',
-            command_options => '-a --no-pager --legend=false --plain'
-        );
+        $command_options .= ' --legend=false';
+    } else {
+        $command_options .= ' --no-legend';
     }
+    my ($stdout)  = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => $command_options
+    );
 
     my $results = {};
 
