@@ -1,0 +1,50 @@
+name: "@NAME@"
+arch: "${ARCH}"
+platform: "linux"
+version_schema: "none"
+version: "@VERSION@"
+release: "1${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  OpenWSMAN is an implementation of the WS-Management protocol stack.
+  Web Services for Management (WS-MAN) is a specification for managing
+  computer systems using web services standards.
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://www.centreon.com"
+license: "Apache-2.0"
+
+contents:
+  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman.so.*"
+    dst: "/usr/lib64/"
+    file_info:
+      mode: 0644
+  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman_client.so.*"
+    dst: "/usr/lib64/"
+    file_info:
+      mode: 0644
+  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman_curl_client_transport.so.*"
+    dst: "/usr/lib64/"
+    file_info:
+      mode: 0644
+
+overrides:
+  rpm:
+    depends:
+      - sblim-sfcc
+    provides:
+      - libwsman1
+  deb:
+    depends:
+      - sblim-sfcc
+    provides:
+      - libwsman1
+
+rpm:
+  summary: Perl interface for openwsman
+  compression: zstd
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}
