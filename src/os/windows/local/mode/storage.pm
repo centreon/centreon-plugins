@@ -230,18 +230,15 @@ sub manage_selection {
     $self->{storage} = {};
 
     foreach (@$decoded) {
-        my $name = $_->{name};
-        $name = $1 if ($name =~ /([A-Z]:)\\$/);
-
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-           $name !~ /$self->{option_results}->{filter_name}/);
+           $_->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_description}) && $self->{option_results}->{filter_description} ne '' &&
             $_->{desc} !~ /$self->{option_results}->{filter_description}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $storage_types{$_->{type}} !~ /$self->{option_results}->{filter_type}/);
 
-        $self->{storage}->{$name} = {
-            display => $name,
+        $self->{storage}->{$_->{name}} = {
+            display => $_->{name},
             size => $_->{size},
             free => $_->{freespace},
         };

@@ -46,13 +46,16 @@ Try {
 
     Foreach ($disk in $disks) {
         $item = @{
-            name = $disk.Name;
+            name = $disk.DriveLetter;
             desc = $disk.Label;
             type = $disk.DriveType;
             size = $null;
             freespace = $null;
         }
 
+        if ($disk.DriveLetter -eq $null) {
+            $item.name = $disk.Name
+        }
         if ($disk.Capacity -ne $null) {
             $item.size = $disk.Capacity.toString()
         }
