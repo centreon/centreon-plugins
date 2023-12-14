@@ -41,21 +41,20 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $disks = Get-CimInstance Win32_LogicalDisk
+    $disks = Get-CimInstance Win32_Volume
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
     Foreach ($disk in $disks) {
         $item = @{
-            name = $disk.DeviceID;
+            name = $disk.Name;
+            desc = $disk.Label;
             type = $disk.DriveType;
-            providername = $disk.ProviderName;
-            desc = $disk.VolumeName;
             size = $null;
             freespace = $null;
         }
 
-        if ($disk.Size -ne $null) {
-            $item.size = $disk.Size.toString()
+        if ($disk.Capacity -ne $null) {
+            $item.size = $disk.Capacity.toString()
         }
         if ($disk.FreeSpace -ne $null) {
             $item.freespace = $disk.FreeSpace.toString()
@@ -82,6 +81,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to list Windows Disks.
+Method to list Windows disks (including mount points).
 
 =cut
