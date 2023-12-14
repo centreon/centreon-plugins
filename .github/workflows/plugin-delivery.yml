@@ -47,6 +47,7 @@ jobs:
           token_download_centreon_com: ${{ secrets.token_download_centreon_com }}
 
   deliver-rpm:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -67,7 +68,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-rpm-legacy:
-    if: ${{ inputs.stability == 'stable' }}
+    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -90,6 +91,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -110,7 +112,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb-legacy:
-    if: ${{ inputs.stability == 'stable' }}
+    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
