@@ -110,6 +110,7 @@ jobs:
         run: |
           if [ "${{ matrix.distrib }}" = "bullseye" ]; then
             NAME_PERL="libopenwsman-perl"
+            USRLIB="/usr/lib/"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
             else
@@ -117,6 +118,7 @@ jobs:
             fi
           else
             NAME_PERL="openwsman-perl"
+            USRLIB="/usr/lib64/"
             if [ "${{ matrix.distrib }}" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
@@ -125,6 +127,7 @@ jobs:
           fi
 
           sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/libwsman.yaml
+          sed -i "s#@USRLIB@#$USRLIB#g" dependencies/perl-openwsman/libwsman.yaml
 
           sed -i "s/@NAME@/$NAME_PERL/g" dependencies/perl-openwsman/perl-openwsman.yaml
           sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/perl-openwsman.yaml
