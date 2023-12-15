@@ -225,7 +225,7 @@ Check alerts.
 
 =item B<--filter-alert-name>
 
-Filter alerts by name (Can use regexp).
+Filter alerts by name (can use regexp).
 
 =item B<--display-alerts>
 

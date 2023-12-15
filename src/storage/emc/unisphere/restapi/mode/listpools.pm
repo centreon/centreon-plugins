@@ -102,7 +102,7 @@ List pools.
 
 =item B<--filter-name>
 
-Filter pool name (Can be a regexp).
+Filter pool name (can be a regexp).
 
 =back
 

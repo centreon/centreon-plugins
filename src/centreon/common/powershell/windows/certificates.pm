@@ -76,6 +76,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get windows certificates.
+Method to get Windows certificates.
 
 =cut

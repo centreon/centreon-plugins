@@ -191,7 +191,7 @@ Critical threshold of NonHeap memory usage
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =back
 

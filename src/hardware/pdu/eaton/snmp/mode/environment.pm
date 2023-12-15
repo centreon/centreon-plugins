@@ -232,32 +232,32 @@ Check pdu environmental sensors.
 
 =item B<--unknown-temperature-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-temperature-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-temperature-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-humidity-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-humidity-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-humidity-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "bad"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

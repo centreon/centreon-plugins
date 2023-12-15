@@ -122,11 +122,11 @@ List services.
 
 =item B<--service>
 
-Filter on a specific service (Must be a PromQL filter, Default: 'service=~".*"')
+Filter on a specific service (must be a PromQL filter, Default: 'service=~".*"')
 
 =item B<--cluster-ip>
 
-Filter on a specific cluster ip (Must be a PromQL filter, Default: 'cluster_ip=~".*"')
+Filter on a specific cluster ip (must be a PromQL filter, Default: 'cluster_ip=~".*"')
 
 =item B<--extra-filter>
 

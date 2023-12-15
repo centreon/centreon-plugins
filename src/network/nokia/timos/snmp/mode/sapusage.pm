@@ -222,7 +222,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admin_state} eq "up" and %{oper_state} !~ /up/').
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_state} eq "up" and %{oper_state} !~ /up/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*>

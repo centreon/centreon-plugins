@@ -339,13 +339,13 @@ Command used: '/usr/platform/`/sbin/uname -i`/sbin/prtdiag -v 2>&1'
 
 =item B<--config-file>
 
-Config file with prtdiag output description (Default: Directory 'conf/prtdiag.conf' under absolute mode path).
+Config file with prtdiag output description (default: Directory 'conf/prtdiag.conf' under absolute mode path).
 
 =item B<--exclude>
 
 Exclude some components (multiple) (Syntax: SECTION,INSTANCE,FILTER).
-SECTION  = component type in prtdiag.conf (Example: temperature, fan,... 
-INSTANCE = Set the instance (Example: %Location%)
+SECTION  = component type in prtdiag.conf (example: temperature, fan,... 
+INSTANCE = Set the instance (example: %Location%)
 FILTER   = regexp to filter
 
 =back

@@ -87,7 +87,7 @@ Trigger warning on %{operStatus} values
 =item B<--critical-status>
 
 Trigger critical on %{operStatus} values
-(Default: '%{operStatus} !~ /(Normal)/')
+(default: '%{operStatus} !~ /(Normal)/')
 
 =back
 

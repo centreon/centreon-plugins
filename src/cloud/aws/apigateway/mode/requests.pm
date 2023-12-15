@@ -182,17 +182,16 @@ Default statistic: 'sum'
 
 =item B<--api-name>
 
-Set the api name (Required) (can be defined multiple times).
+Set the api name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Count', '4XXError', '5XXError') 
+Filter metrics (can be: 'Count', '4XXError', '5XXError') 
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning 
-star substitusion possibilities: requests-client,
-requests-errors-4xx, requests-errors-5xx
+Warning thresholds (* can be requests-client,
+requests-errors-4xx, requests-errors-5xx).
 
 =back
 

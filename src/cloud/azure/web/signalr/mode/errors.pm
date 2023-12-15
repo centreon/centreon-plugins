@@ -112,13 +112,13 @@ Check Azure Web SignalR errors.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-user-errors='800' --critical-user-errors='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'
@@ -130,11 +130,11 @@ Default aggregation: 'maximum' / 'minimum', 'total' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

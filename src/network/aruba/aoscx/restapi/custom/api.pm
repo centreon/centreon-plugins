@@ -273,15 +273,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/rest/v1')
+API url path (default: '/rest/v1')
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

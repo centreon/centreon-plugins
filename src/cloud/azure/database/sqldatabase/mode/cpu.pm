@@ -112,13 +112,13 @@ Metrics are available with:
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=cpu --custommode=api
 --resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='maximum'
 --warning-usage-percent='80'' --critical-usage-percent='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'
@@ -130,15 +130,15 @@ Default aggregation: 'maximum', other are not identified as relevant nor availab
 
 =item B<--resource>
 
-Set resource name or id (Required). It is the database name. 
+Set resource name or ID (required). It is the database name. 
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--server>
 
-Set server name (Required if resource's name is used).
+Set server name (required if resource's name is used).
 
 =item B<--warning-*> B<--critical-*>
 

@@ -135,7 +135,7 @@ Critical threshold in seconds.
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone)
+Timezone of oracle server (if not set, we use current server execution timezone)
 
 =back
 

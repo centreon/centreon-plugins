@@ -168,11 +168,11 @@ Hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 7634)
+Port used (default: 7634)
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (default: 30).
 
 =back
 

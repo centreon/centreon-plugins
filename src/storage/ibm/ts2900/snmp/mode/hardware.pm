@@ -70,12 +70,12 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'robot', 'drive', 'ctrl', 'ctrlpower', 'magazine'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=ctrl,1
 
 =item B<--no-component>

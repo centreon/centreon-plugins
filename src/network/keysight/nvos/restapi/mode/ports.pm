@@ -257,7 +257,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-license-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /invalid_software_version/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /invalid_software_version/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-license-status>
@@ -277,7 +277,7 @@ You can use the following variables: %{adminStatus}, %{operationalStatus}, %{nam
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"').
 You can use the following variables: %{adminStatus}, %{operationalStatus}, %{name}
 
 =item B<--warning-*> B<--critical-*>

@@ -217,7 +217,7 @@ Can be: 'usage', 'data-reduction', 'total-reduction'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

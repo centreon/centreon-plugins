@@ -86,15 +86,15 @@ Close a service ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =item B<--service-id>
 
-Centreon service ID (Required).
+Centreon service ID (required).
 
 =back
 

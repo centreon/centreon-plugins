@@ -220,7 +220,7 @@ Critical threshold in percent
 
 =item B<--filesystem>
 
-Set the filesystem (number expected) ex: 1, 2,... (empty means 'check all filesystems').
+Set the filesystem (number expected) example: 1, 2,... (empty means 'check all filesystems').
 
 =item B<--name>
 

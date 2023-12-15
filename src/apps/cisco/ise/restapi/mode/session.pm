@@ -100,7 +100,7 @@ Check sessions counters.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='active')
+(example: --filter-counters='active')
 
 =item B<--warning-*>
 

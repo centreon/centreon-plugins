@@ -111,12 +111,12 @@ Check panorama connection status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables:  %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /not-connected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /not-connected/i').
 You can use the following variables: %{status}, %{display}
 
 =back

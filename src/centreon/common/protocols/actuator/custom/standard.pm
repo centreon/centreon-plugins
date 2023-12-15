@@ -179,27 +179,27 @@ Hostname.
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
-Specify username for authentication (basic auth)
+Specify the username for authentication (basic auth)
 
 =item B<--api-password>
 
-Specify password for authentication (basic auth)
+Specify the password for authentication (basic auth)
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30)
+Set timeout in seconds (default: 30)
 
 =item B<--url-path>
 
-API url path (Default: '/actuator')
+API url path (default: '/actuator')
 
 =back
 

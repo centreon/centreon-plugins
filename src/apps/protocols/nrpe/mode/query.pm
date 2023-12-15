@@ -114,7 +114,7 @@ In nrpe use following command to get server version: --command='_NRPE_CHECK'
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1' --arg='arg2').
+Set arguments (multiple option. Example: --arg='arg1' --arg='arg2').
 
 =item B<--extra-args>
 

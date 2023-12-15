@@ -127,15 +127,15 @@ See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metr
 
 =item B<--service>
 
-Set the Amazon service (Required) (can be defined multiple times).
+Set the Amazon service (required) (can be defined multiple times).
 
 =item B<--warning-billing>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-billing>
 
-Thresholds critical.
+Critical thresholds.
 
 =back
 

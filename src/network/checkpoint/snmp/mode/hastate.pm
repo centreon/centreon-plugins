@@ -122,17 +122,17 @@ Check HA State of a Checkpoint node (chkpnt.mib).
 
 =item B<--warning-status>
 
-Trigger warning on %{role} or %{hastate} values
-e.g --warning-status '%{role} !~ /master/' will warn when failover occurs
+Trigger warning on %{role} or %{hastate} values.
+Example: --warning-status '%{role} !~ /master/' will warn when failover occurs.
 
 =item B<--critical-status>
 
 Trigger critical on %{role} or %{hastate} values
-(default: '%{hastate} !~ /(UP|working)/')
+(default: '%{hastate} !~ /(UP|working)/').
 
 =item B<--no-ha-status>
 
-Status to return when HA not running or not installed (default: 'UNKNOWN')
+Status to return when HA not running or not installed (default: 'UNKNOWN').
 
 =back
 

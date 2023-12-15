@@ -99,7 +99,7 @@ Command to execute.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =back
 

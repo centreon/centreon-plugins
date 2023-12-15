@@ -175,12 +175,12 @@ Can be: 'entity', 'peer' (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /operational/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /operational/i').
 You can use the following variables: %{state}
 
 =item B<--warning-last-change>

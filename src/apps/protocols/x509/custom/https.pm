@@ -203,27 +203,27 @@ http connection
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host
 
 =item B<--port>
 
-Port used by Webserver (Default: 443)
+Port used by web server (default: 443)
 
 =item B<--method>
 
-Specify http method used (Default: 'GET')
+Specify http method used (default: 'GET')
 
 =item B<--urlpath>
 
-Set path to get webpage (Default: '/')
+Define the path of the web page to get (default: '/')
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Threshold for HTTP timeout (default: 5)
 
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers (multiple option)
 
 =item B<--no-follow>
 

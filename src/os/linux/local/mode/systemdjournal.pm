@@ -163,12 +163,12 @@ Filter on message content (can be a regexp).
 
 Defines the amount of time to look back at messages.
 Can be minutes (ie 5 "minutes ago") or 'cache' to use the
-timestamp from last execution. (Default: 'cache')
+timestamp from last execution. (default: 'cache')
 
 =item B<--timezone>
 
 Defines the timezone to convert date/time to the host
-timezone when using timestamp from cache. (Default: 'local')
+timezone when using timestamp from cache. (default: 'local')
 
 =item B<--warning-entries> B<--critical-entries>
 

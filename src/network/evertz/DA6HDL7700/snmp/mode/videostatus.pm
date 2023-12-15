@@ -134,7 +134,7 @@ You can use the following variables: %{video_locked}, %{display}
 
 =item B<--critical-video-status>
 
-Set critical threshold for device connection status (Default: '%{video_locked} =~ /notLocked/i').
+Set critical threshold for device connection status (default: '%{video_locked} =~ /notLocked/i').
 You can use the following variables: %{video_locked}, %{display}
 
 =back

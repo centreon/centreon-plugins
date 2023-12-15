@@ -126,7 +126,7 @@ Command used: '/opt/PCsensor/TEMPered/utils/tempered'
 
 =item B<--filter-drive>
 
-Filter by drive name (e.g --filter-drive raw4)
+Filter by drive name (example: --filter-drive raw4)
 
 =item B<--warning-*> B<--critical-*>
 

@@ -145,34 +145,34 @@ Check replicated items replication and failover health.
 
 =item B<--vault-name>
 
-Set vault name (Required).
+Set vault name (required).
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--filter-name>
 
-Filter item name (Can be a regexp).
+Filter item name (can be a regexp).
 
 =item B<--warning-replication-status>
 
-Set warning threshold for replication health (Default: '%{replication_status} eq "Warning"').
+Set warning threshold for replication health (default: '%{replication_status} eq "Warning"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-replication-status>
 
-Set critical threshold for replication health (Default: '%{replication_status} eq "Critical"').
+Set critical threshold for replication health (default: '%{replication_status} eq "Critical"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-failover-status>
 
-Set warning threshold for failover status (Default: '%{failover_status} eq "Warning"').
+Set warning threshold for failover status (default: '%{failover_status} eq "Warning"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-failover-status>
 
-Set critical threshold for failover status (Default: '%{failover_status} eq "Critical"').
+Set critical threshold for failover status (default: '%{failover_status} eq "Critical"').
 You can use the following variables: %{status}, %{display}
 
 =back

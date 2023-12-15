@@ -136,13 +136,13 @@ Check Azure Database for PostgreSQL connections status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=connections --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-connections-active='1000' --critical-connections-active='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::postgres::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforPostgreSQL/servers/<db_id>'
@@ -154,15 +154,15 @@ Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
+Set resource type (default: 'servers'). Can be 'servers', 'flexibleServers'.
 
 =item B<--warning-*> B<--critical-*>
 

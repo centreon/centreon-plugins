@@ -507,8 +507,8 @@ Can be 'totalhost','totalservice','groups'. Better to manage it in config file
 
 =item B<--warning-*>
 
-Can be 'total' for host and service, 'groups' for groups
-e.g --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
+Can be 'total' for host and service, 'groups' for groups.
+Example: --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
 
 =item B<--critical-*>
 

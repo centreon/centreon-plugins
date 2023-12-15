@@ -71,7 +71,7 @@ Check physical service status.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'service'.
 
 =item B<--filter>

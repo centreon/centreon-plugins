@@ -233,7 +233,7 @@ You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
+Define the conditions to match for the status to be CRITICAL (default: '%{active} eq "yes" and %{readyToRun} eq "no"').
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>

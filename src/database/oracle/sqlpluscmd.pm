@@ -418,7 +418,7 @@ sqlpluscmd class
 
 =item B<--sqlplus-cmd>
 
-sqlplus command (Default: 'sqlplus').
+sqlplus command (default: 'sqlplus').
 
 =item B<--oracle-home>
 

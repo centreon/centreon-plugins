@@ -118,15 +118,15 @@ Add this option if your want to use your instance alias
 
 =item B<--unknown-status>
 
-Set unknown threshold for instance status (Default: '').
+Set unknown threshold for instance status (default: '').
 
 =item B<--warning-status>
 
-Set warning threshold for instance status (Default: '').
+Set warning threshold for instance status (default: '').
 
 =item B<--critical-status>
 
-Set critical threshold for instance status (Default: '%{status} !~ /OK/').
+Set critical threshold for instance status (default: '%{status} !~ /OK/').
 
 =back
 

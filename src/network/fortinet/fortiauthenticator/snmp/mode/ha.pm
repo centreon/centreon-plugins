@@ -115,7 +115,7 @@ You can use the following variables: %{ha_status}, %{ha_status_last}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ha_status} ne %{ha_status_last}').
+Define the conditions to match for the status to be CRITICAL (default: '%{ha_status} ne %{ha_status_last}').
 You can use the following variables: %{ha_status}, %{ha_status_last}
 
 =back

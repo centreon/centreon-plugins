@@ -361,7 +361,7 @@ Can also check memory usage and cpu usage.
 =item B<--process-status>
 
 Filter process status. Can be a regexp. 
-(Default: 'running|runnable').
+(default: 'running|runnable').
 
 =item B<--process-name>
 
@@ -455,12 +455,12 @@ Enable top memory usage display.
 
 =item B<--top-num>
 
-Number of processes in top memory display (Default: 5).
+Number of processes in top memory display (default: 5).
 
 =item B<--top-size>
 
 Minimum memory usage to be in top memory display 
-(Default: 52428800 -> 50 MB).
+(default: 52428800 -> 50 MB).
 
 =back
 

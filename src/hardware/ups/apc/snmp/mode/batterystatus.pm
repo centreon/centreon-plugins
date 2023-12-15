@@ -368,17 +368,17 @@ Define the date format (default: '%m/%d/%Y').
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /batteryLow/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /batteryLow/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{replace} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{replace} =~ /yes/i').
 You can use the following variables: %{status}, %{replace}
 
 =item B<--unknown-battery-pack-status>
@@ -393,7 +393,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-battery-pack-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "OK"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "OK"').
 You can use the following variables: %{status}
 
 =item B<--unknown-cartridge-status>
@@ -408,7 +408,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-cartridge-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "OK"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "OK"').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

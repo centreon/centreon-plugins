@@ -119,7 +119,7 @@ List namespaces.
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--extra-filter>
 

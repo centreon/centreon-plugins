@@ -172,25 +172,25 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for m
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter on a specific metric 
+Filter on a specific metric. 
 Can be: DataReadIOBytes, DataWriteIOBytes, MetaDataIOBytes, TotalIOBytes, BurstCreditBalance
 
 =item B<--statistic>
 
-Set the metric calculation method (Default: Average)
+Set the metric calculation method (default: Average)
 Can be 'minimum', 'maximum', 'average', 'sum'
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
+Warning thresholds ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
+Critical thresholds ($metric$ can be: 'data-iobytes-read', 'data-iobytes-write', 'metadata-iobytes', 'total-iobytes', 'burst-bytes').
 
 =back
 

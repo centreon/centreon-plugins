@@ -115,7 +115,7 @@ Check api requests.
 
 =item B<--filter-organization-name>
 
-Filter organization name (Can be a regexp).
+Filter organization name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

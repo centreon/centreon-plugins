@@ -208,7 +208,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /powerPathManaged/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /powerPathManaged/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

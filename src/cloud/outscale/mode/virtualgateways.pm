@@ -170,7 +170,7 @@ Filter virtual gateways by name.
 
 =item B<--vg-tag-name>
 
-Virtual gateway tag to be used for the name (Default: 'name').
+Virtual gateway tag to be used for the name (default: 'name').
 
 =item B<--unknown-vg-status>
 

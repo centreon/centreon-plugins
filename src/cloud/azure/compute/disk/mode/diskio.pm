@@ -128,13 +128,13 @@ Check Azure Disk I/O volume and ops.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::disks::plugin --mode=diskio --custommode=api
 --resource=<disk_name> --resource-group=<resourcegroup_id> --warning-disk-read-ops-persec=10 --critical-disk-read-ops-persec=10
 
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::disks::plugin --mode=diskio --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.computeengine/disks/<disk_name>'
@@ -146,11 +146,11 @@ Default aggregation: 'average'.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

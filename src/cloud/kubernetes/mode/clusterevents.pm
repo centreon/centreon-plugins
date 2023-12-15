@@ -204,13 +204,13 @@ Filter namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{type} =~ /warning/i')
+Define the conditions to match for the status to be WARNING (default: '%{type} =~ /warning/i')
 Can use special variables like: %{name}, %{namespace}, %{type},
 %{object}, %{message}, %{count}, %{first_seen}, %{last_seen}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{type} =~ /error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{type} =~ /error/i').
 Can use special variables like: %{name}, %{namespace}, %{type},
 %{object}, %{message}, %{count}, %{first_seen}, %{last_seen}.
 

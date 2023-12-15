@@ -261,21 +261,21 @@ To be used with K/V engines
 
 =item B<--vault-address>
 
-IP address of the HashiCorp Vault server (Mandatory).
+IP address of the HashiCorp Vault server (mandatory).
 
 =item B<--vault-port>
 
-Port of the HashiCorp Vault server (Default: '8200').
+Port of the HashiCorp Vault server (default: '8200').
 
 =item B<--vault-protocol>
 
 HTTP of the HashiCorp Vault server.
-Can be: 'http', 'https' (Default: http).
+Can be: 'http', 'https' (default: http).
 
 =item B<--auth-method>
 
 Authentication method to log in against the Vault server.
-Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (Default: 'token');
+Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (default: 'token');
 
 =item B<--vault-token>
 
@@ -292,7 +292,7 @@ More information here: https://www.vaultproject.io/api-docs/auth
 
 =item B<--secret-path>
 
-Location of the secret in the Vault K/V engine (Mandatory - Can be multiple).
+Location of the secret in the Vault K/V engine (mandatory - Can be multiple).
 Examples:
 for v1 engine: --secret-path='mysecrets/servicecredentials'
 for v2 engine: --secret-path='mysecrets/data/servicecredentials?version=12'

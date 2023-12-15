@@ -1,0 +1,63 @@
+name: "@NAME@"
+arch: "${ARCH}"
+platform: "linux"
+version_schema: "none"
+version: "@VERSION@"
+release: "2${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  This module implements JSONPath, an XPath-like language for searching JSON-like structures.
+  JSONPath is described at http://goessner.net/articles/JsonPath/.
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://www.centreon.com"
+license: "Apache-2.0"
+
+contents:
+  - src: "/tmp/lib/perl5/JSON/Path.pm"
+    dst: "@PERL_VENDORLIB@/JSON/"
+    file_info:
+      mode: 0644
+
+  - src: "/tmp/lib/perl5/JSON/Path/"
+    dst: "@PERL_VENDORLIB@/JSON/Path/"
+    file_info:
+      mode: 0644
+
+  - src: "/tmp/man/man3/JSON::Path*"
+    dst: "/usr/share/man/man3/"
+    file_info:
+      mode: 0644
+
+overrides:
+  rpm:
+    depends:
+      - perl(Carp::Assert)
+      - perl(Exporter::Tiny)
+      - perl(JSON::MaybeXS)
+      - perl(JSON::Parse)
+      - perl(LV)
+      - perl(List::Util)
+      - perl(Readonly)
+      - perl(Tie::IxHash)
+      - perl(Try::Tiny)
+    provides:
+      - perl(JSON::Path)
+  deb:
+    depends:
+      - libcarp-assert-perl
+      - libexporter-tiny-perl
+      - libjson-parse-perl
+      - liblv-perl
+      - libreadonly-perl
+      - libtie-ixhash-perl
+      - libtry-tiny-perl
+
+rpm:
+  summary: This module implements JSONPath, an XPath-like language for searching JSON-like structures
+  compression: zstd
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}

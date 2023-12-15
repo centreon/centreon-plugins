@@ -132,12 +132,12 @@ Check AC plant status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /true/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /true/i').
 You can use the following variables: %{status}
 
 =back

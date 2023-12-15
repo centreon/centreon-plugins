@@ -210,7 +210,7 @@ Return threshold for auto services not running.
 
 =item B<--exclude>
 
-Exclude some services for --auto option (Can be a regexp).
+Exclude some services for --auto option (can be a regexp).
 
 =back
 

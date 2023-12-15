@@ -114,7 +114,7 @@ Check peripherals device connected (since TC 7.2).
 
 =item B<--filter-since>
 
-Filter by since X seconds (Default: 86400).
+Filter by since X seconds (default: 86400).
 
 =item B<--warning-*> B<--critical-*>
 

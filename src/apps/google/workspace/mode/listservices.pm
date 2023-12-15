@@ -100,7 +100,7 @@ List Google Gsuite applications.
 
 =item B<--filter-name>
 
-Filter application name (Can be a regexp).
+Filter application name (can be a regexp).
 
 =back
 

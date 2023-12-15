@@ -125,13 +125,13 @@ Check virtual machine resources CPU metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin 
 --custommode=azcli --mode=cpu --resource=MYVMINSTANCE --resource-group=MYRSCGROUP 
 --filter-metric='Credits' --critical-cpu-credits-remaining='10:' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin 
 --custommode=azcli --mode=cpu --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Compute/virtualMachines/xxx'
@@ -143,16 +143,16 @@ Default aggregation: 'average'
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
-'Percentage CPU') (Can be a regexp).
+Filter metrics (can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
+'Percentage CPU') (can be a regexp).
 
 =item B<--warning-$label$>
 

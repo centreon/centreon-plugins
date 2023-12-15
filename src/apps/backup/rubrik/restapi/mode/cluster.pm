@@ -169,7 +169,7 @@ Example: --filter-counters='status'
 
 =item B<--cluster-id>
 
-Which cluster to check (Default: 'me').
+Which cluster to check (default: 'me').
 
 =item B<--unknown-status>
 
@@ -183,7 +183,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

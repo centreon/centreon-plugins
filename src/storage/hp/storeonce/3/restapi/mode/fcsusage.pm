@@ -157,12 +157,12 @@ Filter name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{is_online} == 1 and %{health} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{is_online} == 1 and %{health} =~ /warning/i').
 You can use the following variables: %{health}, %{is_online}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{is_online} == 1 and %{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{is_online} == 1 and %{health} =~ /critical/i').
 You can use the following variables: %{health}, %{is_online}, %{display}
 
 =item B<--warning-*>

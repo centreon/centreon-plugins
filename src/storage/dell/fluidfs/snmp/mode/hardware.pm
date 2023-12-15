@@ -79,7 +79,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'overall', 'ad', 'extservers', 'substorage'.
 
 =item B<--filter>

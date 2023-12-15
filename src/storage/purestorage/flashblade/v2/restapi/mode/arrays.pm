@@ -256,7 +256,7 @@ Example: --filter-counters='data-reduction'
 
 =item B<--filter-id>
 
-Filter arrays by id (can be a regexp).
+Filter arrays by ID (can be a regexp).
 
 =item B<--filter-name>
 

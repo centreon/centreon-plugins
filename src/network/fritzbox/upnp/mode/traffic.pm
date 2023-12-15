@@ -213,7 +213,7 @@ Example: --filter-counters='^connections$'
 
 =item B<--unit>
 
-Unit of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Unit of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--warning-*> B<--critical-*>
 

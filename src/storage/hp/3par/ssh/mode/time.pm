@@ -183,7 +183,7 @@ Check nodes time offset (use local time if ntp-host option is not set).
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--ntp-hostname>
 
@@ -191,11 +191,11 @@ Set the ntp hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the ntp port (default: 123).
 
 =item B<--timezone>
 
-Set the timezone for displaying the date (Default: UTC).
+Set the timezone for displaying the date (default: UTC).
 
 =item B<--warning-offset>
 

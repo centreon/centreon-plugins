@@ -106,13 +106,13 @@ Meaning the number of times a Traffic Manager endpoint was returned in the given
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=queries --custommode=api
 --resource=<trafficmanagerprofile_id> --resource-group=<resourcegroup_id> --aggregation='Total'
 --warning-queries-persecond='3000' --critical-queries-persecond='4000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=queries --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/trafficmanagerprofiles/<trafficmanagerprofile_id>'
@@ -124,11 +124,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-queries-persecond>
 

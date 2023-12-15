@@ -143,7 +143,7 @@ Critical threshold.
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

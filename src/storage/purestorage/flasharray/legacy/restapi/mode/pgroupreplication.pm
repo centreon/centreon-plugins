@@ -165,12 +165,12 @@ Check protection group replication state and usage.
 
 =item B<--filter-counters>
 
-Only display some counters (Can be a regexp).
+Only display some counters (can be a regexp).
 Example: --filter-counters='^progress$'
 
 =item B<--filter-name>
 
-Filter protection group name (Can be a regexp).
+Filter protection group name (can be a regexp).
 
 =item B<--warning-*>
 
@@ -186,7 +186,7 @@ Can be: 'progress' (%), 'creation' (s), 'duration' (s),
 
 =item B<--timezone>
 
-Timezone of API results (Default: 'GMT').
+Timezone of API results (default: 'GMT').
 
 =back
 

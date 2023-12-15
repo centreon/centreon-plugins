@@ -174,11 +174,11 @@ Gorgone hostname.
 
 =item B<--port>
 
-Port used (Default: 8085)
+Port used (default: 8085)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -190,7 +190,7 @@ Gorgone API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

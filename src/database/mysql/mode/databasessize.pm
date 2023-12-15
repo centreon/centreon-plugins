@@ -236,7 +236,7 @@ Check MySQL databases size and tables.
 
 =item B<--filter-database>
 
-Filter database to checks (Can be a regexp).
+Filter the databases to monitor with a regular expression.
 
 =item B<--filter-table>
 
@@ -244,7 +244,7 @@ Filter table name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'total-usage', 'total-free', 'db-usage',
+Thresholds (can be: 'total-usage', 'total-free', 'db-usage',
 'db-free', 'table-usage', 'table-free', 'table-frag').
 
 =back

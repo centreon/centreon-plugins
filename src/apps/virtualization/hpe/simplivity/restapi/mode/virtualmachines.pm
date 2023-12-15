@@ -171,12 +171,12 @@ Filter virtual machines by virtual machine name.
 
 =item B<--unknown-ha-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--warning-ha-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/').
 You can use the following variables: %{ha_status}, %{vm_name}
 
 =item B<--critical-ha-status>

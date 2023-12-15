@@ -140,19 +140,19 @@ The virtual resource under PolicyStates resource type. In a given time range, 'l
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--resource-location>
 
-Set resource location (Optional).
+Set resource location (optional).
 
 =item B<--resource-type>
 
-Set resource type (Optional).
+Set resource type (optional).
 
 =item B<--policy-name>
 
-Set policy name (Optional).
+Set policy name (optional).
 
 =item B<--warning-*> B<--critical-*>
 

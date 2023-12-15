@@ -177,7 +177,7 @@ __END__
 
 =head1 MODE
 
-Check processor usage.
+Monitor the processor usage.
 
 =over 8
 

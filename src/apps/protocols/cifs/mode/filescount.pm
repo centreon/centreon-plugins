@@ -144,11 +144,11 @@ Count files in a directory (can be recursive).
 
 =item B<--directory>
 
-Check files in the directory (Multiple option).
+Check files in the directory (multiple option).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Don't check fewer levels (default: '0'. Means current dir only).
 
 =item B<--filter-file>
 

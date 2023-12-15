@@ -160,7 +160,7 @@ Check queues.
 
 =item B<--filter-name>
 
-Filter queue name (Can use regexp).
+Filter queue name (can use regexp).
 
 =item B<--warning-*> B<--critical-*>
 

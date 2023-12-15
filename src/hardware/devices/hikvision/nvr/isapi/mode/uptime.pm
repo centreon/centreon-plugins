@@ -135,8 +135,7 @@ Critical threshold.
 
 =item B<--unit>
 
-Select the unit for performance data and thresholds. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks.  Default is seconds
+Select the time unit for the performance data and thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =back
 

@@ -173,7 +173,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-services-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>

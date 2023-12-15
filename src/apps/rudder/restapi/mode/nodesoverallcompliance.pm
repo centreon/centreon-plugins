@@ -181,7 +181,7 @@ Can be: 'perfect', 'good', 'average', 'poor'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'count').
+Units of thresholds (default: '%') ('%', 'count').
 
 =back
 

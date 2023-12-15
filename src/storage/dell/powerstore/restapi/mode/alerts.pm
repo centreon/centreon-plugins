@@ -183,12 +183,12 @@ Filter alerts by name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /minor/i')
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /minor/i')
 You can use the following variables: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /major|critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /major|critical/i').
 You can use the following variables: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--warning-*> B<--critical-*>

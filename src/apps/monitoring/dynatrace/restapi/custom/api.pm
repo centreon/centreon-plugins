@@ -235,7 +235,7 @@ Dynatrace Rest API
 
 =item B<--hostname>
 
-Set hostname or IP of Dynatrace server (Default: live.dynatrace.com).
+Set hostname or IP of Dynatrace server (default: live.dynatrace.com).
 
 =item B<--environment-id>
 
@@ -243,11 +243,11 @@ Set Dynatrace environment ID.
 
 =item B<--port>
 
-Set Dynatrace Port (Default: '443').
+Set Dynatrace Port (default: '443').
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https').
+Specify http if needed (default: 'https').
 
 =item B<--api-password>
 
@@ -255,7 +255,7 @@ Set Dynatrace API token.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =back
 

@@ -92,7 +92,7 @@ Set blade ID.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'disk', 'memory', 'mezz', 'raidcontroller', 'temperature'.
 
 =item B<--filter>

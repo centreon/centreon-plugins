@@ -189,7 +189,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'rfc4293').
+Choose the type of resources to discover (can be: 'rfc4293').
 
 =item B<--prettify>
 

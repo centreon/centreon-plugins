@@ -218,11 +218,11 @@ Santricity hostname.
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -234,11 +234,11 @@ Santricity API password.
 
 =item B<--api-path>
 
-Specify api path (Default: '/devmgr/v2')
+Specify api path (default: '/devmgr/v2')
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

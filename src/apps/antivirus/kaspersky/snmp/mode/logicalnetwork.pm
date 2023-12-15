@@ -152,12 +152,12 @@ Check logical network status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /Warning/i').
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /Warning/i').
 Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /Critical/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} =~ /Critical/i').
 Can use special variables like: %{status}
 
 =item B<--warning-*>

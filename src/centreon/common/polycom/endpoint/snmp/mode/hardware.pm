@@ -71,7 +71,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'global', 'microphone', 'camera', 'nic', 'ptc', 'board'.
 
 =item B<--filter>

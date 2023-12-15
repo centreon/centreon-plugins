@@ -109,7 +109,7 @@ Ntp server address or FQDN
 
 =item B<--port>
 
-Port used (Default: 123)
+Port used (default: 123)
 
 =item B<--timeout>
 
@@ -121,7 +121,7 @@ Warning threshold in seconds
 
 =item B<--critical>
 
-Critical threshold in seconds (e.g @10:10 means CRITICAL if offset is not between -10 and +10 seconds)
+Critical threshold in seconds (example: @10:10 means CRITICAL if offset is not between -10 and +10 seconds)
 
 =back
 

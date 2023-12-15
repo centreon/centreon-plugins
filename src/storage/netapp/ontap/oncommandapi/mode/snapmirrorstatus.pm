@@ -130,12 +130,12 @@ Filter snapmirror name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{update}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /snapmirrored/i || %{update} =~ /not healthy/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /snapmirrored/i || %{update} =~ /not healthy/i').
 You can use the following variables: %{state}, %{update}
 
 =back

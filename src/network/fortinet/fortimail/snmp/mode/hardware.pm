@@ -94,7 +94,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sensors'.
 
 =item B<--add-name-instance>
@@ -103,13 +103,13 @@ Add literal description for instance value (used in filter, and threshold option
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 Can also exclude specific instance: --filter=sensors,1
 
 =item B<--no-component>
 
 Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+If total (with skipped) is 0. (default: 'critical' returns).
 
 =item B<--threshold-overload>
 

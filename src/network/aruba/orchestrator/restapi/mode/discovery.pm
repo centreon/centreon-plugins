@@ -156,7 +156,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'appliance').
+Choose the type of resources to discover (can be: 'appliance').
 
 =back
 

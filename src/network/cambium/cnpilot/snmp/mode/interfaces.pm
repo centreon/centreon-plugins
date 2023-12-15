@@ -45,7 +45,7 @@ Check interfaces.
 
 =item B<--add-global>
 
-Check global port statistics (By default if no --add-* option is set).
+Check global port statistics (by default if no --add-* option is set).
 
 =item B<--add-status>
 
@@ -77,7 +77,7 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
+If the expression is true, metrics are checked (default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 
@@ -86,7 +86,7 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{d
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -99,15 +99,15 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for communication types (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -115,7 +115,7 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -169,7 +169,7 @@ Add an OID to display.
 
 Modify the interface name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

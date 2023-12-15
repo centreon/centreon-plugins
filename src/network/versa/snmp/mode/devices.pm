@@ -178,7 +178,7 @@ Example: --filter-counters='cpu_load'
 
 =item B<--filter-vsn-id>
 
-Filter monitoring on vsn id (can be a regexp).
+Filter monitoring on vsn ID (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

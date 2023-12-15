@@ -233,25 +233,25 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the cluster name (Required) (can be defined multiple times).
+Set the cluster name (required) (can be defined multiple times).
 
 =item B<--node-id>
 
-Set the node id (Optional).
+Set the node ID (optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'ReplicationBytes', 'ReplicationLag') 
-(Can be a regexp).
+Filter metrics (can be: 'ReplicationBytes', 'ReplicationLag') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'replicationbytes', 'replicationlag',
+Warning thresholds ($metric$ can be: 'replicationbytes', 'replicationlag',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'replicationbytes', 'replicationlag',
+Critical thresholds ($metric$ can be: 'replicationbytes', 'replicationlag',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

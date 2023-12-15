@@ -265,7 +265,7 @@ Example: --filter-counters='^running$'
 
 =item B<--filter-instanceid>
 
-Filter by instance id (can be a regexp).
+Filter by instance ID (can be a regexp).
 
 =item B<--add-uptime>
 

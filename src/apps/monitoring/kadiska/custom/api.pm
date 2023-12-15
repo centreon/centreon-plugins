@@ -287,19 +287,19 @@ Kadiska Rest API.
 
 =item B<--hostname>
 
-Set hostname (Default: 'app.kadiska.com').
+Set hostname (default: 'app.kadiska.com').
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--period>
 
-Set period in minutes from which you want to get information. (Default: '15')
+Set period in minutes from which you want to get information. (default: '15')
 Example: --period=60 would return you the data from last hour.  
 
 =item B<--client-id>
@@ -312,7 +312,7 @@ Set client secret.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

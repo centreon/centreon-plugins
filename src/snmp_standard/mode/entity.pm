@@ -76,12 +76,12 @@ Check entity sensors (ENTITY-SENSOR-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sensor'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=sensor,celsius.*
 
 =item B<--no-component>

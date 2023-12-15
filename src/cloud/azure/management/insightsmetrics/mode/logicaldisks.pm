@@ -245,7 +245,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 =over 8
 
 =item B<--workspace-id>
-(Mandatory)
+(mandatory)
 Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>
@@ -264,11 +264,11 @@ Filter on specific logical(s) disk(s).
 
 =item B<--warning-status>
 
-Warning threshold on logical disk status (Default: none).
+Warning threshold on logical disk status (default: none).
 
 =item B<--critical-status>
 
-Critical threshold on logical disk status (Default: '%{status} eq "NOT OK"').
+Critical threshold on logical disk status (default: '%{status} eq "NOT OK"').
 
 =item B<--warning-*>
 

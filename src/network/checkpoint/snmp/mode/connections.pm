@@ -125,7 +125,7 @@ Number of connections trigerring a criticalstate
 
 =item B<--units>
 
-Units of thresholds (Default: 'absolute') ('%', 'absolute').
+Units of thresholds (default: 'absolute') ('%', 'absolute').
 
 =back
 

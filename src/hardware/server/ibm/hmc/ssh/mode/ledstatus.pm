@@ -152,22 +152,22 @@ Format of names: systemname[:lparname]
 
 =item B<--warning-physical-status>
 
-Set warning threshold (Default: '').
+Set warning threshold (default: '').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--critical-physical-status>
 
-Set critical threshold (Default: '%{ledstate} =~ /on/').
+Set critical threshold (default: '%{ledstate} =~ /on/').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--warning-virtuallpar-status>
 
-Set warning threshold (Default: '').
+Set warning threshold (default: '').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--critical-virtuallpar-status>
 
-Set critical threshold (Default: '%{ledstate} =~ /on/').
+Set critical threshold (default: '%{ledstate} =~ /on/').
 You can use the following variables: %{ledstate}, %{display}
 
 =back

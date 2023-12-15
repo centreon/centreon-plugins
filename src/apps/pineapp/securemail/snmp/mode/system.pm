@@ -233,32 +233,32 @@ Check system usage.
 
 =item B<--unknown-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-storage-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-storage-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-storage-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*> 

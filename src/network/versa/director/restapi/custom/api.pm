@@ -414,15 +414,15 @@ Rest API custom mode
 
 =item B<--hostname>
 
-Director hostname (Required)
+Director hostname (required)
 
 =item B<--port>
 
-Port used (Default: 9182)
+Port used (default: 9182)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

@@ -252,7 +252,7 @@ Port used by API (default: '443').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--api-token>
 

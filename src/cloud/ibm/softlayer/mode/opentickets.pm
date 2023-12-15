@@ -154,7 +154,7 @@ Check if there is open tickets
 
 =item B<--ticket-group>
 
-Name of the ticket group (Can be a regexp).
+Name of the ticket group (can be a regexp).
 
 =item B<--warning-ticket>
 

@@ -174,7 +174,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-audio-status>
 
-Set critical threshold for device status (Default: '%{status} =~ /loss/i').
+Set critical threshold for device status (default: '%{status} =~ /loss/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-video-status>
@@ -184,7 +184,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-video-status>
 
-Set critical threshold for device connection status (Default: '%{status} =~ /loss|unknown/i').
+Set critical threshold for device connection status (default: '%{status} =~ /loss|unknown/i').
 You can use the following variables: %{status}, %{display}
 
 =back

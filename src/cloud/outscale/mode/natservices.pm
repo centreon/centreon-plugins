@@ -147,7 +147,7 @@ Filter nat services by name.
 
 =item B<--nat-tag-name>
 
-Nat service tag to be used for the name (Default: 'name').
+Nat service tag to be used for the name (default: 'name').
 
 =item B<--unknown-nat-service-status>
 

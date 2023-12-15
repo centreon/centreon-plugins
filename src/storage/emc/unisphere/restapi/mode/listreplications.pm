@@ -110,7 +110,7 @@ List replications.
 
 =item B<--filter-name>
 
-Filter replication name (Can be a regexp).
+Filter replication name (can be a regexp).
 
 =back
 

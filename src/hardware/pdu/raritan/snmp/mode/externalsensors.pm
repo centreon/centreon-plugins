@@ -114,7 +114,7 @@ Check external sensors.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 
 =item B<--filter>
 

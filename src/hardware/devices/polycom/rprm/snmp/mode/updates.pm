@@ -120,13 +120,13 @@ Check Polycom RPRM updates jobs
 
 =item B<--warning-updates-status>
 
-Custom Warning threshold of the updates state (Default: none)
+Custom Warning threshold of the updates state (default: none)
 Syntax: --warning-updates-status='%{updates_status} =~ /clear/i'
 
 =item B<--critical-updates-status>
 
 Custom Critical threshold of the updates state
-(Default: '%{updates_status} =~ /failed/i' )
+(default: '%{updates_status} =~ /failed/i' )
 Syntax: --critical-updates-status='%{updates_status} =~ /failed/i'
 
 =item B<--warning-* --critical-*>

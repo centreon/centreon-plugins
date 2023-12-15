@@ -185,7 +185,7 @@ Check nsrp groups.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /undefined/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /undefined/i').
 You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-status>
@@ -195,7 +195,7 @@ You can use the following variables: %{status}, %{statusLast}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /ineligible|inoperable/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /ineligible|inoperable/i').
 You can use the following variables: %{status}, %{statusLast}
 
 =item B<--warning-*> B<--critical-*>

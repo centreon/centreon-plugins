@@ -177,15 +177,15 @@ Check networks.
 
 =item B<--filter-network-name>
 
-Filter network name (Can be a regexp).
+Filter network name (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter networks by organization id (Can be a regexp).
+Filter networks by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter networks by organization name (Can be a regexp).
+Filter networks by organization name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

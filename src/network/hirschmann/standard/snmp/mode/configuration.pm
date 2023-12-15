@@ -113,7 +113,7 @@ Check configuration status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default : '%{config_status} =~ /notInSync|outOfSync/').
+Define the conditions to match for the status to be WARNING (default : '%{config_status} =~ /notInSync|outOfSync/').
 You can use the following variables: %{config_status}
 
 =item B<--critical-status>

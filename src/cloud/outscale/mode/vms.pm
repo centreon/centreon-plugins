@@ -147,7 +147,7 @@ Filter virtual machines by name.
 
 =item B<--vm-tag-name>
 
-Virtual machine tag to be used for the name (Default: 'name').
+Virtual machine tag to be used for the name (default: 'name').
 
 =item B<--unknown-vm-status>
 

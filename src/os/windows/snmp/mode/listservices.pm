@@ -134,7 +134,7 @@ __END__
 
 =head1 MODE
 
-List windows services.
+List Windows services.
 
 =over 8
 

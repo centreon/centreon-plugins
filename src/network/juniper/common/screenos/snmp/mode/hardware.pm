@@ -81,12 +81,12 @@ Check hardware (fans, power supplies).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'module', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (Example: --filter=psu --filter=module)
+Exclude some parts (example: --filter=psu --filter=module)
 You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--no-component>

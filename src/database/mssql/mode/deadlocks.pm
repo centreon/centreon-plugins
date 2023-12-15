@@ -101,7 +101,7 @@ Critical threshold number of dead locks per second.
 
 =item B<--filter-database>
 
-Filter database to check.
+Filter the databases to monitor with a regular expression.
 
 =back
 

@@ -115,12 +115,12 @@ Filter persistent volume name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{name}, %{phase}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{phase} !~ /Bound|Available|Released/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{phase} !~ /Bound|Available|Released/i').
 You can use the following variables: %{name}, %{phase}.
 
 =back

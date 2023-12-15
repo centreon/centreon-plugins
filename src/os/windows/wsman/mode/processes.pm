@@ -140,7 +140,7 @@ Check system number of processes.
 =item B<--process-status>
 
 Filter process status. Can be a regexp. 
-(Default: 'running').
+(default: 'running').
 
 =item B<--process-name>
 

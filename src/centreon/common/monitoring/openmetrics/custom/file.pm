@@ -94,7 +94,7 @@ Hostname to query (with ssh).
 
 =item B<--command>
 
-Command to get information (Default: 'cat').
+Command to get information (default: 'cat').
 
 =item B<--command-path>
 

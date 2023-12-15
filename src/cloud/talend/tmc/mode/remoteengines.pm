@@ -147,11 +147,11 @@ Check remote engines.
 
 =item B<--filter-name>
 
-Remote engine name filter (Can be a regexp).
+Remote engine name filter (can be a regexp).
 
 =item B<--filter-environment-name>
 
-Environment filter (Can be a regexp).
+Environment filter (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -165,7 +165,7 @@ You can use the following variables: %{status}, %{availability}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{availability} !~ /retired/ and %{status} =~ /unpaired/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{availability} !~ /retired/ and %{status} =~ /unpaired/i').
 You can use the following variables: %{status}, %{availability}, %{name}
 
 =item B<--warning-*> B<--critical-*>
