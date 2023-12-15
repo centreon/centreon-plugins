@@ -20,6 +20,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Remove previously delivered DEBs
+      run: rm -f ./*.deb
+      shell: bash
+
     - name: Use cache DEB files
       uses: actions/cache/restore@v3
       with:
