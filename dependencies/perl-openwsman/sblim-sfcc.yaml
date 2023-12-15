@@ -22,6 +22,10 @@ contents:
 
 overrides:
   deb:
+    conflicts:
+      - libsblim-sfcc
+    replaces:
+      - libsblim-sfcc
     provides:
       - sblim-sfcc
 

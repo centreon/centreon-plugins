@@ -179,7 +179,8 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
 
       # set condition to true if artifacts are needed
-      - name: Upload package artifacts
+      - if: ${{ false }}
+        name: Upload package artifacts
         uses: actions/upload-artifact@v3
         with:
           name: packages-${{ matrix.distrib }}-${{ matrix.arch }}
