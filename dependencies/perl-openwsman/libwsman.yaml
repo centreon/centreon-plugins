@@ -32,8 +32,6 @@ overrides:
   rpm:
     depends:
       - sblim-sfcc
-    provides:
-      - libwsman1
   deb:
     depends:
       - sblim-sfcc
