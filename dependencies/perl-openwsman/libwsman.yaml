@@ -35,8 +35,6 @@ overrides:
   deb:
     depends:
       - sblim-sfcc
-    provides:
-      - libwsman1
 
 rpm:
   summary: Open source Implementation of WS-Management
