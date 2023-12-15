@@ -27,7 +27,7 @@ overrides:
     replaces:
       - libsblim-sfcc
     provides:
-      - sblim-sfcc
+      - libsblim-sfcc
 
 rpm:
   summary: Small Footprint CIM Client Library
