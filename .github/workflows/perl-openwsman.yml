@@ -79,11 +79,10 @@ jobs:
             make
             make install
           else
+            dnf install -y 'dnf-command(config-manager)'
             if [ "${{ matrix.distrib }}" = "el8" ]; then
-              dnf install -y 'dnf-command(config-manager)'
               dnf config-manager --set-enabled powertools
             else
-              dnf install -y 'dnf-command(config-manager)'
               dnf config-manager --set-enabled crb
             fi
             dnf install -y sblim-sfcc-devel
