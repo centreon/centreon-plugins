@@ -34,8 +34,6 @@ overrides:
   deb:
     depends:
       - libwsman1
-    provides:
-      - libopenwsman-perl
 
 rpm:
   summary: Perl interface for openwsman
