@@ -1,15 +1,12 @@
 *** Settings ***
 Documentation       Storage Synology SNMP
 
-Library             OperatingSystem
-Library             XML
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=storage::synology::snmp::plugin
 
 &{check_components_test1}
