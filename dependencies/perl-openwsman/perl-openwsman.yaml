@@ -10,9 +10,8 @@ maintainer: "Centreon <contact@centreon.com>"
 description: |
   This package provides Perl bindings to access the OpenWSMAN client API.
   Commit: @COMMIT_HASH@
-vendor: "Centreon"
-homepage: "https://www.centreon.com"
-license: "Apache-2.0"
+homepage: "http://www.openwsman.org/"
+license: "BSD"
 
 contents:
   - src: "/tmp/openwsman-@VERSION@/build/bindings/perl/openwsman.so"
