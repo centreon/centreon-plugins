@@ -10,9 +10,8 @@ maintainer: "Centreon <contact@centreon.com>"
 description: |
   Small Footprint CIM Client Library Runtime Libraries
   Commit: @COMMIT_HASH@
-vendor: "Centreon"
-homepage: "https://www.centreon.com"
-license: "Apache-2.0"
+homepage: "http://www.sblim.org"
+license: "EPL-1.0"
 
 contents:
   - src: "/tmp/sblim-sfcc-SFCC_2_2_8/.libs/lib*.so*"
