@@ -42,6 +42,12 @@ runs:
   using: composite
 
   steps:
+    - name: Remove previously packaged DEBs and RPMs
+      run: |
+        rm -f ./*.deb
+        rm -f ./*.rpm
+      shell: bash
+
     - name: Import gpg key
       env:
         RPM_GPG_SIGNING_KEY: ${{ inputs.rpm_gpg_key }}
