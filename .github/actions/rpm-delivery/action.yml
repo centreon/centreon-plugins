@@ -20,6 +20,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Remove previously delivered RPMs
+      run: rm -f ./*.rpm
+      shell: bash
+
     - name: Use cache RPM files
       uses: actions/cache/restore@v3
       with:
@@ -48,6 +52,7 @@ runs:
           exit 1
         fi
 
+        rm -rf noarch x86_64
         mkdir noarch x86_64
 
         for FILE in $FILES; do
