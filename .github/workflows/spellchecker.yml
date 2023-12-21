@@ -39,7 +39,8 @@ jobs:
         run: |
           sudo apt-get install -y hunspell aspell spell ispell
           for f in ${{ steps.filter.outputs.packages_files }}; do
-            echo perl .github/scripts/pod_spell_check.t $f
-            perl .github/scripts/pod_spell_check.t $f
+            echo "perl .github/scripts/pod_spell_check.t $f"
+            output=$(perl .github/scripts/pod_spell_check.t $f)
+            echo $output
           done
         shell: bash
