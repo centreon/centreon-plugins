@@ -42,13 +42,13 @@ jobs:
 
       - name: Run spell check
         id: run_check
-        continue-on-error: true
         run: |
+          set +e
           for f in ${{ steps.filter.outputs.plugins_files }}; do
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
-        shell: bash +e
+        shell: bash
 
       - name: Check errors
         if: steps.run_check.outcome != 'success'
