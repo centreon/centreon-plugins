@@ -36,6 +36,8 @@ jobs:
           install-modules: Test::More Test::Spelling Pod::Wordlist
 
       - name: Run spell check
+        id: run_check
+        continue-on-error: true
         run: |
           sudo apt-get install -y hunspell aspell spell ispell
           for f in ${{ steps.filter.outputs.plugins_files }}; do
@@ -43,3 +45,7 @@ jobs:
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
         shell: bash
+
+      - name: Check errors
+        if: steps.run_check.outcome != 'success'
+        run: exit 1
