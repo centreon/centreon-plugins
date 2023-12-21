@@ -41,6 +41,5 @@ jobs:
           for f in ${{ steps.filter.outputs.plugins_files }}; do
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
-            echo $output
           done
         shell: bash
