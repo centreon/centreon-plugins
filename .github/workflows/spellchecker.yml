@@ -48,7 +48,7 @@ jobs:
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
-        shell: bash
+        shell: bash +e
 
       - name: Check errors
         if: steps.run_check.outcome != 'success'
