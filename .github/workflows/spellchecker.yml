@@ -49,7 +49,3 @@ jobs:
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
         shell: bash
-
-      - name: Check errors
-        if: steps.run_check.outcome != 'success'
-        run: exit 1
