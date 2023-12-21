@@ -1,0 +1,45 @@
+name: spell-checker
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/spellchecker.yml'
+      - 'src/**'
+      - '.github/scripts/pod_spell_check.t'
+
+jobs:
+  pod-spell-check:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          list-files: shell
+          filters: |
+            plugins:
+              - added|modified: src/**
+
+      - name: Install Libraries
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: Test::More Test::Spelling Pod::Wordlist
+
+      - name: Run spell check
+        run: |
+          apt-get install -y hunspell aspell spell ispell
+          for f in ${{ steps.filter.outputs.packages_files }}; do
+            perl .github/scripts/pod_spell_check.t $f
+          done
+
+        shell: bash
