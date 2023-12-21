@@ -41,5 +41,4 @@ jobs:
           for f in ${{ steps.filter.outputs.packages_files }}; do
             perl .github/scripts/pod_spell_check.t $f
           done
-
         shell: bash
