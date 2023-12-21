@@ -47,15 +47,15 @@ sub custom_queries_calc {
 
     $self->{result_values}->{session_id} = $options{new_datas}->{$self->{instance} . '_session_id'};
     $self->{result_values}->{start_time} = $options{new_datas}->{$self->{instance} . '_start_time'};
-    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_duration_ms'};
-    $self->{result_values}->{duration_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration} / 1000);
-    $self->{result_values}->{cpu_time} = $options{new_datas}->{$self->{instance} . '_cpu_time_ms'};
-    $self->{result_values}->{cpu_time_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{cpu_time} / 1000);
-    $self->{result_values}->{wait_time} = $options{new_datas}->{$self->{instance} . '_wait_time_ms'};
+    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_duration_ms'} / 1000;
+    $self->{result_values}->{duration_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration});
+    $self->{result_values}->{cpu_time} = $options{new_datas}->{$self->{instance} . '_cpu_time_ms'} / 1000;
+    $self->{result_values}->{cpu_time_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{cpu_time});
+    $self->{result_values}->{wait_time} = $options{new_datas}->{$self->{instance} . '_wait_time_ms'} / 1000;
     # When query is multi-threaded, wait time can be < 0 (because cpu time > duration)
     # https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/performance/troubleshoot-slow-running-queries#parallel-queries---runner-or-waiter
     $self->{result_values}->{wait_time} = 0 if ($self->{result_values}->{wait_time} < 0); 
-    $self->{result_values}->{wait_time_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{wait_time} / 1000);
+    $self->{result_values}->{wait_time_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{wait_time});
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{command} = $options{new_datas}->{$self->{instance} . '_command'};
     return 0;
@@ -188,18 +188,18 @@ You can use the following variables: %{session_id}, %{start_time}, %{duration},
 
 Example:
 
---warning-status='%{status} =~ /running/ && %{wait_time} > 20000'
+--warning-status='%{status} =~ /running/ && %{wait_time} > 20'
 
 =item B<--critical-status>
 
 Define the conditions to match for the querie to be considered CRITICAL (default: '').
 
-You can use the following variables: %{session_id}, %{start_time}, %{duration} (ms),
-%{cpu_time} (ms), %{wait_time} (ms), %{status}, %{command}
+You can use the following variables: %{session_id}, %{start_time}, %{duration} (s),
+%{cpu_time} (s), %{wait_time} (s), %{status}, %{command}
 
 Example:
 
---critical-status='%{status} !~ /sleeping|background|suspended/ && %{duration} > 30000'
+--critical-status='%{status} !~ /sleeping|background|suspended/ && %{duration} > 30'
 
 =back
 
