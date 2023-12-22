@@ -44,7 +44,6 @@ sub set_counters {
     ];
 }
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);

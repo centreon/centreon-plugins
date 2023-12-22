@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'load'    => 'network::barracuda::bma::snmp::mode::load',
         'mails'   => 'network::barracuda::bma::snmp::mode::mails',
+        'message' => 'network::barracuda::bma::snmp::mode::message',
         'storage' => 'network::barracuda::bma::snmp::mode::storage'
     };
 
