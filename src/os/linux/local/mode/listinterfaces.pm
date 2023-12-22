@@ -144,7 +144,7 @@ __END__
 
 =head1 MODE
 
-List storages.
+List storages
 
 Command used: /sbin/ip -s addr 2>&1
 
