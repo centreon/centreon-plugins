@@ -150,11 +150,11 @@ Critical  threshold average CPU utilization.
 
 =item B<--warning-core>
 
-Warning thresholds for each CPU core
+Warning thresholds for each CPU core.
 
 =item B<--critical-core>
 
-Critical thresholds for each CPU core
+Critical thresholds for each CPU core.
 
 =back
 
