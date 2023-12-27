@@ -92,9 +92,11 @@ sub job_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking job '%s' [type: %s]",
+        "checking job '%s' [type: %s] [object type: %s] [location name: %s]",
         $options{instance_value}->{name},
-        $options{instance_value}->{jobType}
+        $options{instance_value}->{jobType},
+        $options{instance_value}->{objectType},
+        $options{instance_value}->{locationName}
     );
 }
 
@@ -217,6 +219,8 @@ sub new {
         'filter-job-name:s'      => { name => 'filter_job_name' },
         'filter-job-type:s'      => { name => 'filter_job_type' },
         'filter-location-name:s' => { name => 'filter_location_name' },
+        'filter-object-type:s'   => { name => 'filter_object_type' },
+        'last-job-status'        => { name => 'last_job_status' },
         'unit:s'                 => { name => 'unit', default => 's' },
         'limit:s'                => { name => 'limit' }
     });
@@ -244,14 +248,15 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs_exec = $options{custom}->get_jobs_monitoring(limit => $self->{option_results}->{limit});
+    my $jobs_exec = $options{custom}->get_jobs_monitoring(get_param => [ 'limit=' . $self->{option_results}->{limit} ]);
 
     $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
         Digest::MD5::md5_hex(
             $options{custom}->get_connection_info() . '_' .
             (defined($self->{option_results}->{filter_job_id}) ? $self->{option_results}->{filter_job_id} : '') . '_' .
             (defined($self->{option_results}->{filter_job_name}) ? $self->{option_results}->{filter_job_name} : '') . '_' .
-            (defined($self->{option_results}->{filter_job_type}) ? $self->{option_results}->{filter_job_type} : '')
+            (defined($self->{option_results}->{filter_job_type}) ? $self->{option_results}->{filter_job_type} : '') . '_' .
+            (defined($self->{option_results}->{filter_object_type}) ? $self->{option_results}->{filter_object_type} : '')
         )
     );
     my $ctime = time();
@@ -267,6 +272,8 @@ sub manage_selection {
             $job_exec->{objectName} !~ /$self->{option_results}->{filter_job_name}/);
         next if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '' && 
             $job_exec->{jobType} !~ /$self->{option_results}->{filter_job_type}/i);
+        next if (defined($self->{option_results}->{filter_object_type}) && $self->{option_results}->{filter_object_type} ne '' && 
+            $job_exec->{objectType} !~ /$self->{option_results}->{filter_object_type}/i);
         next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
             $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
@@ -276,6 +283,8 @@ sub manage_selection {
             $self->{jobs}->{ $job_exec->{objectId} } = {
                 name => $job_exec->{objectName},
                 jobType => $job_exec->{jobType},
+                objectType => $job_exec->{objectType},
+                locationName => $job_exec->{locationName},
                 timers => {},
                 executions => {}
             };
@@ -289,7 +298,11 @@ sub manage_selection {
             if (!defined($_->{endTime}) && $_->{jobStatus} =~ /Active/i) {
                 $older_running_exec = $_;
             }
-            if (!defined($last_exec) && $_->{jobStatus} !~ /Scheduled/i) {
+            
+            if ($self->{option_results}->{last_job_status}) {
+                $last_exec = $_;
+            
+            } elsif (!defined($last_exec) && $_->{jobStatus} !~ /Scheduled/i) {
                 $last_exec = $_;
             }
 
@@ -382,9 +395,17 @@ Filter jobs by job name.
 
 Filter jobs by job type.
 
+=item B<--filter-object-type>
+
+Filter jobs by object type.
+
 =item B<--filter-location-name>
 
 Filter jobs by location name.
+
+=item B<--last-job-status>
+
+Select the last job status.
 
 =item B<--unit>
 

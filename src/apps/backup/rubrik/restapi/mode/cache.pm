@@ -31,7 +31,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'limit:s' => { name => 'limit' }
+        'filter-job-type:s' => { name => 'filter_job_type' },
+        'limit:s'           => { name => 'limit' }
     });
 
     return $self;
@@ -49,7 +50,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $options{custom}->cache_jobs_monitoring(limit => $self->{option_results}->{limit});
+    my $get_param = [ 'limit=' . $self->{option_results}->{limit} ];
+    if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '') {
+        push @{$get_param}, 'job_type=' . $self->{option_results}->{filter_job_type};
+    }
+
+    $options{custom}->cache_jobs_monitoring(get_param => $get_param);
 
     $self->{output}->output_add(
         severity => 'OK',
@@ -66,6 +72,10 @@ __END__
 Create cache files (job mode could use it with --cache-use option).
 
 =over 8
+
+=item B<--filter-job-type>
+
+Filter jobs by job type.
 
 =item B<--limit>
 
