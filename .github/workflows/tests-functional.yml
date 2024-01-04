@@ -48,6 +48,11 @@ jobs:
             Net::SNMP
             URI::Encode
             XML::LibXML
+            DBI
+            DBD::mysql
+            POSIX
+            Time::HiRes
+            JSON::XS
 
       - name: Install Python
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
@@ -71,3 +76,6 @@ jobs:
           sudo cp -r tests/resources/snmp/* /usr/snmpsim/data/
           snmpsimd --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
           robot tests/functional/snmp
+
+      - name: Run Robot Framework Database tests
+        run: robot tests/functional/database
