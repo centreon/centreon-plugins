@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::values;
 use centreon::plugins::misc;
+use JSON::XS;
 
 my $sort_subs = {
     num => sub { $a <=> $b },
@@ -181,18 +182,52 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{list_counters})) {
-        my $list_counter = 'counter list:';
+        my $list_counter = '';
         my $th_counter = '';
+        my $counters;
         foreach my $key (keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
+                $counters->{metrics}->{$_->{label}}->{nlabel} ="";
+                $counters->{metrics}->{$_->{label}}->{min}="";
+                $counters->{metrics}->{$_->{label}}->{max}="";
+                $counters->{metrics}->{$_->{label}}->{unit}="";
+                $counters->{metrics}->{$_->{label}}->{output_template}="";
+                if(defined($_->{nlabel})) {
+                    $counters->{metrics}->{$_->{label}}->{nlabel} = $_->{nlabel};
+                }
+                if(defined($_->{set}->{perfdatas}->[0]->{min})) {
+                    $counters->{metrics}->{$_->{label}}->{min} = $_->{set}->{perfdatas}->[0]->{min};
+                }
+                if(defined($_->{set}->{perfdatas}->[0]->{max})) {
+                    $counters->{metrics}->{$_->{label}}->{max} = $_->{set}->{perfdatas}->[0]->{max};
+                }
+                if(defined($_->{set}->{perfdatas}->[0]->{unit})) {
+                    $counters->{metrics}->{$_->{label}}->{unit} = $_->{set}->{perfdatas}->[0]->{unit};
+                }
+                if(defined($_->{set}->{perfdatas}->[0]->{template})) {
+                    $counters->{metrics}->{$_->{label}}->{output_template} = $_->{set}->{perfdatas}->[0]->{template};
+                }
                 my $label = $_->{label};
                 $label =~ s/-//g;
-                $list_counter .= " " . $_->{label};
-                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";  
+                $list_counter .= $_->{label}." ";
+                $th_counter .= "--warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
+
             }
         }
+        $counters->{"counter list"}=$list_counter;
+        $counters->{"pack configuration"}=$th_counter;
+
+        my $result_data ="";
+        eval {
+            $result_data = JSON::XS->new->indent->space_after->canonical->utf8->encode($counters);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot use \$counters as it is a malformed JSON: " . $@);
+            $self->{output}->option_exit();
+        }
+
         $self->{output}->output_add(short_msg => $list_counter);
-        $self->{output}->output_add(long_msg => 'configuration: ' . $th_counter); 
+        $self->{output}->output_add(long_msg => $result_data);
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
     }
