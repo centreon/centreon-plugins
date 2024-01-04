@@ -30,11 +30,11 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'sim status: %s [imsi: %s] [interface state: %s] [cellular active SIM ID: %s]',
+        'sim status: %s [imsi: %s] [interface state: %s] [cellular active SIM ICC: %s]',
         $self->{result_values}->{simStatus},
         $self->{result_values}->{imsi},
         $self->{result_values}->{interfaceState},
-        $self->{result_values}->{simId}
+        $self->{result_values}->{simIcc}
     );
 }
 
@@ -95,7 +95,7 @@ sub set_counters {
             critical_default => '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simId' },
+                    { name => 'cellId' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simIcc' },
                     { name => 'simStatus' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -167,20 +167,20 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(simId)';
+        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(simIcc)';
     }
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
         instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { cellId => 1, simId => 1, imsi => 1}
+        labels => { cellId => 1, simIcc => 1, imsi => 1}
     );
 }
 
 my $mapping_info_interface = {
     imei    => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.5' }, # teldatCellularInfoInterfaceModuleIMEI : Cellular module IMEI.
     imsi    => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.6' }, # teldatCellularInfoInterfaceModuleIMSI : Cellular module IMSI.
-    simId   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.7' }, # teldatCellularInfoInterfaceSIMId : Cellular active SIM ID.
+    simIcc   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.8' }, # teldatCellularInfoInterfaceSIMIcc : Cellular active SIM ICC.
 };
 
 my $mapping_state_interface = {
@@ -209,7 +209,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping_state_interface->{interfaceState}->{oid} },
-            { oid => $oid_teldatCellularInfoInterfaceEntry, start => $mapping_info_interface->{imei}->{oid}, end => $mapping_info_interface->{simId}->{oid} },
+            { oid => $oid_teldatCellularInfoInterfaceEntry, start => $mapping_info_interface->{imei}->{oid}, end => $mapping_info_interface->{simIcc}->{oid} },
             { oid => $oid_teldatCellularStateMobileEntry, start => $mapping_state_mobile->{techno}->{oid}, end => $mapping_state_mobile->{simStatus}->{oid} }
         ],
         nothing_quit => 1
@@ -222,18 +222,18 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping_info_interface, results => $snmp_result->{$oid_teldatCellularInfoInterfaceEntry}, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping_state_interface, results => $snmp_result->{$mapping_state_interface->{interfaceState}->{oid}}, instance => $instance);
 
-        my $cell_id = $result->{imei} =~ /^(?:[0-9]+)$/ ? $result->{imei} : $result->{simId};
+        my $cell_id = $result->{imei} =~ /^(?:[0-9]+)$/ ? $result->{imei} : $result->{simIcc};
         next if ($cell_id !~ /^(?:[0-9]+)$/);
         next if (defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '' &&
-            $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simId} !~ /$self->{option_results}->{filter_cell_id}/);
+            $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simIcc} !~ /$self->{option_results}->{filter_cell_id}/);
 
         $self->{cells}->{$instance} = {
             cellId => $cell_id,
-            simId  => $result->{simId},
+            simIcc  => $result->{simIcc},
             status => {
                 cellId => $cell_id,
                 imsi   => $result->{imsi},
-                simId  => $result->{simId},
+                simIcc  => $result->{simIcc},
                 interfaceState => $result2->{interfaceState}
             },
             signal => { cellId => $cell_id }
@@ -254,7 +254,7 @@ sub manage_selection {
 
         $self->{cells}->{$instance}->{status}->{simStatus} = $result3->{simStatus};
 
-        if ($self->{cells}->{$instance}->{status}->{simId} ne '') {
+        if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
             $self->{cells}->{$instance}->{signal}->{rsrp} = $result3->{rsrp};
             $self->{cells}->{$instance}->{signal}->{rsrq} = $result3->{rsrq};
             $self->{cells}->{$instance}->{signal}->{snr} = $result3->{snr};
@@ -278,26 +278,26 @@ Check cellular radio modules.
 
 =item B<--filter-cell-id>
 
-Filter cell modules by id (IMEI or SimID).
+Filter cell modules by id (IMEI or SimICC).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(cellId) %(simId)')
+Define perfdatas instance (default: '%(cellId) %(simIcc)')
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: ''%{interfaceState} =~ /disconnect/ || %{simStatus} =~ /LOCKED/'').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simId}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
 
 =item B<--warning-*> B<--critical-*>
 
