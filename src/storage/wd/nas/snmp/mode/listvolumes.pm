@@ -86,6 +86,7 @@ sub manage_selection {
         oids => [
             { oid => $nas->{ex2}->{volumeTable} },
             { oid => $nas->{ex2ultra}->{volumeTable} },
+            { oid => $nas->{ex4100}->{volumeTable} },
             { oid => $nas->{pr2100}->{volumeTable} },
             { oid => $nas->{pr4100}->{volumeTable} }
         ]
