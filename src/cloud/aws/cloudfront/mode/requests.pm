@@ -154,15 +154,15 @@ Default statistic: 'sum' / Valid statistic: 'sum'.
 
 =item B<--id>
 
-Set the instance id (Required) (can be defined multiple times).
+Set the instance ID (required) (can be defined multiple times).
 
 =item B<--warning-requests>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-requests>
 
-Thresholds critical.
+Critical thresholds.
 
 =item B<--per-sec>
 

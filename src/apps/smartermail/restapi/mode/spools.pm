@@ -95,7 +95,7 @@ Check spools.
 
 =item B<--filter-spool>
 
-Filter spools by name (Can be a regexp).
+Filter spools by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

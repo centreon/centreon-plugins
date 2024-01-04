@@ -273,7 +273,7 @@ You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{r
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
+Define the conditions to match for the status to be CRITICAL (default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
 You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-*> B<--critical-*>

@@ -318,7 +318,7 @@ Check interface optical.
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
+If the expression is true, metrics are checked (default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 
@@ -327,7 +327,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -337,11 +337,11 @@ Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -379,7 +379,7 @@ Add an OID to display.
 
 Modify the interface name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

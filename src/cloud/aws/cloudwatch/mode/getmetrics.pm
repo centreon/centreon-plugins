@@ -203,7 +203,7 @@ perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cl
 
 =item B<--namespace>
 
-Set cloudwatch namespace (Required).
+Set cloudwatch namespace (required).
 
 =item B<--dimension>
 
@@ -211,7 +211,7 @@ Set cloudwatch dimensions.
 
 =item B<--metric>
 
-Set cloudwatch metrics (Required).
+Set cloudwatch metrics (required).
 
 =item B<--warning-metric>
 

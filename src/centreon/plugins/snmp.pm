@@ -1142,7 +1142,7 @@ How many OID values per SNMP request (default: 50) (for get_leef method. Be caut
 =item B<--snmp-autoreduce>
  
 Progressively reduce the number of requested OIDs in bulk mode. Use it in case of
-SNMP errors (By default, the number is divided by 2).
+SNMP errors (by default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 

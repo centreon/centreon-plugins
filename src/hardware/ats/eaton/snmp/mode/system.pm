@@ -164,17 +164,17 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: operation_mode
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: operation_mode
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{operation_mode} !~ /source1|source2/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{operation_mode} !~ /source1|source2/i').
 You can use the following variables: %{operation_mode}
 
 =item B<--warning-*>

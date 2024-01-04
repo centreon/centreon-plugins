@@ -195,7 +195,7 @@ Hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 1414)
+Port used (default: 1414)
 
 =item B<--channel>
 
@@ -203,7 +203,7 @@ Channel name.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (default: 30).
 
 =back
 

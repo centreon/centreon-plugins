@@ -115,7 +115,7 @@ List sources.
 
 =item B<--filter-name>
 
-Filter source name (Can be a regexp).
+Filter source name (can be a regexp).
 
 =back
 

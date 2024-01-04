@@ -140,12 +140,12 @@ Can be: 'name', 'volume' (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /online/i || %{state} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /online/i || %{state} !~ /online/i').
 You can use the following variables: %{status}, %{state}
 
 =back

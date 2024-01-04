@@ -207,7 +207,7 @@ Set port.
 
 =item B<--timeout>  
 
-Timeout in seconds for connection (Defaults: 30)
+Timeout in seconds for connection (defaults: 30)
 
 =item B<--workgroup>
 

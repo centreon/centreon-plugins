@@ -105,7 +105,7 @@ Check connected users.
 
 =item B<--filter-username>
 
-Filter connected username. (Can be a regex)
+Filter connected username. (can be a regex)
 
 =item B<--warning-*>
 

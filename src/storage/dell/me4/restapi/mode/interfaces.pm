@@ -233,21 +233,21 @@ Check interfaces.
 
 =item B<--filter-port-name>
 
-Filter port name (Can be a regexp).
+Filter port name (can be a regexp).
 
 =item B<--unknown-port-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--warning-port-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--critical-port-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /fault/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /fault/i').
 You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>

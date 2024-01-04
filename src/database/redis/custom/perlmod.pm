@@ -160,7 +160,7 @@ Redis server.
 
 =item B<--port>
 
-Redis port (Default: 6379).
+Redis port (default: 6379).
 
 =item B<--password>
 
@@ -172,7 +172,7 @@ Sentinel server. Alternative of server option. service option is required.
 
 =item B<--sentinel-port>
 
-Sentinel port (Default: 26379).
+Sentinel port (default: 26379).
 
 =item B<--service>
 

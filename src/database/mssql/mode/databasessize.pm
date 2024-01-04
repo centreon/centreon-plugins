@@ -383,7 +383,7 @@ Check database data and log files.
 
 =item B<--filter-database>
 
-Filter database by name (Can be a regex).
+Filter the databases to monitor with a regular expression.
 
 =item B<--filter-database-state>
 

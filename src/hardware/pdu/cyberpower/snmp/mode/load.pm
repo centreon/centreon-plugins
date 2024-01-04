@@ -291,12 +291,12 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-bank-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /low|nearOverload/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /low|nearOverload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-bank-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /^overload/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /^overload/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--unknown-phase-status>
@@ -306,12 +306,12 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--warning-phase-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /low|nearOverload/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /low|nearOverload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-phase-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /^overload/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /^overload/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

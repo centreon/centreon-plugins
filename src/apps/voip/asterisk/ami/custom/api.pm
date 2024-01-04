@@ -246,11 +246,11 @@ Asterisk AMI custom mode
 
 =item B<--ami-hostname>
 
-AMI hostname (Required).
+AMI hostname (required).
 
 =item B<--ami-port>
 
-AMI port (Default: 5038).
+AMI port (default: 5038).
 
 =item B<--ami-username>
 

@@ -300,12 +300,12 @@ Check alarms.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /warning|minor/i')
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /warning|minor/i')
 You can use the following variables: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /critical|major/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical|major/i').
 You can use the following variables: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--timezone>

@@ -169,12 +169,12 @@ Can be: 'name', 'from', 'to' (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /up/i').
 You can use the following variables: %{state}
 
 =back

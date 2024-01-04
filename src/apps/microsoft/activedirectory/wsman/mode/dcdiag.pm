@@ -254,8 +254,8 @@ Check Windows Active Directory Health (use 'dcdiag' command).
 
 =item B<--config>
 
-command can be localized by using a configuration file.
-This parameter can be used to specify an alternative location for the configuration file
+The command can be localized by using a configuration file.
+This parameter can be used to specify an alternative location for the configuration file.
 
 =item B<--language>
 

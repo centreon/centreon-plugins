@@ -144,7 +144,7 @@ Check oracle database session status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkoraclesession.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkoraclesession.jsp')
 
 =item B<--datasource>
 

@@ -294,7 +294,7 @@ Check exact job name (no regexp).
 
 =item B<--display-extra-attrs>
 
-Display extra job attributes (Eg: --display-extra-attrs=', number of runs: %(numberOfRuns)').
+Display extra job attributes (example: --display-extra-attrs=', number of runs: %(numberOfRuns)').
 
 =item B<--timezone>
 
@@ -308,7 +308,7 @@ You can use the following variables: %{name}, %{status}, %{application}, %{folde
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /ended not ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /ended not ok/i').
 You can use the following variables: %{name}, %{status}, %{application}, %{folder}, %{type}
 
 =item B<--warning-long>

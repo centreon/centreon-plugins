@@ -210,7 +210,7 @@ Can be: 'sessions-count', 'sessions-active'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =back
 

@@ -157,13 +157,13 @@ Check Azure Event Grid events.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events --custommode=api
 --resource=<topic_rsc_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-matched-events='20' --critical-matched-events='50'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventGrid/<EventGridType>/<topic_rsc_id>'
@@ -175,15 +175,15 @@ Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Default: 'topics'). Can be 'topics', 
+Set resource type (default: 'topics'). Can be 'topics', 
 'systemTopics', 'partnerTopics', 'partnerNamespaces',
 'extensionTopics', 'extensionTopics', 'domains').
 

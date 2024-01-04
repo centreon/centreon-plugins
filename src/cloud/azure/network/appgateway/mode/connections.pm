@@ -103,13 +103,13 @@ Check Azure Application Gateway connections statistics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=connections --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-current-connections='1000' --critical-current-connections='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'
@@ -121,11 +121,11 @@ Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-current-connections>
 

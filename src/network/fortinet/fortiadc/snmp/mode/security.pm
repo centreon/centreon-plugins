@@ -89,7 +89,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-ddos-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "attacking"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "attacking"').
 You can use the following variables: %{status}
 
 =back

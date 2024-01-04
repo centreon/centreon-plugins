@@ -118,7 +118,7 @@ Check oracle redolog status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkoracleredolog.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkoracleredolog.jsp')
 
 =item B<--datasource>
 

@@ -269,15 +269,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api2/json')
+API url path (default: '/api2/json')
 
 =item B<--port>
 
-API port (Default: 8806)
+API port (default: 8806)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -289,7 +289,7 @@ Set API password
 
 =item B<--realm>
 
-Set user realm (Default: 'pmg')
+Set user realm (default: 'pmg')
 
 =item B<--timeout>
 

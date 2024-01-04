@@ -191,15 +191,15 @@ API hostname.
 
 =item B<--port>
 
-API port (Default: 49000)
+API port (default: 49000)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--agent>
 
-Fritzbox has two different UPNP agents: upnp or igdupnp (Default: igdupnp).
+Fritzbox has two different UPNP agents: upnp or igdupnp (default: igdupnp).
 
 =item B<--api-username>
 

@@ -228,7 +228,7 @@ Port used by Selenium server
 
 =item B<--browser>
 
-Browser used by Selenium server (Default : '*firefox')
+Browser used by Selenium server (default : '*firefox')
 
 =item B<--directory>
 
@@ -240,15 +240,15 @@ Scenario used by Selenium server (without extension)
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50)
+Set global execution timeout (default: 50)
 
 =item B<--warning>
 
-Warning threshold in seconds (Scenario execution time)
+Warning threshold in seconds (scenario execution time)
 
 =item B<--critical>
 
-Critical threshold in seconds (Scenario execution response time)
+Critical threshold in seconds (scenario execution response time)
 
 =back
 

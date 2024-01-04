@@ -179,27 +179,27 @@ Filter services you want to check (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{running}, %{label}, %{policy}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{policy} =~ /^on|automatic/i && !%{running}').
+Define the conditions to match for the status to be CRITICAL (default: '%{policy} =~ /^on|automatic/i && !%{running}').
 You can use the following variables: %{running}, %{label}, %{policy}
 
 =back

@@ -111,23 +111,23 @@ Check GitHub's statistics
 
 =item B<--hostname>
 
-IP Addr/FQDN of the GitHub's status website (Default: status.github.com)
+IP Addr/FQDN of the GitHub's status website (default: status.github.com)
 
 =item B<--port>
 
-Port used by GitHub's status website (Default: '443')
+Port used by GitHub's status website (default: '443')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--urlpath>
 
-Set path to get GitHub's status information (Default: '/repo/:owner/:repository')
+Set path to get GitHub's status information (default: '/repo/:owner/:repository')
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Threshold for HTTP timeout (default: 5)
 
 =back
 

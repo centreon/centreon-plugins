@@ -181,17 +181,17 @@ Check long sql queries.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{username}, %{sql_text}, %{since}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{username}, %{sql_text}, %{since}, %{status}
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone).
+Timezone of oracle server (if not set, we use current server execution timezone).
 
 =item B<--memory>
 

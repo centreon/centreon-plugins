@@ -77,7 +77,7 @@ Command used: '/usr/sbin/lom -fpv 2>&1'
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'voltage', 'sf'.
 
 =item B<--filter>

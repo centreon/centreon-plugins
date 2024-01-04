@@ -936,7 +936,7 @@ Set arn of the role to be assumed.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 
@@ -949,7 +949,7 @@ Set timeframe in seconds.
 =item B<--statistic>
 
 Set cloudwatch statistics
-(Can be: 'minimum', 'maximum', 'average', 'sum').
+(can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 

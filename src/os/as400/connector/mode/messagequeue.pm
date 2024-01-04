@@ -134,7 +134,7 @@ Check message queue.
 
 =item B<--message-queue-path>
 
-Specify the message queue (Required. Eg: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
+Specify the message queue (required. Example: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
 
 =item B<--memory>
 
@@ -142,7 +142,7 @@ Check only new messages.
 
 =item B<--filter-message-id>
 
-Filter messages by id (can be a regexp).
+Filter messages by ID (can be a regexp).
 
 =item B<--min-severity>
 

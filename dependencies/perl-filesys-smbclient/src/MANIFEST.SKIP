@@ -1,0 +1,20 @@
+# git
+\B\.git\b
+\B\.gitignore\b
+
+# build files
+^blib
+^_build
+^Build$
+^cover_db
+^Makefile(\.old)?$
+^MANIFEST\.
+^pm_to_blib$
+
+# contrib
+^contrib
+
+# temporary
+~$
+\.bak$
+\.old$

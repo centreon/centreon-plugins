@@ -147,7 +147,7 @@ Check HTTPS statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='^proxy')
+(example: --filter-counters='^proxy')
 
 =item B<--warning-*>
 

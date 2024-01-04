@@ -198,18 +198,17 @@ note: Outgoing* metrics are only available when enhanced stats are enabled (paid
 
 =item B<--stream-name>
 
-Set the stream name (Required) (can be defined multiple times).
+Set the stream name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords',
+Filter metrics (can be: 'IncomingBytes', 'IncomingRecords',
 'OutgoingBytes', 'OutgoingRecords') 
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning
-can be: 'incoming-bytes', 'incoming-records',
-'outgoing-volume', 'outgoing-volume'.
+Warning threshold (* can be: 'incoming-bytes', 'incoming-records',
+'outgoing-volume', 'outgoing-volume').
 
 =back
 

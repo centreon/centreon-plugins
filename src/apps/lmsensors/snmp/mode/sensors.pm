@@ -70,7 +70,7 @@ Check components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'voltage', 'temperature', 'misc'.
 
 =item B<--filter>

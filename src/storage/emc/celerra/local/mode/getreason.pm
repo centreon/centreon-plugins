@@ -105,7 +105,7 @@ Command used: /nas/sbin/getreason 2>&1
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'controlstation', 'datamover'.
 
 =item B<--filter>

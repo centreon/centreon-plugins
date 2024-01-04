@@ -156,18 +156,18 @@ More information on'https://anypoint.mulesoft.com/exchange/portals/anypoint-plat
 
 =item B<--filter-name>
 
-Filter by server name (Regexp can be used).
+Filter by server name (regexp can be used).
 Example: --filter-name='^server1$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
 Typical syntax: --warning-status='%{status} ne "RUNNING"'
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
 Typical syntax: --critical-status='%{status} =~ m/DISCONNECTED/'
 

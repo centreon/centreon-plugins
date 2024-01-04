@@ -165,13 +165,13 @@ Filter StatefulSet namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{up_to_date} < %{desired}')
+Define the conditions to match for the status to be WARNING (default: '%{up_to_date} < %{desired}')
 You can use the following variables: %{name}, %{namespace}, %{desired}, %{current},
 %{up_to_date}, %{ready}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ready} < %{desired}').
+Define the conditions to match for the status to be CRITICAL (default: '%{ready} < %{desired}').
 You can use the following variables: %{name}, %{namespace}, %{desired}, %{current},
 %{up_to_date}, %{ready}.
 

@@ -162,7 +162,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'robot', 'scenario').
+Choose the type of resources to discover (can be: 'robot', 'scenario').
 
 =back
 

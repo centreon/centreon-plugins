@@ -225,7 +225,7 @@ Get sensors perfdatas.
 
 =item B<--exclude>
 
-Exclude some parts (multiple values) (Example: --exclude=TYPE.PART)
+Exclude some parts (multiple values) (example: --exclude=TYPE.PART)
 TYPE = board type ('cpum', 'mem', ...)
 PART = name
 (a regexp can be used)

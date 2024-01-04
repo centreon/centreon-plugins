@@ -102,7 +102,7 @@ Check EAS application java runtime status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkjavaruntime.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkjavaruntime.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

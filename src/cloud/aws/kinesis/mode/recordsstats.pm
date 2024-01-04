@@ -221,19 +221,18 @@ Check metrics about records statistics in Kinesis streams.
 
 =item B<--name>
 
-Set the stream name (Required) (can be defined multiple times).
+Set the stream name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes', ) 
+Filter metrics (can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes', ) 
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning
-can be: 'records-get-iteratorage', 'records-get-volume',
+Warning thresholds (* can be: 'records-get-iteratorage', 'records-get-volume',
 'records-get-latency', 'records-get-success',
 'records-put-volume', 'records-put-latency',
-'records-get-success',
+'records-get-success').
 
 =back
 

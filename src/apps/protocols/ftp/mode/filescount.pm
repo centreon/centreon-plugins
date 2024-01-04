@@ -194,7 +194,7 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =item B<--warning>
 
@@ -206,11 +206,11 @@ Critical threshold (number of files)
 
 =item B<--directory>
 
-Check files in the directory (Multiple option)
+Check files in the directory (multiple option)
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Don't check fewer levels (default: '0'. Means current dir only).
 
 =item B<--filter-file>
 

@@ -104,12 +104,12 @@ Check Azure Kubernetes Cluster network traffic usage in Bytes.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=traffic --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-traffic-out=10000 --critical-traffic-in=15000
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
@@ -120,11 +120,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=traf
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

@@ -195,19 +195,19 @@ IBM SoftLayer XML API
 
 =item B<--hostname>
 
-API hostname (Default: 'api.softlayer.com').
+API hostname (default: 'api.softlayer.com').
 
 =item B<--url-path>
 
-API url path (Default: '/soap/v3')
+API url path (default: '/soap/v3')
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 

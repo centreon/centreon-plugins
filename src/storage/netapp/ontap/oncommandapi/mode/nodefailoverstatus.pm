@@ -153,12 +153,12 @@ Can be: 'name', 'clusters' (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /connected/i || %{interconnect} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /connected/i || %{interconnect} !~ /up/i').
 You can use the following variables: %{state}, %{interconnect}, %{current_mode}, %{take_over_possible}
 
 =back

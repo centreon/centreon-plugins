@@ -206,12 +206,12 @@ You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{space_usage_level} =~ /warning/').
+Define the conditions to match for the status to be WARNING (default: '%{space_usage_level} =~ /warning/').
 You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
 You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-*> B<--critical-*>

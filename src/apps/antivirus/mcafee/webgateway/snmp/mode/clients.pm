@@ -94,7 +94,7 @@ Check connected clients and open network sockets.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='clients')
+(example: --filter-counters='clients')
 
 =item B<--warning-*>
 

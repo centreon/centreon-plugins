@@ -235,17 +235,17 @@ Check daemonset status.
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".*"')
+Filter on a specific daemonset (must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{up_to_date} < %{desired}')
+Define the conditions to match for the status to be WARNING (default: '%{up_to_date} < %{desired}')
 You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{available} < %{desired}').
+Define the conditions to match for the status to be CRITICAL (default: '%{available} < %{desired}').
 You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}, %{ready}, %{misscheduled}
 

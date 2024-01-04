@@ -72,7 +72,7 @@ Check sensors components (Sensor Probes).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'sensors'.
 
 =item B<--filter>

@@ -195,7 +195,7 @@ Check sites.
 
 =item B<--filter-site-name>
 
-Filter sites by name (Can be a regexp).
+Filter sites by name (can be a regexp).
 
 =item B<--use-site-fullname>
 

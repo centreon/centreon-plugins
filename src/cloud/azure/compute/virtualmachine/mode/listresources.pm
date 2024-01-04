@@ -145,11 +145,11 @@ List virtual machines.
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--filter-name>
 
-Filter resource name (Can be a regexp).
+Filter resource name (can be a regexp).
 
 =back
 

@@ -1,0 +1,151 @@
+name: plink
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "dependencies/plink/**"
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - ".github/workflows/plink.yml"
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  package-rpm:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - image: packaging-plugins-alma8
+            distrib: el8
+          - image: packaging-plugins-alma9
+            distrib: el9
+    name: package ${{ matrix.distrib }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - run: |
+          yum install -y wget gcc make
+
+          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+
+          wget -P ~/rpmbuild/SOURCES/ https://the.earth.li/~sgtatham/putty/0.74/putty-0.74.tar.gz
+
+          rpmbuild -ba dependencies/plink/packaging/rpm/plink.spec
+
+          cp -r ~/rpmbuild/RPMS/x86_64/*.rpm .
+        shell: bash
+
+      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./*.rpm
+          key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+
+  sign-rpm:
+    needs: [package-rpm]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - image: packaging-alma8
+            distrib: el8
+          - image: packaging-alma9
+            distrib: el9
+    name: sign rpm ${{ matrix.distrib }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      options: -t
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    steps:
+      - run: |
+            apt-get update
+            apt-get install -y zstd
+        shell: bash
+
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./*.rpm
+          key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+
+      - run: echo "HOME=/root" >> $GITHUB_ENV
+        shell: bash
+
+      - run: rpmsign --addsign ./*.rpm
+        shell: bash
+
+      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./*.rpm
+          key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+
+      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        with:
+          name: packages-${{ matrix.distrib }}
+          path: ./*.rpm
+          retention-days: 1
+
+  deliver-rpm:
+    needs: [get-environment, sign-rpm]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: plink
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Promote ${{ matrix.distrib }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: plink
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}

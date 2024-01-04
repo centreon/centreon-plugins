@@ -140,7 +140,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'vm', 'node').
+Choose the type of resources to discover (can be: 'vm', 'node').
 
 =back
 

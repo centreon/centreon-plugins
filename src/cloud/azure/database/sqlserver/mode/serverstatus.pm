@@ -122,16 +122,16 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter server name (Can be a regexp).
+Filter server name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{fqdn}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "Ready"').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "Ready"').
 You can use the following variables: %{state}, %{fqdn}, %{display}
 
 =back

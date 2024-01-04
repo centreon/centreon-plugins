@@ -110,12 +110,12 @@ Check covers of the printer.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%%{status} =~ /other|unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%%{status} =~ /other|unknown/').
 You can use the following variables: %{status}, %{description}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%%{status} =~ /coverOpen|interlockOpen/').
+Define the conditions to match for the status to be WARNING (default: '%%{status} =~ /coverOpen|interlockOpen/').
 You can use the following variables: %{status}, %{description}
 
 =item B<--critical-status>

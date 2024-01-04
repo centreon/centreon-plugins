@@ -177,7 +177,7 @@ Use SSL connection.
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 3)
+Connection timeout in seconds (default: 3)
 
 =item B<--unknown-status>
 
@@ -191,7 +191,7 @@ You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "failed"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "failed"').
 You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-time>

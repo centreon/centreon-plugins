@@ -94,12 +94,12 @@ Check VA health.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /yellow/')
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /yellow/')
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /red/').
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} =~ /red/').
 You can use the following variables: %{status}
 
 =back

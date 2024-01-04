@@ -132,7 +132,7 @@ Check Xenvs CPU usage
 
 =item B<--filter>
 
-Filter some parts (comma seperated list)
+Filter some parts (comma separated list)
 You can also exclude items from specific instances: --filter=cpu,XENVS-NAME-NUMBER
 
 =item B<--warning>

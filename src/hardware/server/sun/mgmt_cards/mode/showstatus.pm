@@ -256,7 +256,7 @@ Plink command (default: plink). Use to set a path.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--threshold-overload>
 

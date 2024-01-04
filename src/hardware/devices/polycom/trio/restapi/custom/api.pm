@@ -214,11 +214,11 @@ Set hostname.
 
 =item B<--port>
 
-Set port (Default: '443').
+Set port (default: '443').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--api-username>
 
@@ -230,11 +230,11 @@ Set password.
 
 =item B<--lockfile-dir>
 
-Specify the lock file directory (Default: '/var/lib/centreon/centplugins').
+Specify the lock file directory (default: '/var/lib/centreon/centplugins').
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =back
 

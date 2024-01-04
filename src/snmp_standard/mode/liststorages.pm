@@ -292,7 +292,7 @@ __END__
 
 =item B<--storage>
 
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
+Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
 
 =item B<--name>
 
@@ -318,11 +318,11 @@ Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageD
 
 Modify the storage name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
+Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 

@@ -143,12 +143,12 @@ in bytes per second (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 
 =item B<--warning-*>
 
-Warning threshold (Can be: 'wan2lan-lan', 'wan2lan-wan',
+Warning threshold (can be: 'wan2lan-lan', 'wan2lan-wan',
 'lan2wan-lan', 'lan2wan-wan')
 
 =item B<--critical-*>
 
-Critical threshold (Can be: 'wan2lan-lan', 'wan2lan-wan',
+Critical threshold (can be: 'wan2lan-lan', 'wan2lan-wan',
 'lan2wan-lan', 'lan2wan-wan')
 
 =over 8

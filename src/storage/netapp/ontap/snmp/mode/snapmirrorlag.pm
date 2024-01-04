@@ -245,17 +245,17 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /quiesced/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /quiesced/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /unknown|brokenOff|uninitialized/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /unknown|brokenOff|uninitialized/i').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-lag>

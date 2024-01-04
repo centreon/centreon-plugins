@@ -119,7 +119,7 @@ Check EAS application jvm gc status.
 
 =item B<--urlpath>
 
-Set path to get status page. (Default: '/easportal/tools/nagios/checkgc_ps.jsp')
+Set path to get status page. (default: '/easportal/tools/nagios/checkgc_ps.jsp')
 
 =item B<--warning-*> B<--critical-*>
 

@@ -156,7 +156,7 @@ You can use the following variables: %{dn}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "offline"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "offline"').
 You can use the following variables: %{dn}, %{status}
 
 =item B<--warning-*> B<--critical-*>

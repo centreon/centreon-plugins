@@ -209,7 +209,7 @@ Check tables size.
 
 =item B<--filter-database>
 
-Filter tables by database name (Can be a regexp).
+Filter tables by database name (can be a regexp).
 
 =item B<--filter-database-state>
 

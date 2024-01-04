@@ -304,7 +304,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to xml api (Default: '/api/')
+Set path to xml api (default: '/api/')
 
 =item B<--username>
 

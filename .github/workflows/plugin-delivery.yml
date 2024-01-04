@@ -24,13 +24,13 @@ on:
 jobs:
   deliver-sources:
     runs-on: [self-hosted, common]
-    if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
+    if: ${{ contains(fromJson('["stable"]'), inputs.stability) && github.event_name != 'workflow_dispatch' }}
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -47,6 +47,7 @@ jobs:
           token_download_centreon_com: ${{ secrets.token_download_centreon_com }}
 
   deliver-rpm:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -55,7 +56,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -67,7 +68,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-rpm-legacy:
-    if: ${{ inputs.stability == 'stable' }}
+    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -77,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery-legacy
@@ -90,6 +91,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -98,7 +100,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery
@@ -110,7 +112,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb-legacy:
-    if: ${{ inputs.stability == 'stable' }}
+    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
     runs-on: [self-hosted, common]
     strategy:
       fail-fast: false
@@ -120,7 +122,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery-legacy
@@ -138,7 +140,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Push git release tag
         run: |

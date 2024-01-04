@@ -160,11 +160,11 @@ Kaminario password.
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =item B<--resolution>
 
-Selected data performance resolution (Default: '5m').
+Selected data performance resolution (default: '5m').
 
 =back
 

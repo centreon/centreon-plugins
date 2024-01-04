@@ -1,2 +1,21 @@
-*               @centreon/perl-reviewers
-.github/        @centreon/perl-reviewers @centreon/automation-reviewers
+*                   @centreon/owners-connectors
+
+*.md                @centreon/owners-doc
+*.mdx               @centreon/owners-doc
+
+*.cmake             @centreon/owners-cpp
+CMakeLists.txt      @centreon/owners-cpp
+Makefile            @centreon/owners-cpp
+
+*.pm                @centreon/owners-perl
+*.pl                @centreon/owners-perl
+
+*.py                @centreon/owners-python
+
+*.sh                @centreon/owners-bash
+
+tests/**            @centreon/owners-robot-e2e
+
+.github/**          @centreon/owners-pipelines
+packaging/**        @centreon/owners-pipelines
+selinux/**          @centreon/owners-pipelines

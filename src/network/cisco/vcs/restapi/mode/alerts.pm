@@ -119,7 +119,7 @@ Check alerts.
 
 =item B<--filter-reason>
 
-Filter alerts by reason (Can use regexp).
+Filter alerts by reason (can use regexp).
 
 =item B<--display-alerts>
 

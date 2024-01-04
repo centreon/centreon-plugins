@@ -271,7 +271,7 @@ You can use the following variables: %{status}, %{state}, %{name}, %{vdom}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "unhealthy"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "unhealthy"').
 You can use the following variables: %{status}, %{state}, %{name}, %{vdom}
 
 =item B<--warning-*> B<--critical-*>

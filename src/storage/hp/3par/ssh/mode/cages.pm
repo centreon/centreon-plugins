@@ -313,7 +313,7 @@ Check cages.
 
 =item B<--filter-cage-id>
 
-Filter cages by id (can be a regexp).
+Filter cages by ID (can be a regexp).
 
 =item B<--unknown-status>
 

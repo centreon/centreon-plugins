@@ -19,38 +19,52 @@ on:
 
 jobs:
   create-and-push-docker:
-    runs-on: ubuntu-22.04
-
     strategy:
       matrix:
-        distrib: [centos7, alma8, alma9, bullseye]
         include:
-          - project: plugins
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-centos7
+            image: packaging-plugins-centos7
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-alma8
+            image: packaging-plugins-alma8
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-alma9
+            image: packaging-plugins-alma9
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-bullseye
+            image: packaging-plugins-bullseye
+          - runner: ["self-hosted", "collect-arm64"]
+            dockerfile: packaging-plugins-bullseye
+            image: packaging-plugins-bullseye-arm64
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
           username: ${{ secrets.DOCKER_REGISTRY_ID }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
       - name: Login to proxy registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
         with:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.DOCKER_REGISTRY_ID }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
 
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # v3.3.1
         with:
-          file: .github/docker/Dockerfile.packaging-${{ matrix.project }}-${{ matrix.distrib }}
+          file: .github/docker/Dockerfile.${{ matrix.dockerfile }}
           context: .
           build-args: "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
           pull: true
           push: true
-          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest

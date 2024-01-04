@@ -100,7 +100,7 @@ Check hardware (health, temperatures, power supplies metrics and chassis metrics
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'health', 'temperature', 'chassis', 'psu'.
 
 =item B<--filter>

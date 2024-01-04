@@ -109,7 +109,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'power', 'slot'.
 
 =item B<--filter>

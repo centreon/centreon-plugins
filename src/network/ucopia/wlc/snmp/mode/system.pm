@@ -223,22 +223,22 @@ Example: --filter-counters='service-status'
 
 =item B<--warning-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "stopped"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "stopped"').
 You can use the following variables:  %{status}, %{display}
 
 =item B<--warning-ha-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{ha_status}
 
 =item B<--critical-ha-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ha_status} eq "fault"').
+Define the conditions to match for the status to be CRITICAL (default: '%{ha_status} eq "fault"').
 You can use the following variables:  %{ha_status}
 
 =item B<--warning-*> B<--critical-*>

@@ -296,12 +296,12 @@ Check new alarms only.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /yellow/i).
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /yellow/i).
 You can use the following variables: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /red/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /red/i').
 You can use the following variables: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--warning-*>

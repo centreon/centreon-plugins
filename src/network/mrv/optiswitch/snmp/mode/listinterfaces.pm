@@ -77,7 +77,7 @@ __END__
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -111,7 +111,7 @@ Define the OID that will be used to name the interfaces (default: atrConnCepGenD
 
 Modify the interface name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--add-extra-oid>
 

@@ -110,13 +110,13 @@ Check Azure Web SignalR usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=usage --custommode=api
 --resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-connection-count='800' --critical-connection-count='900'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'
@@ -128,11 +128,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

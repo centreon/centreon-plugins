@@ -150,7 +150,7 @@ Nodes discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'node', 'namespace').
+Choose the type of resources to discover (can be: 'node', 'namespace').
 
 =item B<--prettify>
 

@@ -442,7 +442,7 @@ You can use the following variables: %{state}, %{volumeName}, %{svmName}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
 You can use the following variables: %{state}, %{volumeName}, %{svmName}
 
 =item B<--warning-*> B<--critical-*>

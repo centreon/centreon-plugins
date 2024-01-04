@@ -110,7 +110,7 @@ List hosts.
 
 =item B<--filter-name>
 
-Filter host name (Can be a regexp).
+Filter host name (can be a regexp).
 
 =back
 

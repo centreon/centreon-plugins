@@ -419,11 +419,11 @@ Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--filter-interface>
 

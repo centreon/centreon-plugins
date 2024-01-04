@@ -240,7 +240,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-con-status>
 
-Set critical threshold for device connection status (Default: '%{status} =~ /down/i').
+Set critical threshold for device connection status (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-db-status>

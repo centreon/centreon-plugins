@@ -156,7 +156,7 @@ List BCN.
 
 =item B<--bcn>
 
-Set the BCN (number expected) ex: 1, 2,... (empty means 'check all bcn').
+Set the BCN (number expected) example: 1, 2,... (empty means 'check all bcn').
 
 =item B<--name>
 
@@ -170,7 +170,7 @@ Allows to use regexp to filter BCN (with option --name).
 
 Modify the BCN name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
+Example: adding --display-transform-src='-' --display-transform-dst='_'  will replace all occurrences of '-' with '_'
 
 =back
 

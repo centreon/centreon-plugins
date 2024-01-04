@@ -191,17 +191,17 @@ Filter disk name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{health}, %{status}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{health}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /on-line|spare|off-line/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /on-line|spare|off-line/i').
 You can use the following variables: %{health}, %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
