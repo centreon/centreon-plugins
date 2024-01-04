@@ -226,7 +226,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
 
-        $self->{output}->output_add(short_msg => $list_counter);
+        $self->{output}->output_add(short_msg => "counter list: ".$list_counter);
         $self->{output}->output_add(long_msg => $result_data);
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
