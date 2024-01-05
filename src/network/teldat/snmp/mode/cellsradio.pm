@@ -30,7 +30,6 @@ sub custom_signal_perfdata {
     my ($self) = @_;
 
     my $instances = [];
-    my $operator = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
         push @$instances, $self->{result_values}->{$_};
     }
