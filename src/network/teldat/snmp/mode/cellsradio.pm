@@ -33,7 +33,7 @@ sub custom_status_output {
         'sim status: %s [imsi: %s] [interface state: %s]',
         $self->{result_values}->{simStatus},
         $self->{result_values}->{imsi},
-        $self->{result_values}->{interfaceState},
+        $self->{result_values}->{interfaceState}
     );
 }
 
@@ -110,7 +110,7 @@ sub set_counters {
 
     $self->{maps_counters}->{signal} = [
         { label => 'module-cellradio-rsrp', nlabel => 'module.cellradio.rsrp.dbm', set => {
-                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }],
                 output_template => 'rsrp: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -118,7 +118,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-rsrq', nlabel => 'module.cellradio.rsrq.dbm', set => {
-                key_values => [ { name => 'rsrq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'rsrq' }, { name => 'cellId' }],
                 output_template => 'rsrq: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -126,7 +126,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-snr', nlabel => 'module.cellradio.snr.db', set => {
-                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'snr' }, { name => 'cellId' }],
                 output_template => 'snr: %s dB',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -134,7 +134,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-rscp', nlabel => 'module.cellradio.rscp.dbm', set => {
-                key_values => [ { name => 'rscp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'rscp' }, { name => 'cellId' }],
                 output_template => 'rscp: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -142,7 +142,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-csq', nlabel => 'module.cellradio.csq.dbm', set => {
-                key_values => [ { name => 'csq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'csq' }, { name => 'cellId' }],
                 output_template => 'csq: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -263,27 +263,27 @@ sub manage_selection {
     # return if (scalar(keys %{$self->{cells}}) <= 0);
 
     foreach my $instance (keys %{$self->{cells}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
+        my $result4 = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
 
-        $self->{cells}->{$instance}->{techno} = $result->{techno};
+        $self->{cells}->{$instance}->{techno} = $result4->{techno};
 
-        $self->{cells}->{$instance}->{status}->{simStatus} = $result->{simStatus};
+        $self->{cells}->{$instance}->{status}->{simStatus} = $result4->{simStatus};
 
         if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
-            if($result->{rsrp} ne '' && $result->{rsrp} ne 0){
-                $self->{cells}->{$instance}->{signal}->{rsrp} = $result->{rsrp};
+            if($result4->{rsrp} ne '' && $result4->{rsrp} ne 0){
+                $self->{cells}->{$instance}->{signal}->{rsrp} = $result4->{rsrp};
             }
-            if($result->{rsrq} ne '' && $result->{rsrq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rsrq} = $result->{rsrq};
+            if($result4->{rsrq} ne '' && $result4->{rsrq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rsrq} = $result4->{rsrq};
             }
-            if($result->{snr} ne '' && $result->{snr} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{snr} = $result->{snr};
+            if($result4->{snr} ne '' && $result4->{snr} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{snr} = $result4->{snr};
             }
-            if($result->{rscp} ne '' && $result->{rscp} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rscp} = $result->{rscp};
+            if($result4->{rscp} ne '' && $result4->{rscp} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rscp} = $result4->{rscp};
             }
-            if($result->{csq} ne '' && $result->{csq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{csq} = $result->{csq};
+            if($result4->{csq} ne '' && $result4->{csq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{csq} = $result4->{csq};
             }
         }
 
