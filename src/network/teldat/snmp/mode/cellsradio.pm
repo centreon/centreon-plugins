@@ -91,8 +91,8 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            warning_default => '%{interfaceState} =~ /disconnect/ || %{simStatus} =~ /LOCKED/',
-            critical_default => '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/',
+            warning_default => '%{interfaceState} =~ /disconnect/',
+            critical_default => '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/',
             set => {
                 key_values => [
                     { name => 'cellId' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simIcc' },
@@ -255,11 +255,21 @@ sub manage_selection {
         $self->{cells}->{$instance}->{status}->{simStatus} = $result3->{simStatus};
 
         if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
-            $self->{cells}->{$instance}->{signal}->{rsrp} = $result3->{rsrp};
-            $self->{cells}->{$instance}->{signal}->{rsrq} = $result3->{rsrq};
-            $self->{cells}->{$instance}->{signal}->{snr} = $result3->{snr};
-            $self->{cells}->{$instance}->{signal}->{rscp} = $result3->{rscp};
-            $self->{cells}->{$instance}->{signal}->{csq} = $result3->{csq};
+            if($result3->{rsrp} ne '' && $result3->{rsrp} ne 0){
+                $self->{cells}->{$instance}->{signal}->{rsrp} = $result3->{rsrp};
+            }
+            if($result3->{rsrq} ne '' && $result3->{rsrq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rsrq} = $result3->{rsrq};
+            }
+            if($result3->{snr} ne '' && $result3->{snr} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{snr} = $result3->{snr};
+            }
+            if($result3->{rscp} ne '' && $result3->{rscp} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rscp} = $result3->{rscp};
+            }
+            if($result3->{csq} ne '' && $result3->{csq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{csq} = $result3->{csq};
+            }
         }
 
         $self->{global}->{detected}++;
