@@ -30,11 +30,10 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'sim status: %s [imsi: %s] [interface state: %s] [cellular active SIM ICC: %s]',
+        'sim status: %s [imsi: %s] [interface state: %s]',
         $self->{result_values}->{simStatus},
         $self->{result_values}->{imsi},
         $self->{result_values}->{interfaceState},
-        $self->{result_values}->{simIcc}
     );
 }
 
@@ -42,8 +41,10 @@ sub cell_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking cellular radio module '%s'",
-        $options{instance_value}->{cellId}
+        "checking cellular radio module '%s' [cellular active SIM ICC: %s, operator: %s]",
+        $options{instance_value}->{cellId},
+        $options{instance_value}->{simIcc},
+        $options{instance_value}->{operator}
     );
 }
 
@@ -51,8 +52,10 @@ sub prefix_cell_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "cellular radio module '%s'",
-        $options{instance_value}->{cellId}
+        "cellular radio module '%s' [cellular active SIM ICC: %s, operator: %s] ",
+        $options{instance_value}->{cellId},
+        $options{instance_value}->{simIcc},
+        $options{instance_value}->{operator}
     );
 }
 
@@ -95,7 +98,7 @@ sub set_counters {
             critical_default => '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simIcc' },
+                    { name => 'cellId' }, { name => 'operator' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simIcc' },
                     { name => 'simStatus' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -107,7 +110,7 @@ sub set_counters {
 
     $self->{maps_counters}->{signal} = [
         { label => 'module-cellradio-rsrp', nlabel => 'module.cellradio.rsrp.dbm', set => {
-                key_values      => [ { name => 'rsrp' }, { name => 'cellId' } ],
+                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrp: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -115,7 +118,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-rsrq', nlabel => 'module.cellradio.rsrq.dbm', set => {
-                key_values => [ { name => 'rsrq' }, { name => 'cellId' }],
+                key_values => [ { name => 'rsrq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrq: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -123,7 +126,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-snr', nlabel => 'module.cellradio.snr.db', set => {
-                key_values => [ { name => 'snr' }, { name => 'cellId' }],
+                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'snr: %s dB',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -131,7 +134,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-rscp', nlabel => 'module.cellradio.rscp.dbm', set => {
-                key_values => [ { name => 'rscp' }, { name => 'cellId' }],
+                key_values => [ { name => 'rscp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rscp: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -139,7 +142,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-csq', nlabel => 'module.cellradio.csq.dbm', set => {
-                key_values => [ { name => 'csq' }, { name => 'cellId' }],
+                key_values => [ { name => 'csq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'csq: %s dBm',
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1, instance_use => 'name' }
@@ -167,13 +170,13 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(simIcc)';
+        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(operator)';
     }
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
         instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { cellId => 1, simIcc => 1, imsi => 1}
+        labels => { cellId => 1, operator => 1, simIcc => 1}
     );
 }
 
@@ -197,6 +200,10 @@ my $mapping_state_mobile = {
     simStatus   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.26' } # teldatCellularStateMobileSIMStatus : Cellular mobile SIM status.
 };
 
+my $mapping_prof_dial = {
+    operator  => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.4.1.2' } # teldatCellularProfDialName1 : Dial Profile Name(1) associated to cellular interface.
+};
+
 my $oid_teldatCellularInfoInterfaceEntry = '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1'; # teldatInfoInterfaceTable
 my $oid_teldatCellularStateMobileEntry = '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1'; # teldatStateMobileTable
 
@@ -209,6 +216,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping_state_interface->{interfaceState}->{oid} },
+            { oid => $mapping_prof_dial->{operator}->{oid} },
             { oid => $oid_teldatCellularInfoInterfaceEntry, start => $mapping_info_interface->{imei}->{oid}, end => $mapping_info_interface->{simIcc}->{oid} },
             { oid => $oid_teldatCellularStateMobileEntry, start => $mapping_state_mobile->{techno}->{oid}, end => $mapping_state_mobile->{simStatus}->{oid} }
         ],
@@ -221,19 +229,26 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_info_interface, results => $snmp_result->{$oid_teldatCellularInfoInterfaceEntry}, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping_state_interface, results => $snmp_result->{$mapping_state_interface->{interfaceState}->{oid}}, instance => $instance);
+        my $result3 = $options{snmp}->map_instance(mapping => $mapping_prof_dial, results => $snmp_result->{$mapping_prof_dial->{operator}->{oid}}, instance => $instance);
 
         my $cell_id = $result->{imei} =~ /^(?:[0-9]+)$/ ? $result->{imei} : $result->{simIcc};
         next if ($cell_id !~ /^(?:[0-9]+)$/);
         next if (defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '' &&
             $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simIcc} !~ /$self->{option_results}->{filter_cell_id}/);
 
+        my $operator = $result3->{operator};
+        if($result3->{operator} =~ /^-+$/){
+            $operator = "N/A";
+        }
         $self->{cells}->{$instance} = {
             cellId => $cell_id,
             simIcc  => $result->{simIcc},
+            operator => $operator,
             status => {
                 cellId => $cell_id,
-                imsi   => $result->{imsi},
                 simIcc  => $result->{simIcc},
+                operator => $operator,
+                imsi   => $result->{imsi},
                 interfaceState => $result2->{interfaceState}
             },
             signal => { cellId => $cell_id }
@@ -248,27 +263,27 @@ sub manage_selection {
     # return if (scalar(keys %{$self->{cells}}) <= 0);
 
     foreach my $instance (keys %{$self->{cells}}) {
-        my $result3 = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
 
-        $self->{cells}->{$instance}->{techno} = $result3->{techno};
+        $self->{cells}->{$instance}->{techno} = $result->{techno};
 
-        $self->{cells}->{$instance}->{status}->{simStatus} = $result3->{simStatus};
+        $self->{cells}->{$instance}->{status}->{simStatus} = $result->{simStatus};
 
         if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
-            if($result3->{rsrp} ne '' && $result3->{rsrp} ne 0){
-                $self->{cells}->{$instance}->{signal}->{rsrp} = $result3->{rsrp};
+            if($result->{rsrp} ne '' && $result->{rsrp} ne 0){
+                $self->{cells}->{$instance}->{signal}->{rsrp} = $result->{rsrp};
             }
-            if($result3->{rsrq} ne '' && $result3->{rsrq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rsrq} = $result3->{rsrq};
+            if($result->{rsrq} ne '' && $result->{rsrq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rsrq} = $result->{rsrq};
             }
-            if($result3->{snr} ne '' && $result3->{snr} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{snr} = $result3->{snr};
+            if($result->{snr} ne '' && $result->{snr} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{snr} = $result->{snr};
             }
-            if($result3->{rscp} ne '' && $result3->{rscp} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rscp} = $result3->{rscp};
+            if($result->{rscp} ne '' && $result->{rscp} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{rscp} = $result->{rscp};
             }
-            if($result3->{csq} ne '' && $result3->{csq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{csq} = $result3->{csq};
+            if($result->{csq} ne '' && $result->{csq} ne 0) {
+                $self->{cells}->{$instance}->{signal}->{csq} = $result->{csq};
             }
         }
 
@@ -292,22 +307,22 @@ Filter cell modules by id (IMEI or SimICC).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(cellId) %(simIcc)')
+Define perfdatas instance (default: '%(cellId) %(operator)')
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: ''%{interfaceState} =~ /disconnect/ || %{simStatus} =~ /LOCKED/'').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{imsi}, %{simIcc}
+You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>
 
