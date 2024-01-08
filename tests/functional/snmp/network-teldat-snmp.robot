@@ -398,7 +398,7 @@ Network Teldat SNMP cells radio
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --warning-module-cellradio-snr=${teldat_cellsradio_test.warningmodulecellradiosnr}
         END
-        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiocsq}
+        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiosnr}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-module-cellradio-snr=${teldat_cellsradio_test.criticalmodulecellradiosnr}
         END
