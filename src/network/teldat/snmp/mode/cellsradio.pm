@@ -31,7 +31,6 @@ sub custom_signal_perfdata {
 
     my $instances = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
-        use Data::Dumper;
         push @$instances, $self->{result_values}->{$_};
     }
 
