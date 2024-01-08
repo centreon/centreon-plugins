@@ -56,8 +56,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::aruba::in
 
 
 *** Test Cases ***
-Network Aruba Instant SNMP plugin - AP Usage
-    [Documentation]    Network Aruba Instant SNMP plugin - AP Usage
+Network Aruba Instant SNMP plugin
+    [Documentation]    AP Usage
     [Tags]    network    aruba    snmp
     FOR    ${ap_usage_tc}    IN    @{ap_usage_tests}
         ${command}    Catenate
@@ -68,7 +68,7 @@ Network Aruba Instant SNMP plugin - AP Usage
         ...    --critical-clients='${ap_usage_tc.criticalclients}'
         ...    --snmp-community=${ap_usage_tc.snmpcommunity}
 
-        Log To Console ${ap_usage_tc.documentation}
+        Log To Console      ${ap_usage_tc.documentation}
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
