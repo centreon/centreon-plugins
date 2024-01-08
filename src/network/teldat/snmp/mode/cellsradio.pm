@@ -240,7 +240,7 @@ sub manage_selection {
         my $result2 = $options{snmp}->map_instance(mapping => $mapping_state_interface, results => $snmp_result->{$mapping_state_interface->{interfaceState}->{oid}}, instance => $instance);
         my $result3 = $options{snmp}->map_instance(mapping => $mapping_prof_dial, results => $snmp_result->{$mapping_prof_dial->{operator}->{oid}}, instance => $instance);
 
-        my $cell_id = $result->{imei} =~ /^(?:[0-9]+)$/ ? $result->{imei} : $result->{simIcc};
+        my $cell_id = $result->{imei};
         next if ($cell_id !~ /^(?:[0-9]+)$/);
         next if (defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '' &&
             $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simIcc} !~ /$self->{option_results}->{filter_cell_id}/);
@@ -316,7 +316,7 @@ Check cellular radio modules.
 
 =item B<--filter-cell-id>
 
-Filter cell modules by id (IMEI or SimICC).
+Filter cell modules by id IMEI.
 
 =item B<--custom-perfdata-instances>
 
@@ -330,12 +330,12 @@ You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId},
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: ''%{interfaceState} =~ /disconnect/ || %{simStatus} =~ /LOCKED/'').
+Define the conditions to match for the status to be WARNING (default: '%{interfaceState} =~ /disconnect/').
 You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{interfaceState} =~ /initial/ || %{simStatus} =~ /DETECTING/').
+Define the conditions to match for the status to be CRITICAL (default: '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/').
 You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>
