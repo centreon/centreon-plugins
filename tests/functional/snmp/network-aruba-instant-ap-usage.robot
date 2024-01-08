@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Network Aruba Instant SNMP plugin - AP Usage
 
-Library             Network
+Library             OperatingSystem
 Library             String
 
 Test Timeout        120s
