@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Kvm-Avocent-Acs-8000-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_kvm_avocent_8000.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpudetailed.pm",
+        "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/memory.pm",
+        "hardware/kvm/avocent/acs/8000/snmp/"
+    ]
+}
