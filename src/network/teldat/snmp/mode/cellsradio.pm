@@ -31,6 +31,7 @@ sub custom_signal_perfdata {
 
     my $instances = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        use Data::Dumper;
         push @$instances, $self->{result_values}->{$_};
     }
 
@@ -128,31 +129,31 @@ sub set_counters {
 
     $self->{maps_counters}->{signal} = [
         { label => 'module-cellradio-rsrp', nlabel => 'module.cellradio.rsrp.dbm', set => {
-                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }],
+                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrp: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-rsrq', nlabel => 'module.cellradio.rsrq.dbm', set => {
-                key_values => [ { name => 'rsrq' }, { name => 'cellId' }],
+                key_values => [ { name => 'rsrq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrq: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-snr', nlabel => 'module.cellradio.snr.db', set => {
-                key_values => [ { name => 'snr' }, { name => 'cellId' }],
+                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'snr: %s dB',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-rscp', nlabel => 'module.cellradio.rscp.dbm', set => {
-                key_values => [ { name => 'rscp' }, { name => 'cellId' }],
+                key_values => [ { name => 'rscp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rscp: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-csq', nlabel => 'module.cellradio.csq.dbm', set => {
-                key_values => [ { name => 'csq' }, { name => 'cellId' }],
+                key_values => [ { name => 'csq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'csq: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
@@ -178,7 +179,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(cellId)';
+        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(operator)';
     }
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
@@ -259,7 +260,11 @@ sub manage_selection {
                 imsi   => $result->{imsi},
                 interfaceState => $result2->{interfaceState}
             },
-            signal => { cellId => $cell_id }
+            signal => {
+                cellId => $cell_id,
+                simIcc  => $result->{simIcc},
+                operator => $operator
+            }
         };
     }
 
@@ -315,7 +320,8 @@ Filter cell modules by id (IMEI or SimICC).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(cellId) %(operator)')
+Define perfdatas instance (default: '%(cellId) %(operator)').
+You can use the following variables: %{cellId}, %{simIcc}, %{operator}
 
 =item B<--unknown-status>
 
