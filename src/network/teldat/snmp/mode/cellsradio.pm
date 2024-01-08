@@ -116,8 +116,8 @@ sub set_counters {
             critical_default => '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'operator' }, { name => 'interfaceState' }, { name => 'imsi' }, { name => 'simIcc' },
-                    { name => 'simStatus' }
+                    { name => 'cellId' }, { name => 'operator' }, { name => 'imsi' }, { name => 'simIcc' },
+                    { name => 'simStatus' }, { name => 'interfaceState' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
