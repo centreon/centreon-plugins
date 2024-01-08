@@ -222,6 +222,90 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         criticalmodulecellradiosnr=
 ...                         result=CRITICAL: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] rsrq: -18 dBm - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] - rsrq: -18 dBm - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] WARNING: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] | 'modules.cellradio.detected.count'=3;;;0; '359072066403821~N/A#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~N/A#module.cellradio.rsrq.dbm'=-18;;0:-10;0; '359072066403821~N/A#module.cellradio.snr.db'=-1;;;0; '359072066403821~N/A#module.cellradio.csq.dbm'=-73;;;0; '359072066403821~PHENIX#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~PHENIX#module.cellradio.rsrq.dbm'=-18;;0:-10;0; '359072066403821~PHENIX#module.cellradio.snr.db'=-1;;;0; '359072066403821~PHENIX#module.cellradio.csq.dbm'=-73;;;0;
 
+# Test cellsradio mode with warning-module-cellradio-csq option set to a -10
+&{teldat_cellsradio_test11}
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=-10
+...                         criticalmodulecellradiocsq=
+...                         warningmodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
+...                         result=CRITICAL: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] WARNING: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] - csq: -73 dBm - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] csq: -73 dBm | 'modules.cellradio.detected.count'=3;;;0; '359072066403821~N/A#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~N/A#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~N/A#module.cellradio.snr.db'=-1;;;0; '359072066403821~N/A#module.cellradio.csq.dbm'=-73;0:-10;;0; '359072066403821~PHENIX#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~PHENIX#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~PHENIX#module.cellradio.snr.db'=-1;;;0; '359072066403821~PHENIX#module.cellradio.csq.dbm'=-73;0:-10;;0;
+
+# Test cellsradio mode with critical-module-cellradio-csq option set to a -10
+&{teldat_cellsradio_test12}
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalmodulecellradiocsq=-10
+...                         warningmodulecellradiosnr=
+...                         criticalmodulecellradiosnr=
+...                         result=CRITICAL: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] csq: -73 dBm - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] - csq: -73 dBm - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] WARNING: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] | 'modules.cellradio.detected.count'=3;;;0; '359072066403821~N/A#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~N/A#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~N/A#module.cellradio.snr.db'=-1;;;0; '359072066403821~N/A#module.cellradio.csq.dbm'=-73;;0:-10;0; '359072066403821~PHENIX#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~PHENIX#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~PHENIX#module.cellradio.snr.db'=-1;;;0; '359072066403821~PHENIX#module.cellradio.csq.dbm'=-73;;0:-10;0;
+
+# Test cellsradio mode with warning-module-cellradio-snr option set to a 0
+&{teldat_cellsradio_test13}
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
+...                         warningmodulecellradiosnr=0
+...                         criticalmodulecellradiosnr=
+...                         result=CRITICAL: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] WARNING: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] - snr: -1 dB - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] snr: -1 dB | 'modules.cellradio.detected.count'=3;;;0; '359072066403821~N/A#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~N/A#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~N/A#module.cellradio.snr.db'=-1;0:0;;0; '359072066403821~N/A#module.cellradio.csq.dbm'=-73;;;0; '359072066403821~PHENIX#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~PHENIX#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~PHENIX#module.cellradio.snr.db'=-1;0:0;;0; '359072066403821~PHENIX#module.cellradio.csq.dbm'=-73;;;0;
+
+# Test cellsradio mode with critical-module-cellradio-snr option set to a 0
+&{teldat_cellsradio_test14}
+...                         filtercellid=
+...                         customperfdatainstances=
+...                         unknownstatus=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningmodulescellradiodetected=
+...                         criticalmodulescellradiodetected=
+...                         warningmodulecellradiorsrp=
+...                         criticalmodulecellradiorsrp=
+...                         warningmodulecellradiorsrq=
+...                         criticalmodulecellradiorsrq=
+...                         warningmodulecellradiorscp=
+...                         criticalmodulecellradiorscp=
+...                         warningmodulecellradiocsq=
+...                         criticalmodulecellradiocsq=
+...                         warningmodulecellradiosnr=
+...                         criticalmodulecellradiosnr=0
+...                         result=CRITICAL: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] snr: -1 dB - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: PHENIX] sim status: LOCKED [imsi: 208015606540916] [interface state: connect(9)] - snr: -1 dB - cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: DETECTING [imsi: 208015606540916] [interface state: disconnect(1)] WARNING: cellular radio module '359072066403821' [sim icc: 89330122115801091660, operator: N/A] sim status: OK [imsi: 208015606540916] [interface state: disconnect(1)] | 'modules.cellradio.detected.count'=3;;;0; '359072066403821~N/A#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~N/A#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~N/A#module.cellradio.snr.db'=-1;;0:0;0; '359072066403821~N/A#module.cellradio.csq.dbm'=-73;;;0; '359072066403821~PHENIX#module.cellradio.rsrp.dbm'=-114;;;0; '359072066403821~PHENIX#module.cellradio.rsrq.dbm'=-18;;;0; '359072066403821~PHENIX#module.cellradio.snr.db'=-1;;0:0;0; '359072066403821~PHENIX#module.cellradio.csq.dbm'=-73;;;0;
+
 @{teldat_cellsradio_tests}
 ...                         &{teldat_cellsradio_test1}
 ...                         &{teldat_cellsradio_test2}
@@ -233,6 +317,10 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         &{teldat_cellsradio_test8}
 ...                         &{teldat_cellsradio_test9}
 ...                         &{teldat_cellsradio_test10}
+...                         &{teldat_cellsradio_test11}
+...                         &{teldat_cellsradio_test12}
+...                         &{teldat_cellsradio_test13}
+...                         &{teldat_cellsradio_test14}
 
 *** Test Cases ***
 Network Teldat SNMP cells radio
@@ -289,6 +377,30 @@ Network Teldat SNMP cells radio
         ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiorsrq}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-module-cellradio-rsrq=${teldat_cellsradio_test.criticalmodulecellradiorsrq}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.warningmodulecellradiorscp}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-module-cellradio-rscp=${teldat_cellsradio_test.warningmodulecellradiorscp}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiorscp}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-module-cellradio-rscp=${teldat_cellsradio_test.criticalmodulecellradiorscp}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.warningmodulecellradiocsq}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-module-cellradio-csq=${teldat_cellsradio_test.warningmodulecellradiocsq}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiocsq}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-module-cellradio-csq=${teldat_cellsradio_test.criticalmodulecellradiocsq}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.warningmodulecellradiosnr}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-module-cellradio-snr=${teldat_cellsradio_test.warningmodulecellradiosnr}
+        END
+        ${length}    Get Length    ${teldat_cellsradio_test.criticalmodulecellradiocsq}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-module-cellradio-snr=${teldat_cellsradio_test.criticalmodulecellradiosnr}
         END
         ${output}    Run    ${command}
         Log To Console    ${command}
