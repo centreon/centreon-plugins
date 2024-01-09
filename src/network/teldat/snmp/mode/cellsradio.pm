@@ -277,8 +277,6 @@ sub manage_selection {
     foreach my $instance (keys %{$self->{cells}}) {
         my $result4 = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
 
-        $self->{cells}->{$instance}->{techno} = $result4->{techno};
-
         $self->{cells}->{$instance}->{status}->{simStatus} = $result4->{simStatus};
 
         if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
