@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::moonshot::snmp::mode::interfaces;
+package network::teldat::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 
