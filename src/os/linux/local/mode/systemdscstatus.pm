@@ -27,24 +27,34 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
+# Custom function to include details of failed services in status output
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf(
+    my $output = sprintf(
         'status : %s/%s/%s [boot: %s]',
         $self->{result_values}->{load},
         $self->{result_values}->{active},
         $self->{result_values}->{sub},
         $self->{result_values}->{boot}
     );
+
+    # If the overall status is 'failed', include the list of failed services
+    if ($self->{result_values}->{sub} =~ /failed/i) {
+        $output .= sprintf("\nFailed Service(s): %s", join(', ', keys %{$self->{services_failed}}));
+    }
+
+    return $output;
 }
 
+# Prefix for service output
 sub prefix_sc_output {
     my ($self, %options) = @_;
 
     return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
+# Counter configuration
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -99,32 +109,38 @@ sub set_counters {
     ];
 }
 
+# Constructor
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+    # Adding options specific to the script
     $options{options}->add_options(arguments => {
         'filter-name:s'  => { name => 'filter_name' },
         'exclude-name:s' => { name => 'exclude_name' }
     });
 
+    # Adding a variable to store failed services
+    $self->{services_failed} = {};
+
     return $self;
 }
 
+# Function to collect information about services
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # Executing 'systemctl' command to get information about services
     my ($stdout) = $options{custom}->execute_command(
         command => 'systemctl',
         command_options => '-a --no-pager --no-legend --plain'
     );
 
+    # Initializing global counters
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
     $self->{sc} = {};
-    #auditd.service                                                        loaded    active   running Security Auditing Service
-    #avahi-daemon.service                                                  loaded    active   running Avahi mDNS/DNS-SD Stack
-    #brandbot.service                                                      loaded    inactive dead    Flexible Branding Service
+
     while ($stdout =~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/msig) {
         my ($name, $load, $active, $sub) = ($1, $2, $3, lc($4));
 
@@ -136,6 +152,10 @@ sub manage_selection {
         $self->{sc}->{$name} = { display => $name, load => $load, active => $active, sub => $sub, boot => '-' };
         $self->{global}->{$sub} += 1 if (defined($self->{global}->{$sub}));
         $self->{global}->{total} += 1;
+
+        if ($sub =~ /failed/i) {
+            $self->{services_failed}->{$name} = 1;
+        }
     }
 
     if (scalar(keys %{$self->{sc}}) <= 0) {
@@ -143,16 +163,12 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    # Executing 'systemctl' command to get information about service startup state
     ($stdout) = $options{custom}->execute_command(
         command => 'systemctl',
         command_options => 'list-unit-files --no-pager --no-legend --plain'
     );
-    # vendor preset is a new column
-    #UNIT FILE                 STATE           VENDOR PRESET
-    #runlevel4.target          enabled 
-    #runlevel5.target          static  
-    #runlevel6.target          disabled
-    #irqbalance.service        enabled         enabled
+
     while ($stdout =~ /^(.*?)\s+(\S+)\s*/msig) {
         my ($name, $boot) = ($1, $2);
         next if (!defined($self->{sc}->{$name}));
@@ -163,6 +179,7 @@ sub manage_selection {
 1;
 
 __END__
+
 
 =head1 MODE
 
