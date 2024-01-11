@@ -344,6 +344,85 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         &{teldat_cellsradio_test14}
 ...                         &{teldat_cellsradio_test15}
 
+# Test simple usage of the CPU mode
+&{teldat_cpu_test1}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=
+...                         result=OK: cpu average usage: 1.00 % (5s), 1.00 % (1m), 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+
+# Test CPU mode with warning-cpu-utilization-5s option set to a 0.5
+&{teldat_cpu_test2}
+...                         warningcpuutilization5s=0.5
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=
+...                         result=WARNING: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;0:0.5;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+
+# Test CPU mode with critical-cpu-utilization-5s option set to a 0.5
+&{teldat_cpu_test3}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=0.5
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=
+...                         result=CRITICAL: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;;0:0.5;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+
+# Test CPU mode with warning-cpu-utilization-1m option set to a 0.5
+&{teldat_cpu_test4}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=0.5
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=
+...                         result=WARNING: cpu average usage: 1.00 % (1m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;0:0.5;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+
+# Test CPU mode with critical-cpu-utilization-1m option set to a 0.5
+&{teldat_cpu_test5}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=0.5
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=
+...                         result=CRITICAL: cpu average usage: 1.00 % (1m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;0:0.5;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+
+# Test CPU mode with warning-cpu-utilization-5m option set to a 0.5
+&{teldat_cpu_test6}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=0.5
+...                         criticalcpuutilization5m=
+...                         result=WARNING: cpu average usage: 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;0:0.5;;0;100
+
+# Test CPU mode with critical-cpu-utilization-5m option set to a 0.5
+&{teldat_cpu_test7}
+...                         warningcpuutilization5s=
+...                         criticalcpuutilization5s=
+...                         warningcpuutilization1m=
+...                         criticalcpuutilization1m=
+...                         warningcpuutilization5m=
+...                         criticalcpuutilization5m=0.5
+...                         result=CRITICAL: cpu average usage: 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;0:0.5;0;100
+
+@{teldat_cpu_tests}
+...                         &{teldat_cpu_test1}
+...                         &{teldat_cpu_test2}
+...                         &{teldat_cpu_test3}
+...                         &{teldat_cpu_test4}
+...                         &{teldat_cpu_test5}
+...                         &{teldat_cpu_test6}
+...                         &{teldat_cpu_test7}
+
 *** Test Cases ***
 Network Teldat SNMP cells radio
     [Documentation]    Network Teldat SNMP cells radio
@@ -431,4 +510,49 @@ Network Teldat SNMP cells radio
         ...    ${output}
         ...    ${teldat_cellsradio_test.result}
         ...    Wrong output result for compliance of ${teldat_cellsradio_test.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    END
+
+Network Teldat SNMP CPU
+    [Documentation]    Network Teldat SNMP cells radio
+    [Tags]    network    Teldat    snmp
+    FOR    ${teldat_cpu_test}    IN    @{teldat_cpu_tests}
+        ${command}    Catenate
+        ...    ${CMD}
+        ...    --mode=cpu
+        ...    --hostname=127.0.0.1
+        ...    --snmp-version=2c
+        ...    --snmp-port=2024
+        ...    --snmp-community=network-teldat-snmp
+        ${length}    Get Length    ${teldat_cpu_test.warningcpuutilization5s}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-cpu-utilization-5s=${teldat_cpu_test.warningcpuutilization5s}
+        END
+        ${length}    Get Length    ${teldat_cpu_test.criticalcpuutilization5s}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-cpu-utilization-5s=${teldat_cpu_test.criticalcpuutilization5s}
+        END
+        ${length}    Get Length    ${teldat_cpu_test.warningcpuutilization1m}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-cpu-utilization-1m=${teldat_cpu_test.warningcpuutilization1m}
+        END
+        ${length}    Get Length    ${teldat_cpu_test.criticalcpuutilization1m}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-cpu-utilization-1m=${teldat_cpu_test.criticalcpuutilization1m}
+        END
+        ${length}    Get Length    ${teldat_cpu_test.warningcpuutilization5m}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-cpu-utilization-5m=${teldat_cpu_test.warningcpuutilization5m}
+        END
+        ${length}    Get Length    ${teldat_cpu_test.criticalcpuutilization5m}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-cpu-utilization-5m=${teldat_cpu_test.criticalcpuutilization5m}
+        END
+
+        ${output}    Run    ${command}
+        Log To Console    ${command}
+        ${output}    Strip String    ${output}
+        Should Be Equal As Strings
+        ...    ${output}
+        ...    ${teldat_cpu_test.result}
+        ...    Wrong output result for compliance of ${teldat_cpu_test.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
     END
