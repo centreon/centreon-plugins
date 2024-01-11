@@ -6,27 +6,13 @@ Library             String
 
 Test Timeout        120s
 
+
 *** Variables ***
 ${HOSTADDRESS}      127.0.0.1
 ${SNMPPORT}         2024
 ${SNMPVERSION}      2c
 ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
-*** Keywords ***
-Run Avocent 8000 Plugin
-    [Arguments]    ${mode}    ${extraoptions}
-    ${command}    Catenate
-        ...    perl ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-        ...    --plugin=hardware::kvm::avocent::acs::8000::snmp::plugin
-        ...    --mode=${mode}
-        ...    --hostname=${HOSTADDRESS}
-        ...    --snmp-version=${SNMPVERSION}
-        ...    --snmp-port=${SNMPPORT}
-        ...    --snmp-community=${SNMPCOMMUNITY}
-        ...    ${extraoptions}
-
-    ${output}    Run    ${command}
-    [return]     ${output}
 
 *** Test Cases ***
 Cpu-Detailed
@@ -45,7 +31,7 @@ Cpu-Detailed
     Remove File    /dev/shm/snmpstandard_127.0.0.1_2024_cpu-detailed*
     Should Be Equal As Strings
     ...    ${output}
-    ...    OK: CPU Usage: user : counter not moved, nice : counter not moved, system : counter not moved, idle : counter not moved, wait : counter not moved, kernel : counter not moved, interrupt : counter not moved, softirq : counter not moved, steal : counter not moved, guest : counter not moved, guestnice : counter not moved 
+    ...    OK: CPU Usage: user : counter not moved, nice : counter not moved, system : counter not moved, idle : counter not moved, wait : counter not moved, kernel : counter not moved, interrupt : counter not moved, softirq : counter not moved, steal : counter not moved, guest : counter not moved, guestnice : counter not moved
     ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
 
 Hardware
@@ -99,3 +85,20 @@ Serial Ports
     ...    ${output}
     ...    OK: All serial ports are ok | 'ttyS1#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS1#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS10#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS10#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS11#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS11#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS12#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS12#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS13#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS13#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS14#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS14#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS15#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS15#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS16#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS16#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS2#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS2#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS3#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS3#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS4#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS4#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS5#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS5#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS6#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS6#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS7#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS7#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS8#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS8#serialport.traffic.out.bitspersecond'=0b/s;;;0; 'ttyS9#serialport.traffic.in.bitspersecond'=0b/s;;;0; 'ttyS9#serialport.traffic.out.bitspersecond'=0b/s;;;0;
     ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
+
+
+*** Keywords ***
+Run Avocent 8000 Plugin
+    [Arguments]    ${mode}    ${extraoptions}
+    ${command}    Catenate
+    ...    perl ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+    ...    --plugin=hardware::kvm::avocent::acs::8000::snmp::plugin
+    ...    --mode=${mode}
+    ...    --hostname=${HOSTADDRESS}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
+    ...    --snmp-community=${SNMPCOMMUNITY}
+    ...    ${extraoptions}
+
+    ${output}    Run    ${command}
+    RETURN    ${output}
