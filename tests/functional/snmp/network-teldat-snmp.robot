@@ -423,6 +423,85 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::teldat::s
 ...                         &{teldat_cpu_test6}
 ...                         &{teldat_cpu_test7}
 
+# Test simple usage of the memory mode
+&{teldat_memory_test1}
+...                         warningusage=
+...                         criticalusage=
+...                         warningusagefree=
+...                         criticalusagefree=
+...                         warningusageprct=
+...                         criticalusageprct=
+...                         result=OK: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
+
+# Test memory mode with warning-usage option set to a 100
+&{teldat_memory_test2}
+...                         warningusage=100
+...                         criticalusage=
+...                         warningusagefree=
+...                         criticalusagefree=
+...                         warningusageprct=
+...                         criticalusageprct=
+...                         result=WARNING: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;0:100;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
+
+# Test memory mode with critical-usage option set to a 100
+&{teldat_memory_test3}
+...                         warningusage=
+...                         criticalusage=100
+...                         warningusagefree=
+...                         criticalusagefree=
+...                         warningusageprct=
+...                         criticalusageprct=
+...                         result=CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;0:100;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
+
+# Test memory mode with warning-usage-free option set to a 100
+&{teldat_memory_test4}
+...                         warningusage=
+...                         criticalusage=
+...                         warningusagefree=100
+...                         criticalusagefree=
+...                         warningusageprct=
+...                         criticalusageprct=
+...                         result=WARNING: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;0:100;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
+
+# Test memory mode with critical-usage-free option set to a 100
+&{teldat_memory_test5}
+...                         warningusage=
+...                         criticalusage=
+...                         warningusagefree=
+...                         criticalusagefree=100
+...                         warningusageprct=
+...                         criticalusageprct=
+...                         result=CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;0:100;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
+
+# Test memory mode with warning-usage-prct option set to a 30
+&{teldat_memory_test6}
+...                         warningusage=
+...                         criticalusage=
+...                         warningusagefree=
+...                         criticalusagefree=
+...                         warningusageprct=30
+...                         criticalusageprct=
+...                         result=WARNING: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;0:30;;0;100
+
+# Test memory mode with critical-usage-prct option set to a 30
+&{teldat_memory_test7}
+...                         warningusage=
+...                         criticalusage=
+...                         warningusagefree=
+...                         criticalusagefree=
+...                         warningusageprct=
+...                         criticalusageprct=30
+...                         result=CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;0:30;0;100
+
+@{teldat_memory_tests}
+...                         &{teldat_memory_test1}
+...                         &{teldat_memory_test2}
+...                         &{teldat_memory_test3}
+...                         &{teldat_memory_test4}
+...                         &{teldat_memory_test5}
+...                         &{teldat_memory_test6}
+...                         &{teldat_memory_test7}
+
 *** Test Cases ***
 Network Teldat SNMP cells radio
     [Documentation]    Network Teldat SNMP cells radio
@@ -513,7 +592,7 @@ Network Teldat SNMP cells radio
     END
 
 Network Teldat SNMP CPU
-    [Documentation]    Network Teldat SNMP cells radio
+    [Documentation]    Network Teldat SNMP CPU
     [Tags]    network    Teldat    snmp
     FOR    ${teldat_cpu_test}    IN    @{teldat_cpu_tests}
         ${command}    Catenate
@@ -547,7 +626,6 @@ Network Teldat SNMP CPU
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-cpu-utilization-5m=${teldat_cpu_test.criticalcpuutilization5m}
         END
-
         ${output}    Run    ${command}
         Log To Console    ${command}
         ${output}    Strip String    ${output}
@@ -555,4 +633,47 @@ Network Teldat SNMP CPU
         ...    ${output}
         ...    ${teldat_cpu_test.result}
         ...    Wrong output result for compliance of ${teldat_cpu_test.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    END
+Network Teldat SNMP Memory
+    [Documentation]    Network Teldat SNMP memory
+    [Tags]    network    Teldat    snmp
+    FOR    ${teldat_memory_test}    IN    @{teldat_memory_tests}
+        ${command}    Catenate
+        ...    ${CMD}
+        ...    --mode=memory
+        ...    --hostname=127.0.0.1
+        ...    --snmp-version=2c
+        ...    --snmp-port=2024
+        ...    --snmp-community=network-teldat-snmp
+        ${length}    Get Length    ${teldat_memory_test.warningusage}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-usage=${teldat_memory_test.warningusage}
+        END
+        ${length}    Get Length    ${teldat_memory_test.criticalusage}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-usage=${teldat_memory_test.criticalusage}
+        END
+        ${length}    Get Length    ${teldat_memory_test.warningusagefree}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-usage-free=${teldat_memory_test.warningusagefree}
+        END
+        ${length}    Get Length    ${teldat_memory_test.criticalusagefree}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-usage-free=${teldat_memory_test.criticalusagefree}
+        END
+        ${length}    Get Length    ${teldat_memory_test.warningusageprct}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-usage-prct=${teldat_memory_test.warningusageprct}
+        END
+        ${length}    Get Length    ${teldat_memory_test.criticalusageprct}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-usage-prct=${teldat_memory_test.criticalusageprct}
+        END
+        ${output}    Run    ${command}
+        Log To Console    ${command}
+        ${output}    Strip String    ${output}
+        Should Be Equal As Strings
+        ...    ${output}
+        ...    ${teldat_memory_test.result}
+        ...    Wrong output result for compliance of ${teldat_memory_test.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
     END
