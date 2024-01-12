@@ -8,6 +8,6 @@
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/uptime.pm",
 	"snmp_standard/mode/resources/",
-        "network/taldat/snmp/"
+        "network/teldat/snmp/"
     ]
 }
