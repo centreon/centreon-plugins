@@ -1,5 +1,5 @@
 {
-    "pkg_name": "centreon-plugin-Network-Taldat-Snmp",
+    "pkg_name": "centreon-plugin-Network-Teldat-Snmp",
     "pkg_summary": "Centreon Plugin",
     "plugin_name": "centreon_teldat_snmp.pl",
     "files": [
