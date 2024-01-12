@@ -313,7 +313,7 @@ Check cellular radio modules.
 
 =item B<--filter-cell-id>
 
-Filter cell modules by id IMEI.
+Filter cell modules by IMEI id.
 
 =item B<--custom-perfdata-instances>
 
