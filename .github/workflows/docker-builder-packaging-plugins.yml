@@ -37,6 +37,9 @@ jobs:
           - runner: ["self-hosted", "collect-arm64"]
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye-arm64
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-bookworm
+            image: packaging-plugins-bookworm
 
     runs-on: ${{ matrix.runner }}
 

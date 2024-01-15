@@ -130,7 +130,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources

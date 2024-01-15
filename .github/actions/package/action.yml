@@ -32,7 +32,7 @@ inputs:
     description: The rpm gpg signing passphrase
     required: true
   stability:
-    description: "The package stability (stable, testing, unstable)"
+    description: "The package stability (stable, testing, unstable, canary)"
     required: true
 
 runs:

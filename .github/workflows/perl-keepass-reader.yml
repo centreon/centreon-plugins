@@ -120,6 +120,8 @@ jobs:
         include:
           - image: bullseye
             distrib: bullseye
+          - image: bookworm
+            distrib: bookworm
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
@@ -180,7 +182,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources
@@ -201,7 +203,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye]
+        distrib: [el8, el9, bullseye, bookworm]
 
     steps:
       - name: Checkout sources
