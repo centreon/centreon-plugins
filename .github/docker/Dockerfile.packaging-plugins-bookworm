@@ -21,13 +21,14 @@ RUN bash -e <<EOF
 
 apt-get update
 
+echo 'http://deb.debian.org/debian' | apt-get install -y pbuilder
+
 apt-get install -y \
   dh-make \
   aptitude \
   ca-certificates \
   libssh-dev \
   lintian \
-  pbuilder \
   quilt \
   git-buildpackage \
   debmake \
