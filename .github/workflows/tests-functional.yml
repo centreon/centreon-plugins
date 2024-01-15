@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install -qqy snmpsim
 
       - name: Install Node.js
-        uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7 # v3.8.2
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: 16
 
