@@ -67,7 +67,7 @@ jobs:
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
-
+          stability: ${{ needs.get-environment.outputs.stability }}
   deliver-rpm:
     needs: [get-environment, package]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
