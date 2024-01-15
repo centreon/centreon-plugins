@@ -67,28 +67,28 @@ jobs:
           stability: ${{ inputs.stability }}
           artifactory_token: ${{ secrets.artifactory_token }}
 
-  deliver-rpm-legacy:
-    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
-    runs-on: [self-hosted, common]
-    strategy:
-      fail-fast: false
-      matrix:
-        distrib: [el7, el8]
-        major_version: ["21.10", "22.04", "22.10"]
+  # deliver-rpm-legacy:
+  #   if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       distrib: [el7, el8]
+  #       major_version: ["21.10", "22.04", "22.10"]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Delivery
-        uses: ./.github/actions/rpm-delivery-legacy
-        with:
-          module_name: plugins
-          major_version: ${{ matrix.major_version }}
-          distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          stability: ${{ inputs.stability }}
-          artifactory_token: ${{ secrets.artifactory_token }}
+  #     - name: Delivery
+  #       uses: ./.github/actions/rpm-delivery-legacy
+  #       with:
+  #         module_name: plugins
+  #         major_version: ${{ matrix.major_version }}
+  #         distrib: ${{ matrix.distrib }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+  #         stability: ${{ inputs.stability }}
+  #         artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb:
     if: ${{ github.event_name != 'workflow_dispatch' }}
@@ -96,7 +96,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bookworm]
 
     steps:
       - name: Checkout sources
@@ -111,28 +111,28 @@ jobs:
           stability: ${{ inputs.stability }}
           artifactory_token: ${{ secrets.artifactory_token }}
 
-  deliver-deb-legacy:
-    if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
-    runs-on: [self-hosted, common]
-    strategy:
-      fail-fast: false
-      matrix:
-        distrib: [bullseye]
-        major_version: ["22.04", "22.10"]
+  # deliver-deb-legacy:
+  #   if: ${{ inputs.stability == 'stable' && github.event_name != 'workflow_dispatch' }}
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       distrib: [bullseye]
+  #       major_version: ["22.04", "22.10"]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery-legacy
-        with:
-          module_name: plugins
-          distrib: ${{ matrix.distrib }}
-          major_version: ${{ matrix.major_version }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ inputs.stability }}
-          artifactory_token: ${{ secrets.artifactory_token }}
+  #     - name: Delivery
+  #       uses: ./.github/actions/deb-delivery-legacy
+  #       with:
+  #         module_name: plugins
+  #         distrib: ${{ matrix.distrib }}
+  #         major_version: ${{ matrix.major_version }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+  #         stability: ${{ inputs.stability }}
+  #         artifactory_token: ${{ secrets.artifactory_token }}
 
   release-tag:
     if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
