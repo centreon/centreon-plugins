@@ -299,10 +299,7 @@ sub manage_selection {
                 $older_running_exec = $_;
             }
             
-            if ($self->{option_results}->{last_job_status}) {
-                $last_exec = $_;
-            
-            } elsif (!defined($last_exec) && $_->{jobStatus} !~ /Scheduled/i) {
+            if ($_->{jobStatus} !~ /Scheduled/i) {
                 $last_exec = $_;
             }
 
@@ -402,10 +399,6 @@ Filter jobs by object type.
 =item B<--filter-location-name>
 
 Filter jobs by location name.
-
-=item B<--last-job-status>
-
-Select the last job status.
 
 =item B<--unit>
 
