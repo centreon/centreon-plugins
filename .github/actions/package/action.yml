@@ -72,9 +72,6 @@ runs:
           DIRNAME=$(dirname $FILE)
           BASENAME=$(basename $FILE)
           cd $DIRNAME
-          if [ -f $DIRNAME/env/.env.${{ inputs.distrib }} ]; then
-            source $DIRNAME/env/.env.${{ inputs.distrib }}
-          fi
           sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
           nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
           cd -
