@@ -220,7 +220,6 @@ sub new {
         'filter-job-type:s'      => { name => 'filter_job_type' },
         'filter-location-name:s' => { name => 'filter_location_name' },
         'filter-object-type:s'   => { name => 'filter_object_type' },
-        'last-job-status'        => { name => 'last_job_status' },
         'unit:s'                 => { name => 'unit', default => 's' },
         'limit:s'                => { name => 'limit' }
     });
@@ -299,7 +298,7 @@ sub manage_selection {
                 $older_running_exec = $_;
             }
             
-            if ($_->{jobStatus} !~ /Scheduled/i) {
+            if ($_->{jobStatus} !~ /Scheduled|Canceled|Canceling|CancelingScheduled/i) {
                 $last_exec = $_;
             }
 
