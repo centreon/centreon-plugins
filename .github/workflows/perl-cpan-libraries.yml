@@ -318,27 +318,27 @@ jobs:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
 
-  # deliver-rpm:
-  #   needs: [get-environment, sign-rpm]
-  #   if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-  #   runs-on: [self-hosted, common]
+  deliver-rpm:
+    needs: [get-environment, sign-rpm]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
 
-  #   strategy:
-  #     matrix:
-  #       distrib: [el8, el9]
+    strategy:
+      matrix:
+        distrib: [el8, el9]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  #     - name: Delivery
-  #       uses: ./.github/actions/rpm-delivery
-  #       with:
-  #         module_name: perl-cpan-libraries
-  #         distrib: ${{ matrix.distrib }}
-  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-  #         stability: ${{ needs.get-environment.outputs.stability }}
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-deb:
     needs: [get-environment, download-and-cache-deb]
@@ -347,7 +347,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bookworm]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources

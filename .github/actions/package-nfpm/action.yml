@@ -76,6 +76,7 @@ runs:
 
         MAJOR_LEFT=$( echo $MAJOR_VERSION | cut -d "." -f1 )
         MAJOR_RIGHT=$( echo $MAJOR_VERSION | cut -d "-" -f1 | cut -d "." -f2 )
+        BUMP_MAJOR_RIGHT=$(( MAJOR_RIGHT_PART + 1 ))
         if [ "$MAJOR_RIGHT" = "04" ]; then
           BUMP_MAJOR_LEFT="$MAJOR_LEFT"
           BUMP_MAJOR_RIGHT="10"
