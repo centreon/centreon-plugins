@@ -33,13 +33,13 @@ jobs:
         with:
           perl-version: '5.34'
           install-modules-with: cpm
-          install-modules: Test::More Test::Spelling Pod::Wordlist
+          install-modules: Test::More Test::Spelling
 
       - name: Install librairies
         continue-on-error: true
         run: |
           sudo apt-get update
-          sudo apt-get install -y hunspell aspell spell ispell
+          sudo apt-get install -y hunspell
         shell: bash
 
       - name: Run spell check

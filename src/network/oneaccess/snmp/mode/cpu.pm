@@ -86,7 +86,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (oneaccess-sys-mib).
+Check CPU usage (oneaccess-sys-mib).
 
 =over 8
 
@@ -97,6 +97,9 @@ Warning threshold in percent.
 =item B<--critical>
 
 Critical threshold in percent.
+
+sys cpu
+
 
 =back
 
