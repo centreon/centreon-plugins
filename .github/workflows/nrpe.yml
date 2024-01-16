@@ -111,27 +111,27 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-  deliver-rpm:
-    needs: [get-environment, package]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
+  # deliver-rpm:
+  #   needs: [get-environment, package]
+  #   if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+  #   runs-on: [self-hosted, common]
 
-    strategy:
-      matrix:
-        distrib: [el8, el9]
+  #   strategy:
+  #     matrix:
+  #       distrib: [el8, el9]
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Delivery
-        uses: ./.github/actions/rpm-delivery
-        with:
-          module_name: nrpe
-          distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  #     - name: Delivery
+  #       uses: ./.github/actions/rpm-delivery
+  #       with:
+  #         module_name: nrpe
+  #         distrib: ${{ matrix.distrib }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+  #         stability: ${{ needs.get-environment.outputs.stability }}
+  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-deb:
     needs: [get-environment, package]
@@ -140,7 +140,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bookworm]
 
     steps:
       - name: Checkout sources

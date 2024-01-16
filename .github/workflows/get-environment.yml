@@ -39,7 +39,7 @@ jobs:
             develop)
               STABILITY="unstable"
               ;;
-            release* | hotfix*)
+            release* | hotfix* | MON-34064*)
               STABILITY="testing"
               ;;
             master)

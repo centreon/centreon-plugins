@@ -117,29 +117,29 @@ jobs:
           path: ./*.${{ matrix.package_extension}}
           retention-days: 1
 
-  deliver-rpm:
-    needs: [get-environment, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
+  # deliver-rpm:
+  #   needs: [get-environment, package]
+  #   if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+  #   runs-on: [self-hosted, common]
 
-    strategy:
-      matrix:
-        distrib: [el8, el9]
+  #   strategy:
+  #     matrix:
+  #       distrib: [el8, el9]
 
-    name: Deliver ${{ matrix.distrib }}
+  #   name: Deliver ${{ matrix.distrib }}
 
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Delivery
-        uses: ./.github/actions/rpm-delivery
-        with:
-          module_name: perl-json-path
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-rpm-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+  #     - name: Delivery
+  #       uses: ./.github/actions/rpm-delivery
+  #       with:
+  #         module_name: perl-json-path
+  #         distrib: ${{ matrix.distrib }}
+  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  #         cache_key: cache-${{ github.sha }}-rpm-perl-json-path-${{ matrix.distrib }}-${{ github.head_ref || github.ref_name }}
+  #         stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-deb:
     needs: [get-environment, package]
@@ -148,7 +148,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bookworm]
 
     name: Deliver ${{ matrix.distrib }}
 
