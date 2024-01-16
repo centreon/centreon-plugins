@@ -203,7 +203,7 @@ sub manage_selection {
         my $ap_ipaddress = $snmp_result->{$oid_aiClientAPIPAddress}->{$oid};
         if (defined($link_ap->{$ap_ipaddress})) {
             $link_ap->{$ap_ipaddress}->{clients}++;
-        } else {
+        } elsif (defined($self->{ap}->{default})) { # default "AP" is only handled when no AP is identified (see above)
             $self->{ap}->{default}->{clients}++;
         }
     }
