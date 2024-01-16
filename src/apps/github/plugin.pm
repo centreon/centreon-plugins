@@ -50,4 +50,3 @@ __END__
 Check GitHub status, issues, pullrequests and get commits for metrology.
 
 =cut
-
