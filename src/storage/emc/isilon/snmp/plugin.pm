@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'cluster-cpu'      => 'storage::emc::isilon::snmp::mode::clustercpu',
         'cluster-usage'    => 'storage::emc::isilon::snmp::mode::clusterusage',
         'hardware'         => 'storage::emc::isilon::snmp::mode::hardware',
     );
