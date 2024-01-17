@@ -157,14 +157,14 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $command_options = 'list-unit-files --no-pager --plain';
+    my $command_options_2 = 'list-unit-files --no-pager --plain';
 
     if($systemctl_version >= 248){
-        $command_options .= ' --legend=false';
+        $command_options_2 .= ' --legend=false';
     } else {
-        $command_options .= ' --no-legend';
+        $command_options_2 .= ' --no-legend';
     }
-    my ($stdout)  = $options{custom}->execute_command(
+    my ($stdout_2)  = $options{custom}->execute_command(
         command         => 'systemctl',
         command_options => $command_options
     );
@@ -175,7 +175,7 @@ sub manage_selection {
     #runlevel5.target          static  
     #runlevel6.target          disabled
     #irqbalance.service        enabled         enabled
-    while ($stdout =~ /^(.*?)\s+(\S+)\s*/msig) {
+    while ($stdout_2 =~ /^(.*?)\s+(\S+)\s*/msig) {
         my ($name, $boot) = ($1, $2);
         next if (!defined($self->{sc}->{$name}));
         $self->{sc}->{$name}->{boot} = $boot;
