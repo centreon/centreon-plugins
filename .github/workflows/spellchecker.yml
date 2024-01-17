@@ -11,6 +11,8 @@ on:
       - '.github/workflows/spellchecker.yml'
       - 'src/**'
       - '.github/scripts/pod_spell_check.t'
+    tags-ignore:
+      - do-not-spell-check
 
 jobs:
   pod-spell-check:
