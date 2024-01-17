@@ -101,7 +101,6 @@ Critical threshold in percent.
 sys cpu
 
 
-
 =back
 
 =cut
