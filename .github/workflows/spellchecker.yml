@@ -14,7 +14,7 @@ on:
 
 jobs:
   pod-spell-check:
-    if: ${{ !contains(github.event.issue.labels.*.name, 'do-not-spell-check') }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'do-not-spell-check') }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -39,8 +39,6 @@ jobs:
       - name: Install librairies
         continue-on-error: true
         run: |
-          echo ${{ !contains(github.event.issue.labels.*.name, 'do-not-spell-check') }}
-          echo ${{ github.event.issue.labels.*.name }}
           sudo apt-get update
           sudo apt-get install -y hunspell
         shell: bash
