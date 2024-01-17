@@ -14,8 +14,7 @@ on:
 
 jobs:
   pod-spell-check:
-    if: !contains(github.event.issue.labels.*.name, 'do-not-spell-check')
-
+    if: ${{ !contains(github.event.issue.labels.*.name, 'do-not-spell-check') }}
     runs-on: ubuntu-22.04
 
     steps:
