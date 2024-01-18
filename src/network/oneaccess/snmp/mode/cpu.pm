@@ -98,9 +98,6 @@ Warning threshold in percent.
 
 Critical threshold in percent.
 
-sys cpu
-
-
 =back
 
 =cut
