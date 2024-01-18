@@ -189,6 +189,7 @@ sub quote {
     return undef;
 }
 
+
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
