@@ -61,6 +61,13 @@ jobs:
               spaces: 2
               indent-sequences: true
               check-multi-line-strings: false
+            comments:
+              ignore-shebangs: true
+              min-spaces-from-content: 1
+            comments-indentation: disable
+            new-lines:
+              type: unix
+            new-line-at-end-of-file: enable
           EOF
 
       - name: Lint YAML files
