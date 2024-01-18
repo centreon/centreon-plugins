@@ -11,17 +11,16 @@ on:
       - '.github/workflows/spellchecker.yml'
       - 'src/**'
       - '.github/scripts/pod_spell_check.t'
-    tags-ignore:
-      - do-not-spell-check
 
 jobs:
   pod-spell-check:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'do-not-spell-check') }}
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         id: filter
         with:
           base: ${{ github.ref }}
@@ -31,7 +30,7 @@ jobs:
               - added|modified: src/**
 
       - name: Install CPAN Libraries
-        uses: shogo82148/actions-setup-perl@v1
+        uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
