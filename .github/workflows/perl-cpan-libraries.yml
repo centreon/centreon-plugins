@@ -152,7 +152,7 @@ jobs:
           - name: "ZMQ::FFI"
             build_distribs: "el8,el9"
             rpm_dependencies: "zeromq"
-          - name: "ZMQ::LibZMQ4"
+          - name: "ZMQ::LibZMQ5"
             use_dh_make_perl: "false"
             version: "0.01"
             rpm_dependencies: "zeromq"
