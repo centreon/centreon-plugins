@@ -216,7 +216,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=CRITICAL: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;0:20;;0;414 'total_exited'=40;;;0;414
+...                         result=CRITICAL: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;0:20;0;414 'total_exited'=40;;;0;414
 
 # Test systemdc-sc-status mode with warning-total-exited option set to 20
 &{linux_local_systemd_test_12}
@@ -250,6 +250,38 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
 
+# Test systemdc-sc-status mode with warning-total-failed option set to 0
+&{linux_local_systemd_test_14}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=0
+...                         criticaltotalfailed=
+...                         result=WARNING: Total Failed: 0 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
+
+# Test systemdc-sc-status mode with critical-total-failed option set to 0
+&{linux_local_systemd_test_15}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=0
+...                         result=CRITICAL: Total Failed: 0 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
+
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
 ...                         &{linux_local_systemd_test_2}
@@ -264,6 +296,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_systemd_test_11}
 ...                         &{linux_local_systemd_test_12}
 ...                         &{linux_local_systemd_test_13}
+...                         &{linux_local_systemd_test_14}
+...                         &{linux_local_systemd_test_15}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
@@ -312,6 +346,14 @@ Linux Local Systemd-sc-status
         ${length}    Get Length    ${linux_local_systemd_test.criticaltotalexited}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-total-exited=${linux_local_systemd_test.criticaltotalexited}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.warningtotalfailed}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-total-failed=${linux_local_systemd_test.warningtotalfailed}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.criticaltotalfailed}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-total-failed=${linux_local_systemd_test.criticaltotalfailed}
         END
 
         ${output}    Run    ${command}
