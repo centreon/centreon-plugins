@@ -136,7 +136,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
+...                         result=
 
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
@@ -161,8 +161,17 @@ Linux Local Systemd-sc-status
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --exclude-name=${linux_local_systemd_test.excludename}
         END
+        ${length}    Get Length    ${linux_local_systemd_test.warningstatus}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-status=${linux_local_systemd_test.warningstatus}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.criticalstatus}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-status=${linux_local_systemd_test.criticalstatus}
+        END
 
         ${output}    Run    ${command}
+        Log To Console    .    no_newline=true
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
         ...    ${output}
