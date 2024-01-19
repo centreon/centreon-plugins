@@ -32,8 +32,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 # Test list-systemdcservices mode with filter-description option set to a service description value
 &{linux_local_listsystemd_test4}
 ...                         filtername=
-...                         filterdescription=User Manager for UID 1001
-...                         result=user@1001.service' [desc = User Manager for UID 1001] [load = loaded] [active = active] [sub = running]
+...                         filterdescription='User Manager for UID 1001'
+...                         result=List systemd services: \n\'user@1001.service\' [desc = User Manager for UID 1001] [load = loaded] [active = active] [sub = running]
 
 @{linux_local_listsystemd_tests}
 ...                         &{linux_local_listsystemd_test1}
