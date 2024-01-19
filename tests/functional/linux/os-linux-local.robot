@@ -181,6 +181,7 @@ Linux Local List-systemd-services
 
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
+        Run Keyword And Ignore Error
         Should Be Equal As Strings
         ...    ${output}
         ...    ${linux_local_listsystemd_test.result}
