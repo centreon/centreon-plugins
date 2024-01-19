@@ -111,6 +111,10 @@ Linux Local Systemd-sc-status
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --filter-name=${linux_local_test.filtername}
         END
+        ${length}    Get Length    ${linux_local_test.excludename}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --exclude-name=${linux_local_test.excludename}
+        END
 
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
