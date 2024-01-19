@@ -179,7 +179,7 @@ Linux Local List-systemd-services
             ${command}    Catenate    ${command}    --filter-description=${linux_local_listsystemd_test.filterdescription}
         END
 
-        ${output}    Run    ${command}   --maxerrorlines=200
+        ${output}    Run    ${command}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
         ...    ${output}
