@@ -58,12 +58,46 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: not-found] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
+
+# Test systemdc-sc-status mode with exclude-name option set to a fake value
+&{linux_local_test_4}
+...                         filtername=
+...                         excludename=toto
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: not-found] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
+
+# Test systemdc-sc-status mode with exclude-name option set to a service name value
+&{linux_local_test_5}
+...                         filtername=
+...                         excludename=NetworkManager.service
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: not-found] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
 
 @{linux_local_tests}
 ...                         &{linux_local_test_1}
 ...                         &{linux_local_test_2}
 ...                         &{linux_local_test_3}
+...                         &{linux_local_test_4}
+...                         &{linux_local_test_5}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
