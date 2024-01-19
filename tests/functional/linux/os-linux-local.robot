@@ -250,37 +250,9 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;0:20;0;414
 
-# Test systemdc-sc-status mode with warning-total-failed option set to 0
-&{linux_local_systemd_test_14}
-...                         filtername=
-...                         excludename=
-...                         warningstatus=
-...                         criticalstatus=
-...                         warningtotalrunning=
-...                         criticaltotalrunning=
-...                         warningtotaldead=
-...                         criticaltotaldead=
-...                         warningtotalexited=
-...                         criticaltotalexited=
-...                         warningtotalfailed=0
-...                         criticaltotalfailed=
-...                         result=WARNING: Total Failed: 0 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
+# Test systemdc-sc-status mode with warning-total-failed option : NO DATA FOR THIS TEST
 
-# Test systemdc-sc-status mode with critical-total-failed option set to 0
-&{linux_local_systemd_test_15}
-...                         filtername=
-...                         excludename=
-...                         warningstatus=
-...                         criticalstatus=
-...                         warningtotalrunning=
-...                         criticaltotalrunning=
-...                         warningtotaldead=
-...                         criticaltotaldead=
-...                         warningtotalexited=
-...                         criticaltotalexited=
-...                         warningtotalfailed=
-...                         criticaltotalfailed=0
-...                         result=CRITICAL: Total Failed: 0 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
+# Test systemdc-sc-status mode with critical-total-failed option : NO DATA FOR THIS TEST
 
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
@@ -296,8 +268,6 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_systemd_test_11}
 ...                         &{linux_local_systemd_test_12}
 ...                         &{linux_local_systemd_test_13}
-...                         &{linux_local_systemd_test_14}
-...                         &{linux_local_systemd_test_15}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
