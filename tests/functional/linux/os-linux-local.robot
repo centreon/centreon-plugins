@@ -200,7 +200,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=WARNING: Total Dead: 120 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=WARNING: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;0:20;;0;414 'total_exited'=40;;;0;414
 
 # Test systemdc-sc-status mode with critical-total-dead option set to 20
 &{linux_local_systemd_test_11}
@@ -216,7 +216,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=CRITICAL: Total Dead: 120 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=CRITICAL: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;0:20;;0;414 'total_exited'=40;;;0;414
 
 # Test systemdc-sc-status mode with warning-total-exited option set to 20
 &{linux_local_systemd_test_12}
@@ -232,7 +232,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=WARNING: Total Exited: 40 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=WARNING: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
 
 # Test systemdc-sc-status mode with critical-total-exited option set to 20
 &{linux_local_systemd_test_13}
@@ -248,7 +248,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=20
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
 
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
