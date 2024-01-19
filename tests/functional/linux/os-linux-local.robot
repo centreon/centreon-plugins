@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Hardware UPS standard SNMP plugin
+Documentation       OS Linux Local plugin
 
 Library             OperatingSystem
 Library             String
