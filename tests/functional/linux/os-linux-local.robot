@@ -143,7 +143,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         filtername=
 ...                         excludename=
 ...                         warningstatus=
-...                         criticalstatus='%{sub} =~ /exited/'
+...                         criticalstatus='\%{sub} =~ /exited/'
 ...                         warningtotalrunning=
 ...                         criticaltotalrunning=
 ...                         warningtotaldead=
