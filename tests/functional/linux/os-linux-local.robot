@@ -22,8 +22,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 &{linux_local_listsystemd_test2}
 ...                         filtername=NetworkManager.service
 ...                         filterdescription=
-...                         result=List systemd services:\\n
-...                         \'NetworkManager.service\' [desc = NetworkManager.service] [load = not-found] [active = inactive] [sub = dead]
+...                         result=List systemd services:\n\'NetworkManager.service\' [desc = NetworkManager.service] [load = not-found] [active = inactive] [sub = dead]
 # Test list-systemdcservices mode with filter-description option set to a fake value
 &{linux_local_listsystemd_test3}
 ...                         filtername=
