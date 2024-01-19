@@ -658,7 +658,7 @@ sub save_local_http_cache {
                     tables => $options{local},
                     epoch => time()
                 },
-                builtin => $self->{builtin}
+                builtin => $options{builtin}
             }
         );
     }
