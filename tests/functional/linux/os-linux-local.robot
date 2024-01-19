@@ -153,6 +153,39 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
 ...                         result=CRITICAL: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: loaded] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: loaded] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
+# Test systemdc-sc-status mode with warning-total-running option set to 20
+&{linux_local_systemd_test_8}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=20
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=WARNING: Total Running: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
+# Test systemdc-sc-status mode with critical-total-running option set to 20
+&{linux_local_systemd_test_9}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=20
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=CRITICAL: Total Running: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
 ...                         &{linux_local_systemd_test_2}
@@ -161,6 +194,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_systemd_test_5}
 ...                         &{linux_local_systemd_test_6}
 ...                         &{linux_local_systemd_test_7}
+...                         &{linux_local_systemd_test_8}
+...                         &{linux_local_systemd_test_9}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
@@ -185,6 +220,14 @@ Linux Local Systemd-sc-status
         ${length}    Get Length    ${linux_local_systemd_test.criticalstatus}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-status=${linux_local_systemd_test.criticalstatus}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.warningtotalrunning}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-total-running=${linux_local_systemd_test.warningtotalrunning}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.criticaltotalrunning}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-total-running=${linux_local_systemd_test.criticaltotalrunning}
         END
 
         ${output}    Run    ${command}
