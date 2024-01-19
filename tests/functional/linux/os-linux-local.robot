@@ -23,6 +23,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         filtername=NetworkManager.service
 ...                         filterdescription=
 ...                         result=List systemd services: \n\'NetworkManager.service\' [desc = NetworkManager.service] [load = not-found] [active = inactive] [sub = dead]
+
 # Test list-systemdcservices mode with filter-description option set to a fake value
 &{linux_local_listsystemd_test3}
 ...                         filtername=
@@ -40,7 +41,6 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_listsystemd_test2}
 ...                         &{linux_local_listsystemd_test3}
 ...                         &{linux_local_listsystemd_test4}
-
 
 # Test simple usage of the systemdc-sc-status mode
 &{linux_local_systemd_test_1}
@@ -122,6 +122,22 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
 
+# Test systemdc-sc-status mode with warning-status option set to '%{boot} =~ /no-found/'
+&{linux_local_systemd_test_6}
+...                         filtername=
+...                         excludename=
+...                         warningstatus='%{boot} =~ /no-found/'
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
+
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
 ...                         &{linux_local_systemd_test_2}
@@ -173,7 +189,6 @@ Linux Local List-systemd-services
 
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
-        Log To Console    ${output}
         Should Be Equal As Strings
         ...    ${output}
         ...    ${linux_local_listsystemd_test.result}
