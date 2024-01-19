@@ -76,7 +76,7 @@ jobs:
           sudo cp -r tests/resources/snmp/* /usr/snmpsim/data/
           snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
           robot tests/functional/snmp
-          
+
       - name: Run Robot Framework Database tests
         run: robot tests/functional/database
 
