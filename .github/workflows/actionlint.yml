@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Download actionlint
         id: get_actionlint
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Yaml
         run: |
@@ -61,6 +61,13 @@ jobs:
               spaces: 2
               indent-sequences: true
               check-multi-line-strings: false
+            comments:
+              ignore-shebangs: true
+              min-spaces-from-content: 1
+            comments-indentation: disable
+            new-lines:
+              type: unix
+            new-line-at-end-of-file: enable
           EOF
 
       - name: Lint YAML files

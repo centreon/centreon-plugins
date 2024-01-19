@@ -1,0 +1,36 @@
+name: "sblim-sfcc"
+arch: "${ARCH}"
+platform: "linux"
+version_schema: "none"
+version: "2.7.2"
+release: "1${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  Small Footprint CIM Client Library Runtime Libraries
+  Commit: @COMMIT_HASH@
+homepage: "http://www.sblim.org"
+license: "EPL-1.0"
+
+contents:
+  - src: "/tmp/sblim-sfcc-SFCC_2_2_8/.libs/lib*.so*"
+    dst: "/usr/lib/"
+    file_info:
+      mode: 0644
+
+overrides:
+  deb:
+    conflicts:
+      - libsblim-sfcc
+    replaces:
+      - libsblim-sfcc
+    provides:
+      - libsblim-sfcc
+
+rpm:
+  summary: Small Footprint CIM Client Library
+  compression: zstd
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}
