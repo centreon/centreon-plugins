@@ -16,7 +16,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 &{linux_local_listsystemd_test1}
 ...                         filtername=toto
 ...                         filterdescription=
-...                         result=
+...                         result=List systemd services:
 
 # Test list-systemdcservices mode with filter-name option set to a service name value
 &{linux_local_listsystemd_test2}
