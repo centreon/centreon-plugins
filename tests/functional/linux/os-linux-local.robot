@@ -122,11 +122,11 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
 
-# Test systemdc-sc-status mode with warning-status option set to '%{sub} =~ /exited/'
+# Test systemdc-sc-status mode with warning-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
 &{linux_local_systemd_test_6}
 ...                         filtername=
 ...                         excludename=
-...                         warningstatus='\%{sub} =~ /exited/'
+...                         warningstatus='\%{sub} =~ /exited/ && \%{display} =~ /network/'
 ...                         criticalstatus=
 ...                         warningtotalrunning=
 ...                         criticaltotalrunning=
@@ -138,12 +138,12 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=toto
 
-# Test systemdc-sc-status mode with critical-status option set to '%{sub} =~ /exited/'
+# Test systemdc-sc-status mode with critical-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
 &{linux_local_systemd_test_7}
 ...                         filtername=
 ...                         excludename=
 ...                         warningstatus=
-...                         criticalstatus='\%{sub} =~ /exited/'
+...                         criticalstatus='\%{sub} =~ /exited/ && \%{display} =~ /network/'
 ...                         warningtotalrunning=
 ...                         criticaltotalrunning=
 ...                         warningtotaldead=
