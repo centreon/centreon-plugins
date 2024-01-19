@@ -566,7 +566,11 @@ sub collect_http_tables {
                     }
                 }
 
-                $self->save_local_http_cache(local_http_cache => $local_http_cache, local => $local);
+                $self->save_local_http_cache(
+                    local_http_cache => $local_http_cache,
+                    local => $local,
+                    builtin => $self->{builtin}
+                );
             }
         }
 
@@ -637,6 +641,9 @@ sub use_local_http_cache {
             $self->{http_collected}->{tables}->{$name}->{$instance} = $self->{local_http_collected}->{tables}->{$name}->{$instance};
         }
     }
+    
+    $self->{builtin} = $local_http_cache->get(name => 'builtin');
+    $self->set_builtin();
 
     return 1;
 }
@@ -650,7 +657,8 @@ sub save_local_http_cache {
                 http_collected => {
                     tables => $options{local},
                     epoch => time()
-                }
+                },
+                builtin => $self->{builtin}
             }
         );
     }
