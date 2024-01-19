@@ -1,0 +1,64 @@
+{
+    "constants": {
+        "criticalCurrConn": null
+    },
+    "mapping": {
+    },
+    "snmp": {
+        "tables": [
+            {
+                "name": "virtualserverEntry",
+                "oid": ".1.3.6.1.4.1.7146.1.2.2.2.1",
+                "used_instance": "\\.1\\.3\\.6\\.1\\.4\\.1\\.7146\\.1\\.2\\.2\\.2\\.1\\.\\d+\\.(\\d+(\\.\\d+)+)",
+                "entries": [
+                    {
+                        "name": "virtualserverName",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.2.2.1.1"
+                    },
+                    {
+                        "name": "virtualserverCurrentConn",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.2.2.1.9"
+                    },
+                    {
+                        "name": "virtualServerMaxConnections",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.2.2.1.10"
+                    },
+                    {
+                        "name": "virtualserverTotalHTTPRequests",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.2.2.1.43"
+                    }
+                ]
+            }
+        ]
+    },
+    "selection_loop": [
+        {
+            "name": "Virtual Server ZXTM",
+            "source": "%(snmp.tables.virtualserverEntry)",
+            "expand_table": {
+                "virtualserverEntry": "%(snmp.tables.virtualserverEntry.[%(virtualserverEntry.instance)])"
+            },
+            "critical": "defined(%(constants.criticalCurrConn)) and %(virtualserverEntry.virtualserverCurrentConn) >= %(constants.criticalCurrConn)",
+            "perfdatas": [
+                {
+                    "nlabel": "conn",
+                    "instances": ["%(virtualserverEntry.virtualserverName)"],
+                    "value": "%(virtualserverEntry.virtualserverCurrentConn)",
+                    "critical": "%(constants.criticalConn)",
+                    "unit": "conn",
+                    "min": 0
+                }
+            ],
+            "formatting": {
+                "printf_msg": "Device '%s' current connections are '%d', max connections are '%d', total HTTP requests are '%d'",
+                "printf_var": [
+                    "%(virtualserverEntry.virtualserverName)",
+                    "%(virtualserverEntry.virtualserverCurrentConn)",
+                    "%(virtualserverEntry.virtualServerMaxConnections)",
+                    "%(virtualserverEntry.virtualserverTotalHTTPRequests)"
+                ],
+                "display_ok": true
+            }
+        }
+    ]
+}
