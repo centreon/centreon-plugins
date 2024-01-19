@@ -87,7 +87,7 @@ sub custom_select_output {
 
     if (defined($format)) {
         return sprintf(
-            $format->{printf_msg}, @{$format->{printf_var}} 
+            $format->{printf_msg}, @{$format->{printf_var}}
         );
     }
 
@@ -123,7 +123,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'config:s'            => { name => 'config' },
         'filter-selection:s%' => { name => 'filter_selection' },
@@ -192,7 +192,7 @@ sub get_map_value {
     my ($self, %options) = @_;
 
     return undef if (
-        !defined($self->{config}->{mapping}) || 
+        !defined($self->{config}->{mapping}) ||
         !defined($self->{config}->{mapping}->{ $options{map} })
     );
     return '' if (!defined($self->{config}->{mapping}->{ $options{map} }->{ $options{value} }));
@@ -321,26 +321,6 @@ sub call_http {
     $self->add_builtin(name => 'httpCode.' . $options{rq}->{name}, value => $http->get_code());
     $self->add_builtin(name => 'httpMessage.' . $options{rq}->{name}, value => $http->get_message());
 
-    if ($options{rq}->{rtype} eq 'json') {
-        eval {
-            $content = JSON::XS->new->utf8->decode($content);
-        };
-    } elsif ($options{rq}->{rtype} eq 'xml') {
-        eval {
-            $SIG{__WARN__} = sub {};
-            $content = XMLin($content, ForceArray => $options{rq}->{force_array}, KeyAttr => []);
-        };
-    }
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->output_add(long_msg => "$@", debug => 1);
-        $self->{output}->option_exit();
-    }
-
-    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
-    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
-    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
-
     return ($http->get_header(), $content, $http);
 }
 
@@ -379,7 +359,7 @@ sub parse_txt {
         push @entries, $_;
     }
 
-    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content}; 
+    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content};
 
     my $local = {};
     my $i = 0;
@@ -441,8 +421,29 @@ sub parse_structure {
 
     $options{conf}->{path} = $self->substitute_string(value => $options{conf}->{path});
 
+    my $content;
+    if ($options{rtype} eq 'json') {
+        eval {
+            $content = JSON::XS->new->utf8->decode($options{content});
+        };
+    } elsif ($options{rtype} eq 'xml') {
+        eval {
+            $SIG{__WARN__} = sub {};
+            $content = XMLin($options{content}, ForceArray => $options{force_array}, KeyAttr => []);
+        };
+    }
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->output_add(long_msg => "$@", debug => 1);
+        $self->{output}->option_exit();
+    }
+
+    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
+    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
+
     my $jpath = JSON::Path->new($options{conf}->{path});
-    my @values = $jpath->values($options{content});
+    my @values = $jpath->values($content);
 
     my $local = {};
     my $i = 0;
@@ -532,18 +533,10 @@ sub collect_http_tables {
 
         if ($rv == 0) {
             ($headers, $content, $http) = $self->call_http(rq => $options{requests}->[$i], http => $options{http});
+
             $self->set_builtin();
 
             next if (!defined($options{requests}->[$i]->{parse}));
-
-            my $local;
-            foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
-                if ($options{requests}->[$i]->{rtype} eq 'txt') {
-                    $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
-                } else {
-                    $local = $self->parse_structure(name => $options{requests}->[$i]->{name}, content => $content, conf => $conf);
-                }
-            }
 
             if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
                 $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand})) {
@@ -553,6 +546,26 @@ sub collect_http_tables {
                     $self->{scenario_retry} = 1;
                 }
             } else {
+                my $local;
+                foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
+                    if ($options{requests}->[$i]->{rtype} eq 'txt') {
+                        $local = $self->parse_txt(
+                            name => $options{requests}->[$i]->{name},
+                            headers => $headers,
+                            content => $content,
+                            conf => $conf
+                        );
+                    } else {
+                        $local = $self->parse_structure(
+                            name => $options{requests}->[$i]->{name},
+                            content => $content,
+                            conf => $conf,
+                            rtype => $options{requests}->[$i]->{rtype},
+                            force_array => $options{requests}->[$i]->{force_array}
+                        );
+                    }
+                }
+
                 $self->save_local_http_cache(local_http_cache => $local_http_cache, local => $local);
             }
         }
@@ -573,7 +586,7 @@ sub is_http_cache_enabled {
     my ($self, %options) = @_;
 
     return 0 if (
-        !defined($self->{config}->{http}->{cache}) || 
+        !defined($self->{config}->{http}->{cache}) ||
         !defined($self->{config}->{http}->{cache}->{enable}) ||
         $self->{config}->{http}->{cache}->{enable} !~ /^true|1$/i
     );
@@ -607,11 +620,11 @@ sub use_local_http_cache {
         statefile => $self->substitute_string(value => $options{rq}->{cache_file})
     );
     $self->{local_http_collected} = $local_http_cache->get(name => 'http_collected');
-    my $reload = defined($options{rq}->{cache_reload}) && $options{rq}->{cache_reload} =~ /(\d+)/ ? 
+    my $reload = defined($options{rq}->{cache_reload}) && $options{rq}->{cache_reload} =~ /(\d+)/ ?
         $options{rq}->{cache_reload} : 60;
     return (0, $local_http_cache) if (
-        $has_cache_file == 0 || 
-        !defined($self->{local_http_collected}) || 
+        $has_cache_file == 0 ||
+        !defined($self->{local_http_collected}) ||
         ((time() - $self->{local_http_collected}->{epoch}) > ($reload * 60))
     );
 
@@ -649,14 +662,14 @@ sub use_http_cache {
     return 0 if ($self->is_http_cache_enabled() == 0);
 
     my $has_cache_file = $self->{http_cache}->read(
-        statefile => 'cache_http_collection_' . md5_hex($self->{option_results}->{config}) 
+        statefile => 'cache_http_collection_' . md5_hex($self->{option_results}->{config})
     );
     $self->{http_collected} = $self->{http_cache}->get(name => 'http_collected');
-    my $reload = defined($self->{config}->{http}->{cache}->{reload}) && $self->{config}->{http}->{cache}->{reload} =~ /(\d+)/ ? 
+    my $reload = defined($self->{config}->{http}->{cache}->{reload}) && $self->{config}->{http}->{cache}->{reload} =~ /(\d+)/ ?
         $self->{config}->{http}->{cache}->{reload} : 30;
     return 0 if (
-        $has_cache_file == 0 || 
-        !defined($self->{http_collected}) || 
+        $has_cache_file == 0 ||
+        !defined($self->{http_collected}) ||
         ((time() - $self->{http_collected}->{epoch}) > ($reload * 60))
     );
 
@@ -933,7 +946,7 @@ sub parse_http_tables {
     my ($code, $msg_error, $end, $table_label, $instance_label, $label);
     ($code, $msg_error, $end, $table_label) = $self->parse_forward(
         chars => $options{chars},
-        start => $options{start}, 
+        start => $options{start},
         allowed => '[a-zA-Z0-9_]',
         stop => '[).]'
     );
@@ -976,7 +989,7 @@ sub parse_http_tables {
     } else {
         ($code, $msg_error, $end, $instance_label) = $self->parse_forward(
             chars => $options{chars},
-            start => $end + 2, 
+            start => $end + 2,
             allowed => '[^\]]',
             stop => '[\]]'
         );
@@ -1025,7 +1038,7 @@ sub parse_special_variable {
     my ($self, %options) = @_;
 
     my $start = $options{start};
-    if ($options{chars}->[$start] ne '%' || 
+    if ($options{chars}->[$start] ne '%' ||
         $options{chars}->[$start + 1] ne '(') {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable not starting by %(');
         $self->{output}->option_exit();
@@ -1038,7 +1051,7 @@ sub parse_special_variable {
     } else {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
             chars => $options{chars},
-            start => $start + 2, 
+            start => $start + 2,
             allowed => '[a-zA-Z0-9\._]',
             stop => '[)]'
         );
@@ -1321,7 +1334,7 @@ sub exec_func_second2human {
         $sign = '-';
         $data = abs($data);
     }
-    
+
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($data / $_->{value});
@@ -1612,7 +1625,7 @@ sub exec_func_capture {
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
-    } 
+    }
     my $data = $self->get_special_variable_value(%$result);
 
     my @matches = ($data =~ /$options{pattern}/);
@@ -1650,7 +1663,7 @@ sub exec_func_scientific2number {
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
-    } 
+    }
     my $data = $self->get_special_variable_value(%$result);
 
     $data = centreon::plugins::misc::expand_exponential(value => $data);
