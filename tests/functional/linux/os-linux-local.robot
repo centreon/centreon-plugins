@@ -122,12 +122,28 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
 
-# Test systemdc-sc-status mode with warning-status option set to '%{boot} =~ /no-found/'
+# Test systemdc-sc-status mode with warning-status option set to '%{sub} =~ /exited/'
 &{linux_local_systemd_test_6}
 ...                         filtername=
 ...                         excludename=
-...                         warningstatus='%{boot} =~ /no-found/'
+...                         warningstatus='%{sub} =~ /exited/'
 ...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=
+
+# Test systemdc-sc-status mode with critical-status option set to '%{sub} =~ /exited/'
+&{linux_local_systemd_test_7}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus='%{sub} =~ /exited/'
 ...                         warningtotalrunning=
 ...                         criticaltotalrunning=
 ...                         warningtotaldead=
@@ -144,6 +160,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_systemd_test_3}
 ...                         &{linux_local_systemd_test_4}
 ...                         &{linux_local_systemd_test_5}
+...                         &{linux_local_systemd_test_6}
+...                         &{linux_local_systemd_test_7}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
