@@ -168,7 +168,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=WARNING: Total Running: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=WARNING: Total Running: 40 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
 # Test systemdc-sc-status mode with critical-total-running option set to 20
 &{linux_local_systemd_test_9}
@@ -184,7 +184,39 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=CRITICAL: Total Running: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                         result=CRITICAL: Total Running: 40 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
+# Test systemdc-sc-status mode with warning-total-dead option set to 20
+&{linux_local_systemd_test_10}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=20
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=WARNING: Total Dead: 120 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
+# Test systemdc-sc-status mode with critical-total-dead option set to 20
+&{linux_local_systemd_test_11}
+...                         filtername=
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=20
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=CRITICAL: Total Dead: 120 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
 @{linux_local_systemd_tests}
 ...                         &{linux_local_systemd_test_1}
@@ -196,6 +228,8 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_systemd_test_7}
 ...                         &{linux_local_systemd_test_8}
 ...                         &{linux_local_systemd_test_9}
+...                         &{linux_local_systemd_test_10}
+...                         &{linux_local_systemd_test_11}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
@@ -228,6 +262,14 @@ Linux Local Systemd-sc-status
         ${length}    Get Length    ${linux_local_systemd_test.criticaltotalrunning}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --critical-total-running=${linux_local_systemd_test.criticaltotalrunning}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.warningtotaldead}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --warning-total-dead=${linux_local_systemd_test.warningtotaldead}
+        END
+        ${length}    Get Length    ${linux_local_systemd_test.criticaltotaldead}
+        IF    ${length} > 0
+            ${command}    Catenate    ${command}    --critical-total-dead=${linux_local_systemd_test.criticaltotaldead}
         END
 
         ${output}    Run    ${command}
