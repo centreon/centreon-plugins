@@ -248,7 +248,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalexited=20
 ...                         warningtotalfailed=
 ...                         criticaltotalfailed=
-...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
+...                         result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;0:20;0;414
 
 # Test systemdc-sc-status mode with warning-total-failed option set to 0
 &{linux_local_systemd_test_14}
