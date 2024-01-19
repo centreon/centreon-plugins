@@ -12,34 +12,28 @@ ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugi
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 
-# Test simple usage of the list-systemdcservices mode
-&{linux_local_listsystemd_test1}
-...                         filtername=
-...                         filterdescription=
-...                         result=
-
 # Test list-systemdcservices mode with filter-name option set to a fake value
-&{linux_local_listsystemd_test2}
+&{linux_local_listsystemd_test1}
 ...                         filtername=toto
 ...                         filterdescription=
 ...                         result=
 
 # Test list-systemdcservices mode with filter-name option set to a service name value
-&{linux_local_listsystemd_test3}
+&{linux_local_listsystemd_test2}
 ...                         filtername=NetworkManager.service
 ...                         filterdescription=
 ...                         result=
 
 # Test list-systemdcservices mode with filter-description option set to a fake value
-&{linux_local_listsystemd_test4}
+&{linux_local_listsystemd_test3}
 ...                         filtername=
 ...                         filterdescription=toto
 ...                         result=
 
 # Test list-systemdcservices mode with filter-description option set to a service description value
-&{linux_local_listsystemd_test5}
+&{linux_local_listsystemd_test4}
 ...                         filtername=
-...                         filterdescription=
+...                         filterdescription=User Manager for UID 1001
 ...                         result=
 
 @{linux_local_listsystemd_tests}
@@ -47,7 +41,6 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         &{linux_local_listsystemd_test2}
 ...                         &{linux_local_listsystemd_test3}
 ...                         &{linux_local_listsystemd_test4}
-...                         &{linux_local_listsystemd_test5}
 
 
 # Test simple usage of the systemdc-sc-status mode
