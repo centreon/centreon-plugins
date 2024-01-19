@@ -12,6 +12,7 @@ ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugi
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 
+# Test simple usage of the systemdc-sc-status mode
 &{linux_local_test_1}
 ...                         filtername=
 ...                         excludename=
@@ -27,8 +28,42 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 ...                         criticaltotalfailed=
 ...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
+# Test systemdc-sc-status mode with filter-name option set to a fake value
+&{linux_local_test_2}
+...                         filtername=toto
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
+# Test systemdc-sc-status mode with filter-name option set to a service name value
+&{linux_local_test_3}
+...                         filtername=NetworkManager.service
+...                         excludename=
+...                         warningstatus=
+...                         criticalstatus=
+...                         warningtotalrunning=
+...                         criticaltotalrunning=
+...                         warningtotaldead=
+...                         criticaltotaldead=
+...                         warningtotalexited=
+...                         criticaltotalexited=
+...                         warningtotalfailed=
+...                         criticaltotalfailed=
+...                         result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+
 @{linux_local_tests}
 ...                         &{linux_local_test_1}
+...                         &{linux_local_test_2}
+...                         &{linux_local_test_3}
 
 *** Test Cases ***
 Linux Local Systemd-sc-status
@@ -38,7 +73,6 @@ Linux Local Systemd-sc-status
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=systemd-sc-status
-        ...    --verbose
         ${length}    Get Length    ${linux_local_test.filtername}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --filter-name=${linux_local_test.filtername}
