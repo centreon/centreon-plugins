@@ -81,5 +81,4 @@ jobs:
         run: robot tests/functional/database
 
       - name: Run Robot Framework Linux tests
-        run: |
-          robot tests/functional/linux
+        run: robot tests/functional/linux
