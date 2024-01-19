@@ -126,7 +126,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::
 &{linux_local_systemd_test_6}
 ...                         filtername=
 ...                         excludename=
-...                         warningstatus='%{sub} =~ /exited/'
+...                         warningstatus='\%{sub} =~ /exited/'
 ...                         criticalstatus=
 ...                         warningtotalrunning=
 ...                         criticaltotalrunning=
