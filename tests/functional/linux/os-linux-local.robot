@@ -190,7 +190,6 @@ Linux Local Systemd-sc-status
 
         ${output}    Run    ${command}
         Log To Console    .    no_newline=true
-        Log To Console    ${output}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings
         ...    ${output}
