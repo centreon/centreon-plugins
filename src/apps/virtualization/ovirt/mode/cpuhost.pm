@@ -111,7 +111,7 @@ __END__
 
 =head1 MODE
 
-Check host cpu utilization.
+Check host CPU utilization.
 
 =over 8
 

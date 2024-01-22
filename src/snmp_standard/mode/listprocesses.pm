@@ -163,7 +163,7 @@ Filter by service name (can be a regexp).
 
 =item B<--add-stats>
 
-Add cpu and memory stats.
+Add CPU and memory stats.
 
 =back
 
