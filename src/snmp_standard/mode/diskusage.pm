@@ -400,7 +400,7 @@ Example: adding --display-transform-src='dev' --display-transform-dst='run'  wil
 
 =item B<--show-cache>
 
-Display cache disk path datas.
+Display cache disk path data.
 
 =item B<--space-reservation>
 

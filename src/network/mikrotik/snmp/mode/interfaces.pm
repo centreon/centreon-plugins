@@ -274,7 +274,7 @@ Example: adding --display-transform-src='eth' --display-transform-dst='ens'  wil
 
 =item B<--show-cache>
 
-Display cache interface datas.
+Display cache interface data.
 
 =back
 

@@ -1534,7 +1534,7 @@ __END__
 
 =head1 MODE
 
-Collect and compute SQL datas.
+Collect and compute SQL data.
 
 =over 8
 
