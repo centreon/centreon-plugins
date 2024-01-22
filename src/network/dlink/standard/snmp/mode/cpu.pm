@@ -262,7 +262,7 @@ Check CPU usage.
 
 =item B<--check-order>
 
-Check cpu in standard dlink mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
+Check CPU in standard dlink mib. If you have some issue (wrong CPU information in a specific mib), you can change the order 
 (default: 'common,industrial,agent').
 
 =item B<--warning-*> B<--critical-*>

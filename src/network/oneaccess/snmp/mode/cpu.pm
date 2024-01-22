@@ -86,7 +86,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (oneaccess-sys-mib).
+Check CPU usage (oneaccess-sys-mib).
 
 =over 8
 

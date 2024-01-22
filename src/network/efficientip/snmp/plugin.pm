@@ -46,6 +46,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Efficient IP equipment in SNMP.
-Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
+Please use the SNMP Linux plugin for system checks (CPU, memory, traffic, ...).
 
 =cut

@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check cpu (worked since firmware 10.10). 
+Check CPU (worked since firmware 10.10). 
 
 =over 8
 
