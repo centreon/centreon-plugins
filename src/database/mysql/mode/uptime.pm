@@ -26,11 +26,13 @@ use strict;
 use warnings;
 use POSIX;
 
+# Constructeur de la classe
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
+    # Ajout des options spécifiques à ce mode
     $options{options}->add_options(arguments => { 
         "warning:s"  => { name => 'warning' },
         "critical:s" => { name => 'critical' },
@@ -40,10 +42,12 @@ sub new {
     return $self;
 }
 
+# Vérification des options
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    # Validation des seuils de warning et critical
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
         $self->{output}->option_exit();
@@ -54,32 +58,50 @@ sub check_options {
     }
 }
 
+# Méthode d'exécution du script
 sub run {
     my ($self, %options) = @_;
 
+    # Connexion à la base de données MySQL
     $options{sql}->connect();    
+
+    # Vérification de la version de MySQL
     if (!($options{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
 
+    # Exécution de la requête pour obtenir le temps d'activité (uptime)
     $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
     my ($name, $value) = $options{sql}->fetchrow_array();
+    
+    # Vérification si le temps d'activité a été obtenu avec succès
     if (!defined($value)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get uptime.");
         $self->{output}->option_exit();
     }
 
+    # Vérification des seuils de warning et critical
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $msg = sprintf("database is up since %d days", floor($value / 86400));
+
+    # Préparation du message de sortie
+    my $uptime_days = floor($value / 86400);
+    my $msg = sprintf("database is up since %d days", $uptime_days);
     if (defined($self->{option_results}->{seconds})) {
         $msg = sprintf("database is up since %d seconds", $value);
     }
 
+    # Ajout du message à la sortie
     $self->{output}->output_add(
         severity => $exit_code,
         short_msg => $msg
     );
+
+    # Ajout de la date de démarrage de la base de données
+    my $start_time = strftime("%Y/%m/%d %H:%M:%S", localtime(time - $value));
+    $self->{output}->output_add(long_msg => "Start time = $start_time");
+
+    # Ajout des données de performance à la sortie
     $self->{output}->perfdata_add(
         label => 'uptime', 
         nlabel => 'database.uptime.seconds',
@@ -90,13 +112,18 @@ sub run {
         min => 0
     );
 
+    # Affichage de la sortie
     $self->{output}->display();
+
+    # Sortie du script avec le code approprié
     $self->{output}->exit();
 }
 
+# Indique que le module a été correctement chargé
 1;
 
 __END__
+
 
 =head1 MODE
 
