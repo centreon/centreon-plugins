@@ -213,11 +213,21 @@ Can be: 'total-running', 'total-dead', 'total-exited',
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Examples of status for some of this variables :
+%{active}: active, inactive
+%{sub}: waiting, plugged, mounted, dead, failed, running, exited, listening, active
+%{load}: loaded, not-found
+%{boot}: enabled, disabled, static, indirect
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{active} =~ /failed/i').
 You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Examples of status for some of this variables :
+%{active}: active, inactive
+%{sub}: waiting, plugged, mounted, dead, failed, running, exited, listening, active
+%{load}: loaded, not-found
+%{boot}: enabled, disabled, static, indirect
 
 =back
 
