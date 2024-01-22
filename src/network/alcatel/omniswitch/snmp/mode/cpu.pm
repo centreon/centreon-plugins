@@ -172,7 +172,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (AlcatelIND1Health.mib).
+Check CPU usage (AlcatelIND1Health.mib).
 
 =over 8
 
