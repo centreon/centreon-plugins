@@ -167,17 +167,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-command:s'  => { name => 'filter_command' },
-        'exclude-command:s' => { name => 'exclude_command' },
-        'filter-arg:s'      => { name => 'filter_arg' },
-        'exclude-arg:s'     => { name => 'exclude_arg' },
-        'filter-state:s'    => { name => 'filter_state' },
-        'filter-ppid:s'	    => { name => 'filter_ppid' },
-        'add-cpu'           => { name => 'add_cpu' },
-        'add-memory'        => { name => 'add_memory' },
-        'add-disk-io'       => { name => 'add_disk_io' },
-        'page-size:s'       => { name => 'page_size', default => 4096 },
-        'clock-ticks:s'     => { name => 'clock_ticks', default => 100 }
+        'filter-command:s'   => { name => 'filter_command' },
+        'exclude-command:s'  => { name => 'exclude_command' },
+        'filter-arg:s'       => { name => 'filter_arg' },
+        'exclude-arg:s'      => { name => 'exclude_arg' },
+        'filter-state:s'     => { name => 'filter_state' },
+        'filter-ppid:s'      => { name => 'filter_ppid' },
+        'add-cpu'            => { name => 'add_cpu' },
+        'add-memory'         => { name => 'add_memory' },
+        'add-disk-io'        => { name => 'add_disk_io' },
+        'page-size:s'        => { name => 'page_size', default => 4096 },
+        'clock-ticks:s'      => { name => 'clock_ticks', default => 100 },
+        'process_number:i'   => { name => 'process_number' },
     });
 
     return $self;
@@ -361,8 +362,18 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_arg}) ? md5_hex($self->{option_results}->{filter_arg}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_state}) ? md5_hex($self->{option_results}->{filter_state}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_ppid}) ? md5_hex($self->{option_results}->{filter_ppid}) : md5_hex('all'));
+
     $self->parse_output(custom => $options{custom});
     $self->add_extra_metrics(custom => $options{custom});
+
+    if (defined($self->{option_results}->{process_number}) && $self->{option_results}->{process_number} > 0) {
+        if ($self->{global}->{processes} < $self->{option_results}->{process_number}) {
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf('Number of processes is less than %d', $self->{option_results}->{process_number})
+            );
+        }
+    }
 }
 
 1;
@@ -423,6 +434,10 @@ You can use: 'zombie', 'dead', 'paging', 'stopped',
 Thresholds.
 Can be: 'total', 'total-memory-usage', 'total-cpu-utilization', 'total-disks-read',
 'total-disks-write', 'time', 'memory-usage', 'cpu-utilization', 'disks-read', 'disks-write'. 
+
+=item B<--process_number>
+
+Number of processes to monitor.
 
 =back
 
