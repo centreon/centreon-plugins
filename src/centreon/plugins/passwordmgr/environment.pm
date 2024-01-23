@@ -56,8 +56,18 @@ sub manage_options {
         next if (! /^(.+?)=(.+)$/);
         my ($option, $map) = ($1, $2);
 
-        $option =~ s/-/_/g;
         $options{option_results}->{$option} = defined($ENV{$map}) ? $ENV{$map} : '';
+        
+        $option =~ s/-/_/g;
+        if ($option =~ /\@(.*)/) {
+            push @{$options{option_results}->{$1}}, $ENV{$map} if (defined($ENV{$map}));
+        } elsif ($option =~ /\%(.*)/) {
+            my $opt = $1;
+            next if ($map !~ /^(.+?)=(.+)$/);
+            $options{option_results}->{$opt}->{$1} = $ENV{$2} if (defined($ENV{$2}));
+        } else {
+            $options{option_results}->{$option} = defined($ENV{$map}) ? $ENV{$map} : '';
+        }
     }
 }
 
@@ -80,8 +90,17 @@ environment class
 =item B<--environment-map-option>
 
 Overload plugin option.
-Example:
+
+Examples:
+
+For simple options:
 --environment-map-option="snmp-community=SNMPCOMMUNITY"
+
+For options that can be set multiple times (ex Jolokia plugins):
+--environment-map-option="@username=THEUSERNAME"
+
+For options that are used to set key/value couple (ex Collection plugins):
+--environment-map-option="%constant=password=THEPASSWORD"
 
 =back
 
