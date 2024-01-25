@@ -81,13 +81,12 @@ sub run {
         $msg = sprintf("database is up since %d seconds", $value);
     }
 
+    $msg .= sprintf(" (Start time = %s)", strftime("%Y/%m/%d %H:%M:%S", localtime(time - $value)));
+
     $self->{output}->output_add(
         severity => $exit_code,
         short_msg => $msg
     );
-
-    my $start_time = strftime("%Y/%m/%d %H:%M:%S", localtime(time - $value));
-    $self->{output}->output_add(long_msg => "Start time = $start_time");
 
     $self->{output}->perfdata_add(
         label => 'uptime', 
