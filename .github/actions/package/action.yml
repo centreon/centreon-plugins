@@ -31,6 +31,9 @@ inputs:
   rpm_gpg_signing_passphrase:
     description: The rpm gpg signing passphrase
     required: true
+  stability:
+    description: "The package stability (stable, testing, unstable, canary)"
+    required: true
 
 runs:
   using: composite
@@ -53,6 +56,11 @@ runs:
         if  [ "${{ inputs.package_extension }}" = "rpm" ]; then
           export DIST=".${{ inputs.distrib }}"
         else
+          if [ "${{ inputs.stability }}" = "unstable" ] || [ "${{ inputs.stability }}" = "canary" ]; then
+            export RELEASE="$RELEASE-${{ inputs.distrib }}"
+          elif [ "${{ inputs.stability }}" = "testing" ]; then
+            export RELEASE="${{ inputs.distrib }}"
+          fi
           export DIST=""
         fi
 

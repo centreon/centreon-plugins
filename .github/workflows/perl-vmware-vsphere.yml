@@ -47,6 +47,7 @@ jobs:
   package:
     needs:
       - get-sources
+      - get-environment
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -60,6 +61,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -91,6 +95,7 @@ jobs:
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-rpm:
     needs:
@@ -125,7 +130,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources
