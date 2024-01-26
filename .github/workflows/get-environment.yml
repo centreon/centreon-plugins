@@ -34,7 +34,7 @@ jobs:
           else
             BRANCHNAME="$GITHUB_HEAD_REF"
           fi
-          
+  
           case "$BRANCHNAME" in
             develop)
               STABILITY="unstable"
