@@ -28,23 +28,23 @@ This library allows you to build output of your plugin.
 
 **Description**
 
-Add string to output (print it with display method). If status is different than 'ok', output associated with 'ok' status is not printed
+This function adds a string to the output (it is printed when the `display()` method is called). If the status is different from 'ok', the output associated with 'ok' status is not printed.
 
 **Parameters**
 
 | Parameter | Type   | Default | Description                                 |
 |-----------|--------|---------|---------------------------------------------|
-| severity  | String | OK      | Status of the output.                       |
+| severity  | String | OK      | Status of the output. Accepted values: OK, WARNING, CRITICAL, UNKNOWN.                      |
 | separator | String | \-      | Separator between status and output string. |
 | short_msg | String |         | Short output (first line).                  |
 | long_msg  | String |         | Long output (used with --verbose option).   |
+| debug     | Int    |         | If set to 1, the message is displayed only when --debug option is passed  |
 
 **Example**
 
 This is an example of how to manage output:
 
 ```perl
-
 $self->{output}->output_add(severity  => 'OK',
                             short_msg => 'All is ok');
 $self->{output}->output_add(severity  => 'Critical',
@@ -53,7 +53,8 @@ $self->{output}->output_add(long_msg  => 'Port 1 is disconnected');
 
 $self->{output}->display();
 ```
-Output displays :
+
+The displayed output is:
 
 ```
 CRITICAL - There is a critical problem
@@ -71,7 +72,8 @@ Performance data are displayed after '|'.
 
 | Parameter | Type   | Default | Description                            |
 |-----------|--------|---------|----------------------------------------|
-| label     | String |         | Label of the performance data.         |
+| label     | String |         | [legacy] Label of the performance data.         |
+| nlabel     | String |         | Label of the performance data in a more standard and explicit fashion.         |
 | value     | Int    |         | Value of the performance data.         |
 | unit      | String |         | Unit of the performance data.          |
 | warning   | String |         | Warning threshold.                     |
@@ -129,7 +131,6 @@ Manage thresholds of performance data for output.
 This is an example of how to manage performance data for output:
 
 ```perl
-
 my $format_warning_perfdata  = $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => 1000000000, cast_int => 1);
 my $format_critical_perfdata = $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => 1000000000, cast_int => 1);
 
@@ -142,6 +143,7 @@ $self->{output}->perfdata_add(label    => 'memory_used',
                               max      => 1000000000);
 
 ```
+
 **tip**
 In this example, instead of print warning and critical thresholds in 'percent', the function calculates and prints these in 'bytes'.
 
@@ -169,6 +171,7 @@ if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{
   $self->{output}->option_exit();
 }
 ```
+
 **tip**
 You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
@@ -176,7 +179,7 @@ You can see the correct threshold format here: https://nagios-plugins.org/doc/gu
 
 **Description**
 
-Check performance data value with threshold to determine status.
+Compare performance data value with threshold to determine status.
 
 **Parameters**
 

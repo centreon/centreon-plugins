@@ -838,8 +838,8 @@ Option management is a central piece of a successful plugin. You should:
 
 * Carefully name your options to make them **self-explanatory**
 * For a given option, **only one format** is possible (either a flag or a value, but not both)
-* Always **check** for values supplied by the user and print a **clear message** when they do not fit with plugin requirements
-* Set default option value when relevant
+* Always **check** the values supplied by the user and print a **clear message** when they do not fit with plugin requirements
+* Set the option to a default value when relevant
 
 [Table of contents](#table_of_contents)
 
