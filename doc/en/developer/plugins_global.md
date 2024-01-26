@@ -837,7 +837,7 @@ Checking sensors
 Option management is a central piece of a successful plugin. You should:
 
 * Carefully name your options to make them **self-explanatory**
-* For a given option, **only one format** is possible (either a flag or a value, but not both)
+* For a given option, there are two possible behaviours (but only one can apply to a given option): flag (boolean) to enable an option and value, where an additional argument must be provided to set the option's value.
 * Always **check** the values supplied by the user and print a **clear message** when they do not fit with plugin requirements
 * Set the option to a default value when relevant
 
