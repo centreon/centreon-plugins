@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,7 +136,7 @@ Filter VRID (can be a regexp).
 =item B<--role>
 
 If role is 'primary', an error if HSRPs are 'standby' states. 
-If role is 'secondary', an error if HSRPs are 'active' states. (Default: 'primary')
+If role is 'secondary', an error if HSRPs are 'active' states. (default: 'primary')
 
 =back
 

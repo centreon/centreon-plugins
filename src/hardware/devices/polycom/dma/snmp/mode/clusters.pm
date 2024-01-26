@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -208,27 +208,27 @@ Filter on one or several cluster (POSIX regexp)
 
 =item B<--warning-cluster-status>
 
-Custom Warning threshold of the cluster state (Default: none)
+Custom Warning threshold of the cluster state (default: none)
 Syntax: --warning-cluster-status='%{cluster_status} =~ /busyOut/i'
 
 
 =item B<--critical-cluster-status>
 
 Custom Critical threshold of the cluster state
-(Default: '%{cluster_status} =~ /outOfService/i' )
+(default: '%{cluster_status} =~ /outOfService/i' )
 Syntax: --critical-cluster-status='%{cluster_status} =~ /busyOut/i'
 
 
 =item B<--warning-license-status>
 
-Custom Warning threshold of the cluster license state (Default: none)
+Custom Warning threshold of the cluster license state (default: none)
 Syntax: --warning-license-status='%{license_status} =~ /notinstalled/i'
 
 
 =item B<--critical-license-status>
 
 Custom Critical threshold of the cluster license state
-(Default: '%{license_status} =~ /invalid/i')
+(default: '%{license_status} =~ /invalid/i')
 Syntax: --critical-license-status='%{license_status} =~ /notinstalled/i'
 
 =item B<--warning-* --critical-*>

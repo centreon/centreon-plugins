@@ -1,20 +1,11 @@
-name: "deb-package"
-description: "Package DEB Centreon"
+name: "deb-delivery"
+description: "Deliver DEB packages"
 inputs:
+  module_name:
+    description: "The package module name"
+    required: true
   distrib:
     description: "The distribution used for packaging"
-    required: true
-  artifactory_username:
-    description: The artifactory username
-    required: true
-  artifactory_password:
-    description: The artifactory password
-    required: true
-  version:
-    description: "Centreon packaged version"
-    required: true
-  release:
-    description: The release number
     required: true
   cache_key:
     description: "The cached package key"
@@ -22,26 +13,38 @@ inputs:
   stability:
     description: "The package stability (stable, testing, unstable)"
     required: true
+  artifactory_token:
+    description: "token for artifactory"
+    required: true
 
 runs:
   using: "composite"
   steps:
+    - name: Remove previously delivered DEBs
+      run: rm -f ./*.deb
+      shell: bash
+
     - name: Use cache DEB files
-      uses: actions/cache@v3
+      uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
       with:
         path: ./*.deb
         key: ${{ inputs.cache_key }}
+        fail-on-cache-miss: true
 
-    - name: Publish DEBS to Nexus
+    - uses: jfrog/setup-jfrog-cli@901bb9632db90821c2d3f076012bdeaf66598555 # v3.4.1
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+
+    - name: Publish DEBs to artifactory
       run: |
-        for MAJOR in "22.04" "22.10"; do
-          echo "Delivering to $MAJOR ${{ inputs.stability }}"
+        FILES="*.deb"
 
-          FOLDER_SUFFIX="-${{ inputs.stability }}"
-          if [[ "${{ inputs.stability }}" == "stable" ]]; then
-            FOLDER_SUFFIX=""
-          fi
+        for FILE in $FILES; do
+          echo "[DEBUG] - File: $FILE"
 
-          find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u "${{ inputs.artifactory_username }}":"${{ inputs.artifactory_password }}" -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$MAJOR$FOLDER_SUFFIX/
+          ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
+
+          jf rt upload "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
         done
       shell: bash

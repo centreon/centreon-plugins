@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -206,7 +206,7 @@ Check BGP peer prefixes per AFI/SAFI (BGP4-V2-MIB-JUNIPER)
 
 =item B<--filter-peer>
 
-Filter by peer identifier (Can be regexp)
+Filter by peer identifier (can be regexp)
 
 =item B<--warning-*>
 

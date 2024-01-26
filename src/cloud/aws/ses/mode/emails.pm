@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -229,7 +229,7 @@ See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activ
 
 =item B<--dimension>
 
-Set SES dimensions (Can be multiple). Syntax: 
+Set SES dimensions (can be defined multiple times). Syntax: 
 --dimension='DimensionName1=Value1' --dimension='DimensionName2=Value2'.
 
 =item B<--warning-emails-*>

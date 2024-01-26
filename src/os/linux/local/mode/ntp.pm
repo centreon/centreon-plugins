@@ -82,7 +82,7 @@ sub custom_status_output {
 sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state} ne '*') {
+    if ($self->{result_values}->{rawstate} ne '*') {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
             unit => 'ms',
@@ -106,7 +106,7 @@ sub custom_offset_perfdata {
 sub custom_offset_threshold {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state} ne '*') {
+    if ($self->{result_values}->{rawstate} ne '*') {
         return 'ok';
     }
     return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -150,7 +150,7 @@ sub set_counters {
             }
         },
         { label => 'offset', nlabel => 'peer.time.offset.milliseconds', display_ok => 0, set => {
-                key_values => [ { name => 'offset' }, { name => 'state' }, { name => 'display' } ],
+                key_values => [ { name => 'offset' }, { name => 'rawstate' }, { name => 'display' } ],
                 output_template => 'offset: %s ms',
                 closure_custom_threshold_check => $self->can('custom_offset_threshold'),
                 closure_custom_perfdata => $self->can('custom_offset_perfdata'),
@@ -243,11 +243,36 @@ sub manage_selection {
             }
             next if ($line !~ /$mode->{regexp}/);
 
+            my $entry = {};
             my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
             if ($mode->{type} eq 'chronyc') {
                 $remote_peer = centreon::plugins::misc::trim($3);
                 $peer_fate = centreon::plugins::misc::trim($2);
+                my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
+                $entry = {
+                    display  => $remote_peer,
+                    rawstate => $peer_fate,
+                    state    => $state_map_chronyc{$peer_fate},
+                    stratum  => centreon::plugins::misc::trim($stratum),
+                    rawtype  => centreon::plugins::misc::trim($type),
+                    type     => $type_map_chronyc{centreon::plugins::misc::trim($type)},
+                    reach    => centreon::plugins::misc::trim($reach),
+                    offset   => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
+                };
+            } else {
+                my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
+                $entry = {
+                    display  => $remote_peer,
+                    rawstate => $peer_fate,
+                    state    => $state_map_ntpq{$peer_fate},
+                    stratum  => centreon::plugins::misc::trim($stratum),
+                    rawtype  => centreon::plugins::misc::trim($type),
+                    type     => $type_map_ntpq{centreon::plugins::misc::trim($type)},
+                    reach    => centreon::plugins::misc::trim($reach),
+                    offset   => centreon::plugins::misc::trim($offset)
+                };
             }
+
             if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
                 $remote_peer !~ /$self->{option_results}->{filter_name}/) {
                 $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer name.", debug => 1);
@@ -261,16 +286,7 @@ sub manage_selection {
 
             if ($mode->{type} eq 'ntpq') {
                 my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
-                $self->{peers}->{$remote_peer} = {
-                    display  => $remote_peer,
-                    rawstate => $peer_fate,
-                    state    => $state_map_ntpq{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_ntpq{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset)
-                };
+                $self->{peers}->{$remote_peer} = $entry;
             } elsif ($mode->{type} eq 'chronyc') {
                 #210 Number of sources = 4
                 #MS Name/IP address         Stratum Poll Reach LastRx Last sample               
@@ -278,19 +294,9 @@ sub manage_selection {
                 #^+ 212.83.187.62                 2   9   377   179   -715us[ -731us] +/-   50ms
                 #^- 129.250.35.251                2   8   377    15    -82us[  -99us] +/-   96ms
 
-                my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
-                $self->{peers}->{$remote_peer} = {
-                    display  => $remote_peer,
-                    rawstate => $peer_fate,
-                    state    => $state_map_chronyc{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_chronyc{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
-                };
+                $self->{peers}->{$remote_peer} = $entry;
             }
-
+            
             $self->{global}->{peers}++;
         }
     }
@@ -322,42 +328,42 @@ Filter peer state (can be a regexp).
 
 =item B<--warning-peers>
 
-Threshold warning minimum amount of NTP-Server
+Warning threshold minimum amount of NTP-Server
 
 =item B<--critical-peers>
 
-Threshold critical minimum amount of NTP-Server
+Critical threshold minimum amount of NTP-Server
 
 =item B<--warning-offset>
 
-Threshold warning offset deviation value in milliseconds
+Warning threshold offset deviation value in milliseconds
 
 =item B<--critical-offset>
 
-Threshold critical offset deviation value in milliseconds
+Critical threshold offset deviation value in milliseconds
 
 =item B<--warning-stratum>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-stratum>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can used special variables like: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{state}, %{rawstate}, %{type}, %{rawtype}, %{reach}, %{display}
 
 =back
 

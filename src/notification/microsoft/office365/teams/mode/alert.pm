@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -321,11 +321,11 @@ centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin -
 
 =item B<--notification-type>
 
-Specify the notification type (Required).
+Specify the notification type (required).
 
 =item B<--host-name>
 
-Specify Host server name for the alert (Required).
+Specify Host server name for the alert (required).
 
 =item B<--host-state>
 
@@ -371,7 +371,7 @@ Specify extra information about author and comment (only for ACK and DOWNTIME ty
 
 =item B<--extra-info-format>
 
-Specify the extra info display format (Default: 'Author: %s, Comment: %s').
+Specify the extra info display format (default: 'Author: %s, Comment: %s').
 
 =item B<--legacy>
 

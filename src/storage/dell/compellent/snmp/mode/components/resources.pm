@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ our @EXPORT_OK = qw(%map_sc_status);
 %map_sc_status = (
     1 => 'up',
     2 => 'down',
-    3 => 'degraded',
+    3 => 'degraded'
 );
 
 1;

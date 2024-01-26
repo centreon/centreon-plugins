@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,17 +120,17 @@ Check number of calls and participants.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='calls')
+(example: --filter-counters='calls')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-calls', 'local-participants', 'remote-participants',
 'call-legs'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-calls', 'local-participants', 'remote-participants',
 'call-legs'.
 

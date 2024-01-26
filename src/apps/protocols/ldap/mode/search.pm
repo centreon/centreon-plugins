@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -238,7 +238,7 @@ Add custom search options (can change the scope for example).
 
 =item B<--display-entry>
 
-Display ldap entries (with --verbose option) (Example: '%{cn} account locked')
+Display ldap entries (with --verbose option) (example: '%{cn} account locked')
 
 =item B<--username>
 
@@ -250,23 +250,23 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =item B<--warning-entries>
 
-Threshold warning (number of results)
+Warning threshold (number of results)
 
 =item B<--critical-entries>
 
-Threshold critical (number of results)
+Critical threshold (number of results)
 
 =back
 

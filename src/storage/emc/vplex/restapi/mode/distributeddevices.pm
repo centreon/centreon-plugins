@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -110,33 +110,33 @@ Filter devices by device name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
-Can used special variables like: %{operational_status}, %{device_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--critical-operational-status>
 
-Set critical threshold for status (Default: '%{operational_status} ne "ok"').
-Can used special variables like: %{operational_status}, %{device_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{operational_status} ne "ok"').
+You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--warning-health-status>
 
-Set warning threshold for status.
-Can used special variables like: %{health_state}, %{device_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_state} ne "ok"').
-Can used special variables like: %{health_state}, %{device_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{health_state} ne "ok"').
+You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status.
-Can used special variables like: %{service_status}, %{device_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{service_status}, %{device_name}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{service_status} ne "running"').
-Can used special variables like: %{service_status}, %{device_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{service_status} ne "running"').
+You can use the following variables: %{service_status}, %{device_name}
 
 =back
 

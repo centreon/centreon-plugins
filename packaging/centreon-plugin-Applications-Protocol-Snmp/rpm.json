@@ -4,5 +4,5 @@
         "perl(Digest::MD5)",
         "perl(NetAddr::IP)"
     ],
-    "custom_pkg_data": "Obsoletes:    centreon-plugin-Generic-Snmp"
+    "replaces": ["centreon-plugin-Generic-Snmp"]
 }

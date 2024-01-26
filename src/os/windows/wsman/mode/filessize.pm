@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -177,8 +177,8 @@ Check size of files/directories.
 
 =item B<--folder>
 
-Folder to check. (No WQL wildcard allowed)
-Ex: 'C:/Users/Administrator/'.
+Folder to check (no WQL wildcard allowed).
+Example: 'C:/Users/Administrator/'.
 
 =item B<--filter-filename>
 
@@ -186,19 +186,19 @@ Filter files by name.
 
 =item B<--warning-one>
 
-Threshold warning in bytes for each files/directories.
+Warning threshold in bytes for each files/directories.
 
 =item B<--critical-one>
 
-Threshold critical in bytes for each files/directories.
+Critical threshold in bytes for each files/directories.
 
 =item B<--warning-total>
 
-Threshold warning in bytes for all files/directories.
+Warning threshold in bytes for all files/directories.
 
 =item B<--critical-total>
 
-Threshold critical in bytes for all files/directories.
+Critical threshold in bytes for all files/directories.
 
 =back
 

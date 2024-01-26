@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -223,33 +223,33 @@ Filter agents if active or not.
 
 =item B<--unknown-agent-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{active}, %{readyToRun}, %{id}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--warning-agent-status>
 
-Set warning threshold for status.
-Can used special variables like: %{active}, %{readyToRun}, %{id}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
 
-Set critical threshold for status (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
-Can used special variables like: %{active}, %{readyToRun}, %{id}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{active} eq "yes" and %{readyToRun} eq "no"').
+You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-engine-status>
 
-Set warning threshold for status.
-Can used special variables like: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--critical-engine-status>
 
-Set critical threshold for status.
-Can used special variables like: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{agentName}, %{appDisplayName}, %{status}, %{desiredStatus}
 
 =item B<--warning-*> B<--critical-*>
 

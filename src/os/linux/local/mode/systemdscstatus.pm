@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -188,13 +188,13 @@ Can be: 'total-running', 'total-dead', 'total-exited',
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{active} =~ /failed/i').
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Define the conditions to match for the status to be CRITICAL (default: '%{active} =~ /failed/i').
+You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =back
 

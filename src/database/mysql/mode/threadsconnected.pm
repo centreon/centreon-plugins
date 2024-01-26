@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         'Client connected threads total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $self->{result_values}->{total},
@@ -43,7 +43,6 @@ sub prefix_databse_output {
 
     return "Database '" . $options{instance_value}->{name} . "' ";
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;

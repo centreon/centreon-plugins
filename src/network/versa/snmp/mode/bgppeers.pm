@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,18 +204,18 @@ Critical threshold on last update (seconds)
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /established/').
-Can used special variables like: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /established/').
+You can use the following variables: %{local_addr}, %{remote_addr}, %{as}, %{state}, %{display}
 
 =back
 

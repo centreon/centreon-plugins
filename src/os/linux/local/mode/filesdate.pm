@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -115,8 +115,11 @@ sub run {
                 short_msg => sprintf('%s: %s seconds (time: %s)', $name, $diff_time, scalar(localtime($time)))
             );
         }
+
         $self->{output}->perfdata_add(
-            label => $name, unit => 's',
+            nlabel => 'file.mtime.last.seconds',
+            instances => $name,
+            unit => 's',
             value => $diff_time,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
@@ -143,11 +146,11 @@ Files/Directories to check. (Shell expansion is ok)
 
 =item B<--warning>
 
-Threshold warning in seconds for each files/directories (diff time).
+Warning threshold in seconds for each files/directories (diff time).
 
 =item B<--critical>
 
-Threshold critical in seconds for each files/directories (diff time).
+Critical threshold in seconds for each files/directories (diff time).
 
 =item B<--separate-dirs>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -453,7 +453,9 @@ sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
 
-     foreach (@{$self->{overload_th}}) {
+    $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
+
+    foreach (@{$self->{overload_th}}) {
         if ($options{section} =~ /$_->{section}/i) {
             if ($options{value} =~ /$_->{filter}/i &&
                 (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
@@ -486,28 +488,27 @@ Default template for hardware. Should be extended.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'xxx', 'yyy'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=xxx --filter=yyyy)
-Can also exclude specific instance: --filter=xxxxx,instancevalue
+Exclude the items given as a comma-separated list (example: --filter=xxx --filter=yyyy).
+You can also exclude items from specific instances: --filter=xxxxx,instancevalue
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=xxxx,instancevalue
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='xxxxx,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
    
     return $self;
@@ -63,7 +63,7 @@ sub manage_selection {
         $self->{deployments}->{$deployment->{metadata}->{uid}} = {
             uid => $deployment->{metadata}->{uid},
             name => $deployment->{metadata}->{name},
-            namespace => $deployment->{metadata}->{namespace},
+            namespace => $deployment->{metadata}->{namespace}
         }            
     }
 }
@@ -73,14 +73,20 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $deployment (sort keys %{$self->{deployments}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
-                                                         $self->{deployments}->{$deployment}->{uid},
-                                                         $self->{deployments}->{$deployment}->{name},
-                                                         $self->{deployments}->{$deployment}->{namespace}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[uid: %s] [name: %s] [namespace: %s]',
+                $self->{deployments}->{$deployment}->{uid},
+                $self->{deployments}->{$deployment}->{name},
+                $self->{deployments}->{$deployment}->{namespace}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List deployments:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List deployments:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -99,7 +105,7 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             uid => $self->{deployments}->{$deployment}->{uid},
             name => $self->{deployments}->{$deployment}->{name},
-            namespace => $self->{deployments}->{$deployment}->{namespace},
+            namespace => $self->{deployments}->{$deployment}->{namespace}
         );
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,18 +131,18 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i').
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+Define the conditions to match for the status to be WARNING (default: '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i').
+You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
-Can used special variables like: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{cluster_status} =~ /critical/i || %{heartbeat_status} =~ /disconnected/i').
+You can use the following variables: %{cluster_status}, %{heartbeat_status}, %{active_node_name}, %{passive_node_name}
 
 =item B<--warning-*> B<--critical-*>
 

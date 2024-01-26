@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -165,11 +165,11 @@ Check memory usage (AlcatelIND1Health.mib).
 
 =item B<--warning>
 
-Threshold warning in percent (1m,1h).
+Warning threshold in percent (1m,1h).
 
 =item B<--critical>
 
-Threshold critical in percent (1m,1h).
+Critical threshold in percent (1m,1h).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,13 +114,13 @@ Check fabrics.
 =item B<--warning-health>
 
 Set warning for the health level
-Can used special variables like: %{current}, %{previous}.
+You can use the following variables: %{current}, %{previous}.
 example: --warning-health='%{previous} < %{current}'
 
 =item B<--critical-health>
 
 Set critical for the health level
-Can used special variables like: %{current}, %{previous}.
+You can use the following variables: %{current}, %{previous}.
 example: --critical-health='%{current} < 98'
 
 =back

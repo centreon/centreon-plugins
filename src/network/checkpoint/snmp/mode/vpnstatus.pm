@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -165,13 +165,13 @@ Filter vpn name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{type}, %{status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{type}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} eq "permanent" and %{status} =~ /down/i').
-Can used special variables like: %{type}, %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{type} eq "permanent" and %{status} =~ /down/i').
+You can use the following variables: %{type}, %{status}, %{display}
 
 =item B<--buggy-snmp>
 

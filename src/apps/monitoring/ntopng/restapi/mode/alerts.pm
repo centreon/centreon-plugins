@@ -214,13 +214,13 @@ Can be: 'last-5mns' (default), 'last-hour'
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /minor/i')
-Can used special variables like: %{severity}, %{type}, %{timeraised}
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /minor/i')
+You can use the following variables: %{severity}, %{type}, %{timeraised}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /major|critical/i').
-Can used special variables like: %{severity}, %{type}, %{timeraised}
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /major|critical/i').
+You can use the following variables: %{severity}, %{type}, %{timeraised}
 
 =item B<--warning-*> B<--critical-*>
 

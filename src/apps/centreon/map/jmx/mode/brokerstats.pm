@@ -1,4 +1,4 @@
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,26 +140,26 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='session')
+(example: --filter-counters='session')
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{processed_packets} < %{received_packets}').
+Define the conditions to match for the status to be CRITICAL. (default: '%{processed_packets} < %{received_packets}').
 Can use special variables like: %{processed_packets}, %{received_packets}, %{diff_packets}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'received-packets-rate', 'processed-packets-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'received-packets-rate', 'processed-packets-rate'.
 
 =back

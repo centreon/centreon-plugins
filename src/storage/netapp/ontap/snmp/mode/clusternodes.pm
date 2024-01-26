@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -382,7 +382,7 @@ Filter nodes by name (can be a regexp).
 
 =item B<--filter-port-id>
 
-Filter ports by id (can be a regexp).
+Filter ports by ID (can be a regexp).
 
 =item B<--filter-port-role>
 
@@ -390,63 +390,63 @@ Filter ports by role (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{node_status}, %{node_name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
-Can used special variables like: %{node_status}, %{node_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{node_status} eq "clusterComLost"').
-Can used special variables like: %{node_status}, %{node_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} eq "clusterComLost"').
+You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--unknown-bbu-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{bbu_status}, %{node_name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--warning-bbu-status>
 
-Set warning threshold for status.
-Can used special variables like: %{bbu_status}, %{node_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--critical-bbu-status>
 
-Set critical threshold for status (Default: '%{bbu_status} !~ /fullyCharged|ok/i').
-Can used special variables like: %{bbu_status}, %{node_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{bbu_status} !~ /fullyCharged|ok/i').
+You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--unknown-port-link-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--warning-port-link-status>
 
-Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--critical-port-link-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--unknown-port-health>
 
-Set unknown threshold for status.
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-port-health>
 
-Set warning threshold for status (Default: '%{health} eq "degraded"').
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be WARNING (default: '%{health} eq "degraded"').
+You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--critical-port-health>
 
-Set critical threshold for status.
-Can used special variables like: %{health}, %{port_id}, %{node_name}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-*> B<--critical-*>
 

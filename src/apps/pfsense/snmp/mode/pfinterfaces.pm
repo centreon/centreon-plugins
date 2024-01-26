@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,12 +167,12 @@ Check pfInterfaces.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in-pass', 'traffic-out-pass', 'traffic-in-block', 'traffic-out-block'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in-pass', 'traffic-out-pass', 'traffic-in-block', 'traffic-out-block'.
 
 =item B<--filter-name>

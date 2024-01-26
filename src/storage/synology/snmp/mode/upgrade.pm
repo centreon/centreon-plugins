@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,13 +103,13 @@ Check upgrade status
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default : '%{upgrade} ne "unavailable"').
-Can used special variables like: %{model}, %{version}, %{upgrade}
+Define the conditions to match for the status to be WARNING (default : '%{upgrade} ne "unavailable"').
+You can use the following variables: %{model}, %{version}, %{upgrade}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can used special variables like: %{model}, %{version}, %{upgrade}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{model}, %{version}, %{upgrade}
 
 =back
 

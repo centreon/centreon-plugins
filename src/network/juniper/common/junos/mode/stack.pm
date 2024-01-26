@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -213,33 +213,33 @@ Check stack members.
 
 =item B<--unknown-member-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{role}, %{roleLast}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{role}, %{roleLast}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast}').
-Can used special variables like: %{role}, %{roleLast}
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast}').
+You can use the following variables: %{role}, %{roleLast}
 
 =item B<--unknown-port-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{admin_status}, %{oper_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{admin_status}, %{oper_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{admin_status} eq "up"  and %{oper_status} ne "up"').
-Can used special variables like: %{admin_status}, %{oper_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_status} eq "up"  and %{oper_status} ne "up"').
+You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =back
 

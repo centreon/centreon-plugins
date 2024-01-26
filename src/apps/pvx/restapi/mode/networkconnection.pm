@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -166,17 +166,17 @@ Check instances connection metrics.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PVQL object, Default: 'layer')
+Filter on a specific instance (must be a PVQL object, Default: 'layer')
 
 (Object 'application' will be mapped with applications name)
 
 =item B<--filter>
 
-Add a PVQL filter (Example: --filter='application = "mysql"')
+Add a PVQL filter (example: --filter='application = "mysql"')
 
 =item B<--from>
 
-Add a PVQL from clause to filter on a specific layer (Example: --from='tcp')
+Add a PVQL from clause to filter on a specific layer (example: --from='tcp')
 
 =item B<--top>
 
@@ -184,12 +184,12 @@ Only search for the top X results (top is made on 'ratio').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ratio', 'attempt' (conn/s), 'successful' (conn/s), 'connection-time' (ms).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ratio', 'attempt' (conn/s), 'successful' (conn/s), 'connection-time' (ms).
 
 =item B<--filter-counters>

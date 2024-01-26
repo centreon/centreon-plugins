@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,20 +29,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'call-statistics'   => 'network::sonus::sbc::snmp::mode::callstats',
         'channels'          => 'network::sonus::sbc::snmp::mode::channels',
-        'cpu'               => 'snmp_standard::mode::cpu',
-        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'cpu'               => 'network::sonus::sbc::snmp::mode::cpu',
+        'cpu-detailed'      => 'network::sonus::sbc::snmp::mode::cpudetailed',
         'dsp-stats'         => 'network::sonus::sbc::snmp::mode::dspstats',
-        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'interfaces'        => 'network::sonus::sbc::snmp::mode::interfaces',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'load'              => 'snmp_standard::mode::loadaverage',
-        'memory'            => 'snmp_standard::mode::memory',
-        'storage'           => 'snmp_standard::mode::storage',
-        'swap'              => 'snmp_standard::mode::swap',
-    );
+        'load'              => 'network::sonus::sbc::snmp::mode::load',
+        'memory'            => 'network::sonus::sbc::snmp::mode::memory',
+        'storage'           => 'network::sonus::sbc::snmp::mode::storage',
+        'swap'              => 'network::sonus::sbc::snmp::mode::swap'
+    };
 
     return $self;
 }

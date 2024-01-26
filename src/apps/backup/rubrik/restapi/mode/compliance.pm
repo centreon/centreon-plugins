@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -72,9 +72,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $reports = $options{custom}->request_api(endpoint => '/report');
+    my $reports = $options{custom}->request_api(
+        endpoint => '/report',
+        label => 'data'
+    );
     my $report_id;
-    foreach (@{$reports->{data}}) {
+    foreach (@$reports) {
         if ($_->{name} eq 'SLA Compliance Summary') {
             $report_id = $_->{id};
             last;

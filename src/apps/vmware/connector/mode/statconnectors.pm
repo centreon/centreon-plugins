@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,12 +108,12 @@ Get number of requests for each connectors (information from daemon. Not VMWare)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-requests', 'requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-requests', 'requests'.
 
 =back

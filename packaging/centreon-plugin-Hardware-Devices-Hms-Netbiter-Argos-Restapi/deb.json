@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libdatetime-perl",
+        "libdatetime-format-dateparse-perl"
+    ]
+}

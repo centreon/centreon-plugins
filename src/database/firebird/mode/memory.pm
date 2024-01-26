@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -190,13 +190,13 @@ Check memory usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'used' (%), 'attachment' (%), 'transaction' (%), 
 'statement' (%), 'call' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'used' (%), 'attachment' (%), 'transaction' (%), 
 'statement' (%), 'call' (%).
 

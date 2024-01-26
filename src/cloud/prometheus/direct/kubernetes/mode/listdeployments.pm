@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -119,17 +119,17 @@ List deployments.
 
 =item B<--deployment>
 
-Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
+Filter on a specific deployment (must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'labels')
+Overload default metrics name (can be defined multiple times, metric can be 'labels')
 
 Example : --metric-overload='metric,^my_metric_name$'
 

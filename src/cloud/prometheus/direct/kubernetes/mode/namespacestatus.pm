@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -184,31 +184,31 @@ Check namespace status phase.
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--phase>
 
-Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
+Filter on a specific phase (must be a PromQL filter, Default: 'phase=~".*"')
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{phase}.
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{display}, %{phase}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{phase} !~ /Active/').
-Can used special variables like: %{display}, %{phase}
+Define the conditions to match for the status to be CRITICAL (default: '%{phase} !~ /Active/').
+You can use the following variables: %{display}, %{phase}
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -181,13 +181,13 @@ Set critical threshold on rule compliance.
 
 =item B<--warning-status>
 
-Set warning threshold for status of directive compliance (Default: '').
-Can used special variables like: %{directive}, %{compliance}
+Define the conditions to match for the status to be WARNING of directive compliance (default: '').
+You can use the following variables: %{directive}, %{compliance}
 
 =item B<--critical-status>
 
-Set critical threshold for status of directive compliance (Default: '').
-Can used special variables like: %{directive}, %{compliance}
+Define the conditions to match for the status to be CRITICAL of directive compliance (default: '').
+You can use the following variables: %{directive}, %{compliance}
 
 Example :
   --critical-status='%{directive} eq "Users" && %{compliance} < 85'

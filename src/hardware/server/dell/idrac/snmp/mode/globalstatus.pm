@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -171,33 +171,33 @@ Check the overall status of iDrac card.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /nonCritical|other/').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|nonRecoverable/').
+You can use the following variables: %{status}
 
 =item B<--unknown-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}
 
 =item B<--warning-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /nonCritical|other/').
+You can use the following variables: %{status}
 
 =item B<--critical-storage-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|nonRecoverable/').
+You can use the following variables: %{status}
 
 =back
 

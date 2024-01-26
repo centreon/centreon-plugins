@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -279,13 +279,13 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-query-rate', 'total-hit-ratio', 'success-count', 'referral-count', 'nxrrset-count', 
 'failure-count'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-query-rate', 'total-hit-ratio',
 'success-count', 'referral-count', 'nxrrset-count', 'failure-count',
 'aa-latency-1m', 'aa-latency-5m', 'aa-latency-15m',

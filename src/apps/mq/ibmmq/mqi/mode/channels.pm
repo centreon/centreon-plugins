@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -191,11 +191,11 @@ Check channels.
 
 =item B<--filter-name>
 
-Filter channel name (Can use regexp).
+Filter channel name (can use regexp).
 
 =item B<--filter-type>
 
-Filter channel type (Can use regexp, insensitive search).
+Filter channel type (can use regexp, insensitive search).
 
 Here is the IBM - Perl mapping about Channel types: 
 
@@ -211,18 +211,18 @@ MQTT - Telemetry
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
-Can used special variables like: %{channel_status}, %{mca_status}
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{channel_status}, %{mca_status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{channel_status} !~ /running|idle/i').
-Can used special variables like: %{channel_status}, %{mca_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{channel_status} !~ /running|idle/i').
+You can use the following variables: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>
 

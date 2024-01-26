@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-         'cmd-return'     => 'os::windows::local::mode::cmdreturn',
-         'list-storages'  => 'os::windows::local::mode::liststorages',
-         'pending-reboot' => 'os::windows::local::mode::pendingreboot',
-         'sessions'       => 'os::windows::local::mode::sessions',
-         'time'           => 'os::windows::local::mode::ntp',
-         'updates'        => 'os::windows::local::mode::updates'
+         'certificates'      => 'os::windows::local::mode::certificates',
+         'cmd-return'        => 'os::windows::local::mode::cmdreturn',
+         'list-certificates' => 'os::windows::local::mode::listcertificates',
+         'list-storages'     => 'os::windows::local::mode::liststorages',
+         'pending-reboot'    => 'os::windows::local::mode::pendingreboot',
+         'sessions'          => 'os::windows::local::mode::sessions',
+         'time'              => 'os::windows::local::mode::ntp',
+         'updates'           => 'os::windows::local::mode::updates'
     };
 
     return $self;

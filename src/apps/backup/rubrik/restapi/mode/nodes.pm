@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -124,8 +124,13 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $name = $options{custom}->request_api(endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/name');
-    my $nodes = $options{custom}->request_api(endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/node');
+    my $name = $options{custom}->request_api(
+        endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/name'
+    );
+    my $nodes = $options{custom}->request_api(
+        endpoint => '/cluster/' . $self->{option_results}->{cluster_id} . '/node',
+        label => 'data'
+    );
 
     $self->{clusters} = {
         $name => {
@@ -137,7 +142,7 @@ sub manage_selection {
             nodes => {}
         }
     };
-    foreach (@{$nodes->{data}}) {
+    foreach (@$nodes) {
         next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
             $_->{id} !~ /$self->{option_results}->{filter_node_id}/);
 
@@ -169,26 +174,26 @@ Example: --filter-counters='node-status'
 
 =item B<--cluster-id>
 
-Which cluster to check (Default: 'me').
+Which cluster to check (default: 'me').
 
 =item B<--filter-node-id>
 
-Filter nodes by node id (can be a regexp).
+Filter nodes by node ID (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{ip_address}, %{id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{ip_address}, %{id}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{ip_address}, %{id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{ip_address}, %{id}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ok/i').
-Can used special variables like: %{status}, %{ip_address}, %{id}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i').
+You can use the following variables: %{status}, %{ip_address}, %{id}
 
 =item B<--warning-*> B<--critical-*>
 

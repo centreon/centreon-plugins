@@ -154,13 +154,13 @@ Filter by alert name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{level} =~ /warning|minor/i')
-Can used special variables like: %{level}, %{details}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{level} =~ /warning|minor/i')
+You can use the following variables: %{level}, %{details}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{level} =~ /critical|major|error/i').
-Can used special variables like: %{level}, %{details}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{level} =~ /critical|major|error/i').
+You can use the following variables: %{level}, %{details}, %{name}
 
 =item B<--memory>
 

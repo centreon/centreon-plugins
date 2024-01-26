@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,7 +172,7 @@ Check EAS application datasource status.
 
 =item B<--urlpath>
 
-Specify path to get status page. (Default: '/easportal/tools/nagios/checkdatasources.jsp')
+Specify path to get status page. (default: '/easportal/tools/nagios/checkdatasources.jsp')
 
 =item B<--datasource>
 

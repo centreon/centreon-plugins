@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,7 +160,7 @@ Redis server.
 
 =item B<--port>
 
-Redis port (Default: 6379).
+Redis port (default: 6379).
 
 =item B<--password>
 
@@ -172,7 +172,7 @@ Sentinel server. Alternative of server option. service option is required.
 
 =item B<--sentinel-port>
 
-Sentinel port (Default: 26379).
+Sentinel port (default: 26379).
 
 =item B<--service>
 

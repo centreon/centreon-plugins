@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -65,7 +65,7 @@ Check memory usage (UCD-SNMP-MIB).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =item B<--free>
 
@@ -77,13 +77,13 @@ Check swap also.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage', 'swap', 'buffer' (absolute),
 'cached' (absolute), 'shared' (absolute).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'usage', 'swap', 'buffer' (absolute),
 'cached' (absolute), 'shared' (absolute).
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -96,13 +96,13 @@ Check license.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /active/i').
+You can use the following variables: %{status}, %{type}, %{issued_to}, %{expiry_date_in_seconds}.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -162,7 +162,7 @@ sub request_api {
         $hostname = $options{hostname};
     }
 
-    #400: Bad Request- You did something wrong, e.g. a malformed request or missing parameter.
+    #400: Bad Request- You did something wrong, for example a malformed request or missing parameter.
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
@@ -443,6 +443,9 @@ sub get_organization_uplink_loss_and_latency {
 
         if (defined($datas)) {
             foreach (@$datas) {
+                # sometimes uplink is undef. so we skip
+                next if (!defined($_->{uplink}));
+
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
                     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }->{ $_->{uplink} } = $_;
@@ -563,11 +566,11 @@ Meraki api hostname (default: 'api.meraki.com')
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-token>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -110,7 +110,7 @@ List hosts.
 
 =item B<--filter-name>
 
-Filter host name (Can be a regexp).
+Filter host name (can be a regexp).
 
 =back
 

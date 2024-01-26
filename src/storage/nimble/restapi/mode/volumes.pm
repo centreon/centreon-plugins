@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,11 +63,11 @@ sub set_counters {
             }
         },
         { label => 'space-usage', nlabel => 'volume.space.usage.bytes', set => {
-                key_values => [ { name => 'used_space' }, { name => 'display' } ],
+                key_values => [ { name => 'used_space' } ],
                 output_template => 'space used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -130,7 +130,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s'             => { name => 'filter_name' },
+        'filter-replication-role:s' => { name => 'filter_replication_role' }
     });
     
     return $self;
@@ -144,13 +145,19 @@ sub manage_selection {
     $self->{volumes} = {};
     foreach (@{$results->{data}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping volume '" . $_->{name} . "': no matching filter.", debug => 1);
+            $_->{full_name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping volume '" . $_->{full_name} . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{filter_replication_role}) && $self->{option_results}->{filter_replication_role} ne '' &&
+            $_->{replication_role} !~ /$self->{option_results}->{filter_replication_role}/) {
+            $self->{output}->output_add(long_msg => "skipping volume '" . $_->{full_name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
 
-        $self->{volumes}->{ $_->{name} } = {
-            display => $_->{name},
+        $self->{volumes}->{ $_->{full_name} } = {
+            display => $_->{full_name},
             state => $_->{vol_state},
             space_usage_level => $_->{space_usage_level},
             used_space => $_->{total_usage_bytes},
@@ -188,20 +195,24 @@ Example: --filter-counters='status'
 
 Filter volume name (can be a regexp).
 
+=item B<--filter-replication-role>
+
+Filter volumes by replication role (can be a regexp).
+
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{space_level_usage}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{space_usage_level} =~ /warning/').
-Can used special variables like: %{state}, %{space_level_usage}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{space_usage_level} =~ /warning/').
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
-Can used special variables like: %{state}, %{space_level_usage}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i || %{space_usage_level} =~ /critical/').
+You can use the following variables: %{state}, %{space_level_usage}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

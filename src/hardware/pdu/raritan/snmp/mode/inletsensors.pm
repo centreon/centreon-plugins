@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,6 +43,14 @@ sub snmp_execute {
     
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request}, return_type => 1);
+
+    my $oid_pduName = '.1.3.6.1.4.1.13742.6.3.2.2.1.13';
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_pduName, return_type => 1);
+    $self->{pduNames} = {};
+    foreach (keys %$snmp_result) {
+        /\.(\d+)$/;
+        $self->{pduNames}->{$1} = $snmp_result->{$_};
+    }
 }
 
 sub check_numeric_section_option {
@@ -58,8 +66,10 @@ sub load_components {
     my ($self, %options) = @_;
     
     my $mod_name = $self->{components_path} . "::sensor";
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                          error_msg => "Cannot load module '$mod_name'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => $mod_name,
+        error_msg => "Cannot load module '$mod_name'."
+    );
     my $func = $mod_name->can('load');
     $func->($self, type => 'inlet');
     
@@ -76,12 +86,10 @@ sub exec_components {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
@@ -98,22 +106,20 @@ Check inlet sensors.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=airPressure --filter=rmsVoltage)
-Can also exclude specific instance: --filter=rmsVoltage,I1
+Exclude the items given as a comma-separated list (example: --filter=airPressure --filter=rmsVoltage).
+You can also exclude items from specific instances: --filter=rmsVoltage,I1
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='powerQuality,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>

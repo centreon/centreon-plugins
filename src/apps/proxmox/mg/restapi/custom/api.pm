@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::proxmox::mg::restapi::custom::api;
@@ -270,15 +269,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api2/json')
+API url path (default: '/api2/json')
 
 =item B<--port>
 
-API port (Default: 8806)
+API port (default: 8806)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -290,7 +289,7 @@ Set API password
 
 =item B<--realm>
 
-Set user realm (Default: 'pmg')
+Set user realm (default: 'pmg')
 
 =item B<--timeout>
 

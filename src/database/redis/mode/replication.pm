@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -171,23 +171,23 @@ Check replication status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{sync_status} =~ /in progress/i').
-Can used special variables like: %{sync_status}, %{link_status}, %{cluster_state}
+Define the conditions to match for the status to be WARNING (default: '%{sync_status} =~ /in progress/i').
+You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{link_status} =~ /down/i').
-Can used special variables like: %{sync_status}, %{link_status}, %{cluster_state}
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} =~ /down/i').
+You can use the following variables: %{sync_status}, %{link_status}, %{cluster_state}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'connected-slaves', 'master-repl-offset',
 'master-last-io', 'slave-priority', 'slave-read-only'.
 

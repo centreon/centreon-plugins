@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -262,19 +262,19 @@ my $mapping = {
 };
 my $mapping_temperature = {
     name  => { oid => '.1.3.6.1.4.1.116.5.46.1.2.1.1' }, # ipmiTemperatureName
-    value => { oid => '.1.3.6.1.4.1.116.5.46.1.2.1.2' }  # ipmiTemperatureDetailedStatus (eg: "25.0C (77.0F); (range 0.0-43.0C)")
+    value => { oid => '.1.3.6.1.4.1.116.5.46.1.2.1.2' }  # ipmiTemperatureDetailedStatus (example: "25.0C (77.0F); (range 0.0-43.0C)")
 };
 my $oid_temperature_entry = '.1.3.6.1.4.1.116.5.46.1.2.1'; # hcpIpmiTemperatureNodeTableEntry
 
 my $mapping_fan = {
     name  => { oid => '.1.3.6.1.4.1.116.5.46.1.4.1.1' }, # ipmiFanName
-    value => { oid => '.1.3.6.1.4.1.116.5.46.1.4.1.2' }  # ipmiFanDetailedStatus (eg: "5100.0 RPM")
+    value => { oid => '.1.3.6.1.4.1.116.5.46.1.4.1.2' }  # ipmiFanDetailedStatus (example: "5100.0 RPM")
 };
 my $oid_fan_entry = '.1.3.6.1.4.1.116.5.46.1.4.1'; # hcpIpmiFanNodeTableEntry
 
 my $mapping_voltage = {
     name  => { oid => '.1.3.6.1.4.1.116.5.46.1.6.1.1' }, # ipmiVoltageName
-    value => { oid => '.1.3.6.1.4.1.116.5.46.1.6.1.2' }  # ipmiVoltageDetailedStatus (eg: "1.22 Volts (1.08-1.32 Volts)")
+    value => { oid => '.1.3.6.1.4.1.116.5.46.1.6.1.2' }  # ipmiVoltageDetailedStatus (example: "1.22 Volts (1.08-1.32 Volts)")
 };
 my $oid_voltage_entry = '.1.3.6.1.4.1.116.5.46.1.6.1'; # hcpIpmiVoltageNodeTableEntry
 
@@ -407,67 +407,67 @@ Check nodes.
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{node_status}, %{node_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
-Can used special variables like: %{node_status}, %{node_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{node_status} eq "unavailable"').
-Can used special variables like: %{node_status}, %{node_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} eq "unavailable"').
+You can use the following variables: %{node_status}, %{node_id}
 
 =item B<--unknown-nic-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{nic_status}, %{node_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--warning-nic-status>
 
-Set warning threshold for status.
-Can used special variables like: %{nic_status}, %{node_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--critical-nic-status>
 
-Set critical threshold for status (Default: '%{nic_status} eq "failed"').
-Can used special variables like: %{nic_status}, %{node_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{nic_status} eq "failed"').
+You can use the following variables: %{nic_status}, %{node_id}
 
 =item B<--unknown-san-path-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{san_path_status}, %{node_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--warning-san-path-status>
 
-Set warning threshold for status.
-Can used special variables like: %{san_path_status}, %{node_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--critical-san-path-status>
 
-Set critical threshold for status (Default: '%{san_path_status} eq "error"').
-Can used special variables like: %{san_path_status}, %{node_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{san_path_status} eq "error"').
+You can use the following variables: %{san_path_status}, %{node_id}
 
 =item B<--unknown-bbu-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{bbu_status}, %{node_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-bbu-status>
 
-Set warning threshold for status.
-Can used special variables like: %{bbu_status}, %{node_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--critical-bbu-status>
 
-Set critical threshold for status (Default: '%{bbu_status} !~ /healthy/i').
-Can used special variables like: %{bbu_status}, %{node_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{bbu_status} !~ /healthy/i').
+You can use the following variables: %{bbu_status}, %{node_id}
 
 =item B<--warning-*> B<--critical-*>
 

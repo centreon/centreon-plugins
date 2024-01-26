@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -220,23 +220,23 @@ Check device even if it doesn't belongs to an controller team.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-ap', 'total-users', 'ap-users'.
 
 =item B<--warning-ap-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-ap-status>
 
-Set critical threshold for status (Default: '%{state} eq "disconnected"').
-Can used special variables like: %{state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "disconnected"').
+You can use the following variables: %{state}, %{display}
 
 =back
 

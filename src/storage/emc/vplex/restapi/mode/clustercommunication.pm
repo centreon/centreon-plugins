@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,13 +102,13 @@ Filter components by name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
-Can used special variables like: %{operational_state}, %{admin_state}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{operational_state}, %{admin_state}, %{name}
 
 =item B<--critical-operational-status>
 
-Set critical threshold for status (Default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
-Can used special variables like: %{operational_state}, %{admin_state}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
+You can use the following variables: %{operational_state}, %{admin_state}, %{name}
 
 =back
 

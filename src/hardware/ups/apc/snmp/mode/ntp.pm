@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,14 @@ use base qw(snmp_standard::mode::ntp);
 use strict;
 use warnings;
 use Date::Parse;
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    return $self;
+}
 
 sub get_target_time {
     my ($self, %options) = @_;
@@ -63,7 +71,7 @@ Set the ntp hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the ntp port (default: 123).
 
 =item B<--timezone>
 

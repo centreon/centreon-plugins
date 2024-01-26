@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -956,123 +956,123 @@ Check tunnels.
 
 =item B<--unknown-certificate-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>
 
-Set warning threshold for status.
-Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>
 
-Set critical threshold for status.
-Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status (Default: '%{connectionStatus} =~ /unknown/i').
-Can used special variables like: %{sn}, %{connectionStatus}
+Define the conditions to match for the status to be UNKNOWN (default: '%{connectionStatus} =~ /unknown/i').
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
-Can used special variables like: %{sn}, %{connectionStatus}
+Define the conditions to match for the status to be WARNING (default: '%{connectionStatus} =~ /disconnected|unpaired/i').
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status.
-Can used special variables like: %{sn}, %{connectionStatus}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--unknown-operating-state>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{operatingState}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--warning-operating-state>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{operatingState}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--critical-operating-state>
 
-Set critical threshold for status  (Default: '%{operatingState} !~ /operating/i').
-Can used special variables like: %{sn}, %{operatingState}
+Define the conditions to match for the status to be CRITICAL  (default: '%{operatingState} !~ /operating/i').
+You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--unknown-autotest-state>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-autotest-state>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-autotest-state>
 
-Set critical threshold for status  (Default: '%{state} !~ /success/i').
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} !~ /success/i').
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{name}, %{operatingStatus}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--warning-interface-status>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{name}, %{operatingStatus}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
-Can used special variables like: %{sn}, %{name}, %{operatingStatus}
+Define the conditions to match for the status to be CRITICAL  (default: '%{operatingStatus} !~ /up/i').
+You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--unknown-vpn-ike-service-state>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{state}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{state}
 
 =item B<--warning-vpn-ike-service-state>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{state}
 
 =item B<--critical-vpn-ike-service-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /stopped/i').
-Can used special variables like: %{sn}, %{state}
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /stopped/i').
+You can use the following variables: %{sn}, %{state}
 
 =item B<--unknown-vpn-ike-sa-state>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-ike-sa-state>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-ike-sa-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /down/i').
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /down/i').
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-vpn-sa-state>
 
-Set unknown threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--warning-vpn-sa-state>
 
-Set warning threshold for status.
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-sa-state>
 
-Set critical threshold for status  (Default: '%{state} =~ /down/i').
-Can used special variables like: %{sn}, %{name}, %{state}
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /down/i').
+You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--ntp-hostname>
 
@@ -1080,7 +1080,7 @@ Set the ntp hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the ntp port (default: 123).
 
 =item B<--time-connection-unit>
 
@@ -1099,7 +1099,7 @@ Select the time unit for certificate threshold. May be 's' for seconds, 'm' for 
 
 =item B<--traffic-unit>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--speed>
 

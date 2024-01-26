@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -77,18 +77,18 @@ sub run {
     my $new_datas = {};
     $new_datas->{last_timestamp} = time();
     my $result = $options{sql}->fetchall_arrayref();
-    
+
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => "All databases hitratio are ok"
     );
-    
+
     foreach my $row (@{$result}) {
-        $new_datas->{$$row[2] . '_blks_hit'} = $row->[0];
-        $new_datas->{$$row[2] . '_blks_read'} = $row->[1];
+        $new_datas->{$row->[2] . '_blks_hit'} = $row->[0];
+        $new_datas->{$row->[2] . '_blks_read'} = $row->[1];
 
         if (defined($self->{option_results}->{exclude}) && $row->[2] !~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping database '" . $$row[2] . '"');
+            $self->{output}->output_add(long_msg => "Skipping database '" . $row->[2] . '"');
             next;
         }
 
@@ -96,16 +96,16 @@ sub run {
         my $old_blks_read = $self->{statefile_cache}->get(name => $row->[2] . '_blks_read');
 
         next if (!defined($old_blks_hit) || !defined($old_blks_read));
-        $old_blks_hit = 0 if ($$row[0] <= $old_blks_hit);
-        $old_blks_read = 0 if ($$row[1] <= $old_blks_read);
+        $old_blks_hit = 0 if ($row->[0] < $old_blks_hit);
+        $old_blks_read = 0 if ($row->[1] < $old_blks_read);
 
         $database_check++;
         my %prcts = ();
-        my $total_read_requests = $new_datas->{$$row[2] . '_blks_hit'} - $old_blks_hit;
-        my $total_read_disk = $new_datas->{$$row[2] . '_blks_read'} - $old_blks_read;
+        my $total_read_requests = $new_datas->{$row->[2] . '_blks_hit'} - $old_blks_hit;
+        my $total_read_disk = $new_datas->{$row->[2] . '_blks_read'} - $old_blks_read;
         $prcts{hitratio_now} = (($total_read_requests + $total_read_disk) == 0) ? 100 : $total_read_requests * 100 / ($total_read_requests + $total_read_disk);
-        $prcts{hitratio} = (($new_datas->{$$row[2] . '_blks_hit'} + + $new_datas->{$$row[2] . '_blks_read'}) == 0) ? 100 : $new_datas->{$$row[2] . '_blks_hit'} * 100 / ($new_datas->{$$row[2] . '_blks_hit'} + $new_datas->{$$row[2] . '_blks_read'});
-        
+        $prcts{hitratio} = (($new_datas->{$row->[2] . '_blks_hit'} + + $new_datas->{$row->[2] . '_blks_read'}) == 0) ? 100 : $new_datas->{$row->[2] . '_blks_hit'} * 100 / ($new_datas->{$$row[2] . '_blks_hit'} + $new_datas->{$row->[2] . '_blks_read'});
+
         my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(
             long_msg => sprintf(
@@ -113,7 +113,7 @@ sub run {
                 $row->[2], $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}
             )
         );
-        
+
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit_code,
@@ -139,7 +139,7 @@ sub run {
             min => 0, max => 100
         );
     }
-    
+
     $self->{statefile_cache}->write(data => $new_datas); 
     if (!defined($old_timestamp)) {
         $self->{output}->output_add(
@@ -171,11 +171,11 @@ Check hitratio (in buffer cache) for databases.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--lookback>
 

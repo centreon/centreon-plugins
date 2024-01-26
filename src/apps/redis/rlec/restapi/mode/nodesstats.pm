@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -352,7 +352,7 @@ Example: --filter-counters='^cpu'
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -360,23 +360,23 @@ Thresholds are on free space left.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{shard_list}, 
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
 'provisioning', 'decommissioning', 'down'.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{shard_list}, 
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
+You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
 'provisioning', 'decommissioning', 'down'.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 
@@ -385,7 +385,7 @@ Can be: 'cpu-system', 'cpu-user',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'cpu-system', 'cpu-user', 
 'requests', 'memory', 'flash-storage', 
 'persistent-storage', 'ephemeral-storage', 

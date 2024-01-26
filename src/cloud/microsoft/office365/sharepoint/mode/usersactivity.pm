@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -289,7 +289,7 @@ __END__
 
 Check users activity (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-activity?view=o365-worldwide)
 
 =over 8
@@ -300,7 +300,7 @@ Filter users.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),
@@ -311,7 +311,7 @@ Can be: 'active-users',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),
@@ -324,11 +324,11 @@ Can be: 'active-users',
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active|total'
-(Default: 'active|total')
+(default: 'active|total')
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

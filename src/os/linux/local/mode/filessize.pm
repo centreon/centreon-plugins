@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -123,7 +123,9 @@ sub run {
             );
         }
         $self->{output}->perfdata_add(
-            label => $name, unit => 'B',
+            nlabel => 'file.size.bytes',
+            instances => $name,
+            unit => 'B',
             value => $size,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_one'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_one'),
@@ -145,7 +147,8 @@ sub run {
         );
     }
     $self->{output}->perfdata_add(
-        label => 'total', unit => 'B',
+        nlabel => 'files.size.bytes',
+        unit => 'B',
         value => $total_size,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_total'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_total'),
@@ -172,19 +175,19 @@ Files/Directories to check. (Shell expansion is ok)
 
 =item B<--warning-one>
 
-Threshold warning in bytes for each files/directories.
+Warning threshold in bytes for each files/directories.
 
 =item B<--critical-one>
 
-Threshold critical in bytes for each files/directories.
+Critical threshold in bytes for each files/directories.
 
 =item B<--warning-total>
 
-Threshold warning in bytes for all files/directories.
+Warning threshold in bytes for all files/directories.
 
 =item B<--critical-total>
 
-Threshold critical in bytes for all files/directories.
+Critical threshold in bytes for all files/directories.
 
 =item B<--separate-dirs>
 

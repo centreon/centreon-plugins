@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -168,12 +168,12 @@ Check errors (RUGGEDCOM-SYS-INFO-MIB).
 
 =item B<--exclude>
 
-Exclude some instance (Example: --exclude='#WatchdogReset#CrashLogCreated#')
+Exclude some instance (example: --exclude='#WatchdogReset#CrashLogCreated#')
 
 =item B<--no-errors>
 
 Return an error if no errors are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -241,33 +241,33 @@ Check disk limits (since vsphere 5.0).
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-cpu-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-cpu-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-memory-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-memory-status>
 
-Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
-Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -157,18 +157,18 @@ Filter backups by type (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{has_backup} eq "yes" and %{exit_state} ne "SUCCESS" and %{last_error} ne "NO_ERROR"').
-Can used special variables like: %{has_backup}, %{last_error}, %{exit_state}, %{type}
+Define the conditions to match for the status to be CRITICAL (default: '%{has_backup} eq "yes" and %{exit_state} ne "SUCCESS" and %{last_error} ne "NO_ERROR"').
+You can use the following variables: %{has_backup}, %{last_error}, %{exit_state}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

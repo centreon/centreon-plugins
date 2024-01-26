@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,7 +42,8 @@ sub new {
         'warning-regexp:s'        => { name => 'warning_regexp' },
         'critical-regexp:s'       => { name => 'critical_regexp' },
         'unknown-regexp:s'        => { name => 'unknown_regexp' },
-        'regexp-isensitive'       => { name => 'use_iregexp' },
+        'regexp-isensitive'       => { name => 'use_iregexp' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_iregexp' },
 
         'warning-absent:s@'       => { name => 'warning_absent' },
         'critical-absent:s@'      => { name => 'critical_absent' },
@@ -360,19 +361,20 @@ Return Warning if an oid value match the regexp.
 
 Return Critical if an oid value match the regexp.
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive.
 
 =item B<--format-*>
 
-Output format according the threshold.
+Output format according to the threshold.
 Can be: 
 'ok' (default: '%{filter_rows} value(s)'), 
 'warning' (default: 'value(s): %{details_warning}'), 
 'critical' (default: 'value(s): %{details_critical}'), 
 'unknown' (default: 'value(s): %{details_unknown}').
-Can used: %{rows}, %{filter_rows}, %{details_warning}, %{details_ok}, %{details_critical}, %{details_unknown}
+You can use the following variables:
+%{rows}, %{filter_rows}, %{details_warning}, %{details_ok}, %{details_critical}, %{details_unknown}
 
 =item B<--map-values>
 
@@ -394,7 +396,7 @@ Example to convert octetstring to macaddress: --convert-custom-values='join(":",
 
 =item B<--use-perl-mod>
 
-Load additional Perl module (Can be multiple)
+Load additional Perl module (can be defined multiple times)
 Example : --use-perl-mod='Date::Parse'
 
 =back

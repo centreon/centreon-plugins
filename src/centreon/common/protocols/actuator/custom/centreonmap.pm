@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package centreon::common::protocols::actuator::custom::centreonmap;
@@ -158,59 +157,70 @@ sub clean_session {
 
     my $datas = {};
     $options{statefile}->write(data => $datas);
-    $self->{studio_session} = undef;
 }
 
 sub get_session {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'centreonmap_session_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $studio_session = $options{statefile}->get(name => 'studio_session');
+    my $has_cache_file = $options{statefile}->read(statefile => 'centreonmap_session_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{api_username}));
+    my $studio_session = $options{statefile}->get(name => 'studioSession');
+    my $jwt_token = $options{statefile}->get(name => 'jwtToken');
+    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
-    if ($has_cache_file == 0 || !defined($studio_session)) {
+    if ($has_cache_file == 0 ||
+        (!defined($studio_session) && !defined($jwt_token)) || 
+        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        ) {
         my $login = { login => $self->{api_username}, password => $self->{api_password} };
         my $post_json = JSON::XS->new->utf8->encode($login);
 
-        my ($content) = $self->{http}->request(
-            method => 'POST',
-            url_path => $self->{url_path} . '/authentication',
-            header => ['Content-type: application/json'],
-            query_form_post => $post_json,
-            warning_status => '', unknown_status => '', critical_status => ''
-        );
+        my @urls = ('/auth/sign-in', '/authentication');
+        my $content;
+        for my $endpoint (@urls) {
+            ($content) = $self->{http}->request(
+                method => 'POST',
+                url_path => $self->{url_path} . $endpoint,
+                header => ['Content-type: application/json'],
+                query_form_post => $post_json,
+                warning_status => '', unknown_status => '', critical_status => ''
+            );
+            last if ($self->{http}->get_code() == 200);
+        }
 
         if ($self->{http}->get_code() != 200) {
-            $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->add_option_msg(short_msg => "All authentication URLs failed");
             $self->{output}->option_exit();
         }
 
         my $decoded = $self->json_decode(content => $content);
-        if (!defined($decoded->{studioSession})) {
-            $self->{output}->add_option_msg(short_msg => 'Cannot studio session');
+        if (!defined($decoded->{studioSession}) && !defined($decoded->{jwtToken})) {
+            $self->{output}->add_option_msg(short_msg => 'Cannot get session token');
             $self->{output}->option_exit();
         }
 
-        $studio_session = $decoded->{studioSession};
-        $options{statefile}->write(data => { studio_session => $studio_session });
+        if (defined($decoded->{studioSession})) {
+            $studio_session = $decoded->{studioSession};
+            $options{statefile}->write(data => { studio_session => $studio_session, md5_secret => $md5_secret });
+        } else {
+            $jwt_token = $decoded->{jwtToken};
+            $options{statefile}->write(data => { jwtToken => $jwt_token, md5_secret => $md5_secret });
+        }
     }
 
-    $self->{studio_session} = $studio_session;
+    return defined($studio_session) ? 'studio-session: ' . $studio_session : 'Authorization: Bearer ' . $jwt_token;
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{studio_session})) {
-        $self->get_session(statefile => $self->{cache});
-    }
+    my $header = $self->get_session(statefile => $self->{cache});
 
     my $content = $self->{http}->request(
         url_path => $self->{url_path} . '/actuator' . $options{endpoint},
         get_param => $options{get_param},
-        header => [
-            'studio-session: ' . $self->{studio_session}
-        ],
+        header => [ $header ],
         warning_status => '',
         unknown_status => '',
         critical_status => ''
@@ -219,13 +229,12 @@ sub request_api {
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session(statefile => $self->{cache});
-        $self->get_session(statefile => $self->{cache});
+        $header = $self->get_session(statefile => $self->{cache});
+
         $content = $self->{http}->request(
             url_path => $self->{url_path} . '/actuator' . $options{endpoint},
             get_param => $options{get_param},
-            header => [
-                'studio-session: ' . $self->{studio_session}
-            ],
+            header => [ $header ],
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
@@ -263,15 +272,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/centreon-studio/api/beta')
+API url path (default: '/centreon-studio/api/beta')
 
 =item B<--port>
 
-API port (Default: 8080)
+API port (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -287,7 +296,7 @@ Set HTTP timeout
 
 =item B<--client-version>
 
-Set the client version (Default: '21.04.0')
+Set the client version (default: '21.04.0')
 
 =back
 

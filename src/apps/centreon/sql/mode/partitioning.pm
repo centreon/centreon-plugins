@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,13 +31,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "tablename:s@"        => { name => 'tablename' },
-                                  "timezone:s"          => { name => 'timezone' },
-                                  "warning:s"           => { name => 'warning' },
-                                  "critical:s"          => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+        "tablename:s@" => { name => 'tablename' },
+        "timezone:s"   => { name => 'timezone' },
+        "warning:s"    => { name => 'warning' },
+        "critical:s"   => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -70,24 +69,30 @@ sub run {
 
     $self->{sql}->connect();
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All table partitions are up to date"));
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("All table partitions are up to date")
+    );
     foreach my $value (@{$self->{option_results}->{tablename}}) {
         next if ($value eq '');
         if ($value !~ /(\S+)\.(\S+)/) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Wrong table name '%s'", $value));
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => sprintf("Wrong table name '%s'", $value)
+            );
             next;
         }
         my ($database, $table) = ($1, $2);
         $self->{sql}->query(query => "SELECT MAX(CONVERT(PARTITION_DESCRIPTION, SIGNED INTEGER)) as lastPart FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME='" . $table . "' AND TABLE_SCHEMA='" . $database . "' GROUP BY TABLE_NAME;");
         my ($last_time) = $self->{sql}->fetchrow_array();
         if (!defined($last_time)) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Couldn't get partition infos for table '%s'", $value));
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => sprintf("Couldn't get partition infos for table '%s'", $value)
+            );
             next;
         }
-        
+
         my $retention_forward_current = 0;
         my ($day,$month,$year) = (localtime(time))[3,4,5];
         my $current_time = mktime(0, 0, 0, $day, $month, $year);
@@ -99,8 +104,10 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("Table '%s' last partition date is %s (current retention forward in days: %s)", $value, scalar(localtime($last_time)), $retention_forward_current));
         my $exit = $self->{perfdata}->threshold_check(value => $retention_forward_current, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Partitions for table '%s' are not up to date (current retention forward in days: %s)", $value, $retention_forward_current));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Partitions for table '%s' are not up to date (current retention forward in days: %s)", $value, $retention_forward_current)
+            );
         }
     }
 
@@ -126,15 +133,15 @@ Example: centreon_storage.data_bin
 
 =item B<--warning>
 
-Threshold warning (number of retention forward days)
+Warning threshold (number of retention forward days)
 
 =item B<--critical>
 
-Threshold critical (number of retention forward days)
+Critical threshold (number of retention forward days)
 
 =item B<--timezone>
 
-Timezone use for partitioning (If not set, we use current server execution timezone)
+Timezone use for partitioning (if not set, we use current server execution timezone)
 
 =back
 

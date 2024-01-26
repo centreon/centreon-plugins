@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -235,7 +235,7 @@ IP Addr of the DHCP server to query (do a unicast mode)
 
 =item B<--timeout>
 
-How much time to check dhcp responses (Default: 15 seconds)
+How much time to check dhcp responses (default: 15 seconds)
 
 =item B<--out-first-valid>
 
@@ -247,7 +247,7 @@ MAC address to use in the DHCP request
 
 =item B<--interface>
 
-Interface to to use for listening (Default: eth0)
+Interface to to use for listening (default: eth0)
 
 =item B<--cidr-match>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -187,12 +187,12 @@ Check BCA status.
 
 =item B<--warning>
 
-Threshold warning on EURT (End User Response Time).
+Warning threshold on EURT (End User Response Time).
 Permits to add another threshold than snmp.
 
 =item B<--critical>
 
-Threshold critical on EURT (End User Response Time).
+Critical threshold on EURT (End User Response Time).
 Permits to add another threshold than snmp.
 
 =item B<--name>

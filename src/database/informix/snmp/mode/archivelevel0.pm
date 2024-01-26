@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -142,11 +142,11 @@ Filter dbspace name (can be a regexp).
 
 =item B<--warning-time>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical-time>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

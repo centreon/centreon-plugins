@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -187,15 +187,15 @@ Check BGP peer state (BGP4-V2-MIB-JUNIPER)
 
 =item B<--filter-peer>
 
-Filter by peer identifier (Can be regexp)
+Filter by peer identifier (can be regexp)
 
 =item B<--filter-remote-ip>
 
-Filter by remote ip address (Can be regexp)
+Filter by remote ip address (can be regexp)
 
 =item B<--filter-local-as>
 
-Filter by local AS (Can be regexp)
+Filter by local AS (can be regexp)
 
 =item B<--warning-status>
 
@@ -206,7 +206,7 @@ Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status}
 
 =item B<--critical-status>
 
-Specify critical threshold (Default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
+Specify critical threshold (default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
 Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
 %{local_type}, %{local_ip}, %{local_port}, %{local_as},
 %{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}

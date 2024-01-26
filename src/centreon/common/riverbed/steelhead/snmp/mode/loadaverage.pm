@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -143,8 +143,7 @@ Check system load average.
 
 =item B<--warning-*>
 
-Warning thresholds
-Can be --warning-(average|1m|5m|15m) 
+Warning thresholds (* can be average, 1m, 5m, 15m).
 
 =item B<--critical-*>
 

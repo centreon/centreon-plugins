@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -170,7 +170,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $clusters = $options{custom}->get_metrics_by_clusters();
+    my $clusters = $options{custom}->get_performance_metrics_by_clusters();
 
     $self->{global} = { detected => 0 };
     $self->{clusters} = {};

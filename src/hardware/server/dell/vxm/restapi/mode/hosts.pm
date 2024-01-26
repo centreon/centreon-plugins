@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -165,7 +165,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request(endpoint => '/rest/vxm/v1/hosts');
+    my $results = $options{custom}->request(endpoint => '/hosts');
 
     $self->{global} = { num_hosts => 0, unhealthy => 0 };
     $self->{hosts} = {};
@@ -217,56 +217,56 @@ Check hosts.
 
 =item B<--filter-host-sn>
 
-Filter hosts by serial number (Can be a regexp).
+Filter hosts by serial number (can be a regexp).
 
 =item B<--filter-host-name>
 
-Filter hosts by name (Can be a regexp).
+Filter hosts by name (can be a regexp).
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}, %{sn}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}, %{name}, %{sn}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
+You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
-Can used special variables like: %{status}, %{name}, %{sn}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|error/i').
+You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--unknown-nic-status>
 
 Set unknown threshold for nic status.
-Can used special variables like:  %{status}, %{mac}, %{slot}
+You can use the following variables:  %{status}, %{mac}, %{slot}
 
 =item B<--warning-nic-status>
 
 Set warning threshold for nic status.
-Can used special variables like: %{status}, %{mac}, %{slot}
+You can use the following variables: %{status}, %{mac}, %{slot}
 
 =item B<--critical-nic-status>
 
 Set critical threshold for nic status
-Can used special variables like: %{status}, %{mac}, %{slot}
+You can use the following variables: %{status}, %{mac}, %{slot}
 
 =item B<--unknown-disk-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '%{status} !~ /OK/i').
-Can used special variables like: %{status}, %{sn}, %{bay}, %{slot}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /OK/i').
+You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-*> B<--critical-*>
 

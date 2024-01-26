@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,13 +172,13 @@ Check storage account resources transaction latency metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-latency
 --resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='average'
 --critical-successserverlatency-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-latency
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'
@@ -190,11 +190,11 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-namespace>
 
@@ -203,20 +203,20 @@ Default: 'Microsoft.Storage'.
 
 =item B<--storage-type>
 
-Set storage type (Can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
+Set storage type (can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'SuccessServerLatency', 'SuccessE2ELatency') (Can be a regexp).
+Filter metrics (can be: 'SuccessServerLatency', 'SuccessE2ELatency') (Can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'successserverlatency', 'successe2elatency',
+Warning thresholds ($metric$ can be: 'successserverlatency', 'successe2elatency',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'successserverlatency', 'successe2elatency',
+Critical thresholds ($metric$ can be: 'successserverlatency', 'successe2elatency',
 $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =back

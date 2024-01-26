@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -200,11 +200,11 @@ Set the ntp hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the ntp port (default: 123).
 
 =item B<--timezone>
 
-Set the timezone for displaying the date (Default: UTC).
+Set the timezone for displaying the date (default: UTC).
 
 =back
 

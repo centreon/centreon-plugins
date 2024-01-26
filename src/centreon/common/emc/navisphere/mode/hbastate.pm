@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,9 +182,9 @@ Set hba uid to check (not set, means 'all').
 
 =item B<--path-status>
 
-Set how much path must be connected (Can be multiple).
+Set how many paths must be connected (can be defined multiple times).
 Syntax: [WARNING],[CRITICAL],filter_uid,filter_server
-Example: ,@0:1,.*,.* - Means all server must have at least two paths connected.
+Example: ,@0:1,.*,.* - Means all servers must have at least two paths connected.
 
 =back
 

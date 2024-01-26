@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -57,7 +57,16 @@ sub run {
     my ($self, %options) = @_;
 
     my $sql = centreon::plugins::dbi->new(options => $self->{options}, output => $self->{output}, nooptions => 1);
-    $sql->{data_source} = 'mysql:host=' . $centreon_config->{db_host} . 'port=' . $centreon_config->{db_port};
+
+    my $port = '';
+    if (defined($centreon_config->{db_port})) {
+        $port = ';port=' . $centreon_config->{db_port};
+    } elsif ($centreon_config->{db_host} =~ /:(\d+)$/) {
+        $port = ';port=' . $1;
+        $centreon_config->{db_host} =~ s/:\d+$//;
+    }
+
+    $sql->{data_source} = 'mysql:host=' . $centreon_config->{db_host} . $port;
     $sql->{username} = $centreon_config->{db_user};
     $sql->{password} = $centreon_config->{db_passwd};
     $sql->connect();
@@ -65,7 +74,7 @@ sub run {
     $sql->query(query => "SELECT `name`,`current_level`,`level_w`,`level_c` FROM " . $centreon_config->{centreon_db} . 
          ".`mod_bam` WHERE `ba_id` = '" . $self->{option_results}->{bam_id} . "'"
     );
-    my ($name, $current_level, $level_w, $level_c) = $self->{sql}->fetchrow_array();
+    my ($name, $current_level, $level_w, $level_c) = $sql->fetchrow_array();
     if (!defined($current_level)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get bam information");
         $self->{output}->option_exit();
@@ -104,7 +113,7 @@ Do Centreon bam-service checks.
 
 =item B<--centreon-config>
 
-Centreon Database Config File (Default: '/etc/centreon/centreon-config.pm').
+Centreon Database Config File (default: '/etc/centreon/centreon-config.pm').
 
 =item B<--bam-id>
 

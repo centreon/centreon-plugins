@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'charge_remain' }, { name => 'minute_remain' } ],
                 closure_custom_output => $self->can('custom_load_output'),
                 perfdatas => [
-                    { label => 'load', template => '%s', min => 0, max => 100, unit => '%' }
+                    { template => '%s', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'minute_remain' } ],
                 output_template => 'minutes remaining: %s',
                 perfdatas => [
-                    { label => 'charge_remaining', template => '%s', min => 0, unit => 'minutes' }
+                    { template => '%s', min => 0, unit => 'minutes' }
                 ]
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'current', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', template => '%s', min => 0, unit => 'A' }
+                    { template => '%s', min => 0, unit => 'A' }
                 ]
             }
         },
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', template => '%s', unit => 'V' }
+                    { template => '%s', unit => 'V' }
                 ]
             }
         },
@@ -99,7 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { label => 'temp', template => '%s', unit => 'C' }
+                    { template => '%s', unit => 'C' }
                 ]
             }
         }
@@ -108,7 +108,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -162,18 +162,18 @@ Check battery status and charge remaining.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /low/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /low/i').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /depleted/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /depleted/i').
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

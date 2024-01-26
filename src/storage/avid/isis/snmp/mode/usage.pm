@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -196,15 +196,15 @@ Check storage usage.
 
 =item B<--warning-usage>
 
-Threshold warning for used allocated storage.
+Warning threshold for used allocated storage.
 
 =item B<--critical-usage>
 
-Threshold critical for used allocated storage.
+Critical threshold for used allocated storage.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

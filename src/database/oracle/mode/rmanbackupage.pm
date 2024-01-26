@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -205,12 +205,12 @@ Check Oracle rman backup age.
 
 =item B<--warning-*>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
 =item B<--critical-*>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
 =item B<  --no-*>
@@ -229,7 +229,7 @@ Return ok if no backup found.
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone).
+Timezone of oracle server (if not set, we use current server execution timezone).
 
 =item B<--incremental-level>
 

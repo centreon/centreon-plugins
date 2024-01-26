@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -115,7 +115,7 @@ sub run {
     my ($stdout) = $options{custom}->execute_command(
         command => 'nmap',
         command_options => $self->{option_results}->{nmap_options},
-        command_options_suffix => $self->{option_results}->{subnet},
+        command_options_suffix => $self->{option_results}->{subnet} . ' 2> /dev/null',
         timeout => 120
     );
 
@@ -187,7 +187,7 @@ __END__
 =head1 MODE
 
 Resources discovery.
-Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
+Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__ 2> /dev/null
 
 Timeout defaults to 120 seconds.
 
@@ -196,7 +196,7 @@ Timeout defaults to 120 seconds.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (Mandatory).
+resources (must be <ip>/<cidr> format) (mandatory).
 
 =item B<--nmap-options>
 

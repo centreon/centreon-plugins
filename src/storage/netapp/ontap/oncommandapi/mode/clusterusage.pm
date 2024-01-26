@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,12 +128,12 @@ Filter snapmirror name (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'max-node-utilization', 'max-aggregate-utilization'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'max-node-utilization', 'max-aggregate-utilization'.
 
 =back

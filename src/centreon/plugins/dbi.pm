@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,8 +136,15 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
+    $self->{username} = undef;
+    if (defined($self->{option_results}->{username})) {
+        $self->{username} = ref($self->{option_results}->{username}) eq 'ARRAY' ? shift(@{$self->{option_results}->{username}}) : $self->{option_results}->{username};
+    }
+    $self->{password} = undef;
+    if (defined($self->{option_results}->{password})) {
+        $self->{password} = ref($self->{option_results}->{password}) eq 'ARRAY' ? shift(@{$self->{option_results}->{password}}) : $self->{option_results}->{password};
+    }
+    
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
     $self->{connect_query} = (defined($self->{option_results}->{connect_query})) ? shift(@{$self->{option_results}->{connect_query}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
@@ -358,32 +365,34 @@ dbi class
 
 =item B<--datasource>
 
-Datasource (required. Depends of database server).
+Database server information, mandatory if the server's address and port are not
+defined in the corresponding options. The syntax depends on the database type.
 
 =item B<--username>
 
-Database username.
+User name used to connect to the database.
 
 =item B<--password>
 
-Database password.
+Password for the defined user name.
 
 =item B<--connect-options>
 
-Add options in database connect.
+Add connection options for the DBI connect method.
 Format: name=value,name2=value2,...
 
 =item B<--connect-query>
 
-Execute a query just after connection.
+Execute a query just after the connection.
 
 =item B<--sql-errors-exit>
 
-Exit code for DB Errors (default: unknown)
+Expected status in case of DB error or timeout.
+Possible values are warning, critical and unknown (default).
 
 =item B<--timeout>
 
-Timeout in seconds for connection
+Timeout in seconds for connection.
 
 =item B<--exec-timeout>
 

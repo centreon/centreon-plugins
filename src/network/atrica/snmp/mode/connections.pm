@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -393,7 +393,7 @@ Check connections (A-Series.mib).
 
 =item B<--add-status>
 
-Check interface status (By default if no --add-* option is set).
+Check interface status (by default if no --add-* option is set).
 
 =item B<--add-traffic>
 
@@ -405,20 +405,20 @@ Check interface errors.
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (Default: '%{opstatus} eq "up" or %{opstatus} eq "inService"').
+If the expression is true, metrics are checked (default: '%{opstatus} eq "up" or %{opstatus} eq "inService"').
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 Default (depends of the atrica release):
 '%{admstatus} eq "on" and %{opstatus} ne "inService"'
 '%{admstatus} eq "up" and %{opstatus} ne "up"'
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
@@ -427,19 +427,19 @@ Can be: 'in-cir', 'in-eir', 'out-cir', 'out-eir', 'in-eir-discard', 'out-eir-dis
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
 
 =item B<--speed>
 
@@ -459,23 +459,21 @@ Time in seconds before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
+Define the OID to be used to filter interfaces (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
+Define the OID that will be used to name the interfaces (default: atrConnCepGenDescr) (values: atrConnIngDescr, atrConnCepGenDescr).
 
 =item B<--oid-extra-display>
 
 Add an OID to display.
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value.
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value.
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

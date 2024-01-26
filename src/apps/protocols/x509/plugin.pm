@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,6 +37,7 @@ sub new {
     $self->{custom_modes}->{tcp} = 'apps::protocols::x509::custom::tcp';
     $self->{custom_modes}->{https} = 'apps::protocols::x509::custom::https';
     $self->{custom_modes}->{file} = 'apps::protocols::x509::custom::file';
+    $self->{custom_modes}->{opensslcli} = 'apps::protocols::x509::custom::opensslcli';
 
     return $self;
 }

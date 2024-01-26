@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -202,27 +202,27 @@ Check targets status.
 
 =item B<--filter-label>
 
-Set filter on label (Regexp, Can be multiple) (Example: --filter-label='job,kube.*').
+Set filter on label (regexp, can be defined multiple times) (example: --filter-label='job,kube.*').
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{health}.
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{display}, %{health}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} !~ /up/').
-Can used special variables like: %{display}, %{health}
+Define the conditions to match for the status to be CRITICAL (default: '%{health} !~ /up/').
+You can use the following variables: %{display}, %{health}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'dropped', 'up',
 'down', 'unknown'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'dropped', 'up',
 'down', 'unknown'.
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,17 +136,17 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter circuit name (Can be a regexp).
+Filter circuit name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{circuit_status}, %{provider_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
-Can used special variables like: %{circuit_status}, %{provider_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"').
+You can use the following variables: %{circuit_status}, %{provider_status}, %{display}
 
 =back
 

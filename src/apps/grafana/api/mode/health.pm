@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -87,13 +87,13 @@ Check health.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}, %{version}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}, %{version}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} ne "ok"').
-Can used special variables like: %{state}, %{version}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "ok"').
+You can use the following variables: %{state}, %{version}
 
 =back
 

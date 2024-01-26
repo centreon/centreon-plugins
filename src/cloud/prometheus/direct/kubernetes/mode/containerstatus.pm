@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -207,39 +207,39 @@ Check container status.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container=~".*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container=~".*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{status}, %{state}, %{reason}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
-Can used special variables like: %{status}, %{state}, %{reason}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/ || %{state} !~ /ready/').
+You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>
 
-Threshold warning for container restarts count.
+Warning threshold for container restarts count.
 
 =item B<--critical-restarts-count>
 
-Threshold critical for container restarts count.
+Critical threshold for container restarts count.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

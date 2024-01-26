@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,19 +103,19 @@ More information on'https://www.vaultproject.io/api-docs/system/health'.
 
 =item B<--warning-seal-status>
 
-Set warning threshold for seal status (Default: none).
+Set warning threshold for seal status (default: none).
 
 =item B<--critical-seal-status>
 
-Set critical threshold for seal status (Default: '%{sealed} ne "unsealed"').
+Set critical threshold for seal status (default: '%{sealed} ne "unsealed"').
 
 =item B<--warning-init-status>
 
-Set warning threshold for initialization status (Default: none).
+Set warning threshold for initialization status (default: none).
 
 =item B<--critical-init-status>
 
-Set critical threshold for initialization status (Default: '%{init} ne "initialized"').
+Set critical threshold for initialization status (default: '%{init} ne "initialized"').
 
 =back
 

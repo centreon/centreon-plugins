@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -187,7 +187,7 @@ Check updates status.
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 30 sec)
+Set timeout time for command execution (default: 30 sec)
 
 =item B<--no-ps>
 
@@ -195,16 +195,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -216,11 +216,11 @@ Print powershell output.
 
 =item B<--wsus-server>
 
-Set WSUS hostname/IP (Dafault: localhost).
+Set WSUS hostname/IP (default: localhost).
 
 =item B<--wsus-port>
 
-Set WSUS port (Default: 8530).
+Set WSUS port (default: 8530).
 
 =item B<--use-ssl>
 

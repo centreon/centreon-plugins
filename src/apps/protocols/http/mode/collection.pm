@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -64,7 +64,7 @@ sub custom_select_perfdata {
 
     return if (!defined($self->{result_values}->{config}->{perfdatas}));
     foreach (@{$self->{result_values}->{config}->{perfdatas}}) {
-        next if (!defined($_->{value}) || $_->{value} !~ /^\d+(?:\.\d+)?$/);
+        next if (!defined($_->{value}) || $_->{value} !~ /^[+-]?\d+(?:\.\d+)?$/);
         $self->{output}->perfdata_add(%$_);
     }
 }
@@ -203,11 +203,11 @@ sub validate_name {
     my ($self, %options) = @_;
 
     if (!defined($options{name})) {
-        $self->{output}->add_option_msg(short_msg => "name attribute is missing $options{section}");
+        $self->{output}->add_option_msg(short_msg => "name attribute is missing in your http collection (path: $options{section})");
         $self->{output}->option_exit();
     }
     if ($options{name} !~ /^[a-zA-Z0-9]+$/) {
-        $self->{output}->add_option_msg(short_msg => 'incorrect name attribute: ' . $options{name});
+        $self->{output}->add_option_msg(short_msg => "name attribute in your http collection (path: $options{section}) is incorrect: " . $options{name});
         $self->{output}->option_exit();
     }
 }
@@ -218,7 +218,7 @@ sub get_payload {
     return if (!defined($options{rq}->{payload}) || !defined($options{rq}->{payload}->{type}));
 
     if ($options{rq}->{payload}->{type} !~ /^(?:file|data|json)$/) {
-        $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+        $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload] (allowed types: file / data / json)");
         $self->{output}->option_exit();
     }
 
@@ -230,7 +230,7 @@ sub get_payload {
     my $content;
     if ($options{rq}->{payload}->{type} eq 'file') {
         if (ref($options{rq}->{payload}->{value}) ne '' || $options{rq}->{payload}->{value} eq '') {
-            $self->{output}->add_option_msg(short_msg => "value attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->add_option_msg(short_msg => "value attribute is wrong for file type [http > requests > $options{rq}->{name} > payload]");
             $self->{output}->option_exit();
         }
 
@@ -243,7 +243,7 @@ sub get_payload {
         };
         if ($@) {
             $self->{output}->output_add(long_msg => "json payload error: $@", debug => 1);
-            $self->{output}->add_option_msg(short_msg => "cannot encode json payload [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->add_option_msg(short_msg => "cannot encode json type payload [http > requests > $options{rq}->{name} > payload]");
             $self->{output}->option_exit();
         }
     }
@@ -336,6 +336,10 @@ sub call_http {
         $self->{output}->output_add(long_msg => "$@", debug => 1);
         $self->{output}->option_exit();
     }
+
+    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
+    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
 
     return ($http->get_header(), $content, $http);
 }
@@ -455,11 +459,23 @@ sub parse_structure {
 
             my $ref = ref($value);
             if ($ref eq 'HASH') {
+
                 if (!defined($value->{ $_->{id} })) {
-                    $entry->{ $_->{id} } = '';
-                    next;
+                    # Check and assume in case of hash reference first part is the hash ref and second the hash key
+                    if($_->{id} =~ /^(.+?)\.(.*)$/){
+                        if (!defined($value->{$1}->{$2})) {
+                            $entry->{ $_->{id} } = '';
+                            next;
+                        }else{
+                            $entry->{ $_->{id} } = $value->{$1}->{$2};
+                        }
+                    }else {
+                        $entry->{ $_->{id} } = '';
+                        next;
+                    }
+                }else {
+                    $entry->{ $_->{id} } = $value->{ $_->{id} };
                 }
-                $entry->{ $_->{id} } = $value->{ $_->{id} };
             } elsif (ref($value) eq 'ARRAY') {
                 next;
             } elsif ($ref eq '' || $ref eq 'JSON::PP::Boolean') {
@@ -764,7 +780,14 @@ sub exist_table_name {
 sub get_local_variable {
     my ($self, %options) = @_;
 
-    return $self->{expand}->{ $options{name} };
+    if (defined( $self->{expand}->{ $options{name} })) {
+        return $self->{expand}->{ $options{name} };
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", keys(%{$self->{expand}})) . "')", debug => 1);
+        return undef;
+    }
+
+
 }
 
 sub set_local_variable {
@@ -776,19 +799,24 @@ sub set_local_variable {
 sub get_table {
     my ($self, %options) = @_;
 
-    return undef if (
-        !defined($self->{http_collected}->{tables}->{ $options{table} })
-    );
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        return undef;
+    }
     return $self->{http_collected}->{tables}->{ $options{table} };
 }
 
 sub get_table_instance {
     my ($self, %options) = @_;
 
-    return undef if (
-        !defined($self->{http_collected}->{tables}->{ $options{table} }) ||
-        !defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })
-    );
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        return undef;
+    }
+    if (!defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })) {
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
+        return undef;
+    }
     return $self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} };
 }
 
@@ -914,7 +942,8 @@ sub parse_http_tables {
         $self->{output}->option_exit();
     }
     if (!$self->exist_table_name(name => $table_label)) {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown table '$table_label'");
+        my @names = keys %{$self->{http_collected}->{tables}};
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown or empty table '$table_label'. Available tables are (not empty based on your conf) : @names");
         $self->{output}->option_exit();
     }
     if ($options{chars}->[$end] eq ')') {
@@ -1256,6 +1285,68 @@ sub exec_func_scale {
     }
 }
 
+sub exec_func_second2human {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "second2human",
+    #    "src": "%(duration)",
+    #    "save_value": "%(humanDuration)",
+    #    "start": "d",
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my ($str, $str_append) = ('', '');
+    my $periods = [
+        { unit => 'y', value => 31556926 },
+        { unit => 'M', value => 2629743 },
+        { unit => 'w', value => 604800 },
+        { unit => 'd', value => 86400 },
+        { unit => 'h', value => 3600 },
+        { unit => 'm', value => 60 },
+        { unit => 's', value => 1 },
+    ];
+    my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
+    my $sign = '';
+    if ($data < 0) {
+        $sign = '-';
+        $data = abs($data);
+    }
+    
+    foreach (@$periods) {
+        next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
+        my $count = int($data / $_->{value});
+
+        next if ($count == 0);
+        $str .= $str_append . $count . $_->{unit};
+        $data = $data % $_->{value};
+        $str_append = ' ';
+    }
+
+    if ($str eq '') {
+        $str = $data;
+        $str .= $options{start} if (defined($options{start}));
+    }
+
+    if (defined($options{save_value}) && $options{save_value} ne '') {
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $sign . $str, %$var_save_value);
+    }
+}
+
 sub exec_func_date2epoch {
     my ($self, %options) = @_;
 
@@ -1591,6 +1682,8 @@ sub set_functions {
             $self->exec_func_map(%$_);
         } elsif ($_->{type} eq 'scale') {
             $self->exec_func_scale(%$_);
+        } elsif ($_->{type} eq 'second2human') {
+            $self->exec_func_second2human(%$_);
         } elsif (lc($_->{type}) eq 'date2epoch') {
             $self->exec_func_date2epoch(%$_);
         } elsif (lc($_->{type}) eq 'epoch2date') {
@@ -1657,8 +1750,12 @@ sub check_filter2 {
 
 sub check_filter_option {
     my ($self, %options) = @_;
-
     foreach (keys %{$self->{option_results}->{filter_selection}}) {
+
+        if(!defined($self->{expand}->{$_}) && grep {/^src\./} keys(%{$self->{expand}}) ne '') {
+            $self->{output}->add_option_msg(long_msg => "Wrong filter-selection - Available attributes for filtering: " . join(", ", grep {/^src\./} keys(%{$self->{expand}})), debug => 1);
+        }
+
         return 1 if (
             defined($self->{expand}->{$_}) && $self->{option_results}->{filter_selection}->{$_} ne '' &&
             $self->{expand}->{$_} !~ /$self->{option_results}->{filter_selection}->{$_}/
@@ -1766,7 +1863,6 @@ sub add_selection_loop {
             $self->{output}->option_exit();
         }
         next if (!defined($self->{http_collected}->{tables}->{ $result->{table} }));
-
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{ $result->{table} }}) {
             $self->{expand} = $self->set_constants();
             $self->set_builtin();
@@ -1867,18 +1963,18 @@ Collect and compute HTTP datas.
 
 =item B<--config>
 
-config used (Required).
+config used (required).
 Can be a file or json content.
 
 =item B<--filter-selection>
 
 Filter selections.
-Eg: --filter-selection='name=test'
+Example: --filter-selection='name=test'
 
 =item B<--constant>
 
 Add a constant.
-Eg: --constant='warning=30' --constant='critical=45'
+Example: --constant='warning=30' --constant='critical=45'
 
 =back
 

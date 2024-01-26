@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -271,15 +271,15 @@ __END__
 
 =item B<--mode>
 
-Choose a mode.
+Define the mode in which you want the plugin to be executed (see --list-mode).
 
 =item B<--dyn-mode>
 
-Specify a mode with the path (separated by '::').
+Specify a mode with the module's path (advanced).
 
 =item B<--list-mode>
 
-List available modes.
+List all available modes.
 
 =item B<--mode-version>
 
@@ -287,23 +287,25 @@ Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
-Display plugin version.
+Return the version of the plugin.
 
 =item B<--custommode>
 
-Choose a custom mode.
+When a plugin offers several ways (CLI, library, etc.) to get information
+the desired one must be defined with this option.
 
 =item B<--list-custommode>
 
-List available custom modes.
+List all available custom modes.
 
 =item B<--multiple>
 
-Multiple custom mode objects (required by some specific modes)
+Multiple custom mode objects. This may be required by some specific modes (advanced).
 
 =item B<--pass-manager>
 
-Use a password manager.
+Define the password manager you want to use.
+Supported managers are: environment, file, keepass, hashicorpvault and teampass.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -153,13 +153,13 @@ Default: '(/select|/update)$'.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'requests-count', 'avg-requests', 'avg-time',
 '15min-rate-requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'requests-count', 'avg-requests', 'avg-time',
 '15min-rate-requests'.
 

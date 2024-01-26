@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -90,19 +90,19 @@ Check CPU usage and temperature.
 
 =item B<--warning-cpu-usage>
 
-Threshold warning for CPU usage in percentage.
+Warning threshold for CPU usage in percentage.
 
 =item B<--critical-cpu-usage>
 
-Threshold critical for CPU usage in percentage.
+Critical threshold for CPU usage in percentage.
 
 =item B<--warning-temperature>
 
-Threshold warning in celsius degrees for CPU.
+Warning threshold in celsius degrees for CPU.
 
 =item B<--critical-temperature>
 
-Threshold critical in celsius degrees for CPU.
+Critical threshold in celsius degrees for CPU.
 
 =back
 

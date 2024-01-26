@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,7 +55,7 @@ sub check_options {
 sub discovery_host {
     my ($self, %options) = @_;
 
-    my $hosts = $options{custom}->request(endpoint => '/rest/vxm/v1/hosts');
+    my $hosts = $options{custom}->request(endpoint => '/hosts');
 
     my $disco_data = [];
     foreach my $host (@$hosts) {
@@ -120,7 +120,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'host').
+Choose the type of resources to discover (can be: 'host').
 
 =back
 

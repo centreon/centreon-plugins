@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -152,17 +152,17 @@ Check box services status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^started$/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /^started$/i').
+You can use the following variables: %{status}, %{display}
 
 =item B<--filter-name>
 
-Filter by service name (Can be a regexp).
+Filter by service name (can be a regexp).
 
 =back
 

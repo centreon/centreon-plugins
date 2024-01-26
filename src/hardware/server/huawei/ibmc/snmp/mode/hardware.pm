@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,24 +94,22 @@ Check hardware components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'component', 'cpu', 'harddisk', 'fan', 'logicaldrive',
 'memory', 'pcie', 'psu', 'raidcontroller', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=psu)
-Can also exclude specific instance: --filter=psu,1
+Exclude the items given as a comma-separated list (example: --filter=psu).
+You can also exclude items from specific instances: --filter=psu,1
 
 =item B<--no-component>
 
 Return an error if no components are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='psu,CRITICAL,^(?!(ok)$)'
 
 =item B<--warning>

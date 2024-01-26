@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -90,7 +90,8 @@ sub set_counters {
         { label => 'status', type => 2, set => {
                 key_values => [
                     { name => 'active' }, { name => 'last_schedule_time' }, { name => 'name' },
-                    { name => 'namespace' } ],
+                    { name => 'namespace' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
@@ -166,14 +167,14 @@ Filter CronJob namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{name}, %{namespace}, %{active},
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{name}, %{namespace}, %{active},
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{name}, %{namespace}, %{active},
 %{last_schedule}.
 
 =back

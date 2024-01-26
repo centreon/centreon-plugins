@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -232,8 +232,7 @@ Command used: show raid-groups -csv
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='rg,CRITICAL,^(?!(Available|Spare)$)'
 
 =item B<--filter-name>
@@ -246,11 +245,11 @@ Filter by raid level (regexp can be used).
 
 =item B<--warning-usage>
 
-Threshold warning (in percent).
+Warning threshold (in percent).
 
 =item B<--critical-usage>
 
-Threshold critical (in percent).
+Critical threshold (in percent).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -476,15 +476,15 @@ VMware VeloCloud Orchestrator hostname.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--cache-expires-in>
 
-Cache (application) expires each X secondes (Default: 7200)
+Cache (application) expires each X seconds (default: 7200)
 
 =item B<--username>
 
@@ -500,15 +500,15 @@ Set if the user is an operator.
 
 =item B<--api-path>
 
-API base url path (Default: '/portal/rest').
+API base url path (default: '/portal/rest').
 
 =item B<--timeframe>
 
-Set timeframe in seconds (Default: 900).
+Set timeframe in seconds (default: 900).
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =back
 

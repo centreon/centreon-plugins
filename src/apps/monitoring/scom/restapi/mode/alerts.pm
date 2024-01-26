@@ -168,13 +168,13 @@ Filter by host name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /warning/i')
-Can used special variables like: %{severity}, %{host}, %{name}, %{timeraised}
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /warning/i')
+You can use the following variables: %{severity}, %{host}, %{name}, %{timeraised}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /critical/i').
-Can used special variables like: %{severity}, %{host}, %{name}, %{timeraised}
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical/i').
+You can use the following variables: %{severity}, %{host}, %{name}, %{timeraised}
 
 =item B<--warning-*> B<--critical-*>
 

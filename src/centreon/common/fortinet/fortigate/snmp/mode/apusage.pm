@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -222,13 +222,13 @@ Check access point usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-traffic', 'out-traffic', 'cpu' (%), 'memory' (%),
 'clients'.
 
@@ -238,18 +238,18 @@ Filter by access point name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin} eq "enable" and %{status} !~ /online/i'').
-Can used special variables like: %{admin}, %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admin} eq "enable" and %{status} !~ /online/i'').
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =back
 

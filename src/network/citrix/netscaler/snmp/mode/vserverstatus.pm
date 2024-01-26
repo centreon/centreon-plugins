@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -299,13 +299,13 @@ Check vservers status and health.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'in-traffic', 'out-traffic', 'health' (%),
 'clients', 'servers'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'in-traffic', 'out-traffic', 'health' (%),
 'clients', 'servers'.
 
@@ -324,8 +324,7 @@ or to solve a missing counters bug.
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: status,regexp).
 Example: --threshold-overload='CRITICAL,^(?!(green)$)'
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,7 +50,8 @@ sub new {
             'period:s'            => { name => 'period' },
             'statistic:s@'        => { name => 'statistic' },
             'zeroed'              => { name => 'zeroed' },
-            'proxyurl:s'          => { name => 'proxyurl' }
+            'proxyurl:s'          => { name => 'proxyurl' },
+            'endpoint:s'          => { name => 'endpoint' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
@@ -789,6 +790,118 @@ sub elasticache_describe_cache_clusters {
     return $results;
 }
 
+sub directconnect_describe_connections {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    eval {
+        my $ec = $self->{paws}->service('DirectConnect', region => $self->{option_results}->{region});
+        my $connections = $ec->DescribeConnections();
+
+        foreach (@{$connections->{Connections}}) {
+            $results->{ $_->{ConnectionId} } = {
+                name => $_->{ConnectionName},
+                state => $_->{ConnectionState},
+                bandwidth => $_->{Bandwidth}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
+sub directconnect_describe_virtual_interfaces {
+    my ($self, %options) = @_;
+
+    my $results = {};
+    eval {
+        my $ec = $self->{paws}->service('DirectConnect', region => $self->{option_results}->{region});
+        my $vi = $ec->DescribeVirtualInterfaces();
+
+        foreach (@{$vi->{VirtualInterfaces}}) {
+            $results->{ $_->{VirtualInterfaceId} } = {
+                name => $_->{VirtualInterfaceName},
+                state => $_->{VirtualInterfaceState},
+                type => $_->{VirtualInterfaceType},
+                vlan => $_->{Vlan},
+                connectionId => $_->{ConnectionId}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
+sub cloudtrail_events {
+    my ($self, %options) = @_;
+
+    my $events_results = [];
+    eval {
+        my $ct;
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
+        } else {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
+        }
+        my %ct_options = ();
+        if (defined($options{delta})) {
+            $ct_options{EndTime} = time();
+            $ct_options{StartTime} = $ct_options{EndTime} - ($options{delta} * 60);
+        }
+
+        while (my $list_events = $ct->LookupEvents(%ct_options)) {
+            foreach (@{$list_events->{Events}}) {
+                my $event = JSON::XS->new->utf8->decode($_->{CloudTrailEvent});
+                push @{$events_results}, {
+                    eventID => $event->{eventID},
+                    eventType => $event->{eventType},
+                    errorMessage => $event->{errorMessage}
+                };
+            }
+
+            last if (!defined($list_events->{NextToken}));
+            $ct_options{NextToken} = $list_events->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $events_results;
+}
+
+sub cloudtrail_trail_status {
+    my ($self, %options) = @_;
+
+    my $trail_status;
+    eval {
+        my $ct;
+        if (defined($self->{option_results}->{endpoint}) && length $self->{option_results}->{endpoint}) {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region} , endpoint => $self->{option_results}->{endpoint});
+        } else {
+            $ct = $self->{paws}->service('CloudTrail', region => $self->{option_results}->{region});
+        }
+        my %ct_options = ();
+        $ct_options{Name} = $options{trail_name};
+        $trail_status = $ct->GetTrailStatus(%ct_options);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $trail_status;
+}
+
 1;
 
 __END__
@@ -823,7 +936,7 @@ Set arn of the role to be assumed.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 
@@ -836,11 +949,11 @@ Set timeframe in seconds.
 =item B<--statistic>
 
 Set cloudwatch statistics
-(Can be: 'minimum', 'maximum', 'average', 'sum').
+(can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when CloudWatch
+Set metrics value to 0 if none. Useful when CloudWatch
 does not return value when not defined.
 
 =item B<--proxyurl>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -191,25 +191,34 @@ sub request_api {
         $self->authenticate(statefile => $self->{cache});
     }
     
-    my $content = $self->{http}->request(%options, 
+    my $content = $self->{http}->request(
+        %options, 
         warning_status => '', unknown_status => '', critical_status => ''
     );
 
+    my $code = $self->{http}->get_code();
+    return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
+
     # Maybe there is an issue with the token. So we retry.
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ($code < 200 || $code >= 300) {
         $self->clean_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
-        $content = $self->{http}->request(%options, 
+        $content = $self->{http}->request(
+            %options, 
             warning_status => '', unknown_status => '', critical_status => ''
         );
+        $code = $self->{http}->get_code();
     }
+
+    return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+
+    if ($code < 200 || $code >= 300) {
         $self->{output}->add_option_msg(short_msg => 'api request error: ' . (defined($decoded->{type}) ? $decoded->{type} : 'unknown'));
         $self->{output}->option_exit();
     }
@@ -235,11 +244,11 @@ Set hostname or IP of ILO.
 
 =item B<--port>
 
-Set port (Default: '443').
+Set port (default: '443').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--api-username>
 
@@ -251,7 +260,7 @@ Set password.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -234,11 +234,11 @@ Scenario used by JMeter (without extension).
 
 =item B<--warning>
 
-Threshold warning in seconds (scenario execution time).
+Warning threshold in seconds (scenario execution time).
 
 =item B<--critical>
 
-Threshold critical in seconds (scenario execution time).
+Critical threshold in seconds (scenario execution time).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,7 +51,7 @@ sub set_system {
     $self->{components_exec_load} = 0;
 
     $self->{components_path} = 'centreon::common::redfish::restapi::mode::components';
-    $self->{components_module} = ['chassis', 'device', 'fan', 'psu', 'temperature'];
+    $self->{components_module} = ['chassis', 'device', 'drive', 'fan', 'psu', 'sc', 'storage', 'temperature', 'volume'];
 }
 
 sub new {
@@ -84,7 +84,12 @@ sub get_devices {
     $self->get_chassis() if (!defined($self->{chassis}));
     foreach my $chassis (@{$self->{chassis}}) {
         $chassis->{Devices} = [];
-        my $result = $self->{custom}->request_api(url_path => $chassis->{'@odata.id'} . 'Devices/');
+        my $result = $self->{custom}->request_api(
+            url_path => $chassis->{'@odata.id'} . 'Devices/',
+            ignore_codes => { 404 => 1 }
+        );
+        next if (!defined($result));
+
         foreach (@{$result->{Members}}) {
             my $device_detailed = $self->{custom}->request_api(url_path => $_->{'@odata.id'});
             push @{$chassis->{Devices}}, $device_detailed;
@@ -106,6 +111,48 @@ sub get_chassis {
     }
 }
 
+sub get_drive {
+    my ($self, %options) = @_;
+
+    return {} if (!defined($options{drive}->{'@odata.id'}));
+    return $self->{custom}->request_api(url_path => $options{drive}->{'@odata.id'});
+}
+
+sub get_volumes {
+    my ($self, %options) = @_;
+
+    return [] if (!defined($options{storage}->{Volumes}->{'@odata.id'}));
+
+    my $volumes = $self->{custom}->request_api(url_path => $options{storage}->{Volumes}->{'@odata.id'});
+
+    my $result = [];
+    foreach my $volume (@{$volumes->{Members}}) {
+        my $volume_detailed = $self->{custom}->request_api(url_path => $volume->{'@odata.id'});
+        push @$result, $volume_detailed;
+    }
+
+    return $result;
+}
+
+sub get_storages {
+    my ($self, %options) = @_;
+
+    $self->{storages} = [];
+    my $systems = $self->{custom}->request_api(url_path => '/redfish/v1/Systems');
+    foreach my $system (@{$systems->{Members}}) {
+        my $storages = $self->{custom}->request_api(
+            url_path => $system->{'@odata.id'} . '/Storage/',
+            ignore_codes => { 400 => 1, 404 => 1 }
+        );
+        next if (!defined($storages));
+
+        foreach my $storage (@{$storages->{Members}}) {
+            my $storage_detailed = $self->{custom}->request_api(url_path => $storage->{'@odata.id'});
+            push @{$self->{storages}}, $storage_detailed;
+        }
+    }
+}
+
 sub execute_custom {
     my ($self, %options) = @_;
 
@@ -122,23 +169,22 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
-Can be: 'chassis', 'device', 'fan', 'psu', 'temperature'.
+Which component to check (default: '.*').
+Can be: 'chassis', 'device', 'drive', 'fan', 'psu', 'sc', 'storage', 'temperature', 'volume'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='fan,1.2'
+Exclude some parts (comma separated list)
+You can also exclude items from specific instances: --filter='fan,1.2'
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='chassis.state,WARNING,inTest'
 
 =item B<--warning>

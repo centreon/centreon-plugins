@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -126,20 +126,20 @@ perl centreon_plugins --plugin=apps::centreon::restapi::plugin --mode=submit-res
 
 =item B<--host>
 
-Hostname (Mandatory).
+Hostname (mandatory).
 
 =item B<--service>
 
-Service description (If result's for a service).
+Service description (if result's for a service).
 
 =item B<--status>
 
 Status in 0, 1, 2, 3 or ok, warning, critical, unknown for services,
-or in 0, 1 or up, down for hosts (Mandatory).
+or in 0, 1 or up, down for hosts (mandatory).
 
 =item B<--output>
 
-Short output (Mandatory).
+Short output (mandatory).
 
 =item B<--perfdata>
 

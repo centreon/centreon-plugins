@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Safe;
 
 my %oids_hrStorageTable = (
     'hrstoragedescr'    => '.1.3.6.1.2.1.25.2.3.1.3',
@@ -81,7 +82,8 @@ sub new {
         'storage:s'               => { name => 'storage' },
         'name'                    => { name => 'use_name' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-insensitive'      => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
         'oid-filter:s'            => { name => 'oid_filter', default => 'hrStorageDescr'},
         'oid-display:s'           => { name => 'oid_display', default => 'hrStorageDescr'},
         'display-transform-src:s' => { name => 'display_transform_src' },
@@ -90,7 +92,10 @@ sub new {
     });
 
     $self->{storage_id_selected} = [];
-    
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
+
     return $self;
 }
 
@@ -129,8 +134,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $display_value . "' [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B] [id = $_]");
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storage:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List storage:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -144,13 +151,18 @@ sub get_additional_information {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $options{id}};
 
+    our $assign_var = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 sub manage_selection {
@@ -262,9 +274,11 @@ sub disco_show {
         next if (!defined($storage_type) || 
                 ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
 
-        $self->{output}->add_disco_entry(name => $display_value,
-                                         total => $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_},
-                                         storageid => $_);
+        $self->{output}->add_disco_entry(
+            name => $display_value,
+            total => $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_},
+            storageid => $_
+        );
     }
 }
 
@@ -278,7 +292,7 @@ __END__
 
 =item B<--storage>
 
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
+Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
 
 =item B<--name>
 
@@ -288,7 +302,7 @@ Allows to use storage name with option --storage instead of storage oid index.
 
 Allows to use regexp to filter storage (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -300,17 +314,15 @@ Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDe
 
 Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the storage name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
+Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 

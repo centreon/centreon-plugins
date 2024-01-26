@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and alarm monitoring for
@@ -204,63 +204,63 @@ Filter sensors by name (can be a regexp).
 
 =item B<--unknown-sensor-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-sensor-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-sensor-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^paired/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /^paired/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-trafficdrop-status>
 
-Set warning threshold for status.
-Can used special variables like: %{trafficDropStatus}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--warning-trafficdrop-status>
 
-Set warning threshold for status (Default: '%{trafficDropStatus} =~ /warning|unknown|skip/i').
-Can used special variables like: %{trafficDropStatus}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{trafficDropStatus} =~ /warning|unknown|skip/i').
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--critical-trafficdrop-status>
 
-Set critical threshold for status.
-Can used special variables like: %{trafficDropStatus}, %{name}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--unknown-connectivity-status>
 
-Set warning threshold for status (Default: '%{connectivityStatus} =~ /unknown/i').
-Can used special variables like: %{connectivityStatus}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{connectivityStatus} =~ /unknown/i').
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--warning-connectivity-status>
 
-Set warning threshold for status (Default: '%{connectivityStatus} =~ /warning/i').
-Can used special variables like: %{connectivityStatus}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{connectivityStatus} =~ /warning/i').
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--critical-connectivity-status>
 
-Set critical threshold for status (Default: '%{connectivityStatus} =~ /critical/i').
-Can used special variables like: %{connectivityStatus}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{connectivityStatus} =~ /critical/i').
+You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--unknown-interface-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{interfaceName}, %{sensorName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-interface-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{interfaceName}, %{sensorName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--critical-interface-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{interfaceName}, %{sensorName}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
+You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-*> B<--critical-*>
 

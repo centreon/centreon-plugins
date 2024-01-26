@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,13 +141,13 @@ Check global statistics of storage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read', 'read-iops', 'write', 'write-iops',
 'read-time', 'write-time'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read', 'read-iops', 'write', 'write-iops',
 'read-time', 'write-time'.
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,18 +136,18 @@ Example: --filter-counters='status'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /running/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

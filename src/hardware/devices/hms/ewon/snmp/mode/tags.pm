@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -286,11 +286,11 @@ Filter tags by name (can be a regexp).
 
 =item B<--cache-expires-in>
 
-Cache expires each X secondes (Default: 7200)
+Cache expires each X seconds (default: 7200)
 
 =item B<--tag-output-value>
 
-Change tag output (syntax: [regexp,]output) (Default: 'value: %s').
+Change tag output (syntax: [regexp,]output) (default: 'value: %s').
 E.g: --tag-output-value='tagNameMatch,remaining: %s%%' 
 
 =item B<--tag-threshold-warning> B<--tag-threshold-critical>
@@ -300,17 +300,17 @@ E.g: --tag-threshold-warning='tagNameMatch,50' --tag-threshold-critical='tagName
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /alarm/').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alarm/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back

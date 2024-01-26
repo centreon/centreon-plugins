@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,18 +74,16 @@ Check sensors.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=sensor,1.1
+Exclude some parts (comma separated list)
+You can also exclude items from specific instances: --filter=sensor,1.1
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='sensor,CRITICAL,sensorStatusNotApplicable'
 
 =item B<--warning>
@@ -121,14 +119,14 @@ my $mapping = {
     uioSensorStatusSensorName       => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.3' },
     uioSensorStatusTemperatureDegC  => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.6' },
     uioSensorStatusHumidity         => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.7' },
-    uioSensorStatusAlarmStatus      => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.9', map => $map_alarm_status },
+    uioSensorStatusAlarmStatus      => { oid => '.1.3.6.1.4.1.318.1.1.25.1.2.1.9', map => $map_alarm_status }
 };
 my $mapping_iem = {
     iemStatusProbeName         => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.2' },
     iemStatusProbeStatus       => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.3', map => $map_iem_status },
     iemStatusProbeCurrentTemp  => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.4' },
     iemStatusProbeTempUnits    => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.5', map => $map_iem_unit },
-    iemStatusProbeCurrentHumid => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.6' },
+    iemStatusProbeCurrentHumid => { oid => '.1.3.6.1.4.1.318.1.1.10.2.3.2.1.6' }
 };
 my $oid_uioSensorStatusEntry = '.1.3.6.1.4.1.318.1.1.25.1.2.1';
 my $oid_iemStatusProbesEntry = '.1.3.6.1.4.1.318.1.1.10.2.3.2.1';
@@ -181,9 +179,10 @@ sub check_uoi {
                     )
                 );
             }
+
             $self->{output}->perfdata_add(
-                label => 'universal_temp', unit => 'C',
-                nlabel => 'sensor.universal.temperature.celsius', 
+                nlabel => 'sensor.universal.temperature.celsius',
+                unit => 'C',
                 instances => $result->{uioSensorStatusSensorName},
                 value => $result->{uioSensorStatusTemperatureDegC},
                 warning => $warn,
@@ -204,9 +203,10 @@ sub check_uoi {
                 )
             );
         }
+
         $self->{output}->perfdata_add(
-            label => 'universal_humidity', unit => '%',
             nlabel => 'sensor.universal.humidity.percentage',
+            unit => '%',
             instances => $result->{uioSensorStatusSensorName},
             value => $result->{uioSensorStatusHumidity},
             warning => $warn,
@@ -261,8 +261,8 @@ sub check_iem {
                     )
                 );
             }
+
             $self->{output}->perfdata_add(
-                label => 'integrated_temp',
                 unit => $result->{iemStatusProbeTempUnits} eq 'celsius' ? 'C' : 'F',
                 nlabel => 'sensor.integrated.temperature.' . $result->{iemStatusProbeTempUnits}, 
                 instances => $result->{iemStatusProbeName},
@@ -285,9 +285,10 @@ sub check_iem {
                 )
             );
         }
+
         $self->{output}->perfdata_add(
-            label => 'integrated_humidity', unit => '%',
             nlabel => 'sensor.integrated.humidity.percentage',
+            unit => '%',
             instances => $result->{iemStatusProbeName},
             value => $result->{iemStatusProbeCurrentHumid},
             warning => $warn,

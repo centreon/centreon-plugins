@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -431,7 +431,7 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     if (scalar(keys %{$self->{interface_classmap}}) <= 0 && !defined($options{disco})) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot found classmap.');
+        $self->{output}->add_option_msg(short_msg => 'Cannot find classmap.');
         $self->{output}->option_exit();
     }
 }
@@ -473,28 +473,28 @@ Example: --filter-counters='^(total-traffic)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'int-cmap-traffic', 'int-cmap-drop', 
 'cmap-traffic', 'cmap-drop', 'total-traffic', 'total-drop'.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 Only for --warning-int-traffic and --critical-int-traffic options.
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -118,11 +118,11 @@ Check Citrix servers per zone.
 
 =item B<--warning>
 
-Threshold warning of servers per zone.
+Warning threshold of servers per zone.
 
 =item B<--critical>
 
-Threshold critical of servers per zone.
+Critical threshold of servers per zone.
 
 =item B<--zone>
 

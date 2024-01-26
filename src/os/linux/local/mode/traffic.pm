@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,8 +46,9 @@ sub custom_traffic_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        label => $self->{nlabel},
+        unit => 'b/s',
+        instances => $self->{result_values}->{display},
         value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
         warning => $warning,
         critical => $critical,
@@ -117,7 +118,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'in', set => {
+        { label => 'in', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
@@ -125,7 +126,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'out', set => {
+        { label => 'out', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
@@ -138,7 +139,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -289,38 +290,38 @@ Command used: /sbin/ip -s addr 2>&1
 
 =item B<--warning-in>
 
-Threshold warning in percent for 'in' traffic.
+Warning threshold in percent for 'in' traffic.
 
 =item B<--critical-in>
 
-Threshold critical in percent for 'in' traffic.
+Critical threshold in percent for 'in' traffic.
 
 =item B<--warning-out>
 
-Threshold warning in percent for 'out' traffic.
+Warning threshold in percent for 'out' traffic.
 
 =item B<--critical-out>
 
-Threshold critical in percent for 'out' traffic.
+Critical threshold in percent for 'out' traffic.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "RU"').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "RU"').
+You can use the following variables: %{status}, %{display}
 
 =item B<--units>
 
-Units of thresholds (Default: 'b/s') ('%', 'b/s').
+Units of thresholds (default: 'b/s') ('%', 'b/s').
 Percent can be used only if --speed is set.
 
 =item B<--filter-interface>

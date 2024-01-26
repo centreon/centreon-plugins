@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -117,9 +117,9 @@ sub check_options {
         command => $self->{option_results}->{naviseccli_command},
         command_path => $self->{option_results}->{naviseccli_path}
     );
-    $self->{option_results}->{navicli_command} = 'naviseccli'
+    $self->{option_results}->{naviseccli_command} = 'naviseccli'
         if (!defined($self->{option_results}->{naviseccli_command}) || $self->{option_results}->{naviseccli_command} eq '');
-    $self->{option_results}->{navicli_path} = '/opt/Navisphere/bin'
+    $self->{option_results}->{naviseccli_path} = '/opt/Navisphere/bin'
         if (!defined($self->{option_results}->{naviseccli_path}) || $self->{option_results}->{naviseccli_path} eq '');
 
     if (defined($self->{option_results}->{ssh_address}) && $self->{option_results}->{ssh_address} ne '') {
@@ -284,7 +284,7 @@ User scope to connect (will use 'naviseccli'. Default: '0' (global)).
 
 =item B<--timeout>
 
-Set timeout for system command (Default: '30').
+Set timeout for system command (default: '30').
 
 =back
 

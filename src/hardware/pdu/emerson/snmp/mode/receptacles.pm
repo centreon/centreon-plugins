@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -254,18 +254,18 @@ Filter receptable branch name (can be a regexp).
 
 =item B<--unknown-rcp-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{oper_state}, %{power_state}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-rcp-status>
 
-Set warning threshold for status (Default: '%{oper_state} =~ /warning|alarm/').
-Can used special variables like: %{oper_state}, %{power_state}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{oper_state} =~ /warning|alarm/').
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--critical-rcp-status>
 
-Set critical threshold for status (Default: '%{oper_state} =~ /abnormal/').
-Can used special variables like: %{oper_state}, %{power_state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{oper_state} =~ /abnormal/').
+You can use the following variables: %{oper_state}, %{power_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

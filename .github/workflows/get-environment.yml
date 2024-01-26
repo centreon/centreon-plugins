@@ -1,5 +1,9 @@
 on:
   workflow_call:
+    inputs:
+      version_file:
+        required: false
+        type: string
     outputs:
       stability:
         description: "branch stability (stable, testing, unstable, canary)"
@@ -20,6 +24,9 @@ jobs:
       release: ${{ steps.get_environment.outputs.release }}
 
     steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
       - id: get_environment
         run: |
           case "$BRANCHNAME" in
@@ -39,9 +46,15 @@ jobs:
 
           echo "stability=$STABILITY" >> $GITHUB_OUTPUT
 
-          VERSION=`date '+%Y%m%d'`
+          if [[ "${{ inputs.version_file }}" == "" ]]; then
+            VERSION=$(date '+%Y%m%d')
+          elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
+            VERSION=$(grep 'version: ' ${{ inputs.version_file }} | cut -d' ' -f2 | tr -d '"')
+          else
+            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
+          fi
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
 
-          RELEASE=`date '+%H%M%S'`
+          RELEASE=$(date '+%H%M%S')
           echo "release=$(echo $RELEASE)" >> $GITHUB_OUTPUT
         shell: bash

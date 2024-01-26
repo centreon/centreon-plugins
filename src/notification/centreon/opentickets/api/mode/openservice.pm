@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package notification::centreon::opentickets::api::mode::openservice;
@@ -128,23 +127,23 @@ Open a service ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =item B<--service-id>
 
-Centreon service ID (Required).
+Centreon service ID (required).
 
 =item B<--service-state>
 
-Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (Required).
+Service state (example: CRITICAL, UNKNOWN, WARNING, OK) (required).
 
 =item B<--service-output>
 
-Service output (Required).
+Service output (required).
 
 =item B<--contact-name>
 
@@ -177,12 +176,12 @@ Last service state change.
 =item B<--extra-property>
 
 Add a extra property.
-Eg: --extra-property='custom_message=test my message'
+Example: --extra-property='custom_message=test my message'
 
 =item B<--select>
 
 Add a select property (open-ticket list).
-Eg: --select='list-id=value'
+Example: --select='list-id=value'
 
 =back
 

@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Docker-Ssh",
+    "pkg_summary": "Centreon Plugin to monitor Docker",
+    "plugin_name": "centreon_docker_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "cloud/docker/local/"
+    ]
+}

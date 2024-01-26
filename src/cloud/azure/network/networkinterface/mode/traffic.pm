@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,13 +258,13 @@ Check network interface resources traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::networkinterface::plugin --custommode=azcli --mode=traffic
 --resource=MYNIC --resource-group=MYHOSTGROUP --aggregation='total' --critical-bytesreceivedrate-total='10'
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::networkinterface::plugin --custommode=azcli --mode=traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/networkInterfaces/xxx'
@@ -276,25 +276,25 @@ Default aggregation: 'total' / All aggregations are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'BytesReceivedRate', 'BytesSentRate',
-'PacketsSentRate', 'PacketsReceivedRate') (Can be a regexp).
+Filter metrics (can be: 'BytesReceivedRate', 'BytesSentRate',
+'PacketsSentRate', 'PacketsReceivedRate') (can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
+Warning thresholds ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
 'packetsreceivedrate', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
+Critical thresholds ($metric$ can be: 'bytesreceivedrate', 'bytessentrate', 'packetssentrate',
 'packetsreceivedrate', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--per-sec>

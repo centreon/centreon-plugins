@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,11 +107,11 @@ Check a vacuum (manual or auto) command has been performed on at least one of th
 
 =item B<--warning>
 
-Threshold warning in seconds, maximum time interval since last vacuum.
+Warning threshold in seconds, maximum time interval since last vacuum.
 
 =item B<--critical>
 
-Threshold critical in seconds, maximum time interval since last vacuum.
+Critical threshold in seconds, maximum time interval since last vacuum.
 
 =back
 

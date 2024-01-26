@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -126,25 +126,23 @@ Example: centreon_plugins.pl --plugin=apps::vmware::wsman::plugin --mode=hardwar
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'omc_discretesensor', 'omc_fan', 'omc_psu', 'vmware_storageextent', 'vmware_controller',
 'vmware_storagevolume', 'vmware_battery', 'vmware_sassataport', 'cim_card',
 'cim_computersystem', 'cim_numericsensor', 'cim_memory', 'cim_processor', 'cim_recordlog'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=cim_card --filter=cim_recordlog)
-Can also exclude specific instance: --filter='omc_psu,Power Supply 1'
+Exclude the items given as a comma-separated list (example: --filter=cim_card --filter=cim_recordlog).
+You can also exclude items from specific instances: --filter='omc_psu,Power Supply 1'
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='cim_card,CRITICAL,^(?!(OK)$)'
 
 =item B<--warning>

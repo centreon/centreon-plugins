@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::virtualization::hpe::simplivity::restapi::mode::hosts;
@@ -256,63 +255,63 @@ Filter hosts by name.
 
 =item B<--unknown-host-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-host-status>
 
-Set warning threshold for status (Default: '%{status} =~ /suspected/').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /suspected/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-host-status>
 
-Set critical threshold for status (Default: '%{status} =~ /faulty/').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /faulty/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-raid-status>
 
-Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}, %{name}
+Set unknown threshold for component status (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-raid-status>
 
-Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-Can used special variables like: %{status}, %{name}
+Set warning threshold for component status (default: '%{status} =~ /yellow/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-raid-status>
 
-Set critical threshold for component status (Default: '%{status} =~ /red/').
-Can used special variables like: %{status}, %{name}
+Set critical threshold for component status (default: '%{status} =~ /red/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-logical-drive-status>
 
-Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}, %{name}
+Set unknown threshold for component status (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-logical-drive-status>
 
-Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-Can used special variables like: %{status}, %{name}
+Set warning threshold for component status (default: '%{status} =~ /yellow/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-logical-drive-status>
 
-Set critical threshold for component status (Default: '%{status} =~ /red/').
-Can used special variables like: %{status}, %{name}
+Set critical threshold for component status (default: '%{status} =~ /red/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-physical-drive-status>
 
-Set unknown threshold for component status (Default: '%{status} =~ /unknown/').
-Can used special variables like: %{status}, %{name}
+Set unknown threshold for component status (default: '%{status} =~ /unknown/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-physical-drive-status>
 
-Set warning threshold for component status (Default: '%{status} =~ /yellow/').
-Can used special variables like: %{status}, %{name}
+Set warning threshold for component status (default: '%{status} =~ /yellow/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-physical-drive-status>
 
-Set critical threshold for component status (Default: '%{status} =~ /red/').
-Can used special variables like: %{status}, %{name}
+Set critical threshold for component status (default: '%{status} =~ /red/').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

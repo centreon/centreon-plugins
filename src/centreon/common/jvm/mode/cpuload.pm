@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,19 +94,19 @@ perl centreon_plugins.pl --plugin=apps::tomcat::jmx::plugin --custommode=jolokia
 
 =item B<--warning-system>
 
-Threshold warning of System cpuload
+Warning threshold of System cpuload
 
 =item B<--critical-system>
 
-Threshold critical of System cpuload
+Critical threshold of System cpuload
 
 =item B<--warning-process>
 
-Threshold warning of Process cpuload
+Warning threshold of Process cpuload
 
 =item B<--critical-process>
 
-Threshold critical of Process cpuload
+Critical threshold of Process cpuload
 
 =back
 

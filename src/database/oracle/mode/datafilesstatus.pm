@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -245,23 +245,23 @@ Filter data file name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: none).
-Can used special variables like: %{display}, %{status}
+Define the conditions to match for the status to be WARNING (default: none).
+You can use the following variables: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /offline|invalid/i').
-Can used special variables like: %{display}, %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /offline|invalid/i').
+You can use the following variables: %{display}, %{status}
 
 =item B<--warning-online-status>
 
-Set warning threshold for online status (Default: '%{online_status} =~ /sysoff/i').
-Can used special variables like: %{display}, %{online_status}
+Set warning threshold for online status (default: '%{online_status} =~ /sysoff/i').
+You can use the following variables: %{display}, %{online_status}
 
 =item B<--critical-online-status>
 
-Set critical threshold for online status (Default: '%{online_status} =~ /offline|recover/i').
-Can used special variables like: %{display}, %{online_status}
+Set critical threshold for online status (default: '%{online_status} =~ /offline|recover/i').
+You can use the following variables: %{display}, %{online_status}
 
 =item B<--warning-*> B<--critical-*> 
 

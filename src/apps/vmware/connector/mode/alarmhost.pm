@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -287,22 +287,22 @@ Check new alarms only.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i).
-Can used special variables like: %{status}, %{name}, %{entity}, %{type}.
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /yellow/i).
+You can use the following variables: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /red/i').
-Can used special variables like: %{status}, %{name}, %{entity}, %{type}.
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /red/i').
+You can use the following variables: %{status}, %{name}, %{entity}, %{type}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-alarm-warning', 'total-alarm-critical'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-alarm-warning', 'total-alarm-critical'.
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,18 +107,18 @@ Filter vdom by name.
 
 =item B<--unknown-health>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-health>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-health>
 
-Set critical threshold for status (Default: '%{status} !~ /success/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /success/i').
+You can use the following variables: %{status}, %{name}
 
 =back
 

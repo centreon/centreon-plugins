@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -151,13 +151,13 @@ Check service profiles.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{dn}, %{status}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{dn}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "offline"').
-Can used special variables like: %{dn}, %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "offline"').
+You can use the following variables: %{dn}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

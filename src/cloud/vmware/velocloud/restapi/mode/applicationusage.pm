@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,24 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub prefix_edge_output {
+    my ($self, %options) = @_;
+
+    return "Edge '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_app_output {
+    my ($self, %options) = @_;
+
+    return "Application '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -86,24 +104,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_edge_output {
-    my ($self, %options) = @_;
-
-    return "Edge '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_app_output {
-    my ($self, %options) = @_;
-
-    return "Application '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
-sub long_output {
-    my ($self, %options) = @_;
-
-    return "Checking edge '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -137,8 +137,12 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{ $edge->{name} }->{id} = $edge->{id};
-        $self->{edges}->{ $edge->{name} }->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} } = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => { app_count => 0 },
+            apps => {}
+        };
 
         my $apps = $options{custom}->get_apps_metrics(
             edge_id => $edge->{id},
@@ -158,8 +162,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{app_count}++;
-            $self->{edges}->{$edge->{name}}->{apps}->{ $app_name } = {
+            $self->{edges}->{ $edge->{name} }->{global}->{app_count}++;
+            $self->{edges}->{ $edge->{name} }->{apps}->{ $app_name } = {
                 id => $app->{application},
                 display => $app_name,
                 traffic_out => int($app->{bytesTx} * 8 / $self->{timeframe}),
@@ -188,11 +192,11 @@ Check applications usage per edges.
 
 =item B<--filter-edge-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--filter-application-name>
 
-Filter application by name (Can be a regexp).
+Filter application by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

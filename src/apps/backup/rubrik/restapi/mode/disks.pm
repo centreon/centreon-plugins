@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -169,26 +169,26 @@ Example: --filter-counters='disk-status'
 
 =item B<--cluster-id>
 
-Which cluster to check (Default: 'me').
+Which cluster to check (default: 'me').
 
 =item B<--filter-disk-id>
 
-Filter disks by disk id (can be a regexp).
+Filter disks by disk ID (can be a regexp).
 
 =item B<--unknown-disks-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{id}
 
 =item B<--warning-disk-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{id}
 
 =item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}, %{id}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /active/i').
+You can use the following variables: %{status}, %{id}
 
 =item B<--warning-*> B<--critical-*>
 

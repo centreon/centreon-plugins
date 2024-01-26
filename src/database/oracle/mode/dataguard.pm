@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -192,18 +192,18 @@ Check oracle dataguard.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
-Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
+Define the conditions to match for the status to be UNKNOWN (default: '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/').
+You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
-Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
+Define the conditions to match for the status to be WARNING (default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
+You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
-Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
+Define the conditions to match for the status to be CRITICAL (default: '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i').
+You can use the following variables: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--warning-*> B<--critical-*>
 

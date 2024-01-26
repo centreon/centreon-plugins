@@ -19,37 +19,55 @@ on:
 
 jobs:
   create-and-push-docker:
-    runs-on: [self-hosted, common]
-
     strategy:
       matrix:
-        distrib: [centos7, alma8, bullseye]
         include:
-          - project: plugins
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-centos7
+            image: packaging-plugins-centos7
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-alma8
+            image: packaging-plugins-alma8
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-alma9
+            image: packaging-plugins-alma9
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-bullseye
+            image: packaging-plugins-bullseye
+          - runner: ["self-hosted", "collect-arm64"]
+            dockerfile: packaging-plugins-bullseye
+            image: packaging-plugins-bullseye-arm64
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-bookworm
+            image: packaging-plugins-bookworm
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
-          registry: docker.centreon.com
-          username: ${{ secrets.REPOS_USERNAME }}
-          password: ${{ secrets.REPOS_PASSWORD }}
+          registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
       - name: Login to proxy registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
-          registry: docker-proxy.centreon.com
-          username: ${{ secrets.REPOS_USERNAME }}
-          password: ${{ secrets.REPOS_PASSWORD }}
+          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
+          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
-          file: .github/docker/Dockerfile.packaging-${{ matrix.project }}-${{ matrix.distrib }}
+          file: .github/docker/Dockerfile.${{ matrix.dockerfile }}
           context: .
+          build-args: "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
           pull: true
           push: true
-          tags: docker.centreon.com/packaging-${{ matrix.project }}-${{ matrix.distrib }}:latest
+          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest

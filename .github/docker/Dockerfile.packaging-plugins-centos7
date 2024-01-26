@@ -1,9 +1,17 @@
-FROM docker-proxy.centreon.com/centos:7
+ARG REGISTRY_URL
 
-RUN <<EOF
+FROM ${REGISTRY_URL}/centos:7
 
-yum -y install git gettext rpm-build dos2unix python3 epel-release
-yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON
+RUN bash -e <<EOF
+
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+
+yum -y install git gettext rpm-build dos2unix python3 epel-release nfpm
+yum -y install perl-App-FatPacker perl-File-Copy-Recursive perl-JSON jq zstd
 yum clean all
 
 EOF

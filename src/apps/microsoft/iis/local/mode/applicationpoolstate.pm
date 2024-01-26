@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -142,18 +142,18 @@ Filter application pool name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
-Can used special variables like: %{name}, %{state}, %{auto_start}.
+Define the conditions to match for the status to be CRITICAL (default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
+You can use the following variables: %{name}, %{state}, %{auto_start}.
 
 =back
 

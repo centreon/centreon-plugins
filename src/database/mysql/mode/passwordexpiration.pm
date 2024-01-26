@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -210,13 +210,13 @@ Check user password expiration.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{user}, %{expire}, %{expire_time}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{expire} ne "never" and %{expire_time} == 0').
-Can used special variables like: %{user}, %{expire}, %{expire_time}
+Define the conditions to match for the status to be CRITICAL (default: '%{expire} ne "never" and %{expire_time} == 0').
+You can use the following variables: %{user}, %{expire}, %{expire_time}
 
 =back
 

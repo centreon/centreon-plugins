@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -199,9 +199,9 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
             next;
         }
-        if (defined($job->{clientGroups}) && defined($self->{option_results}->{filter_client_name}) && $self->{option_results}->{filter_client_name} ne '') {
+        if (defined($self->{option_results}->{filter_client_group}) && $self->{option_results}->{filter_client_group} ne '' && defined($job->{clientGroups}) && ref($job->{clientGroups}) eq 'ARRAY') {
             my $matched = 0;
-            foreach (@$job->{clientGroups}) {
+            foreach (@{$job->{clientGroups}}) {
                 if ($_->{clientGroupName} =~ /$self->{option_results}->{filter_client_group}/) {
                     $matched = 1;
                     last;
@@ -245,7 +245,7 @@ Filter jobs by policy name (can be a regexp).
 
 =item B<--filter-policy-id>
 
-Filter jobs by policy id (can be a regexp).
+Filter jobs by policy ID (can be a regexp).
 
 =item B<--filter-type>
 
@@ -265,23 +265,23 @@ Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /abnormal/i')
-Can used special variables like: %{display}, %{status}, %{type}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /abnormal/i')
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /errors|failed/i').
-Can used special variables like: %{display}, %{status}, %{type}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /errors|failed/i').
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--warning-*> B<--critical-*>
 

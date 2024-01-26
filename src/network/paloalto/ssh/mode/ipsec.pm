@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -149,18 +149,18 @@ Filter tunnels by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{ike_phase1_state} eq "down" or %{state} ne "active"').
-Can used special variables like: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
+Define the conditions to match for the status to be CRITICAL (default: '%{ike_phase1_state} eq "down" or %{state} ne "active"').
+You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--warning-*> B<--critical-*>
 

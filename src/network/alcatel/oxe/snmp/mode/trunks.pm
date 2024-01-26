@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,22 +198,22 @@ Filter by trunk name (regexp can be used).
 
 =item B<--warning-trunk-status>
 
-Set warning threshold for status
-Can used special variables like: %{trunkstatus}
+Define the conditions to match for the status to be WARNING
+You can use the following variables: %{trunkstatus}
 
 =item B<--critical-trunk-status>
 
-Set critical threshold for status (Default: '%{trunkstatus} =~ /oos/i').
-Can used special variables like: %{trunkstatus}
+Define the conditions to match for the status to be CRITICAL (default: '%{trunkstatus} =~ /oos/i').
+You can use the following variables: %{trunkstatus}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'channel-usage' (%), 'channel-outofservice' (absolute)
 
 =back

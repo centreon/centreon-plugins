@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and alarm monitoring for
@@ -143,15 +143,15 @@ More information on 'https://learn.netdata.cloud/docs/agent/web/api''.
 
 Filter on specific alarm status.
 Can be 'WARNING' or 'CRITICAL'
-(Default: both status shown)
+(default: both status shown)
 
 =item B<--warning-alarms-*>
 
-Set Warning threshold for alarms count (Default: '') where '*' can be warning or 'critical'
+Set Warning threshold for alarms count (default: '') where '*' can be warning or 'critical'
 
 =item B<--critical-alarms-*>
 
-Set Critical threshold for alarms count (Default: '') where '*' can be 'warning' or 'critical'
+Set Critical threshold for alarms count (default: '') where '*' can be 'warning' or 'critical'
 
 =back
 

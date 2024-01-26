@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,7 +134,7 @@ Check message queue.
 
 =item B<--message-queue-path>
 
-Specify the message queue (Required. Eg: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
+Specify the message queue (required. Example: --message-queue-path='/QSYS.LIB/QSYSOPR.MSGQ').
 
 =item B<--memory>
 
@@ -142,7 +142,7 @@ Check only new messages.
 
 =item B<--filter-message-id>
 
-Filter messages by id (can be a regexp).
+Filter messages by ID (can be a regexp).
 
 =item B<--min-severity>
 

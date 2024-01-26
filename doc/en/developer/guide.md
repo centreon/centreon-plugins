@@ -8,7 +8,3 @@ Table of contents
 4. [How to develop a plugin to monitor a device supporting SNMP](tutorial-snmp.md)
 5. \[Coming soon\][How to develop a Service Discovery mode](tutorial-service_discovery.md)
 *******
-
-
-
-

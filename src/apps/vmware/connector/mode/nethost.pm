@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -390,33 +390,33 @@ It monitors only ESX nic that belongs to the filtered vswitches.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{status}
 
 =item B<--unknown-link-status>
 
-Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} !~ /up/').
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} !~ /up/').
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -199,18 +199,18 @@ Filter pool name (can be a regexp).
 
 =item B<--unknown-pool-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{raid_status}, %{state}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-pool-status>
 
-Set warning threshold for status (Default: '%{raid_status} =~ /degraded/i').
-Can used special variables like: %{raid_status}, %{state}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{raid_status} =~ /degraded/i').
+You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--critical-pool-status>
 
-Set critical threshold for status (Default: '%{raid_status} =~ /failed/i').
-Can used special variables like: %{raid_status}, %{state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{raid_status} =~ /failed/i').
+You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

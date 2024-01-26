@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -197,13 +197,13 @@ Filter ports by index (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{location}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}, %{location}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /txFailure|lossOfSignal|readError/').
-Can used special variables like: %{status}, %{port}, %{location}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /txFailure|lossOfSignal|readError/').
+You can use the following variables: %{status}, %{port}, %{location}
 
 =item B<--warning-*> B<--critical-*>
 

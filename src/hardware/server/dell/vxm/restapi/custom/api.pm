@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,6 +43,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'api-username:s'    => { name => 'api_username' },
             'api-password:s'    => { name => 'api_password' },
+            'api-version:s'     => { name => 'api_version' },
             'hostname:s'        => { name => 'hostname' },
             'port:s'            => { name => 'port' },
             'proto:s'           => { name => 'proto' },
@@ -77,6 +78,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{api_version} = defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne '' ? $self->{option_results}->{api_version} : '2';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
@@ -138,7 +140,7 @@ sub request {
 
     $self->settings();
     my $content = $self->{http}->request(
-        url_path => $options{endpoint},
+        url_path => '/rest/vxm/v' . $self->{api_version} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -181,11 +183,11 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -195,9 +197,13 @@ API username.
 
 API password.
 
+=item B<--api-version>
+
+API version (default: 2).
+
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =back
 

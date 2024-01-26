@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -217,23 +217,22 @@ Check stack units.
 
 =item B<--unknown-unit-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{operState}, %{adminState}, %{serial}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--warning-unit-status>
 
-Set warning threshold for status (Default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
-Can used special variables like: %{operState}, %{adminState}, %{serial}
+Define the conditions to match for the status to be WARNING (default: '%{adminState} eq "enable" && %{operState} =~ /nonFatalErr|warning/i').
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--critical-unit-status>
 
-Set critical threshold for status (Default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
-Can used special variables like: %{operState}, %{adminState}, %{serial}
+Define the conditions to match for the status to be CRITICAL (default: '%{adminState} eq "enable" && %{operState} =~ /fatalErr/i').
+You can use the following variables: %{operState}, %{adminState}, %{serial}
 
 =item B<--unit>
 
-Select the unit for detected threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the performance data and thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

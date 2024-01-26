@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -328,7 +328,7 @@ Port used by Selenium server.
 
 =item B<--browser>
 
-Browser used by Selenium server (Default : '*firefox').
+Browser used by Selenium server (default : '*firefox').
 
 =item B<--directory>
 
@@ -344,50 +344,50 @@ Don't stop if error.
 
 =item B<--timeout>
 
-Set scenario execution timeout in second (Default: 50).
+Set scenario execution timeout in second (default: 50).
 
 =item B<--action-timeout>
 
-Set action execution timeout in second (Default: 10).
+Set action execution timeout in second (default: 10).
 
 =item B<--warning-*>
 
-Threshold warning for steps state count
-(Can be: 'failed', 'successful').
+Warning threshold for steps state count
+(can be: 'failed', 'successful').
 
 =item B<--critical-*>
 
-Threshold critical for steps state count
-(Can be: 'failed', 'successful').
+Critical threshold for steps state count
+(can be: 'failed', 'successful').
 
 =item B<--warning-time-scenario>
 
-Threshold warning in milliseconds
+Warning threshold in milliseconds
 for scenario execution time.
 
 =item B<--critical-time-scenario>
 
-Threshold critical in milliseconds
+Critical threshold in milliseconds
 for scenario execution time.
 
 =item B<--warning-time-step>
 
-Threshold warning in milliseconds
+Warning threshold in milliseconds
 for step execution time.
 
 =item B<--critical-time-step>
 
-Threshold critical in milliseconds
+Critical threshold in milliseconds
 for step execution time.
 
 =item B<--warning-state>
 
-Threshold warning for step state.
+Warning threshold for step state.
 
 =item B<--critical-state>
 
-Threshold critical for step state
-(Default: '%{state} !~ /OK/i').
+Critical threshold for step state
+(default: '%{state} !~ /OK/i').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -243,26 +243,26 @@ Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
-Filter job with end time greater than current time less value in seconds (Default: 86400).
+Filter job with end time greater than current time less value in seconds (default: 86400).
 
 =item B<--timezone>
 
-Set timezone (If not set, we use current server execution timezone).
+Set timezone (if not set, we use current server execution timezone).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like:  %{display}, %{status}, %{type}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like:  %{display}, %{status}, %{type}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
+You can use the following variables:  %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{display}, %{status}, %{type}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
+You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-total>
 

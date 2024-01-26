@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -157,11 +157,11 @@ Check Citrix sessions.
 
 =item B<--warning>
 
-Threshold warning of active sessions.
+Warning threshold of active sessions.
 
 =item B<--critical>
 
-Threshold critical of active sessions.
+Critical threshold of active sessions.
 
 =item B<--domain>
 

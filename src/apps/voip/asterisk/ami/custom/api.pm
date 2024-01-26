@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -246,11 +246,11 @@ Asterisk AMI custom mode
 
 =item B<--ami-hostname>
 
-AMI hostname (Required).
+AMI hostname (required).
 
 =item B<--ami-port>
 
-AMI port (Default: 5038).
+AMI port (default: 5038).
 
 =item B<--ami-username>
 

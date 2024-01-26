@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -315,7 +315,7 @@ Password of vpshere/ESX connection (with --vsphere-address).
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50)
+Set global execution timeout (default: 50)
 
 =item B<--sampling-period>
 
@@ -332,18 +332,18 @@ Searchs are case insensitive.
 
 =item B<--unknown-connector-status>
 
-Set unknown threshold for connector status (Default: '%{code} < 0 || (%{code} > 0 && %{code} < 200)').
-Can used special variables like: %{code}, %{short_message}, %{extra_message}.
+Set unknown threshold for connector status (default: '%{code} < 0 || (%{code} > 0 && %{code} < 200)').
+You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =item B<--warning-connector-status>
 
-Set warning threshold for connector status (Default: '').
-Can used special variables like: %{code}, %{short_message}, %{extra_message}.
+Set warning threshold for connector status (default: '').
+You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =item B<--critical-connector-status>
 
-Set critical threshold for connector status (Default: '').
-Can used special variables like: %{code}, %{short_message}, %{extra_message}.
+Set critical threshold for connector status (default: '').
+You can use the following variables: %{code}, %{short_message}, %{extra_message}.
 
 =back
 

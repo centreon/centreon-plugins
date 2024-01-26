@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,9 +54,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{namespaces}->{$namespace->{metadata}->{uid}} = {
+        $self->{namespaces}->{ $namespace->{metadata}->{uid} } = {
             uid => $namespace->{metadata}->{uid},
-            name => $namespace->{metadata}->{name},
+            name => $namespace->{metadata}->{name}
         }            
     }
 }
@@ -66,13 +66,19 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $namespace (sort keys %{$self->{namespaces}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s]",
-                                                         $self->{namespaces}->{$namespace}->{uid},
-                                                         $self->{namespaces}->{$namespace}->{name}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[uid: %s] [name: %s]',
+                $self->{namespaces}->{$namespace}->{uid},
+                $self->{namespaces}->{$namespace}->{name}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List namespaces:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List namespaces:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -90,7 +96,7 @@ sub disco_show {
     foreach my $namespace (sort keys %{$self->{namespaces}}) {             
         $self->{output}->add_disco_entry(
             uid => $self->{namespaces}->{$namespace}->{uid},
-            name => $self->{namespaces}->{$namespace}->{name},
+            name => $self->{namespaces}->{$namespace}->{name}
         );
     }
 }

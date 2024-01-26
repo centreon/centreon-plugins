@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -337,25 +337,25 @@ Example: --filter-counters='^vm-status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%), 'swap' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%), 'swap' (%).
 
 =item B<--warning-vm-status>
 
-Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{state}.
+Define the conditions to match for the status to be WARNING (default: -)
+You can use the following variables: %{name}, %{state}.
 
 =item B<--critical-vm-status>
 
-Set critical threshold for status (Default: -).
-Can used special variables like: %{name}, %{state}.
+Define the conditions to match for the status to be CRITICAL (default: -).
+You can use the following variables: %{name}, %{state}.
 
 =back
 

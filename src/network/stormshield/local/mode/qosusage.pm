@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -271,7 +271,7 @@ File with speed configurations.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,6 +39,7 @@ sub new {
         'inodes'           => 'snmp_standard::mode::inodes',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'load'             => 'snmp_standard::mode::loadaverage',
+        'list-diskio'      => 'snmp_standard::mode::listdiskio',
         'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'list-processes'   => 'snmp_standard::mode::listprocesses',

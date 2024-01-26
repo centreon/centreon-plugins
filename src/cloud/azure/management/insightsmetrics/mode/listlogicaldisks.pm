@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,18 +127,18 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 =over 8
 
 =item B<--workspace-id>
-(Mandatory)
+(mandatory)
 Specify the Azure Log Analytics Workspace ID.
 
 =item B<--resource>
 
-(Mandatory)
+(mandatory)
 Specify the Azure VM Resource ID or name. Short name can be used if the option --name is defined.
 Example: --resource='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourcegroups/my_resourcegroup/providers/microsoft.compute/virtualmachines/azure-vm1'
 
 =item B<--name>
 
-(Optional)
+(optional)
 Use only the name of the VM resource rather than the full ID.
 Example: --resource='azure-vm1' --name
 

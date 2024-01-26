@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -195,12 +195,12 @@ Check Azure Data Factory for factory size and resource usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --mode=factoryusage --custommode=api
 --resource=<factory_id> --resource-group=<resourcegroup_id>
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --mode=factoryusage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DataFactory/factories/<factory_id>'
@@ -210,19 +210,19 @@ perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --m
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
+Warning thresholds ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
+Critical thresholds ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
@@ -86,10 +87,9 @@ sub set_counters {
                 key_values => [
                     { name => 'state' }, { name => 'ipSrc' }, { name => 'ipDst' }
                 ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output')
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
@@ -238,7 +238,7 @@ Check vpn.
 
 =item B<--filter-id>
 
-Filter by id (regexp can be used).
+Filter by ID (regexp can be used).
 
 =item B<--filter-src-ip>
 
@@ -250,18 +250,18 @@ Filter by dst ip (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{srcIp}, %{dstIp}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} eq "dead"').
-Can used special variables like: %{state}, %{srcIp}, %{dstIp}
+Define the conditions to match for the status to be WARNING (default: '%{state} eq "dead"').
+You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can used special variables like: %{state}, %{srcIp}, %{dstIp}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-*> B<--critical-*>
 

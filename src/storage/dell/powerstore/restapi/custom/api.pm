@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -133,7 +133,7 @@ sub get_port {
     return $self->{port};
 }
 
-sub get_metrics_by_clusters {
+sub get_performance_metrics_by_clusters {
     my ($self, %options) = @_;
 
     my $clusters = $self->request_api(endpoint => '/api/rest/cluster');
@@ -143,6 +143,33 @@ sub get_metrics_by_clusters {
         my $post_json = JSON::XS->new->utf8->encode(
             {
                 entity => 'performance_metrics_by_cluster',
+                entity_id => $_->{id},
+                interval => 'Five_Mins'
+            }
+        );
+
+        my $perfs = $self->request_api(
+            method => 'POST',
+            endpoint => '/api/rest/metrics/generate',
+            headers => ['Content-Type: application/json'],
+            query_form_post => $post_json
+        );
+        $results->{ $_->{id} } = $perfs;
+    }
+
+    return $results;
+}
+
+sub get_space_metrics_by_appliance {
+    my ($self, %options) = @_;
+
+    my $appliances = $self->request_api(endpoint => '/api/rest/appliance');
+
+    my $results = {};
+    foreach (@$appliances) {
+        my $post_json = JSON::XS->new->utf8->encode(
+            {
+                entity => 'space_metrics_by_appliance',
                 entity_id => $_->{id},
                 interval => 'Five_Mins'
             }
@@ -212,11 +239,11 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -228,7 +255,7 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =back
 

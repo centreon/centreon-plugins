@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -265,7 +265,7 @@ Check virtual machine integration services on hyper-v node.
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -273,16 +273,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -302,29 +302,29 @@ Filter by VM notes (can be a regexp).
 
 =item B<--filter-status>
 
-Filter virtual machine status (can be a regexp) (Default: 'running').
+Filter virtual machine status (can be a regexp) (default: 'running').
 
 =item B<--warning-global-status>
 
-Set warning threshold for status (Default: '%{integration_service_state} =~ /Update required/i').
-Can used special variables like: %{vm}, %{integration_service_state}, 
+Define the conditions to match for the status to be WARNING (default: '%{integration_service_state} =~ /Update required/i').
+You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--critical-global-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{vm}, %{integration_service_state}, 
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{primary_status} !~ /Ok/i').
-Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
+Define the conditions to match for the status to be CRITICAL (default: '%{primary_status} !~ /Ok/i').
+You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =back
 

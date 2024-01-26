@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged instry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub custom_usage_perfdata_ms {
         nlabel => $self->{nlabel},
         unit => 'ms',
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-        value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        value => sprintf('%.2f', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -46,7 +46,7 @@ sub custom_usage_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-        value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        value => sprintf('%.2f', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -701,7 +701,7 @@ Display statistics for watchers used by work-from-anywhere users.
 =item B<--warning-[country|isp|watcher]-*> B<--critical-[country|isp|watcher]-*> 
 
 Thresholds. Can be:
-'dtt-spent', 'errors-prct', 'full-time-network-spent',
+'dtt-spent', 'errors-prct', 'full-network-time-spent',
 'sessions', 'srt-spent', 'requests', 'redirect-time-avg',
 'loading-page', 'pages', 'processing', 'users', 'waiting-time-avg'.
 

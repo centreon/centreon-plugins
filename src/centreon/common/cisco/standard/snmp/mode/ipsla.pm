@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -949,17 +949,16 @@ Check RTT Controls (CISCO-RTT-MON)
 
 =item B<--filter-tag>
 
-Filter tag (Default: '.*')
+Filter tag (default: '.*')
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='opersense,CRITICAL,^(?!(ok)$)'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
@@ -967,7 +966,7 @@ Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDela
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
 'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
 'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 

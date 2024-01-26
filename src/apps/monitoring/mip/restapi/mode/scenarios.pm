@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -305,7 +305,7 @@ Example: --filter-counters='^status$'
 
 =item B<--filter-id>
 
-Filter scenarios by id (can be a regexp).
+Filter scenarios by ID (can be a regexp).
 
 =item B<--filter-display-name>
 
@@ -321,8 +321,8 @@ Filter scenarios by applicationn name (can be a regexp).
 
 =item B<--display-instance>
 
-Set the scenario display value (Default: '%{name}').
-Can used special variables like: %{name}, %{app_name}, %{display_name}, %{id}
+Set the scenario display value (default: '%{name}').
+You can use the following variables: %{name}, %{app_name}, %{display_name}, %{id}
 
 =item B<--memory>
 
@@ -330,18 +330,18 @@ Only check new result entries for scenarios.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical/i').
+You can use the following variables: %{status}, %{display}
 
 =back
 

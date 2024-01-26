@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,7 +189,7 @@ Hostname to query.
 
 =item B<--port>
 
-telnet port (Default: 23).
+telnet port (default: 23).
 
 =item B<--username>
 
@@ -201,7 +201,7 @@ telnet password.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--command-plink>
 
@@ -213,23 +213,21 @@ Use ssh (with plink) instead of telnet.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'temperature', 'si', 'disk', 'fan', 'voltage', 'psu', 'sensors'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan)
-Can also exclude specific instance: --filter=fan,F1.RS
+Exclude the items given as a comma-separated list (example: --filter=fan).
+You can also exclude items from specific instances: --filter=fan,F1.RS
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='fan,CRITICAL,^(?!(OK|NOT PRESENT)$)'
 
 =back

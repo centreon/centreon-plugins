@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -186,23 +186,23 @@ Filter vpn name with regexp.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{connectstatus} eq "disconnected"').
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{connectstatus} eq "disconnected"').
+You can use the following variables: %{activestatus}, %{connectstatus}, %{display}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,13 +120,13 @@ Check Polycom RPRM provisioning jobs
 
 =item B<--warning-provisioning-status>
 
-Custom Warning threshold of the provisioning state (Default: none)
+Custom Warning threshold of the provisioning state (default: none)
 Syntax: --warning-provisioning-status='%{provisioning_status} =~ /clear/i'
 
 =item B<--critical-provisioning-status>
 
 Custom Critical threshold of the provisioning state
-(Default: '%{provisioning_status} =~ /failed/i' )
+(default: '%{provisioning_status} =~ /failed/i' )
 Syntax: --critical-provisioning-status='%{provisioning_status} =~ /failed/i'
 
 =item B<--warning-* --critical-*>

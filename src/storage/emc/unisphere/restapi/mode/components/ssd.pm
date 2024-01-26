@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,7 +48,7 @@ sub check {
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
-                "ssd '%s' status is '%s' [instance = %s]",
+                "ssd '%s' status is '%s' [instance: %s]",
                 $name, $health, $instance
             )
         );

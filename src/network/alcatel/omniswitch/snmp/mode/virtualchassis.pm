@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,18 +132,18 @@ Check virtual chassis.
 
 =item B<--unknown-chassis-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{role}, %{status}, %{mac}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--warning-chassis-status>
 
-Set warning threshold for status.
-Can used special variables like: %{role}, %{status}, %{mac}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--critical-chassis-status>
 
-Set critical threshold for status (Default: %{status} !~ /init|running/)
-Can used special variables like: %{role}, %{status}, %{mac}
+Define the conditions to match for the status to be CRITICAL (default: %{status} !~ /init|running/)
+You can use the following variables: %{role}, %{status}, %{mac}
 
 =item B<--warning-*> B<--critical-*>
 

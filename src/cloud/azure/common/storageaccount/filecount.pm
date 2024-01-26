@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -155,12 +155,12 @@ Check storage account resources file count metric.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-count
 --resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filecount-average='10' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-count
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
@@ -172,11 +172,11 @@ Default aggregation: 'average' / Total and average are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-namespace>
 
@@ -185,11 +185,11 @@ Default: 'Microsoft.Storage'.
 
 =item B<--warning-filecount-*>
 
-Thresholds warning (* can be: 'average', 'total').
+Warning thresholds (* can be: 'average', 'total').
 
 =item B<--critical-filecount-*>
 
-Thresholds critical (* can be: 'average', 'total').
+Critical thresholds (* can be: 'average', 'total').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,7 +258,7 @@ Check interfaces.
 
 =item B<--add-global>
 
-Check global port statistics (By default if no --add-* option is set).
+Check global port statistics (by default if no --add-* option is set).
 
 =item B<--add-status>
 
@@ -298,27 +298,27 @@ Check interface optical metrics.
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
+If the expression is true, metrics are checked (default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-poe-status>
 
 Set warning threshold for poe status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
+You can use the following variables: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
 
 =item B<--critical-poe-status>
 
-Set critical threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
@@ -332,15 +332,15 @@ And also: 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'volta
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for communication types (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -348,11 +348,11 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
 
 =item B<--speed>
 
@@ -376,23 +376,21 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 
 Add an OID to display.
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value.
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value.
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

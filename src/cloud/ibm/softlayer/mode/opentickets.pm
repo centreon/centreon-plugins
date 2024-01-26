@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -154,25 +154,25 @@ Check if there is open tickets
 
 =item B<--ticket-group>
 
-Name of the ticket group (Can be a regexp).
+Name of the ticket group (can be a regexp).
 
 =item B<--warning-ticket>
 
-Set warning threshold for status.
-Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--critical-ticket>
 
-Set critical threshold for status.
-Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--warning-open>
 
-Threshold warning for open tickets.
+Warning threshold for open tickets.
 
 =item B<--critical-open>
 
-Threshold critical for open tickets.
+Critical threshold for open tickets.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,9 @@ use strict;
 use warnings;
 
 my %map_status = (
-    1 => 'active',
-    2 => 'inactive',
+    0 => 'Fail',
+    1 => 'Good',
+    2 => 'Not installed',
 );
 
 my $mapping = {

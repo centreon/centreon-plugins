@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,12 @@ sub check {
     $self->{output}->output_add(long_msg => 'checking shelfs');
     $self->{components}->{shelf} = { name => 'shelfs', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'shelf'));
-    return if (!defined($self->{json_results}->{records}));
 
-    foreach my $shelf (@{$self->{json_results}->{records}}) {
+    $self->get_shelves();
+
+    return if (!defined($self->{shelves}->{records}));
+
+    foreach my $shelf (@{$self->{shelves}->{records}}) {
         my $shelf_instance = $shelf->{serial_number};
         my $shelf_name = $shelf->{name};
 

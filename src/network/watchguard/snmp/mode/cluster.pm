@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -161,33 +161,33 @@ Check cluster.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status.
-Can used special variables like: %{state}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{state}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{role}, %{serial}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
-Can used special variables like: %{role}, %{serial}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{role}, %{serial}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
-Can used special variables like: %{role}, %{serial}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{role}, %{serial}
 
 =item B<--warning-*> B<--critical-*>
 

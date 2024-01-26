@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,13 +131,13 @@ Check Cisco changed and saved configurations (CISCO-CONFIG-MAN-MIB).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{running_last_changed} > %{running_last_saved}').
-Can used special variables like: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
+Define the conditions to match for the status to be CRITICAL (default: '%{running_last_changed} > %{running_last_saved}').
+You can use the following variables: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
 
 =back
 

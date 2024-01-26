@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -183,7 +183,7 @@ Hostname to query.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 45).
+Timeout in seconds for the command (default: 45).
 
 =item B<--command>
 
@@ -191,26 +191,26 @@ command to execute on the remote machine
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{exit_code} == 3').
-Can used special variables like: %{short_message}, %{exit_code}
+Define the conditions to match for the status to be UNKNOWN (default: '%{exit_code} == 3').
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{exit_code} == 1').
-Can used special variables like: %{short_message}, %{exit_code}
+Define the conditions to match for the status to be WARNING (default: '%{exit_code} == 1').
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{exit_code} == 2').
-Can used special variables like: %{short_message}, %{exit_code}
+Define the conditions to match for the status to be CRITICAL (default: '%{exit_code} == 2').
+You can use the following variables: %{short_message}, %{exit_code}
 
 =item B<--warning-time>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical-time>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

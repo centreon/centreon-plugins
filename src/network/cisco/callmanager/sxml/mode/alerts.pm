@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -225,7 +225,7 @@ Check alerts.
 
 =item B<--filter-alert-name>
 
-Filter alerts by name (Can use regexp).
+Filter alerts by name (can use regexp).
 
 =item B<--display-alerts>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -176,15 +176,15 @@ Check disk usages.
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--filter-name>
 
-Filter disk name. (Can be a regex)
+Filter disk name. (can be a regex)
 
 =item B<--units>
 

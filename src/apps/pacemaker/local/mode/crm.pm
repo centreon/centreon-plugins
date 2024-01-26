@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -469,43 +469,43 @@ Filter resource (also clone resource) by name (can be a regexp).
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
-Can used special variables like: %{connection_status}, %{connection_error}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status (Default: '%{connection_status} =~ /failed/i').
-Can used special variables like: %{connection_status}, %{connection_error}
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_status} =~ /failed/i').
+You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--warning-quorum-status>
 
-Set warning threshold for status.
-Can used special variables like: %{quorum_status}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{quorum_status}
 
 =item B<--critical-quorum-status>
 
-Set critical threshold for status (Default: '%{quorum_status} =~ /noQuorum/i').
-Can used special variables like: %{quorum_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{quorum_status} =~ /noQuorum/i').
+You can use the following variables: %{quorum_status}
 
 =item B<--warning-resource-status>
 
-Set warning threshold for status.
-Can used special variables like: %{name}, %{status}, %{node}, %{is_unmanaged}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged}
 
 =item B<--critical-resource-status>
 
-Set critical threshold for status (Default: '%{status} =~ /stopped|failed/i').
-Can used special variables like: %{name}, %{status}, %{node}, %{is_unmanaged}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /stopped|failed/i').
+You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged}
 
 =item B<--warning-clone-resource-status>
 
-Set warning threshold for status.
-Can used special variables like: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
 
 =item B<--critical-clone-resource-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
+You can use the following variables: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
 
 =item B<--ignore-failed-actions>
 

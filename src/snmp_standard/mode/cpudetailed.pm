@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -262,12 +262,12 @@ An average of all CPUs.
 
 =item B<--warning-*>
 
-Threshold warning in percent.
+Warning threshold in percent.
 Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
 =item B<--critical-*>
 
-Threshold critical in percent.
+Critical threshold in percent.
 Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
 =back

@@ -1,4 +1,4 @@
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,7 +102,7 @@ Check power-supplies.
 
 =item B<--filter-engine-id>
 
-Filter power supplies by engine id (can be a regexp).
+Filter power supplies by engine ID (can be a regexp).
 
 =item B<--filter-psu-name>
 
@@ -110,23 +110,23 @@ Filter power supplies by power supply name (can be a regexp).
 
 =item B<--warning-operational-status>
 
-Set warning threshold for status.
-Can used special variables like: %{operational_status}, %{engine_id}, %{psu_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{operational_status}, %{engine_id}, %{psu_name}
 
 =item B<--critical-operational-status>
 
-Set critical threshold for status (Default: '%{operational_status} ne "online"').
-Can used special variables like: %{operational_status}, %{engine_id}, %{psu_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{operational_status} ne "online"').
+You can use the following variables: %{operational_status}, %{engine_id}, %{psu_name}
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status.
-Can used special variables like: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{operational_status} ne "online"').
-Can used special variables like: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
+Define the conditions to match for the status to be CRITICAL (default: '%{operational_status} ne "online"').
+You can use the following variables: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,7 +147,7 @@ Check Synthetic Monitor availability.
 
 =item B<--relative-time>
 
-Set request relative time (Default: '30min').
+Set request relative time (default: '30min').
 Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
 
 =item B<--filter-synthetic>

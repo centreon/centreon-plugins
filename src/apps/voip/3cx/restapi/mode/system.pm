@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,18 +189,18 @@ Filter updates' category.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{error}, %{service}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{error}, %{service}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{error}, %{service}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{error}, %{service}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{error} =~ /false/').
-Can used special variables like: %{error}, %{service}
+Define the conditions to match for the status to be CRITICAL (default: '%{error} =~ /false/').
+You can use the following variables: %{error}, %{service}
 
 =item B<--warning-*> B<--critical-*>
 

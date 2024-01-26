@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use POSIX;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -77,7 +77,8 @@ sub run {
         threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
     );
     $self->{output}->perfdata_add(
-        label => 'uptime', unit => 's',
+        nlabel => 'system.uptime.seconds',
+        unit => 's',
         value => floor($uptime),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -111,11 +112,11 @@ Command used: cat /proc/uptime 2>&1
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =item B<--seconds>
 

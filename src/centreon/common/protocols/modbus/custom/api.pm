@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -183,19 +183,19 @@ Example: --rtu-port=/dev/ttyUSB0
 
 =item B<--rtu-baudrate>  
 
-A valid baud rate (Default: 9600)
+A valid baud rate (default: 9600)
 
 =item B<--rtu-databits>
 
-An integer from 5 to 8 (Default: 8)
+An integer from 5 to 8 (default: 8)
 
 =item B<--rtu-parity>
 
-Either 'even', 'odd' or 'none' (Default: none)
+Either 'even', 'odd' or 'none' (default: none)
 
 =item B<--rtu-stopbits>
 
-1 or 2 (Default: 1)
+1 or 2 (default: 1)
 
 =item B<--tcp-host>
 
@@ -203,11 +203,11 @@ Host address
 
 =item B<--tcp-port>
 
-Host port (Default: 502)
+Host port (default: 502)
 
 =item B<--timeout>
 
-Timeout in seconds (Default: 10)
+Timeout in seconds (default: 10)
 
 =back
 

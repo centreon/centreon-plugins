@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,8 +34,14 @@ sub custom_status_output {
         $self->{result_values}->{subject}, $self->{result_values}->{expiration}, $self->{result_values}->{date},
         $self->{result_values}->{issuer}
     );
+    if (defined($self->{result_values}->{verify_hostname}) && $self->{result_values}->{verify_hostname} eq 'FAILED') {
+        $msg .= sprintf(" - Verify hostname status '%s'", $self->{result_values}->{verify_hostname});
+    }
     if (defined($self->{result_values}->{alt_subjects}) && $self->{result_values}->{alt_subjects} ne '') {
         $self->{output}->output_add(long_msg => sprintf("Alternative subject names: %s.", $self->{result_values}->{alt_subjects}));
+    }
+    if (defined($self->{result_values}->{verify_hostname}) && $self->{result_values}->{verify_hostname} ne '-') {
+        $self->{output}->output_add(long_msg => sprintf("Verify hostname result: %s.", $self->{result_values}->{verify_hostname}));
     }
     return $msg;
 }
@@ -48,6 +54,7 @@ sub custom_status_calc {
     $self->{result_values}->{expiration} = ($options{new_datas}->{$self->{instance} . '_expiration'} - time()) / 86400;
     $self->{result_values}->{date} = $options{new_datas}->{$self->{instance} . '_date'};
     $self->{result_values}->{alt_subjects} = $options{new_datas}->{$self->{instance} . '_alt_subjects'};
+    $self->{result_values}->{verify_hostname} = $options{new_datas}->{$self->{instance} . '_verify_hostname'};
     return 0;
 }
 
@@ -63,11 +70,13 @@ sub set_counters {
             label => 'status', type => 2,
             warning_default => '%{expiration} < 60',
             critical_default => '%{expiration} < 30',
+            unknown_default => '%{verify_hostname} eq "FAILED"',
             set => {
                 key_values => [
                     { name => 'subject' }, { name => 'issuer' },
                     { name => 'expiration' }, { name => 'date' },
-                    { name => 'alt_subjects' }
+                    { name => 'alt_subjects' },
+                    { name => 'verify_hostname' },
                 ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -99,7 +108,9 @@ sub manage_selection {
         issuer => defined($cert->{issuer}) ? $cert->{issuer} : '-',
         expiration => $cert->{expiration},
         date => $cert->{expiration_date},
-        alt_subjects => $cert->{alt_subjects}
+        alt_subjects => $cert->{alt_subjects},
+        verify_hostname => defined($cert->{verify_hostname})
+            ? ($cert->{verify_hostname} ? "OK" : "FAILED") : '-',
     };
 }
 
@@ -115,12 +126,12 @@ Check X509's certificate validity (for SMTPS, POPS, IMAPS, HTTPS)
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{expiration} < 60').
+Define the conditions to match for the status to be WARNING. (default: '%{expiration} < 60').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{expiration} < 30').
+Define the conditions to match for the status to be CRITICAL. (default: '%{expiration} < 30').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 Examples :

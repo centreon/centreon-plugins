@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -274,18 +274,18 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_index}) && $self->{option_results}->{filter_index} ne '' &&
             $index !~ /$self->{option_results}->{filter_index}/);
-        next if ($qtree ne '' && defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
+        next if (defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
             $qtree !~ /$self->{option_results}->{filter_qtree}/);
-        next if ($volume ne '' && defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
+        next if (defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
             $volume !~ /$self->{option_results}->{filter_volume}/);
-        next if ($vserver ne '' &&defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+        next if (defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
             $vserver !~ /$self->{option_results}->{filter_vserver}/);
 
         my $path = $vserver . $volume . $qtree;
         $self->{duplicated}->{$path} = 0 if (!defined($self->{duplicated}->{$path}));
         $self->{duplicated}->{$path}++;
 
-        $self->{quotas}->{$index} = {
+        $self->{quotas}->{$path . $index} = {
             index => $index,
             qtree => $qtree,
             volume => $volume,

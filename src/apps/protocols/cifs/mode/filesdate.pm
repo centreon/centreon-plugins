@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,10 +89,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'directory:s@' => { name => 'directory' },
-        'file:s@'      => { name => 'file' },
-        'timezone:s'   => { name => 'timezone' },
-        'unit:s'       => { name => 'unit', default => 's' }
+        'filter-file:s' => { name => 'filter_file' },
+        'directory:s@'  => { name => 'directory' },
+        'file:s@'       => { name => 'file' },
+        'timezone:s'    => { name => 'timezone' },
+        'unit:s'        => { name => 'unit', default => 's' }
     });
 
     return $self;
@@ -155,6 +156,9 @@ sub manage_selection {
 
             my $name = $dir . '/' . $file->[1];
 
+            next if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
+                $name !~ /$self->{option_results}->{filter_file}/);
+
             $rv = $options{custom}->stat_file(file => $name);
             if ($rv->{code} != 0) {
                 $self->{output}->add_option_msg(short_msg => "cannot stat file '" . $name . "': " . $rv->{message});
@@ -200,11 +204,15 @@ Check modified time of files.
 
 =item B<--directory>
 
-Check files in the directory (no recursive) (Multiple option)
+Check files in the directory (no recursive) (multiple option)
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option)
+
+=item B<--filter-file>
+
+Filter files (can be a regexp. Directory in the name).
 
 =item B<--timezone>
 
@@ -213,8 +221,7 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--unit>
 
-Select the unit for modified time threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the modified time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

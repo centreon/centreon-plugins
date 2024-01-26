@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -263,12 +263,12 @@ Check IP Label Ekara incidents.
 
 =item B<--timeframe>
 
-Set timeframe period in seconds. (Default: 900)
+Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
 
 =item B<--filter-id>
 
-Filter by monitor id (can be a regexp).
+Filter by monitor ID (can be a regexp).
 
 =item B<--filter-name>
 
@@ -280,36 +280,36 @@ Ignore solved incidents within the timeframe.
 
 =item B<--warning-incident-status>
 
-Warning threshold for incident status (Default: none).
+Warning threshold for incident status (default: none).
 Syntax: --warning-incident-status='%{status} =~ "xxx"'
 Can be 'Open' or 'Closed'
 
 =item B<--critical-incident-status>
 
-Critical threshold for incident status (Default: '%{status} =~ "Open"').
+Critical threshold for incident status (default: '%{status} =~ "Open"').
 Syntax: --critical-incident-status='%{status} =~ "xxx"'
 Can be 'Open' or 'Closed'
 
 =item B<--warning-incident-severity>
 
-Warning threshold for incident severity (Default: none).
+Warning threshold for incident severity (default: none).
 Syntax: --warning-incident-severity='%{severity} =~ "xxx"'
 
 =item B<--critical-incident-severity>
 
-Critical threshold for incident severity (Default: '%{severity} =~ "Critical"').
+Critical threshold for incident severity (default: '%{severity} =~ "Critical"').
 Syntax: --critical-incident-severity='%{severity} =~ "xxx"'
 
 =item B<--warning-trigger-status>
 
-Warning threshold for trigger status (Default: none).
+Warning threshold for trigger status (default: none).
 Syntax: --warning-trigger-status='%{status} =~ "xxx"'
 Can be 'Unknown', 'Success', 'Failure', 'Aborted', 'No execution',
 'Stopped', 'Excluded', 'Degraded'
 
 =item B<--critical-trigger-status>
 
-Critical threshold for trigger status (Default: '%{severity} =~ "Failure"').
+Critical threshold for trigger status (default: '%{severity} =~ "Failure"').
 Syntax: --critical-trigger-status='%{status} =~ "xxx"'
 Can be 'Unknown', 'Success', 'Failure', 'Aborted', 'No execution',
 'Stopped', 'Excluded', 'Degraded'

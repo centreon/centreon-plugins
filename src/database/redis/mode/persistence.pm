@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -139,23 +139,23 @@ Check RDB persistence status.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{progress_status} =~ /in progress/i').
-Can used special variables like: %{progress_status}, %{status}
+Define the conditions to match for the status to be WARNING (default: '%{progress_status} =~ /in progress/i').
+You can use the following variables: %{progress_status}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /fail/i').
-Can used special variables like: %{progress_status}, %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /fail/i').
+You can use the following variables: %{progress_status}, %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'changes', 'last-save', 'save-size', 
 'last-save-duration', 'current-save-duration'.
 

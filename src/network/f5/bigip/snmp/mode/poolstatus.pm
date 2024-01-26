@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -190,6 +190,7 @@ sub add_members {
     my $oid_status = $options{map} eq 'new' ? '.1.3.6.1.4.1.3375.2.2.5.6.2.1.5' : '.1.3.6.1.4.1.3375.2.2.5.3.2.1.15';
     my $snmp_result = $options{snmp}->get_table(oid => $oid_status);
 
+    my $loaded = 0;
     foreach my $oid (keys %$snmp_result) {
         $oid =~ /^$oid_status\.(.*)$/;
         my $instance = $1;
@@ -202,6 +203,7 @@ sub add_members {
 
         next if (!defined($self->{pools}->{$poolInstance}));
 
+        $loaded = 1;
         $options{snmp}->load(
             oids => [ map($_->{oid}, values(%{$mapping_members->{ $options{map} }})) ], 
             instances => [$instance], 
@@ -215,6 +217,8 @@ sub add_members {
             status => $map_pool_status->{ $snmp_result->{$oid} }
         };
     }
+
+    return if ($loaded == 0);
 
     $snmp_result = $options{snmp}->get_leef();
     foreach (keys %$snmp_result) {
@@ -328,33 +332,33 @@ Filter by name (regexp can be used).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{status}, %{membersAllDisabled}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
-Can used special variables like: %{state}, %{status}, %{membersAllDisabled}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "yellow"').
+You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
-Can used special variables like: %{state}, %{status}, %{membersAllDisabled}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{membersAllDisabled} eq "no" and %{state} eq "enabled" and %{status} eq "red"').
+You can use the following variables: %{state}, %{status}, %{membersAllDisabled}, %{display}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{status}, %{poolName}, %{nodeName}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}, %{status}, %{poolName}, %{nodeName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
-Can used special variables like: %{state}, %{status}, %{poolName}, %{nodeName}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
 =item B<--warning-*> B<--critical-*>
 

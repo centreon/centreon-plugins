@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,18 +131,18 @@ Search in following datacenter(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
-Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+Define the conditions to match for the status to be UNKNOWN (default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
-Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+Define the conditions to match for the status to be WARNING (default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
-Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
+Define the conditions to match for the status to be CRITICAL (default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
+You can use the following variables: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =back
 

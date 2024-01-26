@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,10 +28,10 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $label = $self->{nlabel};
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        $label = 'storage.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -42,8 +42,9 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $label,
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
@@ -110,7 +111,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{disks} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'storage.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -123,7 +124,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -198,15 +199,15 @@ Command used: df -P -k -T 2>&1
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

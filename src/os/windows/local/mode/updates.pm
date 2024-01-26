@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'pending-updates', nlabel => 'windows.pending.updates.count', set => {
                 key_values => [ { name => 'num' } ],
-                output_template => 'windows pending updates: %s',
+                output_template => 'pending Windows updates: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -149,13 +149,13 @@ __END__
 
 =head1 MODE
 
-Check windows pending updates.
+Check pending Windows updates.
 
 =over 8
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -163,16 +163,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -182,13 +182,17 @@ Display powershell script.
 
 Print powershell output.
 
+=item B<--filter-mandatory>
+
+Filter only mandatory Windows updates.
+
 =item B<--filter-title>
 
-Filter windows updates by title (can be a regexp).
+Filter Windows updates by title (can be a regexp).
 
 =item B<--exclude-title>
 
-Exclude windows updates by title (regexp can be used).
+Exclude Windows updates by title (can be a regexp).
 
 =item B<--display-updates>
 

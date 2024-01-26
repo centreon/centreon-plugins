@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -307,11 +307,11 @@ Check udp connections.
 
 =item B<--warning>
 
-Threshold warning for total connections.
+Warning threshold for total connections.
 
 =item B<--critical>
 
-Threshold critical for total connections.
+Critical threshold for total connections.
 
 =item B<--service>
 

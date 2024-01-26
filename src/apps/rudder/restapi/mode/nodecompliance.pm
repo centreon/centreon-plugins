@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,13 +175,13 @@ Set critical threshold on node compliance.
 
 =item B<--warning-status>
 
-Set warning threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
+Define the conditions to match for the status to be WARNING of rule compliance (default: '').
+You can use the following variables: %{rule}, %{compliance}
 
 =item B<--critical-status>
 
-Set critical threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
+Define the conditions to match for the status to be CRITICAL of rule compliance (default: '').
+You can use the following variables: %{rule}, %{compliance}
 
 Example :
   --critical-status='%{rule} eq "Global configuration for all nodes" && %{compliance} < 95'

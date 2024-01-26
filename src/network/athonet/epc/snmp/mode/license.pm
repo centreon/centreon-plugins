@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -351,18 +351,17 @@ Example: --filter-counters='users'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /expired|invalid/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired|invalid/i').
 Can use special variables like: %{status}
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is days.
+Select the time unit for the expiration threshold. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is days.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -154,7 +154,7 @@ Interface name to check (0 by default).
 
 =item B<--ip>
 
-Set IP Address to monitor (Required).
+Set IP Address to monitor (required).
 
 =item B<--warning-*> B<--critical-*>
 

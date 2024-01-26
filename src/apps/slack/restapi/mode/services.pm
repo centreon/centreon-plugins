@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,15 +160,15 @@ Check Slack services status.
 =item B<--filter-name>
 
 Only display the status for a specific servie
-(Example: --filter-service='connections')
+(example: --filter-service='connections')
 
 =item B<--warning-status>
 
-Set warning threshold for the service status (Default: '%{status} eq "active" and %{type} eq "incident"').
+Set warning threshold for the service status (default: '%{status} eq "active" and %{type} eq "incident"').
 
 =item B<--critical-status>
 
-Set warning threshold for the service status (Default: '%{status} eq "active" and %{type} eq "outage"').
+Set warning threshold for the service status (default: '%{status} eq "active" and %{type} eq "outage"').
 
 =back
 

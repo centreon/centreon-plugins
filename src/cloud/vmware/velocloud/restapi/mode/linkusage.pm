@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,10 +189,10 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}} = {
+        $self->{edges}->{ $edge->{name} } = {
             id => $edge->{id},
             display => $edge->{name},
-            global => {},
+            global => { link_count => 0, traffic_in => 0, traffic_out => 0 },
             links => {}
         };
 
@@ -208,8 +208,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{link_count}++;
+            $self->{edges}->{ $edge->{name} }->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 traffic_out => int($link->{bytesTx} * 8 / $self->{timeframe}),
@@ -221,12 +221,12 @@ sub manage_selection {
                 packet_loss_out => $link->{bestLossPctTx},
                 packet_loss_in => $link->{bestLossPctRx}
             };
-            if (!defined($self->{edges}->{$edge->{name}}->{global}->{traffic_in})) {
-                $self->{edges}->{$edge->{name}}->{global}->{traffic_in} = 0;
-                $self->{edges}->{$edge->{name}}->{global}->{traffic_out} = 0;
+            if (!defined($self->{edges}->{ $edge->{name} }->{global}->{traffic_in})) {
+                $self->{edges}->{ $edge->{name} }->{global}->{traffic_in} = 0;
+                $self->{edges}->{ $edge->{name} }->{global}->{traffic_out} = 0;
             }
-            $self->{edges}->{$edge->{name}}->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
-            $self->{edges}->{$edge->{name}}->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
+            $self->{edges}->{ $edge->{name} }->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
+            $self->{edges}->{ $edge->{name} }->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
         }
     }
 
@@ -248,11 +248,11 @@ Check links usage per edges.
 
 =item B<--filter-edge-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--filter-link-name>
 
-Filter link by name (Can be a regexp).
+Filter link by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

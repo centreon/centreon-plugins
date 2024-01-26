@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -308,25 +308,25 @@ Check brokers.
 
 =item B<--filter-broker-name>
 
-Filter broker name (Can be a regexp).
+Filter broker name (can be a regexp).
 
 =item B<--filter-destination-name>
 
-Filter destination name (Can be a regexp).
+Filter destination name (can be a regexp).
 
 =item B<--filter-destination-type>
 
-Filter destination type (Can be a regexp).
+Filter destination type (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Good/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Good/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

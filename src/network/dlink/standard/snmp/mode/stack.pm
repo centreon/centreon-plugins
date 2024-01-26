@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -244,33 +244,33 @@ Check stack.
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '%{status} =~ /codeUpdate/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /codeUpdate/i').
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
-Can used special variables like: %{role}, %{roleLast}, %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} || %{status} =~ /unsupported|codeMismatch/i').
+You can use the following variables: %{role}, %{roleLast}, %{status}, %{display}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{status} eq "down"').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "down"').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

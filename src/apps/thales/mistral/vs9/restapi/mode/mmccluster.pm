@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,33 +140,33 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status  (Default: '%{replicationStatus} =~ /unknown/i').
-Can used special variables like: %{enabled}, %{replicationStatus}
+Define the conditions to match for the status to be UNKNOWN  (default: '%{replicationStatus} =~ /unknown/i').
+You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{replicationStatus} =~ /not_synchronized/i').
-Can used special variables like: %{enabled}, %{replicationStatus}
+Define the conditions to match for the status to be WARNING (default: '%{replicationStatus} =~ /not_synchronized/i').
+You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} =~ /disconnected/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /disconnected/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

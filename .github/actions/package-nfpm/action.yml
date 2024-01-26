@@ -1,0 +1,120 @@
+name: package-nfpm
+description: Package module using nfpm
+inputs:
+  nfpm_file_pattern:
+    description: The pattern of the nfpm configuration file(s)
+    required: true
+  package_extension:
+    description: The package extension (deb or rpm)
+    required: true
+  distrib:
+    description: The package distrib
+    required: true
+  major_version:
+    description: The major version
+    required: false
+  minor_version:
+    description: The minor version
+    required: false
+  release:
+    description: The package release number
+    required: false
+  arch:
+    description: The package architecture
+    required: false
+  commit_hash:
+    description: The commit hash
+    required: true
+  cache_key:
+    description: The package files cache key
+    required: true
+  rpm_gpg_key:
+    description: The rpm gpg key
+    required: true
+  rpm_gpg_signing_key_id:
+    description: The rpm gpg signing key identifier
+    required: true
+  rpm_gpg_signing_passphrase:
+    description: The rpm gpg signing passphrase
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Remove previously packaged DEBs and RPMs
+      run: |
+        rm -f ./*.deb
+        rm -f ./*.rpm
+      shell: bash
+
+    - name: Import gpg key
+      env:
+        RPM_GPG_SIGNING_KEY: ${{ inputs.rpm_gpg_key }}
+      run: echo -n "$RPM_GPG_SIGNING_KEY" > key.gpg
+      shell: bash
+
+    - name: Build ${{ inputs.package_extension }} files
+      env:
+        RPM_GPG_SIGNING_KEY_ID: ${{ inputs.rpm_gpg_signing_key_id }}
+        RPM_GPG_SIGNING_PASSPHRASE: ${{ inputs.rpm_gpg_signing_passphrase }}
+      run: |
+        export MAJOR_VERSION="${{ inputs.major_version }}"
+        export VERSION="${{ inputs.major_version }}.${{ inputs.minor_version }}"
+        export RELEASE="${{ inputs.release }}"
+        export ARCH="${{ inputs.arch }}"
+
+        if  [ "${{ inputs.package_extension }}" = "rpm" ]; then
+          export DIST=".${{ inputs.distrib }}"
+          export APACHE_USER="apache"
+          export APACHE_GROUP="apache"
+        else
+          export DIST=""
+          export APACHE_USER="www-data"
+          export APACHE_GROUP="www-data"
+        fi
+
+        MAJOR_LEFT=$( echo $MAJOR_VERSION | cut -d "." -f1 )
+        MAJOR_RIGHT=$( echo $MAJOR_VERSION | cut -d "-" -f1 | cut -d "." -f2 )
+        BUMP_MAJOR_RIGHT=$(( MAJOR_RIGHT_PART + 1 ))
+        if [ "$MAJOR_RIGHT" = "04" ]; then
+          BUMP_MAJOR_LEFT="$MAJOR_LEFT"
+          BUMP_MAJOR_RIGHT="10"
+        else
+          BUMP_MAJOR_LEFT=$(( $MAJOR_LEFT + 1 ))
+          BUMP_MAJOR_RIGHT="04"
+        fi
+
+        export NEXT_MAJOR_VERSION="$BUMP_MAJOR_LEFT.$BUMP_MAJOR_RIGHT"
+
+        export RPM_SIGNING_KEY_FILE="$(pwd)/key.gpg"
+        export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
+        export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
+
+        for FILE in ${{ inputs.nfpm_file_pattern }}; do
+          DIRNAME=$(dirname $FILE)
+          BASENAME=$(basename $FILE)
+          cd $DIRNAME
+          sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
+          sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
+          sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
+          nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
+          cd -
+          mv $DIRNAME/*.${{ inputs.package_extension }} ./
+        done
+      shell: bash
+
+    - name: Cache packages
+      uses: actions/cache/save@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+      with:
+        path: ./*.${{ inputs.package_extension }}
+        key: ${{ inputs.cache_key }}
+
+    # Update if condition to true to get packages as artifacts
+    - if: ${{ false }}
+      name: Upload package artifacts
+      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      with:
+        name: packages-${{ inputs.distrib }}
+        path: ./*.${{ inputs.package_extension}}
+        retention-days: 1

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,18 +201,18 @@ Filter stores by hostname.
 
 =item B<--unknown-health>
 
-Set unknown threshold for status (Default: '%{health} =~ /unknown/i').
-Can used special variables like: %{health}, %{name}
+Define the conditions to match for the status to be UNKNOWN (default: '%{health} =~ /unknown/i').
+You can use the following variables: %{health}, %{name}
 
 =item B<--warning-health>
 
-Set warning threshold for status (Default: '%{health} =~ /warning/i').
-Can used special variables like: %{health}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /warning/i').
+You can use the following variables: %{health}, %{name}
 
 =item B<--critical-health>
 
-Set critical threshold for status (Default: '%{health} =~ /critical/i').
-Can used special variables like: %{health}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /critical/i').
+You can use the following variables: %{health}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

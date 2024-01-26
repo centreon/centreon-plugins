@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,7 +52,7 @@ sub custom_uptime_perfdata {
     $self->{output}->perfdata_add(
         label => 'uptime', unit => $self->{instance_mode}->{option_results}->{unit},
         nlabel => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        value => sprintf("%.2f", $self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -63,7 +63,7 @@ sub custom_uptime_threshold {
     my ($self, %options) = @_;
 
     return $self->{perfdata}->threshold_check(
-        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        value => sprintf("%.2f", $self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         threshold => [
             { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
             { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
@@ -193,11 +193,11 @@ Check system uptime.
 
 =item B<--warning-uptime>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-uptime>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--add-sysdesc>
 
@@ -214,13 +214,12 @@ With that option, we manage the counter going back. But there is a few chance we
 
 =item B<--reboot-window>
 
-To be used with check-overload option. Time in milliseconds (Default: 5000)
+To be used with check-overload option. Time in milliseconds (default: 5000)
 You increase the chance of not missing a reboot if you decrease that value.
 
 =item B<--unit>
 
-Select the unit for performance data and thresholds. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks.  Default is seconds
+Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =back
 

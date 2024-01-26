@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -197,27 +197,27 @@ Check system status.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='rate')
+(example: --filter-counters='rate')
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{activated} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{activated} !~ /true/i').
 Can use special variables like: %{activated}, %{cluster_enabled}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-legs', 'completed-legs', 'audio-outgoing-rate',
 'audio-incoming-rate', 'video-outgoing-rate', 'video-incoming-rate'.
 

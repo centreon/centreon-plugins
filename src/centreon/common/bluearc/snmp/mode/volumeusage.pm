@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -220,13 +220,13 @@ Filter volume name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /needsChecking/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /needsChecking/i').
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: -).
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: -).
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
@@ -235,7 +235,7 @@ Can be: 'usage'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

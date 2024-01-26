@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -421,7 +421,7 @@ Check SAP QoS usage.
 
 =item B<--display-name>
 
-Display name (Default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
+Display name (default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
 Can also be: %{SapDescription}, %{SapPortId}
 
 =item B<--filter-name>
@@ -446,26 +446,26 @@ Set interface speed for total outgoing traffic (in Mb).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
 Set warning threshold for ib status.
-Can used special variables like: %{admin}, %{status}, %{display}
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for ib status (Default: '%{admin} =~ /up/i and %{status} !~ /up/i').
-Can used special variables like: %{admin}, %{status}, %{display}
+Set critical threshold for ib status (default: '%{admin} =~ /up/i and %{status} !~ /up/i').
+You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--reload-cache-time>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -111,11 +111,13 @@ sub get_port {
 
 sub internal_api_list_nodes {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
@@ -139,7 +141,9 @@ sub internal_api_info {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . '/machine/',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
@@ -157,12 +161,13 @@ sub internal_api_info {
 
 sub internal_api_list_containers {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => ''
     );
+
     my $containers = [];
     my $containers_ids;
     eval {
@@ -209,10 +214,13 @@ sub internal_api_list_containers {
 
 sub internal_api_get_machine_stats {
     my ($self, %options) = @_;
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . '/machine',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
+
     my $machine_stats;
     my $full_machine_stats;
     eval {
@@ -239,6 +247,7 @@ sub internal_api_get_container_stats {
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path} . '/' . $options{container_id},
         unknown_status => '', critical_status => '', warning_status => ''
     );
+
     my $container_stats;
     my $full_container_stats;
     eval {
@@ -251,8 +260,15 @@ sub internal_api_get_container_stats {
             short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
         );
     } else {
-        $container_stats->[0] = $full_container_stats->{stats}[0];
-        $container_stats->[1] = $full_container_stats->{stats}[scalar(@{$full_container_stats->{stats}}) - 1];
+        my $stats;
+        if (defined($full_container_stats->{stats})) {
+            $stats = $full_container_stats->{stats};
+        } else {
+            my @keys = keys(%$full_container_stats);
+            $stats = $full_container_stats->{ $keys[0] }->{stats};
+        }
+        $container_stats->[0] = $stats->[0];
+        $container_stats->[1] = $stats->[scalar(@$stats) - 1];
     }
     return $container_stats;
 }
@@ -358,43 +374,43 @@ IP Addr/FQDN of the cadvisor node (can be multiple).
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-path>
 
-Path used (Default: '/containers/docker')
+Define the path of the endpoint to query  (default: '/containers/docker')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Threshold for HTTP timeout (default: 10)
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify certificate to send to the web server
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify key to send to the web server
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify root certificate to send to the web server
 
 =item B<--cert-pwd>
 
@@ -402,7 +418,7 @@ Specify certificate's password
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
+Specify that the type of certificate is PKCS1.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,7 +49,8 @@ sub new {
             'token:s'       => { name => 'token' },
             'timeout:s'     => { name => 'timeout' },
             'limit:s'       => { name => 'limit' },
-            'config-file:s' => { name => 'config_file' }
+            'config-file:s' => { name => 'config_file' },
+            'namespace:s'   => { name => 'namespace' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -71,18 +72,20 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{token} = (defined($self->{option_results}->{token})) ? $self->{option_results}->{token} : '';
     $self->{limit} = (defined($self->{option_results}->{limit})) && $self->{option_results}->{limit} =~ /(\d+)/ ? $1 : 100;
- 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    $self->{namespace} = defined($self->{option_results}->{namespace}) && $self->{option_results}->{namespace} ne '' ?
+        $self->{option_results}->{namespace} : '';
+
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{token}) || $self->{token} eq '') {
+    if ($self->{token} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --token option.");
         $self->{output}->option_exit();
     }
@@ -116,10 +119,13 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings;
+    $self->settings();
 
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} .
-        ':' . $self->{port} . $options{url_path} . "'", debug => 1);
+    $self->{output}->output_add(
+        long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} .
+        ':' . $self->{port} . $options{url_path} . "'",
+        debug => 1
+    );
 
     my $response = $self->{http}->request(%options);
 
@@ -153,7 +159,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $response");
         $self->{output}->option_exit();
     }
-    
+
     return $decoded;
 }
 
@@ -163,7 +169,7 @@ sub request_api_paginate {
     my @items;
     my @get_param = ( 'limit=' . $self->{limit} );
     push @get_param, @{$options{get_param}} if (defined($options{get_param}));
-    
+
     while (1) {
         my $response = $self->request_api(
             method => $options{method},
@@ -183,105 +189,141 @@ sub request_api_paginate {
 
 sub kubernetes_list_cronjobs {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/batch/v1beta1/cronjobs');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/batch/v1beta1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1beta1/cronjobs'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/daemonsets');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/apps/v1/namespaces/' . $self->{namespace} . '/daemonsets' : '/apis/apps/v1/daemonsets'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_deployments {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/deployments');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/apps/v1/namespaces/' . $self->{namespace} . '/deployments' : '/apis/apps/v1/deployments'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_events {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/events');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/api/v1/namespaces/' . $self->{namespace} . '/events' : '/api/v1/events'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_ingresses {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/extensions/v1beta1/ingresses');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/extensions/v1beta1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/extensions/v1beta1/ingresses'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_namespaces {
     my ($self, %options) = @_;
-        
+
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/namespaces');
-    
+
     return $response;
 }
 
 sub kubernetes_list_nodes {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/nodes');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => '/api/v1/nodes'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_rcs {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/replicationcontrollers');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/api/v1/namespaces/' . $self->{namespace} . '/replicationcontrollers' : '/api/v1/replicationcontrollers'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_replicasets {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/replicasets');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/apps/v1/namespaces/' . $self->{namespace} . '/replicasets' : '/apis/apps/v1/replicasets'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_services {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/v1/services');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/api/v1/namespaces/' . $self->{namespace} . '/services' : '/api/v1/services'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_statefulsets {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/statefulsets');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/apis/apps/v1/namespaces/' . $self->{namespace} . '/statefulsets' :  '/apis/apps/v1/statefulsets'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_pods {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/pods');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $self->{namespace} ne '' ? '/api/v1/namespaces/' . $self->{namespace} . '/pods' : '/api/v1/pods'
+    );
+
     return $response;
 }
 
 sub kubernetes_list_pvs {
     my ($self, %options) = @_;
-        
-    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/persistentvolumes');
-    
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => '/api/v1/persistentvolumes'
+    );
+
     return $response;
 }
 
@@ -309,11 +351,11 @@ Kubernetes API hostname.
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--timeout>
 
@@ -324,6 +366,10 @@ Set HTTP timeout
 Number of responses to return for each list calls.
 
 See https://kubernetes.io/docs/reference/kubernetes-api/common-parameters/common-parameters/#limit
+
+=item B<--namespace>
+
+Set namespace to get informations.
 
 =back
 

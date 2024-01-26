@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,18 +135,18 @@ Filter by firewalls by serial (can be a regexp).
 
 =item B<--unknown-service-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{health}, %{service}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{health}, %{service}
 
 =item B<--warning-service-status>
 
-Set warning threshold for status (Default: '%{health} =~ /minor/i').
-Can used special variables like: %{health}, %{service}
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /minor/i').
+You can use the following variables: %{health}, %{service}
 
 =item B<--critical-service-status>
 
-Set critical threshold for status (Default: '%{health} =~ /major/i').
-Can used special variables like: %{health}, %{service}
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /major/i').
+You can use the following variables: %{health}, %{service}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,7 +135,9 @@ Check e-mails.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'firmware-space', 'maillog-space'.
+Can be: 'internal-hourly', 'internal-daily', 'internal-total',
+'outbound-hourly', 'outbound-daily', 'outbound-total',
+'inbound-hourly', 'inbound-daily', 'inbound-total'.
 
 =back
 

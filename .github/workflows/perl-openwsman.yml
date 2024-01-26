@@ -1,0 +1,321 @@
+name: perl-openwsman
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "dependencies/perl-openwsman/**"
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - "dependencies/perl-openwsman/**"
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  package:
+    needs: [get-environment]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: packaging-plugins-alma8
+            distrib: el8
+            package_extension: rpm
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
+          - image: packaging-plugins-alma9
+            distrib: el9
+            package_extension: rpm
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
+          - image: packaging-plugins-bullseye
+            distrib: bullseye
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
+          - image: packaging-plugins-bookworm
+            distrib: bookworm
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
+          - image: packaging-plugins-bullseye-arm64
+            distrib: bullseye
+            package_extension: deb
+            runner: ["self-hosted", "collect-arm64"]
+            arch: arm64
+            version: 2.7.2
+
+    runs-on: ${{ matrix.runner }}
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    name: package ${{ matrix.distrib }} ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install locally sblim-sfcc
+        run: |
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+            apt-get update
+            apt-get install -y libcurl4-openssl-dev
+            cd /tmp
+            wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
+            cd sblim-sfcc-SFCC_2_2_8
+            ./autoconfiscate.sh
+            ./configure --prefix=/usr
+            make
+            make install
+          else
+            dnf install -y 'dnf-command(config-manager)'
+            if [ "${{ matrix.distrib }}" = "el8" ]; then
+              dnf config-manager --set-enabled powertools
+            else
+              dnf config-manager --set-enabled crb
+            fi
+            dnf install -y sblim-sfcc-devel
+          fi
+        shell: bash
+
+      - name: Build openwsman
+        run: |
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+            apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
+          else
+            dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
+          fi
+
+          cd /tmp
+          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ matrix.version }}.tar.gz|tar zxvf -
+          cd openwsman-${{ matrix.version }}/
+          mkdir build
+          cd build
+          cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
+          make
+
+      - name: Set package name and paths according to distrib
+        run: |
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+            NAME_PERL="libopenwsman-perl"
+            USRLIB="/usr/lib/"
+            if [ "${{ matrix.arch }}" = "amd64" ]; then
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
+            else
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/5.32"
+            fi
+          else
+            NAME_PERL="openwsman-perl"
+            USRLIB="/usr/lib64/"
+            if [ "${{ matrix.distrib }}" = "el8" ]; then
+              PERL_VENDORARCH="/usr/local/lib64/perl5"
+            else
+              PERL_VENDORARCH="/usr/local/lib64/perl5/5.32"
+            fi
+          fi
+
+          sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/libwsman.yaml
+          sed -i "s#@USRLIB@#$USRLIB#g" dependencies/perl-openwsman/libwsman.yaml
+
+          sed -i "s/@NAME@/$NAME_PERL/g" dependencies/perl-openwsman/perl-openwsman.yaml
+          sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/perl-openwsman.yaml
+          sed -i "s#@PERL_VENDORARCH@#$PERL_VENDORARCH#g" dependencies/perl-openwsman/perl-openwsman.yaml
+
+          cat dependencies/perl-openwsman/sblim-sfcc.yaml
+          cat dependencies/perl-openwsman/libwsman.yaml
+          cat dependencies/perl-openwsman/perl-openwsman.yaml
+        shell: bash
+
+      - name: Package sblim-sfcc
+        if: ${{ matrix.distrib == 'bullseye' || matrix.distrib == 'bookworm' }}
+        uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "dependencies/perl-openwsman/sblim-sfcc.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          arch: ${{ matrix.arch }}
+          commit_hash: ${{ github.sha }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+
+      - name: Package libwsman
+        uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "dependencies/perl-openwsman/libwsman.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          arch: ${{ matrix.arch }}
+          commit_hash: ${{ github.sha }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+
+      - name: Package perl-openwsman
+        uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "dependencies/perl-openwsman/perl-openwsman.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          arch: ${{ matrix.arch }}
+          commit_hash: ${{ github.sha }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+
+      # set condition to true if artifacts are needed
+      - if: ${{ false }}
+        name: Upload package artifacts
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        with:
+          name: packages-${{ matrix.distrib }}-${{ matrix.arch }}
+          path: ./*.${{ matrix.package_extension}}
+          retention-days: 1
+
+  deliver-rpm:
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    name: Deliver ${{ matrix.distrib }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Delivery libwsman
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: libwsman-amd64
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: cache-${{ github.sha }}-rpm-libwsman-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Delivery perl-openwsman
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: perl-openwsman-amd64
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: cache-${{ github.sha }}-rpm-perl-openwsman-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  deliver-deb:
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        include:
+          - distrib: bullseye
+            arch: amd64
+          - distrib: bookworm
+            arch: amd64
+          - distrib: bullseye
+            arch: arm64
+
+    name: Deliver ${{ matrix.distrib }} ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Delivery sblim-sfcc
+        uses: ./.github/actions/deb-delivery
+        with:
+          module_name: sblim-sfcc-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: cache-${{ github.sha }}-deb-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Delivery libwsman
+        uses: ./.github/actions/deb-delivery
+        with:
+          module_name: libwsman-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: cache-${{ github.sha }}-deb-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Delivery perl-openwsman
+        uses: ./.github/actions/deb-delivery
+        with:
+          module_name: perl-openwsman-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: cache-${{ github.sha }}-deb-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        include:
+          - distrib: el8
+            arch: amd64
+          - distrib: el9
+            arch: amd64
+          - distrib: bullseye
+            arch: amd64
+          - distrib: bookworm
+            arch: amd64
+          - distrib: bullseye
+            arch: arm64
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Promote sblim-sfcc ${{ matrix.distrib }} ${{ matrix.arch }} to stable
+        if: ${{ matrix.distrib == 'bullseye' || matrix.distrib == 'bookworm' }}
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: sblim-sfcc-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Promote libwsman ${{ matrix.distrib }} ${{ matrix.arch }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: libwsman-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Promote perl-openwsman ${{ matrix.distrib }} ${{ matrix.arch }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: perl-openwsman-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}

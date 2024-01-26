@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,11 +129,11 @@ Check archive level0 backup last execution.
 
 =item B<--warning>
 
-Threshold warning in seconds since last execution.
+Warning threshold in seconds since last execution.
 
 =item B<--critical>
 
-Threshold critical in seconds since last execution.
+Critical threshold in seconds since last execution.
 
 =item B<--name>
 

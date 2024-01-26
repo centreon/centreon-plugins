@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -91,10 +91,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name'              => { name => 'use_name' },
-        'filesystem:s'      => { name => 'filesystem' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }
+        'name'               => { name => 'use_name' },
+        'filesystem:s'       => { name => 'filesystem' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
     });
 
     return $self;
@@ -211,15 +212,15 @@ Check filesystem usages.
 
 =item B<--warning-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-usage>
 
-Threshold critical in percent
+Critical threshold in percent
 
 =item B<--filesystem>
 
-Set the filesystem (number expected) ex: 1, 2,... (empty means 'check all filesystems').
+Set the filesystem (number expected) example: 1, 2,... (empty means 'check all filesystems').
 
 =item B<--name>
 
@@ -229,7 +230,7 @@ Allows to use filesystem name with option --filesystem instead of devoce oid ind
 
 Allows to use regexp to filter filesystems (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive to filter filesystems (with option --name).
 

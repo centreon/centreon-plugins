@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -272,7 +272,7 @@ Check cpu usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
 =item B<--check-order>
 
 Check cpu in standard cisco mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
-(Default: 'process,old_sys,system_ext').
+(default: 'process,old_sys,system_ext').
 
 =item B<--warning-*> B<--critical-*>
 

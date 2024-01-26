@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,7 +134,8 @@ sub new {
         'free'                => { name => 'free' },
         'name:s'              => { name => 'name' },
         'regexp'              => { name => 'use_regexp' },
-        'regexp-isensitive'   => { name => 'use_regexpi' },
+        'regexp-isensitive'   => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'  => { name => 'use_regexpi' },
         'space-reservation:s' => { name => 'space_reservation' }
     });
 
@@ -202,15 +203,15 @@ Command used: bdf 2>&1
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -224,7 +225,7 @@ Set the storage mount point (empty means 'check all storages')
 
 Allows to use regexp to filter storage mount point (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -235,7 +236,7 @@ Filter filesystem (regexp can be used).
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
+The value is in percent of total (default: none).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -130,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check windows pending reboot.
+Check pending Windows reboot.
 
 =over 8
 
@@ -144,14 +144,14 @@ Print powershell output.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{RebootPending} =~ /true/i').
-Can used special variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+Define the conditions to match for the status to be WARNING (default: '%{RebootPending} =~ /true/i').
+You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
 %{PendFileRename}, %{PendComputerRename}.
 
 =back

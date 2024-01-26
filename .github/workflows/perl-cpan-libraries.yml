@@ -1,0 +1,383 @@
+name: perl-cpan-libraries
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  package:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        distrib: [el8, el9, bullseye, bookworm]
+        name:
+          [
+            "Authen::SASL::SASLprep",
+            "Authen::SCRAM::Client",
+            "boolean",
+            "BSON",
+            "BSON::XS",
+            "Carp::Assert",
+            "Clone",
+            "Clone::Choose",
+            "common::sense",
+            "Convert::Binary::C",
+            "Convert::EBCDIC",
+            "Crypt::Blowfish_PP",
+            "DateTime::Format::Duration::ISO8601",
+            "DBD::Sybase",
+            "Device::Modbus",
+            "Device::Modbus::RTU::Client",
+            "Device::Modbus::TCP::Client",
+            "Digest::MD5::File",
+            "Digest::SHA1",
+            "Email::Send::SMTP::Gmail",
+            "EV",
+            "FFI::CheckLib",
+            "FFI::Platypus",
+            "File::SearchPath",
+            "Hash::Merge",
+            "Hash::Ordered",
+            "HTTP::Daemon",
+            "HTTP::Daemon::SSL",
+            "HTTP::ProxyPAC",
+            "JMX::Jmx4Perl",
+            "JSON::Parse",
+            "JSON::WebToken",
+            "LV",
+            "MIME::Types",
+            "MongoDB",
+            "Net::DHCP",
+            "Net::FTPSSL",
+            "Net::HTTPTunnel",
+            "Net::NTP",
+            "Net::SMTPS",
+            "Net::SMTP_auth",
+            "Net::Subnet",
+            "Net::TFTP",
+            "PBKDF2::Tiny",
+            "Schedule::Cron",
+            "Statistics::Descriptive",
+            "Statistics::Regression",
+            "Sys::SigAction",
+            "Term::Clui",
+            "Term::ShellUI",
+            "Unicode::Stringprep",
+            "URI::Encode",
+            "URI::Template",
+            "URL::Encode",
+            "UUID",
+            "UUID::URandom",
+            "WWW::Selenium",
+            "XML::Filter::BufferText",
+            "XML::LibXML::Simple",
+            "XML::SAX::Writer",
+            "ZMQ::Constants",
+            "ZMQ::FFI",
+            "ZMQ::LibZMQ4"
+          ]
+        include:
+          - build_distribs: "el8,el9,bullseye,bookworm"
+          - rpm_dependencies: ""
+          - deb_dependencies: ""
+          - rpm_provides: ""
+          - version: ""
+          - use_dh_make_perl: "true"
+          - spec_file: ""
+          - distrib: el8
+            package_extension: rpm
+            image: packaging-plugins-alma8
+          - distrib: el9
+            package_extension: rpm
+            image: packaging-plugins-alma9
+          - distrib: bullseye
+            package_extension: deb
+            image: packaging-plugins-bullseye
+          - distrib: bookworm
+            package_extension: deb
+            image: packaging-plugins-bookworm
+          - name: "BSON"
+            build_distribs: "el8,el9"
+            rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
+          - name: "BSON::XS"
+            build_distribs: "el8,el9"
+          - name: "Convert::Binary::C"
+            build_distribs: "el8,el9"
+          - name: "DateTime::Format::Duration::ISO8601"
+            rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
+          - name: "DBD::Sybase"
+            build_distribs: "el8,el9"
+          - name: "Device::Modbus::RTU::Client"
+            version: "0.022"
+          - name: "Device::Modbus::TCP::Client"
+            version: "0.026"
+          - name: "EV"
+            build_distribs: "el8,el9"
+          - name: "FFI::CheckLib"
+            build_distribs: "el8,el9"
+          - name: "FFI::Platypus"
+            build_distribs: "el8,el9"
+            rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
+          - name: "Net::DHCP"
+            rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
+          - name: "Statistics::Regression"
+            version: "0.53"
+          - name: "UUID"
+            use_dh_make_perl: "false"
+            build_distribs: "el8,el9"
+            version: "0.31"
+          - name: "ZMQ::Constants"
+            build_distribs: "el9,bullseye,bookworm"
+          - name: "ZMQ::FFI"
+            build_distribs: "el8,el9"
+            rpm_dependencies: "zeromq"
+          - name: "ZMQ::LibZMQ4"
+            use_dh_make_perl: "false"
+            version: "0.01"
+            rpm_dependencies: "zeromq"
+            deb_dependencies: "libzmq5"
+    name: package ${{ matrix.distrib }} ${{ matrix.name }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.package_extension == 'rpm' }}
+        run: |
+          yum install -y yum-utils epel-release git
+          yum config-manager --set-enabled crb || true # alma 9
+          yum config-manager --set-enabled powertools || true # alma 8
+          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc ruby libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.package_extension == 'rpm' && matrix.spec_file == '' }}
+        run: |
+          if [ -z "${{ matrix.version }}" ]; then
+            PACKAGE_VERSION=""
+          else
+            PACKAGE_VERSION=" -v ${{ matrix.version }}"
+          fi
+
+          if [ -z "${{ matrix.rpm_dependencies }}" ]; then
+            PACKAGE_DEPENDENCIES=""
+          else
+            for PACKAGE_DEPENDENCY in `echo ${{ matrix.rpm_dependencies }}`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
+            done
+          fi
+
+          if [ -z "${{ matrix.rpm_provides }}" ]; then
+            PACKAGE_PROVIDES=""
+          else
+            for PACKAGE_PROVIDE in `echo "${{ matrix.rpm_provides }}"`; do
+              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
+            done
+          fi
+
+          cpanm Module::Build::Tiny
+          cpanm Module::Install
+
+          export SYBASE="/usr"
+
+          gem install fpm
+          fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.package_extension == 'rpm' && matrix.spec_file != '' }}
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+
+          rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
+
+          cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.package_extension == 'deb' && matrix.use_dh_make_perl == 'false' }}
+        run: |
+          apt update
+          apt install -y cpanminus ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
+
+          PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
+          if [ -z "${{ matrix.version }}" ]; then
+            PACKAGE_VERSION=""
+          else
+            PACKAGE_VERSION=" -v ${{ matrix.version }}"
+          fi
+
+          if [ -z "${{ matrix.deb_dependencies }}" ]; then
+            PACKAGE_DEPENDENCIES=""
+          else
+            for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
+            done
+          fi
+
+          cpanm Module::Build::Tiny
+          cpanm Module::Install
+
+          gem install fpm
+          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.package_extension == 'deb' && matrix.use_dh_make_perl == 'true' }}
+        run: |
+          apt update
+          apt install -y cpanminus libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
+
+          if [ -z "${{ matrix.version }}" ]; then
+            PACKAGE_VERSION=""
+          else
+            PACKAGE_VERSION="--version ${{ matrix.version }}-${{ matrix.distrib }}"
+          fi
+
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
+        shell: bash
+
+      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        with:
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          path: ./*.${{ matrix.package_extension }}
+          retention-days: 1
+
+  sign-rpm:
+    needs: [package]
+
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+    name: sign rpm ${{ matrix.distrib }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      options: -t
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    steps:
+      - run: apt-get install -y zstd
+        shell: bash
+
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: packages-rpm-${{ matrix.distrib }}
+          path: ./
+
+      - run: echo "HOME=/root" >> $GITHUB_ENV
+        shell: bash
+
+      - run: rpmsign --addsign ./*.rpm
+        shell: bash
+
+      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./*.rpm
+          key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+
+  download-and-cache-deb:
+    needs: [package]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm]
+    steps:
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: packages-deb-${{ matrix.distrib }}
+          path: ./
+
+      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./*.deb
+          key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+
+  deliver-rpm:
+    needs: [get-environment, sign-rpm]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Delivery
+        uses: ./.github/actions/rpm-delivery
+        with:
+          module_name: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  deliver-deb:
+    needs: [get-environment, download-and-cache-deb]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          module_name: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [el8, el9, bullseye, bookworm]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Promote ${{ matrix.distrib }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}

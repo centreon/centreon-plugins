@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -247,39 +247,39 @@ Check node status.
 
 =item B<--node>
 
-Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
+Filter on a specific node (must be a PromQL filter, Default: 'node=~".*"')
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{status}, %{schedulable}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
-Can used special variables like: %{display}, %{status}, %{schedulable}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Ready/ || %{schedulable} != /false/').
+You can use the following variables: %{display}, %{status}, %{schedulable}
 
 =item B<--warning-allocated-pods>
 
-Threshold warning for pods allocation.
+Warning threshold for pods allocation.
 
 =item B<--critical-allocated-pods>
 
-Threshold critical for pods allocation.
+Critical threshold for pods allocation.
 
 =item B<--units>
 
-Units of thresholds (Default: '') (Can be '%').
+Units of thresholds (default: '') (can be '%').
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'list-pfinterfaces' => 'apps::pfsense::snmp::mode::listpfinterfaces',
         'packet-stats'      => 'apps::pfsense::snmp::mode::packetstats',
         'pfinterfaces'      => 'apps::pfsense::snmp::mode::pfinterfaces',
-        'runtime'           => 'apps::pfsense::snmp::mode::runtime'
+        'runtime'           => 'apps::pfsense::snmp::mode::runtime',
+        'state-table'       => 'apps::pfsense::snmp::mode::statetable'
     };
 
     return $self;

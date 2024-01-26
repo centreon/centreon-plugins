@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -188,22 +188,22 @@ Only display some counters (regexp can be used).
 =item B<--warning-sync-status>
 
 Set warning threshold for sync status
-Can used special variables like: %{syncstatus}
+You can use the following variables: %{syncstatus}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for sync status (Default: '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/').
-Can used special variables like: %{syncstatus}
+Set critical threshold for sync status (default: '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/').
+You can use the following variables: %{syncstatus}
 
 =item B<--warning-failover-status>
 
 Set warning threshold for failover status
-Can used special variables like: %{failoverstatus}
+You can use the following variables: %{failoverstatus}
 
 =item B<--critical-failover-status>
 
-Set critical threshold for failover status (Default: '%{failoverstatus} =~ /unknown/').
-Can used special variables like: %{failoverstatus}
+Set critical threshold for failover status (default: '%{failoverstatus} =~ /unknown/').
+You can use the following variables: %{failoverstatus}
 
 =back
 

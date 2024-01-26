@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -1516,26 +1516,33 @@ Output class
 
 =item B<--verbose>
 
-Display long output.
+Display extended status information (long output).
 
 =item B<--debug>
 
-Display also debug messages.
+Display debug messages.
 
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
+Example: adding --filter-perfdata='avg' will remove all metrics that do not contain
+'avg' from performance data.
 
 =item B<--filter-perfdata-adv>
 
-Advanced perfdata filter.
-
-Eg: --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")'
+Filter perfdata based on a "if" condition using the following variables:
+label, value, unit, warning, critical, min, max.
+Variables must be written either %{variable} or %(variable).
+Example: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
+remove all metrics whose value equals 0 and that don't have a maximum value.
 
 =item B<--explode-perfdata-max>
 
-Put max perfdata (if it exist) in a specific perfdata 
-(without values: same with '_max' suffix) (Multiple options)
+Create a new metric for each metric that comes with a maximum limit. The new
+metric will be named identically with a '_max' suffix). 
+Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
+into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
+
 
 =item B<--change-perfdata> B<--extend-perfdata> 
 
@@ -1546,11 +1553,11 @@ Common examples:
 
 =over 4
 
-Change storage free perfdata in used: --change-perfdata=free,used,invert()
+Convert storage free perfdata into used: --change-perfdata=free,used,invert()
 
-Change storage free perfdata in used: --change-perfdata=used,free,invert()
+Convert storage free perfdata into used: --change-perfdata=used,free,invert()
 
-Scale traffic values automaticaly: --change-perfdata=traffic,,scale(auto)
+Scale traffic values automatically: --change-perfdata=traffic,,scale(auto)
 
 Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
 
@@ -1560,8 +1567,14 @@ Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =item B<--extend-perfdata-group>
 
-Extend perfdata from multiple perfdatas (methods in target are: min, max, average, sum)
-Syntax: --extend-perfdata-group=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
+Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+regex: regular expression
+namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+calculation: how the values of the new metrics should be calculated
+newuom (optional): unit of measure for the new metrics
+min (optional): lowest value the metrics can reach
+max (optional): highest value the metrics can reach
 
 Common examples:
 
@@ -1575,66 +1588,81 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 
 =item B<--change-short-output> B<--change-long-output>
 
-Change short/long output display: --change-short-output=pattern~replace~modifier
+Modify the short/long output that is returned by the plugin.
+Syntax: --change-short-output=pattern~replacement~modifier
+Most commonly used modifiers are i (case insensitive) and g (replace all occurrences).
+Example: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
 
 =item B<--change-exit>
 
-Change exit code: --change-exit=unknown=critical
+Replace an exit code with one of your choice.
+Example: adding --change-exit=unknown=critical will result in a CRITICAL state
+instead of an UNKNOWN state.
 
 =item B<--range-perfdata>
 
-Change perfdata range thresholds display: 
-1 = start value equals to '0' is removed, 2 = threshold range is not display.
+Rewrite the ranges displayed in the perfdata. Accepted values:
+0: nothing is changed.
+1: if the lower value of the range is equal to 0, it is removed.
+2: remove the thresholds from the perfdata.
 
 =item B<--filter-uom>
 
-Filter UOM that match the regexp.
+Mask the units when they don't match the given regular expression.
 
 =item B<--opt-exit>
 
-Optional exit code for an execution error (i.e. wrong option provided,
-SSH connection refused, timeout, etc)
-(Default: unknown).
+Replace the exit code in case of an execution error (i.e. wrong option provided,
+SSH connection refused, timeout, etc). Default: unknown.
 
 =item B<--output-ignore-perfdata>
 
-Remove perfdata from output.
+Remove all the metrics from the service. The service will still have a status
+and an output.
 
 =item B<--output-ignore-label>
 
-Remove label status from output.
+Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the 
+beginning of the output.
+Example: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 
-Display output in XML format.
+Return the output in XML format (to send to an XML API).
 
 =item B<--output-json>
 
-Display output in JSON format.
+Return the output in JSON format (to send to a JSON API).
 
 =item B<--output-openmetrics>
 
-Display metrics in OpenMetrics format.
+Return the output in OpenMetrics format (to send to a tool expecting this
+format).
 
 =item B<--output-file>
 
-Write output in file (can be used with json and xml options)
+Write output in file (can be combined with json, xml and openmetrics options).
+E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 
-Display discovery arguments (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of available macros to configure a service discovery rule
+(formatted in XML).
 
 =item B<--disco-show>
 
-Display discovery values (if the mode manages it).
+Applies only to modes beginning with 'list-'.
+Returns the list of discovered objects (formatted in XML) for service discovery.
 
 =item B<--float-precision>
 
-Set the float precision for thresholds (Default: 8).
+Define the float precision for thresholds (default: 8).
 
 =item B<--source-encoding>
 
-Set encoding of monitoring sources (In some case. Default: 'UTF-8').
+Define the character encoding of the response sent by the monitored resource
+Default: 'UTF-8'.
 
 =head1 DESCRIPTION
 

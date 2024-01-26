@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -332,11 +332,11 @@ Exclude partition name (regexp can be used).
 
 =item B<--bytes-per-sector>
 
-Bytes per sector (Default: 512)
+Bytes per sector (default: 512)
 
 =item B<--interrupt-frequency>
 
-Linux Kernel Timer Interrupt Frequency (Default: 1000)
+Linux Kernel Timer Interrupt Frequency (default: 1000)
 
 =item B<--skip>
 

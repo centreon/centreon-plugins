@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,8 @@ sub new {
         'health'     => 'apps::ceph::restapi::mode::health',
         'list-pools' => 'apps::ceph::restapi::mode::listpools',
         'osd'        => 'apps::ceph::restapi::mode::osd',
-        'pools'      => 'apps::ceph::restapi::mode::pools'
+        'pools'      => 'apps::ceph::restapi::mode::pools',
+        'storage'    => 'apps::ceph::restapi::mode::storage'
     };
 
     $self->{custom_modes}->{api} = 'apps::ceph::restapi::custom::api';

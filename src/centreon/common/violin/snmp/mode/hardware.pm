@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,28 +128,27 @@ Check components (Fans, Power Supplies, Temperatures, Chassis alarm, vimm, globa
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'psu', 'fan', 'ca', 'vimm', 'lfc', 'gfc', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=fan,41239F00647-A
+Exclude the items given as a comma-separated list (example: --filter=fan --filter=psu).
+You can also exclude items from specific instances: --filter=fan,41239F00647-A
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,41239F00647-fan02
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
+
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='gfc,CRITICAL,^(?!(Online)$)'
 
 =item B<--warning>

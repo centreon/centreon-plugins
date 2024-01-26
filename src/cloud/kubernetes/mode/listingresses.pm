@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -73,14 +73,20 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $ingress (sort keys %{$self->{ingresses}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
-                                                         $self->{ingresses}->{$ingress}->{uid},
-                                                         $self->{ingresses}->{$ingress}->{name},
-                                                         $self->{ingresses}->{$ingress}->{namespace}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[uid: %s] [name: %s] [namespace: %s]',
+                $self->{ingresses}->{$ingress}->{uid},
+                $self->{ingresses}->{$ingress}->{name},
+                $self->{ingresses}->{$ingress}->{namespace}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List ingresses:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List ingresses:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -99,7 +105,7 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             uid => $self->{ingresses}->{$ingress}->{uid},
             name => $self->{ingresses}->{$ingress}->{name},
-            namespace => $self->{ingresses}->{$ingress}->{namespace},
+            namespace => $self->{ingresses}->{$ingress}->{namespace}
         );
     }
 }

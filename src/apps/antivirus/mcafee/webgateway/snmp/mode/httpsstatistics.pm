@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,17 +147,17 @@ Check HTTPS statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='^proxy')
+(example: --filter-counters='^proxy')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'request', 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'request', 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 

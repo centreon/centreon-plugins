@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -270,13 +270,13 @@ Check cluster status.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
-Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
+You can use the following variables: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--warning-*> B<--critical-*>
 

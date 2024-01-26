@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,6 +61,15 @@ sub GetOptions {
     for (my $i = 0; $i < $num_args;) {
         if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)((?s).*)/) {
             my ($option, $value) = ($1, $2);
+
+            # The special argument "--" forces an end of option-scanning.
+            # All arguments placed after are stored in a list with the special option key '_double_dash_'.
+            if ($option eq '' && $value eq '') {
+                my @values = splice @ARGV, $i + 1, $num_args - $i - 1;
+                push @{${$opts{'_double_dash_'}}}, @values;
+                splice @ARGV, $i, 1;
+                last;
+            }
 
             # find type of option
             if ($search_str !~ /,((?:[^,]*?\|){0,}$option(?:\|.*?){0,}(:.*?){0,1}),/) {

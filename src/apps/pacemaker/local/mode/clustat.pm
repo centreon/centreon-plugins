@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -149,12 +149,12 @@ Command used: /usr/sbin/clustat -x 2>&1
 =item B<--warning-*>
 
 Can be ('group','node')
-Warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-*>
 
 Can be ('group','node')
-Critical threshold for status. (Default: --critical-node '%{state} !~ /up|clean/' --critical-group '%{state} !~ /started|starting/')
+Define the conditions to match for the status to be CRITICAL. (default: --critical-node '%{state} !~ /up|clean/' --critical-group '%{state} !~ /started|starting/')
 
 =back
 

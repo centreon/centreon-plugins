@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -242,12 +242,12 @@ Check the status of the physical disks.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-errors', 'write-errors', 'read-io', 'write-io', 'utils'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-errors', 'write-errors', 'read-io', 'write-io', 'utils'.
 
 =item B<--filter-disk>

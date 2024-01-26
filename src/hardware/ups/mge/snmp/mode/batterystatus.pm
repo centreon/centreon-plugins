@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,11 +140,11 @@ Check Battery Status and battery charge remaining.
 
 =item B<--warning>
 
-Threshold warning in percent of charge remaining.
+Warning threshold in percent of charge remaining.
 
 =item B<--critical>
 
-Threshold critical in percent of charge remaining.
+Critical threshold in percent of charge remaining.
 
 =item B<--filter-status>
 

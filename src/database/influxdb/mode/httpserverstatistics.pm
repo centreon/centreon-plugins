@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -161,7 +161,7 @@ Check several statistics from the HTTP server serving API.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'requests-query-count', 'requests-write-count',
 'requests-ping-count', 'requests-status-count', 'requests-active',
 'requests-write-active', 'requests-response-data',
@@ -169,7 +169,7 @@ Can be: 'requests-query-count', 'requests-write-count',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'requests-query-count', 'requests-write-count',
 'requests-ping-count', 'requests-status-count', 'requests-active',
 'requests-write-active', 'requests-response-data',

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,66 +24,66 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     return sprintf("output status is '%s'", $self->{result_values}->{status});
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, set => {
+         {
+             label => 'status',
+             type => 2,
+             unknown_default => '%{status} =~ /unknown/i',
+             critical_default => '%{status} !~ /onLine|rebooting/i',
+             set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'load', set => {
+        { label => 'load', nlabel => 'lines.output.load.percentage', set => {
                 key_values => [ { name => 'load' } ],
                 output_template => 'load: %s %%',
                 perfdatas => [
-                    { label => 'load', value => 'load', template => '%s', 
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        { label => 'current', set => {
+        { label => 'current', nlabel => 'lines.output.current.ampere', set => {
                 key_values => [ { name => 'current' } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', value => 'current', template => '%s', 
-                      min => 0, unit => 'A' },
-                ],
+                    { template => '%s', min => 0, unit => 'A' }
+                ]
             }
         },
-        { label => 'voltage', set => {
+        { label => 'voltage', nlabel => 'lines.output.voltage.volt', set => {
                 key_values => [ { name => 'voltage' } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'voltage', template => '%s', 
-                      unit => 'V' },
-                ],
+                    { template => '%s', unit => 'V' }
+                ]
             }
         },
-        { label => 'frequence', set => {
+        { label => 'frequence', nlabel => 'lines.output.frequence.hertz', set => {
                 key_values => [ { name => 'frequency' } ],
                 output_template => 'frequence: %s Hz',
                 perfdatas => [
-                    { label => 'frequence', value => 'frequency', template => '%s', 
-                      unit => 'Hz' },
-                ],
+                    { template => '%s', unit => 'Hz' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -92,27 +92,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /onLine|rebooting/i' },
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 my $map_status = {
     1 => 'unknown', 2 => 'onLine', 3 => 'onBattery', 4 => 'onSmartBoost',
     5 => 'timedSleeping', 6 => 'softwareBypass', 7 => 'off',
     8 => 'rebooting', 9 => 'switchedBypass', 10 => 'hardwareFailureBypass',
-    11 => 'sleepingUntilPowerReturn', 12 => 'onSmartTrim',
+    11 => 'sleepingUntilPowerReturn', 12 => 'onSmartTrim'
 };
 
 my $mapping = {
@@ -124,7 +113,7 @@ my $mapping = {
     upsHighPrecOutputVoltage   => { oid => '.1.3.6.1.4.1.318.1.1.1.4.3.1' }, # tenths of VAC
     upsHighPrecOutputFrequency => { oid => '.1.3.6.1.4.1.318.1.1.1.4.3.2' }, # tenths of Hz
     upsHighPrecOutputLoad      => { oid => '.1.3.6.1.4.1.318.1.1.1.4.3.3' }, # tenths of percent
-    upsHighPrecOutputCurrent   => { oid => '.1.3.6.1.4.1.318.1.1.1.4.3.4' }, # tenths of amperes
+    upsHighPrecOutputCurrent   => { oid => '.1.3.6.1.4.1.318.1.1.1.4.3.4' }  # tenths of amperes
 };
 
 sub manage_selection {
@@ -166,18 +155,18 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /onLine|rebooting/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /onLine|rebooting/i').
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

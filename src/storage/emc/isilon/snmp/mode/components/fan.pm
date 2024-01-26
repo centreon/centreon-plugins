@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,23 +52,30 @@ sub check {
         next if ($self->check_filter(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' is %s rpm [instance = %s] [description = %s]",
-                                    $result->{fanName}, $result->{fanSpeed}, $instance, 
-                                    $result->{fanDescription}));
-             
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' is %s rpm [instance = %s] [description = %s]",
+                $result->{fanName}, $result->{fanSpeed}, $instance, 
+                $result->{fanDescription}
+            )
+        );
+
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{fanSpeed});
-        
+
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' is %s rpm", $result->{fanName}, $result->{fanSpeed}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' is %s rpm", $result->{fanName}, $result->{fanSpeed})
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'speed', unit => 'rpm',
             nlabel => 'hardware.fan.speed.rpm',
             instances => $result->{fanName},
             value => $result->{fanSpeed},
             warning => $warn,
-            critical => $crit,
+            critical => $crit
         );
     }
 }

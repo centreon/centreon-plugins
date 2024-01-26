@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -165,21 +165,21 @@ Filter VPN name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{p1state}, %{p2state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
-Can used special variables like: %{p1state}, %{p2state}
+Define the conditions to match for the status to be CRITICAL (default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
+You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--warning-update-time>
 
-Threshold warning for update time (in secondes).
+Warning threshold for update time (in seconds).
 
 =item B<--critical-update-time>
 
-Threshold critical for update time (in secondes).
+Critical threshold for update time (in seconds).
 
 =back
 

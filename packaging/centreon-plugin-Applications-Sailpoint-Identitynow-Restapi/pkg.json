@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Sailpoint-Identitynow-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor SailPoint IdentityNow throught RestAPI",
+    "plugin_name": "centreon_sailpoint_identitynow_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/sailpoint/identitynow/restapi/"
+    ]
+}

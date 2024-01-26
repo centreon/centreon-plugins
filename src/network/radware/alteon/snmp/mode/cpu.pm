@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -224,14 +224,14 @@ Example: --filter-counters='^(64s)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'mp-1s', 'mp-4s', 'mp-64s', 
 'sp-ga-1s', 'sp-ga-4s', 'sp-ga-64s',
 'sp-ga-avg-1s', 'sp-ga-avg-4s', 'sp-ga-avg-64s'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'mp-1s', 'mp-4s', 'mp-64s', 
 'sp-ga-1s', 'sp-ga-4s', 'sp-ga-64s',
 'sp-ga-avg-1s', 'sp-ga-avg-4s', 'sp-ga-avg-64s'.

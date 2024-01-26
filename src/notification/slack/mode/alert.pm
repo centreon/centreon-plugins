@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -246,11 +246,11 @@ centreon_plugins.pl --plugin=notification::slack::plugin --mode=alert --slack-ur
 
 =item B<--slack-url>
 
-Specify slack url (Required).
+Specify slack url (required).
 
 =item B<--slack-channel>
 
-Specify slack channel (Required).
+Specify slack channel (required).
 
 =item B<--slack-username>
 
@@ -258,7 +258,7 @@ Specify slack username.
 
 =item B<--host-name>
 
-Specify host server name for the alert (Required).
+Specify host server name for the alert (required).
 
 =item B<--host-state>
 
@@ -306,35 +306,35 @@ Specify the centreon token for autologin macro (could be used in link-url and gr
 
 =item B<--graph-url>
 
-Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
+Specify the graph url (example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
 
 =item B<--link-url>
 
-Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
+Specify the link url (example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (default: 5).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,12 +41,6 @@ sub custom_radio_channel_util_calc {
     return 0;
 }
 
-sub skip_global {
-    my ($self, %options) = @_;
-
-    scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
@@ -75,7 +69,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global', },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'ap', type => 3, cb_prefix_output => 'prefix_ap_output', cb_long_output => 'ap_long_output', indent_long_output => '    ', message_multiple => 'All access points are ok',
             group => [
                 { name => 'ap_global', type => 0 },
@@ -320,23 +314,23 @@ Monitor radio interfaces channels utilization.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-radio-status>
 
-Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--critical-radio-status>
 
-Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

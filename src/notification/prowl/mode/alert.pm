@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,19 +127,19 @@ Send iOS push notifications via Prowl API (https://www.prowlapp.com/api.php).
 
 =item B<--hostname>
 
-Hostname of the Prowl API (Default: 'api.prowlapp.com')
+Hostname of the Prowl API (default: 'api.prowlapp.com')
 
 =item B<--port>
 
-Port used by API (Default: '443')
+Port used by API (default: '443')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--urlpath>
 
-Set path to the notifications API (Default: '/publicapi/add').
+Set path to the notifications API (default: '/publicapi/add').
 
 =item B<--apikey>
 

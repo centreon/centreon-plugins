@@ -176,13 +176,13 @@ Filter by message (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /minor/i')
-Can used special variables like: %{severity}, %{text}, %{source}, %{since}
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /minor/i')
+You can use the following variables: %{severity}, %{text}, %{source}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /critical|major/i').
-Can used special variables like: %{severity}, %{text}, %{source}, %{since}
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical|major/i').
+You can use the following variables: %{severity}, %{text}, %{source}, %{since}
 
 =item B<--memory>
 

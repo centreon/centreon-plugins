@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -174,11 +174,11 @@ Parity node hostname or IP
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =item B<--api-path>
 
-API base url path (Default: '/').
+API base url path (default: '/').
 
 =back
 

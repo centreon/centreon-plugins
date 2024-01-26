@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -280,7 +280,7 @@ __END__
 
 Check mailbox usage (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/mailbox-usage?view=o365-worldwide)
 
 =over 8
@@ -291,37 +291,37 @@ Filter mailboxes.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-mailboxes', 'total-usage-active' (count),
 'total-usage-inactive' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-mailboxes', 'total-usage-active' (count),
 'total-usage-inactive' (count).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{used} > %{issue_warning_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota},
+Define the conditions to match for the status to be WARNING (default: '%{used} > %{issue_warning_quota}').
+You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{used} > %{prohibit_send_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota},
+Define the conditions to match for the status to be CRITICAL (default: '%{used} > %{prohibit_send_quota}').
+You can use the following variables: %{used}, %{issue_warning_quota},
 %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active|total'
-(Default: 'active|total')
+(default: 'active|total')
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,33 +141,33 @@ Filter replication name (can be a regexp).
 
 =item B<--unknown-health-status>
 
-Set unknown threshold for status (Default: '%{health_status} =~ /unknown/i').
-Can used special variables like: %{health_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{health_status} =~ /unknown/i').
+You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-health-status>
 
-Set warning threshold for status (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
-Can used special variables like: %{health_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{health_status} =~ /ok_but|degraded|minor/i').
+You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Set critical threshold for status (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
-Can used special variables like: %{health_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{health_status} =~ /major|critical|non_recoverable/i').
+You can use the following variables: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
-Set unknown threshold for status (Default: '%{repl_status} =~ /unknown/i').
-Can used special variables like: %{repl_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{repl_status} =~ /unknown/i').
+You can use the following variables: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
 
-Set warning threshold for status (Default: '%{repl_status} =~ /syncing/i').
-Can used special variables like: %{repl_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{repl_status} =~ /syncing/i').
+You can use the following variables: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>
 
-Set critical threshold for status (Default: '%{repl_status} =~ /inconsistent/i').
-Can used special variables like: %{repl_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{repl_status} =~ /inconsistent/i').
+You can use the following variables: %{repl_status}, %{display}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,11 +108,11 @@ Check the percentage of audio ports used on this cisco meeting place platform.
 
 =item B<--warning>
 
-Threshold warning: Percentage value of audio ports usage resulting in a warning state
+Warning threshold: Percentage value of audio ports usage resulting in a warning state
 
 =item B<--critical>
 
-Threshold critical: Percentage value of audio ports usage resulting in a critical state
+Critical threshold: Percentage value of audio ports usage resulting in a critical state
 
 =back
 

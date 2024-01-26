@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,7 +182,7 @@ Check events.
 
 =item B<--relative-time>
 
-Set request relative time (Default: '2h').
+Set request relative time (default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
 =item B<--filter-management-zone>
@@ -200,17 +200,17 @@ Filter events by entity/name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
+Define the conditions to match for the status to be UNKNOWN.
 Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{entityId}, %{eventType}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{entityId}, %{eventType}, %{startTime}, %{endTime}, %{time}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Define the conditions to match for the status to be CRITICAL.
 Can use special variables like: %{status}, %{managementZone}, %{entityName}, %{entityId}, %{eventType}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-*> B<--critical-*>

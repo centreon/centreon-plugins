@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -254,11 +254,11 @@ Set hostname of the Loggly server (<subdomain>.loggly.com).
 
 =item B<--port>
 
-Set Loggly Port (Default: '443').
+Set Loggly Port (default: '443').
 
 =item B<--proto>
 
-Specify http if needed (Default: 'https').
+Specify http if needed (default: 'https').
 
 =item B<--api-password>
 
@@ -266,7 +266,7 @@ Set Loggly API token.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '30').
+Threshold for HTTP timeout (default: '30').
 
 =back
 

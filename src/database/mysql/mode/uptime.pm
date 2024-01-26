@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,15 +28,14 @@ use POSIX;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "seconds"                 => { name => 'seconds', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        "warning:s"  => { name => 'warning' },
+        "critical:s" => { name => 'critical' },
+        "seconds"    => { name => 'seconds' }
+    });
 
     return $self;
 }
@@ -63,29 +62,33 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
-    
+
     $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
     my ($name, $value) = $options{sql}->fetchrow_array();
     if (!defined($value)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get uptime.");
         $self->{output}->option_exit();
     }
-    
+
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $msg = sprintf("database is up since %d days", floor($value / 86400));
     if (defined($self->{option_results}->{seconds})) {
         $msg = sprintf("database is up since %d seconds", $value);
     }
-    
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => $msg);
-    $self->{output}->perfdata_add(label => 'uptime', 
-                                  nlabel => 'database.uptime.seconds',
-                                  unit => 's',
-                                  value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => $msg
+    );
+    $self->{output}->perfdata_add(
+        label => 'uptime', 
+        nlabel => 'database.uptime.seconds',
+        unit => 's',
+        value => $value,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -103,11 +106,11 @@ Check MySQL uptime.
 
 =item B<--warning>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--seconds>
 

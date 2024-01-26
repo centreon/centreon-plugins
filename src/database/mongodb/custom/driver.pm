@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -81,7 +81,7 @@ sub check_options {
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{no_ssl} = (defined($self->{option_results}->{no_ssl})) ? 1 : 0;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
@@ -210,7 +210,7 @@ Port used by MongoDB.
 
 =item B<--protocol>
 
-Protocol used (Default: mongodb)
+Protocol used (default: mongodb)
 DNS Seedlist Connection Format can be specified, i.e. 'mongodb+srv'
 
 =item B<--username>
@@ -223,11 +223,11 @@ MongoDB password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--no-ssl>
 

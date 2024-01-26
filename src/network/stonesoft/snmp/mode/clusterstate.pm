@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,18 +109,18 @@ Check status of clustered node.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{node_status} =~ /unknown/i').
-Can used special variables like: %{node_status}, %{node_member_id}.
+Define the conditions to match for the status to be UNKNOWN (default: '%{node_status} =~ /unknown/i').
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{node_status} =~ /lockedOnline/i').
-Can used special variables like: %{node_status}, %{node_member_id}.
+Define the conditions to match for the status to be WARNING (default: '%{node_status} =~ /lockedOnline/i').
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
-Can used special variables like: %{node_status}, %{node_member_id}.
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
+You can use the following variables: %{node_status}, %{node_member_id}.
 
 =back
 

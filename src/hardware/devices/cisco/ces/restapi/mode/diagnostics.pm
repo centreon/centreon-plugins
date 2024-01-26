@@ -150,13 +150,13 @@ Use old legacy command.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{level} =~ /warning|minor/i')
-Can used special variables like: %{description}, %{level}, %{type}
+Define the conditions to match for the status to be WARNING (default: '%{level} =~ /warning|minor/i')
+You can use the following variables: %{description}, %{level}, %{type}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{level} =~ /critical|major/i').
-Can used special variables like: %{description}, %{level}, %{type}
+Define the conditions to match for the status to be CRITICAL (default: '%{level} =~ /critical|major/i').
+You can use the following variables: %{description}, %{level}, %{type}
 
 =back
 

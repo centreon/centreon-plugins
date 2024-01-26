@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,21 +140,21 @@ Check NTP performances
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{health} !~ /No leap second today/')
-Can used special variables like: %{leap}
+Define the conditions to match for the status to be WARNING (default: '%{health} !~ /No leap second today/')
+You can use the following variables: %{leap}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '')
-Can used special variables like: %{health}
+Define the conditions to match for the status to be CRITICAL (default: '')
+You can use the following variables: %{health}
 
 =item B<--warning-*>
 
-Threshold warning. Can be : 'stratum-level', 'precision', 'poll-interval'
+Warning threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =item B<--critical-*>
 
-Threshold critical. Can be : 'stratum-level', 'precision', 'poll-interval'
+Critical threshold. Can be : 'stratum-level', 'precision', 'poll-interval'
 
 =back
 

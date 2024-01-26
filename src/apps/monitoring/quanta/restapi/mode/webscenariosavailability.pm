@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,7 +135,7 @@ Set ID of the scenario.
 
 =item B<--timeframe>
 
-Set timeframe in seconds (Default: 14400).
+Set timeframe in seconds (default: 14400).
 
 =item B<--warning-*> B<--critical-*>
 

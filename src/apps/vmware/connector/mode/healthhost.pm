@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -257,9 +257,8 @@ sub manage_selection {
                     $status = lc($1) if ($entry->{status} =~ /(yellow|red)/i);
                     $self->{host}->{$host_name}->{global_problems}->{$status}++;
                     $self->{host}->{$host_name}->{global_problems}->{total}++;
-                    if ($status eq 'ok') {
-                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++ 
-                    } else {
+                    if ($status ne 'ok') {
+                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++;
                         $self->{host}->{$host_name}->{global_summary}->{$i} = {
                             type => defined($entry->{type}) ? $entry->{type} : '',
                             name => $entry->{name},
@@ -328,18 +327,18 @@ Check storage(s) status.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

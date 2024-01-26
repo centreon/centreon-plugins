@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -180,23 +180,23 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'traffic-in', 'traffic-out'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: -)
-Can used special variables like: %{source}, %{status}, %{error}.
+Define the conditions to match for the status to be WARNING (default: -)
+You can use the following variables: %{source}, %{status}, %{error}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
-Can used special variables like: %{source}, %{status}, %{error}.
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
+You can use the following variables: %{source}, %{status}, %{error}.
 
 =back
 

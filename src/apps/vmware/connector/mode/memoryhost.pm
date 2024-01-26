@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -253,7 +253,7 @@ Search in following cluster(s) (can be a regexp).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -261,26 +261,26 @@ Thresholds are on free space left.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{status}
 
 =item B<--warning-consumed-memory>
 
-Threshold warning (can use unit option).
+Warning threshold (can use unit option).
 
 =item B<--critical-consumed-memory>
 
-Threshold critical (can use unit option).
+Critical threshold (can use unit option).
 
 =item B<--warning-overhead-memory>
 
@@ -288,15 +288,15 @@ Threshold overhead.
 
 =item B<--critical-overhead-memory>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--warning-state-memory>
 
-Threshold warning. For state != 'high': --warning-state=0
+Warning threshold. For state != 'high': --warning-state=0
 
 =item B<--critical-state-memory>
 
-Threshold critical. For state != 'high': --warning-state=0
+Critical threshold. For state != 'high': --warning-state=0
 
 =item B<--no-memory-state>
 

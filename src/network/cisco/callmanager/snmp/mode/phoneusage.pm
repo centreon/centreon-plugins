@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,13 +175,13 @@ Filter phone by description (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{description}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}, %{description}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /^registered/').
-Can used special variables like: %{status}, %{name}, %{description}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /^registered/').
+You can use the following variables: %{status}, %{name}, %{description}
 
 =item B<--warning-*> B<--critical-*>
 

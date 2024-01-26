@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -150,8 +150,8 @@ sub get_access_token {
 
     my $has_cache_file = $options{statefile}->read(
         statefile =>
-            'azure_api_' . 
-            md5_hex($self->{tenant}) . '_' . 
+            'azure_api_' .
+            md5_hex($self->{tenant}) . '_' .
             md5_hex($self->{client_id}) . '_' .
             md5_hex($self->{management_endpoint})
     );
@@ -243,7 +243,7 @@ sub convert_duration {
     my ($self, %options) = @_;
 
     my $duration;
-    
+
     if ($options{time_string} =~ /^P.*S$/) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
@@ -268,7 +268,7 @@ sub convert_duration {
 
 sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
-    
+
     if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d.*)Z/) {
         my $dt = DateTime->new(
             year       => $1,
@@ -280,11 +280,11 @@ sub convert_iso8601_to_epoch {
             nanosecond => $7
         );
 
-        my $epoch_time = $dt->epoch;
+        my $epoch_time = $dt->epoch();
         return $epoch_time;
 
     }
-    
+
     $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
     $self->{output}->option_exit();
 
@@ -310,7 +310,7 @@ sub json_decode {
 sub azure_get_subscription_cost_management_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version} ;
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version};
 
     return $url;
 }
@@ -321,14 +321,19 @@ sub azure_get_subscription_cost_management {
     my $results = {};
     my $encoded_form_post;
 
-    my $full_url = $self->azure_get_subscription_cost_management_set_url(); 
+    my $full_url = $self->azure_get_subscription_cost_management_set_url();
 
     eval {
         $encoded_form_post = JSON::XS->new->utf8->encode($options{body_post});
     };
 
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    my $response = $self->request_api(method => 'POST', full_url => $full_url, query_form_post => $encoded_form_post, hostname => '');  
+    my $response = $self->request_api(
+        method => 'POST',
+        full_url => $full_url,
+        query_form_post => $encoded_form_post,
+        hostname => '',
+        header => ['Content-Type: application/json']
+    );
 
     return $response->{properties}->{rows};
 }
@@ -562,23 +567,23 @@ sub azure_list_vms {
     my $full_response = [];
     my $full_url = $self->azure_list_vms_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
-	
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
-    
+
     return $full_response;
 }
 
 sub azure_list_file_shares_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" 
-    . $options{storage_account} . "/fileServices/default/shares?api-version=" . $options{api_version};
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" .
+        $options{storage_account} . "/fileServices/default/shares?api-version=" . $options{api_version};
     return $url;
 }
 
@@ -766,13 +771,13 @@ sub azure_list_sqlservers {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlservers_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -992,13 +997,13 @@ sub azure_list_nics {
     my $full_response = [];
     my $full_url = $self->azure_list_nics_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1020,13 +1025,13 @@ sub azure_list_nsgs {
     my $full_response = [];
     my $full_url = $self->azure_list_nsgs_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1048,13 +1053,13 @@ sub azure_list_publicips {
     my $full_response = [];
     my $full_url = $self->azure_list_publicips_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1076,13 +1081,13 @@ sub azure_list_route_tables {
     my $full_response = [];
     my $full_url = $self->azure_list_route_tables_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1104,13 +1109,13 @@ sub azure_list_snapshots {
     my $full_response = [];
     my $full_url = $self->azure_list_snapshots_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1132,13 +1137,13 @@ sub azure_list_sqlvms {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlvms_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
     return $full_response;
@@ -1160,13 +1165,77 @@ sub azure_list_sqlelasticpools {
     my $full_response = [];
     my $full_url = $self->azure_list_sqlelasticpools_set_url(%options);
     while (1) {
-	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-	foreach (@{$response->{value}}) {
-	    push @$full_response, $_;
-	}
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
 
-	last if (!defined($response->{nextLink}));
-	$full_url = $response->{nextLink};
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if length $options{resource_group};
+    $url .= "/providers/" . $options{providers} if length $options{providers};
+    $url .= "/" . $options{resource} if length $options{resource};
+    $url .= "/" . $options{query_name};
+}
+
+sub azure_list_policystates {
+    my ($self, %options) = @_;
+
+    my $get_params = [
+        'api-version', $self->{api_version},
+        '$select', 'ResourceId, ResourceType, ResourceLocation, ResourceGroup, PolicyDefinitionName, IsCompliant, ComplianceState'
+    ];
+    my @filters = ();
+    if (length $options{resource_location}) {
+        push(@filters, ("ResourceLocation eq '" . $options{resource_location} . "'"));
+        delete $options{resource_location};
+    }
+    if (length $options{resource_type}) {
+        push(@filters, ("ResourceType eq '" . $options{resource_type} . "'"));
+        delete $options{resource_type};
+    }
+    if (length $options{policy_name}) {
+        push(@filters, ("PolicyDefinitionName eq '" . $options{policy_name} . "'"));
+        delete $options{policy_name};
+    }
+    my $filterRequest;
+    foreach my $filter (@filters) {
+        if (!defined($filterRequest)) {
+            $filterRequest = $filter;
+        } else {
+            $filterRequest .= " and " . $filter;
+        }
+    }
+    if (length$filterRequest) {
+        push(@$get_params, '$filter', $filterRequest);
+    }
+
+    my ($url) = $self->azure_set_url(%options);
+    my $full_response = [];
+    while (1) {
+        my $response = $self->request_api(
+            method => 'POST',
+            full_url => $url,
+            hostname => '',
+            get_params => $get_params,
+            query_form_post => '',
+            header => ['Content-Type: application/json']
+        );
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{'@odata.nextLink'}));
+        $url = $response->{'@odata.nextLink'};
     }
 
     return $full_response;
@@ -1186,13 +1255,13 @@ Microsoft Azure Rest API
 
 To connect to the Azure Rest API, you must register an application.
 
-Follow the 'How-to guide' in https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
+Follow the 'How-to guide' at https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
-The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
+The application needs the 'Monitoring Reader' role (see https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 
-For futher informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
+For further informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
 
 =over 8
 
@@ -1214,11 +1283,11 @@ Set Azure client secret.
 
 =item B<--login-endpoint>
 
-Set Azure login endpoint URL (Default: 'https://login.microsoftonline.com')
+Set Azure login endpoint URL (default: 'https://login.microsoftonline.com')
 
 =item B<--management-endpoint>
 
-Set Azure management endpoint URL (Default: 'https://management.azure.com')
+Set Azure management endpoint URL (default: 'https://management.azure.com')
 
 =item B<--timeframe>
 
@@ -1226,20 +1295,22 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--interval>
 
-Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
+and 'count'.
+Can be called multiple times.
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when Monitor
-does not return value when not defined.
+Set metrics value to 0 if they are missing. Useful when some metrics are
+undefined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

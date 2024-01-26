@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,18 +41,18 @@ sub check {
 
     my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
-        next if ($self->check_filter(section => 'node', instance => $_->{id}));
+        next if ($self->check_filter(section => 'node', instance => $_->{id}, name => $_->{name}));
         $self->{components}->{node}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "node '%s' status is '%s' [instance: %s].",
+                "node '%s' status is '%s' [instance: %s]",
                 $_->{name},
                 $_->{status},
                 $_->{id}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'node', value => $_->{status});
+        my $exit = $self->get_severity(label => 'default', section => 'node', instance => $_->{id}, name => $_->{name}, value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

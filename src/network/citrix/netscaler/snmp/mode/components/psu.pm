@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,10 +24,10 @@ use strict;
 use warnings;
 
 my %map_psu_status = (
-    0 => 'normal',
+    0 => 'not supported',
     1 => 'not present',
     2 => 'failed',
-    3 => 'not supported',
+    3 => 'normal',
 );
 
 my $mapping = {

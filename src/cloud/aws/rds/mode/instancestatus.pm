@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -191,27 +191,27 @@ Example: --filter-counters='^total-available$'
 
 =item B<--filter-instanceid>
 
-Filter by instance id (can be a regexp).
+Filter by instance ID (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-available', 'total-backing-up', 'total-failed', 
 'total-maintenance', 'total-stopped', 'total-storage-full'.
 

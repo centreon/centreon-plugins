@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,7 +49,7 @@ sub search {
     $map_search_field->{PTR} = 'ptrdname' if (defined($self->{option_results}->{use_ptr_fqdn}));
 
     my $error_quit = defined($options{error_quit}) ? $options{error_quit} : undef;
-    
+
     my $reply = $handle->search($self->{option_results}->{search}, $search_type);
     if ($reply) {
         foreach my $rr ($reply->answer) {
@@ -68,32 +68,35 @@ sub search {
             $self->{output}->exit();
         }
     }
-    
+
     return sort @results;
 }
 
 sub connect {
     my ($self, %options) = @_;
     my %dns_options = ();
-    
-    my $nameservers = [];
+
     if (defined($self->{option_results}->{nameservers})) {
-        $nameservers = [@{$self->{option_results}->{nameservers}}];
+        foreach my $ns (@{$self->{option_results}->{nameservers}}) {
+            my @entries = split(/,/, $ns);
+            foreach my $name (@entries) {
+                next if ($name eq '');
+                $dns_options{nameservers} = [] if (!defined($dns_options{nameservers}));
+                push @{$dns_options{nameservers}}, $name;
+            }
+        }
     }
-    my $searchlist = [];
+
     if (defined($self->{option_results}->{searchlist})) {
-        $searchlist = [@{$self->{option_results}->{searchlist}}];
+        $dns_options{searchlist} = [@{$self->{option_results}->{searchlist}}];
     }
+
     foreach my $option (@{$self->{option_results}->{dns_options}}) {
         next if ($option !~ /^(.+?)=(.+)$/);
         $dns_options{$1} = $2;
     }
 
-    $handle = Net::DNS::Resolver->new(
-        nameservers => $nameservers,
-        searchlist  => $searchlist,
-        %dns_options
-    );
+    $handle = Net::DNS::Resolver->new(%dns_options);
 }
 
 1;

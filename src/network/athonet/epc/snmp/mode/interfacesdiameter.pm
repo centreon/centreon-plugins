@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -215,33 +215,33 @@ Filter interfaces by owner (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}, %{owner}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}, %{owner}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{name}, %{owner}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
+You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--unknown-transport-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-transport-status>
 
-Set warning threshold for status.
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--critical-transport-status>
 
-Set critical threshold for status (Default: '%{transport_status} =~ /down/i').
-Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{transport_status} =~ /down/i').
+You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

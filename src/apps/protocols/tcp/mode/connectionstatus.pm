@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -177,30 +177,30 @@ Use SSL connection.
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 3)
+Connection timeout in seconds (default: 3)
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{port}, %{error_message}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{port}, %{error_message}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} eq "failed"').
-Can used special variables like: %{status}, %{port}, %{error_message}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "failed"').
+You can use the following variables: %{status}, %{port}, %{error_message}
 
 =item B<--warning-time>
 
-Threshold warning in seconds
+Warning threshold in seconds
 
 =item B<--critical-time>
 
-Threshold critical in seconds
+Critical threshold in seconds
 
 =back
 

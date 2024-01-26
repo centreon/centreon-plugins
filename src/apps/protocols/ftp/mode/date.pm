@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,23 +198,23 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =item B<--warning>
 
-Threshold warning in seconds for each files (diff time)
+Warning threshold in seconds for each files (diff time)
 
 =item B<--critical>
 
-Threshold critical in seconds for each files (diff time)
+Critical threshold in seconds for each files (diff time)
 
 =item B<--directory>
 
-Check files in the directory (no recursive) (Multiple option)
+Check files in the directory (no recursive) (multiple option)
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option)
 
 =item B<--timezone>
 

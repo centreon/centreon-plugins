@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -125,13 +125,15 @@ sub get_clamav_last_update {
     #0.99.2:57:23114:1487851834:1:63:45614:290
     # field 2 = main.cvd version number
     # field 3 = daily.cvd version number
-    my $nameservers = [];
+    my %dns_options = ();
     if (defined($self->{option_results}->{nameservers})) {
-        $nameservers = [@{$self->{option_results}->{nameservers}}];
+        foreach my $dns (@{$self->{option_results}->{nameservers}}) {
+            next if ($dns !~ /[a-zA-Z0-9]/);
+            $dns_options{nameservers} = [] if (!defined($dns_options{nameservers}));
+            push @{$dns_options{nameservers}}, $dns;
+        }
     }
-    my $handle = Net::DNS::Resolver->new(
-        nameservers => $nameservers
-    );
+    my $handle = Net::DNS::Resolver->new(%dns_options);
     my $txt_query = $handle->query("current.cvd.clamav.net", "TXT");
     if (!$txt_query) {
         $self->{output}->add_option_msg(short_msg => "Unable to get TXT Record : " . $handle->errorstring . ".");
@@ -237,41 +239,41 @@ The system configuration is used by default.
 
 =item B<--maindb-file>
 
-Antivirus main.cvd file (Default: '/var/lib/clamav/main.cvd').
+Antivirus main.cvd file (default: '/var/lib/clamav/main.cvd').
 
 =item B<--dailydb-file>
 
-Antivirus daily.cvd file (Default: '/var/lib/clamav/daily.cvd').
+Antivirus daily.cvd file (default: '/var/lib/clamav/daily.cvd').
 
 =item B<--warning-engine-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{last_engine_version}, %{current_engine_version}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{last_engine_version}, %{current_engine_version}
 
 =item B<--critical-engine-status>
 
-Set critical threshold for status (Default: '%{last_engine_version} ne %{current_engine_version}').
-Can used special variables like: %{last_engine_version}, %{current_engine_version}
+Define the conditions to match for the status to be CRITICAL (default: '%{last_engine_version} ne %{current_engine_version}').
+You can use the following variables: %{last_engine_version}, %{current_engine_version}
 
 =item B<--warning-maindb-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--critical-maindb-status>
 
-Set critical threshold for status (Default: '%{last_maindb_version} ne %{current_maindb_version}').
-Can used special variables like: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
+Define the conditions to match for the status to be CRITICAL (default: '%{last_maindb_version} ne %{current_maindb_version}').
+You can use the following variables: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--warning-dailydb-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =item B<--critical-dailydb-status>
 
-Set critical threshold for status (Default: '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000').
-Can used special variables like: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
+Define the conditions to match for the status to be CRITICAL (default: '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000').
+You can use the following variables: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =back
 

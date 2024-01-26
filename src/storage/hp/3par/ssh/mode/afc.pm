@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -266,7 +266,7 @@ Check adaptive flash cache.
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--filter-volume-name>
 
@@ -274,19 +274,27 @@ Filter volumes by name (can be a regexp).
 
 =item B<--unknown-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /normal/i')
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /normal/i')
+You can use the following variables: %{status}, %{node_id}
 
+=item B<--warning-*>
 
-Can used special variables like: %{status}, %{node_id}
+Define the WARNING thresholds for the following components:
+'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct',
+'flashcache-node-readhits', 'flashcache-volume-readhits'.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--critical-*>
 
-Thresholds.
-Can be: 'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct'.
+Define the CRITICAL thresholds for the following components:
+'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct',
 'flashcache-node-readhits', 'flashcache-volume-readhits'.
 
 =back

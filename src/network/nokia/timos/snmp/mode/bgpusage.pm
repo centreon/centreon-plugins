@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -192,23 +192,23 @@ Check BGP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-prefixes', 'sent-prefixes', 'received-prefixes'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{display}, %{state}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /outOfService/')
-Can used special variables like:  %{display}, %{state}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /outOfService/')
+You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-name>
 

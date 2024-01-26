@@ -19,8 +19,6 @@ on:
       - '.github/workflows/plugins.yml'
       - 'src/**'
       - 'packaging/**'
-    tags:
-      - centreon-plugins-*
 
 jobs:
   get-environment:
@@ -31,15 +29,15 @@ jobs:
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.9'
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         id: filter
         with:
           base: ${{ github.ref }}
@@ -55,19 +53,17 @@ jobs:
       - name: transform to directories
         run: |
           folders=()
-          for f in ${{ steps.filter.outputs.packages_files }}; \
-            do \
-              echo "Adding $(dirname $f) to folders"; \
-              folders+=($(dirname $f)); \
+          for f in ${{ steps.filter.outputs.packages_files }}; do
+            echo "Adding $(dirname $f) to folders"
+            folders+=($(dirname $f))
           done
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
 
           files=()
-          for f in ${{ steps.filter.outputs.plugins_files }}; \
-            do \
-              echo "Adding $f to files"; \
-              files+=($f); \
+          for f in ${{ steps.filter.outputs.plugins_files }}; do
+              echo "Adding $f to files"
+              files+=($f)
           done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
@@ -86,17 +82,154 @@ jobs:
           fi
         shell: bash
 
-  package:
+  fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
     needs: [get-environment, get-plugins]
-    uses: ./.github/workflows/plugin-package.yml
-    with:
-      plugins: ${{ needs.get-plugins.outputs.plugins }}
-      version: ${{ needs.get-environment.outputs.version }}
-      release: ${{ needs.get-environment.outputs.release }}
-    secrets:
-      artifactory_username: ${{ secrets.REPOS_USERNAME }}
-      artifactory_password: ${{ secrets.REPOS_PASSWORD }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Prepare FatPacker
+        uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: App::FatPacker File::Copy::Recursive JSON
+
+      - name: Run FatPacker
+        run: |
+          COMMIT=$(git log -1 HEAD --pretty=format:%h)
+          perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+
+      - uses: actions/cache/save@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
+  package:
+    runs-on: ubuntu-22.04
+    needs: [get-environment, get-plugins, fatpacker]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-centos7
+            distrib: el7
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+    name: "package ${{ matrix.distrib }}"
+
+    steps:
+      - name: Checkout sources
+        if: ${{ matrix.distrib == 'el7' }}
+        # el7 is not compatible with checkout v4 which uses node20
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Checkout sources
+        if: ${{ matrix.distrib != 'el7' }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+
+      - run: |
+          PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
+          for PLUGIN in $PLUGINS; do
+            PACKAGE_PATH=$PLUGIN
+
+            if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
+                PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
+                PLUGIN=$(echo ${BASH_REMATCH[2]})
+            fi
+
+            PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
+
+            echo "::group::Preparing $PLUGIN_NAME_LOWER"
+
+            # Process package files
+            pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
+            pkg_summary=$(echo "${pkg_values[0]}")
+            plugin_name=$(echo "${pkg_values[1]}")
+            conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
+            replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
+            provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
+            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
+            deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
+            deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
+            deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
+            rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
+            rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
+            rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
+            rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
+
+            sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
+              -e "s/@SUMMARY@/$pkg_summary/g" \
+              -e "s/@CONFLICTS@/$conflicts/g" \
+              -e "s/@REPLACES@/$replaces/g" \
+              -e "s/@PROVIDES@/$provides/g" \
+              -e "s/@DEB_DEPENDENCIES@/$deb_dependencies/g" \
+              -e "s/@DEB_CONFLICTS@/$deb_conflicts/g" \
+              -e "s/@DEB_REPLACES@/$deb_replaces/g" \
+              -e "s/@DEB_PROVIDES@/$deb_provides/g" \
+              -e "s/@RPM_DEPENDENCIES@/$rpm_dependencies/g" \
+              -e "s/@RPM_CONFLICTS@/$rpm_conflicts/g" \
+              -e "s/@RPM_REPLACES@/$rpm_replaces/g" \
+              -e "s/@RPM_PROVIDES@/$rpm_provides/g" \
+              < .github/packaging/centreon-plugin.yaml.template \
+              >> .github/packaging/$PLUGIN.yaml
+
+            if [ "${{ matrix.package_extension }}" = "rpm" ]; then
+              sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
+                .github/packaging/$PLUGIN.yaml
+            else
+              sed -i "s/@PACKAGE_NAME@/$PLUGIN_NAME_LOWER/g" \
+                .github/packaging/$PLUGIN.yaml
+            fi
+
+            cat .github/packaging/$PLUGIN.yaml
+
+            echo "::endgroup::"
+          done
+        shell: bash
+
+      - uses: ./.github/actions/package
+        with:
+          nfpm_file_pattern: ".github/packaging/*.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          version: ${{ needs.get-environment.outputs.version }}
+          release: ${{ needs.get-environment.outputs.release }}
+          commit_hash: ${{ github.sha }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver:
     needs: [get-environment, package]
@@ -107,9 +240,5 @@ jobs:
       release: ${{ needs.get-environment.outputs.release }}
       stability: ${{ needs.get-environment.outputs.stability }}
     secrets:
-      artifactory_username: ${{ secrets.NEXUS_USER }}
-      artifactory_password: ${{ secrets.NEXUS_PASSWD }}
-      update_repo_path: ${{ secrets.UPDATE_REPO_PATH }}
-      cloudfront_id: ${{ secrets.CLOUDFRONT_ID }}
-      yum_repo_address: ${{ secrets.YUM_REPO_ADDRESS }}
-      yum_repo_key: ${{ secrets.YUM_REPO_KEY }}
+      artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+      token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}

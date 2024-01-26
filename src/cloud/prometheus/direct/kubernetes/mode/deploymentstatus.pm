@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -210,29 +210,29 @@ Check deployment status.
 
 =item B<--deployment>
 
-Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
+Filter on a specific deployment (must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
-Can used special variables like: %{display}, %{desired}, %{current},
+Define the conditions to match for the status to be WARNING (default: '%{up_to_date} < %{desired}')
+You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{available} < %{desired}').
-Can used special variables like: %{display}, %{desired}, %{current},
+Define the conditions to match for the status to be CRITICAL (default: '%{available} < %{desired}').
+You can use the following variables: %{display}, %{desired}, %{current},
 %{available}, %{unavailable}, %{up_to_date}
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

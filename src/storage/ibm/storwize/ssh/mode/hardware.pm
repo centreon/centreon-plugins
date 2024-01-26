@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,19 +38,19 @@ sub set_system {
             ['offline', 'CRITICAL'],
             ['degraded', 'WARNING'],
             ['excluded', 'OK'], # lsarray
-            ['mask', 'OK'], # lshost
+            ['mask', 'OK'] # lshost
         ],
         portfc => [
             ['active', 'OK'],
             ['inactive_unconfigured', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         portsas => [
             ['online', 'OK'],
             ['offline_unconfigured', 'OK'],
             ['excluded', 'OK'],
             ['offline', 'CRITICAL'],
-            ['degraded', 'WARNING'],
+            ['degraded', 'WARNING']
         ],
         mdisk => [
             ['online', 'OK'],
@@ -58,8 +58,8 @@ sub set_system {
             ['offline', 'CRITICAL'],
             ['degraded_paths', 'WARNING'],
             ['degraded_ports', 'WARNING'],
-            ['degraded', 'WARNING'],
-        ],
+            ['degraded', 'WARNING']
+        ]
     };
     
     $self->{components_path} = 'storage::ibm::storwize::ssh::mode::components';
@@ -78,7 +78,7 @@ sub ssh_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -99,24 +99,26 @@ Check components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'array', 'drive', 'enclosure', 'enclosurebattery', 'enclosurecanister',
 'enclosurepsu', 'host', 'portfc', 'portsas', 'vdisk', 'node', 'quorum', 'mdisk', 'systemstats'.
 
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, absent-problem and threshold options).
+
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=host --filter=enclosurecanister)
-Can also exclude specific instance: --filter=host,10
+Exclude the items given as a comma-separated list (example: --filter=host --filter=enclosurecanister).
+You can also exclude items from specific instances: --filter=host,10
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: ---threshold-overload='host,.*,OK,degraded'
 
 =item B<--warning>

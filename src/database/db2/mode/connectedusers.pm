@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -97,11 +97,11 @@ Check connected users.
 
 =item B<--filter-appl-name>
 
-Filter users by application name (Can be a regex).
+Filter users by application name (can be a regex).
 
 =item B<--exclude-appl-name>
 
-Exclude users by application name (Can be a regex).
+Exclude users by application name (can be a regex).
 
 =item B<--warning-*> B<--critical-*>
 

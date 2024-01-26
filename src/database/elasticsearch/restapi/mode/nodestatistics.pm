@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,13 +160,13 @@ Example: --filter-counters='heap'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'data-size', 'disk-free', 'documents-total',
 'jvm-heap-usage' (in %), 'jvm-heap-usage-bytes'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'data-size', 'disk-free', 'documents-total',
 'jvm-heap-usage' (in %), 'jvm-heap-usage-bytes'.
 

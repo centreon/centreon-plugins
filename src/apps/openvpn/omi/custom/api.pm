@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -226,7 +226,7 @@ OMI hostname.
 
 =item B<--omi-port>
 
-OMI port (Default: 7505).
+OMI port (default: 7505).
 
 =item B<--omi-password>
 

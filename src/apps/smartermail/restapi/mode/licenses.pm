@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::smartermail::restapi::mode::licenses;
@@ -91,18 +90,18 @@ Check licenses.
 
 =item B<--unknown-upgrade-protection-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{upgrade_protection_status}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-upgrade-protection-status>
 
-Set warning threshold for status.
-Can used special variables like: %{upgrade_protection_status}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--critical-upgrade-protection-status>
 
-Set critical threshold for status (Default: '%{upgrade_protection_status} =~ /expired/').
-Can used special variables like: %{upgrade_protection_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{upgrade_protection_status} =~ /expired/').
+You can use the following variables: %{upgrade_protection_status}
 
 =item B<--warning-*> B<--critical-*>
 

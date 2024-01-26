@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,7 +140,7 @@ Check system number of processes.
 =item B<--process-status>
 
 Filter process status. Can be a regexp. 
-(Default: 'running').
+(default: 'running').
 
 =item B<--process-name>
 
@@ -153,11 +153,11 @@ name (with option --process-name).
 
 =item B<--warning>
 
-Threshold warning of matching processes detected.
+Warning threshold of matching processes detected.
 
 =item B<--critical>
 
-Threshold critical of matching processes detected.
+Critical threshold of matching processes detected.
 
 =back
 

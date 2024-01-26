@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -257,13 +257,13 @@ Timezone options. Default is 'GMT'.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{oper_mode}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{oper_mode}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{oper_mode} !~ /normal/i').
-Can used special variables like: %{oper_mode}
+Define the conditions to match for the status to be CRITICAL (default: '%{oper_mode} !~ /normal/i').
+You can use the following variables: %{oper_mode}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Time::HiRes;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
@@ -46,6 +47,8 @@ sub new {
         "show-sequence"             => { name => 'show_sequence' },
         "show-index"                => { name => 'show_index' },
         "restart-sequence"          => { name => 'restart_sequence' },
+        "min-duration:s"            => { name => 'min_duration' },
+        "max-duration:s"            => { name => 'max_duration' },
     });
 
     $self->{cache} = centreon::plugins::statefile->new(%options);
@@ -68,11 +71,11 @@ sub check_options {
 
     foreach my $status (split(',', $self->{option_results}->{status_sequence})) {
         if (!defined($self->{option_results}->{host}) && $status !~ /^[0-3]$/ && $status !~ /ok|warning|critical|unknown/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case insensitive).");
             $self->{output}->option_exit();
         }
         if (defined($self->{option_results}->{host}) && $status !~ /^[0-1]$/ && $status !~ /up|down/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case insensitive).");
             $self->{output}->option_exit();
         }
         push @{$self->{status_sequence}}, $status;
@@ -99,6 +102,31 @@ sub check_options {
     if ($self->{metrics_range_start} > $self->{metrics_range_end}) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --metrics-values-range where range start is lower than range end.");
         $self->{output}->option_exit();
+    }
+
+    if (defined($self->{option_results}->{min_duration})) {
+        if (!defined($self->{option_results}->{max_duration}) || $self->{option_results}->{max_duration} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --max-duration option if --min_duration is set.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{option_results}->{min_duration} !~ /^[0-9]*\.?[0-9]*$/) {
+            $self->{output}->add_option_msg(short_msg => "--min-duration should be a number.");
+            $self->{output}->option_exit();
+        }
+    }
+    if (defined($self->{option_results}->{max_duration})){
+        if (!defined($self->{option_results}->{min_duration}) || $self->{option_results}->{min_duration} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --min-duration option if --max_duration is set.");
+            $self->{output}->option_exit();
+        }
+        if ($self-> {option_results}->{max_duration} !~ /^[0-9]*\.?[0-9]*$/){
+            $self->{output}->add_option_msg(short_msg => "--max-duration should be a number.");
+            $self->{output}->option_exit();
+        }
+        if ($self-> {option_results}->{max_duration} <= $self->{option_results}->{min_duration} ){
+            $self->{output}->add_option_msg(short_msg => "--max-duration should be higher than min-duration.");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -153,6 +181,13 @@ sub get_sequence_output {
 
 sub run {
     my ($self, %options) = @_;
+
+    # Adding plugin simulated duration
+    # rand(n) returns a random number between 0 and n value is exclude.
+    if (defined($self->{option_results}->{min_duration}) && defined($self->{option_results}->{max_duration})) {
+        my $sleep_duration = $self->{option_results}->{min_duration} + rand($self->{option_results}->{max_duration} - $self->{option_results}->{min_duration});
+        Time::HiRes::sleep($sleep_duration);
+    }
 
     my ($status, $index) = $self->get_next_status(statefile => $self->{cache});
     my $status_label = $status;
@@ -220,15 +255,15 @@ to defined the way cache file is managed.
 
 Examples:
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='ok,warning,ok,critical,critical,critical'
 --output='Not so dummy service' --show-sequence --statefile-dir='/tmp'
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='up,down,down' --host
 --output='Not so dummy host'
 
-perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 --mode=not-so-dummy --status-sequence='ok,ok,ok' --output='Not so dummy'
 --metrics-count=5 --metrics-name='met.rics' --metrics-values-range='-15:42'
 
@@ -238,7 +273,7 @@ perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
 
 Comma separated sequence of statuses from which the mode should pick is
 return code from.
-(Example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
+(example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
 (Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown, up, down).
 
 =item B<--host>
@@ -255,13 +290,13 @@ Number of metrics to generate.
 
 =item B<--metrics-name>
 
-Name of the metrics (Default: 'metrics.number').
+Name of the metrics (default: 'metrics.number').
 
 Metrics are suffixed by a number between 1 and metrics count.
 
 =item B<--metrics-values-range>
 
-Range of values from which metrics values can be picked (Default: '0:100').
+Range of values from which metrics values can be picked (default: '0:100').
 
 =item B<--show-sequence>
 
@@ -274,6 +309,18 @@ Show the index as a metric (in addition to the defined metrics count).
 =item B<--restart-sequence>
 
 Restart the sequence from the beginning (ie. reset the sequence in cache file).
+
+=item B<--min-duration>
+
+Min duration thresholds (in seconds) use to set the range used to randomly simulate the execution of a plugin.
+If this option is set, max-duration is mandatory.
+The duration is chosen in the [min,max) range.
+
+=item B<--max-duration>
+
+Max duration thresholds (in seconds) use to set the range used to randomly simulate the execution of a plugin.
+If this option is set, min-duration is mandatory.
+The duration is chosen in the [min,max) range (max is excluded).
 
 =back
 

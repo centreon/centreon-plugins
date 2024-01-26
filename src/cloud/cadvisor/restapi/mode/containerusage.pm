@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -156,6 +156,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+
         my $first_index = 0;
         my $first_stat = $result->{$container_id}->{Stats}[$first_index];
         my $first_ts = $first_stat->{timestamp};
@@ -249,13 +250,13 @@ Example: --filter-counters='cpu'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out', 
 'cpu' (%), 'memory' (%).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%).
 

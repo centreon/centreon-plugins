@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,13 +94,13 @@ Check VA health.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} =~ /yellow/')
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /yellow/')
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{status} =~ /red/').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} =~ /red/').
+You can use the following variables: %{status}
 
 =back
 

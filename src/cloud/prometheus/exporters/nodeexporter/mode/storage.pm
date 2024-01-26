@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -249,19 +249,19 @@ Check storages usage.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--mountpoint>
 
-Filter on a specific mountpoint (Must be a PromQL filter, Default: 'mountpoint=~".*"')
+Filter on a specific mountpoint (must be a PromQL filter, Default: 'mountpoint=~".*"')
 
 =item B<--fstype>
 
-Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
+Filter on a specific fstype (must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -269,21 +269,21 @@ Thresholds are on free space left.
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshold.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

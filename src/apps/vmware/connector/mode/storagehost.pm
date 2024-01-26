@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -360,48 +360,48 @@ Filter paths by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
-Can used special variables like: %{status}, %{maintenance}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{maintenance}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can used special variables like: %{status}, %{maintenance}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-adapter-status>
 
 Set warning threshold for adapter status.
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-adapter-status>
 
-Set critical threshold for adapter status (Default: '%{status} =~ /fault/').
-Can used special variables like: %{name}, %{host}, %{status}
+Set critical threshold for adapter status (default: '%{status} =~ /fault/').
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-lun-status>
 
-Set warning threshold for lun status (Default: '%{status} =~ /degraded|quiesced/').
-Can used special variables like: %{name}, %{host}, %{status}
+Set warning threshold for lun status (default: '%{status} =~ /degraded|quiesced/').
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-lun-status>
 
-Set critical threshold for lun status (Default: '%{status} =~ /lostcommunication|error/').
-Can used special variables like: %{name}, %{host}, %{status}
+Set critical threshold for lun status (default: '%{status} =~ /lostcommunication|error/').
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-path-status>
 
 Set warning threshold for path status.
-Can used special variables like: %{name}, %{host}, %{status}
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-path-status>
 
-Set critical threshold for path status (Default: '%{status} =~ /dead/').
-Can used special variables like: %{name}, %{host}, %{status}
+Set critical threshold for path status (default: '%{status} =~ /dead/').
+You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Safe;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -60,12 +61,16 @@ sub new {
         'name'                    => { name => 'use_name' },
         'diskpath:s'              => { name => 'diskpath' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_regexpi' },
         'filter-device:s'         => { name => 'filter_device' },
         'filter-path:s'           => { name => 'filter_path' },
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
     });
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -79,10 +84,15 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $results = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping->{dskPath}->{oid} }, 
-                                                              { oid => $mapping->{dskDevice}->{oid} }, 
-                                                              { oid => $mapping->{dskPercentNode}->{oid} } ],
-                                                    return_type => 1, nothing_quit => 1);
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{dskPath}->{oid} }, 
+            { oid => $mapping->{dskDevice}->{oid} }, 
+            { oid => $mapping->{dskPercentNode}->{oid} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
     $self->{disk} = {};
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$results})) {
         next if ($oid !~ /^$mapping->{dskPath}->{oid}\.(.*)/);
@@ -90,9 +100,9 @@ sub manage_selection {
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         $result->{dskPath} = $self->get_display_value(value => $result->{dskPath});
-        
+
         $self->{output}->output_add(long_msg => sprintf("disk path : '%s', device : '%s'", $result->{dskPath}, $result->{dskDevice}), debug => 1);
-        
+
         if (!defined($result->{dskPercentNode})) {
             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : no inode usage value", $result->{dskPath}), debug => 1);
             next;
@@ -131,8 +141,7 @@ sub manage_selection {
                 next;
             }
         }
-        
-        
+
         $self->{disk}->{$result->{dskPath}} = {
             display => $result->{dskPath}, 
             usage => $result->{dskPercentNode}
@@ -147,13 +156,18 @@ sub manage_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $options{value};
 
+    our $assign_var = $options{value};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 1;
@@ -169,15 +183,15 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--warning-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-usage>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) ex: 1, 2,... (empty means 'check all disks path').
+Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 
@@ -187,17 +201,15 @@ Allows to use disk path name with option --diskpath instead of disk path oid ind
 
 Allows to use regexp to filter diskpath (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the disk path name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-device>
 

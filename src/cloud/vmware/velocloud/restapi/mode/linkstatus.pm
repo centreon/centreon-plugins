@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,8 +129,12 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} } = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => { link_count => 0 },
+            links => {}
+        };
 
         my $links = $options{custom}->get_links_metrics(
             edge_id => $edge->{id},
@@ -144,8 +148,8 @@ sub manage_selection {
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+            $self->{edges}->{ $edge->{name} }->{global}->{link_count}++;
+            $self->{edges}->{ $edge->{name} }->{links}->{ $link->{link}->{displayName} } = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 state => $link->{link}->{state},
@@ -173,16 +177,16 @@ Check edge links status.
 
 =item B<--filter-edge-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--filter-link-name>
 
-Filter link by name (Can be a regexp).
+Filter link by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{state}, %{vpn_state}, %{backup_state}.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,23 +201,23 @@ Check IS-IS usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-int-inservice', 'total-int-outservice'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-int-inservice', 'total-int-outservice'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{display}, %{oper_state}, %{admin_state}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{display}, %{oper_state}, %{admin_state}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin_state} eq "inService" and %{oper_state} !~ /inService|transition/').
-Can used special variables like:  %{display}, %{oper_state}, %{admin_state}.
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_state} eq "inService" and %{oper_state} !~ /inService|transition/').
+You can use the following variables:  %{display}, %{oper_state}, %{admin_state}.
 
 =item B<--filter-name>
 

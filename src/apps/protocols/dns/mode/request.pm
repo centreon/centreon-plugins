@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -163,7 +163,7 @@ perl centreon_plugins.pl --plugin=apps::protocols::dns::plugin --mode=request --
 
 =item B<--nameservers>
 
-Set nameserver to query (can be multiple).
+Set nameserver to query (can use option multiple times or separated values by coma).
 The system configuration is used by default.
 
 =item B<--searchlist>
@@ -200,11 +200,11 @@ Critical threshold if the answer changed between two checks.
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold in seconds.
 
 =back
 

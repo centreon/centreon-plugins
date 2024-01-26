@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,7 +50,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
-        'resource-group:s' => { name => 'resource_group' },
+        'resource-group:s' => { name => 'resource_group' }
     });
 
     return $self;
@@ -67,11 +67,10 @@ sub check_options {
 
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    my $resource_type = $self->{option_results}->{resource_type};
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/(.*)\/(.*)$/) {
+    my $resource_type = 'servers';
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/servers\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = 'servers';
-        $resource = $3;
+        $resource = $2;
     }
 
     $self->{az_resource} = $resource;
@@ -107,13 +106,13 @@ Check Azure Database for MariaDB IO comsuption usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=io-consumption --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-ioconsumption-usage='80' --critical-ioconsumption-usage='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=io-consumption --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
@@ -125,11 +124,11 @@ Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-ioconsumption-usage>
 

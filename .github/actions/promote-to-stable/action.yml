@@ -1,0 +1,96 @@
+name: "promote testing to stable"
+description: "Promote testing packages to stable."
+inputs:
+  artifactory_token:
+    description: "Artifactory token"
+    required: true
+  module:
+    description: "Module"
+    required: true
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: jfrog/setup-jfrog-cli@901bb9632db90821c2d3f076012bdeaf66598555 # v3.4.1
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+
+    - name: Promote RPM packages to stable
+      if: ${{ startsWith(inputs.distrib, 'el') }}
+      run: |
+        set -x
+        echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
+
+        for ARCH in "noarch" "x86_64"; do
+          echo "[DEBUG] - Get path of $ARCH testing artifacts to promote to stable."
+          SRC_PATHS=$(jf rt s --include-dirs rpm-plugins/${{ inputs.distrib }}/testing/$ARCH/${{ inputs.module }}/*.rpm | jq -r '.[].path')
+
+          if [[ ${SRC_PATHS[@]} ]]; then
+            for SRC_PATH in ${SRC_PATHS[@]}; do
+              echo "[DEBUG] - Source path found: $SRC_PATH"
+            done
+          else
+            echo "[DEBUG] - No source path found."
+            continue
+          fi
+
+          echo "[DEBUG] - Build $ARCH target path."
+          TARGET_PATH="rpm-plugins/${{ inputs.distrib }}/${{ inputs.stability }}/$ARCH/RPMS/${{ inputs.module }}/"
+          echo "[DEBUG] - Target path: $TARGET_PATH"
+
+          echo "[DEBUG] - Promoting $ARCH testing artifacts to stable."
+          for ARTIFACT in ${SRC_PATHS[@]}; do
+            echo "[DEBUG] - Downloading $ARTIFACT from TESTING."
+            jf rt download $ARTIFACT --flat
+          done
+          for ARTIFACT_DL in $(dir|grep -E "*.rpm"); do
+            echo "[DEBUG] - Promoting (upload) $ARTIFACT_DL to stable $TARGET_PATH."
+            jf rt upload "$ARTIFACT_DL" "$TARGET_PATH" --flat
+          done
+          rm -f *.rpm
+        done
+
+      shell: bash
+
+    - name: Promote DEB package to stable
+      if: ${{ startsWith(inputs.distrib, 'bullseye') || startsWith(inputs.distrib, 'bookworm' }}
+      run: |
+        echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
+
+        echo "[DEBUG] - Get path of testing DEB packages to promote to stable."
+        SRC_PATHS=$(jf rt s --include-dirs apt-plugins-testing/pool/${{ inputs.module }}/*.deb | jq -r '.[].path')
+
+        if [[ ${SRC_PATHS[@]} ]]; then
+          for SRC_PATH in ${SRC_PATHS[@]}; do
+            echo "[DEBUG] - Source path found: $SRC_PATH"
+          done
+        else
+          echo "[DEBUG] - No source path found."
+          continue
+        fi
+
+        echo "[DEBUG] - Build target path."
+        TARGET_PATH="apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module }}/"
+        echo "[DEBUG] - Target path: $TARGET_PATH"
+
+        echo "[DEBUG] - Promoting DEB testing artifacts to stable."
+        for ARTIFACT in ${SRC_PATHS[@]}; do
+          echo "[DEBUG] - Downloading $ARTIFACT from TESTING."
+          jf rt download $ARTIFACT --flat
+        done
+
+        for ARTIFACT_DL in $(dir|grep -E "*.deb"); do
+          ARCH=$(echo $ARTIFACT_DL | cut -d '_' -f3 | cut -d '.' -f1)
+          echo "[DEBUG] - Promoting (upload) $ARTIFACT_DL to stable $TARGET_PATH."
+          jf rt upload "$ARTIFACT_DL" "$TARGET_PATH" --deb "${{ inputs.distrib }}/main/$ARCH"
+        done
+        rm -f *.deb
+
+      shell: bash

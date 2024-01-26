@@ -1,0 +1,77 @@
+name: "@NAME@"
+arch: "${ARCH}"
+platform: "linux"
+version_schema: "none"
+version: "0.019"
+release: "2${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  This module implements the Argon2 key derivation function, which is suitable to convert any password into a cryptographic key.
+  This is most often used to for secure storage of passwords but can also be used to derive a encryption key from a password.
+  It offers variable time and memory costs as well as output size.
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://www.centreon.com"
+license: "Apache-2.0"
+
+contents:
+  - src: "/tmp/bin/argon2-calibrate"
+    dst: "/usr/local/bin/"
+    file_info:
+      mode: 0755
+    packager: rpm
+  - src: "/tmp/bin/argon2-calibrate"
+    dst: "/usr/bin/"
+    file_info:
+      mode: 0755
+    packager: deb
+
+  - src: "/tmp/lib/perl5/*/auto/Crypt/Argon2/"
+    dst: "@PERL_VENDORARCH@/auto/Crypt/Argon2/"
+    file_info:
+      mode: 0644
+
+  - src: "/tmp/lib/perl5/*/Crypt/Argon2.pm"
+    dst: "@PERL_VENDORARCH@/Crypt/"
+    file_info:
+      mode: 0644
+
+  - src: "/tmp/man/man3/Crypt::Argon2*"
+    dst: "/usr/share/man/man3/"
+    file_info:
+      mode: 0644
+
+overrides:
+  rpm:
+    depends:
+      - perl(Exporter)
+      - perl(Time::HiRes)
+      - perl(XSLoader)
+      - perl(strict)
+      - perl(warnings)
+    conflicts:
+      - perl-Crypt-Argon2-debuginfo
+    replaces:
+      - perl-Crypt-Argon2-debuginfo
+    provides:
+      - perl-Crypt-Argon2-debuginfo
+      - perl(Crypt::Argon2)
+  deb:
+    depends:
+      - perl
+      - libc6
+    conflicts:
+      - libcrypt-argon2-perl-dbgsym
+    replaces:
+      - libcrypt-argon2-perl-dbgsym
+    provides:
+      - libcrypt-argon2-perl-dbgsym
+
+rpm:
+  summary: Perl interface to the Argon2 key derivation functions
+  compression: zstd
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}

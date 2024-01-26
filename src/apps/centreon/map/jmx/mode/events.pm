@@ -1,4 +1,4 @@
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,11 +114,11 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='session')
+(example: --filter-counters='session')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restart-rate', 'update-resource-rate',
 'session-expired-rate', 'update-acl-children-rate', 'sync-children-rate', 'remove-child-rate',
 'update-status-resource-rate', 'remove-resource-rate', 'update-status-inherited-rate', 'add-child-rate',
@@ -128,7 +128,7 @@ Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restar
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'open-gate-rate', 'close-gate-rate', 'add-resource-rate', 'poller-restart-rate', 'update-resource-rate',
 'session-expired-rate', 'update-acl-children-rate', 'sync-children-rate', 'remove-child-rate',
 'update-status-resource-rate', 'remove-resource-rate', 'update-status-inherited-rate', 'add-child-rate',

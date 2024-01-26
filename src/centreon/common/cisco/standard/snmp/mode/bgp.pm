@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,7 +219,10 @@ sub manage_selection {
         }
 
         my $local;
-        if (length($result->{localAddr}) == 4) {
+        # it can be empty
+        if (length($result->{localAddr}) == 0) {
+            $local = '-';
+        } elsif (length($result->{localAddr}) == 4) {
             $local = Socket::inet_ntop(Socket::AF_INET, $result->{localAddr}) . ':' . $result->{localPort};
         } else {
             $local = '[' . Socket::inet_ntop(Socket::AF_INET6, $result->{localAddr}) . ']:' . $result->{localPort};
@@ -260,18 +263,18 @@ Filter based on IP of peers (regexp allowed)
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
-Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
+Define the conditions to match for the status to be CRITICAL (default: '%{adminStatus} =~ /start/ && %{state} !~ /established/').
+You can use the following variables: %{adminStatus}, %{state}, %{localAddr}, %{remoteAddr}, %{remoteAs}
 
 =item B<--warning-*> B<--critical-*>
 

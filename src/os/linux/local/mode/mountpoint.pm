@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -130,32 +130,32 @@ Command used: mount 2>&1
 
 =item B<--filter-mountpoint>
 
-Filter mount point name (Can use regexp).
+Filter mount point name (can use regexp).
 
 =item B<--exclude-mountpoint>
 
-Exclude mount point name (Can use regexp).
+Exclude mount point name (can use regexp).
 
 =item B<--filter-device>
 
-Filter device name (Can use regexp).
+Filter device name (can use regexp).
 
 =item B<--exclude-device>
 
-Exclude device name (Can use regexp).
+Exclude device name (can use regexp).
 
 =item B<--filter-type>
 
-Filter mount point type (Can use regexp).
+Filter mount point type (can use regexp).
 
 =item B<--warning-status>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-status>
 
-Threshold critical
-(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
+Critical threshold
+(default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
 
 =back
 

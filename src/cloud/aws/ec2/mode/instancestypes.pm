@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,7 +219,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html' fo
 =item B<--filter-family>
 
 Filter by instance family (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
+(can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
 
 =item B<--filter-type>
 
@@ -227,7 +227,7 @@ Filter by instance type (regexp)
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'a1.medium', 'a1.large', 'a1.xlarge', 'a1.2xlarge', 'a1.4xlarge', 'm4.large',
 'm4.xlarge', 'm4.2xlarge', 'm4.4xlarge', 'm4.10xlarge', 'm4.16xlarge', 'm5.large',
 'm5.xlarge', 'm5.2xlarge', 'm5.4xlarge', 'm5.8xlarge', 'm5.12xlarge', 'm5.16xlarge',

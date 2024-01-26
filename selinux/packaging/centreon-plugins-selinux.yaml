@@ -1,0 +1,42 @@
+name: "centreon-plugins-selinux"
+arch: "amd64"
+platform: "linux"
+version_schema: "none"
+version: "0.0.8"
+release: "${RELEASE}${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  SELinux context for centreon-plugins
+vendor: "Centreon"
+homepage: "https://centreon.com"
+license: "Apache-2.0"
+
+depends:
+  - policycoreutils
+  - centreon-common-selinux
+  - centreon-engine-selinux
+  - centreon-broker-selinux
+replaces:
+  - centreon-plugins-selinux-debuginfo
+conflicts:
+  - centreon-plugins-selinux-debuginfo
+provides:
+  - centreon-plugins-selinux-debuginfo
+
+contents:
+  - src: "../src/centreon-plugins.pp"
+    dst: "/usr/share/selinux/packages/centreon/centreon-plugins.pp"
+    file_info:
+      mode: 0655
+
+scripts:
+  postinstall: ./scripts/centreon-plugins-selinux-postinstall.sh
+  preremove: ./scripts/centreon-plugins-selinux-preremove.sh
+
+rpm:
+  summary: SELinux context for centreon-plugins
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}

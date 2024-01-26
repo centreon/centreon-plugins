@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -179,7 +179,7 @@ Filter on event log source.
 =item B<--filter-logfile>
 
 Filter on specific logfile.
-Ex: Application, System
+Example: Application, System.
 
 =item B<--filter-type>
 
@@ -188,7 +188,7 @@ Can be: 'information', 'critical', 'warning', 'error', 'verbose'.
 
 =item B<--timeframe>
 
-Time frame to filter events on hour (Default: 1).
+Time frame to filter events on hour (default: 1).
 
 =item B<--warning-*> B<--critical-*>
 

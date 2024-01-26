@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -192,22 +192,22 @@ Default statistic: 'average' / Only valid statistic: 'average'.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'asg', 'instance').
+Set the instance type (required) (can be: 'asg', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (Can be multiple).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}.
 'status' can be: 'passed', 'failed'.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{status}.
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
+You can use the following variables: %{status}.
 'status' can be: 'passed', 'failed'.
 
 =back

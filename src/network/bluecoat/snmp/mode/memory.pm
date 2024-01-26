@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,11 +108,11 @@ Check bluecoat memory.
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--nocache>
 

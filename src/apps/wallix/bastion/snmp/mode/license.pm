@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -191,7 +191,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unit:s' => { name => 'unit', default => 's' }
+        'filter-category:s' => { name => 'filter_category' },
+        'unit:s'            => { name => 'unit', default => 's' }
     });
 
     return $self;
@@ -208,6 +209,9 @@ sub check_options {
 
 sub add_license {
     my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
+        $options{name} !~ /$self->{option_results}->{filter_category}/);
 
     $self->{licenses}->{ $options{name} } = {
         name => $options{name},
@@ -300,20 +304,23 @@ Check license.
 
 =over 8
 
-=item B<--warning-status>
+=item B<--filter-category>
 
-Set warning threshold for status.
-Can used special variables like: %{status}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{status} eq "expired"').
-Can used special variables like: %{status}
+Filter licenses by category ('primary', 'secondary', 'resource').
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the expired license thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "expired"').
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,8 +38,7 @@ sub new {
         'list-resources'    => 'cloud::azure::compute::virtualmachine::mode::listresources',
         'memory'            => 'cloud::azure::compute::virtualmachine::mode::memory',
         'network'           => 'cloud::azure::compute::virtualmachine::mode::network',
-        'vm-sizes'          => 'cloud::azure::compute::virtualmachine::mode::vmsizes',
-        'vms-state'         => 'cloud::azure::compute::virtualmachine::mode::vmsstate'
+        'vm-sizes'          => 'cloud::azure::compute::virtualmachine::mode::vmsizes'
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';

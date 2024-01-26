@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'pending-updates', nlabel => 'windows.pending.updates.count', set => {
                 key_values => [ { name => 'num' } ],
-                output_template => 'windows pending updates: %s',
+                output_template => 'pending Windows updates: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -138,7 +138,7 @@ __END__
 
 =head1 MODE
 
-Check windows pending updates.
+Check pending Windows updates.
 
 =over 8
 
@@ -152,11 +152,11 @@ Print powershell output.
 
 =item B<--filter-title>
 
-Filter windows updates by title (can be a regexp).
+Filter Windows updates by title (can be a regexp).
 
 =item B<--exclude-title>
 
-Exclude windows updates by title (regexp can be used).
+Exclude Windows updates by title (regexp can be used).
 
 =item B<--display-updates>
 

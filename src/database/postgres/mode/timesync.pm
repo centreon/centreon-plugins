@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -106,11 +106,11 @@ Compares the local system time with the time reported by Postgres
 
 =item B<--warning>
 
-Threshold warning in seconds. (use a range. it can be -0.3s or +0.3s.)
+Warning threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
 
 =item B<--critical>
 
-Threshold critical in seconds. (use a range. it can be -0.3s or +0.3s.)
+Critical threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
 
 =back
 

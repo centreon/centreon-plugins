@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,29 +167,29 @@ App guid to look for.
 
 =item B<--warning-app-state>
 
-Threshold warning for app state.
+Warning threshold for app state.
 
 =item B<--critical-app-state>
 
-Threshold critical for app state (Default: '%{state} !~ /STARTED/i').
+Critical threshold for app state (default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-instance-state>
 
-Threshold warning for instances state.
+Warning threshold for instances state.
 
 =item B<--critical-instance-state>
 
-Threshold critical for instances state (Default: '%{state} !~ /RUNNING/i').
+Critical threshold for instances state (default: '%{state} !~ /RUNNING/i').
 
 =item B<--warning-*>
 
-Threshold warning for instances count based 
-on state (Can be: 'running', 'stopped', 'crashed')
+Warning threshold for instances count based 
+on state (can be: 'running', 'stopped', 'crashed')
 
 =item B<--critical-*>
 
-Threshold critical for instances count based 
-on state (Can be: 'running', 'stopped', 'crashed').
+Critical threshold for instances count based 
+on state (can be: 'running', 'stopped', 'crashed').
 
 =back
 

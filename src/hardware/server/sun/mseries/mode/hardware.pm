@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -225,7 +225,7 @@ Get sensors perfdatas.
 
 =item B<--exclude>
 
-Exclude some parts (multiple values) (Example: --exclude=TYPE.PART)
+Exclude some parts (multiple values) (example: --exclude=TYPE.PART)
 TYPE = board type ('cpum', 'mem', ...)
 PART = name
 (a regexp can be used)

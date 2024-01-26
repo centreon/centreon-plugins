@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -221,18 +221,18 @@ Filter interface by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{enabled}, %{state}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{enabled}, %{state}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{enabled} eq "yes" and %{state} eq "down"').
-Can used special variables like: %{enabled}, %{state}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{enabled} eq "yes" and %{state} eq "down"').
+You can use the following variables: %{enabled}, %{state}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -429,23 +429,22 @@ Set your domain expiration date timezone (default: 'UTC').
 
 =item B<--unknown-status>
 
-Set critical threshold for status (Default: '%{status} =~ /checkError/i').
-Can used special variables like: %{status}, %{domain}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /checkError/i').
+You can use the following variables: %{status}, %{domain}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{domain}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{domain}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can used special variables like: %{status}, %{domain}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{status}, %{domain}
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,6 +129,14 @@ sub read_config {
 			<critical>a .*?chou.</critical>
 		</messages>
 	</dcdiag>
+	<dcdiag language="it">
+		<messages>
+			<global>Inizio test.*?:\s+(.*?)\n.*?(superato|warning|non ha superato)</global>
+			<ok>superato</ok>
+			<warning>warning</warning>
+			<critical>non ha superato</critical>
+		</messages>
+	</dcdiag>
 </root>
 END_FILE
 
@@ -246,8 +254,8 @@ Check Windows Active Directory Health (use 'dcdiag' command).
 
 =item B<--config>
 
-command can be localized by using a configuration file.
-This parameter can be used to specify an alternative location for the configuration file
+The command can be localized by using a configuration file.
+This parameter can be used to specify an alternative location for the configuration file.
 
 =item B<--language>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'lockswaits', type => 0 },
+        { name => 'lockswaits', type => 0 }
     ];
 
     $self->{maps_counters}->{lockswaits} = [
@@ -36,10 +36,10 @@ sub set_counters {
                 key_values => [ { name => 'value' } ],
                 output_template => '%.2f dead locks/s',
                 perfdatas => [
-                    { template => '%.2f', min => 0 },
-                ],
+                    { template => '%.2f', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -50,7 +50,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-database:s" => { name => 'filter_database' },
+        'filter-database:s' => { name => 'filter_database' }
     });
 
     return $self;
@@ -91,17 +91,17 @@ Check MSSQL locks-waits per second
 
 =over 8
 
-=item B<--warning-lockswait>
+=item B<--warning-lockswaits>
 
-Threshold warning number of lock-waits per second.
+Warning threshold number of lock-waits per second.
 
-=item B<--critical-lockswait>
+=item B<--critical-lockswaits>
 
-Threshold critical number of lock-waits per second.
+Critical threshold number of lock-waits per second.
 
 =item B<--filter-database>
 
-Filter database to check.
+Filter the databases to monitor with a regular expression.
 
 =back
 

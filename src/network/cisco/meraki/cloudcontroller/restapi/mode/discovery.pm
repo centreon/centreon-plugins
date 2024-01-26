@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,23 +204,23 @@ Prettify JSON output.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'device', 'network').
+Choose the type of resources to discover (can be: 'device', 'network').
 
 =item B<--filter-network-id>
 
-Filter by network id (Can be a regexp).
+Filter by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter by organization id (Can be a regexp).
+Filter by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter by organization name (Can be a regexp).
+Filter by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter by tags (Can be a regexp).
+Filter by tags (can be a regexp).
 
 =back
 

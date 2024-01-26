@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -113,11 +113,11 @@ Example: --filter-counters='^requestv4$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 
 General name server statistics: 'udp', 'tcp', 'requestv4', 'requestv6', 'recursion', 'response',
 'recurserej', 'duplicate', 'dropped', 'res-queryv4', 'res-queryv6', 'res-retry',

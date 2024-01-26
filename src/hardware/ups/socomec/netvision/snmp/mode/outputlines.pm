@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -193,18 +193,18 @@ Ignore counters equals to 0.
 
 =item B<--unknown-source-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}
 
 =item B<--warning-source-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}
 
 =item B<--critical-source-status>
 
-Set critical threshold for status.
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 

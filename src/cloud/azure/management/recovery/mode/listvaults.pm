@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,7 +129,7 @@ Set resource location.
 
 =item B<--filter-name>
 
-Filter vault name (Can be a regexp).
+Filter vault name (can be a regexp).
 
 =back
 

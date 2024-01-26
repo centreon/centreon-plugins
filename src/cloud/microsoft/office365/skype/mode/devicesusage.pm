@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -230,7 +230,7 @@ __END__
 
 Check devices usage (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/SkypeForBusiness/skype-for-business-online-reporting/device-usage-report)
 
 =over 8
@@ -241,14 +241,14 @@ Filter users.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-devices', 'windows' (count), 'ipad' (count),
 'iphone' (count), 'android-phone' (count),
 'windows-phone' (count).
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-devices', 'windows' (count), 'ipad' (count),
 'iphone' (count), 'android-phone' (count),
 'windows-phone' (count).
@@ -260,7 +260,7 @@ Example to hide per user counters: --filter-counters='windows'
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

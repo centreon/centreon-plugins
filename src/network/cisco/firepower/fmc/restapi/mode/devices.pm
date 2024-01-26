@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,26 +182,26 @@ Check devices.
 
 =item B<--filter-domain-name>
 
-Filter devices by domain name (Can be a regexp).
+Filter devices by domain name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--unknown-device-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-status>
 
-Set warning threshold for status (Default: '%{status} =~ /yellow/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /yellow/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-status>
 
-Set critical threshold for status (Default: '%{status} =~ /red|black/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /red|black/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

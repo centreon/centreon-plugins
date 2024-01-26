@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -300,13 +300,13 @@ Check alarms.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /warning|minor/i')
-Can used special variables like: %{severity}, %{type}, %{label}, %{since}
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /warning|minor/i')
+You can use the following variables: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{severity} =~ /critical|major/i').
-Can used special variables like: %{severity}, %{type}, %{label}, %{since}
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical|major/i').
+You can use the following variables: %{severity}, %{type}, %{label}, %{since}
 
 =item B<--timezone>
 

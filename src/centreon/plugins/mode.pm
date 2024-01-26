@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,6 +32,7 @@ sub new {
     $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
     
     %{$self->{option_results}} = ();
+    @{$self->{option_extras}} = @{$options{options}->{extra_arguments}};
     $self->{output} = $options{output};
     $self->{output}->use_new_perfdata(value => 1)
         if (defined($options{force_new_perfdata}) && $options{force_new_perfdata} == 1);

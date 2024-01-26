@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,12 +167,12 @@ Check Output lines metrics (load, voltage, current).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
 
 =back

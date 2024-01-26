@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -196,12 +196,12 @@ List virtual machine resources sizes.
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--filter-type>
 
 Filter by virtual machine type (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
+(can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
 
 =item B<--filter-size>
 
@@ -209,7 +209,7 @@ Filter by virtual machine size (regexp)
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'standard-b1s', 'standard-b1ms', 'standard-b2s', 'standard-b2ms', 'standard-b4ms', 'standard-b8ms',
 'standard-d2s-v3', 'standard-d4s-v3', 'standard-d8s-v3', 'standard-d16s-v3', 'standard-d32s-v3',
 'standard-d64s-v3', 'standard-d2-v3', 'standard-d4-v3', 'standard-d8-v3', 'standard-d16-v3', 'standard-d32-v3',
@@ -235,7 +235,7 @@ Can be: 'standard-b1s', 'standard-b1ms', 'standard-b2s', 'standard-b2ms', 'stand
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'standard-b1s', 'standard-b1ms', 'standard-b2s', 'standard-b2ms', 'standard-b4ms', 'standard-b8ms',
 'standard-d2s-v3', 'standard-d4s-v3', 'standard-d8s-v3', 'standard-d16s-v3', 'standard-d32s-v3',
 'standard-d64s-v3', 'standard-d2-v3', 'standard-d4-v3', 'standard-d8-v3', 'standard-d16-v3', 'standard-d32-v3',

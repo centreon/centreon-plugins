@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -161,11 +161,11 @@ Filter by zone access points name (can be a regexp).
 
 =item B<--warning-usage>
 
-Threshold warning in percentage of bandwidth limit.
+Warning threshold in percentage of bandwidth limit.
 
 =item B<--critical-usage>
 
-Threshold critical in percentage of bandwidth limit.
+Critical threshold in percentage of bandwidth limit.
 
 =back
 

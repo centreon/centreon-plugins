@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -151,15 +151,15 @@ Endpoint hostname.
 
 =item B<--port>
 
-Port used (Default: 80)
+Port used (default: 80)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--urlpath>
 
-URL to scrape metrics from (Default: '/metrics').
+URL to scrape metrics from (default: '/metrics').
 
 =item B<--username>
 
@@ -171,7 +171,7 @@ Endpoint password.
 
 =item B<--timeout>
 
-Set HTTP timeout (Default: 10).
+Set HTTP timeout (default: 10).
 
 =back
 

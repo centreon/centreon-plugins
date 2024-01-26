@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,32 +175,32 @@ Example: --filter-counters='^sync-status$'
 
 =item B<--warning-sync-status>
 
-Set warning threshold for status (Default: '%{sync_status} =~ /Running with autonomy|Free running/i').
-Can used special variables like: %{sync_status}
+Define the conditions to match for the status to be WARNING (default: '%{sync_status} =~ /Running with autonomy|Free running/i').
+You can use the following variables: %{sync_status}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for status (Default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
-Can used special variables like: %{sync_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
+You can use the following variables: %{sync_status}
 
 =item B<--warning-timebase-status>
 
-Set warning threshold for status (Default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
-Can used special variables like: %{timebase_status}
+Define the conditions to match for the status to be WARNING (default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
+You can use the following variables: %{timebase_status}
 
 =item B<--critical-timebase-status>
 
-Set critical threshold for status (Default: '%{timebase_status} =~ /^XO$/i').
-Can used special variables like: %{timebase_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{timebase_status} =~ /^XO$/i').
+You can use the following variables: %{timebase_status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ntp-requests'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ntp-requests'.
 
 =back

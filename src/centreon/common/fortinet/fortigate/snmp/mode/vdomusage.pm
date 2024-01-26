@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -435,13 +435,13 @@ Time in minutes before reloading cache file (default: 60).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{op_mode}, %{ha_state}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{op_mode}, %{ha_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{op_mode}, %{ha_state}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{op_mode}, %{ha_state}
 
 =item B<--warning-*> B<--critical-*>
 

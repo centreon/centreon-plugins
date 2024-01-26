@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -118,11 +118,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'directory:s@' => { name => 'directory' },
-        'file:s@'      => { name => 'file' },
-        'max-depth:s'  => { name => 'max_depth', default => 0 },
-        'timezone:s'   => { name => 'timezone' },
-        'unit:s'       => { name => 'unit', default => 's' }
+        'filter-file:s' => { name => 'filter_file' },
+        'directory:s@'  => { name => 'directory' },
+        'file:s@'       => { name => 'file' },
+        'max-depth:s'   => { name => 'max_depth', default => 0 },
+        'timezone:s'    => { name => 'timezone' },
+        'unit:s'        => { name => 'unit', default => 's' }
     });
 
     return $self;
@@ -189,6 +190,9 @@ sub check_directory {
                 next if ($file->[1] eq '.' || $file->[1] eq '..');
 
                 my $name = $dir . '/' . $file->[1];
+
+                next if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
+                    $name !~ /$self->{option_results}->{filter_file}/);
 
                 if ($file->[0] == SMBC_DIR) {
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
@@ -263,15 +267,19 @@ Check files.
 
 =item B<--directory>
 
-Check directory (Multiple option)
+Check directory (multiple option).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only). Used for directory counting files and size.
+Don't check fewer levels (default: '0'. Means current dir only). Used for directory counting files and size.
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option).
+
+=item B<--filter-file>
+
+Filter files (can be a regexp. Directory in the name).
 
 =item B<--timezone>
 
@@ -280,8 +288,7 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--unit>
 
-Select the unit for modified time threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the modified time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

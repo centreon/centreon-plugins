@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,6 +98,7 @@ sub set_counters {
                 { name => 'device_performance', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_connections', type => 0, cb_prefix_output => 'prefix_connection_output', skipped_code => { -10 => 1 } },
                 { name => 'device_traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1, -11 => 1 } },
+                { name => 'device_links_counters', type => 0, skipped_code => { -10 => 1, -11 => 1 } },
                 { name => 'device_links', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } },
                 { name => 'device_ports', display_long => 1, cb_prefix_output => 'prefix_port_output',  message_multiple => 'All ports are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
@@ -144,7 +145,7 @@ sub set_counters {
                     { template => '%s', min => 0, max => 'total' }
                 ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{device_status} = [
@@ -217,7 +218,7 @@ sub set_counters {
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
         },
@@ -226,7 +227,18 @@ sub set_counters {
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{device_links_counters} = [
+        { label => 'links-ineffective', nlabel => 'device.links.ineffective.count', display_ok => 0, set => {
+                key_values => [ { name => 'ineffective' } ],
+                output_template => 'links ineffective: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -356,6 +368,8 @@ sub add_uplink {
     );
 
     if (defined($links)) {
+        $self->{devices}->{ $options{serial} }->{device_links_counters} = { ineffective => 0 };
+
         foreach (@$links) {
             my $interface = lc($_->{interface});
             $interface =~ s/\s+//g;
@@ -363,6 +377,8 @@ sub add_uplink {
                 display => $interface,
                 link_status => lc($_->{status})
             };
+            $self->{devices}->{ $options{serial} }->{device_links_counters}->{ineffective}++
+                if ($_->{status} =~ /failed|Not Connected/i);
         }
     }
 }
@@ -563,23 +579,23 @@ Check devices.
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter devices by network id (Can be a regexp).
+Filter devices by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (Can be a regexp).
+Filter devices by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter devices by organization name (Can be a regexp).
+Filter devices by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter devices by tags (Can be a regexp).
+Filter devices by tags (can be a regexp).
 
 =item B<--add-switch-ports>
 
@@ -587,7 +603,7 @@ Add switch port statuses and traffic.
 
 =item B<--filter-switch-port>
 
-Filter switch port (Can be a regexp).
+Filter switch port (can be a regexp).
 
 =item B<--skip-clients>
 
@@ -607,48 +623,48 @@ Skip port traffic counters if port status is disconnected.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /alerting/i').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alerting/i').
+You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status.
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} =~ /failed/i').
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} =~ /failed/i').
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status.
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
-Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
+You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
@@ -656,7 +672,7 @@ Thresholds.
 Can be: 'total-online', 'total-online-prct', 'total-offline', 'total-offline-prct', 'total-alerting',
 'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
 'connections-assoc', 'connections-dhcp', 'connections-dns',
-'load', 'link-latency' (ms), ''link-loss' (%),
+'load', 'links-ineffective', 'link-latency' (ms), ''link-loss' (%),
 'port-traffic-in', 'port-traffic-out'.
 
 =back

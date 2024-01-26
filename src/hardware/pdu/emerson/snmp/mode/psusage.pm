@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -197,7 +197,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{ps}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot found power sources.");
+        $self->{output}->add_option_msg(short_msg => "Cannot find power sources.");
         $self->{output}->option_exit();
     }
 }
@@ -223,13 +223,13 @@ Example: --filter-counters='^(power|energy)$'
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'power', 'energy', 'current-neutral',
 'line-load', 'line-current'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'power', 'energy', 'current-neutral',
 'line-load', 'line-current'.
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -256,7 +256,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 If you don't, you get costs for the whole subscription.
 
@@ -265,14 +265,14 @@ Example: --resource-group=MYRESOURCEGROUP1 --resource-group=MYRESOURCEGROUP2
 
 =item B<--tags>
 
-Set tags to filter on (Optional).
+Set tags to filter on (optional).
 
 You can specify multiple tags. You will get results for the resource groups matching all the tags specified.
 Example: --tags='Environment => DEV' --tags='managed_by => automation'
 
 =item B<--lookup-days>
 
-Days backward to look up (Default: '30').
+Days backward to look up (default: '30').
 
 =item B<--warning-subscription-costs>
 

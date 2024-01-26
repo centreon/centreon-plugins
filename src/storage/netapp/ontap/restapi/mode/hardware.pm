@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,18 +28,31 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{cb_hook2} = 'execute_custom';
+    $self->{cb_hook2} = 'save_custom';
 
     $self->{thresholds} = {
         state => [
             ['ok', 'OK'],
             ['error', 'CRITICAL'],
             ['.*', 'CRITICAL']
+        ],
+        disk => [
+            ['present', 'OK'],
+            ['broken', 'CRITICAL'],
+            ['copy', 'OK'],
+            ['maintenance', 'OK'],
+            ['partner', 'OK'],
+            ['reconstructing', 'OK'],
+            ['removed', 'OK'],
+            ['spare', 'OK'],
+            ['unfail', 'OK'],
+            ['zeroing', 'OK'],
+            ['n/a', 'OK']
         ]
     };
     
     $self->{components_path} = 'storage::netapp::ontap::restapi::mode::components';
-    $self->{components_module} = ['shelf', 'bay', 'fru'];
+    $self->{components_module} = ['bay', 'disk', 'fru', 'shelf'];
 }
 
 sub new {
@@ -52,10 +65,24 @@ sub new {
     return $self;
 }
 
-sub execute_custom {
+sub get_disks {
     my ($self, %options) = @_;
 
-    $self->{json_results} = $options{custom}->request_api(endpoint => '/api/storage/shelves?fields=*');
+    return $self->{custom}->request_api(endpoint => '/api/storage/disks?fields=*');
+}
+
+sub get_shelves {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{shelves}));
+
+    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=*');
+}
+
+sub save_custom {
+    my ($self, %options) = @_;
+
+    $self->{custom} = $options{custom};
 }
 
 1;
@@ -68,23 +95,21 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
-Can be: 'shelf', 'bay', 'fru'.
+Which component to check (default: '.*').
+Can be: 'bay', 'disk', 'fru', 'shelf'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter='fru,-'
+Exclude some parts (comma separated list)
+You can also exclude items from specific instances: --filter='fru,-'
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='fru,OK,error'
 
 =back

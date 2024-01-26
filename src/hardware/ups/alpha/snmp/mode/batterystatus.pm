@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,27 +160,27 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /batteryLow/i').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /batteryDepleted/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /batteryDepleted/i').
+You can use the following variables: %{status}
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'load', 'voltage', 'current', 'temperature'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'load', 'voltage', 'current', 'temperature'.
 
 =back

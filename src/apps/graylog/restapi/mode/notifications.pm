@@ -1,5 +1,5 @@
 #
-## Copyright 2023 Centreon (http://www.centreon.com/)
+## Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -121,20 +121,20 @@ More information on https://docs.graylog.org/en/<version>/pages/configuration/re
 
 Filter on specific notification severity.
 Can be 'normal' or 'urgent'.
-(Default: both severities shown).
+(default: both severities shown).
 
 =item B<--filter-node>
 
 Filter notifications by node ID.
-(Default: all notifications shown).
+(default: all notifications shown).
 
 =item B<--warning-notifications-*>
 
-Set warning threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
+Set warning threshold for notifications count (default: '') where '*' can be 'total', 'normal'  or 'urgent'.
 
 =item B<--critical-notifications-*>
 
-Set critical threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
+Set critical threshold for notifications count (default: '') where '*' can be 'total', 'normal'  or 'urgent'.
 
 =back
 

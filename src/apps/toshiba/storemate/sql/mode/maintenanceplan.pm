@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -157,13 +157,13 @@ Database name (default: 'Framework').
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{description}, %{workstation_id}, %{since}
+Define the conditions to match for the status to be WARNING (default: '')
+You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '1 == 1'. We match all errors).
-Can used special variables like: %{description}, %{workstation_id}, %{since}
+Define the conditions to match for the status to be CRITICAL (default: '1 == 1'. We match all errors).
+You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--timezone>
 

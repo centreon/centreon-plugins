@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,8 +128,7 @@ Check PBX State.
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='state,CRITICAL,^(?!(normal)$)'
 
 =back

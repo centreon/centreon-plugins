@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,7 +136,7 @@ Hmc command to list events (default: lssvcevents).
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--retention>
 
@@ -148,7 +148,7 @@ Retention in minutes. Use with option --retention.
 
 =item B<--filter-status>
 
-Filter by status ("open" or "closed") (Default : open).
+Filter by status ("open" or "closed") (default : open).
 
 =item B<--filter-problem-nums>
 

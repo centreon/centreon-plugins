@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Safe;
 
 my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
 my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11';
@@ -38,13 +39,17 @@ sub new {
         'diskpath:s'              => { name => 'diskpath' },
         'name'                    => { name => 'use_name' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_regexpi' },
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'skip-total-size-zero'    => { name => 'skip_total_size_zero' }
     });
 
     $self->{diskpath_id_selected} = [];
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -75,8 +80,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $display_value . "' [id = " . $_ . ']');
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List disk path:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List disk path:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -95,13 +102,18 @@ sub get_additional_information {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{datas}->{'dskPath_' . $options{id}};
 
+    our $assign_var = $self->{datas}->{'dskPath_' . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
     }
-    return $value;
+
+    return $assign_var;
 }
 
 sub manage_selection {
@@ -179,8 +191,10 @@ sub disco_show {
         }
         my $display_value = $self->get_display_value(id => $_);
 
-        $self->{output}->add_disco_entry(name => $display_value,
-                                         diskpathid => $_);
+        $self->{output}->add_disco_entry(
+            name => $display_value,
+            diskpathid => $_
+        );
     }
 }
 
@@ -197,7 +211,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) ex: 1, 2,... (empty means 'check all disks path').
+Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 
@@ -207,17 +221,15 @@ Allows to use disk path name with option --diskpath instead of disk path oid ind
 
 Allows to use regexp to filter diskpath (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value. (security risk!!!)
+Modify the disk path name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--skip-total-size-zero>
 

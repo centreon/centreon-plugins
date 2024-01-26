@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -271,22 +271,22 @@ Filter virtual machine name (can be a regexp).
 =item B<--warning-vm-power-state>
 
 Set warning threshold for the virtual machine power state.
-Can used special variables like: %{vmPowerState}.
+You can use the following variables: %{vmPowerState}.
 
 =item B<--critical-vm-power-state>
 
 Set critical threshold for the virtual machine power state.
-Can used special variables like: %{vmPowerState}.
+You can use the following variables: %{vmPowerState}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'memory' (%s), 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'avg-latency', 'read-iops', 'write-iops',
 'cpu' (%), 'memory' (%s), 'traffic-in', 'traffic-out'.
 

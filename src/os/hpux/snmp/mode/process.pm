@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -169,21 +169,21 @@ __END__
 
 =head1 MODE
 
-Check system number of processes.
+Monitor the number of system processes.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning (process count).
+Warning threshold (process count).
 
 =item B<--critical>
 
-Threshold critical (process count).
+Critical threshold (process count).
 
 =item B<--process-cmd>
 
-Check process command.
+Define the command of the processes to check.
 
 =item B<--regexp-cmd>
 
@@ -191,7 +191,7 @@ Allows to use regexp to filter process command (with option --process-cmd).
 
 =item B<--process-status>
 
-Check process status (Default: 'run'). Can be a regexp.
+Define the status(es) of the processes to check (default: 'run'). Can be a regexp.
 
 =back
 

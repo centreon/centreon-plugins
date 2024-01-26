@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -322,18 +322,18 @@ Display virtual machine description.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
-Can used special variables like: %{connection_state}, %{power_state}
+Define the conditions to match for the status to be UNKNOWN (default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
+You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{connection_state}, %{power_state}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{connection_state}, %{power_state}
 
 =item B<--speed-in>
 
@@ -345,16 +345,16 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'swap-in', 'swap-out'.
 
 =back

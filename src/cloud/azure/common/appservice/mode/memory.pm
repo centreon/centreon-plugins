@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,14 +41,6 @@ sub get_metrics_mapping {
             'output'  => 'Memory working set',
             'label'   => 'app-memory',
             'nlabel'  => 'appservice.memory.usage.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => '',
-        },
-        'privatebytes' => {
-            'output'  => 'Private Bytes',
-            'label'   => 'app-private-bytes',
-            'nlabel'  => 'appservice.memory.privatebytes.usage.bytes',
             'unit'    => 'B',
             'min'     => '0',
             'max'     => '',
@@ -119,13 +111,13 @@ Check Azure App Service app memory usage.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-app-memory='80' --critical-app-memory='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
@@ -137,21 +129,21 @@ Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+'app-average-memory', 'app-memory'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+'app-average-memory', 'app-memory'.
 
 =back
 

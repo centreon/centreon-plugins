@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -232,33 +232,33 @@ Check pdu environmental sensors.
 
 =item B<--unknown-temperature-status>
 
-Set unknon threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-temperature-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-temperature-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "bad"').
+You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-humidity-status>
 
-Set unknon threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-humidity-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}, %{display}
 
 =item B<--critical-humidity-status>
 
-Set critical threshold for status (Default: '%{status} eq "bad"').
-Can used special variables like: %{status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "bad"').
+You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

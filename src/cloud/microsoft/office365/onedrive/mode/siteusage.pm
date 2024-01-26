@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -351,7 +351,7 @@ __END__
 
 Check sites usage (reporting period over the last refreshed day).
 
-(See link for details about metrics :
+(see link for details about metrics :
 https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage?view=o365-worldwide)
 
 =over 8
@@ -363,7 +363,7 @@ Can be: 'url', 'owner' (can be a regexp).
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active-sites',
 'total-usage-active' (count), 'total-usage-inactive' (count),
 'total-file-count-active' (count), 'total-file-count-inactive' (count),
@@ -372,7 +372,7 @@ Can be: 'active-sites',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active-sites',
 'total-usage-active' (count), 'total-usage-inactive' (count),
 'total-file-count-active' (count), 'total-file-count-inactive' (count),
@@ -383,11 +383,11 @@ Can be: 'active-sites',
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active-sites|total'
-(Default: 'active-sites|total')
+(default: 'active-sites|total')
 
 =item B<--units>
 
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

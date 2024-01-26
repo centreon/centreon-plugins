@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,15 +258,15 @@ HashiCorp Vault hostname.
 
 =item B<--port>
 
-Port used (Default: 8200)
+Port used (default: 8200)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-version>
 
-Specify the Vault API version (Default: 'v1')
+Specify the Vault API version (default: 'v1')
 
 =item B<--vault-token>
 
@@ -274,7 +274,7 @@ Specify the Vault access token (only for the 'token' authentication method)
 
 =item B<--auth-method>
 
-Specify the Vault authentication method (Default: 'token').
+Specify the Vault authentication method (default: 'token').
 Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass', 'token'
 If different from 'token' the "--auth-settings" options must be set.
 
@@ -286,7 +286,7 @@ Syntax: --auth-settings='<setting>=<value>'.Example for the 'userpass' method:
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

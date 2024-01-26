@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -249,18 +249,18 @@ Example: --filter-counters='node-status'
 
 =item B<--unknown-node-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{state}, %{link_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status.
-Can used special variables like: %{state}, %{link_status}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{state} ne "online"').
-Can used special variables like: %{state}, %{link_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "online"').
+You can use the following variables: %{state}, %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

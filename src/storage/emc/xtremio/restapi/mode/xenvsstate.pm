@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -173,13 +173,12 @@ Check Xenvs state
 
 =item B<--filter>
 
-Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=device,cluster-1_xxxx
+Filter some parts (comma separated list)
+You can also exclude items from specific instances: --filter=device,cluster-1_xxxx
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='xenvs_state,CRITICAL,^(?!(ok)$)'
 
 =back

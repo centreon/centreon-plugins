@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -239,7 +239,7 @@ Specify host server output message for the alert.
 
 =item B<--host-name>
 
-Specify host server name for the alert (Required).
+Specify host server name for the alert (required).
 
 =item B<--service-description>
 
@@ -263,11 +263,11 @@ Specify the centreon token for autologin macro (could be used in link-url and gr
 
 =item B<--graph-url>
 
-Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
+Specify the graph url (example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
 
 =item B<--link-url>
 
-Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
+Specify the link url (example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
 
 =item B<--timeout>
 

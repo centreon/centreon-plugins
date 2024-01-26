@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -528,8 +528,8 @@ Example: --filter-counters='rate|latency'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{type},  
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 
 'delete-pending', 'import-pending', 'creation-failed', 'recovery'.
@@ -541,10 +541,10 @@ Can used special variables like: %{status}, %{type},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /creation-failed/i | 
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /creation-failed/i | 
 %{backup_status} =~ /failed/i | %{export_status} =~ /failed/i | 
 %{import_status} =~ /failed/i').
-Can used special variables like: %{status}, %{type},  
+You can use the following variables: %{status}, %{type},  
 %{backup_status}, %{export_status}, %{shard_list}.
 'status' can be: 'pending', 'active', 'active-change-pending', 
 'delete-pending', 'import-pending', 'creation-failed', 'recovery'.
@@ -556,7 +556,7 @@ Can used special variables like: %{status}, %{type},
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 'connections',
 'total-rates', 'latency', 'other-rates', 'other-latency', 
@@ -567,7 +567,7 @@ Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu',
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'total-cpu', 'fork-cpu', 'main-thread-cpu', 
 'memory', 'mem-frag-ratio', 'connections',
 'total-rates', 'latency', 'other-rates', 'other-latency', 

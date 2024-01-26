@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -209,6 +209,21 @@ sub get_certificate_informations {
     $cert_infos->{subject} = $socket->peer_certificate('commonName');
     $cert_infos->{issuer} = $socket->peer_certificate('authority');
 
+    if (defined($self->{ssl_context}->{SSL_verify_mode}) &&
+        defined($self->{option_results}->{servername}) &&
+        $self->{ssl_context}->{SSL_verify_mode} == SSL_VERIFY_NONE) {
+        $cert_infos->{verify_hostname} =  $socket->verify_hostname(
+            $self->{option_results}->{servername},
+            # like default scheme
+            {
+                wildcards_in_cn => 'anywhere',
+                wildcards_in_alt => 'anywhere',
+                check_cn => 'always',
+                ip_in_cn => 1,
+            }
+        );
+    }
+
     my @subject_alt_names = $socket->peer_certificate('subjectAltNames');
     my $append = '';
     $cert_infos->{alt_subjects} = '';
@@ -253,7 +268,7 @@ Port used by host.
 
 =item B<--servername>
 
-Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (eg: foo.bar.com).
+Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (example: foo.bar.com).
 
 =item B<--ssl-opt>
 
@@ -271,7 +286,7 @@ Ignore SSL handshake errors. For example: 'SSL error: SSL wants a read first'.
 
 =item B<--timeout>
 
-Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::SSL >= 1.984).
+Set timeout in seconds for SSL connection (default: '3') (only with IO::Socket::SSL >= 1.984).
 
 =item B<--starttls>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,7 +103,7 @@ Check messages in a mailbox with IMAP filter.
 
 =item B<--search>
 
-Set the search string (Required)
+Set the search string (required)
 
 =item B<--delete>
 
@@ -111,15 +111,15 @@ Delete messages found
 
 =item B<--folder>
 
-Set IMAP folder (Default: 'INBOX')
+Set IMAP folder (default: 'INBOX')
 
 =item B<--warning>
 
-Threshold warning of number messages found
+Warning threshold of number messages found
 
 =item B<--critical>
 
-Threshold critical of number message found
+Critical threshold of number message found
 
 =back
 

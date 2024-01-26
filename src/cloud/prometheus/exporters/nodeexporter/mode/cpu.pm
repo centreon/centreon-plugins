@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -178,31 +178,31 @@ Check CPU usage for nodes and each of their cores.
 
 =item B<--instance>
 
-Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--cpu>
 
-Filter on a specific cpu (Must be a PromQL filter, Default: 'cpu=~".*"')
+Filter on a specific cpu (must be a PromQL filter, Default: 'cpu=~".*"')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'node-usage', 'cpu-usage'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'node-usage', 'cpu-usage'.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (Can be multiple)
+Add a PromQL filter (can be defined multiple times)
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple)
+Overload default metrics name (can be defined multiple times)
 
 Example : --metric-overload='metric,^my_metric_name$'
 

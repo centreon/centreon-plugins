@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -253,23 +253,23 @@ Example: --filter-counters='status'
 
 =item B<--warning-device-status>
 
-Set warning threshold (Default: '%{status} =~ /warning/').
-Can used special variables like: %{status}
+Set warning threshold (default: '%{status} =~ /warning/').
+You can use the following variables: %{status}
 
 =item B<--critical-device-status>
 
-Set critical threshold (Default: '%{status} =~ /error/').
-Can used special variables like: %{status}
+Set critical threshold (default: '%{status} =~ /error/').
+You can use the following variables: %{status}
 
 =item B<--warning-process-status>
 
 Set warning threshold.
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--critical-process-status>
 
 Set critical threshold.
-Can used special variables like: %{name}, %{status}
+You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*> B<--critical-*>
 

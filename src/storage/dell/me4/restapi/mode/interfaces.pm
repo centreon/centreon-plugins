@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -233,22 +233,22 @@ Check interfaces.
 
 =item B<--filter-port-name>
 
-Filter port name (Can be a regexp).
+Filter port name (can be a regexp).
 
 =item B<--unknown-port-status>
 
-Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
-Can used special variables like: %{status}, %{health}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
+You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--warning-port-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
-Can used special variables like: %{status}, %{health}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/i').
+You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--critical-port-status>
 
-Set critical threshold for status (Default: '%{status} =~ /fault/i').
-Can used special variables like: %{status}, %{health}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /fault/i').
+You can use the following variables: %{status}, %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

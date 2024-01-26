@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -344,48 +344,48 @@ Check virtual port-channel (vPC).
 
 =item B<--unknown-peer-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--warning-peer-status>
 
-Set warning threshold for status.
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--critical-peer-status>
 
-Set critical threshold for status (Default: '%{role} ne %{role_last}').
-Can used special variables like: %{role}, %{role_last}, %{domain_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{role_last}').
+You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--unknown-keepalive-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{keepalive_status}, %{domain_id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--warning-keepalive-status>
 
-Set warning threshold for status.
-Can used special variables like: %{keepalive_status}, %{domain_id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--critical-keepalive-status>
 
-Set critical threshold for status (Default: '%{keepalive_status} ne "alive"').
-Can used special variables like: %{keepalive_status}, %{domain_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{keepalive_status} ne "alive"').
+You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status (Default: '%{link_status} =~ /downStar/i')
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{link_status} =~ /downStar/i')
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Set critical threshold for status (Default: '%{link_status} eq "down"').
-Can used special variables like: %{link_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} eq "down"').
+You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,7 +50,7 @@ sub set_system {
             ['preExtension', 'OK']
         ]
     };
-    
+
     $self->{components_path} = 'network::nokia::timos::snmp::mode::components';
     $self->{components_module} = ['entity'];
 }
@@ -82,23 +82,21 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'entity'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=entity,fan.1
+Exclude some parts (comma separated list)
+You can also exclude items from specific instances: --filter=entity,fan.1
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='entity,fan..*,CRITICAL,booting'
 
 =item B<--warning>
@@ -168,35 +166,45 @@ sub check {
         next if ($oid !~ /^$mapping->{tmnxHwName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'entity', instance => $result->{tmnxHwClass} . '.' . $instance));
-        
+
         $self->{components}->{entity}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("%s '%s' status is '%s' [instance = %s, temperature = %s]",
-                                                        $result->{tmnxHwClass}, $result->{tmnxHwName}, 
-                                                        $result->{tmnxHwOperState}, $result->{tmnxHwClass} . '.' . $instance,
-                                                        $result->{tmnxHwTempSensor} eq 'true' ? $result->{tmnxHwTemperature} : '-'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "%s '%s' status is '%s' [instance = %s, temperature = %s]",
+                $result->{tmnxHwClass}, $result->{tmnxHwName}, 
+                $result->{tmnxHwOperState}, $result->{tmnxHwClass} . '.' . $instance,
+                $result->{tmnxHwTempSensor} eq 'true' ? $result->{tmnxHwTemperature} : '-'
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'entity', instance => $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s '%s' status is '%s'", $result->{tmnxHwClass}, $result->{tmnxHwName}, $result->{tmnxHwOperState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("%s '%s' status is '%s'", $result->{tmnxHwClass}, $result->{tmnxHwName}, $result->{tmnxHwOperState}));
         }
-        
+
         next if ($result->{tmnxHwTempSensor} eq 'false');
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $result->{tmnxHwClass} . '.' . $instance,, value => $result->{tmnxHwTemperature});            
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwTemperature});            
         if ($checked == 0 && $result->{tmnxHwTempThreshold} != -1 ) {
             $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $result->{tmnxHwClass} . '.' . $instance, value => $result->{tmnxHwTempThreshold});
 
-            $exit = $self->{perfdata}->threshold_check(value => $result->{slHdwTempSensorCurrentTemp}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }]);
+            $exit = $self->{perfdata}->threshold_check(value => $result->{tmnxHwTemperature}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }]);
             $warn = undef;
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $result->{tmnxHwClass} . '.' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s '%s' temperature is '%s' C", $result->{tmnxHwClass}, 
-                                            $result->{tmnxHwName}, $result->{tmnxHwTemperature}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "%s '%s' temperature is '%s' C", $result->{tmnxHwClass}, 
+                    $result->{tmnxHwName}, $result->{tmnxHwTemperature}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',
             nlabel => 'hardware.entity.temperature.celsius',

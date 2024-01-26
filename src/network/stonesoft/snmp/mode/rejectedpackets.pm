@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,11 +131,11 @@ Check rejected packets per second by firewall.
 
 =item B<--warning>
 
-Threshold warning for blocked packets per second.
+Warning threshold for blocked packets per second.
 
 =item B<--critical>
 
-Threshold critical for blocked packets per second.
+Critical threshold for blocked packets per second.
 
 =back
 

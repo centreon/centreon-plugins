@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,7 +128,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request(endpoint => '/rest/vxm/v1/chassis');
+    my $results = $options{custom}->request(endpoint => '/chassis');
 
     $self->{global} = { num_chassis => 0, unhealthy => 0 };
     $self->{chassis} = {};
@@ -166,37 +166,37 @@ Check chassis.
 
 =item B<--filter-chassis-sn>
 
-Filter clusters by serial number (Can be a regexp).
+Filter clusters by serial number (can be a regexp).
 
 =item B<--unknown-chassis-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{chassisSn}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--warning-chassis-status>
 
-Set warning threshold for status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}, %{chassisSn}
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
+You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--critical-chassis-status>
 
-Set critical threshold for status (Default: '%{status} =~ /critical|error/i').
-Can used special variables like: %{status}, %{chassisSn}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|error/i').
+You can use the following variables: %{status}, %{chassisSn}
 
 =item B<--unknown-psu-status>
 
 Set unknown threshold for power supply status.
-Can used special variables like: %{status}, %{chassisSn}, %{psuName}
+You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--warning-psu-status>
 
-Set warning threshold for power supply status (Default: '%{status} =~ /warning/i').
-Can used special variables like: %{status}, %{chassisSn}, %{psuName}
+Set warning threshold for power supply status (default: '%{status} =~ /warning/i').
+You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--critical-psu-status>
 
-Set critical threshold for power supply status (Default: '%{status} =~ /critical|error/i').
-Can used special variables like: %{status}, %{chassisSn}, %{psuName}
+Set critical threshold for power supply status (default: '%{status} =~ /critical|error/i').
+You can use the following variables: %{status}, %{chassisSn}, %{psuName}
 
 =item B<--warning-*> B<--critical-*>
 

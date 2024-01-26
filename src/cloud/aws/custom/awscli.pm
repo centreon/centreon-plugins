@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -914,6 +914,142 @@ sub elasticache_describe_cache_clusters {
     return $results;
 }
 
+sub directconnect_describe_connections_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "directconnect describe-connections --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub directconnect_describe_connections {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->directconnect_describe_connections_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = {};
+    foreach (@{$raw_results->{connections}}) {
+        $results->{ $_->{connectionId} } = {
+            name => $_->{connectionName},
+            state => $_->{connectionState},
+            bandwidth => $_->{bandwidth}
+        };
+    }
+
+    return $results;
+}
+
+sub directconnect_describe_virtual_interfaces_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "directconnect describe-virtual-interfaces --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub directconnect_describe_virtual_interfaces {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->directconnect_describe_virtual_interfaces_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $results = {};
+    foreach (@{$raw_results->{virtualInterfaces}}) {
+        $results->{ $_->{virtualInterfaceId} } = {
+            name => $_->{virtualInterfaceName},
+            state => $_->{virtualInterfaceState},
+            type => $_->{virtualInterfaceType},
+            vlan => $_->{vlan},
+            connectionId => $_->{connectionId}
+        };
+    }
+
+    return $results;
+}
+
+sub cloudtrail_events_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "lookup-events --region $self->{option_results}->{region} --output json";
+    if (defined($options{delta})) {
+        my $endtime = time();
+        my $starttime = $endtime - ($options{delta} * 60);
+        $cmd_options .= " --start-time $starttime";
+        $cmd_options .= " --end-time $endtime";
+    }
+    $cmd_options .= " --starting-token $options{next_token}" if (length($options{next_token}));
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (length($self->{endpoint_url}));
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (length($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub cloudtrail_events {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudtrail_events_set_cmd(%options);
+
+    my $events_results = [];
+    eval {
+        while (my $list_events = $self->execute(cmd_options => $cmd_options)) {
+            foreach (@{$list_events->{Events}}) {
+                my $event = JSON::XS->new->utf8->decode($_->{CloudTrailEvent});
+                push @{$events_results}, {
+                    eventID => $event->{eventID},
+                    eventType => $event->{eventType},
+                    errorMessage => $event->{errorMessage}
+                };
+            }
+
+            last if (!defined($list_events->{NextToken}));
+            $options{next_token} = $list_events->{NextToken};
+        }
+    };
+
+    return $events_results;
+}
+
+sub cloudtrail_trail_status_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "get-trail-status --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --name $options{trail_name}";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (length($self->{endpoint_url}));
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (length($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub cloudtrail_trail_status {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudtrail_trail_status_set_cmd(%options);
+
+    my $trail_status;
+    eval {
+        $trail_status = $self->execute(cmd_options => $cmd_options);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $trail_status;
+}
+
 1;
 
 __END__
@@ -954,7 +1090,7 @@ Override AWS service endpoint URL if necessary.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 
@@ -966,16 +1102,16 @@ Set timeframe in seconds.
 
 =item B<--statistic>
 
-Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
+Set cloudwatch statistics (can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 
-Set metrics value to 0 if none. Usefull when CloudWatch
+Set metrics value to 0 if none. Useful when CloudWatch
 does not return value when not defined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--sudo>
 
@@ -983,16 +1119,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'aws').
+Command to get information (default: 'aws').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 Only use for testing purpose, when you want to set ALL parameters of a command by yourself.
 
 =item B<--proxyurl>
@@ -1001,9 +1137,9 @@ Proxy URL if any
 
 =item B<--skip-ssl-check>
 
-Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party. 
+Avoid certificate issuer verification. Useful when AWS resources are hosted by a third party. 
 
-Note that it strips all stderr from the command result. Will be enhanced someday. Debug will only display CLI instead of evreything. 
+Note that it strips all stderr from the command result. Debug will only display CLI instead of evreything.
 
 =back
 

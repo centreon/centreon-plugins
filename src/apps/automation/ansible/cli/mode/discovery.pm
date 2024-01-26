@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -111,7 +111,7 @@ Command used: ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json an
 
 =item B<--host-pattern>
 
-Specify host pattern to look for (Default: 'all').
+Specify host pattern to look for (default: 'all').
 
 =item B<--prettify>
 

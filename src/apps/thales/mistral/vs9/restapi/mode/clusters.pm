@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -290,33 +290,33 @@ Filter clusters by name.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+Define the conditions to match for the status to be WARNING (default: '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i').
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--critical-cluster-status>
 
-Set critical threshold for status (Default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
-Can used special variables like: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
+Define the conditions to match for the status to be CRITICAL (default: '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i').
+You can use the following variables: %{gatewaysClusterStatus}, %{availableForSwitching}, %{clusterName}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status.
-Can used special variables like: %{connectedStatus}, %{role}, %{memberName}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 
 =item B<--time-contact-unit>
 

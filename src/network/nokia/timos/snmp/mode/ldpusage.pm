@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -210,25 +210,25 @@ Check LDP usage.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'ipv4-oper-down-events', 'ipv4-active-sessions', 'ipv4-active-link-adj',
 'ipv4-active-target-adj'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'ipv4-oper-down-events', 'ipv4-active-sessions', 'ipv4-active-link-adj',
 'ipv4-active-target-adj'.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{ipv4_oper_state}, %{admin_state}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{admin_state} eq "inService" and %{ipv4_oper_state} !~ /inService|transition/').
-Can used special variables like: %{ipv4_oper_state}, %{admin_state}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_state} eq "inService" and %{ipv4_oper_state} !~ /inService|transition/').
+You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{display}
 
 =item B<--filter-name>
 

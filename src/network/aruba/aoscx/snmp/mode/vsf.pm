@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -235,33 +235,33 @@ Check vsf virtual chassis.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /no_split/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /no_split/i').
+You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{role}, %{roleLast}, %{id}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{role}, %{roleLast}, %{id}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--critical-member-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
-Can used special variables like: %{status}, %{role}, %{roleLast}, %{id}
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
+You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--warning-*> B<--critical-*>
 

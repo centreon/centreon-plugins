@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -194,28 +194,28 @@ Check events status and number of impacted ressources
 
 =item B<--filter-status>
 
-Filter events status (Default: 'Active')
+Filter events status (default: 'Active')
 
 =item B<--warning-event>
 
-Set warning threshold for status.
-Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--critical-event>
 
-Set critical threshold for status (Default: '%{status} =~ /Active/ && %{items} > 0').
-Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /Active/ && %{items} > 0').
+You can use the following variables: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'active', 'completed', 'published'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'active', 'completed', 'published'.
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,7 +107,7 @@ Set the query.
 
 =item B<--output-field>
 
-Set the field to verbose-output from the last matching event (ex: json.message).
+Set the field to verbose-output from the last matching event (example: json.message).
 
 =item B<--warning-*> B<--critical-*>
 

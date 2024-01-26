@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -313,95 +313,107 @@ Check cages.
 
 =item B<--filter-cage-id>
 
-Filter cages by id (can be a regexp).
+Filter cages by ID (can be a regexp).
 
 =item B<--unknown-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /Normal/i')
-
-
-Can used special variables like: %{status}, %{cage_id}
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Normal/i')
+You can use the following variables: %{status}, %{cage_id}
 
 =item B<--unknown-board-firmware-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-board-firmware-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-board-firmware-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /Current/i')
-
-
-Can used special variables like: %{status}, %{cage_id}, %{board_id}
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Current/i')
+You can use the following variables: %{status}, %{cage_id}, %{board_id}
 
 =item B<--unknown-board-[self|partner]-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-board-[self|partner]-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-board-[self|partner]-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /ok/i')
-
-
-Can used special variables like: %{status}, %{cage_id}, %{board_id}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i')
+You can use the following variables: %{status}, %{cage_id}, %{board_id}
 
 
 =item B<--unknown-psu-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-psu-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-psu-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /ok/i')
-
-
-Can used special variables like: %{status}, %{cage_id}, %{psu_id}
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i')
+You can use the following variables: %{status}, %{cage_id}, %{psu_id}
 
 =item B<--unknown-psu-[ac|dc|fan]-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-psu-[ac|dc|fan]-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-psu-[ac|dc|fan]-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /ok/i')
-
-
-Can used special variables like: %{status}, %{cage_id}, %{psu_id}
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i')
+You can use the following variables: %{status}, %{cage_id}, %{psu_id}
 
 =item B<--unknown-drive-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-drive-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-drive-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /normal/i')
-
-
-Can used special variables like: %{status}, %{cage_id}, %{drive_id}
-
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /normal/i')
+You can use the following variables: %{status}, %{cage_id}, %{drive_id}
 
 =item B<--unknown-drive-[porta|portb]-status>
 
+Define the conditions to match for the status to be UNKNOWN.
+
 =item B<--warning-drive-[porta|portb]-status>
+
+Define the conditions to match for the status to be WARNING.
 
 =item B<--critical-drive-[porta|portb]-status>
 
-Set thresholds for status (Default critical: '%{status} !~ /ok/i')
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /ok/i')
+You can use the following variables: %{status}, %{cage_id}, %{drive_id}
 
+=item B<--warning-drive-temperature>
 
-Can used special variables like: %{status}, %{cage_id}, %{drive_id}
+Define WARNING threshold for the temperature of the drives.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--critical-drive-temperature>
 
-Thresholds.
-Can be: 'drive-temperature'.
+Define CRITICAL threshold for the temperature of the drives.
 
 =back
 

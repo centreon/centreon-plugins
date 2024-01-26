@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -199,16 +199,16 @@ sub parse_output {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'ps',
-        command_options => '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1'
+        command_options => '-e -o state -o etime -o pid -o ppid -o comm:50 -o %a -w 2>&1'
     );
 
     $self->{global} = { processes => 0 };
     $self->{processes} = {};
 
-    my @lines = split /\n/, $stdout;
-    my $line = shift @lines;
+    my @lines = split(/\n/, $stdout);
+    my $line = shift(@lines);
     foreach my $line (@lines) {
-        next if ($line !~ /^(.*?)===(.*?)===(.*?)===(.*?)===(.*?)===(.*)$/);
+        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.{50})\s+(.*)$/);
         my ($state, $elapsed, $pid, $ppid, $cmd, $args) = (
             centreon::plugins::misc::trim($1),
             centreon::plugins::misc::trim($2),
@@ -295,7 +295,7 @@ sub add_memory {
         next if ($options{content} !~ /==>\s*\/proc\/$pid\/statm.*?\n(.*?)(?:==>|\Z)/ms);
         my @values = split(/\s+/, $1);
 
-        my $memory_used = ($values[1] * $self->{option_results}->{page_size}) + ($values[5] * $self->{option_results}->{page_size});
+        my $memory_used = ($values[1] * $self->{option_results}->{page_size});
         $self->{processes}->{$pid}->{memory_used} = $memory_used;
         $self->{global}->{memory_used} += $memory_used;
     }
@@ -343,7 +343,7 @@ sub add_extra_metrics {
     $self->set_timestamp(timestamp => Time::HiRes::time());
     my ($content) = $options{custom}->execute_command(
         command => 'bash',
-        command_options => "-c 'tail -n +1 /proc/$proc_arg/$files_arg'",
+        command_options => "-c 'tail -vn +1 /proc/$proc_arg/$files_arg'",
         no_quit => 1
     );
 

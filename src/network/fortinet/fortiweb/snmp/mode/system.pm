@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -155,13 +155,13 @@ Example: --filter-counters='memory-usage'
 
 =item B<--warning-ha-status>
 
-Set warning threshold for status.
-Can used special variables like: %{ha_mode}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{ha_mode}
 
 =item B<--critical-ha-status>
 
-Set critical threshold for status.
-Can used special variables like: %{ha_mode}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{ha_mode}
 
 =item B<--warning-*> B<--critical-*>
 

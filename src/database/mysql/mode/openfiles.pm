@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,12 +27,12 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'warning:s'  => { name => 'warning', },
-        'critical:s' => { name => 'critical', },
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
     });
 
     return $self;
@@ -84,6 +84,7 @@ sub run {
             $prct_open, $open_files, $open_files_limit
         )
     );
+
     $self->{output}->perfdata_add(
         label => 'open_files',
         nlabel => 'database.open.files.count',
@@ -109,11 +110,11 @@ Check number of open files.
 
 =item B<--warning>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -154,21 +154,21 @@ Filter apps name (can be a regexp).
 
 =item B<--warning-state>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-state>
 
-Threshold critical (Default: '%{state} !~ /STARTED/i').
+Critical threshold (default: '%{state} !~ /STARTED/i').
 
 =item B<--warning-*>
 
-Threshold warning for apps count based 
-on state (Can be: 'started', 'stopped')
+Warning threshold for apps count based 
+on state (can be: 'started', 'stopped')
 
 =item B<--critical-*>
 
-Threshold critical for apps count based 
-on state (Can be: 'started', 'stopped').
+Critical threshold for apps count based 
+on state (can be: 'started', 'stopped').
 
 =back
 

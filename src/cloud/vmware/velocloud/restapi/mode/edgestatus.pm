@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -96,7 +96,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{id}} = {
+        $self->{edges}->{ $edge->{id} } = {
             display => $edge->{name},
             edge_state => $edge->{edgeState},
             service_state => $edge->{serviceState},
@@ -123,24 +123,24 @@ Check edge status.
 
 =item B<--filter-name>
 
-Filter edge by name (Can be a regexp).
+Filter edge by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
-Can used special variables like: %{edge_state}, %{service_state},
+Define the conditions to match for the status to be UNKNOWN (default: '%{edge_state} =~ /NEVER_ACTIVATED/').
+You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{edge_state}, %{service_state},
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
-Can used special variables like: %{edge_state}, %{service_state},
+Define the conditions to match for the status to be CRITICAL (default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
+You can use the following variables: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 
 =back

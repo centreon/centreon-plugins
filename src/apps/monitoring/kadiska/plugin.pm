@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
+        'alerts'                => 'apps::monitoring::kadiska::mode::alerts',
+        'list-alert-rules'      => 'apps::monitoring::kadiska::mode::listalertrules',
         'list-runners'          => 'apps::monitoring::kadiska::mode::listrunners',
         'list-targets'          => 'apps::monitoring::kadiska::mode::listtargets',
-        'watcher-statistics'    => 'apps::monitoring::kadiska::mode::watcherstatistics',
-        'nettracer-statistics'  => 'apps::monitoring::kadiska::mode::nettracerstatistics'
+        'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
+        'nettracer-statistics'  => 'apps::monitoring::kadiska::mode::nettracerstatistics',
+        'watcher-statistics'    => 'apps::monitoring::kadiska::mode::watcherstatistics'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::kadiska::custom::api';

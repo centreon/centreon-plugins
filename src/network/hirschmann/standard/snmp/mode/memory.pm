@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -88,12 +88,12 @@ my $map_enable = {
 my $mapping = {
     hios => {
         measure_enable => { oid => '.1.3.6.1.4.1.248.11.22.1.8.1', map => $map_enable }, # hm2DiagEnableMeasurement
-        ram_total      => { oid => '.1.3.6.1.4.1.248.11.22.1.8.11.1' }, # hm2DiagMemoryRamAllocated
+        ram_used       => { oid => '.1.3.6.1.4.1.248.11.22.1.8.11.1' }, # hm2DiagMemoryRamAllocated
         ram_free       => { oid => '.1.3.6.1.4.1.248.11.22.1.8.11.2' }  # hm2DiagMemoryRamFree
     },
     classic => {
         measure_enable => { oid => '.1.3.6.1.4.1.248.14.2.15.1', map => $map_enable }, # hmEnableMeasurement
-        ram_total      => { oid => '.1.3.6.1.4.1.248.14.2.15.3.1' }, # hmMemoryAllocated
+        ram_used       => { oid => '.1.3.6.1.4.1.248.14.2.15.3.1' }, # hmMemoryAllocated
         ram_free       => { oid => '.1.3.6.1.4.1.248.14.2.15.3.2' }  # hmMemoryFree
     }
 };
@@ -109,14 +109,14 @@ sub check_memory {
         $self->{output}->option_exit();
     }
 
-    $result->{ram_total} *= 1024;
+    $result->{ram_used} *= 1024;
     $result->{ram_free} *= 1024;
     $self->{ram} = {
-        total => $result->{ram_total},
-        used => $result->{ram_total} - $result->{ram_free},
+        total => $result->{ram_used} + $result->{ram_free},
+        used => $result->{ram_used},
         free => $result->{ram_free},
-        prct_used => 100 - ($result->{ram_free} * 100 / $result->{ram_total}),
-        prct_free => $result->{ram_free} * 100 / $result->{ram_total}
+        prct_used => $result->{ram_used} * 100 / ($result->{ram_used} + $result->{ram_free}),
+        prct_free => $result->{ram_free} * 100 / ($result->{ram_used} + $result->{ram_free})
     };
 }
 

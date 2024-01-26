@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -356,11 +356,11 @@ ILO password.
 
 =item B<--port>
 
-ILO Port (Default: 443).
+ILO Port (default: 443).
 
 =item B<--timeout>
 
-Set timeout (Default: 30).
+Set timeout (default: 30).
 
 =item B<--force-ilo3>
 

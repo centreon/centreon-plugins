@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,33 +147,33 @@ Search in following cluster(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i').
+You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be WARNING (default: '').
+You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Define the conditions to match for the status to be CRITICAL (default: '').
+You can use the following variables: %{status}
 
 =item B<--unknown-overall-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /gray/i').
-Can used special variables like: %{overall_status}
+Define the conditions to match for the status to be WARNING (default: '%{overall_status} =~ /gray/i').
+You can use the following variables: %{overall_status}
 
 =item B<--warning-overall-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i').
-Can used special variables like: %{overall_status}
+Define the conditions to match for the status to be WARNING (default: '%{overall_status} =~ /yellow/i').
+You can use the following variables: %{overall_status}
 
 =item B<--critical-overall-status>
 
-Set critical threshold for status (Default: '%{overall_status} =~ /red/i').
-Can used special variables like: %{overall_status}
+Define the conditions to match for the status to be CRITICAL (default: '%{overall_status} =~ /red/i').
+You can use the following variables: %{overall_status}
 
 =back
 

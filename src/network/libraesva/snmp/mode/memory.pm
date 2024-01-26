@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,11 +45,11 @@ Check memory usage (UCD-SNMP-MIB).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute') (Deprecated. Please use new counters directly)
+Units of thresholds (default: '%') ('%', 'absolute') (deprecated. Please use new counters directly)
 
 =item B<--free>
 
-Thresholds are on free space left (Deprecated. Please use new counters directly)
+Thresholds are on free space left (deprecated. Please use new counters directly)
 
 =item B<--swap>
 

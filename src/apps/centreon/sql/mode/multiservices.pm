@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -367,6 +367,36 @@ my %map_service_state = (
     3 => 'unknown',
 );
 
+
+sub manage_query {
+    my ($self, %options) = @_;
+
+    my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
+                FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
+                AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
+                AND hosts.name = '" . $options{host} . "'
+                AND services.description = '" . $options{service} . "'";
+    
+    $self->{sql}->query(query => $query);
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        if (!exists($self->{instance_mode}->{inventory}->{hosts}->{$options{group}}->{$row->{name}})) {
+            push @{$self->{instance_mode}->{inventory}->{groups}->{$options{group}}->{'list_'.$map_host_state{$row->{hstate}}}} ,$row->{name};  
+            if (!defined($self->{hosts}->{$options{host}})) {
+                $self->{hosts}->{$options{host}} = 1;
+                $self->{totalhost}->{$map_host_state{$row->{hstate}}}++;
+                $self->{logicalgroups}->{$options{group}}->{$map_host_state{$row->{hstate}}}++;
+            }
+        }
+        push @{$self->{instance_mode}->{inventory}->{groups}->{$options{group}}->{'list_'.$map_service_state{$row->{sstate}}}}, $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description};
+
+        $self->{instance_mode}->{inventory}->{hosts}->{$options{group}}->{$row->{name}} = $row->{hstate};
+        $self->{instance_mode}->{inventory}->{services}{ $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description} } = { state => $row->{sstate}, output => $row->{soutput} } ;
+        $self->{instance_mode}->{inventory}->{groups}->{$options{group}}->{$row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description}} = { state => $row->{sstate}, output => $row->{soutput} };
+        $self->{totalservice}->{$map_service_state{$row->{sstate}}}++;
+        $self->{logicalgroups}->{$options{group}}->{$map_service_state{$row->{sstate}}}++;                     
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     # $options{sql} = sqlmode object
@@ -374,6 +404,7 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{groups} = {};
+    $self->{hosts} = {};
 
     if ($config_data->{counters}->{totalhosts} eq 'true') {
         push @{$self->{maps_counters_type}}, {
@@ -435,26 +466,22 @@ sub manage_selection {
                 up => 0, down => 0, unreachable => 0,
                 ok => 0, warning => 0, critical => 0, unknown => 0
             };
-            foreach my $tuple (keys %{$config_data->{selection}->{$group}}) {
-                my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                             FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
-                             AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
-                             AND hosts.name = '" . $tuple . "'
-                             AND services.description = '" . $config_data->{selection}->{$group}->{$tuple} . "'";
-                $self->{sql}->query(query => $query);
-                while ((my $row = $self->{sql}->fetchrow_hashref())) {
-                    if (!exists($self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}})) {
-                        push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_host_state{$row->{hstate}}}} ,$row->{name};
-                        $self->{totalhost}->{$map_host_state{$row->{hstate}}}++;
-                        $self->{logicalgroups}->{$group}->{$map_host_state{$row->{hstate}}}++;
+            foreach my $host (keys %{$config_data->{selection}->{$group}}) {
+                if (ref($config_data->{selection}->{$group}->{$host}) eq "ARRAY") { 
+                    foreach my $service (@{$config_data->{selection}->{$group}->{$host}}) {
+                        $self->manage_query(
+                            group   => $group,
+                            host    => $host,
+                            service => $service
+                        );
                     }
-                    push @{$self->{instance_mode}->{inventory}->{groups}->{$group}->{'list_'.$map_service_state{$row->{sstate}}}}, $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description};
-
-                    $self->{instance_mode}->{inventory}->{hosts}->{$group}->{$row->{name}} = $row->{hstate};
-                    $self->{instance_mode}->{inventory}->{services}{ $row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description} } = { state => $row->{sstate}, output => $row->{soutput} } ;
-                    $self->{instance_mode}->{inventory}->{groups}->{$group}->{$row->{name} . ${config_data}->{formatting}->{host_service_separator} . $row->{description}} = { state => $row->{sstate}, output => $row->{soutput} };
-                    $self->{totalservice}->{$map_service_state{$row->{sstate}}}++;
-                    $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;
+                
+                } else {
+                    $self->manage_query(
+                        group   => $group,
+                        host    => $host,
+                        service => $config_data->{selection}->{$group}->{$host}
+                    );
                 }
             }
         }
@@ -480,8 +507,8 @@ Can be 'totalhost','totalservice','groups'. Better to manage it in config file
 
 =item B<--warning-*>
 
-Can be 'total' for host and service, 'groups' for groups
-e.g --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
+Can be 'total' for host and service, 'groups' for groups.
+Example: --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
 
 =item B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -93,11 +93,11 @@ Check temperature (SYNOLOGY-SYSTEM-MIB).
 
 =item B<--warning-temperature>
 
-Threshold warning in celsius degrees.
+Warning threshold in celsius degrees.
 
 =item B<--critical-temperature>
 
-Threshold critical in celsius degrees.
+Critical threshold in celsius degrees.
 
 =back
 

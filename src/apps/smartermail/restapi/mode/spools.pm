@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package apps::smartermail::restapi::mode::spools;
@@ -96,7 +95,7 @@ Check spools.
 
 =item B<--filter-spool>
 
-Filter spools by name (Can be a regexp).
+Filter spools by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

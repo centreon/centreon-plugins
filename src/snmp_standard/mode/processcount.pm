@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -361,7 +361,7 @@ Can also check memory usage and cpu usage.
 =item B<--process-status>
 
 Filter process status. Can be a regexp. 
-(Default: 'running|runnable').
+(default: 'running|runnable').
 
 =item B<--process-name>
 
@@ -392,11 +392,11 @@ arguments (with option --process-args).
 
 =item B<--warning>
 
-Threshold warning of matching processes count.
+Warning threshold of matching processes count.
 
 =item B<--critical>
 
-Threshold critical of matching processes count.
+Critical threshold of matching processes count.
 
 =item B<--memory>
 
@@ -404,32 +404,32 @@ Check memory usage.
 
 =item B<--warning-mem-each>
 
-Threshold warning of memory 
+Warning threshold of memory 
 used by each matching processes (in Bytes).
 
 =item B<--critical-mem-each>
 
-Threshold critical of memory 
+Critical threshold of memory 
 used by each matching processes (in Bytes).
 
 =item B<--warning-mem-total>
 
-Threshold warning of total 
+Warning threshold of total 
 memory used by matching processes (in Bytes).
 
 =item B<--critical-mem-total>
 
-Threshold critical of total 
+Critical threshold of total 
 memory used by matching processes (in Bytes).
 
 =item B<--warning-mem-avg>
 
-Threshold warning of average 
+Warning threshold of average 
 memory used by matching processes (in Bytes).
 
 =item B<--critical-mem-avg>
 
-Threshold critical of average 
+Critical threshold of average 
 memory used by matching processes (in Bytes).
 
 =item B<--cpu>
@@ -439,13 +439,13 @@ If processes pid changes too much, the plugin can't compute values.
 
 =item B<--warning-cpu-total>
 
-Threshold warning of cpu usage for all processes (in percent).
+Warning threshold of cpu usage for all processes (in percent).
 CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
 and a process can have a value greater than 100%.
 
 =item B<--critical-cpu-total>
 
-Threshold critical of cpu usage for all processes (in percent).
+Critical threshold of cpu usage for all processes (in percent).
 CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
 and a process can have a value greater than 100%.
 
@@ -455,12 +455,12 @@ Enable top memory usage display.
 
 =item B<--top-num>
 
-Number of processes in top memory display (Default: 5).
+Number of processes in top memory display (default: 5).
 
 =item B<--top-size>
 
 Minimum memory usage to be in top memory display 
-(Default: 52428800 -> 50 MB).
+(default: 52428800 -> 50 MB).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -228,18 +228,18 @@ Skip revoked certificates.
 
 =item B<--unknown-certificate-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-certificate-status>
 
-Set warning threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--critical-certificate-status>
 
-Set critical threshold for status.
-Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-*> B<--critical-*>
 

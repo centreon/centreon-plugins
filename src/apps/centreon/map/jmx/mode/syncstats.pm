@@ -1,4 +1,4 @@
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -239,25 +239,25 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='centreon')
+(example: --filter-counters='centreon')
 
 =item B<--warning-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'map-synchronization-centreon-count',
 'map-synchronization-centreon-duration-average-milliseconds',
 'map-synchronization-centreon-duration-max-milliseconds'.
 
 =item B<--critical-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'map-synchronization-centreon-count',
 'map-synchronization-centreon-duration-average-milliseconds',
 'map-synchronization-centreon-duration-max-milliseconds'.
 
 =item B<--warning-instance-*>
 
-Threshold warning.
+Warning threshold.
 Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-average-milliseconds',
 'map-synchronization-acl-duration-max-milliseconds', 'map-synchronization-resource-count',
 'map-synchronization-resource-duration-average-milliseconds',
@@ -265,7 +265,7 @@ Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-avera
 
 =item B<--critical-instance-*>
 
-Threshold critical.
+Critical threshold.
 Can be: 'map-synchronization-acl-count', 'map-synchronization-acl-duration-average-milliseconds',
 'map-synchronization-acl-duration-max-milliseconds', 'map-synchronization-resource-count',
 'map-synchronization-resource-duration-average-milliseconds',

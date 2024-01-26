@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -367,33 +367,33 @@ Check MySQL replication (need to use --multiple).
 
 =item B<--unknown-connection-status>
 
-Set unknown threshold for status.
-Can used special variables like:  %{status}, %{error_message}, %{display}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status.
-Can used special variables like:  %{status}, %{error_message}, %{display}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for status (Default: '%{status} ne "ok"').
-Can used special variables like: %{status}, %{error_message}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "ok"').
+You can use the following variables: %{status}, %{error_message}, %{display}
 
 =item B<--unknown-replication-status>
 
-Set unknown threshold for status (Default: '%{replication_status} =~ /configurationIssue/i').
-Can used special variables like: %{replication_status}, %{display}
+Define the conditions to match for the status to be UNKNOWN (default: '%{replication_status} =~ /configurationIssue/i').
+You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-replication-status>
 
-Set warning threshold for status (Default: '%{replication_status} =~ /inProgress/i').
-Can used special variables like: %{replication_status}, %{display}
+Define the conditions to match for the status to be WARNING (default: '%{replication_status} =~ /inProgress/i').
+You can use the following variables: %{replication_status}, %{display}
 
 =item B<--critical-replication-status>
 
-Set critical threshold for status (Default: '%{replication_status} =~ /connectIssueToMaster/i').
-Can used special variables like: %{replication_status}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: '%{replication_status} =~ /connectIssueToMaster/i').
+You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Camera-Optelecom-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Optelecom camera using SNMP",
+    "plugin_name": "centreon_camera_optelecom_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "hardware/devices/camera/optelecom/snmp/"
+    ]
+}

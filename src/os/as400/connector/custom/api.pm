@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -206,15 +206,15 @@ Centreon AS400 connector Rest API
 
 =item B<--connector-hostname>
 
-Centreon connector hostname (Default: 127.0.0.1)
+Centreon connector hostname (default: 127.0.0.1)
 
 =item B<--connector-port>
 
-Port used (Default: 8091)
+Port used (default: 8091)
 
 =item B<--connector-proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--connector-username>
 
@@ -226,19 +226,19 @@ API password.
 
 =item B<--connector-timeout>
 
-Set timeout in seconds (Default: 50)
+Set timeout in seconds (default: 50)
 
 =item B<--as400-hostname>
 
-AS/400 hostname (Required)
+AS/400 hostname (required)
 
 =item B<--as400-username>
 
-AS/400 username (Required)
+AS/400 username (required)
 
 =item B<--as400-password>
 
-AS/400 password (Required)
+AS/400 password (required)
 
 =back
 

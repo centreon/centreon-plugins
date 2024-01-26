@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -90,11 +90,11 @@ Check MSSQL buffer cache hit ratio.
 
 =item B<--warning-hit-ratio>
 
-Threshold warning.
+Warning threshold.
 
 =item B<--critical-hit-ratio>
 
-Threshold critical.
+Critical threshold.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,17 +31,33 @@ sub check {
     $self->{output}->output_add(long_msg => 'checking fru');
     $self->{components}->{fru} = { name => 'frus', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fru'));
-    return if (!defined($self->{json_results}->{records}));
 
-    foreach my $shelf (@{$self->{json_results}->{records}}) {
+    $self->get_shelves();
+
+    return if (!defined($self->{shelves}->{records}));
+
+    foreach my $shelf (@{$self->{shelves}->{records}}) {
         my $shelf_instance = $shelf->{serial_number};
         my $shelf_name = $shelf->{name};
 
         next if ($self->check_filter(section => 'shelf', instance => $shelf_instance));
 
         foreach my $fru (@{$shelf->{frus}}) {
-            my $instance = $fru->{serial_number};
             my $name = $fru->{type} . ':' . $fru->{id};
+
+            if ($fru->{installed} !~ /true|1/i) {
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        "fru '%s' shelf '%s' is uninstalled",
+                        $name,
+                        $shelf_name
+                    )
+                );
+                next;
+            }
+
+            my $instance = $fru->{serial_number};
+            
 
             next if ($self->check_filter(section => 'fru', instance => $instance));
             $self->{components}->{fru}->{total}++;

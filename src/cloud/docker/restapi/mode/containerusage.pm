@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -345,13 +345,13 @@ Example: --filter-counters='^container-status$'
 
 =item B<--warning-container-status>
 
-Set warning threshold for status.
-Can used special variables like: %{name}, %{state}, %{health}.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{name}, %{state}, %{health}.
 
 =item B<--critical-container-status>
 
-Set critical threshold for status.
-Can used special variables like: %{name}, %{state}, %{health}.
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{name}, %{state}, %{health}.
 
 =item B<--warning-*> B<--critical-*>
 

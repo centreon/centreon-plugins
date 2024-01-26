@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,7 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Authors : Roman Morandell - ivertix
 #
 
 package notification::centreon::opentickets::api::custom::api;
@@ -57,7 +56,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{cache} = centreon::plugins::statefile->new(%options, default_backend => 'curl');
 
     return $self;
 }
@@ -138,7 +137,8 @@ sub settings {
     $self->{http}->set_options(
         hostname => $self->{api_hostname},
         port => $self->{api_port},
-        proto => $self->{api_proto}
+        proto => $self->{api_proto},
+        %{$self->{option_results}}
     );
 }
 
@@ -275,15 +275,15 @@ Centreon address.
 
 =item B<--url-path>
 
-API url path (Default: '/centreon/api/')
+API url path (default: '/centreon/api/')
 
 =item B<--api-port>
 
-API port (Default: 80)
+API port (default: 80)
 
 =item B<--api-proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -104,12 +104,12 @@ Check remaining Azure Kubernetes Cluster Allocatable CPU Cores and Memory in Byt
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
@@ -119,11 +119,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allo
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-allocatable-memory-bytes>
 

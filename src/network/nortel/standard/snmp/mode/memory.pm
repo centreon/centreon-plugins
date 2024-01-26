@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,7 +52,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', display_ok => 0, nlabel => 'memory.usage.bytes', set => {
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -60,7 +60,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -68,9 +68,9 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
-                output_template => 'used: %.2f %%',
+        { label => 'usage-prct', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
@@ -113,13 +113,13 @@ sub check_khi {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_khi, results => $snmp_result, instance => $instance);
 
-        my $total = $result->{rcKhiSlotMemUsed} * 1024 + $result->{rcKhiSlotMemFree} * 1024;
+        my $total = ($result->{rcKhiSlotMemUsed} * 1024) + ($result->{rcKhiSlotMemFree} * 1024);
         $self->{memory}->{'slot_' . $1} = {
             display => 'slot_' . $1,
             used => $result->{rcKhiSlotMemUsed} * 1024,
             free => $result->{rcKhiSlotMemFree} * 1024,
-            prct_used => $result->{rcKhiSlotMemUsed} * 1024 / $total,
-            prct_free => $result->{rcKhiSlotMemFree} * 1024 / $total,
+            prct_used => ($result->{rcKhiSlotMemUsed} * 1024 * 100 / $total),
+            prct_free => ($result->{rcKhiSlotMemFree} * 1024 * 100 / $total),
             total => $total
         };
     }

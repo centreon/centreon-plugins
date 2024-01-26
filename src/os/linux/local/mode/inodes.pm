@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,7 +39,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{inodes} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
                 output_template => 'used: %s %%',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -121,11 +121,11 @@ Command used: df -P -i -T 2>&1
 
 =item B<--warning-usage>
 
-Threshold warning in percent.
+Warning threshold in percent.
 
 =item B<--critical-usage>
 
-Threshold critical in percent.
+Critical threshold in percent.
 
 =item B<--filter-mountpoint>
 

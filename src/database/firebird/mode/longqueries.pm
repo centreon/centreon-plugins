@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -121,15 +121,15 @@ Check current number of long queries on the database (firebird version >= 2.1)
 
 =item B<--warning>
 
-Threshold warning (number of long queries).
+Warning threshold (number of long queries).
 
 =item B<--critical>
 
-Threshold critical (number of long queries).
+Critical threshold (number of long queries).
 
 =item B<--seconds>
 
-Filter queries over X seconds (Default: 60).
+Filter queries over X seconds (default: 60).
 
 =item B<--filter-user>
 

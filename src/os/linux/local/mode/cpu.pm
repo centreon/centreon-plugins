@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,7 +107,7 @@ sub set_counters {
                 output_template => 'CPU(s) average usage is %.2f %%',
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'prct_used', template => '%.2f',
+                    { value => 'prct_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
                 ]
             }
@@ -124,7 +124,7 @@ sub set_counters {
                 output_template => 'usage : %.2f %%',
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_used', template => '%.2f',
+                    { value => 'prct_used', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -140,7 +140,7 @@ sub prefix_cpu_core_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {

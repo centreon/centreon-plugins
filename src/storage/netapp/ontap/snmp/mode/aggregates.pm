@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -133,33 +133,33 @@ Filter aggregates by name.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /normal|mirrored/i').
-Can used special variables like: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /normal|mirrored/i').
+You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-state>
 
 Set unknown threshold for state.
-Can used special variables like: %{state}, %{name}
+You can use the following variables: %{state}, %{name}
 
 =item B<--warning-state>
 
 Set warning threshold for state.
-Can used special variables like: %{state}, %{name}
+You can use the following variables: %{state}, %{name}
 
 =item B<--critical-state>
 
-Set critical threshold for state (Default: '%{state} =~ /offline/i').
-Can used special variables like: %{state}, %{name}
+Set critical threshold for state (default: '%{state} =~ /offline/i').
+You can use the following variables: %{state}, %{name}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'command:s'          => { name => 'command' },
         'arg:s@'             => { name => 'arg' },
+        'extra-args'         => { name => 'extra_args' },
         'sanitize-message:s' => { name => 'sanitize_message' }
     });
 
@@ -70,9 +71,12 @@ sub sanitize_message {
 sub run {
     my ($self, %options) = @_;
 
+    my @arg = defined($self->{option_results}->{arg}) ? @{$self->{option_results}->{arg}} : ();
+    push @arg, @{$self->{option_extras}} if ($self->{option_results}->{extra_args});
+
     my $result = $options{custom}->request(
         command => $self->{option_results}->{command},
-        arg => $self->{option_results}->{arg}
+        arg => \@arg
     );
 
     $self->{output}->output_add(
@@ -110,7 +114,14 @@ In nrpe use following command to get server version: --command='_NRPE_CHECK'
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1' --arg='arg2').
+Set arguments (multiple option. Example: --arg='arg1' --arg='arg2').
+
+=item B<--extra-args>
+
+Use extra arguments from command line (all values placed after a double-dash '--')
+as additional "--arg" options for the NRPE command.
+
+Example: --arg='arg1' --extra-args -- 'arg2' 'arg3' 'arg4'
 
 =item B<--sanitize-message>
 

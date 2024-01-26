@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -242,35 +242,35 @@ Check table locks:
 
 =item B<--warning-deadlks>
 
-Threshold warning 'deadlks' in absolute.
+Warning threshold 'deadlks' in absolute.
 
 =item B<--critical-deadlks>
 
-Threshold critical 'deadlks' in absolute.
+Critical threshold 'deadlks' in absolute.
 
 =item B<--warning-lockwts>
 
-Threshold warning 'lockwts' in absolute.
+Warning threshold 'lockwts' in absolute.
 
 =item B<--critical-lockwts>
 
-Threshold critical 'lockwts' in absolute.
+Critical threshold 'lockwts' in absolute.
 
 =item B<--warning-lockreqs>
 
-Threshold warning 'lockreqs' in absolute.
+Warning threshold 'lockreqs' in absolute.
 
 =item B<--critical-lockreqs>
 
-Threshold critical 'lockreqs' in absolute.
+Critical threshold 'lockreqs' in absolute.
 
 =item B<--warning-lktouts>
 
-Threshold warning 'lktouts' in absolute.
+Warning threshold 'lktouts' in absolute.
 
 =item B<--critical-lktouts>
 
-Threshold critical 'lktouts' in absolute.
+Critical threshold 'lktouts' in absolute.
 
 =item B<--name>
 

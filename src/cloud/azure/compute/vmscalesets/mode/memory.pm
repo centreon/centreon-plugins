@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -97,12 +97,12 @@ Check Azure Virtual Machine Scale Sets Available Memory.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::vmscalesets::plugin --mode=memory --custommode=api
 --resource=<vmss_id> --resource-group=<resourcegroup_id> --critical-memory-available='8GB:' --warning-memory-available='16GB:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::vmscalesets::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Compute/virtualMachineScaleSets/<vmss_id>' 
@@ -112,11 +112,11 @@ perl centreon_plugins.pl --plugin=cloud::azure::vmscalesets::plugin --mode=memor
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-memory-available>
 
