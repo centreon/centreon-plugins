@@ -116,7 +116,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
-    my $legend_format= ' --no-legend'
+    my $legend_format= ' --no-legend';
     my ($stdout_version) = $options{custom}->execute_command(
         command         => 'systemctl',
         command_options => '--version'
