@@ -37,6 +37,9 @@ inputs:
   rpm_gpg_signing_passphrase:
     description: The rpm gpg signing passphrase
     required: true
+  stability:
+    description: "Branch stability (stable, testing, unstable, canary)"
+    required: true
 
 runs:
   using: composite
@@ -70,6 +73,11 @@ runs:
           export APACHE_GROUP="apache"
         else
           export DIST=""
+          if [ "${{ inputs.stability }}" = "unstable" ] || [ "${{ inputs.stability }}" = "canary" ]; then
+            export RELEASE="$RELEASE~${{ inputs.distrib }}"
+          elif [ "${{ inputs.stability }}" = "testing" ]; then
+            export RELEASE="1~${{ inputs.distrib }}"
+          fi
           export APACHE_USER="www-data"
           export APACHE_GROUP="www-data"
         fi
