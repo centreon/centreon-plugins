@@ -76,7 +76,7 @@ sub GetOptions {
 
                 # for old format plugins (with run function) that not allowed list-counters options
                 if($option =~ /list-counters/){
-                    warn "list-counters option not availible yet for this mode." if ($warn_message == 1);
+                    warn "list-counters option not available yet for this mode." if ($warn_message == 1);
                 }else{
                     warn "Unknown option: $option" if ($warn_message == 1);
                 }
