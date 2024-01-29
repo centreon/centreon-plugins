@@ -85,7 +85,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Package
-        uses: ./.github/actions/package
+        uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml"
           distrib: ${{ matrix.distrib }}
