@@ -136,7 +136,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalexited=
 ...                                 warningtotalfailed=
 ...                                 criticaltotalfailed=
-...                                 result=WARNING: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: enabled] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: loaded] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                                 result=WARNING: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: enabled] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: enabled] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
 # Test systemd-sc-status mode with critical-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
 &{linux_local_systemd_test_7}
@@ -152,7 +152,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalexited=
 ...                                 warningtotalfailed=
 ...                                 criticaltotalfailed=
-...                                 result=CRITICAL: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: enabled] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: loaded] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
+...                                 result=CRITICAL: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: enabled] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: enabled] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
 # Test systemd-sc-status mode with warning-total-running option set to 20
 &{linux_local_systemd_test_8}
