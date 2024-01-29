@@ -88,7 +88,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalexited=
 ...                                 warningtotalfailed=
 ...                                 criticaltotalfailed=
-...                                 result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: not-found] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
+...                                 result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: -] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
 
 # Test systemd-sc-status mode with exclude-name option set to a fake value
 &{linux_local_systemd_test_4}

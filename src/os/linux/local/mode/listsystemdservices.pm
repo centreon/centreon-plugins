@@ -47,22 +47,21 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
+    my $legend_format= ' --no-legend';
     my ($stdout_version) = $options{custom}->execute_command(
         command         => 'systemctl',
         command_options => '--version'
     );
     $stdout_version =~ /^systemd\s(\d+)\s/;
     my $systemctl_version=$1;
-    my $command_options = '-a --no-pager --plain';
-
     if($systemctl_version >= 248){
-        $command_options .= ' --legend=false';
-    } else {
-        $command_options .= ' --no-legend';
+        $legend_format = ' --legend=false';
     }
+
+    my $command_options_1 = '-a --no-pager --plain';
     my ($stdout)  = $options{custom}->execute_command(
         command         => 'systemctl',
-        command_options => $command_options
+        command_options => $command_options_1.$legend_format
     );
 
     my $results = {};
