@@ -12,25 +12,25 @@ ${CENTREON_PLUGINS}                 ${CURDIR}${/}..${/}..${/}..${/}src${/}centre
 
 ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 
-# Test list-systemdcservices mode with filter-name option set to a fake value
+# Test list-systemdservices mode with filter-name option set to a fake value
 &{linux_local_listsystemd_test1}
 ...                                 filtername=toto
 ...                                 filterdescription=
 ...                                 result=List systemd services:
 
-# Test list-systemdcservices mode with filter-name option set to a service name value
+# Test list-systemdservices mode with filter-name option set to a service name value
 &{linux_local_listsystemd_test2}
 ...                                 filtername=NetworkManager.service
 ...                                 filterdescription=
 ...                                 result=List systemd services: \n\'NetworkManager.service\' [desc = NetworkManager.service] [load = not-found] [active = inactive] [sub = dead]
 
-# Test list-systemdcservices mode with filter-description option set to a fake value
+# Test list-systemdservices mode with filter-description option set to a fake value
 &{linux_local_listsystemd_test3}
 ...                                 filtername=
 ...                                 filterdescription=toto
 ...                                 result=List systemd services:
 
-# Test list-systemdcservices mode with filter-description option set to a service description value
+# Test list-systemdservices mode with filter-description option set to a service description value
 &{linux_local_listsystemd_test4}
 ...                                 filtername=
 ...                                 filterdescription='User Manager for UID 1001'
@@ -42,7 +42,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 &{linux_local_listsystemd_test3}
 ...                                 &{linux_local_listsystemd_test4}
 
-# Test simple usage of the systemdc-sc-status mode
+# Test simple usage of the systemd-sc-status mode
 &{linux_local_systemd_test_1}
 ...                                 filtername=
 ...                                 excludename=
@@ -58,7 +58,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with filter-name option set to a fake value
+# Test systemd-sc-status mode with filter-name option set to a fake value
 &{linux_local_systemd_test_2}
 ...                                 filtername=toto
 ...                                 excludename=
@@ -74,7 +74,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=UNKNOWN: No service found.
 
-# Test systemdc-sc-status mode with filter-name option set to a service name value
+# Test systemd-sc-status mode with filter-name option set to a service name value
 &{linux_local_systemd_test_3}
 ...                                 filtername=NetworkManager.service
 ...                                 excludename=
@@ -90,7 +90,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=OK: Total Running: 0, Total Failed: 0, Total Dead: 1, Total Exited: 0 - Service 'NetworkManager.service' status : not-found/inactive/dead [boot: not-found] | 'total_running'=0;;;0;1 'total_failed'=0;;;0;1 'total_dead'=1;;;0;1 'total_exited'=0;;;0;1
 
-# Test systemdc-sc-status mode with exclude-name option set to a fake value
+# Test systemd-sc-status mode with exclude-name option set to a fake value
 &{linux_local_systemd_test_4}
 ...                                 filtername=
 ...                                 excludename=toto
@@ -106,7 +106,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=OK: Total Running: 40, Total Failed: 0, Total Dead: 120, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with exclude-name option set to a service name value
+# Test systemd-sc-status mode with exclude-name option set to a service name value
 &{linux_local_systemd_test_5}
 ...                                 filtername=
 ...                                 excludename=NetworkManager.service
@@ -122,7 +122,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=OK: Total Running: 40, Total Failed: 0, Total Dead: 119, Total Exited: 40 - All services are ok | 'total_running'=40;;;0;413 'total_failed'=0;;;0;413 'total_dead'=119;;;0;413 'total_exited'=40;;;0;413
 
-# Test systemdc-sc-status mode with warning-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
+# Test systemd-sc-status mode with warning-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
 &{linux_local_systemd_test_6}
 ...                                 filtername=
 ...                                 excludename=
@@ -138,7 +138,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=WARNING: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: loaded] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: loaded] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with critical-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
+# Test systemd-sc-status mode with critical-status option set to '\%{sub} =~ /exited/ && \%{display} =~ /network/'
 &{linux_local_systemd_test_7}
 ...                                 filtername=
 ...                                 excludename=
@@ -154,7 +154,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=CRITICAL: Service 'systemd-networkd-wait-online.service' status : loaded/active/exited [boot: loaded] - Service 'walinuxagent-network-setup.service' status : loaded/active/exited [boot: loaded] | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with warning-total-running option set to 20
+# Test systemd-sc-status mode with warning-total-running option set to 20
 &{linux_local_systemd_test_8}
 ...                                 filtername=
 ...                                 excludename=
@@ -170,7 +170,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=WARNING: Total Running: 40 | 'total_running'=40;0:20;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with critical-total-running option set to 20
+# Test systemd-sc-status mode with critical-total-running option set to 20
 &{linux_local_systemd_test_9}
 ...                                 filtername=
 ...                                 excludename=
@@ -186,7 +186,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=CRITICAL: Total Running: 40 | 'total_running'=40;;0:20;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with warning-total-dead option set to 20
+# Test systemd-sc-status mode with warning-total-dead option set to 20
 &{linux_local_systemd_test_10}
 ...                                 filtername=
 ...                                 excludename=
@@ -202,7 +202,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=WARNING: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;0:20;;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with critical-total-dead option set to 20
+# Test systemd-sc-status mode with critical-total-dead option set to 20
 &{linux_local_systemd_test_11}
 ...                                 filtername=
 ...                                 excludename=
@@ -218,7 +218,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=CRITICAL: Total Dead: 120 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;0:20;0;414 'total_exited'=40;;;0;414
 
-# Test systemdc-sc-status mode with warning-total-exited option set to 20
+# Test systemd-sc-status mode with warning-total-exited option set to 20
 &{linux_local_systemd_test_12}
 ...                                 filtername=
 ...                                 excludename=
@@ -234,7 +234,7 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=WARNING: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;0:20;;0;414
 
-# Test systemdc-sc-status mode with critical-total-exited option set to 20
+# Test systemd-sc-status mode with critical-total-exited option set to 20
 &{linux_local_systemd_test_13}
 ...                                 filtername=
 ...                                 excludename=
@@ -250,9 +250,9 @@ ${CMD}                              perl ${CENTREON_PLUGINS} --plugin=os::linux:
 ...                                 criticaltotalfailed=
 ...                                 result=CRITICAL: Total Exited: 40 | 'total_running'=40;;;0;414 'total_failed'=0;;;0;414 'total_dead'=120;;;0;414 'total_exited'=40;;0:20;0;414
 
-# Test systemdc-sc-status mode with warning-total-failed option : NO DATA FOR THIS TEST
+# Test systemd-sc-status mode with warning-total-failed option : NO DATA FOR THIS TEST
 
-# Test systemdc-sc-status mode with critical-total-failed option : NO DATA FOR THIS TEST
+# Test systemd-sc-status mode with critical-total-failed option : NO DATA FOR THIS TEST
 
 @{linux_local_systemd_tests}
 ...                                 &{linux_local_systemd_test_1}
