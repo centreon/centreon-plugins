@@ -1559,7 +1559,7 @@ Convert storage free perfdata into used: --change-perfdata='used,free,invert()'
 
 Scale traffic values automatically: --change-perfdata='traffic,,scale(auto)'
 
-Scale traffic values in Mbps: --change-perfdata='traffic_in,,scale"Mbps",mbps'
+Scale traffic values in Mbps: --change-perfdata='traffic_in,,scale(Mbps),mbps'
 
 Change traffic values in percent: --change-perfdata='traffic_in,,percent()'
 
