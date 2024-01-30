@@ -69,7 +69,7 @@ runs:
           export VERSION="${{ inputs.major_version }}.${{ inputs.minor_version }}"
           export MAJOR_VERSION="${{ inputs.major_version }}"
           export MINOR_VERSION="${{ inputs.minor_version }}"
-        elif [ -z ${{ inputs.major_version }} ];
+        elif [ -z ${{ inputs.major_version }} ]; then
           export VERSION="${{ inputs.version }}"
           export MAJOR_VERSION=$( echo $MAJOR_VERSION | cut -d "-" -f1 )
           export MINOR_VERSION=$( echo $MAJOR_VERSION | cut -d "-" -f2 )
