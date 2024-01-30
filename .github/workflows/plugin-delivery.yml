@@ -108,7 +108,7 @@ jobs:
           module_name: plugins
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ inputs.stability }}
+          stability: unstable
           artifactory_token: ${{ secrets.artifactory_token }}
 
   deliver-deb-legacy:
