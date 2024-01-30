@@ -192,7 +192,7 @@ sub kubernetes_list_cronjobs {
 
     my $response = $self->request_api_paginate(
         method => 'GET',
-        url_path => $self->{namespace} ne '' ? '/apis/batch/v1beta1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1beta1/cronjobs'
+        url_path => $self->{namespace} ne '' ? '/apis/batch/v1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1/cronjobs'
     );
 
     return $response;
