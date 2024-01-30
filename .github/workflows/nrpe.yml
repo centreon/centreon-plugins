@@ -135,7 +135,7 @@ jobs:
 
   deliver-deb:
     needs: [get-environment, package]
-    # if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
@@ -152,5 +152,5 @@ jobs:
           module_name: nrpe
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: unstable
+          stability: ${{ needs.get-environment.outputs.stability }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}

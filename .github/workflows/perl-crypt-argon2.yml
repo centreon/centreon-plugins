@@ -157,7 +157,7 @@ jobs:
 
   deliver-deb:
     needs: [get-environment, package]
-    # if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
@@ -183,7 +183,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-crypt-argon2-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
-          stability: unstable
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   promote:
     needs: [get-environment]
