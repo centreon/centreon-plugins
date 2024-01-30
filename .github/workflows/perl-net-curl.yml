@@ -180,7 +180,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
           cache_key: cache-${{ github.sha }}-deb-perl-net-curl-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
-          stability: unstable
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   promote:
     needs: [get-environment]
