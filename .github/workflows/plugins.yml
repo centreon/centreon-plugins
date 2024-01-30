@@ -233,12 +233,12 @@ jobs:
 
   deliver:
     needs: [get-environment, package]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    # if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
       version: ${{ needs.get-environment.outputs.version }}
       release: ${{ needs.get-environment.outputs.release }}
-      stability: ${{ needs.get-environment.outputs.stability }}
+      stability: unstable
     secrets:
       artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
       token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
