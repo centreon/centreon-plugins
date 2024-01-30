@@ -116,5 +116,5 @@ jobs:
           module_name: connector-vmware
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+          stability: unstable
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
