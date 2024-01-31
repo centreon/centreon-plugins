@@ -71,7 +71,7 @@ runs:
           export MINOR_VERSION="${{ inputs.minor_version }}"
         elif [ -z ${{ inputs.major_version }} ]; then
           export VERSION="${{ inputs.version }}"
-          export MAJOR_VERSION=$( echo $MAJOR_VERSION | cut -d "-" -f1 )
+          export MAJOR_VERSION=$( echo $VERSION | cut -d "-" -f1 )
           export MINOR_VERSION=$( echo $MAJOR_VERSION | cut -d "-" -f2 )
         fi
         export RELEASE="${{ inputs.release }}"
