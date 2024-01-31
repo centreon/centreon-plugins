@@ -21,7 +21,7 @@ inputs:
     required: false
   release:
     description: The package release number
-    required: false
+    required: true
   arch:
     description: The package architecture
     required: false
