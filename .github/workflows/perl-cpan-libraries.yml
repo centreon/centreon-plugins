@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distrib: [el8, el9, bullseye, bookworm]
+        distrib: [el8, el9, bullseye, bookworm, jammy]
         name:
           [
             "Authen::SASL::SASLprep",
@@ -98,7 +98,7 @@ jobs:
             "ZMQ::LibZMQ4"
           ]
         include:
-          - build_distribs: "el8,el9,bullseye,bookworm"
+          - build_distribs: "el8,el9,bullseye,bookworm,jammy"
           - rpm_dependencies: ""
           - deb_dependencies: ""
           - rpm_provides: ""
@@ -117,6 +117,9 @@ jobs:
           - distrib: bookworm
             package_extension: deb
             image: packaging-plugins-bookworm
+          - distrib: jammy
+            package_extension: deb
+            image: packaging-plugins-jammy
           - name: "BSON"
             build_distribs: "el8,el9"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
@@ -148,7 +151,7 @@ jobs:
             build_distribs: "el8,el9"
             version: "0.31"
           - name: "ZMQ::Constants"
-            build_distribs: "el9,bullseye,bookworm"
+            build_distribs: "el9,bullseye,bookworm,jammy"
           - name: "ZMQ::FFI"
             build_distribs: "el8,el9"
             rpm_dependencies: "zeromq"
@@ -306,7 +309,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bullseye, bookworm, jammy]
     steps:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
@@ -347,7 +350,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
@@ -368,7 +371,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye, bookworm]
+        distrib: [el8, el9, bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
