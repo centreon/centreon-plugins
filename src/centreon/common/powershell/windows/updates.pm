@@ -49,7 +49,7 @@ Try {
 
     Foreach ($update in $updates) {
         $item = @{
-            title = $update.Title;
+            title = $update.Title.Normalize([Text.NormalizationForm]::FormD) -replace "\p{M}", "" -replace "\p{Z}", " ";
             isMandatory = $update.IsMandatory;
         }
 
