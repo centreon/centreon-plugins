@@ -93,7 +93,7 @@ runs:
         fi
 
         if [ -z "$MAJOR_VERSION" ]; then
-          MAJOR_LEFT=$( echo $MAJOR_VERSION | cut -d "." -f1 )
+          MAJOR_LEFT=$( echo $VERSION | cut -d "." -f1 )
           MAJOR_RIGHT=$( echo $MAJOR_VERSION | cut -d "-" -f1 | cut -d "." -f2 )
           if [ "$MAJOR_RIGHT" == "04" ]; then
             BUMP_MAJOR_LEFT="$MAJOR_LEFT"
