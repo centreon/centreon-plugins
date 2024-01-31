@@ -92,7 +92,7 @@ runs:
           export APACHE_GROUP="www-data"
         fi
 
-        if [[ "$MAJOR_VERSION" != "" ]]; then
+        if [ -z "$MAJOR_VERSION" ]; then
           MAJOR_LEFT=$( echo $MAJOR_VERSION | cut -d "." -f1 )
           MAJOR_RIGHT=$( echo $MAJOR_VERSION | cut -d "-" -f1 | cut -d "." -f2 )
           if [ "$MAJOR_RIGHT" == "04" ]; then
