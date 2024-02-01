@@ -174,6 +174,7 @@ sub new {
         }
     }
 
+
     return $self;
 }
 
@@ -215,7 +216,7 @@ sub check_options {
             }
         }
         $counters->{"counter list"}=$list_counter;
-        $counters->{"pack configuration"}=$th_counter;
+        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRAOPTIONS\$";
 
         my $result_data ="";
         eval {
