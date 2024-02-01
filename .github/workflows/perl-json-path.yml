@@ -41,6 +41,9 @@ jobs:
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
 
     runs-on: ubuntu-22.04
 
