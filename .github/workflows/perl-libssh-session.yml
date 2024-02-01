@@ -49,6 +49,11 @@ jobs:
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -166,6 +171,8 @@ jobs:
           - distrib: bullseye
             arch: arm64
           - distrib: bookworm
+            arch: amd64
+          - distrib: jammy
             arch: amd64
 
     name: Deliver ${{ matrix.distrib }} ${{ matrix.arch }}

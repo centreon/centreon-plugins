@@ -51,6 +51,12 @@ jobs:
             runner: ubuntu-22.04
             arch: amd64
             version: 2.7.2
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -242,6 +248,8 @@ jobs:
           - distrib: bullseye
             arch: amd64
           - distrib: bookworm
+            arch: amd64
+          - distrib: jammy
             arch: amd64
           - distrib: bullseye
             arch: arm64

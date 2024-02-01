@@ -40,11 +40,17 @@ runs:
       run: |
         FILES="*.deb"
 
+        if [[ "${{ inputs.distrib }}" == "jammy" ]]; then
+          REPO_PREFIX="ubuntu"
+        else
+          REPO_PREFIX="apt"
+        fi
+
         for FILE in $FILES; do
           echo "[DEBUG] - File: $FILE"
 
           ARCH=$(echo $FILE | cut -d '_' -f3 | cut -d '.' -f1)
 
-          jf rt upload "$FILE" "apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
+          jf rt upload "$FILE" "${REPO_PREFIX}-plugins-${{ inputs.stability }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/$ARCH"
         done
       shell: bash

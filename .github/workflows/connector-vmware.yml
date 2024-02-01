@@ -43,6 +43,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -104,7 +107,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
