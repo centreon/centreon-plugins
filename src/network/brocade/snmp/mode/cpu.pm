@@ -97,7 +97,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (SW.mib).
+Check system CPU usage (SW.mib).
 
 =over 8
 

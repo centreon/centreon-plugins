@@ -142,7 +142,7 @@ __END__
 
 =head1 MODE
 
-Check device cpu, memory and state.
+Check device CPU, memory and state.
 
 =over 8
 

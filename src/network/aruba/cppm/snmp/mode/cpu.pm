@@ -45,7 +45,7 @@ Check system CPUs.
 
 =item B<--use-ucd>
 
-Use UCD mib for cpu average.
+Use UCD mib for CPU average.
 
 =item B<--warning-average>
 

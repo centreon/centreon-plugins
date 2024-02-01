@@ -115,7 +115,7 @@ __END__
 
 =head1 MODE
 
-Check cluster cpu usage.
+Check cluster CPU usage.
 
 =over 8
 

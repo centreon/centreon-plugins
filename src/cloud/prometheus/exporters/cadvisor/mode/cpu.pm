@@ -158,7 +158,7 @@ Check containers CPU usage and throttled.
 
 =item B<--cpu-attribute>
 
-Set the cpu attribute to match element (must be a PromQL filter, Default: 'cpu="total"')
+Set the CPU attribute to match element (must be a PromQL filter, Default: 'cpu="total"')
 
 =item B<--container>
 
