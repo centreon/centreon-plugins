@@ -19,11 +19,10 @@ ENV LANG en_US.utf8
 
 RUN bash -e <<EOF
 
-apt-get update
-
-echo 'http://deb.debian.org/debian' | apt-get install -y pbuilder
+echo 'http://deb.debian.org/debian' | apt-get update
 
 apt-get install -y \
+  pbuilder \
   dh-make \
   aptitude \
   ca-certificates \
