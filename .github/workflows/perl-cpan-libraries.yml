@@ -6,9 +6,9 @@ concurrency:
 
 on:
   workflow_dispatch:
-  # pull_request:
-  #   paths:
-  #     - ".github/workflows/perl-cpan-libraries.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
   push:
     branches:
       - develop

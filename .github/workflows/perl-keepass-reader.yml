@@ -7,8 +7,8 @@ concurrency:
 on:
   workflow_dispatch:
   pull_request:
-    # paths:
-    #   - "dependencies/perl-keepass-reader/**"
+    paths:
+      - "dependencies/perl-keepass-reader/**"
   push:
     branches:
       - develop
