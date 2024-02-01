@@ -94,7 +94,7 @@ __END__
 
 =head1 MODE
 
-Cache SNMP datas in a JSON cache file.
+Cache SNMP data in a JSON cache file.
 
 =over 8
 

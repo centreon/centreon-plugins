@@ -382,7 +382,7 @@ bash -c 'tail -n +1 /proc/{pid1,pid2,...}/{statm,stat,io}'
 
 =item B<--add-cpu>
 
-Monitor cpu usage.
+Monitor CPU usage.
 
 =item B<--add-memory>
 

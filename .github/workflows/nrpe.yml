@@ -100,7 +100,7 @@ jobs:
         shell: bash
 
       - name: Package
-        uses: ./.github/actions/package
+        uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "nrpe/packaging/*.yaml"
           distrib: ${{ matrix.distrib }}
@@ -143,7 +143,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources

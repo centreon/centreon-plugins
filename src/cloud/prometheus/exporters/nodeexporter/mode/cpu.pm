@@ -182,7 +182,7 @@ Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"
 
 =item B<--cpu>
 
-Filter on a specific cpu (must be a PromQL filter, Default: 'cpu=~".*"')
+Filter on a specific CPU (must be a PromQL filter, Default: 'cpu=~".*"')
 
 =item B<--warning-*>
 

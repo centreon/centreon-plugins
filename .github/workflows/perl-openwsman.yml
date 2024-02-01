@@ -157,11 +157,13 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 2
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Package libwsman
         uses: ./.github/actions/package-nfpm
@@ -170,11 +172,13 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 4
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Package perl-openwsman
         uses: ./.github/actions/package-nfpm
@@ -183,11 +187,13 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 4
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       # set condition to true if artifacts are needed
       - if: ${{ false }}

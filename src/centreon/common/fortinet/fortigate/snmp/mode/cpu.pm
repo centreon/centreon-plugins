@@ -168,7 +168,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (FORTINET-FORTIGATE-MIB).
+Check system CPU usage (FORTINET-FORTIGATE-MIB).
 
 =over 8
 
@@ -179,11 +179,11 @@ Can be: 'core', 'average', 'cluster-average'.
 
 =item B<--cluster>
 
-Add cluster cpu informations.
+Add cluster CPU informations.
 
 =item B<--filter-core>
 
-Core cpu to monitor (can be a regexp).
+Core CPU to monitor (can be a regexp).
 
 =back
 

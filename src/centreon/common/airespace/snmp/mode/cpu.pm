@@ -73,7 +73,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (AIRESPACE-SWITCHING-MIB).
+Check CPU usage (AIRESPACE-SWITCHING-MIB).
 
 =over 8
 

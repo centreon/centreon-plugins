@@ -80,7 +80,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage of cloud controller (panzura-systemext).
+Check CPU usage of cloud controller (panzura-systemext).
 
 =over 8
 

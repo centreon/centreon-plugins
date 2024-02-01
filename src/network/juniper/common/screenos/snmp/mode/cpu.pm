@@ -124,7 +124,7 @@ __END__
 
 =head1 MODE
 
-Check Juniper cpu usage (NETSCREEN-RESOURCE-MIB).
+Check Juniper CPU usage (NETSCREEN-RESOURCE-MIB).
 
 =over 8
 

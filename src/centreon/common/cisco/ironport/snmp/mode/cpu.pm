@@ -84,7 +84,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage of web security and mail (ASYNCOS-MAIL-MIB, ASYNCOSWEBSECURITYAPPLIANCE-MIB).
+Check CPU usage of web security and mail (ASYNCOS-MAIL-MIB, ASYNCOSWEBSECURITYAPPLIANCE-MIB).
 
 =over 8
 

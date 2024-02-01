@@ -126,7 +126,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (CISCOSBmng.mib).
+Check CPU usage (CISCOSBmng.mib).
 
 =over 8
 

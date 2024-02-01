@@ -1957,7 +1957,7 @@ __END__
 
 =head1 MODE
 
-Collect and compute HTTP datas.
+Collect and compute HTTP data.
 
 =over 8
 

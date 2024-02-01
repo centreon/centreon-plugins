@@ -256,13 +256,13 @@ __END__
 
 =head1 MODE
 
-Check cpu usage.
+Check CPU usage.
 
 =over 8
 
 =item B<--check-order>
 
-Check cpu in standard dlink mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
+Check CPU in standard dlink mib. If you have some issue (wrong CPU information in a specific mib), you can change the order 
 (default: 'common,industrial,agent').
 
 =item B<--warning-*> B<--critical-*>

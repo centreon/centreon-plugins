@@ -220,7 +220,7 @@ jobs:
           done
         shell: bash
 
-      - uses: ./.github/actions/package
+      - uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: ".github/packaging/*.yaml"
           distrib: ${{ matrix.distrib }}

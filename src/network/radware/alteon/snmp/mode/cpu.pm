@@ -213,7 +213,7 @@ __END__
 
 =head1 MODE
 
-Check MP cpu usage (ALTEON-CHEETAH-SWITCH-MIB).
+Check MP CPU usage (ALTEON-CHEETAH-SWITCH-MIB).
 
 =over 8
 

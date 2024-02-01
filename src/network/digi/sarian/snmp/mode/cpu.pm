@@ -84,7 +84,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (sarian-monitor.mib).
+Check CPU usage (sarian-monitor.mib).
 
 =over 8
 

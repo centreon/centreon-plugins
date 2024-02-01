@@ -110,7 +110,7 @@ Example: adding --display-transform-src='dev' --display-transform-dst='run'  wil
 
 =item B<--show-cache>
 
-Display cache storage datas.
+Display cache storage data.
 
 =item B<--space-reservation>
 
