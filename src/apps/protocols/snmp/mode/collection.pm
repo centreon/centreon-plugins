@@ -1646,7 +1646,7 @@ __END__
 
 =head1 MODE
 
-Collect and compute SNMP datas.
+Collect and compute SNMP data.
 
 =over 8
 

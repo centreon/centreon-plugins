@@ -175,7 +175,7 @@ Regexp dst to transform display value.
 
 =item B<--show-cache>
 
-Display cache interface datas.
+Display cache interface data.
 
 =back
 
