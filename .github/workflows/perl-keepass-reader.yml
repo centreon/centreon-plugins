@@ -7,8 +7,8 @@ concurrency:
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - "dependencies/perl-keepass-reader/**"
+    # paths:
+    #   - "dependencies/perl-keepass-reader/**"
   push:
     branches:
       - develop
@@ -122,6 +122,8 @@ jobs:
             distrib: bullseye
           - image: bookworm
             distrib: bookworm
+          - image: jammy
+            distrib: jammy
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
@@ -182,7 +184,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources

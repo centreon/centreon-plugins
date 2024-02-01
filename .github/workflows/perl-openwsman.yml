@@ -7,8 +7,8 @@ concurrency:
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - "dependencies/perl-openwsman/**"
+    # paths:
+    #   - "dependencies/perl-openwsman/**"
   push:
     branches:
       - develop
