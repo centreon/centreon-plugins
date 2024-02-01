@@ -10,6 +10,9 @@ inputs:
   distrib:
     description: The package distrib
     required: true
+  version:
+    description: The package version ([major_version].[minor_version])
+    required: false
   major_version:
     description: The major version
     required: false
@@ -18,7 +21,7 @@ inputs:
     required: false
   release:
     description: The package release number
-    required: false
+    required: true
   arch:
     description: The package architecture
     required: false
@@ -36,6 +39,9 @@ inputs:
     required: true
   rpm_gpg_signing_passphrase:
     description: The rpm gpg signing passphrase
+    required: true
+  stability:
+    description: "Branch stability (stable, testing, unstable, canary)"
     required: true
 
 runs:
@@ -59,8 +65,15 @@ runs:
         RPM_GPG_SIGNING_KEY_ID: ${{ inputs.rpm_gpg_signing_key_id }}
         RPM_GPG_SIGNING_PASSPHRASE: ${{ inputs.rpm_gpg_signing_passphrase }}
       run: |
-        export MAJOR_VERSION="${{ inputs.major_version }}"
-        export VERSION="${{ inputs.major_version }}.${{ inputs.minor_version }}"
+        if [ -z ${{ inputs.version }} ]; then
+          export VERSION="${{ inputs.major_version }}.${{ inputs.minor_version }}"
+          export MAJOR_VERSION="${{ inputs.major_version }}"
+          export MINOR_VERSION="${{ inputs.minor_version }}"
+        elif [ -z ${{ inputs.major_version }} ]; then
+          export VERSION="${{ inputs.version }}"
+          export MAJOR_VERSION=$( echo $VERSION | cut -d "-" -f1 )
+          export MINOR_VERSION=$( echo $VERSION | cut -d "-" -f2 )
+        fi
         export RELEASE="${{ inputs.release }}"
         export ARCH="${{ inputs.arch }}"
 
@@ -70,22 +83,27 @@ runs:
           export APACHE_GROUP="apache"
         else
           export DIST=""
+          if [ "${{ inputs.stability }}" == "unstable" ] || [ "${{ inputs.stability }}" == "canary" ]; then
+            export RELEASE="$RELEASE~${{ inputs.distrib }}"
+          elif [ "${{ inputs.stability }}" == "testing" ]; then
+            export RELEASE="1~${{ inputs.distrib }}"
+          fi
           export APACHE_USER="www-data"
           export APACHE_GROUP="www-data"
         fi
 
-        MAJOR_LEFT=$( echo $MAJOR_VERSION | cut -d "." -f1 )
-        MAJOR_RIGHT=$( echo $MAJOR_VERSION | cut -d "-" -f1 | cut -d "." -f2 )
-        BUMP_MAJOR_RIGHT=$(( MAJOR_RIGHT_PART + 1 ))
-        if [ "$MAJOR_RIGHT" = "04" ]; then
-          BUMP_MAJOR_LEFT="$MAJOR_LEFT"
-          BUMP_MAJOR_RIGHT="10"
-        else
-          BUMP_MAJOR_LEFT=$(( $MAJOR_LEFT + 1 ))
-          BUMP_MAJOR_RIGHT="04"
+        if [ -z "$MAJOR_VERSION" ]; then
+          MAJOR_LEFT=$( echo $VERSION | cut -d "." -f1 )
+          MAJOR_RIGHT=$( echo $VERSION | cut -d "-" -f1 | cut -d "." -f2 )
+          if [ "$MAJOR_RIGHT" == "04" ]; then
+            BUMP_MAJOR_LEFT="$MAJOR_LEFT"
+            BUMP_MAJOR_RIGHT="10"
+          else
+            BUMP_MAJOR_LEFT=$(( $MAJOR_LEFT + 1 ))
+            BUMP_MAJOR_RIGHT="04"
+          fi
+          export NEXT_MAJOR_VERSION="$BUMP_MAJOR_LEFT.$BUMP_MAJOR_RIGHT"
         fi
-
-        export NEXT_MAJOR_VERSION="$BUMP_MAJOR_LEFT.$BUMP_MAJOR_RIGHT"
 
         export RPM_SIGNING_KEY_FILE="$(pwd)/key.gpg"
         export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"

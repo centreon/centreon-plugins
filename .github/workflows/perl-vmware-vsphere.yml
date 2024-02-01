@@ -85,12 +85,13 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Package
-        uses: ./.github/actions/package
+        uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           commit_hash: ${{ github.sha }}
+          release: ${{ needs.get-environment.outputs.release }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
