@@ -60,7 +60,7 @@ runs:
       shell: bash
 
     - name: Promote DEB package to stable
-      if: ${{ startsWith(inputs.distrib, 'bullseye') || startsWith(inputs.distrib, 'bookworm' || startsWith(inputs.disttrib, 'jammy') }}
+      if: ${{ startsWith(inputs.distrib, 'bullseye') || startsWith(inputs.distrib, 'bookworm' }}
       run: |
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
 

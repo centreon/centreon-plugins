@@ -172,8 +172,6 @@ jobs:
             arch: amd64
           - distrib: bookworm
             arch: amd64
-          - distrib: jammy
-            arch: amd64
           - distrib: bullseye
             arch: arm64
 
@@ -206,8 +204,6 @@ jobs:
           - distrib: bullseye
             arch: amd64
           - distrib: bookworm
-            arch: amd64
-          - distrib: jammy
             arch: amd64
           - distrib: bullseye
             arch: arm64

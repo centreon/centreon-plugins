@@ -434,7 +434,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources
@@ -455,7 +455,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye, bookworm, jammy]
+        distrib: [el8, el9, bullseye, bookworm]
 
     steps:
       - name: Checkout sources

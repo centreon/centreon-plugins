@@ -134,7 +134,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources
