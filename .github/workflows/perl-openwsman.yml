@@ -116,6 +116,7 @@ jobs:
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
           make
+        shell: bash
 
       - name: Set package name and paths according to distrib
         run: |
