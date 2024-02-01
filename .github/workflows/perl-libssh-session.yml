@@ -49,6 +49,11 @@ jobs:
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -71,7 +76,7 @@ jobs:
 
       - name: Install locally Libssh::Session
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" || [ "${{ matrix.distrib }}" = "jammy" ]; then
             apt-get update
             apt-get install -y cpanminus gcc libssh-dev
           else
@@ -83,7 +88,7 @@ jobs:
 
       - name: Set package name and paths according to distrib
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
             NAME="libssh-session-perl"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"

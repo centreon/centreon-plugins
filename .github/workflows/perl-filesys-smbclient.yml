@@ -120,6 +120,8 @@ jobs:
             distrib: bullseye
           - image: packaging-plugins-bookworm
             distrib: bookworm
+          - image: packaging-plugins-jammy
+            distrib: jammy
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest

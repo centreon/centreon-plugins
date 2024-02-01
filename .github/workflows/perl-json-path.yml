@@ -41,6 +41,9 @@ jobs:
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
 
     runs-on: ubuntu-22.04
 
@@ -58,7 +61,7 @@ jobs:
 
       - name: Install locally JSON::Path
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
             apt-get update
             apt-get install -y cpanminus gcc
           else
@@ -75,7 +78,7 @@ jobs:
       - name: Set package name and paths according to distrib
         run: |
           VERSION="1.0.3"
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ]; then
+          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
             NAME="libjson-path-perl"
             PERL_VENDORLIB="/usr/share/perl5"
           else
