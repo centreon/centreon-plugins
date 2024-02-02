@@ -76,7 +76,7 @@ jobs:
 
       - name: Install locally Libssh::Session
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" || [ "${{ matrix.distrib }}" = "jammy" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             apt-get update
             apt-get install -y cpanminus gcc libssh-dev
           else
@@ -88,7 +88,7 @@ jobs:
 
       - name: Set package name and paths according to distrib
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libssh-session-perl"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
@@ -171,6 +171,8 @@ jobs:
           - distrib: bullseye
             arch: arm64
           - distrib: bookworm
+            arch: amd64
+          - distrib: jammy
             arch: amd64
 
     name: Deliver ${{ matrix.distrib }} ${{ matrix.arch }}

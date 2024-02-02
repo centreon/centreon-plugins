@@ -80,7 +80,7 @@ jobs:
 
       - name: Install locally sblim-sfcc
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
@@ -103,7 +103,7 @@ jobs:
 
       - name: Build openwsman
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
           else
             dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
@@ -116,10 +116,11 @@ jobs:
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
           make
+        shell: bash
 
       - name: Set package name and paths according to distrib
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ] || [ "${{ matrix.distrib }}" = "bookworm" ] || [ "${{ matrix.distrib }}" = "jammy" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
@@ -150,7 +151,7 @@ jobs:
         shell: bash
 
       - name: Package sblim-sfcc
-        if: ${{ matrix.distrib == 'bullseye' || matrix.distrib == 'bookworm' || matrix.distrib == 'jammy' }}
+        if: ${{ matrix.package_extension == 'deb' }}
         uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "dependencies/perl-openwsman/sblim-sfcc.yaml"
@@ -249,6 +250,8 @@ jobs:
             arch: amd64
           - distrib: bookworm
             arch: amd64
+          - distrib: jammy
+            arch: amd64
           - distrib: bullseye
             arch: arm64
 
@@ -308,7 +311,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Promote sblim-sfcc ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        if: ${{ matrix.distrib == 'bullseye' || matrix.distrib == 'bookworm' || matrix.distrib == 'jammy' }}
+        if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy"]'), matrix.distrib) }}
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
