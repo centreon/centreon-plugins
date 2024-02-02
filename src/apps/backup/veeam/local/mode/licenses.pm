@@ -18,12 +18,17 @@
 # limitations under the License.
 #
 
+# Import necessary libraries
 package apps::backup::veeam::local::mode::licenses;
 
+# Use base class
 use base qw(centreon::plugins::templates::counter);
 
+# Use strict and warnings
 use strict;
 use warnings;
+
+# Import required modules and types
 use centreon::common::powershell::veeam::licenses;
 use apps::backup::veeam::local::mode::resources::types qw($license_type $license_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -31,9 +36,11 @@ use centreon::plugins::misc;
 use JSON::XS;
 use POSIX;
 
+# Define time unit conversions
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
+# Custom function for performance data output
 sub custom_expires_perfdata {
     my ($self, %options) = @_;
 
@@ -48,6 +55,7 @@ sub custom_expires_perfdata {
     );
 }
 
+# Custom function for threshold checking
 sub custom_expires_threshold {
     my ($self, %options) = @_;
 
@@ -61,12 +69,14 @@ sub custom_expires_threshold {
     );
 }
 
+# Custom function for status output
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'status: ' . $self->{result_values}->{status};
 }
 
+# Custom function for license instances output
 sub custom_license_instances_output {
     my ($self, %options) = @_;
 
@@ -80,6 +90,7 @@ sub custom_license_instances_output {
     );
 }
 
+# Prefix output function for license information
 sub prefix_license_output {
     my ($self, %options) = @_;
 
@@ -90,6 +101,7 @@ sub prefix_license_output {
     );
 }
 
+# Set counters function
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -152,6 +164,7 @@ sub set_counters {
     ];
 }
 
+# Constructor function
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -174,6 +187,7 @@ sub new {
     return $self;
 }
 
+# Check options function
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -195,6 +209,7 @@ sub check_options {
     }
 }
 
+# Manage selection function
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -237,14 +252,12 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    #[
-    #  {"licensed_instances":7150,"expiration_time":"1632960000","type":0,"licensed_to":"Centreon Services","status":0,"used_instances":165}
-    #]
-
+    # Loop through decoded JSON data
     $self->{global} = { total => 0 };
     $self->{licenses} = {};
     my $current_time = time();
     foreach my $license (@$decoded) {
+        # Apply filters if specified
         if (defined($self->{option_results}->{filter_to}) && $self->{option_results}->{filter_to} ne '' &&
             $license->{licensed_to} !~ /$self->{option_results}->{filter_to}/) {
             $self->{output}->output_add(long_msg => "skipping license '" . $license->{licensed_to} . "': no matching filter.", debug => 1);
@@ -261,6 +274,7 @@ sub manage_selection {
             next;
         }
 
+        # Assign license information to internal data structure
         $self->{licenses}->{ $license->{licensed_to} } = {
             to => $license->{licensed_to},
             type => $license_type->{ $license->{type} },
@@ -280,6 +294,7 @@ sub manage_selection {
             $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_free} = 100 - $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used};
         }
 
+        # Store global license count
         $self->{global}->{total}++;
     }
 }
