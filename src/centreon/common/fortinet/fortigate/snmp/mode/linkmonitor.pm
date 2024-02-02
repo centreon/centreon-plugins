@@ -171,7 +171,6 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "With filter-name: $self->{option_results}->{filter_name} - Skipping link monitor '" . $snmp_result->{$oid} . " with id '" . $instance . "'.", debug => 1);
             next;
         }
-
         if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
             $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
             $self->{output}->output_add(long_msg => "With filter-vdom: $self->{option_results}->{filter_vdom} - Skipping vdom '" . $result->{vdom} . "'.", debug => 1);
@@ -194,6 +193,7 @@ sub manage_selection {
     }
 
     return if (scalar(keys %{$self->{linkmonitor}}) <= 0);
+    # Return : OK: if empty => User needs to set up filters to avoid this mysterious OK result.
 
 }
 
