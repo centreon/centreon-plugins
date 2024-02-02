@@ -1207,8 +1207,10 @@ sub get_selection {
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface}) 
         && $self->{no_interfaceid_options} == 0) {
+        my $regex = $self->{option_results}->{interface};
         foreach (@{$all_ids}) {
-            if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
+            my $id = $_;
+            if ($id =~ /(^|\s|,)$regex(\s*,|$)/) {
                 $self->add_selected_interface(id => $_);
             }
         }
