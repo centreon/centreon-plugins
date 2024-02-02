@@ -153,24 +153,27 @@ sub manage_selection {
     );
 
     $self->{linkmonitor} = {};
-    foreach (keys %$snmp_result) {
-        /^$oid_name\.(.*)$/;
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$oid_name\.(.*)$/);
         my $id = $1;
+
+        use Data::Dumper;
+        print Dumper($id);
 
         if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $id !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping link monitor '" . $snmp_result->{$_} . "'.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping link monitor '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping link monitor '" . $snmp_result->{$_} . "'.", debug => 1);
+            $snmp_result->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping link monitor '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
 
         $self->{linkmonitor}->{ $id } = {
             id => $id,
-            name => $snmp_result->{$_}
+            name => $snmp_result->{$oid}
         };
     }
 
@@ -181,22 +184,23 @@ sub manage_selection {
         instances => [ map($_, keys(%{$self->{linkmonitor}})) ],
         instance_regexp => '^(.*)$'
     );
+
     $snmp_result = $options{snmp}->get_leef();
-    foreach (keys %{$self->{linkmonitor}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+    foreach my $instance (keys %{$self->{linkmonitor}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
             $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
-            $self->{output}->output_add(long_msg => "skipping vdom '" . $self->{linkmonitor}->{$_}->{name} . "'.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping vdom '" . $self->{linkmonitor}->{$instance}->{name} . "'.", debug => 1);
             next;
         }
 
-        $self->{linkmonitor}->{$_}->{state} = $result->{state};
-        $self->{linkmonitor}->{$_}->{latency} = $result->{latency};
-        $self->{linkmonitor}->{$_}->{jitter} = $result->{jitter};
+        $self->{linkmonitor}->{$instance}->{state} = $result->{state};
+        $self->{linkmonitor}->{$instance}->{latency} = $result->{latency};
+        $self->{linkmonitor}->{$instance}->{jitter} = $result->{jitter};
         chop($result->{packet_loss});
-        $self->{linkmonitor}->{$_}->{packet_loss} = $result->{packet_loss};
-        $self->{linkmonitor}->{$_}->{vdom} = $result->{vdom};
+        $self->{linkmonitor}->{$instance}->{packet_loss} = $result->{packet_loss};
+        $self->{linkmonitor}->{$instance}->{vdom} = $result->{vdom};
     }
 }
 
