@@ -31,9 +31,28 @@ sub prefix_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Link monitor '%s' [vdom: %s] ",
+        "Link monitor '%s' [vdom: %s] [id: %s] ",
         $options{instance_value}->{name},
-        $options{instance_value}->{vdom}
+        $options{instance_value}->{vdom},
+        $options{instance_value}->{id}
+    );
+}
+
+sub custom_signal_perfdata {
+    my ($self) = @_;
+
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $instances,
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
     );
 }
 
@@ -45,70 +64,32 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{linkmonitor} = [
-        {
-            label => 'status',
+        { label => 'status',
             type => 2,
             critical_default => '%{state} eq "dead"',
             set => {
-                key_values => [ { name => 'state' }, { name => 'vdom' }, { name => 'name' } ],
+                key_values => [ { name => 'state' }, { name => 'vdom' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'latency', nlabel => 'linkmonitor.latency.milliseconds', set => {
-                key_values => [ { name => 'latency' }, { name => 'vdom' }, { name => 'name' } ],
+                key_values => [ { name => 'latency' }, { name => 'vdom' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'latency: %sms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}],
-                        value => sprintf('%.3f', $self->{result_values}->{latency}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'jitter', nlabel => 'linkmonitor.jitter.milliseconds', set => {
-                key_values => [ { name => 'jitter' }, { name => 'vdom' }, { name => 'name' } ],
+                key_values => [ { name => 'jitter' }, { name => 'vdom' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'jitter: %sms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}],
-                        value => sprintf('%.3f', $self->{result_values}->{jitter}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'packetloss', nlabel => 'linkmonitor.packetloss.percentage', set => {
-                key_values => [ { name => 'packet_loss' }, { name => 'vdom' }, { name => 'name' } ],
+                key_values => [ { name => 'packet_loss' }, { name => 'vdom' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'packet loss: %.3f%%',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => '%',
-                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}],
-                        value => sprintf('%.3f', $self->{result_values}->{packet_loss}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0,
-                        max => 100
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         }
     ];
@@ -120,12 +101,28 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'   => { name => 'filter_id' },
-        'filter-name:s' => { name => 'filter_name' },
-        'filter-vdom:s' => { name => 'filter_vdom' }
+        'filter-id:s'                 => { name => 'filter_id' },
+        'filter-name:s'               => { name => 'filter_name' },
+        'filter-vdom:s'               => { name => 'filter_vdom' },
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
+        $self->{option_results}->{custom_perfdata_instances} = '%(name) %(vdom)';
+    }
+
+    $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances',
+        instances => $self->{option_results}->{custom_perfdata_instances},
+        labels => { name => 1, vdom => 1, id=>1 }
+    );
 }
 
 my $mapping_status = { 0 => 'alive', 1 => 'dead' };
@@ -218,6 +215,11 @@ Filter link monitor by name (can be a regexp).
 =item B<--filter-vdom>
 
 Filter link monitor by vdom name (can be a regexp).
+
+=item B<--custom-perfdata-instances>
+
+Define perfdatas instance (default: '%(name) %(vdom)').
+You can use the following variables: %{name}, %{vdom}, %{id}
 
 =item B<--unknown-status>
 
