@@ -86,7 +86,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
-        { label => 'packetloss', nlabel => 'linkmonitor.packetloss.percentage', set => {
+        { label => 'packet-loss', nlabel => 'linkmonitor.packet.loss.percentage', set => {
                 key_values => [ { name => 'packet_loss' }, { name => 'vdom' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'packet loss: %.3f%%',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
@@ -190,7 +190,7 @@ sub manage_selection {
     }
 
     return if (scalar(keys %{$self->{linkmonitor}}) <= 0);
-    # Return : OK: if empty => User needs to set up filters to avoid this mysterious OK result.
+    # Returns : OK: if empty => User needs to set up filters to avoid this mysterious OK result.
 
 }
 
@@ -214,11 +214,11 @@ Filter link monitor by name (can be a regexp).
 
 =item B<--filter-vdom>
 
-Filter link monitor by vdom name (can be a regexp).
+Filter link monitor by virtual domain name (can be a regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(name) %(vdom)').
+Define perfdata instance (default: '%(name) %(vdom)').
 You can use the following variables: %{name}, %{vdom}, %{id}
 
 =item B<--unknown-status>
@@ -239,7 +239,7 @@ You can use the following variables: %{state}, %{vdom}, %{id}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'latency', 'jitter', 'packetloss'.
+Can be: 'latency', 'jitter', 'packet-loss'.
 
 =back
 

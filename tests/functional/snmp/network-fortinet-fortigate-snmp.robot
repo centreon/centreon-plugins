@@ -27,7 +27,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with filter-id option set to 3
 &{fortinet_fortigate_linkmonitor_test2}
@@ -44,7 +44,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with filter-name option set to MonitorWAN1
 &{fortinet_fortigate_linkmonitor_test3}
@@ -61,7 +61,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=OK: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive, latency: 39.739ms, jitter: 0.096ms, packet loss: 0.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0;
+...                         result=OK: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive, latency: 39.739ms, jitter: 0.096ms, packet loss: 0.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0;
 
 # Test linkmonitor mode with filter-vdom option set to 'root'
 &{fortinet_fortigate_linkmonitor_test4}
@@ -78,7 +78,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with custom-perf-data-instances option set to '%(name) %(id)'
 &{fortinet_fortigate_linkmonitor_test5}
@@ -95,7 +95,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~1#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~1#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~1#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~2#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~2#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~2#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~3#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~3#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~3#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~1#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~1#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~1#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~2#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~2#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~2#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~3#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~3#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~3#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with unknown-status option set to '%{state} eq "alive"'
 &{fortinet_fortigate_linkmonitor_test6}
@@ -112,7 +112,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead UNKNOWN: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead UNKNOWN: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with warning-status option set to '%{state} eq "alive"'
 &{fortinet_fortigate_linkmonitor_test7}
@@ -129,7 +129,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with critical-status option set to '%{state} eq "alive"'
 &{fortinet_fortigate_linkmonitor_test8}
@@ -146,7 +146,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN1' [vdom: root] [id: 1] state: alive - Link monitor 'MonitorWAN2' [vdom: root] [id: 2] state: alive | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with warning-latency option set to 40
 &{fortinet_fortigate_linkmonitor_test9}
@@ -163,7 +163,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] latency: 46.446ms | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;0:40;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;0:40;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;0:40;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] latency: 46.446ms | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;0:40;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;0:40;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;0:40;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with critical-latency option set to 40
 &{fortinet_fortigate_linkmonitor_test10}
@@ -180,7 +180,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] latency: 46.446ms - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;0:40;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;0:40;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;0:40;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] latency: 46.446ms - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;0:40;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;0:40;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;0:40;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with warning-jitter option set to 1
 &{fortinet_fortigate_linkmonitor_test11}
@@ -197,7 +197,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] jitter: 1.868ms | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;0:1;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;0:1;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;0:1;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] jitter: 1.868ms | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;0:1;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;0:1;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;0:1;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with critical-jitter option set to 1
 &{fortinet_fortigate_linkmonitor_test12}
@@ -214,7 +214,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=1
 ...                         warningpacketloss=
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] jitter: 1.868ms - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;0:1;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;0:1;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;0:1;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] jitter: 1.868ms - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;0:1;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;0:1;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;0:1;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0;
 
 # Test linkmonitor mode with warning-packetloss option set to 0.5
 &{fortinet_fortigate_linkmonitor_test13}
@@ -231,7 +231,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=0.5
 ...                         criticalpacketloss=
-...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead, packet loss: 100.000% WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] packet loss: 1.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;0:0.5;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;0:0.5;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;0:0.5;;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead, packet loss: 100.000% WARNING: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] packet loss: 1.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;0:0.5;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;0:0.5;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;0:0.5;;0;
 
 # Test linkmonitor mode with critical-packetloss option set to 0.5
 &{fortinet_fortigate_linkmonitor_test14}
@@ -248,7 +248,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet:
 ...                         criticaljitter=
 ...                         warningpacketloss=
 ...                         criticalpacketloss=0.5
-...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] packet loss: 1.000% - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead, packet loss: 100.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packetloss.percentage'=0;;0:0.5;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packetloss.percentage'=1;;0:0.5;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packetloss.percentage'=100;;0:0.5;0;
+...                         result=CRITICAL: Link monitor 'MonitorWAN2' [vdom: root] [id: 2] packet loss: 1.000% - Link monitor 'MonitorWAN3' [vdom: root] [id: 3] state: dead, packet loss: 100.000% | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;0:0.5;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;0:0.5;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;0:0.5;0;
 
 @{fortinet_fortigate_linkmonitor_tests}
 ...                         &{fortinet_fortigate_linkmonitor_test1}
@@ -358,11 +358,11 @@ Network Fortinet Fortigate SNMP link monitor
         END
          ${length}    Get Length    ${fortinet_fortigate_linkmonitor_test.warningpacketloss}
         IF    ${length} > 0
-            ${command}    Catenate    ${command}    --warning-packetloss=${fortinet_fortigate_linkmonitor_test.warningpacketloss}
+            ${command}    Catenate    ${command}    --warning-packet-loss=${fortinet_fortigate_linkmonitor_test.warningpacketloss}
         END
         ${length}    Get Length    ${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
         IF    ${length} > 0
-            ${command}    Catenate    ${command}    --critical-packetloss=${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
+            ${command}    Catenate    ${command}    --critical-packet-loss=${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
         END
         ${output}    Run    ${command}
         Log To Console    .    no_newline=true

@@ -140,7 +140,7 @@ Filter link monitor by state (can be a regexp).
 
 =item B<--filter-vdom>
 
-Filter link monitor by vdom name (can be a regexp).
+Filter link monitor by virtual domain name (can be a regexp).
 
 =back
 
