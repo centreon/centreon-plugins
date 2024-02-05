@@ -67,11 +67,10 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-            $result->{state} !~ /$self->{option_results}->{filter_name}/) {
+            $result->{state} !~ /$self->{option_results}->{filter_state}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{state} . "': no matching filter.", debug => 1);
             next;
         }
-                
         push @{$self->{linkmonitor}}, $result; 
     }
 }
@@ -80,6 +79,11 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
+
+    if (scalar(keys @{$self->{linkmonitor}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No link monitor found matching.");
+        $self->{output}->option_exit();
+    }
 
     foreach (sort @{$self->{linkmonitor}}) { 
         $self->{output}->output_add(long_msg => sprintf("[Name = %s] [State = %s]", $_->{name}, $_->{state}));
