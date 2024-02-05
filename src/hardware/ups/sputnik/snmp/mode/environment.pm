@@ -89,25 +89,23 @@ sub manage_selection {
 
     # upsEnvSensorCounts is not used but it gives the number of sensors
     #my $oid_upsEnvSensorCounts = '.1.3.6.1.4.1.54661.1.1.1.2.1.0';
-    my $oid_upsEnvSensorTemperature = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.2';
-    my $oid_upsEnvSensorHumidity = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.3';
+    my $oid_upsEnvSensors = '.1.3.6.1.4.1.54661.1.1.1.2.2.1';
+    #my $oid_upsEnvSensorTemperature = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.2';
+    #my $oid_upsEnvSensorHumidity = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.3';
 
     # Each sensor will provide a temperature and a humidity ratio
     my $mapping = {
-        upsEnvSensorTemperature     => { oid => $oid_upsEnvSensorTemperature },
-        upsEnvSensorHumidity        => { oid => $oid_upsEnvSensorHumidity }
+        upsEnvSensorTemperature     => { oid => $oid_upsEnvSensors.'.2' },
+        upsEnvSensorHumidity        => { oid => $oid_upsEnvSensors.'.3' }
     };
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_upsEnvSensorTemperature },
-            { oid => $oid_upsEnvSensorHumidity }
-        ],
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_upsEnvSensors,
         nothing_quit => 1
     );
 
     $self->{sensors} = {};
-    foreach my $oid (keys %{$snmp_result->{$oid_upsEnvSensorTemperature}}) {
-        next if ($oid !~ /^$oid_upsEnvSensorTemperature\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$oid_upsEnvSensors\.2\.(.*)$/);
         my $sensor_index = $1;
 
         # skip if a filter is defined, and the current sensor does not match
