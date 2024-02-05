@@ -27,8 +27,9 @@ use warnings;
 
 my $mapping_status = { 0 => 'alive', 1 => 'dead' };
 my $mapping = {
-    name  => { oid => '.1.3.6.1.4.1.12356.101.4.8.2.1.2' }, # fgLinkMonitorName
-    state => { oid => '.1.3.6.1.4.1.12356.101.4.8.2.1.3', map => $mapping_status } # fgLinkMonitorState
+    name  => { oid => '.1.3.6.1.4.1.12356.101.4.8.2.1.2' },                         # fgLinkMonitorName
+    state => { oid => '.1.3.6.1.4.1.12356.101.4.8.2.1.3', map => $mapping_status }, # fgLinkMonitorState
+    vdom  => { oid => '.1.3.6.1.4.1.12356.101.4.8.2.1.9' }                          # fgLinkMonitorVdom
 };
 my $oid_table = '.1.3.6.1.4.1.12356.101.4.8.2';
 
@@ -39,7 +40,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
-        'filter-state:s' => { name => 'filter_state' }
+        'filter-state:s' => { name => 'filter_state' },
+        'filter-vdom:s'               => { name => 'filter_vdom' }
     });
 
     return $self;
@@ -71,6 +73,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{state} . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
+            $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{vdom} . "': no matching filter.", debug => 1);
+            next;
+        }
         push @{$self->{linkmonitor}}, $result; 
     }
 }
@@ -86,7 +93,7 @@ sub run {
     }
 
     foreach (sort @{$self->{linkmonitor}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[Name = %s] [State = %s]", $_->{name}, $_->{state}));
+        $self->{output}->output_add(long_msg => sprintf("[Name = %s] [Vdom = %s] [State = %s]", $_->{name}, $_->{vdom}, $_->{state}));
     }
     
     $self->{output}->output_add(
@@ -100,7 +107,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'state']);
+    $self->{output}->add_disco_format(elements => ['name', 'vdom', 'state']);
 }
 
 sub disco_show {
@@ -109,7 +116,7 @@ sub disco_show {
     $self->manage_selection(%options);
 
     foreach (sort @{$self->{linkmonitor}}) {
-        $self->{output}->add_disco_entry(name => $_->{name}, state => $_->{state});
+        $self->{output}->add_disco_entry(name => $_->{name}, vdom => $_->{vdom}, state => $_->{state});
     }
 }
 
@@ -130,6 +137,10 @@ Filter link monitor by name (can be a regexp).
 =item B<--filter-state>
 
 Filter link monitor by state (can be a regexp).
+
+=item B<--filter-vdom>
+
+Filter link monitor by vdom name (can be a regexp).
 
 =back
 
