@@ -37,7 +37,7 @@ runs:
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
     - name: Publish DEBs to artifactory
-      if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'stable') }}
+      if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'unstable') }}
       run: |
         FILES="*.deb"
 
