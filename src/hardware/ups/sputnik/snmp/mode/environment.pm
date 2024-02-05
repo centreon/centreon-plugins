@@ -28,18 +28,11 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    # All options/properties of this mode, always add the force_new_perfdata => 1 to enable new metric/performance data naming.
-    # It also where you can specify that the plugin uses a cache file for example
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     # Declare options
     $options{options}->add_options(arguments => {
-        # One the left it's the option name that will be used in the command line. The ':s' at the end is to
-        # define that this options takes a value.
-        # On the right, it's the code name for this option, optionnaly you can define a default value so the user
-        # doesn't have to set it.
-        # option name        => variable name
         'filter-id:s' => { name => 'filter_id' }
     });
 
@@ -56,9 +49,6 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # cpu will receive value for both instances (768 and 769) : the type => 1 explicits that
-        # You can define a callback (cb) function to manage the output prefix. This function is called 
-        # each time a value is passed to the counter and can be shared across multiple counters.
         { name => 'sensors', type => 1, cb_prefix_output => 'prefix_sensors_output', message_multiple => 'All sensors are ok' }
     ];
 
@@ -67,7 +57,6 @@ sub set_counters {
                 key_values => [ { name => 'temperature' }, { name => 'display' } ],
                 output_template => 'temperature %.2f C',
                 perfdatas => [
-                    # we add the label_extra_instance option to have one perfdata per instance
                     { label => 'temperature', template => '%.2f', unit => 'C', label_extra_instance => 1,  instance_use => 'display' }
                 ]
             }
@@ -76,7 +65,6 @@ sub set_counters {
                 key_values => [ { name => 'humidity' }, { name => 'display' } ],
                 output_template => 'humidity %s %%',
                 perfdatas => [
-                    # we add the label_extra_instance option to have one perfdata per instance
                     { label => 'humidity', template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1,  instance_use => 'display' }
                 ]
             }
@@ -87,13 +75,14 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # upsEnvSensorCounts is not used but it gives the number of sensors
+    # FI: upsEnvSensorCounts is not used but it gives the number of sensors
     #my $oid_upsEnvSensorCounts = '.1.3.6.1.4.1.54661.1.1.1.2.1.0';
     my $oid_upsEnvSensors = '.1.3.6.1.4.1.54661.1.1.1.2.2.1';
+    # FI: the actual MIB OIDs:
     #my $oid_upsEnvSensorTemperature = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.2';
     #my $oid_upsEnvSensorHumidity = '.1.3.6.1.4.1.54661.1.1.1.2.2.1.3';
 
-    # Each sensor will provide a temperature and a humidity ratio
+    # Each sensor will provide a temperature (in 100th of degrees) and a humidity percentage
     my $mapping = {
         upsEnvSensorTemperature     => { oid => $oid_upsEnvSensors.'.2' },
         upsEnvSensorHumidity        => { oid => $oid_upsEnvSensors.'.3' }
@@ -104,19 +93,28 @@ sub manage_selection {
     );
 
     $self->{sensors} = {};
-    foreach my $oid (keys %{$snmp_result}) {
+    foreach my $oid (sort(keys %{$snmp_result})) {
         next if ($oid !~ /^$oid_upsEnvSensors\.2\.(.*)$/);
+        # The index of the sensor will be used in the instance name
         my $sensor_index = $1;
 
-        # skip if a filter is defined, and the current sensor does not match
-        if (defined($self->{option_results}->{filter_id}) && $sensor_index ne '' && $sensor_index !~ $self->{option_results}->{filter_id} ) {
-            #FIXME: Log the skip
+        # Skip if a filter is defined and the current sensor does not match
+        if (defined($self->{option_results}->{filter_id}) && $sensor_index ne '' && $sensor_index !~ /$self->{option_results}->{filter_id}/ ) {
+            $self->{output}->output_add(
+                long_msg => "With filter-id: '$self->{option_results}->{filter_id}' - Skipping sensor '$sensor_index'.",
+                debug    => 1
+            );
             next;
         }
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $sensor_index);
+        # Get all the metrics for the current instance
+        my $result = $options{snmp}->map_instance(
+            mapping => $mapping,
+            results => $snmp_result,
+            instance => $sensor_index
+        );
 
-        # the temperature is given multiplied by 100, so we have to divide it
+        # The temperature is given multiplied by 100, so we have to divide it by 100
         # cf MIB: UNITS     "0.01 degrees Centigrade"
         $self->{sensors}->{$sensor_index} = {
             display => 'Sensor '.$sensor_index,
@@ -125,20 +123,20 @@ sub manage_selection {
         };
     }
 
+    # No results is not OK
     if (scalar(keys %{$self->{sensors}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No sensors found.");
         $self->{output}->option_exit();
     }
 }
 
-
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check environment counters.
+Monitor temperature and humidity using the device's environment sensors.
 
 =over 8
 
@@ -146,7 +144,10 @@ Check environment counters.
 
 Thresholds. Can be: 'humidity' (%), 'temperature' (C).
 
+=item B<--filter-id>
+
+Define which sensors should be monitored based on their IDs. This option will be treated as a regular expression.
+
 =back
 
 =cut
-

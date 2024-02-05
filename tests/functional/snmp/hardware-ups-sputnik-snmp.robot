@@ -14,7 +14,7 @@ ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugi
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sputnik::snmp::plugin
 
 *** Test Cases ***
-Sputnik UPS - Environment ${tc}/8
+Sputnik UPS - Environment ${tc}/9
     [Tags]    hardware    UPS    snmp
     ${command}    Catenate
     ...    ${CMD}
@@ -23,26 +23,18 @@ Sputnik UPS - Environment ${tc}/8
     ...    --snmp-version=2c
     ...    --snmp-port=2024
     ...    --snmp-community=hardware-ups/hardware-ups-sputnik
-    ${length}    Get Length    ${w_temperature}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --warning-temperature=${w_temperature}
-    END
-    ${length}    Get Length    ${c_temperature}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --critical-temperature=${c_temperature}
-    END
-    ${length}    Get Length    ${w_humidity}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --warning-humidity=${w_humidity}
-    END
-    ${length}    Get Length    ${c_humidity}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --critical-humidity=${c_humidity}
-    END
-    ${length}    Get Length    ${filter_id}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --filter-id=${filter_id}
-    END
+
+    # Append options to command
+    ${opt}    Append Option    --warning-temperature   ${w_temperature}
+    ${command}    Catenate    ${command}    ${opt}
+    ${opt}    Append Option    --critical-temperature  ${c_temperature}
+    ${command}    Catenate    ${command}    ${opt}
+    ${opt}    Append Option    --warning-humidity      ${w_humidity}
+    ${command}    Catenate    ${command}    ${opt}
+    ${opt}    Append Option    --critical-humidity     ${c_humidity}
+    ${command}    Catenate    ${command}    ${opt}
+    ${opt}    Append Option    --filter-id             ${filter_id}
+    ${command}    Catenate    ${command}    ${opt}
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
@@ -60,4 +52,12 @@ Sputnik UPS - Environment ${tc}/8
             ...      6     1            10               50               20            70            WARNING: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;0:10;0:50;; 'Sensor 1#environment.humidity.percentage'=33%;0:20;0:70;0;100
             ...      7     1            10               20               20            30            CRITICAL: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;0:10;0:20;; 'Sensor 1#environment.humidity.percentage'=33%;0:20;0:30;0;100
             ...      8     2            30               50               50            70            UNKNOWN: No sensors found.
-#            ...      9     1            empty            empty            empty         empty         OK: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;0:30;0:50;; 'Sensor 1#environment.humidity.percentage'=33%;0:50;0:70;0;100
+            ...      9     1            _empty_          _empty_          _empty_       _empty_       OK: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;;;; 'Sensor 1#environment.humidity.percentage'=33%;;;0;100
+
+*** Keywords ***
+Append Option
+    [Documentation]    Concatenates the first argument (option) with the second (value) after having replaced the value with "" if its content is '_empty_'
+    [Arguments]    ${option}    ${value}
+    ${value}    Set Variable If    '${value}' == '_empty_'    ''    ${value}
+    [return]    ${option}=${value}
+
