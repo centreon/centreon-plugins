@@ -339,7 +339,7 @@ Filter destination type (can be a regexp).
 
 =item B<--request>
 
-Set the mbean and attributes to request (will replace defaults)
+Set the MBean and attributes to request (will replace defaults)
 in a JSON-formatted fashion.
 
 This is useful to reduce the size of returned data by providing destination
