@@ -217,56 +217,56 @@ jobs:
         distrib: [bullseye, bookworm, jammy]
         name:
           [
-            "Authen::SASL::SASLprep",
-            "Authen::SCRAM::Client",
-            "boolean",
-            "Carp::Assert",
-            "Clone",
-            "Clone::Choose",
-            "common::sense",
-            "Convert::EBCDIC",
+            # "Authen::SASL::SASLprep",
+            # "Authen::SCRAM::Client",
+            # "boolean",
+            # "Carp::Assert",
+            # "Clone",
+            # "Clone::Choose",
+            # "common::sense",
+            # "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
             "DateTime::Format::Duration::ISO8601",
-            "Device::Modbus",
-            "Digest::MD5::File",
-            "Digest::SHA1",
-            "Email::Send::SMTP::Gmail",
-            "FFI::CheckLib",
-            "File::SearchPath",
-            "Hash::Merge",
-            "Hash::Ordered",
-            "HTTP::Daemon",
-            "HTTP::Daemon::SSL",
-            "HTTP::ProxyPAC",
-            "JMX::Jmx4Perl",
-            "JSON::Parse",
-            "JSON::WebToken",
-            "LV",
-            "MIME::Types",
-            "MongoDB",
-            "Net::FTPSSL",
-            "Net::HTTPTunnel",
-            "Net::NTP",
-            "Net::SMTPS",
-            "Net::SMTP_auth",
-            "Net::Subnet",
-            "Net::TFTP",
-            "PBKDF2::Tiny",
+            # "Device::Modbus",
+            # "Digest::MD5::File",
+            # "Digest::SHA1",
+            # "Email::Send::SMTP::Gmail",
+            # "FFI::CheckLib",
+            # "File::SearchPath",
+            # "Hash::Merge",
+            # "Hash::Ordered",
+            # "HTTP::Daemon",
+            # "HTTP::Daemon::SSL",
+            # "HTTP::ProxyPAC",
+            # "JMX::Jmx4Perl",
+            # "JSON::Parse",
+            # "JSON::WebToken",
+            # "LV",
+            # "MIME::Types",
+            # "MongoDB",
+            # "Net::FTPSSL",
+            # "Net::HTTPTunnel",
+            # "Net::NTP",
+            # "Net::SMTPS",
+            # "Net::SMTP_auth",
+            # "Net::Subnet",
+            # "Net::TFTP",
+            # "PBKDF2::Tiny",
             "Schedule::Cron",
             "Statistics::Descriptive",
             "Statistics::Regression",
-            "Sys::SigAction",
-            "Term::Clui",
-            "Term::ShellUI",
-            "Unicode::Stringprep",
-            "URI::Encode",
-            "URI::Template",
-            "URL::Encode",
-            "UUID::URandom",
-            "WWW::Selenium",
-            "XML::Filter::BufferText",
-            "XML::LibXML::Simple",
-            "XML::SAX::Writer",
+            # "Sys::SigAction",
+            # "Term::Clui",
+            # "Term::ShellUI",
+            # "Unicode::Stringprep",
+            # "URI::Encode",
+            # "URI::Template",
+            # "URL::Encode",
+            # "UUID::URandom",
+            # "WWW::Selenium",
+            # "XML::Filter::BufferText",
+            # "XML::LibXML::Simple",
+            # "XML::SAX::Writer",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
           ]
@@ -306,8 +306,8 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
         run: |
-          apt update
-          apt install -y cpanminus ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
+          apt-get update
+          apt-get install -y cpanminus ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
 
           PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
           if [ -z "${{ matrix.version }}" ]; then
@@ -328,18 +328,18 @@ jobs:
           cpanm Module::Install
 
           gem install fpm
-          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
+          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
         run: |
-          apt update
-          apt install -y cpanminus libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
+          apt-get update
+          apt-get install -y cpanminus libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
 
           if [ -z "${{ matrix.version }}" ]; then
             PACKAGE_VERSION=""
           else
-            PACKAGE_VERSION="--version ${{ matrix.version }}~${{ matrix.distrib }}"
+            PACKAGE_VERSION="--version ${{ matrix.version }}"
           fi
 
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
