@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::ups::sputnik::snmp::plugin;
+package hardware::ups::inmatics::sputnik::snmp::plugin;
 
 use strict;
 use warnings;
@@ -32,7 +32,7 @@ sub new {
     $self->{modes} = {
         'alarms'         => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
         'battery-status' => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',
-        'environment'    => 'hardware::ups::sputnik::snmp::mode::environment',
+        'environment'    => 'hardware::ups::inmatics::sputnik::snmp::mode::environment',
         'input-lines'    => 'hardware::ups::standard::rfc1628::snmp::mode::inputlines',
         'output-lines'   => 'hardware::ups::standard::rfc1628::snmp::mode::outputlines',
         'output-source'  => 'hardware::ups::standard::rfc1628::snmp::mode::outputsource'

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::ups::sputnik::snmp::mode::environment;
+package hardware::ups::inmatics::sputnik::snmp::mode::environment;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -11,7 +11,7 @@ Test Timeout        120s
 *** Variables ***
 ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::sputnik::snmp::plugin
+${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::inmatics::sputnik::snmp::plugin
 
 *** Test Cases ***
 Sputnik UPS - Environment ${tc}/9
