@@ -410,7 +410,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   sign-rpm:
-    needs: [package-rpm,merge-package-rpm-artifacts]
+    needs: [package-rpm, merge-package-rpm-artifacts]
 
     runs-on: ubuntu-22.04
     strategy:
@@ -447,7 +447,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   download-and-cache-deb:
-    needs: [package-deb,merge-package-deb-artifacts]
+    needs: [package-deb, merge-package-deb-artifacts]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
