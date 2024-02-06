@@ -200,9 +200,18 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
+      - name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
       - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.name }}
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
 
@@ -365,9 +374,18 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
         shell: bash
 
+      - name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
       - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
-          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.name }}
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
 
