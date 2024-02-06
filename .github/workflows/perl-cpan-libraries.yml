@@ -312,7 +312,7 @@ jobs:
           PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
           if [ -z "${{ matrix.version }}" ]; then
             CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//g' | sed 's/.*\-//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]];
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
