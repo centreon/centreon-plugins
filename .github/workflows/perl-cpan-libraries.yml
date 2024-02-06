@@ -311,9 +311,14 @@ jobs:
 
           PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
           if [ -z "${{ matrix.version }}" ]; then
-            PACKAGE_VERSION=""
+            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//g' | sed 's/.*\-//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]];
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
+            PACKAGE_VERSION=" -v ${CPAN_PACKAGE_VERSION}~${{ matrix.distrib }}"
           else
-            PACKAGE_VERSION=" -v ${{ matrix.version }}"
+            PACKAGE_VERSION=" -v ${{ matrix.version }}~${{ matrix.distrib }}"
           fi
 
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
@@ -328,7 +333,7 @@ jobs:
           cpanm Module::Install
 
           gem install fpm
-          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
+          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
