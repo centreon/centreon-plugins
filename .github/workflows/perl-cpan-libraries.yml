@@ -385,7 +385,7 @@ jobs:
         with:
           target_name: packages-rpm-${{ matrix.distrib }}
           source_paths: packages-rpm-${{ matrix.distrib }}/*.rpm
-          source_name_pattern: packages-rpm-${{ matrix.distrib }}-
+          source_name_pattern: packages-rpm-
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # merge-package-deb-artifacts:
