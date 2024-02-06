@@ -231,7 +231,7 @@ jobs:
         uses: ./.github/actions/merge-artifacts
         with:
           target_name: packages-rpm-${{ matrix.distrib }}
-          source_paths: packages-rpm-${{ matrix.distrib }}/*.rpm
+          source_paths: packages-rpm-${{ matrix.distrib }}/
           source_name_pattern: packages-rpm-${{ matrix.distrib }}-
           github_token: ${{ secrets.GITHUB_TOKEN }}
 

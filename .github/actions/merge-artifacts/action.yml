@@ -17,7 +17,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Download ${{ matrix.type_of_report }} Artifacts
+    - name: Download Artifacts
       uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
       with:
         pattern: ${{ inputs.source_name_pattern }}*
@@ -32,7 +32,7 @@ runs:
           ${{ inputs.source_paths }}
         retention-days: 1
 
-    - name: Delete ${{ matrix.type_of_report }} Artifacts
+    - name: Delete Artifacts
       run: |
         artifact_pattern="${{ inputs.source_name_pattern }}"
         TOKEN="${{ inputs.github_token }}"
