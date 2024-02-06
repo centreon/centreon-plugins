@@ -311,7 +311,7 @@ jobs:
           apt-get install -y cpanminus
 
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//g' | sed 's/.*\-//')
+            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
 
             if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
