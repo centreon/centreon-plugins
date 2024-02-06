@@ -1,7 +1,8 @@
 --force-counters32
-Mbean
-messages-inflighted
+MBean
 OID
 oneaccess-sys-mib
+queue-messages-inflighted
 SNMP
 SSH
+topic-messages-inflighted
