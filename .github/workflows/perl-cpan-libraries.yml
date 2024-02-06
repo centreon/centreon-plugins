@@ -318,9 +318,9 @@ jobs:
               exit 1
             fi
 
-            PACKAGE_VERSION=" -v ${CPAN_PACKAGE_VERSION}"
+            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
           else
-            PACKAGE_VERSION=" -v ${{ matrix.version }}"
+            PACKAGE_VERSION="${{ matrix.version }}"
           fi
 
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
