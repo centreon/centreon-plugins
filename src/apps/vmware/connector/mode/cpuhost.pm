@@ -173,7 +173,7 @@ __END__
 
 =head1 MODE
 
-Check ESX cpu usage.
+Check ESX CPU usage.
 
 =over 8
 

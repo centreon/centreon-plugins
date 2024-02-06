@@ -265,13 +265,13 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
+Check CPU usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
 
 =over 8
 
 =item B<--check-order>
 
-Check cpu in standard cisco mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
+Check CPU in standard cisco mib. If you have some issue (wrong CPU information in a specific mib), you can change the order 
 (default: 'process,old_sys,system_ext').
 
 =item B<--warning-*> B<--critical-*>

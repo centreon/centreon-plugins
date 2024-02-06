@@ -161,7 +161,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (FASTPATH-SWITCHING-MIB).
+Check CPU usage (FASTPATH-SWITCHING-MIB).
 
 =over 8
 

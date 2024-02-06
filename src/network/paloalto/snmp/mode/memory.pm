@@ -87,7 +87,7 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--show-cache>
 
-Display cache storage datas.
+Display cache storage data.
 
 =item B<--filter-storage-type>
 

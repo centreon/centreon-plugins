@@ -1,0 +1,84 @@
+{
+    "constants": {
+        "okState": "active",
+        "criticalState": "disabled",
+        "criticalConnSecond": null,
+        "criticalCurrConn": null
+    },
+    "mapping": {
+        "poolState": {
+            "1": "active",
+            "2": "disabled",
+            "3": "draining",
+            "4": "unused",
+            "5": "unknown"
+        }
+    },
+    "snmp": {
+        "tables": [
+            {
+                "name": "poolEntry",
+                "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1",
+                "used_instance": "\\.1\\.3\\.6\\.1\\.4\\.1\\.7146\\.1\\.2\\.3\\.2\\.1\\.\\d+\\.(\\d+(\\.\\d+)+)",
+                "entries": [
+                    {
+                        "name": "poolName",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.1"
+                    },
+                    {
+                        "name": "poolState",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.14",
+                        "map": "poolState"
+                    },
+                    {
+                        "name": "poolTotalConn",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.10",
+                        "sampling": 1
+                    },
+                    {
+                        "name": "poolCurrentConn",
+                        "oid": ".1.3.6.1.4.1.7146.1.2.3.2.1.48"
+                    }
+                ]
+            }
+        ]
+    },
+    "selection_loop": [
+        {
+            "name": "Pool ZXTM",
+            "source": "%(snmp.tables.poolEntry)",
+            "expand_table": {
+                "poolEntry": "%(snmp.tables.poolEntry.[%(poolEntry.instance)])"
+            },
+            "critical": "%(poolEntry.poolState) =~ /%(constants.criticalState)/ or (defined(%(constants.criticalConnSecond)) and %(poolEntry.poolTotalConnPerSeconds) >= %(constants.criticalConnSecond)) or (defined(%(constants.criticalCurrConn)) and %(poolEntry.poolCurrentConn) >= %(constants.criticalCurrConn))",
+            "perfdatas": [
+                {
+                    "nlabel": "connS",
+                    "instances": ["%(poolEntry.poolName)"],
+                    "value": "%(poolEntry.poolTotalConnPerSeconds)",
+                    "critical": "%(constants.criticalConnSecond)",
+                    "unit": "conn/s",
+                    "min": 0
+                },
+                {
+                    "nlabel": "conn",
+                    "instances": ["%(poolEntry.poolName)"],
+                    "value": "%(poolEntry.poolCurrentConn)",
+                    "critical": "%(constants.criticalConn)",
+                    "unit": "conn",
+                    "min": 0
+                }
+            ],
+            "formatting": {
+                "printf_msg": "Device '%s' state is '%s', current connetions are '%d', with conn/s '%.2f'",
+                "printf_var": [
+                    "%(poolEntry.poolName)",
+                    "%(poolEntry.poolState)",
+                    "%(poolEntry.poolCurrentConn)",
+                    "%(poolEntry.poolTotalConnPerSeconds)"
+                ],
+                "display_ok": true
+            }
+        }
+    ]
+}

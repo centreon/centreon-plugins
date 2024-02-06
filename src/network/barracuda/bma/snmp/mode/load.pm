@@ -75,7 +75,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu load.
+Check system CPU load.
 
 =over 8
 

@@ -131,7 +131,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (env_mib.mib).
+Check CPU usage (env_mib.mib).
 
 =over 8
 

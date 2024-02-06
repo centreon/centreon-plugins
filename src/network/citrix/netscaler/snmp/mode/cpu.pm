@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (NS-MIB-smiv2).
+Check CPU usage (NS-MIB-smiv2).
 
 =over 8
 

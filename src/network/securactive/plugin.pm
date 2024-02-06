@@ -49,6 +49,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check SecurActive in SNMP.
-The system (cpu, memory, traffic,...) can be used monitor with linux snmp plugin.
+The system checks (CPU, memory, traffic,...) can be monitored with the linux snmp plugin.
 
 =cut

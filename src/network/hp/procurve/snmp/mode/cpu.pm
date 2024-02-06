@@ -81,7 +81,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (hpSwitchStat.mib).
+Check CPU usage (hpSwitchStat.mib).
 
 =over 8
 

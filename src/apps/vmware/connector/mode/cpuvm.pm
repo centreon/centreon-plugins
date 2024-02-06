@@ -197,7 +197,7 @@ __END__
 
 =head1 MODE
 
-Check virtual machine cpu usage.
+Check virtual machine CPU usage.
 
 =over 8
 

@@ -141,7 +141,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (RBN-CPU-METER-MIB).
+Check CPU usage (RBN-CPU-METER-MIB).
 
 =over 8
 

@@ -106,7 +106,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage.
+Check CPU usage.
 
 =over 8
 
@@ -117,7 +117,7 @@ Can be: 'core', 'average'.
 
 =item B<--filter-core>
 
-Core cpu to monitor (can be a regexp).
+Core CPU to monitor (can be a regexp).
 
 =back
 
