@@ -374,7 +374,6 @@ jobs:
 
     runs-on: ubuntu-22.04
     strategy:
-      fail-fast: false
       matrix:
         distrib: [el8, el9]
 
@@ -394,7 +393,6 @@ jobs:
 
     runs-on: ubuntu-22.04
     strategy:
-      fail-fast: false
       matrix:
         distrib: [bullseye, bookworm, jammy]
 
