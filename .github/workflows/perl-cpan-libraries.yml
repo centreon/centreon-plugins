@@ -370,7 +370,7 @@ jobs:
           retention-days: 1
 
   merge-package-rpm-artifacts:
-    needs: [package-rpm]
+    needs: [package-rpm, merge-package-deb-artifacts]
 
     runs-on: ubuntu-22.04
     strategy:
