@@ -1,5 +1,10 @@
 --force-counters32
+license-instances-usage-prct
 OID
 oneaccess-sys-mib
+powershell
 SNMP
+space-usage-prct
 SSH
+SureBackup
+Veeam

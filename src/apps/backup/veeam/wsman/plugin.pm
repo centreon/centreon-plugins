@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,6 +47,8 @@ sub new {
 __END__
 
 =head1 PLUGIN DESCRIPTION
+
+EXPERIMENTAL Plugin : Community-supported only (no support from Centreon at this time)
 
 Check Veeam through powershell.
 

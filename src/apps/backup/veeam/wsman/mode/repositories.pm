@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -224,6 +224,8 @@ sub manage_selection {
 __END__
 
 =head1 MODE
+
+EXPERIMENTAL Mode : Community-supported only (no support from Centreon at this time)
 
 Check repositories.
 
