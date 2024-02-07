@@ -304,33 +304,17 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Get package version
-        id: package-version
-        run: |
-          apt-get update
-          apt-get install -y cpanminus
-
-          if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
-
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
-              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
-              exit 1
-            fi
-
-            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
-          else
-            PACKAGE_VERSION="${{ matrix.version }}"
-          fi
-
-          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
-        shell: bash
-
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
         run: |
-          apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
+          apt update
+          apt install -y cpanminus ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
 
           PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
+          if [ -z "${{ matrix.version }}" ]; then
+            PACKAGE_VERSION=""            
+          else
+            PACKAGE_VERSION=" -v ${{ matrix.version }}"
+          fi
 
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -344,14 +328,21 @@ jobs:
           cpanm Module::Install
 
           gem install fpm
-          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+          fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
         run: |
-          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
+          apt update
+          apt install -y cpanminus libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
+          if [ -z "${{ matrix.version }}" ]; then
+            PACKAGE_VERSION=""
+          else
+            PACKAGE_VERSION="--version ${{ matrix.version }}-${{ matrix.distrib }}"
+          fi
+          
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
         shell: bash
 
       - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
