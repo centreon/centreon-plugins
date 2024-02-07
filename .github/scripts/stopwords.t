@@ -1,5 +1,5 @@
 --force-counters32
-Cebtreib
+Centreon
 license-instances-usage-prct
 OID
 oneaccess-sys-mib
