@@ -311,7 +311,7 @@ jobs:
 
           PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
           if [ -z "${{ matrix.version }}" ]; then
-            PACKAGE_VERSION=""            
+            PACKAGE_VERSION=""
           else
             PACKAGE_VERSION=" -v ${{ matrix.version }}"
           fi
@@ -341,7 +341,7 @@ jobs:
           else
             PACKAGE_VERSION="--version ${{ matrix.version }}-${{ matrix.distrib }}"
           fi
-          
+
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
         shell: bash
 
