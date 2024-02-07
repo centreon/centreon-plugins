@@ -1,5 +1,9 @@
 #
+<<<<<<< HEAD
 # Copyright 2024 Centreon (http://www.centreon.com/)
+=======
+# Copyright 2023 Centreon (http://www.centreon.com/)
+>>>>>>> e2f21b5022fa9931f010fa5b9ebfa02b0b3b8cbf
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,8 +140,11 @@ __END__
 
 =head1 MODE
 
+<<<<<<< HEAD
 EXPERIMENTAL Mode : Community-supported only (no support from Centreon at this time)
 
+=======
+>>>>>>> e2f21b5022fa9931f010fa5b9ebfa02b0b3b8cbf
 List repositories.
 
 =over 8
