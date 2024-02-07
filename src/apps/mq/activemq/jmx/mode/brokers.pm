@@ -339,6 +339,8 @@ Filter destination type (can be a regexp).
 
 =item B<--request>
 
+EXPERIMENTAL Option : Community-supported only (no support from Centreon at this time)
+
 Set the MBean and attributes to request (will replace defaults)
 in a JSON-formatted fashion.
 
