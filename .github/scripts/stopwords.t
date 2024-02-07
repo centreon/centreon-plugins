@@ -1,4 +1,5 @@
 --force-counters32
+Centreon
 MBean
 OID
 oneaccess-sys-mib
