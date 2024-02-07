@@ -48,6 +48,8 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
+EXPERIMENTAL Plugin : Community-supported only (no support from Centreon at this time)
+
 Check Veeam through powershell.
 
 =cut
