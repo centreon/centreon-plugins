@@ -371,7 +371,6 @@ jobs:
 
   merge-package-rpm-artifacts:
     needs: [package-rpm]
-    if: always()
     runs-on: ubuntu-22.04
     strategy:
       matrix:
