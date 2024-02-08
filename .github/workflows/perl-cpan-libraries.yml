@@ -443,7 +443,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   download-and-cache-deb:
-    needs: [package-deb, merge-package-deb-artifacts]
+    needs: [merge-package-deb-artifacts]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
