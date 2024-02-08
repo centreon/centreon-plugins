@@ -389,7 +389,6 @@ jobs:
 
   merge-package-deb-artifacts:
     needs: [package-deb]
-    if: always()
     runs-on: ubuntu-22.04
     strategy:
       matrix:
