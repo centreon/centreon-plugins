@@ -1,13 +1,12 @@
 package storage::datacore::api::mode::poolspaceusage;
 use strict;
 use warnings;
-use Data::Dumper;
-use centreon::plugins::http;
+
 # Use the counter module. It will save you a lot of work and will manage a lot of things for you.
 # Consider this as mandatory when writing a new mode.
 use base qw(centreon::plugins::templates::counter);
 # Import some functions that will make your life easier when dealing with string values
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
 # We will have to process some JSON, no need to reinvent the wheel, load the lib you installed in a previous section
 use JSON::XS;
 sub empty {
@@ -24,8 +23,8 @@ sub new {
     bless $self, $class;
     $options{options}->add_options(arguments => {
 
-        'server:s' => { name => 'server', default => '' },
-        'pool:s'   => { name => 'pool', default => '' } });
+        'filter-server:s' => { name => 'filter_server', default => '' },
+        'filter-pool:s'   => { name => 'filter_pool', default => '' } });
 
     return $self;
 }
@@ -39,7 +38,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'BytesAllocatedPercentage', type => 0, cb_prefix_output => 'prefix_queries_output' },
+        { name => 'BytesAllocatedPercentage', type => 0 },
     ];
     $self->{maps_counters}->{BytesAllocatedPercentage} = [
         # The label defines options name, a --warning-bytesallocatedpercentage and --critical-bytesallocatedpercentage will be added to the mode
@@ -66,8 +65,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $pool_id = $options{custom}->request_pool_id(
-        server => $self->{option_results}->{server},
-        pool   => $self->{option_results}->{pool});
+        filter_server => $self->{option_results}->{filter_server},
+        filter_pool   => $self->{option_results}->{filter_pool});
 
 
     my $data = $options{custom}->request_api(

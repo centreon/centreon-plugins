@@ -78,17 +78,18 @@ sub check_options {
 }
 sub request_pool_id {
     my ($self, %options) = @_;
-    if ($self->{cache}->read('statefile' => 'datacore_api_pool' . md5_hex($options{server} . $options{pool}))
+
+    if ($self->{cache}->read('statefile' => 'datacore_api_pool' . md5_hex($options{filter_server} . $options{filter_pool}))
         && $self->{cache}->get(name => 'expires_on') - time() < 10) {
-        return $options{statefile}->get(name => 'access_token');
+        return $self->{cache}->get(name => 'access_token');
     }
 
     my @get_filter;
-    if (!empty($options{server})) {
-        push(@get_filter, { server => $options{server} });
+    if (!empty($options{filter_server})) {
+        push(@get_filter, { server => $options{filter_server} });
     }
-    if (!empty($options{pool})) {
-        push(@get_filter, { pool => $options{pool} });
+    if (!empty($options{filter_pool})) {
+        push(@get_filter, { pool => $options{filter_pool} });
     }
     my $result = $self->request_api(
         get_param => \@get_filter,
@@ -100,6 +101,7 @@ sub request_pool_id {
     return $pool_id;
 
 }
+
 sub request_api {
     my ($self, %options) = @_;
     my $result = $self->{http}->request(

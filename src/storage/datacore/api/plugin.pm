@@ -13,7 +13,8 @@ sub new {
     #    On the left, the name of the mode as users will use it in their command line
     #    On the right, the path to the file (note that .pm is not present at the end)
     $self->{modes} = {
-        'pool-usage' => 'storage::datacore::api::mode::poolspaceusage'
+        'pool-usage' => 'storage::datacore::api::mode::poolspaceusage',
+        'event-count' => 'storage::datacore::api::mode::eventcount',
     };
     $self->{custom_modes}->{api} = 'storage::datacore::api::custom::api';
     return $self;

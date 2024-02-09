@@ -65,6 +65,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "b9f7dd2b-e1e1-4902-95ba-c6b76a1de390",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/alerts",
+      "responses": [
+        {
+          "uuid": "a1dece29-074b-4100-a764-f7ddccdec8da",
+          "body": "[ {\n \"Caller\" : \"ServerMachineGroup.UpdateServers\",\n \"HighPriority\" : true,\n \"Id\" : {\n   \"MachineId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SequenceNumber\" : 34937\n },\n \"Level\" : 2,\n \"MachineName\" : \"STORAGESVR001\",\n \"MessageData\" : [ \"StorageSvr002\" ],\n \"MessageText\" : \"Connection to server {0} has been lost.\",\n \"NeedsAcknowledge\" : false,\n \"Sources\" : [ {\n   \"SourceCaption\" : \"Group1\",\n   \"SourceId\" : \"4b428832-fd51-45df-9c21-ce267e1ceb7a\",\n   \"SourceType\" : 12\n } ],\n \"TimeStamp\" : \"/Date(1437398005546)/\",\n \"UserId\" : null,\n \"UserName\" : null,\n \"Visibility\" : 64\n}, {\n \"Caller\" : \"BasePerfMonitor`1.SetState\",\n \"HighPriority\" : true,\n \"Id\" : {\n   \"MachineId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SequenceNumber\" : 33985\n },\n \"Level\" : 3,\n \"MachineName\" : \"STORAGESVR001\",\n \"MessageData\" : null,\n \"MessageText\" : \"The Replication buffer free space of StorageSvr001 in Group1 is <= 10%\",\n \"NeedsAcknowledge\" : false,\n \"Sources\" : [ {\n   \"SourceCaption\" : \"Replication buffer free space of StorageSvr001 in Group1\",\n   \"SourceId\" : \"FallingThresholdPerfMonitor`1<A3E78CFA-DBEC-44E1-A23C-E9E262EC4551>ReplicationBufferPercentFreeSpace\",\n   \"SourceType\" : 3\n }, {\n   \"SourceCaption\" : \"StorageSvr001 in Group1\",\n   \"SourceId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SourceType\" : 12\n }, {\n   \"SourceCaption\" : \"Group1\",\n   \"SourceId\" : \"4b428832-fd51-45df-9c21-ce267e1ceb7a\",\n   \"SourceType\" : 12\n } ],\n \"TimeStamp\" : \"/Date(1437397587894)/\",\n \"UserId\" : null,\n \"UserName\" : null,\n \"Visibility\" : 64\n}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -75,6 +104,10 @@
     {
       "type": "route",
       "uuid": "0c038179-3723-4d67-9bed-fc226629c847"
+    },
+    {
+      "type": "route",
+      "uuid": "b9f7dd2b-e1e1-4902-95ba-c6b76a1de390"
     }
   ],
   "proxyMode": false,
