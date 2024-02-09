@@ -277,6 +277,7 @@ sub display {
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
         next if (!defined($self->{option_results}->{no_component_count}) && $self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        next if (defined($self->{option_results}->{component}) && $comp !~ /$self->{option_results}->{component}/ );
 
         if ($self->{count} == 1) {
             ($exit, $warn, $crit) = $self->get_severity_count(label => $comp, value => $self->{components}->{$comp}->{total});
