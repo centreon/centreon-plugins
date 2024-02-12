@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Storage-DataCore-Sansymphony",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_Datacore_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/datacore/api/"
+    ]
+}

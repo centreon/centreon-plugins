@@ -75,6 +75,19 @@ sub set_counters {
                     { template => '%d', unit=> '%', min => 0, max => 100}
                 ]
             }
+        },{
+            label => 'oversubscribed',
+            nlabel => 'datacore.pool.oversubscribed.percentage',
+            set => {
+            # Key value name is the name we will use to pass the data to this counter. You can have several ones.
+                key_values => [ { name => 'oversubscribed' } ],
+                # Output template describe how the value will display
+                output_template => 'Over subscribed bytes : %s ',
+                # Perfdata array allow you to define relevant metrics properties (min, max) and its sprintf template format
+                perfdatas => [
+                    { template => '%d', unit=> '%', min => 0, max => 100}
+                ]
+            }
         }
     ];
 
