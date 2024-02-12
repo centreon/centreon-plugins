@@ -115,9 +115,22 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
-        command => 'systemctl',
-        command_options => '-a --no-pager --no-legend --plain'
+    # check systemctl version to convert no-legend in legend=false (change in versions >= 248)
+    my $legend_format= ' --no-legend';
+    my ($stdout_version) = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => '--version'
+    );
+    $stdout_version =~ /^systemd\s(\d+)\s/;
+    my $systemctl_version=$1;
+    if($systemctl_version >= 248){
+        $legend_format = ' --legend=false';
+    }
+
+    my $command_options_1 = '-a --no-pager --plain';
+    my ($stdout)  = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => $command_options_1.$legend_format
     );
 
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
@@ -143,17 +156,19 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    ($stdout) = $options{custom}->execute_command(
-        command => 'systemctl',
-        command_options => 'list-unit-files --no-pager --no-legend --plain'
+    my $command_options_2 = 'list-unit-files --no-pager --plain';
+    my ($stdout_2)  = $options{custom}->execute_command(
+        command         => 'systemctl',
+        command_options => $command_options_2.$legend_format
     );
+
     # vendor preset is a new column
     #UNIT FILE                 STATE           VENDOR PRESET
     #runlevel4.target          enabled 
     #runlevel5.target          static  
     #runlevel6.target          disabled
     #irqbalance.service        enabled         enabled
-    while ($stdout =~ /^(.*?)\s+(\S+)\s*/msig) {
+    while ($stdout_2 =~ /^(.*?)\s+(\S+)\s*/msig) {
         my ($name, $boot) = ($1, $2);
         next if (!defined($self->{sc}->{$name}));
         $self->{sc}->{$name}->{boot} = $boot;
@@ -169,6 +184,7 @@ __END__
 Check systemd services status.
 
 Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-files --no-pager --no-legend'
+Command change for systemctl version >= 248 : --no-legend is converted in legend=false
 
 =over 8
 
@@ -190,11 +206,21 @@ Can be: 'total-running', 'total-dead', 'total-exited',
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Example of statuses for the majority of these variables:
+%{active}: active, inactive
+%{sub}: waiting, plugged, mounted, dead, failed, running, exited, listening, active
+%{load}: loaded, not-found
+%{boot}: enabled, disabled, static, indirect
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{active} =~ /failed/i').
 You can use the following variables: %{display}, %{active}, %{sub}, %{load}, %{boot}
+Example of statuses for the majority of these variables:
+%{active}: active, inactive
+%{sub}: waiting, plugged, mounted, dead, failed, running, exited, listening, active
+%{load}: loaded, not-found
+%{boot}: enabled, disabled, static, indirect
 
 =back
 

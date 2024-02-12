@@ -200,9 +200,18 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      - name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
-          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
 
@@ -345,14 +354,59 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --build $PACKAGE_VERSION --cpan ${{ matrix.name }}
         shell: bash
 
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      - name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
-          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
 
-  sign-rpm:
+  merge-package-rpm-artifacts:
     needs: [package-rpm]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Merging Artifacts
+        uses: ./.github/actions/merge-artifacts
+        with:
+          target_name: packages-rpm-${{ matrix.distrib }}
+          source_paths: packages-rpm-${{ matrix.distrib }}/*.rpm
+          source_name_pattern: packages-rpm-${{ matrix.distrib }}-
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  merge-package-deb-artifacts:
+    needs: [package-deb]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Merging Artifacts
+        uses: ./.github/actions/merge-artifacts
+        with:
+          target_name: packages-deb-${{ matrix.distrib }}
+          source_paths: packages-deb-${{ matrix.distrib }}/*.deb
+          source_name_pattern: packages-deb-${{ matrix.distrib }}-
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  sign-rpm:
+    needs: [merge-package-rpm-artifacts]
 
     runs-on: ubuntu-22.04
     strategy:
@@ -372,7 +426,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -389,13 +443,13 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   download-and-cache-deb:
-    needs: [package-deb]
+    needs: [merge-package-deb-artifacts]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./

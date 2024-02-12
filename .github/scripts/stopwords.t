@@ -1,8 +1,12 @@
+--filter-vdom
 --force-counters32
 Centreon
+Fortinet
+Fortigate
 license-instances-usage-prct
 OID
 oneaccess-sys-mib
+perfdata
 powershell
 SNMP
 space-usage-prct

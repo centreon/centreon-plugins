@@ -1,0 +1,65 @@
+name: 'Merge Artifacts'
+description: 'Merge Artifacts'
+inputs:
+  target_name:
+    description: 'The name of the result artifact'
+    required: true
+  source_paths:
+    description: 'The path to the files that will be uplaoded'
+    required: true
+  source_name_pattern:
+    description: "Artifact's pattern to be merged"
+    required: true
+  github_token:
+    description: 'The Github Token to use'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
+      with:
+        pattern: ${{ inputs.source_name_pattern }}*
+        path: ${{ inputs.target_name }}
+        merge-multiple: true
+
+    - name: Upload the Regrouped Artifact
+      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
+      with:
+        name: ${{ inputs.target_name }}
+        path: |
+          ${{ inputs.source_paths }}
+        retention-days: 1
+
+    - name: Delete Artifacts
+      run: |
+        artifact_pattern="${{ inputs.source_name_pattern }}"
+        TOKEN="${{ inputs.github_token }}"
+        artifact_exists=true
+        while [ "$artifact_exists" = true ]; do
+          artifact_exists=false
+          artifacts_response=$(curl -L \
+                        -H "Accept: application/vnd.github+json" \
+                        -H "Authorization: Bearer $TOKEN" \
+                        -H "X-GitHub-Api-Version: 2022-11-28" \
+                        "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?per_page=100")
+          artifacts=$(echo $artifacts_response | jq -c '.artifacts[]')
+          echo "Those are the artifacts : $artifacts"
+          while read row; do
+            artifact_name=$(echo "$row" | jq -r '.name')
+            if [[ "$artifact_name" =~ ^.*"$artifact_pattern".* ]]; then
+              artifact_exists=true
+              echo "Deleting : $artifact_name"
+              artifact_id=$(echo "$row" | jq -r '.id')
+              curl -L \
+                -X DELETE \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer $TOKEN" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${artifact_id}"
+            fi
+          done <<< "$artifacts"
+        done
+        echo "End of Deleting"
+      shell: bash

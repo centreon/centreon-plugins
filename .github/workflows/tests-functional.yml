@@ -60,7 +60,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Robot Framework
-        run: pip3.11 install robotframework
+        run: |
+          pip3.11 install robotframework
+          pip3.11 install RobotFramework-Examples
         shell: bash
 
       - name: Run Robot Framework API tests
@@ -79,3 +81,6 @@ jobs:
 
       - name: Run Robot Framework Database tests
         run: robot tests/functional/database
+
+      - name: Run Robot Framework Linux tests
+        run: robot tests/functional/linux
