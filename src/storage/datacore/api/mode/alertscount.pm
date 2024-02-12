@@ -1,6 +1,26 @@
+#
+# Copyright 2024 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 package storage::datacore::api::mode::alertscount;
 use strict;
 use warnings;
+use centreon::plugins::misc qw(empty);
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -13,7 +33,7 @@ sub new {
     bless $self, $class;
     $options{options}->add_options(arguments => {
 
-        'filter-server:s' => { name => 'filter_server', default => '' },
+        'filter-server:s' => { name => 'filter_server'},
         'max-alert-age:s' => { name => 'max_alert_age' } });
     $self->{output} = $options{output};
 
@@ -84,7 +104,8 @@ sub manage_selection {
     $self->{alerts}->{error} = $alerts_count->{$alerts_level{error}}->{count};
 
 }
-# take a decoded json reference and send back a hash with loglevel as key and number of alerts as value.
+# take a decoded json reference and send back a hash with loglevel as key and a hash with number of alert
+# and the list of alerts text as value.
 sub order_alerts {
     my ($self, $alerts) = @_;
     my %alerts_count = (
@@ -103,8 +124,9 @@ sub order_alerts {
         next if (defined($self->{option_results}->{max_alert_age})
             and $alert_date < (time - $self->{option_results}->{max_alert_age}) * 1000);
         # filter on the machine issuing the alert with a user defined regex
-        next if (defined($self->{option_results}->{filter_server})
-            and $alert->{MachineName} =~ /$self->{option_results}->{filter_server}/);
+
+        next if (!centreon::plugins::misc::empty($self->{option_results}->{filter_server})
+            and $alert->{MachineName} !~ $self->{option_results}->{filter_server});
 
         $alerts_count{$alert->{Level}}->{count}++;
         # we don't want to clog the long output, so we keep only the few first logs.
@@ -119,3 +141,29 @@ sub order_alerts {
     return \%alerts_count;
 }
 1;
+
+__END__
+
+=head1 MODE
+
+Check Datacore alerts number exposed through the rest api
+
+=over 8
+
+=item B<--max-alert-age>
+
+filter alerts to check those newer than this parameter (s)
+
+=item B<--filter-server>
+
+Define which devices should be monitored based on the MachineName. This option will be treated as a regular expression.
+By default all machine will be checked.
+
+=item B<--warning/critical-*>
+
+Warning and critical threshold on the number of alerts of a type before changing state.
+Replace * with trace, alert, warning, or error.
+
+=back
+
+

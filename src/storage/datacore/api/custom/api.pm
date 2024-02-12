@@ -1,3 +1,22 @@
+#
+# Copyright 2024 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 package storage::datacore::api::custom::api;
 use strict;
 use warnings;
@@ -5,14 +24,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
-
-sub empty {
-    my $value = shift;
-    if (!defined($value) || $value eq '') {
-        return 1;
-    }
-    return 0;
-}
+use centreon::plugins::misc qw(empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -58,7 +70,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     # Check if the user provided a value for --hostname option. If not, display a message and exit
-    if (empty($self->{option_results}->{hostname})) {
+    if (centreon::plugins::misc::empty($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => 'Please set hostname option');
         $self->{output}->option_exit();
     }
@@ -66,11 +78,11 @@ sub check_options {
     # Set parameters for http module, note that the $self->{option_results} is a hash containing
     # all your options key/value pairs.
     $self->{http}->set_options(%{$self->{option_results}});
-    if (empty($self->{option_results}->{username})) {
+    if (centreon::plugins::misc::empty($self->{option_results}->{username})) {
         $self->{output}->add_option_msg(short_msg => 'Please set hostname option to authenticate against datacore rest api');
         $self->{output}->option_exit();
     }
-    if (empty($self->{option_results}->{password})) {
+    if (centreon::plugins::misc::empty($self->{option_results}->{password})) {
         $self->{output}->add_option_msg(short_msg => 'Please set password option to authenticate against datacore rest api');
         $self->{output}->option_exit();
     }
@@ -85,10 +97,10 @@ sub request_pool_id {
     }
 
     my @get_filter;
-    if (!empty($options{filter_server})) {
+    if (!centreon::plugins::misc::empty($options{filter_server})) {
         push(@get_filter, { server => $options{filter_server} });
     }
-    if (!empty($options{filter_pool})) {
+    if (!centreon::plugins::misc::empty($options{filter_pool})) {
         push(@get_filter, { pool => $options{filter_pool} });
     }
     my $result = $self->request_api(
