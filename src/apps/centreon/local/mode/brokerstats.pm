@@ -30,61 +30,132 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg;
-    
-    if ($self->{result_values}->{type} eq 'input') {
-        $msg = sprintf("state : %s", $self->{result_values}->{state});
-    } else {
-        $msg = sprintf(
-            "state : %s [status : %s] [queue file enabled : %s]", 
-            $self->{result_values}->{state},  $self->{result_values}->{status}, $self->{result_values}->{queue_file_enabled}
-        );
-    }
+    my $msg = sprintf(
+        "state : %s [status : %s] [queue file enabled : %s]", 
+        $self->{result_values}->{state},
+        $self->{result_values}->{status},
+        $self->{result_values}->{queue_file_enabled}
+    );
     return $msg;
 }
 
-sub prefix_endpoint_output {
+sub prefix_input_output {
     my ($self, %options) = @_;
 
-    return "Endpoint $options{instance_value}->{type} '" . $options{instance_value}->{display} . "' ";
+    return "Input '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_output_output {
+    my ($self, %options) = @_;
+
+    return "Output '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_consumer_output {
+    my ($self, %options) = @_;
+
+    return "Consumer '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'endpoint', type => 1, cb_prefix_output => 'prefix_endpoint_output', message_multiple => 'Broker statistics are ok', skipped_code => { -10 => 1 } }
+        {
+            name => 'inputs', type => 3, cb_prefix_output => 'prefix_input_output', cb_long_output => 'prefix_input_output', indent_long_output => '    ', message_multiple => 'Input endpoints statistics are ok',
+            group => [
+                { name => 'inputs_status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'consumers', type => 1, display_long => 1, cb_prefix_output => 'prefix_consumer_output', message_multiple => 'Consumers statistics are ok', skipped_code => { -10 => 1 } }
+            ]
+        },
+        { name => 'outputs', type => 1, cb_prefix_output => 'prefix_output_output', message_multiple => 'Output endpoints statistics are ok', skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{endpoint} = [
-        { label => 'status', type => 2, critical_default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i', set => {
+    $self->{maps_counters}->{outputs} = [
+        { label => 'output-status', type => 2, critical_default => '%{queue_file_enabled} =~ /yes/i', set => {
                 key_values => [ { name => 'queue_file_enabled' }, { name => 'state' }, { name => 'status' }, { name => 'type' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'speed-events', set => {
+        { label => 'speed-events', nlabel => 'output.events.processing_speed.persecond', set => {
                 key_values => [ { name => 'speed_events' }, { name => 'display' } ],
-                output_template => 'Speed Events: %s/s',
+                output_template => 'Events processing speed: %.2f/s',
                 perfdatas => [
-                    { label => 'speed_events', value => 'speed_events', template => '%s', 
+                    { label => 'speed_events', value => 'speed_events', template => '%.2f', 
                       unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'queued-events', set => {
+        { label => 'queued-events', nlabel => 'output.events.queued.count', set => {
                 key_values => [ { name => 'queued_events' }, { name => 'display' } ],
-                output_template => 'Queued Events: %s',
+                output_template => 'Queued events: %s',
                 perfdatas => [
                     { label => 'queued_events', value => 'queued_events', template => '%s', 
                       unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'unacknowledged-events', set => {
+        { label => 'unacknowledged-events', nlabel => 'output.events.unacknowledged.count', set => {
                 key_values => [ { name => 'unacknowledged_events' }, { name => 'display' } ],
-                output_template => 'Unacknowledged Events: %s',
+                output_template => 'Unacknowledged events: %s',
+                perfdatas => [
+                    { label => 'unacknowledged_events', value => 'unacknowledged_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+    
+    $self->{maps_counters}->{inputs_status} = [
+        { label => 'input-status', type => 2, critical_default => '%{state} !~ /listening/i', set => {
+                key_values => [ { name => 'state' }, { name => 'type' }, { name => 'display' } ],
+                output_template => 'state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'consumers', nlabel => 'input.consumers.count', set => {
+                key_values => [ { name => 'consumers_count' }, { name => 'display' } ],
+                output_template => 'Consumers: %s',
+                perfdatas => [
+                    { label => 'consumers', value => 'consumers_count', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];    
+
+    $self->{maps_counters}->{consumers} = [
+        { label => 'consumer-status', type => 2, critical_default => '%{state} !~ /connected/i', set => {
+                key_values => [ { name => 'state' }, { name => 'display' } ],
+                output_template => 'state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'speed-events', nlabel => 'consumer.events.processing_speed.persecond', set => {
+                key_values => [ { name => 'speed_events' }, { name => 'display' } ],
+                output_template => 'Events processing speed: %.2f/s',
+                perfdatas => [
+                    { label => 'speed_events', value => 'speed_events', template => '%.2f', 
+                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'queued-events', nlabel => 'consumer.events.queued.count', set => {
+                key_values => [ { name => 'queued_events' }, { name => 'display' } ],
+                output_template => 'Queued events: %s',
+                perfdatas => [
+                    { label => 'queued_events', value => 'queued_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'unacknowledged-events', nlabel => 'consumer.events.unacknowledged.count', set => {
+                key_values => [ { name => 'unacknowledged_events' }, { name => 'display' } ],
+                output_template => 'Unacknowledged events: %s',
                 perfdatas => [
                     { label => 'unacknowledged_events', value => 'unacknowledged_events', template => '%s', 
                       unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
@@ -96,7 +167,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -104,7 +175,9 @@ sub new {
         'hostname:s'           => { name => 'hostname' },
         'timeout:s'            => { name => 'timeout', default => 30 },
         'sudo'                 => { name => 'sudo' },
-        'filter-name:s'        => { name => 'filter_name' }
+        'filter-name:s'        => { name => 'filter_name' },
+        'warning-status:s'     => { name => 'warning_status' }, # Legacy compat
+        'critical-status:s'    => { name => 'critical_status' } # Legacy compat
     });
 
     $self->{ssh} = centreon::plugins::ssh->new(%options);
@@ -114,6 +187,17 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
+
+    # Legacy compat
+    if (defined($options{option_results}->{warning_status}) && $options{option_results}->{warning_status} ne '') {
+        $options{option_results}->{'warning-input-status'} = $options{option_results}->{warning_status};
+        $options{option_results}->{'warning-output-status'} = $options{option_results}->{warning_status};
+    }
+    if (defined($options{option_results}->{critical_status}) && $options{option_results}->{critical_status} ne '') {
+        $options{option_results}->{'critical-input-status'} = $options{option_results}->{critical_status};
+        $options{option_results}->{'critical-output-status'} = $options{option_results}->{critical_status};
+    }
+    
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{broker_stats_file}) || scalar(@{$self->{option_results}->{broker_stats_file}}) == 0) {
@@ -153,7 +237,9 @@ sub execute_command {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{endpoint} = {};
+    $self->{outputs} = {};
+    $self->{inputs} = {};
+
     foreach my $config (@{$self->{option_results}->{broker_stats_file}}) {
         my ($stdout) = $self->execute_command(
             command => 'cat',
@@ -176,32 +262,50 @@ sub manage_selection {
 
             if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
                 $endpoint !~ /$self->{option_results}->{filter_name}/i) {
-                $self->{output}->output_add(long_msg => "skipping endpoint '" . $endpoint . "': no matching filter name");
+                $self->{output}->output_add(long_msg => "skipping endpoint '" . $endpoint . "': no matching filter name", debug => 1);
                 next;
             }
 
-            my $state = $json->{$entry}->{state};
-            my $type = 'output';
-            $type = 'input' if (!defined($json->{$entry}->{status}));
+            if (!defined($json->{$entry}->{status})) {
+                $self->{inputs}->{$endpoint}->{display} = $endpoint;
+                $self->{inputs}->{$endpoint}->{consumers_count} = 0;
+                $self->{inputs}->{$endpoint}->{inputs_status} = {
+                    display => $endpoint,
+                    type => "input",
+                    state => $json->{$entry}->{state},
+                    consumers_count => 0,
+                    consumers => {}
+                };
 
-            my $queue_enabled = '-';
-            if (defined($json->{$entry}->{queue_file_enabled})) {
-                $queue_enabled = $json->{$entry}->{queue_file_enabled} ? 'yes' : 'no';
+                foreach my $key (keys %{$json->{$entry}}) {
+                    next if ($key !~ /^$endpoint/);
+                    $self->{inputs}->{$endpoint}->{consumers_count}++;
+                    $self->{inputs}->{$endpoint}->{inputs_status}->{consumers_count}++;
+                    
+                    $self->{inputs}->{$endpoint}->{consumers}->{$key} = {
+                        display => $key,
+                        state => $json->{$entry}->{$key}->{state},
+                        speed_events => $json->{$entry}->{$key}->{event_processing_speed},
+                        queued_events => $json->{$entry}->{$key}->{queued_events},
+                        unacknowledged_events => ($json->{$entry}->{$key}->{bbdo_unacknowledged_events}) ? $json->{$entry}->{$key}->{bbdo_unacknowledged_events} : 0
+                    };
+                }
+            } else {
+                $self->{outputs}->{$endpoint} = {
+                    display => $endpoint,
+                    state => $json->{$entry}->{state},
+                    type => "output",
+                    status => $json->{$entry}->{status},
+                    speed_events => $json->{$entry}->{event_processing_speed},
+                    queued_events => $json->{$entry}->{queued_events},
+                    unacknowledged_events => ($json->{$entry}->{bbdo_unacknowledged_events}) ? $json->{$entry}->{bbdo_unacknowledged_events} : 0,
+                    queue_file_enabled => ($json->{$entry}->{queue_file_enabled}) ? 'yes' : 'no'
+                };
             }
-            $self->{endpoint}->{$endpoint} = {
-                display => $endpoint,
-                state => $state,
-                type => $type,
-                status => defined($json->{$entry}->{status}) ? $json->{$entry}->{status} : '-',
-                speed_events => $json->{$entry}->{event_processing_speed},
-                queued_events => $json->{$entry}->{queued_events},
-                unacknowledged_events => $json->{$entry}->{bbdo_unacknowledged_events},
-                queue_file_enabled => $queue_enabled
-            };
         }
     }
 
-    if (scalar(keys %{$self->{endpoint}}) <= 0) {
+    if (scalar(keys %{$self->{inputs}}) <= 0 && scalar(keys %{$self->{outputs}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No endpoint found.");
         $self->{output}->option_exit();
     }
@@ -240,17 +344,26 @@ Filter endpoint name.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'speed-events', 'queued-events', 'unacknowledged-events'.
+Can be: 'speed-events', 'queued-events', 'unacknowledged-events', 'consumers'.
 
-=item B<--warning-status>
+=item B<--warning-*-status>
 
 Define the conditions to match for the status to be WARNING.
+Can be: 'input', 'output' or 'consumer'
+You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{display}
+
+=item B<--critical-*-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Can be: 'input', 'output' or 'consumer'
 You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
-=item B<--critical-status>
+Defaults are :
 
-Define the conditions to match for the status to be CRITICAL (default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
-You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
+- input: '%{state} !~ /listening/i'
+- ouput: '%{queue_file_enabled} =~ /yes/i'
+- consumer: '%{state} !~ /connected/i'
 
 =back
 
