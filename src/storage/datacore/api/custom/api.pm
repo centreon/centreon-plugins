@@ -120,6 +120,7 @@ sub request_api {
         basic       => 1,
         username    => $self->{option_results}->{username},
         password    => $self->{option_results}->{password},
+        headers     => ["ServerHost" => $self->{option_results}->{hostname} ],
         credentials => 1,
         %options,
     );
