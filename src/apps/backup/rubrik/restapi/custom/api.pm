@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -404,7 +404,7 @@ sub get_cache_file_response {
 sub cache_jobs_monitoring {
     my ($self, %options) = @_;
 
-    my $datas = $self->get_jobs_monitoring(disable_cache => 1, limit => $options{limit});
+    my $datas = $self->get_jobs_monitoring(disable_cache => 1, get_param => $options{get_param});
     $self->write_cache_file(
         statefile => 'jobs_monitoring',
         response => $datas
@@ -422,7 +422,7 @@ sub get_jobs_monitoring {
     return $self->request_api(
         endpoint => '/api/v1/job_monitoring',
         label => 'jobMonitoringInfoList',
-        get_param => ['limit=' . $options{limit}]
+        get_param => $options{get_param}
     );
 }
 

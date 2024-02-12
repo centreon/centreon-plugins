@@ -10,6 +10,7 @@
         "snmp_standard/mode/memory.pm",
         "snmp_standard/mode/loadaverage.pm",
         "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/uptime.pm",
         "storage/synology/snmp/"
     ]
 }

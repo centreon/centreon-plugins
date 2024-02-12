@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,7 +45,7 @@ Check system CPUs.
 
 =item B<--use-ucd>
 
-Use UCD mib for cpu average.
+Use UCD mib for CPU average.
 
 =item B<--warning-average>
 

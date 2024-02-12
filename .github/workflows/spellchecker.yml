@@ -1,0 +1,54 @@
+name: spell-checker
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/spellchecker.yml'
+      - 'src/**'
+      - '.github/scripts/pod_spell_check.t'
+
+jobs:
+  pod-spell-check:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'do-not-spellcheck') }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          list-files: shell
+          filters: |
+            plugins:
+              - added|modified: src/**
+
+      - name: Install CPAN Libraries
+        uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: Test::More Test::Spelling
+
+      - name: Install librairies
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y hunspell
+        shell: bash
+
+      - name: Run spell check
+        id: run_check
+        run: |
+          set +e
+          for f in ${{ steps.filter.outputs.plugins_files }}; do
+            echo "perl .github/scripts/pod_spell_check.t $f"
+            output=$(perl .github/scripts/pod_spell_check.t $f)
+          done
+        shell: bash

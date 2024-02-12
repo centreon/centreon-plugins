@@ -45,6 +45,18 @@ jobs:
             runner: ubuntu-22.04
             arch: amd64
             version: 2.7.2
+          - image: packaging-plugins-bookworm
+            distrib: bookworm
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
+            version: 2.7.2
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -68,7 +80,7 @@ jobs:
 
       - name: Install locally sblim-sfcc
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
@@ -91,7 +103,7 @@ jobs:
 
       - name: Build openwsman
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
           else
             dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
@@ -104,10 +116,11 @@ jobs:
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
           make
+        shell: bash
 
       - name: Set package name and paths according to distrib
         run: |
-          if [ "${{ matrix.distrib }}" = "bullseye" ]; then
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
@@ -138,18 +151,20 @@ jobs:
         shell: bash
 
       - name: Package sblim-sfcc
-        if: ${{ matrix.distrib == 'bullseye' }}
+        if: ${{ matrix.package_extension == 'deb' }}
         uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "dependencies/perl-openwsman/sblim-sfcc.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 2
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Package libwsman
         uses: ./.github/actions/package-nfpm
@@ -158,11 +173,13 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 4
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Package perl-openwsman
         uses: ./.github/actions/package-nfpm
@@ -171,16 +188,18 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
+          release: 4
           commit_hash: ${{ github.sha }}
-          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension}}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
       # set condition to true if artifacts are needed
       - if: ${{ false }}
         name: Upload package artifacts
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: packages-${{ matrix.distrib }}-${{ matrix.arch }}
           path: ./*.${{ matrix.package_extension}}
@@ -228,6 +247,10 @@ jobs:
       matrix:
         include:
           - distrib: bullseye
+            arch: amd64
+          - distrib: bookworm
+            arch: amd64
+          - distrib: jammy
             arch: amd64
           - distrib: bullseye
             arch: arm64
@@ -278,6 +301,8 @@ jobs:
             arch: amd64
           - distrib: bullseye
             arch: amd64
+          - distrib: bookworm
+            arch: amd64
           - distrib: bullseye
             arch: arm64
 
@@ -286,7 +311,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Promote sblim-sfcc ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        if: ${{ matrix.distrib == 'bullseye' }}
+        if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy"]'), matrix.distrib) }}
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}

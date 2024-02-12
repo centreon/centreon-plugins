@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -73,7 +73,13 @@ sub GetOptions {
 
             # find type of option
             if ($search_str !~ /,((?:[^,]*?\|){0,}$option(?:\|.*?){0,}(:.*?){0,1}),/) {
-                warn "Unknown option: $option" if ($warn_message == 1);
+
+                # for old format plugins (with run function) that not allowed list-counters options
+                if($option =~ /list-counters/){
+                    warn "list-counters option not available yet for this mode." if ($warn_message == 1);
+                }else{
+                    warn "Unknown option: $option" if ($warn_message == 1);
+                }
                 $i++;
                 next;
             }

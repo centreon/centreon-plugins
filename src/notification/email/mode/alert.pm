@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,9 +30,12 @@ use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP;
 use JSON::XS;
 use URI::Escape;
+use HTML::Template;
 use centreon::plugins::http;
+use notification::email::templates::resources;
 
-my %color_host = (
+
+my %color = (
     up => { 
         background => '#88B922',
         text => '#FFFFFF' 
@@ -40,6 +43,22 @@ my %color_host = (
     down => { 
         background => '#FF4A4A', 
         text => '#FFFFFF' 
+    },
+    ok => {
+        background => '#88B922',
+        text => '#FFFFFF'
+    },
+    warning => {
+        background => '#FD9B27',
+        text => '#FFFFFF'
+    },
+    critical => {
+        background => '#FF4A4A',
+        text => '#FFFFFF'
+    },
+    unknown => {
+        background => '#E0E0E0',
+        text => '#FFFFFF'
     },
     unreachable => { 
         background => '#E0E0E0', 
@@ -59,41 +78,6 @@ my %color_host = (
     },
     downtimecanceled => { 
         background => '#F0E9F8', 
-        text => '#666666'
-    }
-);
-
-my %color_service = (
-    ok => {
-        background => '#88B922',
-        text => '#FFFFFF'
-    },
-    warning => {
-        background => '#FD9B27',
-        text => '#FFFFFF'
-    },
-    critical => {
-        background => '#FF4A4A',
-        text => '#FFFFFF'
-    },
-    unknown => {
-        background => '#E0E0E0',
-        text => '#FFFFFF'
-    },
-    acknowledgement => {
-        background => '#F5F1E9',
-        text => '#666666'
-    },
-    downtimestart => {
-        background => '#F0E9F8',
-        text => '#666666'
-    },
-    downtimeend => {
-        background => '#F0E9F8',
-        text => '#666666'
-    },
-    downtimecanceled => {
-        background => '#F0E9F8',
         text => '#666666'
     }
 );
@@ -123,6 +107,7 @@ sub new {
         'host-duration:s'        => { name => 'host_duration' },
         'service-id:s'           => { name => 'service_id' },
         'service-description:s'  => { name => 'service_description' },
+        'service-displayname:s'  => { name => 'service_displayname' },
         'service-state:s'        => { name => 'service_state' },
         'service-output:s'       => { name => 'service_output' },
         'service-longoutput:s'   => { name => 'service_longoutput' },
@@ -178,50 +163,53 @@ sub host_message {
     
     my $host_id = $self->{option_results}->{host_id};
 
+    my $event_type = '';
+    my $author = '';
+    my $author_alt = '';
+    my $comment = '';
+    my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
+        }
+    }
+    
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
+        }
+    }
+
     my $details = {
         id => $host_id,
         resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id",
         tab => "details"
     };
 
-    my $author_html = '';
-    my $author_alt = '';
-    my $comment_html = '';
-    my $comment_alt = '';
-    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
-        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime by:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
-            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
-        } elsif ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Author:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
-            $author_alt = 'Acknowledged Author: ' . $self->{option_results}->{notif_author};
-        } elsif ($self->{option_results}->{type} =~ /^flaping.*$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Author:</h4>
-                    <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
-            $author_alt = 'Flapping Author: ' . $self->{option_results}->{notif_author};
-        }
-    }
-
-    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
-        if ($self->{option_results}->{type} =~ /^downtime.*$/i){
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
-            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
-        } elsif ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
-            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
-        } elsif ($self->{option_results}->{type} =~ /^flaping.*$/i) {
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
-            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
-        }
-    }
-
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : Host: ' . $self->{option_results}->{host_name} . ' ' . $self->{option_results}->{host_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -245,284 +233,51 @@ sub host_message {
         Info:
         ' .$self->{option_results}->{host_output};
 
-    $self->{payload_attachment}->{html_message} = '
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-	    <meta charset="utf-8">
-	    <title>' . $self->{option_results}->{host_name} . '</title>
-	    <meta name="description" content="Centreon Email Notification Alert">
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-	    <meta name="x-apple-disable-message-reformatting">
-
-        <style type="text/css">
-	    html,body {
-		    margin: 0 auto !important;
-		    padding: 0 !important;
-		    height: 100% !important;
-		    width: 100% !important;
-		    background-color: #F2F2F2;
-	    }
-	
-	    * {
-		    -ms-text-size-adjust: 100%;
-		    -webkit-text-size-adjust: 100%;
-	    }
-	
-	    div[style*="margin: 16px 0"] {
-    		margin:0 !important;
-	    }
-	
-	    table,td {
-		    mso-table-lspace: 0pt !important;
-		    mso-table-rspace: 0pt !important;
-	    }
-	
-	    table {
-		    border-spacing: 0 !important;
-		    border-collapse: collapse !important;
-		    table-layout: fixed !important;
-		    margin: 0 auto !important;
-	    }
-	
-	    table table table {
-		    table-layout: auto;
-	    }
-	
-	    img {
-    		-ms-interpolation-mode:bicubic;
-    	}
-	
-    	*[x-apple-data-detectors],/* iOS */
-    	    .x-gmail-data-detectors,/* Gmail */
-    	    .x-gmail-data-detectors *,
-    	.aBn {
-		    border-bottom: 0 !important;
-		    cursor: default !important;
-		    color: inherit !important;
-		    text-decoration: none !important;
-		    font-size: inherit !important;
-		    font-family: inherit !important;
-		    font-weight: inherit !important;
-		    line-height: inherit !important;
-	    }
-	
-	    .a6S {
-		    display: none !important;
-		    opacity: 0.01 !important;
-	    }
-	
-	    img.g-img + div {
-    		display:none !important;
-    	}
-	
-    	.button-link {
-	    	text-decoration: none !important;
-	    }
-	
-	    @media only screen and (min-device-width: 375px) and (max-device-width: 413px) { /* iPhone 6 and 6+ */
-    		.email-container {
-			    min-width: 375px !important;
-		    }
-	    }
-	
-	    .button-td,.button-a {
-    		transition: all 100ms ease-in;
-    	}
-	
-	    .button-td:hover,.button-a:hover {
-    		background: #555555 !important;
-		    border-color: #555555 !important;
-	    }
-	
-	    @media screen and (max-width: 600px) {
-    		.email-container p {
-			    font-size: 17px !important;
-			    line-height: 22px !important;
-		    }
-	    }
-    </style>
-
-    <!--[if gte mso 9]>
-    <xml>
-	    <o:OfficeDocumentSettings>
-		    <o:AllowPNG/>
-		    <o:PixelsPerInch>96</o:PixelsPerInch>
-	    </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
-
-    <!--[if mso]>
-    <style type="text/css">
-    	* {
-		    font-family: sans-serif !important;
-	    }
-    </style>
-    <![endif]-->
-    </head>
-    <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
-        <center style="width: 100%; background: #f6f6f6; text-align: left;">
-
-                <div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;font-family: sans-serif;">
-                        [' .$self->{option_results}->{type} . '] Host: ' . $self->{option_results}->{host_alias} . ' (' . $self->{option_results}->{host_name} . ') is ' . $self->{option_results}->{host_state} . '. ***************************************************************************************************************************************
-                </div>
-
-                <div style="max-width: 600px; padding: 10px 0; margin: auto;" class="email-container">
-                        <!--[if mso]>
-                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center">
-                        <tr>
-                        <td>
-                        <![endif]-->
-
-                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="95%" style="max-width: 600px;">
-                                <tr>
-                                        <td bgcolor="#ffffff" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" align="center" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-                <tbody>
-                  <tr>
-                    <td style="background-color:#255891;">
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;">Centreon Notification</h2>
-                    </td>
-                  </tr>
-                  <tr>';
+    my $background_color= 'white';
+    my $text_color = 'black';
     if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . ';">
-                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
-    } else{
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . ';">
-                                                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . '; text-align:center;">';
-    }
-
-    $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
-                    </td>
-                  </tr>
-                </tbody>
-            </table>
-            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;border-left-style: solid;border-right-style: solid;border-color: #d3d3d3;border-width: 1px;">
-              <td style="font-size:16px;vertical-align:top;">&nbsp;</td>
-                <tbody>
-                  <tr>
-                    <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                      <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:right; padding-right:5%;">' . $self->{option_results}->{host_attempts} . '/' . $self->{option_results}->{max_host_attempts} . '</h5>
-                      <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; text-align:center; text-decoration:underline;">Host:</h4>
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:26px; text-align:center;">' . $self->{option_results}->{host_name} . '</h2>
-                      <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:center;">is</h5>
-                      <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:30px; color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . ';text-align:center;">' . $self->{option_results}->{host_state} . '</h1>
-                      <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:center;">for: ' . $self->{option_results}->{host_duration} . '</h5>
-                    </td>
-                  </tr>
-                </tbody>
-                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                <tbody>
-                  <tr>
-                    <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                      <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%; text-decoration:underline;">Host Alias:</h4>
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{host_alias} . '</h2>
-                    </td>
-                  </tr>
-                </tbody>
-                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                <tbody>
-                  <tr>
-                    <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                      <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Host Address:</h4>
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{host_address} . '</h2>
-                    </td>
-                  </tr>
-                </tbody>
-                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                <tbody>
-                  <tr>
-                    <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                      <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Date:</h4>
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{date} . '</h2>
-                    </td>
-                  </tr>
-                </tbody>
-                <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                <tbody>
-                  <tr>
-                    <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                      <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Status Information:</h4>
-                      <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{host_output} . '</h2>
-                    </td>
-                  </tr>
-                </tbody>';
-    if (defined($author_html) && $author_html ne '') {
-        $self->{payload_attachment}->{html_message} .= '
-                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    <tbody>
-                        <tr>
-                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                $author_html. '
-                            </td>
-                        </tr>
-                    </tbody>';
-    }
-
-    if (defined($comment_html) && $comment_html ne '') {
-        $self->{payload_attachment}->{html_message} .= '
-                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    <tbody>
-                        <tr>
-                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                $comment_html. '
-                            </td>
-                        </tr>
-                    </tbody>';
-    }
-
-    $self->{payload_attachment}->{html_message} .= '
-              <td style="font-size:16px;vertical-align:top;">&nbsp;</td>
-            </table>
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-              <tbody>
-                <tr>';
-    if ($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . '; height:10px"></td>';
+        $background_color = $color{lc($self->{option_results}->{host_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{host_state})}->{text};
     } else {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_host{lc($self->{option_results}->{type})}->{background} . '; height:10px"></td>';
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
     }
-    $self->{payload_attachment}->{html_message} .= '
-                </tr>
-                <tr>
-                  <td style="background-color:#255891;">';
-    if (defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne ''){
-        $self->{payload_attachment}->{html_message} .='
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;"><a href="'. $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data . '" style="color:#ffffff;" target="_blank">Go to Centreon</a></h2>';
-    }
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{host_state})}->{background}
+    );
+  
+    
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_host_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        attempts => $self->{option_results}->{host_attempts},
+        maxAttempts => $self->{option_results}->{max_host_attempts},
+        hostName => $self->{option_results}->{host_name},
+        status => $self->{option_results}->{host_state},
+        duration => $self->{option_results}->{host_duration},
+        hostAlias => $self->{option_results}->{host_alias},
+        hostAddress => $self->{option_results}->{host_address},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $self->{option_results}->{host_output},
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
 
-    $self->{payload_attachment}->{html_message} .='
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-                </td>
-                    </tr>
-                </tbody>
-                </table>
-                                            </td>
-                                    </tr>
-                            </table>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width: 680px;">
-            <tr>
-            <td style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; vertical-align:middle; color: #999999; text-align: center; padding: 40px 10px;width: 100%;" class="x-gmail-data-detectors">
-                <br>
-            </td>
-            </tr>
-        </table>
-                            <!--[if mso]>
-                            </td>
-                            </tr>
-                            </table>
-                            <![endif]-->
-                    </div>
+    $self->{payload_attachment}->{html_message} = $html_part->output
 
-        </center>
-    </body>
-    </html>
-    ';
+
 }
 
 sub service_message {
@@ -531,38 +286,40 @@ sub service_message {
     my $host_id = $self->{option_results}->{host_id};
     my $service_id = $self->{option_results}->{service_id};
 
-    my $author_html = '';
+    my $event_type = '';
+    my $author = '';
     my $author_alt = '';
-    my $comment_html = '';
+    my $comment = '';
     my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
     if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
         if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime by:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
+            $event_type = 'Scheduled Downtime';
             $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
         } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Author:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
-            $author_alt = 'Acknowledged Author: ' . $self->{option_results}->{notif_author};
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
         } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
-            $author_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Author:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_author} . '</h2>';
-            $author_alt = 'Flapping Author: ' . $self->{option_results}->{notif_author};
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
         }
     }
-
+    
     if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
         if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Scheduled Downtime Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
+            $event_type = 'Scheduled Downtime';
             $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
         } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Acknowledged Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
+            $event_type = 'Acknowledged';
             $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
         } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
-            $comment_html = '<h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Flapping Comment:</h4>
-                            <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{notif_comment} . '</h2>';
+            $event_type = 'Flapping';
             $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
         }
     }
@@ -578,14 +335,14 @@ sub service_message {
             warning_status => '',
             critical_status => ''
         );
-        
+
         if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
-            $graph_html = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">No graph</h2>';
+            $graph_html = '<p>No graph found</p>';
         } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
-            $graph_html = '<h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">Cannot retrieve graph: ' . $content . '</h2>';
+            $graph_html = '<p>Cannot retrieve graph: ' . $content . '</p>';
         } else {
             $self->{payload_attachment}->{graph_png} = $content;
-            $graph_html = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\" style=\"display:block; width:98%; height:auto;margin:0 10px 0 10px;\">\n";
+            $graph_html = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\"  alt=\"Service Graph\" style=\"width:100%; height:auto;\">\n";
         }
     }
 
@@ -595,13 +352,12 @@ sub service_message {
         tab => 'details'
     };
 
+    my $line_break = '<br />';
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
 
-    my $line_break = '<br />';
-
-    $self->{option_results}->{service_longoutput} =~ s/\\n/<br \/>/g;
-
+   
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : ' . $self->{option_results}->{service_description} . ' '. $self->{option_results}->{service_state} . ' on ' . $self->{option_results}->{host_name} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
     ***** Centreon *****
@@ -626,309 +382,315 @@ sub service_message {
     ' . $self->{option_results}->{service_output} . '
     ' . $self->{option_results}->{service_longoutput};
 
-    $self->{payload_attachment}->{html_message} = '
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-	    <meta charset="utf-8">
-	    <title>' . $self->{option_results}->{host_name} . ' / ' . $self->{option_results}->{service_description} .'</title>
-	    <meta name="description" content="Centreon Email Notification Alert">
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-	    <meta name="x-apple-disable-message-reformatting">
+    $self->{option_results}->{service_longoutput} =~ s/\\n/<br \/>/g;
+    my $output = $self->{option_results}->{service_output} . $line_break . $self->{option_results}->{service_longoutput};
 
-        <style type="text/css">
-	    html,body {
-		    margin: 0 auto !important;
-            padding: 0 !important;
-            height: 100% !important;
-            width: 100% !important;
-		    background-color: #F2F2F2;
-        }
-        
-        * {
-            -ms-text-size-adjust: 100%;
-            -webkit-text-size-adjust: 100%;
-        }
-        
-        div[style*="margin: 16px 0"] {
-            margin:0 !important;
-        }
-        
-        table,td {
-            mso-table-lspace: 0pt !important;
-            mso-table-rspace: 0pt !important;
-        }
-        
-        table {
-            border-spacing: 0 !important;
-            border-collapse: collapse !important;
-            table-layout: fixed !important;
-            margin: 0 auto !important;
-        }
-        
-        table table table {
-            table-layout: auto;
-        }
-        
-        img {
-            -ms-interpolation-mode:bicubic;
-        }
-        
-        *[x-apple-data-detectors],/* iOS */
-        .x-gmail-data-detectors,/* Gmail */
-        .x-gmail-data-detectors *,
-        .aBn {
-            border-bottom: 0 !important;
-            cursor: default !important;
-            color: inherit !important;
-            text-decoration: none !important;
-            font-size: inherit !important;
-            font-family: inherit !important;
-            font-weight: inherit !important;
-            line-height: inherit !important;
-        }
-        
-        .a6S {
-            display: none !important;
-            opacity: 0.01 !important;
-        }
-        
-        img.g-img + div {
-            display:none !important;
-        }
-        
-        .button-link {
-            text-decoration: none !important;
-        }
-        
-        @media only screen and (min-device-width: 375px) and (max-device-width: 413px) { /* iPhone 6 and 6+ */
-            .email-container {
-                min-width: 375px !important;
-            }
-        }
-        
-        .button-td,.button-a {
-            transition: all 100ms ease-in;
-        }
-        
-        .button-td:hover,.button-a:hover {
-            background: #555555 !important;
-            border-color: #555555 !important;
-        }
-        
-        @media screen and (max-width: 700px) {
-            .email-container p {
-                font-size: 17px !important;
-                line-height: 22px !important;
-            }
-        }
-    </style>
-
-    <!--[if gte mso 9]>
-    <xml>
-        <o:OfficeDocumentSettings>
-            <o:AllowPNG/>
-            <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
-
-    <!--[if mso]>
-    <style type="text/css">
-        * {
-            font-family: sans-serif !important;
-        }
-    </style>
-    <![endif]-->
-    </head>
-    <body width="100%" bgcolor="#f6f6f6" style="margin: 0;line-height:1.4;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;">
-            <center style="width: 100%; background: #f6f6f6; text-align: left;">
-
-                    <div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;font-family: sans-serif;">[' . $self->{option_results}->{type} . '] Service: ' . $self->{option_results}->{service_description} . ' on Host: ' . $self->{option_results}->{host_name} . ' (' . $self->{option_results}->{host_alias} . ') is '. $self->{option_results}->{service_state} . '. ***************************************************************************************************************************************
-                    </div>
-                    <div style="padding: 10px 0; margin: auto;" class="email-container">
-                            <!--[if mso]>
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="700" align="center">
-                            <tr>
-                            <td>
-                            <![endif]-->
-
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="95%" style="max-width: 700px;">
-                                    <tr>
-                                            <td bgcolor="#ffffff" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" align="center" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-    <tbody><tr>
-                        <td bgcolor="#ffffff" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" align="center" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-                    <tbody>
-                    <tr>
-                        <td style="background-color:#255891;">
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;">Centreon Notification</h2>
-                        </td>
-                    </tr>
-                    <tr>';
+    my $background_color= 'white';
+    my $text_color = 'black';
     if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . ';">
-            <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{service_state})}->{text} .'; text-align:center;">';
+        $background_color = $color{lc($self->{option_results}->{service_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{service_state})}->{text};
     } else {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . ';">
-            <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; padding:0; margin:10px; color:'. $color_service{lc($self->{option_results}->{type})}->{text} .'; text-align:center;">';
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
     }
-    $self->{payload_attachment}->{html_message} .= $self->{option_results}->{type} . '</h1>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;border-left-style: solid;border-right-style: solid;border-color: #d3d3d3;border-width: 1px;">
-                <tbody><tr><td style="font-size:16px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody><tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                        <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:right; padding-right:5%;">' . $self->{option_results}->{service_attempts} . '/' . $self->{option_results}->{max_service_attempts} . '</h5>
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; text-align:center; text-decoration:underline;">Host:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:26px; text-align:center;">' . $self->{option_results}->{host_name} . '</h2>
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; text-align:center; text-decoration:underline;">Service:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:26px; text-align:center;">' . $self->{option_results}->{service_description} . '</h2>
-                        <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:center;">is</h5>
-                        <h1 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:30px; color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} .';text-align:center;">' . $self->{option_results}->{service_state} . '</h1>
-                        <h5 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#b0b0b0; text-align:center;">for: ' . $self->{option_results}->{service_duration} . '</h5>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody><tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%; text-decoration:underline;">Host Alias:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{host_alias} . '</h2>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody><tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Host Address:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{host_address} . '</h2>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody><tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Date:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;">' . $self->{option_results}->{date} . '</h2>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody><tbody>
-                    <tr>
-                        <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                        <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Status Information:</h4>
-                        <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:20px; padding-left:5%;"> ' . $self->{option_results}->{service_output} . $line_break . $self->{option_results}->{service_longoutput} . '
-                        </h2>
-                        </td>
-                    </tr>
-                    </tbody>
-    ';
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{service_state})}->{background}
+    );
 
-    if (defined($author_html) && $author_html ne '') {
-        $self->{payload_attachment}->{html_message} .= '
-                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    <tbody>
-                        <tr>
-                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                $author_html. '
-                            </td>
-                        </tr>
-                    </tbody>';
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_service_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        attempts => $self->{option_results}->{service_attempts},
+        maxAttempts => $self->{option_results}->{max_service_attempts},
+        hostName => $self->{option_results}->{host_name},
+        serviceDescription => $self->{option_results}->{service_description},
+        status => $self->{option_results}->{service_state},
+        duration => $self->{option_results}->{service_duration},
+        hostAlias => $self->{option_results}->{host_alias},
+        hostAddress => $self->{option_results}->{host_address},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $output,
+        graphHtml => $graph_html,
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
+
+    $self->{payload_attachment}->{html_message} = $html_part->output
+
+        
+}
+
+sub bam_message {
+    my ($self, %options) = @_;
+
+    my $event_type = '';
+    my $author = '';
+    my $author_alt = '';
+    my $comment = '';
+    my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
+        }
     }
-
-    if (defined($comment_html) && $comment_html ne '') {
-        $self->{payload_attachment}->{html_message} .= '
-                    <td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    <tbody>
-                        <tr>
-                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">'.
-                                $comment_html. '
-                            </td>
-                        </tr>
-                    </tbody>';
+    
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
+        }
     }
 
-    if (defined($graph_html) && $graph_html ne '') {
-        $self->{payload_attachment}->{html_message} .= '
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td></tr></tbody>
-                    <tbody>
-                        <tr>
-                            <td width="98%" style="vertical-align:middle;font-size:14px;width:98%;margin:0 10px 0 10px;">
-                                <h4 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; font-size:15px; color:#b0b0b0; padding-left:3%;text-decoration:underline;">Service Graph:</h4>
-                                '. $graph_html . '
-                            </td>
-                        </tr>
-                    </tbody>';
+    $self->{option_results}->{service_description} =~ /ba_(\d+)/;
+    my $ba_id = $1;
+   
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/main.php?p=20701&o=d&ba_id=' . $ba_id;
+
+    $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' BAM: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
+    $self->{payload_attachment}->{alt_message} = '
+        ***** Centreon BAM *****
+
+        Notification Type: ' . $self->{option_results}->{type} . '
+        Service: ' . $self->{option_results}->{service_displayname} . '
+        State: ' . $self->{option_results}->{service_state} . '
+        Date/Time: ' . $self->{option_results}->{date};
+
+    if(defined($author_alt) && $author_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
     }
-                    
-    $self->{payload_attachment}->{html_message} .= '
-                    <tbody><tr><td style="font-size:9px;vertical-align:top;">&nbsp;</td>
-                    </tr></tbody>
-                <tbody><tr><td style="font-size:16px;vertical-align:top;">&nbsp;</td>
-                </tr></tbody></table>
-                
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
-                <tbody>
-                    <tr>';
-    if ($self->{option_results}->{type} =~ /^problem|recovery$/i) {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . '; height:10px">';
+    if(defined($comment_alt) && $comment_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
+
+        Info:
+        ' .$self->{option_results}->{service_output};
+
+    my $background_color= 'white';
+    my $text_color = 'black';
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $background_color = $color{lc($self->{option_results}->{service_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{service_state})}->{text};
     } else {
-        $self->{payload_attachment}->{html_message} .= '<td style="background-color:' . $color_service{lc($self->{option_results}->{type})}->{background} . '; height:10px">';
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
     }
-    $self->{payload_attachment}->{html_message} .= '</tr>
-                    <tr>
-                    <td style="background-color:#255891;">';
-    if (defined($self->{option_results}->{centreon_url}) && $self->{option_results}->{centreon_url} ne '') {
-        $self->{payload_attachment}->{html_message} .='
-                    <h2 style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; margin:0; color:#ffffff; text-align:center;"><a href="'. $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data . '" style="color:#ffffff;" target="_blank">Go to Centreon</a></h2>';
-    }
-    $self->{payload_attachment}->{html_message} .= '
-                </td>
-                </tr>
-                </tbody>
-                </table>
-                        </td>
-                    </tr>
-                </tbody>
-                </table>
-                                            </td>
-                                    </tr>
-                            </table>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width: 680px;">
-            <tr>
-            <td style="font-family: CoconPro-BoldCond, Open Sans, Verdana, sans-serif; vertical-align:middle; color: #999999; text-align: center; padding: 40px 10px;width: 100%;" class="x-gmail-data-detectors">
-                <br>
-            </td>
-            </tr>
-        </table>
-                            <!--[if mso]>
-                            </td>
-                            </tr>
-                            </table>
-                            <![endif]-->
-                    </div>
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{service_state})}->{background}
+    );
+  
+    
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_bam_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        serviceDescription => $self->{option_results}->{service_displayname},
+        status => $self->{option_results}->{service_state},
+        duration => $self->{option_results}->{service_duration},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $self->{option_results}->{service_output},
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
 
-        </center>
-    </body>
-    </html>
-    ';
+    $self->{payload_attachment}->{html_message} = $html_part->output
+
+}
+
+sub metaservice_message {
+    my ($self, %options) = @_;
+
+    my $host_id = $self->{option_results}->{host_id};
+    my $service_id = $self->{option_results}->{service_id};
+
+    my $event_type = '';
+    my $author = '';
+    my $author_alt = '';
+    my $comment = '';
+    my $comment_alt = '';
+    my $include_author = 0;
+    my $include_comment = 0;
+
+    if (defined($self->{option_results}->{notif_author}) && $self->{option_results}->{notif_author} ne '') {
+        $author = $self->{option_results}->{notif_author};
+        $include_author = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $author_alt = 'Scheduled Downtime by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $author_alt = 'Acknowledged by: ' . $self->{option_results}->{notif_author};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $author_alt = 'Flapping by: ' . $self->{option_results}->{notif_author};
+        }
+    }
+    
+    if (defined($self->{option_results}->{notif_comment}) && $self->{option_results}->{notif_comment} ne '') {
+        $comment = $self->{option_results}->{notif_comment};
+        $include_comment = 1;
+        if ($self->{option_results}->{type} =~ /^downtime.*$/i) {
+            $event_type = 'Scheduled Downtime';
+            $comment_alt = 'Scheduled Downtime Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+            $event_type = 'Acknowledged';
+            $comment_alt = 'Acknowledged Comment: ' . $self->{option_results}->{notif_comment};
+        } elsif($self->{option_results}->{type} =~ /^flaping.*$/i) {
+            $event_type = 'Flapping';
+            $comment_alt = 'Flapping Comment: ' . $self->{option_results}->{notif_comment};
+        }
+    }
+
+    my $graph_html;
+    if ($self->{option_results}->{centreon_user} && $self->{option_results}->{centreon_user} ne '' 
+        && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
+        my $content = $self->{http}->request(
+            hostname => '',
+            full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
+            timeout => $self->{option_results}->{timeout},
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        );
+
+        if ($self->{http}->get_code() !~ /200/ || $content =~ /^OK/) {
+            $graph_html = '<p>No graph found</p>';
+        } elsif ($content =~ /Access denied|Resource not found|Invalid token/) {
+            $graph_html = '<p>Cannot retrieve graph: ' . $content . '</p>';
+        } else {
+            $self->{payload_attachment}->{graph_png} = $content;
+            $graph_html = '<img src="cid:' . $self->{option_results}->{host_name} . '_' . $self->{option_results}->{service_description} . "\"  alt=\"Service Graph\" style=\"width:100%; height:auto;\">\n";
+        }
+    }
+
+    my $details = {
+        id => $service_id,
+        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        tab => 'details'
+    };
+
+    my $line_break = '<br />';
+    my $json_data = encode_json($details);
+    my $encoded_data = uri_escape($json_data);
+    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
+
+    $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' Meta Service: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
+    $self->{payload_attachment}->{alt_message} = '
+        ***** Centreon *****
+
+        Notification Type: ' . $self->{option_results}->{type} . '
+        Meta Service: ' . $self->{option_results}->{service_displayname} . '
+        State: ' . $self->{option_results}->{service_state} . '
+        Date/Time: ' . $self->{option_results}->{date};
+
+    if(defined($author_alt) && $author_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "\n        " . $author_alt . "\n";
+    }
+    if(defined($comment_alt) && $comment_alt ne ''){
+        $self->{payload_attachment}->{alt_message} .= "        " . $comment_alt . "\n";
+    }
+    $self->{payload_attachment}->{alt_message} .= '
+
+        Info:
+        ' .$self->{option_results}->{service_output};
+
+    my $background_color= 'white';
+    my $text_color = 'black';
+    if($self->{option_results}->{type} =~ /^problem|recovery$/i) {
+        $background_color = $color{lc($self->{option_results}->{service_state})}->{background};
+        $text_color = $color{lc($self->{option_results}->{service_state})}->{text};
+    } else {
+        $background_color = $color{lc($self->{option_results}->{type})}->{background} ;
+        $text_color = $color{lc($self->{option_results}->{type})}->{text};
+    }
+    
+    my $dynamic_css = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_css
+        );
+    $dynamic_css->param(
+        backgroundColor => $background_color,
+        textColor => $text_color,
+        stateColor => $color{lc($self->{option_results}->{service_state})}->{background}
+    );
+  
+    
+    my $html_part = HTML::Template->new(
+        scalarref => \$notification::email::templates::resources::get_metaservice_template);
+    $html_part->param(
+        dynamicCss => $dynamic_css->output,
+        type => $self->{option_results}->{type},
+        attempts => $self->{option_results}->{service_attempts},
+        maxAttempts => $self->{option_results}->{max_service_attempts},
+        serviceDescription => $self->{option_results}->{service_displayname},
+        status => $self->{option_results}->{service_state},
+        duration => $self->{option_results}->{service_duration},
+        date => $self->{option_results}->{date},
+        dynamicHref => $dynamic_href,
+        eventType => $event_type,
+        author => $author,
+        comment => $comment,
+        output => $self->{option_results}->{service_output},
+        graphHtml => $graph_html,
+        includeAuthor => $include_author,
+        includeComment => $include_comment
+    );
+
+    $self->{payload_attachment}->{html_message} = $html_part->output
+
 }
 
 sub set_payload {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
+    if ($self->{option_results}->{host_name} =~ /^_Module_BAM.*/) {
+        $self->bam_message();
+    } elsif ($self->{option_results}->{host_name} =~ /^_Module_Meta/ ) {
+        $self->metaservice_message();
+    } elsif ( defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '' ) {
         $self->service_message();
     } else {
         $self->host_message();
@@ -1041,7 +803,7 @@ centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-addre
 
 Example for Centreon configuration:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts=''$SERVICEATTEMPT$ --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
+centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
 
 =over 8
 
@@ -1120,6 +882,10 @@ ID of the service.
 =item B<--service-description>
 
 Description of the service.
+
+=item B<--service-displayname>
+
+Display BA name.
 
 =item B<--service-state>
 

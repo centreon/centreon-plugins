@@ -34,12 +34,33 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=storage::synology:
 ...                         &{check_components_test3}
 ...                         &{check_components_test4}
 
+&{uptime_t1}
+...                         description=Uptime check expected to be OK
+...                         snmpcommunity=synology_component_disk_ok
+...                         warning=
+...                         critical=
+...                         expected_output=OK: System uptime is: 46m 5s | 'uptime'=2765.00s;;;0;
+&{uptime_t2}
+...                         description=Uptime check expected to be warning
+...                         snmpcommunity=synology_component_disk_ok
+...                         warning=10
+...                         critical=
+...                         expected_output=WARNING: System uptime is: 46m 5s | 'uptime'=2765.00s;0:10;;0;
+&{uptime_t3}
+...                         description=Uptime check expected to be critical
+...                         snmpcommunity=synology_component_disk_ok
+...                         warning=
+...                         critical=10
+...                         expected_output=CRITICAL: System uptime is: 46m 5s | 'uptime'=2765.00s;;0:10;0;
+
+@{uptime_tests}
+...                         &{uptime_t1}
+...                         &{uptime_t2}
+...                         &{uptime_t3}
 
 *** Test Cases ***
-Synology SNMP: Checking disk components
-    [Documentation]    Monitor the different states of disk health
+Components
     [Tags]    storage   synology    snmp
-    Log To Console    Synology SNMP: Checking disk components
     FOR    ${check_components_test}    IN    @{check_components_tests}
         ${command}    Catenate
         ...    ${CMD}
@@ -48,10 +69,30 @@ Synology SNMP: Checking disk components
         ...    --snmp-version=2
         ...    --snmp-port=2024
         ...    --snmp-community=${check_components_test.snmpcommunity}
+
         ${output}    Run    ${command}
-        Log To Console    ${check_components_test.description}
         Should Be Equal As Strings
         ...    ${check_components_test.expected_output}
         ...    ${output}
-        ...    Wrong output for components mode: ${check_components_test}.{\n}Command output:{\n}${output}
+        ...    ${check_components_test.description} failed. Wrong output for components mode: ${check_components_test}.{\n}Command output:{\n}${output}
+    END
+
+Uptime
+    [Tags]    storage   synology    snmp
+    FOR    ${test_item}    IN    @{uptime_tests}
+        ${command}    Catenate
+        ...    ${CMD}
+        ...    --mode=uptime
+        ...    --hostname=127.0.0.1
+        ...    --snmp-version=2
+        ...    --snmp-port=2024
+        ...    --snmp-community=${test_item.snmpcommunity}
+        ...    --warning-uptime=${test_item.warning}
+        ...    --critical-uptime=${test_item.critical}
+
+        ${output}    Run    ${command}
+        Should Be Equal As Strings
+        ...    ${test_item.expected_output}
+        ...    ${output}
+        ...    ${test_item.description} failed. Wrong output for components mode: ${test_item}.{\n}Command output:{\n}${output}
     END

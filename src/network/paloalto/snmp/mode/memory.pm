@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -87,7 +87,7 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--show-cache>
 
-Display cache storage datas.
+Display cache storage data.
 
 =item B<--filter-storage-type>
 

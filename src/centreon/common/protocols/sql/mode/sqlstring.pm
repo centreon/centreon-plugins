@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -95,14 +95,13 @@ sub check_options {
 
     $self->{printf_value} = 'value_field';
     if (defined($self->{option_results}->{printf_value}) && $self->{option_results}->{printf_value} ne '') {
-        $self->{printf_value} = $1
-            if ($self->{option_results}->{printf_value} =~ /\$self->\{result_values}->\{(value_field|key_field)}/);
-        $self->{printf_value} = $1
-            if ($self->{option_results}->{printf_value} =~ /\%\{(value_field|key_field)}/);
-        $self->{printf_value} = $1
-            if ($self->{option_results}->{printf_value} =~ /\%\((value_field|key_field)\)/);
+          $self->{printf_value} = $1
+              if ($self->{option_results}->{printf_value} =~ /\$self->\{result_values\}->\{(value_field|key_field)\}/);
+          $self->{printf_value} = $1
+              if ($self->{option_results}->{printf_value} =~ /\%\{(value_field|key_field)\}/);
+          $self->{printf_value} = $1
+              if ($self->{option_results}->{printf_value} =~ /\%\((value_field|key_field)\)/);
     }
-
 }
 
 sub manage_selection {

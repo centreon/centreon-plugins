@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,6 +46,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Efficient IP equipment in SNMP.
-Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
+Please use the SNMP Linux plugin for system checks (CPU, memory, traffic, ...).
 
 =cut

@@ -57,7 +57,7 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -88,7 +88,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+      - uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -99,12 +99,12 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.rpm
@@ -120,6 +120,10 @@ jobs:
         include:
           - image: bullseye
             distrib: bullseye
+          - image: bookworm
+            distrib: bookworm
+          - image: jammy
+            distrib: jammy
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
@@ -140,12 +144,12 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make -p libkeepass-reader-perl --verbose --build --version 0.2-${{ matrix.distrib }} perl-keepass-reader/
         shell: bash
 
-      - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.deb
@@ -180,7 +184,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
@@ -201,7 +205,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye]
+        distrib: [el8, el9, bullseye, bookworm]
 
     steps:
       - name: Checkout sources

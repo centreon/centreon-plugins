@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -173,7 +173,7 @@ __END__
 
 =head1 MODE
 
-Check ESX cpu usage.
+Check ESX CPU usage.
 
 =over 8
 
