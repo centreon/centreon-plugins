@@ -58,6 +58,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'BytesAllocatedPercentage', type => 0 },
+        { name => 'oversubscribed', type => 0 },
     ];
     $self->{maps_counters}->{BytesAllocatedPercentage} = [
         # The label defines options name, a --warning-bytesallocatedpercentage and --critical-bytesallocatedpercentage will be added to the mode
@@ -75,7 +76,8 @@ sub set_counters {
                     { template => '%d', unit=> '%', min => 0, max => 100}
                 ]
             }
-        },{
+        } ];
+    $self->{maps_counters}->{oversubscribed} = [{
             label => 'oversubscribed',
             nlabel => 'datacore.pool.oversubscribed.percentage',
             set => {
@@ -85,11 +87,10 @@ sub set_counters {
                 output_template => 'Over subscribed bytes : %s ',
                 # Perfdata array allow you to define relevant metrics properties (min, max) and its sprintf template format
                 perfdatas => [
-                    { template => '%d', unit=> '%', min => 0, max => 100}
+                    { template => '%d', unit=> 'bytes', min => 0}
                 ]
             }
-        }
-    ];
+        }];
 
 }
 
@@ -104,7 +105,9 @@ sub manage_selection {
     my $data = $options{custom}->request_api(
         url_path  => '/RestService/rest.svc/1.0/performances/' . $pool_id,
     );
+
     $self->{BytesAllocatedPercentage}->{bytesallocatedpercentage} = $data->[0]->{"BytesAllocatedPercentage"};
+    $self->{oversubscribed}->{oversubscribed} = $data->[0]->{"BytesOverSubscribed"};
 
 }
 1;
