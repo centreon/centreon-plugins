@@ -1,5 +1,9 @@
+--filter-vdom
 --force-counters32
+Fortinet
+Fortigate
 OID
 oneaccess-sys-mib
+perfdata
 SNMP
 SSH
