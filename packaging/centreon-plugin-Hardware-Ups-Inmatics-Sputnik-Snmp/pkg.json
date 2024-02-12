@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Inmatics-Sputnik-Snmp",
+    "pkg_summary": "Centreon Plugin - Hardware UPS Inmatics PSU Sputnik SNMP",
+    "plugin_name": "centreon_ups_sputnik_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/ups/standard/rfc1628/snmp/",
+        "hardware/ups/inmatics/sputnik/snmp/"
+    ]
+}
