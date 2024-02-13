@@ -123,14 +123,17 @@ sub get_change_value {
     
     my $value = $options{value};
     return '' if (!defined($options{value}));
-    if (defined($self->{map_values}->{$options{value}})) {
+    
+    if (defined($self->{option_results}->{convert_custom_values}) && $self->{option_results}->{convert_custom_values} ne '') {
+        eval "\$value = $self->{option_results}->{convert_custom_values}";
+    }
+
+    if (defined($value) && defined($self->{map_values}->{$value})) {
+        $value = $self->{map_values}->{$value}
+    } elsif (defined($self->{map_values}->{$options{value}})) {
         $value = $self->{map_values}->{$options{value}};
     } elsif (defined($self->{option_results}->{map_value_other}) && $self->{option_results}->{map_value_other} ne '') {
         $value = $self->{option_results}->{map_value_other};
-    }
-
-    if (defined($self->{option_results}->{convert_custom_values}) && $self->{option_results}->{convert_custom_values} ne '') {
-        eval "\$value = $self->{option_results}->{convert_custom_values}";
     }
 
     return $value;
