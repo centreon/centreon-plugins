@@ -154,6 +154,7 @@ jobs:
         with:
           ruby-version: '3.3'
           self-hosted: true
+          bundler-cache: false
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
@@ -320,6 +321,7 @@ jobs:
         with:
           ruby-version: '3.3'
           self-hosted: true
+          bundler-cache: false
 
       - name: Get package version
         id: package-version
