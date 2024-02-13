@@ -41,8 +41,9 @@ sub port_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking port '%s'",
-        $options{instance_value}->{name}
+        "checking port '%s' - type '%s'",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
@@ -50,8 +51,9 @@ sub prefix_port_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "port '%s' ",
-        $options{instance_value}->{name}
+        "port '%s' - type '%s'",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
@@ -176,7 +178,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-type:s' => { name => 'filter_type' }
     });
 
     return $self;
@@ -194,10 +197,21 @@ sub manage_selection {
 
     $self->{ports} = {};
     foreach (@{$result->{stats_snapshot}}) {
-        next if ($_->{type} ne 'Port');
+        #Type may be 'Dynamic filter' but no request here by the customer.
+        next if ($_->{type} ne 'Port' && $_->{type} ne 'Port Group');
+        #Exclude Loopback dedup
+        next if (defined($_->{tp_total_tx_count_bytes}) && defined($_->{np_total_deny_count_packets}));
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{default_name} !~ /$self->{option_results}->{filter_name}/);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $_->{default_name} !~ /$self->{option_results}->{filter_name}/){
+            $self->{output}->output_add(long_msg => "With filter-name: $self->{option_results}->{filter_name} - Skipping object '" . $_->{default_name} . "'.", debug => 1);
+            next;
+        };
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $_->{type} !~ /$self->{option_results}->{filter_type}$/){
+            $self->{output}->output_add(long_msg => "With filter-type: $self->{option_results}->{filter_type} - Skipping object '" . $_->{default_name} . " with type '" . $_->{type} . "'.", debug => 1);
+            next;
+        };
 
         my $info = $options{custom}->request_api(
             method => 'GET',
@@ -206,27 +220,45 @@ sub manage_selection {
         );
 
         $self->{ports}->{ $_->{default_name} } = {
-            name => $_->{default_name},
+            name    => $_->{default_name},
             license => {
-                name => $_->{default_name},
+                name   => $_->{default_name},
                 status => lc($info->{license_status}),
             },
-            link => {
+            link    => {
                 name              => $_->{default_name},
                 adminStatus       => $info->{enabled} =~ /true|1/i ? 'enabled' : 'disabled',
                 operationalStatus => $info->{link_status}->{link_up} =~ /true|1/i ? 'up' : 'down'
-            },
-            traffic => {
-                traffic_out => $_->{tp_total_tx_count_bytes},
-                traffic_out_util => $_->{tp_current_tx_utilization}
-            },
-            packet => {
-                packets_out => $_->{tp_total_tx_count_packets},
-                packets_dropped => $_->{tp_total_drop_count_packets},
-                packets_insp => $_->{tp_total_insp_count_packets},
-                packets_pass => $_->{tp_total_pass_count_packets}
             }
         };
+
+        if (defined($_->{tp_total_tx_count_bytes})) {
+            # Tool Port and Port Group
+            if($_->{type} eq 'Port Group'){
+                $self->{ports}->{$_->{default_name}}{type}=$_->{type};
+            }else{
+                $self->{ports}->{$_->{default_name}}{type}="Tool Port";
+            }
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{tp_total_tx_count_bytes};
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{tp_current_tx_utilization};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{tp_total_tx_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{tp_total_drop_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = $_->{tp_total_insp_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{tp_total_pass_count_packets};
+        }else{
+            #Network Port
+            $self->{ports}->{$_->{default_name}}{type}="Network Port";
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{np_total_rx_count_bytes}; #ok
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{np_current_rx_utilization}; #ok
+            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{np_total_rx_count_packets}; #ok
+
+            # Confirmation nécessaire de ces métriques
+            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #$_->{np_total_rx_count_invalid_packets};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = 'test ?'; #$_->{np_total_rx_count_crc_alignment_errors};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #$_->{np_total_deny_count_packets};
+            use Data::Dumper;
+            print Dumper($self->{ports}->{$_->{default_name}});
+        }
     }
 
     $self->{cache_name} = 'keysight_nvos_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' . $options{custom}->get_port() . '_' .
@@ -249,6 +281,11 @@ Check ports.
 =item B<--filter-name>
 
 Filter ports by name (can be a regexp).
+
+=item B<--filter-type>
+
+Filter ports by type (can be a regexp).
+You can use the following types: 'Network Port', 'Port Group' and 'Tool Port'
 
 =item B<--unknown-license-status>
 
