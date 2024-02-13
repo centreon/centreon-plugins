@@ -13,7 +13,7 @@ Test Timeout        120s
 ${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}                 ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}keysight-nvos-restapi.json
 
-${CMD}                          perl ${CENTREON_PLUGINS} --plugin=network::keysight::nvos::restapi::plugin --custommode=paws --region=eu-west --aws-secret-key=secret --aws-access-key=key
+${CMD}                          perl ${CENTREON_PLUGINS} --plugin=network::keysight::nvos::restapi::plugin
 
 # Test simple usage of the ports mode
 &{keysight_ports_test1}
@@ -112,7 +112,7 @@ Keysight Nvos Restapi license
     FOR    ${keysight_license_test}    IN    @{keysight_license_tests}
                 ${command}    Catenate
         ...    ${CMD}
-        ...    --mode=ports
+        ...    --mode=license
         ...    --hostname=localhost
         ...    --port=3003
         ...    --api-username='admin'
