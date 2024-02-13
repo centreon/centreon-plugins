@@ -272,10 +272,8 @@ sub manage_selection {
 
             # Confirmation nécessaire de ces métriques
             $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #$_->{np_total_rx_count_invalid_packets};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = 'test ?'; #$_->{np_total_rx_count_crc_alignment_errors};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = $_->{np_total_rx_count_crc_alignment_errors};
             $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #$_->{np_total_deny_count_packets};
-            use Data::Dumper;
-            print Dumper($self->{ports}->{$_->{default_name}});
         }
     }
 
