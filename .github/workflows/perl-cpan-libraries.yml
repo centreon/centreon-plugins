@@ -155,7 +155,11 @@ jobs:
           yum install -y yum-utils epel-release git
           yum config-manager --set-enabled crb || true # alma 9
           yum config-manager --set-enabled powertools || true # alma 8
-          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc ruby libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel
+          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel
+
+          dnf module reset -y ruby
+          dnf module enable -y ruby:3.1
+          dnf install -y ruby
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
@@ -232,7 +236,6 @@ jobs:
             "Carp::Assert",
             "Clone",
             "Clone::Choose",
-            "common::sense",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
             "DateTime::Format::Duration::ISO8601",
@@ -248,7 +251,6 @@ jobs:
             "HTTP::Daemon::SSL",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
-            "JSON::Parse",
             "JSON::WebToken",
             "LV",
             "MIME::Types",
