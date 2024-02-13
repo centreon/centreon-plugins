@@ -51,7 +51,7 @@ sub prefix_port_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "port '%s' - type '%s'",
+        "port '%s' - type:'%s' - ",
         $options{instance_value}->{name},
         $options{instance_value}->{type}
     );
@@ -67,6 +67,24 @@ sub prefix_packet_output {
     my ($self, %options) = @_;
 
     return 'packets ';
+}
+
+sub custom_signal_perfdata {
+    my ($self) = @_;
+
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $instances,
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub set_counters {
@@ -107,10 +125,10 @@ sub set_counters {
             critical_default => '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"',
             set => {
                 key_values => [
-                    { name => 'adminStatus' }, { name => 'operationalStatus' } , { name => 'name' }
+                    { name => 'adminStatus' }, { name => 'operationalStatus' } , { name => 'name' }, { name => 'type' }
                 ],
-                closure_custom_output => $self->can('custom_link_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output => sub { return 0; },
+                closure_custom_perfdata => $self->can('custom_signal_perfdata'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
