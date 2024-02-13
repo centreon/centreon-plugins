@@ -45,28 +45,28 @@ ${CMD}                          perl ${CENTREON_PLUGINS} --plugin=network::keysi
 &{keysight_license_test1}
 ...                             unknownstatus=
 ...                             warningstatus=
-...                             criticalunknownstatus=
+...                             criticalstatus=
 ...                             result=OK: License expiration status: NONE\nExpired: Maintenance; Oct 20, 2023 23:59:59 GMT
 
 # Test license mode with unknown-status option set to '%{status} =~ /NONE/i'
 &{keysight_license_test2}
 ...                             unknownstatus='\%{status} =~ /NONE/i'
 ...                             warningstatus=
-...                             criticalunknownstatus=
+...                             criticalstatus=
 ...                             result=UNKNOWN: License expiration status: NONE\nExpired: Maintenance; Oct 20, 2023 23:59:59 GMT
 
 # Test license mode with warning-status option set to '%{status} =~ /NONE/i'
 &{keysight_license_test3}
 ...                             unknownstatus=
 ...                             warningstatus='\%{status} =~ /NONE/i'
-...                             criticalunknownstatus=
+...                             criticalstatus=
 ...                             result=WARNING: License expiration status: NONE\nExpired: Maintenance; Oct 20, 2023 23:59:59 GMT
 
 # Test license mode with critical-status option set to '%{status} =~ /NONE/i'
 &{keysight_license_test4}
 ...                             unknownstatus=
 ...                             warningstatus=
-...                             criticalunknownstatus='\%{status} =~ /NONE/i'
+...                             criticalstatus='\%{status} =~ /NONE/i'
 ...                             result=CRITICAL: License expiration status: NONE\nExpired: Maintenance; Oct 20, 2023 23:59:59 GMT
 
 @{keysight_license_tests}
