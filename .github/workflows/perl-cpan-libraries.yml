@@ -314,6 +314,9 @@ jobs:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
+    env:
+      RUNNER_TOOL_CACHE: "/tmp"
+
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
