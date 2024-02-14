@@ -31,7 +31,7 @@ overrides:
     depends:
       - perl(Crypt::Argon2)
     provides:
-      - perl(JSON::Path)
+      - perl(KeePass::Reader)
   deb:
     depends:
       - libcrypt-argon2-perl
