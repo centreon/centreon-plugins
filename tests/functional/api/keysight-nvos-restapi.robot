@@ -114,7 +114,7 @@ Keysight Nvos Restapi license
         ...    ${CMD}
         ...    --mode=license
         ...    --hostname=localhost
-        ...    --port=3003
+        ...    --port=3000
         ...    --api-username='admin'
         ...    --api-password='admin'
         ...    --proto='http'
@@ -149,7 +149,7 @@ Start Mockoon
     ...    --data
     ...    ${MOCKOON_JSON}
     ...    --port
-    ...    3003
+    ...    3000
     ...    --pname
     ...    keysight-nvos
     Wait For Process    ${process}
