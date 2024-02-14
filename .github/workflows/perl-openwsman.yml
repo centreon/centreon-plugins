@@ -121,12 +121,22 @@ jobs:
       - name: Set package name and paths according to distrib
         run: |
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+            apt-get install -y perl
+          else
+            dnf install -y perl
+          fi
+
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "Perl version is $PERL_VERSION"
+
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
-              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/$PERL_VERSION"
             else
-              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/$PERL_VERSION"
             fi
           else
             NAME_PERL="openwsman-perl"
@@ -134,7 +144,7 @@ jobs:
             if [ "${{ matrix.distrib }}" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
-              PERL_VENDORARCH="/usr/local/lib64/perl5/5.32"
+              PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
             fi
           fi
 

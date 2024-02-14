@@ -88,19 +88,23 @@ jobs:
 
       - name: Set package name and paths according to distrib
         run: |
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "Perl version is $PERL_VERSION"
+
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libssh-session-perl"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
-              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/$PERL_VERSION"
             else
-              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/$PERL_VERSION"
             fi
           else
             NAME="perl-Libssh-Session"
             if [ "${{ matrix.distrib }}" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
-              PERL_VENDORARCH="/usr/local/lib64/perl5/5.32"
+              PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
             fi
           fi
 
@@ -117,7 +121,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
-          release: 4
+          release: 5
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-perl-libssh-session-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
