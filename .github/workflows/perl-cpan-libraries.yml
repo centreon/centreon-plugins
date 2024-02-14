@@ -148,7 +148,8 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
@@ -204,7 +205,8 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - name: Replace '::' with - in the feature path
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
@@ -213,7 +215,8 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -279,9 +282,11 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Get package version
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Get package version
         id: package-version
         run: |
           apt-get update
@@ -331,7 +336,8 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
         shell: bash
 
-      - name: Replace '::' with - in the feature path
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
@@ -340,7 +346,8 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
