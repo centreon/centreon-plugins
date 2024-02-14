@@ -230,54 +230,21 @@ jobs:
         distrib: [bullseye, bookworm, jammy]
         name:
           [
-            "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
-            "boolean",
-            "Carp::Assert",
-            "Clone",
-            "Clone::Choose",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
-            "Digest::MD5::File",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
-            "FFI::CheckLib",
-            "File::SearchPath",
-            "Hash::Merge",
             "Hash::Ordered",
-            "HTTP::Daemon",
-            "HTTP::Daemon::SSL",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
-            "JSON::WebToken",
-            "LV",
-            "MIME::Types",
-            "MongoDB",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
-            "Net::NTP",
-            "Net::SMTPS",
             "Net::SMTP_auth",
-            "Net::Subnet",
-            "Net::TFTP",
-            "PBKDF2::Tiny",
-            "Schedule::Cron",
-            "Statistics::Descriptive",
             "Statistics::Regression",
-            "Sys::SigAction",
-            "Term::Clui",
-            "Term::ShellUI",
-            "Unicode::Stringprep",
-            "URI::Encode",
-            "URI::Template",
-            "URL::Encode",
-            "UUID::URandom",
             "WWW::Selenium",
-            "XML::Filter::BufferText",
-            "XML::LibXML::Simple",
-            "XML::SAX::Writer",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
           ]
@@ -297,10 +264,9 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
-          - name: "DateTime::Format::Duration::ISO8601"
           - name: "Statistics::Regression"
+            build_distribs: "bullseye"
             version: "0.53"
-          - name: "ZMQ::Constants"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"
