@@ -83,24 +83,28 @@ jobs:
             dnf install -y libcurl-devel cpanminus gcc
           fi
 
-          cpanm -v -l /tmp Net::Curl@0.54
+          cpanm -v -l /tmp Net::Curl@0.55
         shell: bash
 
       - name: Set package name and paths according to distrib
         run: |
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "::notice::${{ matrix.distrib }} perl version is $PERL_VERSION"
+
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libnet-curl-perl"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
-              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/$PERL_VERSION"
             else
-              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/5.32"
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/$PERL_VERSION"
             fi
           else
             NAME="perl-Net-Curl"
             if [ "${{ matrix.distrib }}" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
-              PERL_VENDORARCH="/usr/local/lib64/perl5/5.32"
+              PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
             fi
           fi
 
