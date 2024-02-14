@@ -65,11 +65,9 @@ jobs:
       - name: Build library
         run: |
           if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
-            #dnf install -y make perl perl-devel perl-ExtUtils-MakeMaker
             dnf install -y make perl
           else
             apt-get update
-            #apt-get install -y make dh-make-perl
             apt-get install -y make perl
           fi
 
