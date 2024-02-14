@@ -131,12 +131,12 @@ sub order_alerts {
         $alerts_count{$alert->{Level}}->{count}++;
         # we don't want to clog the long output, so we keep only the few first logs.
         #print "add log to " . $alert->{Level};
-        push(@{$alerts_count{$alert->{Level}}->{list}}, $alert->{MessageText}) ;
+        push(@{$alerts_count{$alert->{Level}}->{list}}, $alert->{MessageText}) if (scalar(@{$alerts_count{$alert->{Level}}->{list}}) < 50);
     }
 
     #print $alerts_count{$alerts_level{error}};
-    $self->{output}->output_add(long_msg => "error : " . join("\n", $alerts_count{$alerts_level{error}}->{list}));
-    $self->{output}->output_add(long_msg => "info : " . join("\n", $alerts_count{$alerts_level{info}}->{list}));
+    $self->{output}->output_add(long_msg => "error : " . join("\n", @{$alerts_count{$alerts_level{error}}->{list}}));
+    $self->{output}->output_add(long_msg => "warning : " . join("\n", @{$alerts_count{$alerts_level{warning}}->{list}}));
 
     return \%alerts_count;
 }

@@ -2,6 +2,7 @@ package storage::datacore::api::plugin;
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -15,6 +16,7 @@ sub new {
     $self->{modes} = {
         'pool-usage' => 'storage::datacore::api::mode::poolspaceusage',
         'alerts-count' => 'storage::datacore::api::mode::alertscount',
+        'list-pool' => 'storage::datacore::api::mode::listpool',
     };
     $self->{custom_modes}->{api} = 'storage::datacore::api::custom::api';
     return $self;

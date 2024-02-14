@@ -79,7 +79,7 @@ sub check_options {
     # all your options key/value pairs.
     $self->{http}->set_options(%{$self->{option_results}});
     if (centreon::plugins::misc::empty($self->{option_results}->{username})) {
-        $self->{output}->add_option_msg(short_msg => 'Please set hostname option to authenticate against datacore rest api');
+        $self->{output}->add_option_msg(short_msg => 'Please set username option to authenticate against datacore rest api');
         $self->{output}->option_exit();
     }
     if (centreon::plugins::misc::empty($self->{option_results}->{password})) {
@@ -120,7 +120,7 @@ sub request_api {
         basic       => 1,
         username    => $self->{option_results}->{username},
         password    => $self->{option_results}->{password},
-        headers     => ["ServerHost" => $self->{option_results}->{hostname} ],
+        header     => ["ServerHost: $self->{option_results}->{hostname}"],
         credentials => 1,
         %options,
     );
