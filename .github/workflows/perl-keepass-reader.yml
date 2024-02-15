@@ -141,7 +141,7 @@ jobs:
           mv dependencies/perl-keepass-reader/src/ perl-keepass-reader
           tar czf perl-keepass-reader.tar.gz perl-keepass-reader
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make -p libkeepass-reader-perl --verbose --build --version 0.2-${{ matrix.distrib }} perl-keepass-reader/
+          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make -p libkeepass-reader-perl --dist ${{ matrix.distrib }} --verbose --build --version 0.2-${{ matrix.distrib }} perl-keepass-reader/
         shell: bash
 
       - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
