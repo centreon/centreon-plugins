@@ -87,6 +87,31 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
           fail-on-cache-miss: true
 
+      - name: Set paths according to distrib
+        run: |
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "Perl version is $PERL_VERSION"
+
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+            if [ "${{ matrix.arch }}" = "amd64" ]; then
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl/$PERL_VERSION"
+            else
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl/$PERL_VERSION"
+            fi
+          else
+            if [ "${{ matrix.distrib }}" = "el8" ]; then
+              PERL_VENDORARCH="/usr/local/lib64/perl5"
+            else
+              PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
+            fi
+          fi
+
+          sed -i "s#@PERL_VENDORARCH@#$PERL_VENDORARCH#g" dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml
+
+          cat dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml
+        shell: bash
+
       - name: Package
         uses: ./.github/actions/package-nfpm
         with:
@@ -94,7 +119,8 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           commit_hash: ${{ github.sha }}
-          release: ${{ needs.get-environment.outputs.release }}
+          version: "7.0.0"
+          release: "17698550"
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
