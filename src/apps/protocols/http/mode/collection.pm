@@ -337,9 +337,11 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
-    my $encoded = JSON::XS->new->utf8->pretty->encode($content);
-    $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
-    $self->{output}->output_add(long_msg => "$encoded", debug => 1);
+    if ($self->{output}->is_debug()) {
+        my $encoded = JSON::XS->new->allow_nonref(1)->utf8->pretty->encode($content);
+        $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+        $self->{output}->output_add(long_msg => "$encoded", debug => 1);
+    }
 
     return ($http->get_header(), $content, $http);
 }
@@ -534,14 +536,14 @@ sub collect_http_tables {
             ($headers, $content, $http) = $self->call_http(rq => $options{requests}->[$i], http => $options{http});
             $self->set_builtin();
 
-            next if (!defined($options{requests}->[$i]->{parse}));
-
-            my $local;
-            foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
-                if ($options{requests}->[$i]->{rtype} eq 'txt') {
-                    $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
-                } else {
-                    $local = $self->parse_structure(name => $options{requests}->[$i]->{name}, content => $content, conf => $conf);
+            my $local = {};
+			if (defined($options{requests}->[$i]->{parse})) {
+                foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
+                    if ($options{requests}->[$i]->{rtype} eq 'txt') {
+                        $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
+                    } else {
+                        $local = $self->parse_structure(name => $options{requests}->[$i]->{name}, content => $content, conf => $conf);
+                    }
                 }
             }
 
