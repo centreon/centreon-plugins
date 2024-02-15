@@ -32,37 +32,31 @@ jobs:
             package_extension: rpm
             runner: ubuntu-22.04
             arch: amd64
-            version: 2.7.2
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
             runner: ubuntu-22.04
             arch: amd64
-            version: 2.7.2
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
-            version: 2.7.2
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
-            version: 2.7.2
           - image: packaging-plugins-jammy
             distrib: jammy
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
-            version: 2.7.2
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
             runner: ["self-hosted", "collect-arm64"]
             arch: arm64
-            version: 2.7.2
 
     runs-on: ${{ matrix.runner }}
 
@@ -73,6 +67,10 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     name: package ${{ matrix.distrib }} ${{ matrix.arch }}
+
+    env:
+      version: "2.7.2"
+      release: "6"
 
     steps:
       - name: Checkout sources
@@ -110,8 +108,8 @@ jobs:
           fi
 
           cd /tmp
-          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ matrix.version }}.tar.gz|tar zxvf -
-          cd openwsman-${{ matrix.version }}/
+          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ env.version }}.tar.gz|tar zxvf -
+          cd openwsman-${{ env.version }}/
           mkdir build
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
@@ -148,11 +146,9 @@ jobs:
             fi
           fi
 
-          sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/libwsman.yaml
           sed -i "s#@USRLIB@#$USRLIB#g" dependencies/perl-openwsman/libwsman.yaml
 
           sed -i "s/@NAME@/$NAME_PERL/g" dependencies/perl-openwsman/perl-openwsman.yaml
-          sed -i "s/@VERSION@/${{ matrix.version }}/g" dependencies/perl-openwsman/perl-openwsman.yaml
           sed -i "s#@PERL_VENDORARCH@#$PERL_VENDORARCH#g" dependencies/perl-openwsman/perl-openwsman.yaml
 
           cat dependencies/perl-openwsman/sblim-sfcc.yaml
@@ -168,7 +164,8 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
-          release: 2
+          version: ${{ env.version }}
+          release: ${{ env.release }}
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
@@ -183,7 +180,8 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
-          release: 4
+          version: ${{ env.version }}
+          release: ${{ env.release }}
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
@@ -198,22 +196,14 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           arch: ${{ matrix.arch }}
-          release: 4
+          version: ${{ env.version }}
+          release: ${{ env.release }}
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
-
-      # set condition to true if artifacts are needed
-      - if: ${{ false }}
-        name: Upload package artifacts
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
-        with:
-          name: packages-${{ matrix.distrib }}-${{ matrix.arch }}
-          path: ./*.${{ matrix.package_extension}}
-          retention-days: 1
 
   deliver-rpm:
     needs: [get-environment, package]
