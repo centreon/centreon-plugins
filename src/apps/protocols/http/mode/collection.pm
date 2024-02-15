@@ -537,7 +537,7 @@ sub collect_http_tables {
             $self->set_builtin();
 
             my $local = {};
-			if (defined($options{requests}->[$i]->{parse})) {
+            if (defined($options{requests}->[$i]->{parse})) {
                 foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
                     if ($options{requests}->[$i]->{rtype} eq 'txt') {
                         $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
