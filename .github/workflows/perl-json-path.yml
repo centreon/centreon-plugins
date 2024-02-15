@@ -79,6 +79,11 @@ jobs:
       - name: Set package name and paths according to distrib
         run: |
           VERSION="1.0.4"
+
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "Perl version is $PERL_VERSION"
+
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libjson-path-perl"
             PERL_VENDORLIB="/usr/share/perl5"
@@ -88,7 +93,7 @@ jobs:
               VERSION="0.5" # https://github.com/centreon/centreon-plugins/issues/4540
               PERL_VENDORLIB="/usr/local/share/perl5"
             else
-              PERL_VENDORLIB="/usr/local/share/perl5/5.32"
+              PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"
             fi
           fi
 
