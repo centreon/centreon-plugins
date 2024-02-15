@@ -79,6 +79,10 @@ jobs:
 
       - name: Set package name and paths according to distrib
         run: |
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
+
+          echo "Perl version is $PERL_VERSION"
+
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libkeepass-reader-perl"
             PERL_VENDORLIB="/usr/share/perl5"
@@ -87,7 +91,7 @@ jobs:
             if [[ "${{ matrix.distrib }}" == "el8" ]]; then
               PERL_VENDORLIB="/usr/local/share/perl5"
             else
-              PERL_VENDORLIB="/usr/local/share/perl5/5.32"
+              PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"
             fi
           fi
 
@@ -104,7 +108,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: "0.2"
-          release: "2"
+          release: "3"
           arch: all
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.run_id }}-${{ matrix.package_extension }}-${{ env.module_name }}-${{ matrix.distrib }}

@@ -1,9 +1,9 @@
 name: "perl-VMware-vSphere"
-arch: "amd64"
+arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "7.0.0"
-release: "17698549${DIST}"
+version: "${VERSION}"
+release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
 maintainer: "Centreon <contact@centreon.com>"
@@ -20,18 +20,10 @@ license: "GPLv2+"
 
 contents:
   - src: "../../../vmware-vsphere-cli-distrib/VMware"
-    dst: "@PERL_SITELIB@/VMware"
-    packager: rpm
-  - src: "../../../vmware-vsphere-cli-distrib/VMware"
-    dst: "/usr/share/perl5/VMware"
-    packager: deb
+    dst: "@PERL_VENDORARCH@/VMware"
 
   - src: "../../../vmware-vsphere-cli-distrib/WSMan"
-    dst: "@PERL_SITELIB@/WSMan"
-    packager: rpm
-  - src: "../../../vmware-vsphere-cli-distrib/WSMan"
-    dst: "/usr/share/perl5/WSMan"
-    packager: deb
+    dst: "@PERL_VENDORARCH@/WSMan"
 
 overrides:
   rpm:
