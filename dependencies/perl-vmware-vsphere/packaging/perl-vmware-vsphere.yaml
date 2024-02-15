@@ -21,17 +21,9 @@ license: "GPLv2+"
 contents:
   - src: "../../../vmware-vsphere-cli-distrib/VMware"
     dst: "@PERL_VENDORARCH@/VMware"
-    packager: rpm
-  - src: "../../../vmware-vsphere-cli-distrib/VMware"
-    dst: "/usr/share/perl5/VMware"
-    packager: deb
 
   - src: "../../../vmware-vsphere-cli-distrib/WSMan"
     dst: "@PERL_VENDORARCH@/WSMan"
-    packager: rpm
-  - src: "../../../vmware-vsphere-cli-distrib/WSMan"
-    dst: "/usr/share/perl5/WSMan"
-    packager: deb
 
 overrides:
   rpm:
