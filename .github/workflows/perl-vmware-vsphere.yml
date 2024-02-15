@@ -91,7 +91,7 @@ jobs:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-    name: package ${{ matrix.distrib }}
+    name: package ${{ matrix.distrib }} ${{ matrix.arch }}
 
     steps:
       - name: Checkout sources
