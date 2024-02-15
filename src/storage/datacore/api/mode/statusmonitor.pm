@@ -52,39 +52,42 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 1, cb_prefix_output => 'prefix_health_output' },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'global', type => 2, critical_default => '%{State} =~ /16/', warning_default => '%{State} =~ /TOTO/',
-            set => {
-                key_values                     => [
-                    { name => 'state' }, { name => 'messagetext' }, { name => 'extendedcaption' },
-                ],
-
-                closure_custom_output          => $self->can('custom_status_output'),
-                closure_custom_perfdata        => sub {return 0;},
+        { label => 'status',
+        type => 2,
+        warning_default => '%{status} =~ /MINOR/i',
+        critical_default => '%{status} =~ /MAJOR|CRITICAL/i',
+        set => {
+                key_values => [ { name => 'state' }, { name => 'extendedcaption' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
+
+
 
 sub manage_selection {
     my ($self, %options) = @_;
     my $monitor_data = $self->request_monitors(%options);
     for my $object (@$monitor_data) {
         #$self->{global} = $object->{ExtendedCaption};
-        $self->{global}->{$object->{ExtendedCaption}} = {
+        $self->{global} = {
             state           => 'toto',
             messagetext     => $object->{MessageText},
             extendedcaption => $object->{ExtendedCaption}
         };
+        last;
         #print "$object->{ExtendedCaption}  $object->{State} \n";
 
     }
     use Data::Dumper;
-    print Dumper($self);
+    #print Dumper($self);
 }
 
 sub custom_status_output {
