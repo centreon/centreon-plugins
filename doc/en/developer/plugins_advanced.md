@@ -943,9 +943,9 @@ List of methods:
 * **new**: class constructor. Overload if you need to add some specific options 
 or to use a statefile.
 * **check_options**: overload if you need to check your specific options.
-* **manage_selection**: overload if *mandatory*. Method to get informations for 
+* **manage_selection**: overload is *mandatory*. Method to get informations for 
 the equipment.
-* **set_counters**: overload if **mandatory**. Method to configure counters.
+* **set_counters**: overload is **mandatory**. Method to configure counters.
 
 **Class hardware**
 

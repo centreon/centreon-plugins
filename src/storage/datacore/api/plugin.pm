@@ -17,6 +17,7 @@ sub new {
         'pool-usage' => 'storage::datacore::api::mode::poolspaceusage',
         'alerts-count' => 'storage::datacore::api::mode::alertscount',
         'list-pool' => 'storage::datacore::api::mode::listpool',
+        'status-monitor' => 'storage::datacore::api::mode::statusmonitor',
     };
     $self->{custom_modes}->{api} = 'storage::datacore::api::custom::api';
     return $self;

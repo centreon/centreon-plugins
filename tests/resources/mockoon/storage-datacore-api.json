@@ -42,7 +42,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "RestService/rest.svc/1.0/performances/A3E78CFA-DBEC-44E1-A23C-E9E262EC4551:%7Bd68b8a36-0ec4-11e5-80ba-00155d651622%7D",
+      "endpoint": "RestService/rest.svc/1.0/performances/B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:%7B4dec1b5a-2577-11e5-80c3-00155d651622%7D",
       "responses": [
         {
           "uuid": "0eb0a2ca-2f12-40af-ba94-0feef989b6a1",
@@ -94,6 +94,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "be0b350e-f8da-4998-a045-a3cf840745c0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/monitors",
+      "responses": [
+        {
+          "uuid": "6f53cd5e-7417-4fdf-a310-e2a7af4b7c3a",
+          "body": "[\r\n  {\r\n    \"Caption\": \"State\",\r\n    \"ExtendedCaption\": \"State of HostVM2\",\r\n    \"Id\": \"ClientMachineStateMonitor<ed89ef91d72142dc958e02c5b7014fac>\",\r\n    \"Internal\": false,\r\n    \"SequenceNumber\": 9417,\r\n    \"Description\": \"Monitors the state of hosts.\",\r\n    \"MessageText\": \"Connected\",\r\n    \"MonitoredObjectId\": \"ed89ef91d72142dc958e02c5b7014fac\",\r\n    \"State\": 16,\r\n    \"TemplateId\": \"T(DataCore.Executive.Controller.ClientMachineStateMonitor<DataCore.Executive.Controller.ClientMachine>)\",\r\n    \"TimeStamp\": \"/Date(1486136115475-0500)/\"\r\n  },\r\n  {\r\n    \"Caption\": \"I/O latency\",\r\n    \"ExtendedCaption\": \"I/O latency of Mirror of Virtual disk 1 on StorageSvr005\",\r\n    \"Id\": \"RisingThresholdPerfMonitor`1<V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568>TotalOperationsTime\",\r\n    \"Internal\": false,\r\n    \"SequenceNumber\": 10036,\r\n    \"Description\": \"Monitors the physical disks latency.\",\r\n    \"MessageText\": \"Disabled\",\r\n    \"MonitoredObjectId\": \"V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568\",\r\n    \"State\": 1,\r\n    \"TemplateId\": \"T(DataCore.Executive.Controller.RisingThresholdPerfMonitor`1[T]<V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568>TotalOperationsTime)\",\r\n    \"TimeStamp\": \"/Date(1486148705910-0500)/\"\r\n  }\r\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -108,6 +137,10 @@
     {
       "type": "route",
       "uuid": "b9f7dd2b-e1e1-4902-95ba-c6b76a1de390"
+    },
+    {
+      "type": "route",
+      "uuid": "be0b350e-f8da-4998-a045-a3cf840745c0"
     }
   ],
   "proxyMode": false,

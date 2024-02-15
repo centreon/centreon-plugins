@@ -88,6 +88,7 @@ sub check_options {
     }
 
 }
+
 sub request_pool_id {
     my ($self, %options) = @_;
 
@@ -113,6 +114,7 @@ sub request_pool_id {
     return $pool_id;
 
 }
+
 
 sub request_api {
     my ($self, %options) = @_;
