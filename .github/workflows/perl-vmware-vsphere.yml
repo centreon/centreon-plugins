@@ -23,6 +23,8 @@ jobs:
       version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
 
   get-sources:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
     runs-on: ubuntu-22.04
     steps:
       - name: Download vsphere cli sources
@@ -137,17 +139,15 @@ jobs:
           commit_hash: ${{ github.sha }}
           version: "7.0.0"
           release: "17698550"
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-rpm:
-    needs:
-      - get-environment
-      - package
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
@@ -161,22 +161,28 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
         with:
-          module_name: perl-vmware-vsphere
+          module_name: perl-vmware-vsphere-amd64
           distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}-amd64
           stability: ${{ needs.get-environment.outputs.stability }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-deb:
-    needs:
-      - get-environment
-      - package
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    needs: [get-environment, package]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        include:
+          - distrib: bullseye
+            arch: amd64
+          - distrib: bullseye
+            arch: arm64
+          - distrib: bookworm
+            arch: amd64
+          - distrib: jammy
+            arch: amd64
 
     steps:
       - name: Checkout sources
@@ -185,8 +191,38 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
-          module_name: perl-vmware-vsphere
+          module_name: perl-vmware-vsphere-${{ matrix.arch }}
           distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}-${{ matrix.arch }}
           stability: ${{ needs.get-environment.outputs.stability }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        include:
+          - distrib: el8
+            arch: amd64
+          - distrib: el9
+            arch: amd64
+          - distrib: bullseye
+            arch: amd64
+          - distrib: bookworm
+            arch: amd64
+          - distrib: bullseye
+            arch: arm64
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Promote ${{ matrix.distrib }} ${{ matrix.arch }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: perl-vmware-vsphere-${{ matrix.arch }}
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}

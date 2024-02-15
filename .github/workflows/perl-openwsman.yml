@@ -22,6 +22,7 @@ jobs:
 
   package:
     needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
     strategy:
       fail-fast: false
