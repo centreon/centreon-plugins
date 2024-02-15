@@ -97,9 +97,9 @@ jobs:
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
             NAME="libcrypt-argon2-perl"
             if [ "${{ matrix.arch }}" = "amd64" ]; then
-              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl5/$PERL_VERSION"
+              PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl/$PERL_VERSION"
             else
-              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl5/$PERL_VERSION"
+              PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl/$PERL_VERSION"
             fi
           else
             NAME="perl-Crypt-Argon2"
