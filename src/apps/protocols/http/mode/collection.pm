@@ -627,6 +627,11 @@ sub use_local_http_cache {
         }
     }
 
+    my $builtin = $local_http_cache->get(name => 'builtin');
+    foreach my $name (keys %$builtin) {
+        $self->add_builtin(name => $name, value => $builtin->{$name});
+    }
+
     return 1;
 }
 
@@ -639,7 +644,8 @@ sub save_local_http_cache {
                 http_collected => {
                     tables => $options{local},
                     epoch => time()
-                }
+                },
+                builtin => $self->{builtin}
             }
         );
     }
