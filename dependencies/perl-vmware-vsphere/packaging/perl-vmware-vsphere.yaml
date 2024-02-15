@@ -1,5 +1,5 @@
 name: "perl-VMware-vSphere"
-arch: "amd64"
+arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
 version: "${VERSION}"

@@ -45,28 +45,43 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
 
   package:
-    needs:
-      - get-sources
-      - get-environment
-    runs-on: ubuntu-22.04
+    needs: [get-environment, get-sources]
+
     strategy:
       matrix:
         include:
           - package_extension: rpm
             image: packaging-plugins-alma8
             distrib: el8
+            runner: ubuntu-22.04
+            arch: amd64
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
+            runner: ubuntu-22.04
+            arch: amd64
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
+            runner: ubuntu-22.04
+            arch: amd64
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
+            runner: ubuntu-22.04
+            arch: amd64
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
+            runner: ubuntu-22.04
+            arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-bullseye-arm64
+            distrib: bullseye
+            runner: ["self-hosted", "collect-arm64"]
+            arch: arm64
+
+    runs-on: ${{ matrix.runner }}
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -118,6 +133,7 @@ jobs:
           nfpm_file_pattern: "dependencies/perl-vmware-vsphere/packaging/perl-vmware-vsphere.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
+          arch: ${{ matrix.arch }}
           commit_hash: ${{ github.sha }}
           version: "7.0.0"
           release: "17698550"
