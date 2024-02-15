@@ -104,7 +104,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: "0.2"
-          release: "2"
+          release: "3"
           arch: all
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.run_id }}-${{ matrix.package_extension }}-${{ env.module_name }}-${{ matrix.distrib }}
