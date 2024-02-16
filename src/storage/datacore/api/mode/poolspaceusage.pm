@@ -48,21 +48,20 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        # BytesAllocatedPercentage is the disk usage of the pool
+        # in datacore you can make thin provisionning, where you give to each partition more than what you really have.
+        # oversubscribed is the number of Bytes allocated minus the number of bytes present in the system.
         { name => 'BytesAllocatedPercentage', type => 0 },
         { name => 'oversubscribed', type => 0 },
     ];
     $self->{maps_counters}->{BytesAllocatedPercentage} = [
-        # The label defines options name, a --warning-bytesallocatedpercentage and --critical-bytesallocatedpercentage will be added to the mode
-        # The nlabel is the name of your performance data / metric that will show up in your graph
+
         {
             label  => 'bytesallocatedpercentage',
             nlabel => 'datacore.pool.bytesallocated.percentage',
             set    => {
-                # Key value name is the name we will use to pass the data to this counter. You can have several ones.
                 key_values      => [ { name => 'bytesallocatedpercentage' } ],
-                # Output template describe how the value will display
                 output_template => 'Bytes Allocated : %s %%',
-                # Perfdata array allow you to define relevant metrics properties (min, max) and its sprintf template format
                 perfdatas       => [
                     { template => '%d', unit => '%', min => 0, max => 100 }
                 ]
@@ -72,17 +71,13 @@ sub set_counters {
         label  => 'oversubscribed',
         nlabel => 'datacore.pool.oversubscribed.bytes',
         set    => {
-            # Key value name is the name we will use to pass the data to this counter. You can have several ones.
             key_values      => [ { name => 'oversubscribed' } ],
-            # Output template describe how the value will display
             output_template => 'Over subscribed bytes : %s',
-            # Perfdata array allow you to define relevant metrics properties (min, max) and its sprintf template format
             perfdatas       => [
                 { template => '%d', unit => 'bytes', min => 0 }
             ]
         }
     } ];
-
 }
 
 sub manage_selection {
@@ -91,9 +86,32 @@ sub manage_selection {
     my $data = $options{custom}->request_api(
         url_path => '/RestService/rest.svc/1.0/performances/' . $self->{option_results}->{pool_id},
     );
-
+    if (defined($data->[1])) {
+        $self->{output}->add_option_msg(short_msg => 'multiples pools found in api response, only one is expected. Please check pool_id and datacore versions.');
+        $self->{output}->option_exit();
+    }
     $self->{BytesAllocatedPercentage}->{bytesallocatedpercentage} = $data->[0]->{"BytesAllocatedPercentage"};
     $self->{oversubscribed}->{oversubscribed} = $data->[0]->{"BytesOverSubscribed"};
 
 }
 1;
+
+__END__
+
+=head1 MODE
+
+Check Datacore pool space and over subscribed usage exposed through the rest api.
+
+=over 8
+
+=item B<--pool-id>
+
+Id of the pool to check. See list-pool autodiscovery mode to list pools id (required).
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds. Use --list-counters to get available thresholds options and units.
+
+=back
+
+

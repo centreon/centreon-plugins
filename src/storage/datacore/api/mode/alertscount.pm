@@ -32,9 +32,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     $options{options}->add_options(arguments => {
-
-        'filter-server:s' => { name => 'filter_server'},
+        'filter-server:s' => { name => 'filter_server' },
         'max-alert-age:s' => { name => 'max_alert_age' } });
+
     $self->{output} = $options{output};
 
     return $self;
@@ -52,8 +52,6 @@ sub set_counters {
         { name => 'alerts', type => 0 },
     ];
     $self->{maps_counters}->{alerts} = [
-        # The label defines options name, a --warning-bytesallocatedpercentage and --critical-bytesallocatedpercentage will be added to the mode
-        # The nlabel is the name of your performance data / metric that will show up in your graph
         {
             label  => 'error',
             nlabel => 'datacore.event.error.count',
@@ -104,19 +102,19 @@ sub manage_selection {
     $self->{alerts}->{error} = $alerts_count->{$alerts_level{error}}->{count};
 
 }
+
 # take a decoded json reference and send back a hash with loglevel as key and a hash with number of alert
 # and the list of alerts text as value.
 sub order_alerts {
     my ($self, $alerts) = @_;
     my %alerts_count = (
-        0 => {count => 0, list => []},
-        1 => {count => 0, list => []},
-        2 => {count => 0, list => []},
-        3 => {count => 0, list => []});
+        0 => { count => 0, list => [] },
+        1 => { count => 0, list => [] },
+        2 => { count => 0, list => [] },
+        3 => { count => 0, list => [] });
 
     for my $alert (@$alerts) {
 
-        # here we should allow to filter on somme element like machineName  or messageText
         # spec require to filter on time of the log.
         $alert->{TimeStamp} =~ /\/Date\((\d+)\)\/$/;
         my $alert_date = $1;
@@ -125,16 +123,20 @@ sub order_alerts {
             and $alert_date < (time - $self->{option_results}->{max_alert_age}) * 1000);
         # filter on the machine issuing the alert with a user defined regex
 
-        next if (!centreon::plugins::misc::empty($self->{option_results}->{filter_server})
-            and $alert->{MachineName} !~ $self->{option_results}->{filter_server});
+        if (!centreon::plugins::misc::empty($self->{option_results}->{filter_server})
+            and $alert->{MachineName} !~ $self->{option_results}->{filter_server}) {
+            $self->{output}->output_add(long_msg => "excluding alert from machine $alert->{MachineName}\n", debug => 1);
+            next;
+        }
 
         $alerts_count{$alert->{Level}}->{count}++;
         # we don't want to clog the long output, so we keep only the few first logs.
-        #print "add log to " . $alert->{Level};
-        push(@{$alerts_count{$alert->{Level}}->{list}}, $alert->{MessageText}) if (scalar(@{$alerts_count{$alert->{Level}}->{list}}) < 50);
+        # we use a array instead of directly adding to long_output because we need to sort errors
+        if (scalar(@{$alerts_count{$alert->{Level}}->{list}}) < 50) {
+            push(@{$alerts_count{$alert->{Level}}->{list}}, $alert->{MessageText})
+        }
     }
 
-    #print $alerts_count{$alerts_level{error}};
     $self->{output}->output_add(long_msg => "error : " . join("\n", @{$alerts_count{$alerts_level{error}}->{list}}));
     $self->{output}->output_add(long_msg => "warning : " . join("\n", @{$alerts_count{$alerts_level{warning}}->{list}}));
 

@@ -25,8 +25,10 @@ use base qw(centreon::plugins::templates::counter);
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(empty);
 
-my %monitor_state = (1 => "Undefined", 2 => "Healthy", 4 => "Attention", 8 => "Warning", 16 => "Critical", 'toto' => 'TOTO');
+my %monitor_state = (1 => "Undefined", 2 => "Healthy", 4 => "Attention", 8 => "Warning", 16 => "Critical");
+
 sub new {
     my ($class, %options) = @_;
 
@@ -43,65 +45,66 @@ sub check_options {
     $self->SUPER::check_options(%options);
     $self->{cache}->check_options(option_results => $self->{option_results});
 }
-sub prefix_health_output {
-    my ($self, %options) = @_;
 
-    return 'prefix-output : ';
-}
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 1, message_multiple => 'All memory usages are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status',
-        type => 2,
-        warning_default => '%{status} =~ /MINOR/i',
-        critical_default => '%{status} =~ /MAJOR|CRITICAL/i',
-        set => {
-                key_values => [ { name => 'state' }, { name => 'extendedcaption' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+        { label              => 'state',
+            type             => 2,
+            warning_default  => '%{state} =~ /Warning/i',
+            critical_default => '%{state} =~ /Critical/i',
+            set              => {
+                key_values                     => [ { name => 'state' }, { name => 'extendedcaption' }, { name => 'messagetext' } ],
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
 }
 
-
-
 sub manage_selection {
     my ($self, %options) = @_;
     my $monitor_data = $self->request_monitors(%options);
+    my $i = 0;
     for my $object (@$monitor_data) {
-        #$self->{global} = $object->{ExtendedCaption};
-        $self->{global} = {
-            state           => 'toto',
+
+        if (!centreon::plugins::misc::empty($self->{option_results}->{filter_caption})
+            and $object->{ExtendedCaption} !~ $self->{option_results}->{filter_caption}) {
+            next;
+        }
+        $self->{global}->{$i} = {
+            state           => $monitor_state{$object->{State}},
             messagetext     => $object->{MessageText},
             extendedcaption => $object->{ExtendedCaption}
         };
-        last;
-        #print "$object->{ExtendedCaption}  $object->{State} \n";
-
+        $i++;
     }
-    use Data::Dumper;
-    #print Dumper($self);
+    # for now if no data is given to the counter, output is OK: with status ok, instead of unknown.
+    # We manage this case in each plugin for now.
+    if ($i == 0) {
+        $self->{output}->add_option_msg(short_msg => 'No monitors where checked, please check filter_caption parameter and api response.');
+        $self->{output}->option_exit();
+    }
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
     my $res = sprintf(
-        "%s status : %s because : %s",
+        "'%s' status : '%s', message is  '%s'",
         $self->{result_values}->{extendedcaption},
-        $monitor_state{$self->{result_values}->{state}},
+        $self->{result_values}->{state},
         $self->{result_values}->{messagetext}
-
     );
     return $res;
 }
-
+# as --filter-caption allow to filter element to check and this api don't allow parameter filtering, we should cache
+# the output in case a client make multiples check a minute.
 sub request_monitors {
     my ($self, %options) = @_;
 
@@ -120,3 +123,29 @@ sub request_monitors {
 
 }
 1;
+
+__END__
+
+=head1 MODE
+
+Check Datacore monitor status exposed through the rest api.
+
+=over 8
+
+=item B<--filter-caption>
+
+Define which element should be monitored based on the extended caption. This option will be treated as a regular expression.
+By default all elements will be checked.
+
+=item B<--warning-state> B<--critical-state>
+
+define which output from the api should be considered warning or critical.
+
+warning_default  = '%{state} =~ /Warning/i',
+
+critical_default = '%{state} =~ /Critical/i',
+
+possible value for state : Undefined, Healthy, Attention, Warning, Critical.
+
+=back
+

@@ -28,10 +28,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
-    });
-
     return $self;
 }
 sub check_options {
@@ -49,7 +45,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No pool found in api response.");
         $self->{output}->option_exit();
     }
-    use Data::Dumper;
     for my $pool (@$pool_list) {
        push(@{$self->{pools}}, {
             ExtendedCaption => $pool->{ExtendedCaption},
@@ -60,6 +55,7 @@ sub manage_selection {
     }
 
 }
+
 sub run {
     my ($self, %options) = @_;
     $self->manage_selection(%options);

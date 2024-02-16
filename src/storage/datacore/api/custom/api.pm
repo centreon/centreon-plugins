@@ -23,7 +23,6 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::misc qw(empty);
 
 sub new {
@@ -40,21 +39,15 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-
-        'hostname:s'        => { name => 'hostname' },
-        'port:s'            => { name => 'port', default => 443 },
-        'proto:s'           => { name => 'proto', default => 'https' },
-        'timeout:s'         => { name => 'timeout' },
-        'username:s'        => { name => 'username' },
-        'password:s'        => { name => 'password' },
-        # These options are here to defined conditions about which status the plugin will return regarding HTTP response code
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-        'warning-status:s'  => { name => 'warning_status' },
-        'critical-status:s' => { name => 'critical_status', default => '' }
+        'hostname:s' => { name => 'hostname' },
+        'port:s'     => { name => 'port', default => 443 },
+        'proto:s'    => { name => 'proto', default => 'https' },
+        'timeout:s'  => { name => 'timeout' },
+        'username:s' => { name => 'username' },
+        'password:s' => { name => 'password' }
     });
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -66,18 +59,15 @@ sub set_options {
 }
 sub set_defaults {}
 
+# hostname,username and password are required options
 sub check_options {
     my ($self, %options) = @_;
+    $self->{http}->set_options(%{$self->{option_results}});
 
-    # Check if the user provided a value for --hostname option. If not, display a message and exit
     if (centreon::plugins::misc::empty($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => 'Please set hostname option');
         $self->{output}->option_exit();
     }
-    $self->{cache}->check_options(option_results => $self->{option_results});
-    # Set parameters for http module, note that the $self->{option_results} is a hash containing
-    # all your options key/value pairs.
-    $self->{http}->set_options(%{$self->{option_results}});
     if (centreon::plugins::misc::empty($self->{option_results}->{username})) {
         $self->{output}->add_option_msg(short_msg => 'Please set username option to authenticate against datacore rest api');
         $self->{output}->option_exit();
@@ -88,45 +78,21 @@ sub check_options {
     }
 
 }
-
-sub request_pool_id {
-    my ($self, %options) = @_;
-
-    if ($self->{cache}->read('statefile' => 'datacore_api_pool' . md5_hex($options{filter_server} . $options{filter_pool}))
-        && $self->{cache}->get(name => 'expires_on') - time() < 10) {
-        return $self->{cache}->get(name => 'access_token');
-    }
-
-    my @get_filter;
-    if (!centreon::plugins::misc::empty($options{filter_server})) {
-        push(@get_filter, { server => $options{filter_server} });
-    }
-    if (!centreon::plugins::misc::empty($options{filter_pool})) {
-        push(@get_filter, { pool => $options{filter_pool} });
-    }
-    my $result = $self->request_api(
-        get_param => \@get_filter,
-        url_path  => '/RestService/rest.svc/1.0/pools');
-
-    my $pool_id = $result->[0]->{Id};
-    my $datas = { last_timestamp => time(), access_token => $pool_id, expires_on => time() + 3600 };
-    $self->{cache}->write(data => $datas);
-    return $pool_id;
-
-}
-
-
+# wrapper around centreon::plugins::http::request to add authentication and decode json.
+# output : deserialized json from the api if not error found in http call.
 sub request_api {
     my ($self, %options) = @_;
+    # datacore api require a ServerHost header with the hostname used to query the api to respond.
+    # authentication is http standard basic auth.
     my $result = $self->{http}->request(
         basic       => 1,
+        credentials => 1,
+        header      => [ "ServerHost: $self->{option_results}->{hostname}" ],
         username    => $self->{option_results}->{username},
         password    => $self->{option_results}->{password},
-        header     => ["ServerHost: $self->{option_results}->{hostname}"],
-        credentials => 1,
         %options,
     );
-    # Declare a scalar deserialize the JSON content string into a perl data structure
+    # Declare a scalar to deserialize the JSON content string into a perl data structure
     my $decoded_content;
     eval {
         $decoded_content = JSON::XS->new->decode($result);
@@ -140,3 +106,48 @@ sub request_api {
 
 }
 1;
+
+
+__END__
+
+=head1 NAME
+
+Datacore Sansymphony Rest API
+
+=head1 REST API OPTIONS
+
+Datacore Sansymphony Rest API
+
+=over 8
+
+=item B<--hostname>
+
+Datacore hostname.
+
+=item B<--port>
+
+Http port (default: 443)
+
+=item B<--proto>
+
+http protocol, either http or https (default: 'https')
+
+=item B<--username>
+
+API username.
+
+=item B<--password>
+
+API password.
+
+=item B<--timeout>
+
+Set timeout in seconds (default: 10).
+
+=back
+
+=head1 DESCRIPTION
+
+B<custom>.
+
+=cut

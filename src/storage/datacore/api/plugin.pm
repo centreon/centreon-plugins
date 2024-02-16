@@ -10,9 +10,7 @@ sub new {
 
     # A version, we don't really use it but could help if your want to version your code
     $self->{version} = '0.1';
-    # Important part!
-    #    On the left, the name of the mode as users will use it in their command line
-    #    On the right, the path to the file (note that .pm is not present at the end)
+
     $self->{modes} = {
         'pool-usage' => 'storage::datacore::api::mode::poolspaceusage',
         'alerts-count' => 'storage::datacore::api::mode::alertscount',
