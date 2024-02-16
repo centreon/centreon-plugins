@@ -254,8 +254,9 @@ sub get_payload {
 sub call_http {
     my ($self, %options) = @_;
 
-    if (!defined($options{rq}->{hostname}) || $options{rq}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "hostname attribute is missing [http > requests > $options{rq}->{name}]");
+    if ((!defined($options{rq}->{full_url}) || $options{rq}->{full_url} eq '') &&
+        (!defined($options{rq}->{hostname}) || $options{rq}->{hostname} eq '')) {
+        $self->{output}->add_option_msg(short_msg => "hostname or full_url attribute is missing [http > requests > $options{rq}->{name}]");
         $self->{output}->option_exit();
     }
     if (!defined($options{rq}->{rtype}) || $options{rq}->{rtype} !~ /^(?:txt|json|xml)$/) {
@@ -298,11 +299,19 @@ sub call_http {
         $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
     }
 
+    my $full_url;
+    my $hostname = $self->substitute_string(value => $options{rq}->{hostname});
+    if (defined($options{rq}->{full_url}) && $options{rq}->{full_url} ne '') {
+        $full_url = $self->substitute_string(value => $options{rq}->{full_url});
+        $hostname = '';
+    }
+
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
         backend => $self->substitute_string(value => $options{rq}->{backend}),
         method => $self->substitute_string(value => $options{rq}->{method}),
-        hostname => $self->substitute_string(value => $options{rq}->{hostname}),
+        full_url => $full_url,
+        hostname => $hostname,
         proto => $self->substitute_string(value => $options{rq}->{proto}),
         port => $self->substitute_string(value => $options{rq}->{port}),
         url_path => $self->substitute_string(value => $options{rq}->{endpoint}),
@@ -547,6 +556,12 @@ sub collect_http_tables {
                 }
             }
 
+            $self->set_functions(
+                section => "http > requests > $options{requests}->[$i]->{name}",
+                functions => $options{requests}->[$i]->{functions},
+                default => 1
+            );
+
             if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
                 $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand})) {
                 $self->{scenario_stopped} = 1;
@@ -639,13 +654,20 @@ sub save_local_http_cache {
     my ($self, %options) = @_;
 
     if (defined($options{local_http_cache})) {
+        my $expand = {};
+        foreach my $name (keys %{$self->{expand}}) {
+            next if ($name =~ /^(builtin|constants)\./);
+            $expand->{$name} = $self->{expand}->{$name};
+        }
+        
         $options{local_http_cache}->write(
             data => {
                 http_collected => {
                     tables => $options{local},
                     epoch => time()
                 },
-                builtin => $self->{builtin}
+                builtin => $self->{builtin},
+                local_vars => $expand
             }
         );
     }
@@ -745,6 +767,17 @@ sub display_variables {
             }
         }
     }
+    
+    foreach my $name (keys %{$self->{expand}}) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '    %s = %s',
+                $name,
+                $self->{expand}->{$name}
+            ),
+            debug => 1
+        );
+    }
 }
 
 sub collect_http {
@@ -773,6 +806,13 @@ sub collect_http {
 
     $self->collect_http_sampling();
 
+    # can use local_var set for selection/selection_loop
+    $self->{local_vars} = {};
+    foreach my $name (keys %{$self->{expand}}) {
+        next if ($name =~ /^(builtin|constants)\./);
+        $self->{local_vars}->{$name} = $self->{expand}->{$name};
+    }
+
     if ($self->{output}->is_debug()) {
         $self->display_variables();
     }
@@ -796,6 +836,14 @@ sub get_local_variable {
     }
 
 
+}
+
+sub set_local_variables {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$self->{local_vars}}) {
+        $self->set_local_variable(name => $_, value => $self->{local_vars}->{$_});
+    }
 }
 
 sub set_local_variable {
@@ -1638,6 +1686,7 @@ sub exec_func_capture {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
         }
+
         $self->set_special_variable_value(value => $value, %$save);
     }
 }
@@ -1828,6 +1877,7 @@ sub add_selection {
         my $config = {};
         $self->{expand} = $self->set_constants();
         $self->set_builtin();
+        $self->set_local_variables();
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'before_expand');
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
@@ -1865,20 +1915,26 @@ sub add_selection_loop {
 
         next if (!defined($_->{source}) || $_->{source} eq '');
         $self->{current_section} = '[selection_loop > ' . $i . ' > source]';
+
         my $result = $self->parse_special_variable(chars => [split //, $_->{source}], start => 0);
         if ($result->{type} != 2) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
             $self->{output}->option_exit();
         }
+
         next if (!defined($self->{http_collected}->{tables}->{ $result->{table} }));
+
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{ $result->{table} }}) {
             $self->{expand} = $self->set_constants();
             $self->set_builtin();
+            $self->set_local_variables();
             $self->{expand}->{ $result->{table} . '.instance' } = $instance;
+
             foreach my $label (keys %{$self->{http_collected}->{tables}->{ $result->{table} }->{$instance}}) {
                 $self->{expand}->{ $result->{table} . '.' . $label } =
                     $self->{http_collected}->{tables}->{ $result->{table} }->{$instance}->{$label};
             }
+
             my $config = {};
             $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
             $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'before_expand');
