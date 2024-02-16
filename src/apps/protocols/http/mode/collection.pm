@@ -647,6 +647,11 @@ sub use_local_http_cache {
         $self->add_builtin(name => $name, value => $builtin->{$name});
     }
 
+    my $local_vars = $local_http_cache->get(name => 'local_vars');
+    foreach my $name (keys %$local_vars) {
+        $self->set_local_variable(name => $name, value => $local_vars->{$name});
+    }
+
     return 1;
 }
 
