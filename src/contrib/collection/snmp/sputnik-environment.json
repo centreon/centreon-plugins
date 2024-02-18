@@ -1,0 +1,67 @@
+{
+    "constants": {},
+    "mapping": {},
+    "snmp": {
+        "tables": [
+            {
+                "name": "upsEnvSensors",
+                "oid": ".1.3.6.1.4.1.54661.1.1.1.2.2.1",
+                "used_instance": "\\.2\\.(\\d+)$",
+                "entries": [
+                    {
+                        "name": "temperature",
+                        "oid": ".1.3.6.1.4.1.54661.1.1.1.2.2.1.2"
+                    },
+                    {
+                        "name": "humidity",
+                        "oid": ".1.3.6.1.4.1.54661.1.1.1.2.2.1.3"
+                    }
+                ]
+            }
+        ]
+    },
+    "selection_loop": [
+        {
+            "name": "Sensors",
+            "source": "%(snmp.tables.upsEnvSensors)",
+            "expand_table": {
+                "upsEnvSensors": "%(snmp.tables.upsEnvSensors.[%(upsEnvSensors.instance)])"
+            },
+            "functions": [
+                {
+                   "type": "replace",
+                   "src": "%(upsEnvSensors.temperature)",
+                   "expression": "s/(\\d?\\d)(\\d\\d)/$1.$2/"
+                }
+            ],
+
+            "perfdatas": [
+                {
+                    "nlabel": "environment.temperature.celsius",
+                    "instances": ["%(upsEnvSensors.instance)"],
+                    "value": "%(upsEnvSensors.temperature)",
+                    "critical": "",
+                    "unit": "C"
+                },
+                {
+                    "nlabel": "environment.humidity.percent",
+                    "instances": ["%(upsEnvSensors.instance)"],
+                    "value": "%(upsEnvSensors.humidity)",
+                    "critical": "",
+                    "unit": "%",
+                    "min": 0,
+                    "max": 100
+                }
+            ],
+            "formatting": {
+                "printf_msg": "Sensor '%s' temperature is '%s'°C and humidity is '%s'%%",
+                "printf_var": [
+                    "%(upsEnvSensors.instance)",
+                    "%(upsEnvSensors.temperature)",
+                    "%(upsEnvSensors.humidity)"
+                ],
+                "display_ok": true
+            }
+        }
+    ]
+}
