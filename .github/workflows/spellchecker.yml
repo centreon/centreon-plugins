@@ -48,6 +48,9 @@ jobs:
         run: |
           set +e
           for f in ${{ steps.filter.outputs.plugins_files }}; do
+            if [[ "$f" =~ \.json$ ]] ; then
+              continue
+            fi
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
