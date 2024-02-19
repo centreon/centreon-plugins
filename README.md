@@ -28,13 +28,13 @@ In short, they return:
 ### What can Centreon Plugins monitor?
 
 You can monitor many systems:
-* **Application**: Apache, Asterisk, Elasticsearch, Github, Jenkins, Kafka, Nginx, Pfsense, Redis, Tomcat, Varnish,...
-* **Cloud**: AWS, Azure, Docker, Office365, Nutanix, Prometheus,...
-* **Databases**: Firebird, Informix, MS SQL, MySQL, Oracle, Postgres, Cassandra
-* **Hardware**: printers (RFC3805), UPS (Powerware, Mge, Standard), Sun Hardware, Cisco UCS, SensorIP, HP Proliant, HP Bladechassis, Dell Openmanage, Dell CMC, Raritan,...
-* **Network**: Aruba, Brocade, Bluecoat, Brocade, Checkpoint, Cisco AP/IronPort/ASA/Standard, Extreme, Fortigate, H3C, Hirschmann, HP Procurve, F5 BIG-IP, Juniper, PaloAlto, Redback, Riverbed, Ruggedcom, Stonesoft,...
-* **Operating systems**: Linux (SNMP, NRPE), Freebsd (SNMP), AIX (SNMP), Solaris (SNMP)...
-* **Storage**: EMC Clariion, Netapp, Nimble, HP MSA p2000, Dell EqualLogic, Qnap, Panzura, Synology...
+* **Application**: Apache, Asterisk, Elasticsearch, Github, Jenkins, Kafka, Nginx, Pfsense, Redis, Tomcat, Varnish, etc.
+* **Cloud**: AWS, Azure, Docker, Office365, Nutanix, Prometheus, etc.
+* **Databases**: Firebird, Informix, MS SQL, MySQL, Oracle, Postgres, Cassandra.
+* **Hardware**: printers (RFC3805), UPS (Powerware, Mge, Standard), Sun Hardware, Cisco UCS, SensorIP, HP Proliant, HP Bladechassis, Dell Openmanage, Dell CMC, Raritan, etc.
+* **Network**: Aruba, Brocade, Bluecoat, Brocade, Checkpoint, Cisco AP/IronPort/ASA/Standard, Extreme, Fortigate, H3C, Hirschmann, HP Procurve, F5 BIG-IP, Juniper, PaloAlto, Redback, Riverbed, Ruggedcom, Stonesoft, etc.
+* **Operating systems**: Linux (SNMP, NRPE), Freebsd (SNMP), AIX (SNMP), Solaris (SNMP), etc.
+* **Storage**: EMC Clariion, Netapp, Nimble, HP MSA p2000, Dell EqualLogic, Qnap, Panzura, Synology, etc.
 
 To get a complete list, run:
 
@@ -120,7 +120,7 @@ Then create a [fork](https://github.com/centreon/centreon-plugins/fork) and a de
 
 ### Issues/bug reports
 
-If you encounter a behaviour that is clearly a bug or a regression, you are welcom to submit an [issue](https://github.com/centreon/centreon-plugins/issues). Please be aware that this is an open source project and that there is no guaranteed response time.
+If you encounter a behaviour that is clearly a bug or a regression, you are welcome to submit an [issue](https://github.com/centreon/centreon-plugins/issues). Please be aware that this is an open source project and that there is no guaranteed response time.
 
 ### Questions/search for help
 
