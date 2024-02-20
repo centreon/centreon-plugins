@@ -153,7 +153,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%{$mapping->{$label}})) ]
     );
-    if (!defined($snmp_result->{ $mapping->{netvision6}->{status} . '.0' })) {
+    if (!defined($snmp_result->{ $mapping->{netvision6}->{status}->{oid} . '.0' })) {
         $label = 'netvision5';
         $snmp_result = $options{snmp}->get_leef(
             oids => [ map($_->{oid} . '.0', values(%{$mapping->{$label}})) ],
