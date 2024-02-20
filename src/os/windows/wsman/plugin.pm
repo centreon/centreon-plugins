@@ -22,14 +22,14 @@ package os::windows::wsman::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_wsman);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{modes} = {
+    %{ $self->{modes} } = (
         'cpu'             => 'os::windows::wsman::mode::cpu',
         'eventlog'        => 'os::windows::wsman::mode::eventlog',
         'files-date'      => 'os::windows::wsman::mode::filesdate',
@@ -49,8 +49,10 @@ sub new {
         'time'            => 'os::windows::wsman::mode::time',
         'updates'         => 'os::windows::wsman::mode::updates',
         'uptime'          => 'os::windows::wsman::mode::uptime'
-    };
+    );
 
+    $self->{custom_modes}{openwsman} = 'os::windows::wsman::custom::openwsman';
+    $self->{custom_modes}{omicli} = 'os::windows::wsman::custom::omicli';
     return $self;
 }
 

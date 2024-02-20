@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use JSON::XS;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -86,14 +87,12 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $results = $options{wsman}->request(
-        uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
-        wql_filter => "Select Name,FreePhysicalMemory,TotalVisibleMemorySize from Win32_OperatingSystem",
-        result_type => 'array'
+    my $results = $options{custom}->wmi_request(
+        wql => "Select Name,FreePhysicalMemory,TotalVisibleMemorySize from Win32_OperatingSystem"
     );
+    my $decoded_json = JSON::XS->new->utf8->decode($results);
 
-    foreach (@$results) {
+    foreach (@$decoded_json) {
         my $free = $_->{FreePhysicalMemory} * 1024;
         my $total = $_->{TotalVisibleMemorySize} * 1024;
         $self->{memory} = {
