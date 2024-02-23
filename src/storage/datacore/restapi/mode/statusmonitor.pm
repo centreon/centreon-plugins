@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::api::mode::statusmonitor;
+package storage::datacore::restapi::mode::statusmonitor;
 use strict;
 use warnings;
 
@@ -96,7 +96,7 @@ sub manage_selection {
 sub custom_status_output {
     my ($self, %options) = @_;
     my $res = sprintf(
-        "'%s' status : '%s', message is  '%s'",
+        "'%s' status : '%s', message is '%s'",
         $self->{result_values}->{extendedcaption},
         $self->{result_values}->{state},
         $self->{result_values}->{messagetext}

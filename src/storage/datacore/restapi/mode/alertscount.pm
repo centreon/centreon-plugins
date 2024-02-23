@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::api::mode::alertscount;
+package storage::datacore::restapi::mode::alertscount;
 use strict;
 use warnings;
 use centreon::plugins::misc qw(empty);

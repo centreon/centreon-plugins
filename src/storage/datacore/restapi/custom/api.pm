@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::api::custom::api;
+package storage::datacore::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;

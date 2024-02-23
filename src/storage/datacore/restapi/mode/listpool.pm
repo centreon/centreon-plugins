@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::api::mode::listpool;
+package storage::datacore::restapi::mode::listpool;
 use strict;
 use warnings;
 

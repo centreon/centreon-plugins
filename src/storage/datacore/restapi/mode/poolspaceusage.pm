@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::api::mode::poolspaceusage;
+package storage::datacore::restapi::mode::poolspaceusage;
 use strict;
 use warnings;
 
@@ -108,9 +108,13 @@ Check Datacore pool space and over subscribed usage exposed through the rest api
 
 Id of the pool to check. See list-pool autodiscovery mode to list pools id (required).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-oversubscribed> B<--critical-oversubscribed>
 
-Thresholds. Use --list-counters to get available thresholds options and units.
+Warning and critical threshold on the number of Bytes suscribed over the real space of the pool.
+
+=item B<--warning-bytesallocatedpercentage> B<--critical-bytesallocatedpercentage>
+
+Warning and critical threshold on the percentage of bytes allocated in the pool.
 
 =back
 
