@@ -277,6 +277,7 @@ sub display {
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
         next if (!defined($self->{option_results}->{no_component_count}) && $self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        next if (defined($self->{option_results}->{component}) && $comp !~ /$self->{option_results}->{component}/ );
 
         if ($self->{count} == 1) {
             ($exit, $warn, $crit) = $self->get_severity_count(label => $comp, value => $self->{components}->{$comp}->{total});
@@ -488,23 +489,23 @@ Default template for hardware. Should be extended.
 
 =item B<--component>
 
-Which component to check (default: '.*').
-Can be: 'xxx', 'yyy'.
+Define which component should be monitored based on their names. 
+This option will be treated as a regular expression. 
+All components are included by default ('.*').
 
 =item B<--filter>
 
-Exclude the items given as a comma-separated list (example: --filter=xxx --filter=yyyy).
-You can also exclude items from specific instances: --filter=xxxxx,instancevalue
+Exclude some components. This option can be called several times (example: --filter=component1 --filter=component2). 
+You can also exclude components from a specific instance (example: --filter=component_name,instance_value).
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma separated list)
-Can be specific or global: --absent-problem=xxxx,instancevalue
+Return an error if a component is not 'present' (default is skipping). 
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
 
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
-
 
 =item B<--threshold-overload>
 
@@ -513,21 +514,21 @@ Example: --threshold-overload='xxxxx,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='xxxxx,.*,30'
+Define the warning threshold for temperatures (syntax: type,instance,threshold)
+Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='xxxxx,.*,40'
+Define the critical threshold for temperatures (syntax: type,instance,threshold)
+Example: --critical='temperature,.*,40'
 
-=item B<--warning-count-xxxx>
+=item B<--warning-count-*>
 
-Set warning threshold for component count.
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
 
-=item B<--critical-count-xxxx>
+=item B<--critical-count-*>
 
-Set critical threshold for component count.
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 
