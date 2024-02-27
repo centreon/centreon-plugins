@@ -27,7 +27,7 @@ jobs:
           list-files: shell
           filters: |
             plugins:
-              - added|modified: src/**
+              - added|modified: 'src/**/*.pm'
 
       - name: Install CPAN Libraries
         uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
@@ -48,9 +48,6 @@ jobs:
         run: |
           set +e
           for f in ${{ steps.filter.outputs.plugins_files }}; do
-            if [[ "$f" =~ \.json$ ]] ; then
-              continue
-            fi
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done
