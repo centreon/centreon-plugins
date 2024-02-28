@@ -49,7 +49,9 @@ sub manage_selection {
     );
     my $results = {};
     foreach (@$jobs) {
-        $results->{ $_->{objectId} } = $_;
+        if (defined($_->{objectId})) {
+            $results->{ $_->{objectId} } = $_;
+        }
     }
     return $results;
 }
@@ -63,9 +65,9 @@ sub run {
             long_msg => sprintf(
                 '[jobId: %s][jobName: %s][jobType: %s][locationName: %s]',
                 $_->{objectId},
-                $_->{objectName},
-                $_->{jobType},
-                $_->{locationName}
+                defined($_->{objectName}) ? $_->{objectName} : 'none',
+                defined($_->{jobType}) ? $_->{jobType} : 'none',
+                defined($_->{locationName}) ? $_->{locationName} : 'none'
             )
         );
     }
@@ -91,9 +93,9 @@ sub disco_show {
     foreach (values %$results) {
         $self->{output}->add_disco_entry(
             jobId => $_->{objectId},
-            jobName => $_->{objectName},
-            jobType => $_->{jobType},
-            locationName => $_->{locationName}
+            jobName => defined($_->{objectName}) ? $_->{objectName} : 'none',
+            jobType => defined($_->{jobType}) ? $_->{jobType} : 'none',
+            locationName => defined($_->{locationName}) ? $_->{locationName} : 'none'
         );
     }
 }

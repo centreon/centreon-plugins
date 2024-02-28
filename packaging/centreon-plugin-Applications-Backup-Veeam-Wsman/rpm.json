@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "perl(openwsman)",
+        "perl(JSON::XS)",
+        "perl(POSIX)"
+    ]
+}

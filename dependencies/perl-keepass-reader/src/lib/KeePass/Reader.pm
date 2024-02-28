@@ -31,7 +31,7 @@ sub new {
 
 sub error {
     my ($self, %options) = @_;
-    
+
     if (defined($options{message})) {
         $self->{error_msg} = $options{message};
     }
@@ -42,7 +42,7 @@ sub error {
 sub load_db {
     my ($self, %options) = @_;
 
-    $self->{error_msg} = undef; 
+    $self->{error_msg} = undef;
     $self->{buffer_file} = undef;
     $self->{master_read_pos} = 0;
 

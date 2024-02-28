@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "libopenwsman-perl",
+        "libjson-perl",
+        "libdatetime-perl"
+    ]
+}

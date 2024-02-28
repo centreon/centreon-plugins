@@ -2,7 +2,7 @@ name: "@NAME@"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "0.54"
+version: "0.55"
 release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
@@ -40,7 +40,7 @@ contents:
 overrides:
   rpm:
     depends:
-      - perl
+      - perl-interpreter
       - libcurl
     conflicts:
       - perl-Net-Curl-debuginfo

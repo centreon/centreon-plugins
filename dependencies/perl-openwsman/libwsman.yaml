@@ -2,7 +2,7 @@ name: "libwsman1"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "@VERSION@"
+version: "${VERSION}"
 release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
@@ -14,16 +14,21 @@ homepage: "http://www.openwsman.org/"
 license: "BSD"
 
 contents:
-  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman.so.*"
+  - src: "/tmp/openwsman-${VERSION}/build/src/lib/libwsman.so.*"
     dst: "@USRLIB@"
+    expand: true
     file_info:
       mode: 0644
-  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman_client.so.*"
+
+  - src: "/tmp/openwsman-${VERSION}/build/src/lib/libwsman_client.so.*"
     dst: "@USRLIB@"
+    expand: true
     file_info:
       mode: 0644
-  - src: "/tmp/openwsman-@VERSION@/build/src/lib/libwsman_curl_client_transport.so.*"
+
+  - src: "/tmp/openwsman-${VERSION}/build/src/lib/libwsman_curl_client_transport.so.*"
     dst: "@USRLIB@"
+    expand: true
     file_info:
       mode: 0644
 
