@@ -3,6 +3,7 @@
         "net-tools",
         "quota",
         "perl(Data::Dumper)",
+        "perl(DateTime)",
         "perl(Pod::Parser)",
         "perl(Digest::MD5)",
         "perl(NetAddr::IP)"
