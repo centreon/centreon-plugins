@@ -242,7 +242,7 @@ sub collect_snmp_tables {
         my $used_instance = defined($table->{used_instance}) && $table->{used_instance} ne '' ? $table->{used_instance} : '\.(\d+)$';
         my $snmp_result = $options{snmp}->get_table(oid => $table->{oid});
         foreach (keys %$snmp_result) {
-            /$used_instance/;
+            /$used_instance/ or next;
             next if (defined($self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}));
             my $instance = $1;
     

@@ -18,151 +18,116 @@ on:
     paths:
       - "dependencies/perl-keepass-reader/**"
 
+env:
+  module_name: perl-keepass-reader
+
 jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
 
-  package-rpm:
+  package:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
-    runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         include:
           - image: packaging-plugins-alma8
             distrib: el8
+            package_extension: rpm
           - image: packaging-plugins-alma9
             distrib: el9
-    name: package ${{ matrix.distrib }}
+            package_extension: rpm
+          - image: packaging-plugins-bullseye
+            distrib: bullseye
+            package_extension: deb
+          - image: packaging-plugins-bookworm
+            distrib: bookworm
+            package_extension: deb
+          - image: packaging-plugins-jammy
+            distrib: jammy
+            package_extension: deb
+
+    runs-on: ubuntu-22.04
+
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - run: |
-          yum install -y make perl perl-devel perl-ExtUtils-MakeMaker
-
-          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-
-          cp -rp dependencies/perl-keepass-reader/src perl-KeePass-Reader/
-          tar czf ~/rpmbuild/SOURCES/perl-KeePass-Reader.tar.gz perl-KeePass-Reader
-
-          rpmbuild -ba dependencies/perl-keepass-reader/packaging/rpm/perl-KeePass-Reader.spec
-
-          cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
-        shell: bash
-
-      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
-        with:
-          path: ./*.rpm
-          key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-
-  sign-rpm:
-    needs: [package-rpm]
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        include:
-          - image: packaging-alma8
-            distrib: el8
-          - image: packaging-alma9
-            distrib: el9
-    name: sign rpm ${{ matrix.distrib }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
-      options: -t
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
-
-    steps:
-      - run: |
-            apt-get update
-            apt-get install -y zstd
-        shell: bash
-
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
-        with:
-          path: ./*.rpm
-          key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-
-      - run: echo "HOME=/root" >> $GITHUB_ENV
-        shell: bash
-
-      - run: rpmsign --addsign ./*.rpm
-        shell: bash
-
-      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
-        with:
-          path: ./*.rpm
-          key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
-
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
-        with:
-          name: packages-${{ matrix.distrib }}
-          path: ./*.rpm
-          retention-days: 1
-
-  package-deb:
-    needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
-
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        include:
-          - image: bullseye
-            distrib: bullseye
-          - image: bookworm
-            distrib: bookworm
-          - image: jammy
-            distrib: jammy
     name: package ${{ matrix.distrib }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-${{ matrix.image }}:latest
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - run: |
-          apt update
-          apt install -y dh-make-perl perl
+      - name: Build library
+        run: |
+          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
+            dnf install -y make perl
+          else
+            apt-get update
+            apt-get install -y make perl
+          fi
 
-          mv dependencies/perl-keepass-reader/src/ perl-keepass-reader
-          tar czf perl-keepass-reader.tar.gz perl-keepass-reader
-
-          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make -p libkeepass-reader-perl --verbose --build --version 0.2-${{ matrix.distrib }} perl-keepass-reader/
+          cd dependencies/perl-keepass-reader/src
+          perl Makefile.PL INSTALL_BASE=/tmp/perl-keepass-reader
+          make
+          make pure_install
         shell: bash
 
-      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
-        with:
-          path: ./*.deb
-          key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+      - name: Set package name and paths according to distrib
+        run: |
+          PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
 
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+          echo "Perl version is $PERL_VERSION"
+
+          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+            NAME="libkeepass-reader-perl"
+            PERL_VENDORLIB="/usr/share/perl5"
+          else
+            NAME="perl-KeePass-Reader"
+            if [[ "${{ matrix.distrib }}" == "el8" ]]; then
+              PERL_VENDORLIB="/usr/local/share/perl5"
+            else
+              PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"
+            fi
+          fi
+
+          sed -i "s/@NAME@/$NAME/g" dependencies/perl-keepass-reader/packaging/perl-keepass-reader.yaml
+          sed -i "s#@PERL_VENDORLIB@#$PERL_VENDORLIB#g" dependencies/perl-keepass-reader/packaging/perl-keepass-reader.yaml
+
+          cat dependencies/perl-keepass-reader/packaging/perl-keepass-reader.yaml
+        shell: bash
+
+      - name: Package
+        uses: ./.github/actions/package-nfpm
         with:
-          name: packages-${{ matrix.distrib }}
-          path: ./*.deb
-          retention-days: 1
+          nfpm_file_pattern: "dependencies/perl-keepass-reader/packaging/perl-keepass-reader.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          version: "0.2"
+          release: "3"
+          arch: all
+          commit_hash: ${{ github.sha }}
+          cache_key: cache-${{ github.run_id }}-${{ matrix.package_extension }}-${{ env.module_name }}-${{ matrix.distrib }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
 
   deliver-rpm:
-    needs: [get-environment, sign-rpm]
+    needs: [get-environment, package]
     if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
       matrix:
         distrib: [el8, el9]
+
+    name: Deliver ${{ matrix.distrib }}
 
     steps:
       - name: Checkout sources
@@ -171,20 +136,22 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
         with:
-          module_name: perl-keepass-reader
+          module_name: ${{ env.module_name }}
           distrib: ${{ matrix.distrib }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          cache_key: cache-${{ github.run_id }}-rpm-${{ env.module_name }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-deb:
-    needs: [get-environment, package-deb]
+    needs: [get-environment, package]
     if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
+
+    name: Deliver ${{ matrix.distrib }}
 
     steps:
       - name: Checkout sources
@@ -193,10 +160,10 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
-          module_name: perl-keepass-reader
+          module_name: ${{ env.module_name }}
           distrib: ${{ matrix.distrib }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          cache_key: cache-${{ github.run_id }}-deb-${{ env.module_name }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
   promote:
@@ -205,7 +172,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye, bookworm]
+        distrib: [bullseye, bookworm]
 
     steps:
       - name: Checkout sources
@@ -215,6 +182,6 @@ jobs:
         uses: ./.github/actions/promote-to-stable
         with:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-keepass-reader
+          module: ${{ env.module_name }}
           distrib: ${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}

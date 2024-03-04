@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Backup-Veeam-Wsman",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_veeam_backup_wsman.pl",
+    "files": [
+        "centreon/plugins/script_wsman.pm",
+        "centreon/plugins/wsman.pm",
+        "apps/backup/veeam/wsman/",
+        "centreon/common/powershell/functions.pm",
+        "centreon/common/powershell/veeam/"
+    ]
+}

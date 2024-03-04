@@ -118,6 +118,10 @@ jobs:
         include:
           - image: packaging-plugins-bullseye
             distrib: bullseye
+          - image: packaging-plugins-bookworm
+            distrib: bookworm
+          - image: packaging-plugins-jammy
+            distrib: jammy
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -135,7 +139,7 @@ jobs:
           mv dependencies/perl-filesys-smbclient/src/ perl-filesys-smbclient
           tar czf perl-filesys-smbclient.tar.gz perl-filesys-smbclient
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make --verbose --build --version 4.0-${{ matrix.distrib }} perl-filesys-smbclient/
+          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make --dist ${{ matrix.distrib }} --verbose --build --version 4.0-${{ matrix.distrib }} perl-filesys-smbclient/
         shell: bash
 
       - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
@@ -172,7 +176,7 @@ jobs:
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
@@ -193,7 +197,7 @@ jobs:
     runs-on: [self-hosted, common]
     strategy:
       matrix:
-        distrib: [el8, el9, bullseye]
+        distrib: [el8, el9, bullseye, bookworm]
 
     steps:
       - name: Checkout sources

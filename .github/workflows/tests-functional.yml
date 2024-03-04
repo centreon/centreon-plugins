@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install -qqy snmpsim
 
       - name: Install Node.js
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 16
 
@@ -36,7 +36,7 @@ jobs:
         run: npm install -g -D @mockoon/cli@3.1.0
 
       - name: Install perl dependencies
-        uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
+        uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
@@ -60,7 +60,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Robot Framework
-        run: pip3.11 install robotframework
+        run: |
+          pip3.11 install robotframework
+          pip3.11 install RobotFramework-Examples
         shell: bash
 
       - name: Run Robot Framework API tests
@@ -79,3 +81,6 @@ jobs:
 
       - name: Run Robot Framework Database tests
         run: robot tests/functional/database
+
+      - name: Run Robot Framework Linux tests
+        run: robot tests/functional/linux
