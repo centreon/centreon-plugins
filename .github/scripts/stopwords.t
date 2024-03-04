@@ -4,12 +4,15 @@ Centreon
 Fortinet
 Fortigate
 license-instances-usage-prct
+MBean
 OID
 oneaccess-sys-mib
 perfdata
 powershell
+queue-messages-inflighted
 SNMP
 space-usage-prct
 SSH
 SureBackup
+topic-messages-inflighted
 Veeam
