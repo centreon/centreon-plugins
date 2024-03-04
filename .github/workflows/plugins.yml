@@ -155,6 +155,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - if: ${{ matrix.distrib == 'el7' }}
+        # el7 is not compatible with checkout v4 which uses node20
         uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
         with:
           path: ./build/
