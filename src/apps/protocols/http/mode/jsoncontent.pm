@@ -389,7 +389,7 @@ JSON OPTIONS:
 
 =item B<--data>
 
-Set file with JSON request
+Set the JSON request or specify a file with the request inside.
 
 =item B<--lookup>
 
