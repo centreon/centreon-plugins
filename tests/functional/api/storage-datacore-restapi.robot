@@ -16,7 +16,6 @@ ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage
 
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
 
-
 *** Test Cases ***
 Datacore check pool usage
     [Documentation]    Check Datacore pool usage
