@@ -87,7 +87,7 @@ sub custom_select_output {
 
     if (defined($format)) {
         return sprintf(
-            $format->{printf_msg}, @{$format->{printf_var}} 
+            $format->{printf_msg}, @{$format->{printf_var}}
         );
     }
 
@@ -123,7 +123,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+   
     $options{options}->add_options(arguments => {
         'config:s'            => { name => 'config' },
         'filter-selection:s%' => { name => 'filter_selection' },
@@ -192,7 +192,7 @@ sub get_map_value {
     my ($self, %options) = @_;
 
     return undef if (
-        !defined($self->{config}->{mapping}) || 
+        !defined($self->{config}->{mapping}) ||
         !defined($self->{config}->{mapping}->{ $options{map} })
     );
     return '' if (!defined($self->{config}->{mapping}->{ $options{map} }->{ $options{value} }));
@@ -330,28 +330,6 @@ sub call_http {
     $self->add_builtin(name => 'httpCode.' . $options{rq}->{name}, value => $http->get_code());
     $self->add_builtin(name => 'httpMessage.' . $options{rq}->{name}, value => $http->get_message());
 
-    if ($options{rq}->{rtype} eq 'json') {
-        eval {
-            $content = JSON::XS->new->utf8->decode($content);
-        };
-    } elsif ($options{rq}->{rtype} eq 'xml') {
-        eval {
-            $SIG{__WARN__} = sub {};
-            $content = XMLin($content, ForceArray => $options{rq}->{force_array}, KeyAttr => []);
-        };
-    }
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->output_add(long_msg => "$@", debug => 1);
-        $self->{output}->option_exit();
-    }
-
-    if ($self->{output}->is_debug()) {
-        my $encoded = JSON::XS->new->allow_nonref(1)->utf8->pretty->encode($content);
-        $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
-        $self->{output}->output_add(long_msg => "$encoded", debug => 1);
-    }
-
     return ($http->get_header(), $content, $http);
 }
 
@@ -452,6 +430,29 @@ sub parse_structure {
 
     $options{conf}->{path} = $self->substitute_string(value => $options{conf}->{path});
 
+    my $content;
+    if ($options{rtype} eq 'json') {
+        eval {
+            $content = JSON::XS->new->utf8->decode($options{content});
+        };
+    } elsif ($options{rtype} eq 'xml') {
+        eval {
+            $SIG{__WARN__} = sub {};
+            $content = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
+        };
+    }
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->output_add(long_msg => "$@", debug => 1);
+        $self->{output}->option_exit();
+    }
+
+    if ($self->{output}->is_debug()) {
+        my $encoded = JSON::XS->new->allow_nonref(1)->utf8->pretty->encode($content);
+        $self->{output}->output_add(long_msg => '======> returned JSON structure:', debug => 1);
+        $self->{output}->output_add(long_msg => "$encoded", debug => 1);
+    }
+
     my $jpath = JSON::Path->new($options{conf}->{path});
     my @values = $jpath->values($options{content});
 
@@ -551,7 +552,13 @@ sub collect_http_tables {
                     if ($options{requests}->[$i]->{rtype} eq 'txt') {
                         $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
                     } else {
-                        $local = $self->parse_structure(name => $options{requests}->[$i]->{name}, content => $content, conf => $conf);
+                        $local = $self->parse_structure(
+                            name => $options{requests}->[$i]->{name},
+                            content => $content,
+                            conf => $conf,
+                            rtype => $options{requests}->[$i]->{rtype},
+                            force_array => $options{requests}->[$i]->{force_array}
+                        );
                     }
                 }
             }
