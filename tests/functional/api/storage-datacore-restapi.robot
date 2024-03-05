@@ -16,12 +16,14 @@ ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage
 
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
 
+
 *** Test Cases ***
 Datacore check pool usage
     [Documentation]    Check Datacore pool usage
     [Tags]    storage    api
     ${output}    Run
     ...    ${CMD} --mode=pool-usage --critical-oversubscribed=${critical-oversubscribed} --warning-oversubscribed=${warning-oversubscribed} --warning-bytesallocatedpercentage=${warning-bytesallocatedpercentage} --critical-bytesallocatedpercentage=${critical-bytesallocatedpercentage} --pool-id=B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:{4dec1b5a-2577-11e5-80c3-00155d651622}
+    ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}
     ...    ${result}
@@ -36,8 +38,8 @@ Datacore check alert count
     [Tags]    storage    api
     ${output}    Run
     ...    ${CMD} --mode=alerts-count --warning-error=${warning-error} --critical-error=${critical-error} --warning-warning=${warning-warning} --critical-warning=${critical-warning}
+    ${output}    Strip String    ${output}
     Should Be Equal As Strings
-
     ...    ${output}
     ...    ${result}
     ...    Wrong output result for alert count :\n\n ${output} \n\n ${result}\n\n
@@ -51,13 +53,14 @@ Datacore check status monitor
     [Tags]    storage    api
     ${output}    Run
     ...    ${CMD} --mode=status-monitor
+    ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}
     ...    ${result}
     ...    Wrong output result for status monitor :\n${output} \nresult:\n${result}\n\n
 
     Examples:    result   --
-        ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'${SPACE}
+        ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
 
 *** Keywords ***
 Start Mockoon
@@ -68,13 +71,7 @@ Start Mockoon
     ...    ${MOCKOON_JSON}
     ...    --port
     ...    3000
-    ...    --pname
-    ...    datacore-rest-api
-    Wait For Process    ${process}
+    Sleep    5s
 
 Stop Mockoon
-    ${process}    Start Process
-    ...    mockoon-cli
-    ...    stop
-    ...    datacore-rest-api
-    Wait For Process    ${process}
+    Terminate All Processes

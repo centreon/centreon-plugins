@@ -30,10 +30,10 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Install Mockoon CLI
-        run: npm install -g -D @mockoon/cli@3.1.0
+        run: npm install -g -D @mockoon/cli@6.2.0
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@ea0507898383e7dbce382138da0c21af1849eb9e # v1.27.0
