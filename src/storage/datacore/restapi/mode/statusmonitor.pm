@@ -74,7 +74,7 @@ sub manage_selection {
     my $i = 0;
     for my $object (@$monitor_data) {
 
-        if (!centreon::plugins::misc::empty($self->{option_results}->{filter_caption})
+        if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_caption})
             and $object->{ExtendedCaption} !~ $self->{option_results}->{filter_caption}) {
             next;
         }

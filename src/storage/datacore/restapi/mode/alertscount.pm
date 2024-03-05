@@ -96,10 +96,12 @@ sub manage_selection {
         url_path => '/RestService/rest.svc/1.0/alerts'
     );
     my $alerts_count = $self->order_alerts($data);
-    $self->{alerts}->{trace} = $alerts_count->{$alerts_level{trace}}->{count};
-    $self->{alerts}->{info} = $alerts_count->{$alerts_level{info}}->{count};
-    $self->{alerts}->{warning} = $alerts_count->{$alerts_level{warning}}->{count};
-    $self->{alerts}->{error} = $alerts_count->{$alerts_level{error}}->{count};
+    $self->{alerts} = {
+        trace   => $alerts_count->{$alerts_level{trace}}->{count},
+        info    => $alerts_count->{$alerts_level{info}}->{count},
+        warning => $alerts_count->{$alerts_level{warning}}->{count},
+        error   => $alerts_count->{$alerts_level{error}}->{count},
+    };
 
 }
 
@@ -118,12 +120,17 @@ sub order_alerts {
         # spec require to filter on time of the log.
         $alert->{TimeStamp} =~ /\/Date\((\d+)\)\/$/;
         my $alert_date = $1;
+        if (centreon::plugins::misc::is_empty($alert_date) or $alert_date !~ /^[0-9]*[.,]?\d*$/){
+            $self->{output}->output_add(long_msg => "alert on $alert->{MachineName} have an invalid date : $alert->{TimeStamp}\n", debug => 1);
+            next;
+        }
+
         # filter on age of the alert with a user defined max age
         next if (defined($self->{option_results}->{max_alert_age})
             and $alert_date < (time - $self->{option_results}->{max_alert_age}) * 1000);
         # filter on the machine issuing the alert with a user defined regex
 
-        if (!centreon::plugins::misc::empty($self->{option_results}->{filter_server})
+        if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_server})
             and $alert->{MachineName} !~ $self->{option_results}->{filter_server}) {
             $self->{output}->output_add(long_msg => "excluding alert from machine $alert->{MachineName}\n", debug => 1);
             next;

@@ -130,7 +130,7 @@ sub set_counters {
                 ]
             }
         }
-    ]; #    $self->{app_metrics}->{ $entry->{component} }->{display} = $entry->{component};
+    ];
     $self->{maps_counters}->{app_metrics} = [
         # The app_metrics has two different labels, connection and errors.
         { label => 'connections', nlabel => 'myawesomeapp.connections.count', set => {

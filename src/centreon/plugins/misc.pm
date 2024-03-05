@@ -311,7 +311,7 @@ sub backtick {
     return (0, join("\n", @output), $return_code);
 }
 
-sub empty {
+sub is_empty {
     my $value = shift;
     if (!defined($value) or $value eq '') {
         return 1;

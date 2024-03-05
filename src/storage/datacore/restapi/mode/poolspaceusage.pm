@@ -38,7 +38,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    if (centreon::plugins::misc::empty($self->{option_results}->{pool_id})) {
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{pool_id})) {
         $self->{output}->add_option_msg(short_msg => 'Please set pool-id option');
         $self->{output}->option_exit();
     }

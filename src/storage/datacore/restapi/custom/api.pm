@@ -64,15 +64,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->{http}->set_options(%{$self->{option_results}});
 
-    if (centreon::plugins::misc::empty($self->{option_results}->{hostname})) {
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => 'Please set hostname option');
         $self->{output}->option_exit();
     }
-    if (centreon::plugins::misc::empty($self->{option_results}->{username})) {
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{username})) {
         $self->{output}->add_option_msg(short_msg => 'Please set username option to authenticate against datacore rest api');
         $self->{output}->option_exit();
     }
-    if (centreon::plugins::misc::empty($self->{option_results}->{password})) {
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{password})) {
         $self->{output}->add_option_msg(short_msg => 'Please set password option to authenticate against datacore rest api');
         $self->{output}->option_exit();
     }
@@ -122,23 +122,23 @@ Datacore Sansymphony Rest API
 
 =item B<--hostname>
 
-Datacore hostname.
+Address of the Datacore server that hosts the API endpoint.
 
 =item B<--port>
 
-Http port (default: 443)
+Port of the resource to connect to (default: 443).
 
 =item B<--proto>
 
-http protocol, either http or https (default: 'https')
+HTTP protocol, either http or https (default: 'https')
 
 =item B<--username>
 
-API username.
+Username to access the endpoint.
 
 =item B<--password>
 
-API password.
+Password to access the endpoint.
 
 =item B<--timeout>
 
