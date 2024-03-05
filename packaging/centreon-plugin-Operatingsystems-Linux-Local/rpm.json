@@ -2,6 +2,7 @@
     "dependencies": [
         "net-tools",
         "quota",
+        "lsof",
         "perl(Data::Dumper)",
         "perl(DateTime)",
         "perl(Pod::Parser)",
