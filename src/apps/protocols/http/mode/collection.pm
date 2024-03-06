@@ -1002,7 +1002,7 @@ sub parse_http_tables {
     ($code, $msg_error, $end, $table_label) = $self->parse_forward(
         chars => $options{chars},
         start => $options{start}, 
-        allowed => '[a-zA-Z0-9_]',
+        allowed => '[a-zA-Z0-9_\-]',
         stop => '[).]'
     );
     if ($code) {
@@ -1067,7 +1067,7 @@ sub parse_http_tables {
     ($code, $msg_error, $end, $label) = $self->parse_forward(
         chars => $options{chars},
         start => $end + 2,
-        allowed => '[a-zA-Z0-9_]',
+        allowed => '[a-zA-Z0-9_\-]',
         stop => '[)]'
     );
     if ($code) {
@@ -1107,7 +1107,7 @@ sub parse_special_variable {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
             chars => $options{chars},
             start => $start + 2, 
-            allowed => '[a-zA-Z0-9\._]',
+            allowed => '[a-zA-Z0-9\._\-]',
             stop => '[)]'
         );
         if ($code) {
@@ -1776,7 +1776,7 @@ sub prepare_variables {
 
     return undef if (!defined($options{value}));
 
-    while ($options{value} =~ /%\(([a-zA-Z0-9\.]+?)\)/g) {
+    while ($options{value} =~ /%\(([a-zA-Z0-9\.\-]+?)\)/g) {
         next if ($1 =~ /^http\./);
         $options{value} =~ s/%\(($1)\)/\$expand->{'$1'}/g;
     }
@@ -1790,7 +1790,7 @@ sub check_filter {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     our $expand = $options{values};
-    $options{filter} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
+    $options{filter} =~ s/%\(([a-zA-Z0-9\._:\-]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
@@ -1806,7 +1806,7 @@ sub check_filter2 {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     our $expand = $options{values};
-    $options{filter} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
+    $options{filter} =~ s/%\(([a-zA-Z0-9\._:\-]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
