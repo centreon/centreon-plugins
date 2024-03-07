@@ -115,18 +115,18 @@
   ],
   "data": [
     {
-      "uuid": "76dec2a5-ff63-4e81-9611-94b900ab16e1",
-      "id": "c5kh",
-      "name": "EventsData",
-      "documentation": "",
-      "value": "[\n  {{#each (dataRaw 'EventsTypeData')}}\n    {{#if (gte @isEvent 1)}}\n    ,\n    {{/if}}\n    {{setVar 'isEvent' (add (urlParam name) @isEvent)}}\n    {{#repeat (urlParam name comma=true)}}\n      {\n        \"AccessKeyId\": \"{{ faker 'string.alphaNumeric' 20 casing='upper' }}\",\n        \"AccountId\": \"{{ faker 'string.numeric' 12 }}\",\n        \"Error\": {{error}},\n        {{#if error}}\n        \"ErrorCode\": \"{{errorCode}}\",\n\t      \"ErrorMessage\": \"{{errorMessage}}\",\n        {{/if}}\n        \"EventId\": \"{{ faker 'string.uuid' }}\",\n        \"EventName\": \"{{oneOf (array 'LookupEvents' 'ListInstanceAssociations' 'AssumeRoleWithWebIdentity')}}\",\n        \"EventSource\": \"{{oneOf (array 'cloudtrail.amazonaws.com' 'ssm.amazonaws.com' 'sts.amazonaws.com')}}\",\n        \"EventTime\": \"{{ faker 'date.recent' }}\",\n        \"EventType\": \"{{name}}\",\n        \"PrincipalId\": \"{{ faker 'string.alphaNumeric' 20 casing='upper' }}\",\n        \"UserName\": \"{{ faker 'internet.userName' }}\",\n        \"UserRole\": \"{{ faker 'person.jobType' }}\"\n      }\n    {{/repeat}}\n  {{/each}}\n]"
-    },
-    {
       "uuid": "5dce6340-bade-4336-8041-50fd22570055",
       "id": "nu28",
       "name": "EventsTypeData",
       "documentation": "",
       "value": "[\n  {\n    \"name\": \"AwsApiCall\",\n    \"error\": false\n  },\n  {\n    \"name\": \"AwsServiceEvent\",\n    \"error\": false\n  },\n  {\n    \"name\": \"AwsConsoleAction\",\n    \"error\": true,\n  \t\"errorCode\": \"ThrottlingException\",\n  \t\"errorMessage\": \"Rate exceeded error\"\n  },\n  {\n    \"name\": \"AwsConsoleSignIn\",\n    \"error\": true,\n    \"errorCode\": \"LoginErrorException\",\n    \"errorMessage\": \"Login error\"\n  }\n]"
+    },
+    {
+      "uuid": "76dec2a5-ff63-4e81-9611-94b900ab16e1",
+      "id": "c5kh",
+      "name": "EventsData",
+      "documentation": "",
+      "value": "[\n  {{#each (dataRaw 'EventsTypeData')}}\n    {{#if (gte @isEvent 1)}}\n    ,\n    {{/if}}\n    {{setVar 'isEvent' (add (urlParam name) @isEvent)}}\n    {{#repeat (urlParam name comma=true)}}\n      {\n        \"AccessKeyId\": \"{{ faker 'string.alphaNumeric' 20 casing='upper' }}\",\n        \"AccountId\": \"{{ faker 'string.numeric' 12 }}\",\n        \"Error\": {{error}},\n        {{#if error}}\n        \"ErrorCode\": \"{{errorCode}}\",\n\t      \"ErrorMessage\": \"{{errorMessage}}\",\n        {{/if}}\n        \"EventId\": \"{{ faker 'string.uuid' }}\",\n        \"EventName\": \"{{oneOf (array 'LookupEvents' 'ListInstanceAssociations' 'AssumeRoleWithWebIdentity')}}\",\n        \"EventSource\": \"{{oneOf (array 'cloudtrail.amazonaws.com' 'ssm.amazonaws.com' 'sts.amazonaws.com')}}\",\n        \"EventTime\": \"{{ faker 'date.recent' }}\",\n        \"EventType\": \"{{name}}\",\n        \"PrincipalId\": \"{{ faker 'string.alphaNumeric' 20 casing='upper' }}\",\n        \"UserName\": \"{{ faker 'internet.userName' }}\",\n        \"UserRole\": \"{{ faker 'person.jobType' }}\"\n      }\n    {{/repeat}}\n  {{/each}}\n]"
     }
   ],
   "callbacks": []
