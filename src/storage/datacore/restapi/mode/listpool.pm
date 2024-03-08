@@ -27,6 +27,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
 
     return $self;
 }
@@ -46,6 +50,8 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     for my $pool (@$pool_list) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
+            && $pool->{Alias} !~ /$self->{option_results}->{filter_name}/);
        push(@{$self->{pools}}, {
             ExtendedCaption => $pool->{ExtendedCaption},
             Caption         => $pool->{Caption},
@@ -93,3 +99,17 @@ sub disco_show {
     }
 }
 1;
+
+=head1 MODE
+
+List pools.
+
+=over 8
+
+=item B<--filter-name>
+
+Filter pool name (can be a regexp).
+
+=back
+
+=cut

@@ -24,26 +24,6 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use JSON::XS;
 
-sub new {
-    my ($class, %options) = @_;
-
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-    bless $self, $class;
-    $options{options}->add_options(arguments => {
-        'pool-id:s' => { name => 'pool_id' } });
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    if (centreon::plugins::misc::is_empty($self->{option_results}->{pool_id})) {
-        $self->{output}->add_option_msg(short_msg => 'Please set pool-id option');
-        $self->{output}->option_exit();
-    }
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -78,6 +58,26 @@ sub set_counters {
             ]
         }
     } ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    $options{options}->add_options(arguments => {
+        'pool-id:s' => { name => 'pool_id' } });
+
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{pool_id})) {
+        $self->{output}->add_option_msg(short_msg => 'Please set pool-id option');
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {

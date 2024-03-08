@@ -38,15 +38,23 @@ sub new {
     my $self = {};
     bless $self, $class;
 
+
     $options{options}->add_options(arguments => {
-        'hostname:s' => { name => 'hostname' },
-        'port:s'     => { name => 'port', default => 443 },
-        'proto:s'    => { name => 'proto', default => 'https' },
-        'timeout:s'  => { name => 'timeout' },
-        'username:s' => { name => 'username' },
-        'password:s' => { name => 'password' }
+        'hostname:s'             => { name => 'hostname' },
+        'port:s'                 => { name => 'port', default => 443 },
+        'proto:s'                => { name => 'proto', default => 'https' },
+        'timeout:s'              => { name => 'timeout' },
+        'username:s'             => { name => 'username' },
+        'password:s'             => { name => 'password' },
+        'unknown-http-status:s'  => { name => 'unknown_http_status' },
+        'warning-http-status:s'  => { name => 'warning_http_status' },
+        'critical-http-status:s' => { name => 'critical_http_status' }
     });
+
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+
     $self->{output} = $options{output};
+
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
 
     return $self;
@@ -64,6 +72,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->{http}->set_options(%{$self->{option_results}});
 
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
+
     if (centreon::plugins::misc::is_empty($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => 'Please set hostname option');
         $self->{output}->option_exit();
@@ -78,18 +88,29 @@ sub check_options {
     }
 
 }
+
+sub settings {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{settings_done}));
+    $self->{http}->add_header(key => 'ServerHost', value => $self->{option_results}->{hostname});
+    $self->{http}->set_options(basic => 1, credentials => 1);
+    $self->{settings_done} = 1;
+}
+
 # wrapper around centreon::plugins::http::request to add authentication and decode json.
 # output : deserialized json from the api if not error found in http call.
 sub request_api {
     my ($self, %options) = @_;
+
     # datacore api require a ServerHost header with the hostname used to query the api to respond.
     # authentication is http standard basic auth.
     my $result = $self->{http}->request(
-        basic       => 1,
-        credentials => 1,
-        header      => [ "ServerHost: $self->{option_results}->{hostname}" ],
-        username    => $self->{option_results}->{username},
-        password    => $self->{option_results}->{password},
+        username        => $self->{option_results}->{username},
+        password        => $self->{option_results}->{password},
+        unknown_status  => $self->{option_results}->{unknown_http_status},
+        warning_status  => $self->{option_results}->{warning_http_status},
+        critical_status => $self->{option_results}->{critical_http_status},
         %options,
     );
     # Declare a scalar to deserialize the JSON content string into a perl data structure
@@ -149,5 +170,3 @@ Set timeout in seconds (default: 10).
 =head1 DESCRIPTION
 
 B<custom>.
-
-=cut

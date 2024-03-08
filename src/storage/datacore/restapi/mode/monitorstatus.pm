@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::restapi::mode::statusmonitor;
+package storage::datacore::restapi::mode::monitorstatus;
 use strict;
 use warnings;
 
@@ -29,21 +29,15 @@ use centreon::plugins::misc qw(empty);
 
 my %monitor_state = (1 => "Undefined", 2 => "Healthy", 4 => "Attention", 8 => "Warning", 16 => "Critical");
 
-sub new {
-    my ($class, %options) = @_;
-
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-    bless $self, $class;
-    $options{options}->add_options(arguments => {
-        'filter-caption:s' => { name => 'filter_caption' } });
-    $self->{cache} = centreon::plugins::statefile->new(%options);
-    return $self;
-}
-
-sub check_options {
+sub custom_status_output {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    my $res = sprintf(
+        "'%s' status : '%s', message is '%s'",
+        $self->{result_values}->{extendedcaption},
+        $self->{result_values}->{state},
+        $self->{result_values}->{messagetext}
+    );
+    return $res;
 }
 
 sub set_counters {
@@ -68,41 +62,50 @@ sub set_counters {
     ];
 }
 
+sub new {
+    my ($class, %options) = @_;
+
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    $options{options}->add_options(arguments => {
+        'filter-caption:s' => { name => 'filter_caption' } });
+    $self->{cache} = centreon::plugins::statefile->new(%options);
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+    $self->{cache}->check_options(option_results => $self->{option_results});
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
+
     my $monitor_data = $self->request_monitors(%options);
-    my $i = 0;
+
+    my $monitored_count = 0;
     for my $object (@$monitor_data) {
 
         if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_caption})
             and $object->{ExtendedCaption} !~ $self->{option_results}->{filter_caption}) {
             next;
         }
-        $self->{global}->{$i} = {
+        $self->{global}->{$monitored_count} = {
             state           => $monitor_state{$object->{State}},
             messagetext     => $object->{MessageText},
             extendedcaption => $object->{ExtendedCaption}
         };
-        $i++;
+        $monitored_count++;
     }
     # for now if no data is given to the counter, output is OK: with status ok, instead of unknown.
     # We manage this case in each plugin for now.
-    if ($i == 0) {
+    if ($monitored_count == 0) {
         $self->{output}->add_option_msg(short_msg => 'No monitors where checked, please check filter_caption parameter and api response.');
         $self->{output}->option_exit();
     }
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-    my $res = sprintf(
-        "'%s' status : '%s', message is '%s'",
-        $self->{result_values}->{extendedcaption},
-        $self->{result_values}->{state},
-        $self->{result_values}->{messagetext}
-    );
-    return $res;
-}
 # as --filter-caption allow to filter element to check and this api don't allow parameter filtering, we should cache
 # the output in case a client make multiples check a minute.
 sub request_monitors {

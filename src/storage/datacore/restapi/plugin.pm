@@ -13,11 +13,15 @@ sub new {
 
     $self->{modes} = {
         'pool-usage' => 'storage::datacore::restapi::mode::poolspaceusage',
-        'alerts-count' => 'storage::datacore::restapi::mode::alertscount',
+        'alerts' => 'storage::datacore::restapi::mode::alerts',
         'list-pool' => 'storage::datacore::restapi::mode::listpool',
-        'status-monitor' => 'storage::datacore::restapi::mode::statusmonitor',
+        'status-monitor' => 'storage::datacore::restapi::mode::monitorstatus',
     };
     $self->{custom_modes}->{api} = 'storage::datacore::restapi::custom::api';
     return $self;
 }
 1;
+=head1 PLUGIN DESCRIPTION
+
+Check Datacore using rest API.
+

@@ -37,7 +37,7 @@ Datacore check alert count
     [Documentation]    Check Datacore pool usage
     [Tags]    storage    api
     ${output}    Run
-    ...    ${CMD} --mode=alerts-count --warning-error=${warning-error} --critical-error=${critical-error} --warning-warning=${warning-warning} --critical-warning=${critical-warning}
+    ...    ${CMD} --mode=alerts --warning-error=${warning-error} --critical-error=${critical-error} --warning-warning=${warning-warning} --critical-warning=${critical-warning}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}

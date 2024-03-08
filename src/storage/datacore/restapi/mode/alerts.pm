@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package storage::datacore::restapi::mode::alertscount;
+package storage::datacore::restapi::mode::alerts;
 use strict;
 use warnings;
 use centreon::plugins::misc qw(empty);
@@ -26,30 +26,11 @@ use base qw(centreon::plugins::templates::counter);
 
 my %alerts_level = ('trace' => 0, 'info' => 1, 'warning' => 2, 'error' => 3);
 
-sub new {
-    my ($class, %options) = @_;
-
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-    bless $self, $class;
-    $options{options}->add_options(arguments => {
-        'filter-server:s' => { name => 'filter_server' },
-        'max-alert-age:s' => { name => 'max_alert_age' } });
-
-    $self->{output} = $options{output};
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'alerts', type => 0 },
+        { name => 'alerts', type => 0},
     ];
     $self->{maps_counters}->{alerts} = [
         {
@@ -87,6 +68,25 @@ sub set_counters {
     },
     ];
 
+}
+
+sub new {
+    my ($class, %options) = @_;
+
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    $options{options}->add_options(arguments => {
+        'filter-server:s' => { name => 'filter_server' },
+        'max-alert-age:s' => { name => 'max_alert_age' } });
+
+    $self->{output} = $options{output};
+
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
 }
 
 sub manage_selection {
