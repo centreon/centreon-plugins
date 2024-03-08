@@ -20,7 +20,7 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: nrpe/packaging/centreon-nrpe3-daemon.yaml
+      version_file: nrpe/packaging/centreon-nrpe4-daemon.yaml
 
   package:
     needs: [get-environment]
@@ -59,7 +59,7 @@ jobs:
 
       - name: Download nrpe sources
         run: |
-          curl -Lo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
+          curl -sLo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
           mv nrpe-${{ needs.get-environment.outputs.version }} nrpe-src
         shell: bash
 
@@ -67,7 +67,7 @@ jobs:
         run: |
           cd nrpe-src
 
-          patch -p1 < ../nrpe/packaging/files/nrpe3_add_centreon_cmd.patch
+          patch -p1 < ../nrpe/packaging/files/nrpe4_add_centreon_cmd.patch
 
           if [ "${{ matrix.package_extension }}" = "deb" ]; then
             NAGIOS_PLUGINS_PATH="/usr/lib/nagios/plugins"
