@@ -1,13 +1,16 @@
 --filter-vdom
 --force-counters32
 Centreon
-Fortinet
+Datacore
 Fortigate
+Fortinet
 license-instances-usage-prct
 OID
 oneaccess-sys-mib
 perfdata
 powershell
+proto
+Sansymphony
 SNMP
 space-usage-prct
 SSH
