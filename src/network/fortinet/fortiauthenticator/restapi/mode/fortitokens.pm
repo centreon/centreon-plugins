@@ -55,7 +55,7 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    return sprintf("[tokens ftm] populated:%s - used:%s(%.2f%%) - available:%s(%.2f%%)",
+    return sprintf("FRM tokens populated: %s, used: %s (%.2f%%), available: %s (%.2f%%)",
 	    	$self->{result_values}->{populated},
 		$self->{result_values}->{used},
 		$self->{result_values}->{prct_used},
