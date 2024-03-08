@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'fortitoken'       => 'network::fortinet::fortiauthenticator::restapi::mode::fortitokens',
+        'fortitoken' => 'network::fortinet::fortiauthenticator::restapi::mode::fortitokens',
     };
 
     $self->{custom_modes}->{api} = 'network::fortinet::fortiauthenticator::restapi::custom::api';
