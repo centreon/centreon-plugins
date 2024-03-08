@@ -111,7 +111,7 @@ sub get_uuid {
 
     return md5_hex(
         ((defined($self->{hostname}) && $self->{hostname} ne '') ? $self->{hostname} : 'none') . '_' .
-        ((defined($self->{port}) && $self->{port} ne '') ? $self->{port} : 'none')
+        ((defined($self->{url_path}) && $self->{url_path} ne '') ? $self->{url_path} : 'none')
     );
 }
 
