@@ -1,9 +1,10 @@
 {
     "pkg_name": "centreon-plugin-Applications-Protocol-Cifs",
-    "pkg_summary": "Centreon Plugin",
+    "pkg_summary": "Centreon Plugin to monitor CIFS/Samba shares",
     "plugin_name": "centreon_protocol_cifs.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/cifs/custom/libcifs.pm",
         "apps/protocols/cifs/"
     ]
 }
