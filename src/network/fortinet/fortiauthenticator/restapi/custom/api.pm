@@ -133,16 +133,16 @@ sub get_port {
 sub request_api {
 	my ($self, %options) = @_;
 
-	$self->settings();
-	my $login = {};
-	return if (!defined($self->{settings_done}));
-	$login = { credentials => 1, basic => 1, insecure => 1, username => $self->{api_username}, password => $self->{api_token} };
-	my $content = $self->{http}->request(
+    my $content = $self->{http}->request(
         url_path => $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
-	%$login
+        credentials => 1,
+        basic => 1,
+        insecure => 1,
+        username => $self->{api_username},
+        password => $self->{api_token}
     );
 
 	if (!defined($content) || $content eq '') {
