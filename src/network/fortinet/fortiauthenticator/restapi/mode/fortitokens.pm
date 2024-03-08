@@ -32,7 +32,7 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'fortitokens.ftm.tokens.usage.percentage', 
+        label => 'fortitokens.tokens.ftm.usage.percentage', 
 	unit => '%',
 	min => 0, 
 	max => 100,
