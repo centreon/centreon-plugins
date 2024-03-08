@@ -123,7 +123,9 @@ sub manage_selection {
 
     foreach my $log (@{$data}) {        
         next if (defined($self->{option_results}->{memory}) &&
-            defined($log->{date_parsed}->{timestamp}) && $last_time > $log->{date_parsed}->{timestamp});
+            defined($log->{date_parsed}->{timestamp}) &&
+            defined($last_time) &&
+            $last_time > $log->{date_parsed}->{timestamp});
 
         $self->{logs}->{global}->{log}->{$i}->{message} = $log->{message};
         $i++;
