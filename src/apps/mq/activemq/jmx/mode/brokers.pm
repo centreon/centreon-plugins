@@ -204,7 +204,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-broker-name:s'      => { name => 'filter_broker_name' },
         'filter-destination-name:s' => { name => 'filter_destination_name' },
-        'filter-destination-type:s' => { name => 'filter_destination_type' }
+        'filter-destination-type:s' => { name => 'filter_destination_type' },
+        'request:s@'                => { name => 'request' }
     });
 
     return $self;
@@ -238,6 +239,24 @@ sub manage_selection {
             ]
         }
     ];
+
+    if (defined($self->{option_results}->{request}) && $self->{option_results}->{request} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'JSON::XS',
+            error_msg => "Cannot load module 'JSON::XS'."
+        );
+        $request = undef;
+        foreach (@{$self->{option_results}->{request}}) {
+            eval {
+                push @$request, JSON::XS->new->utf8->decode($_);
+            };
+            if ($@) {
+                $self->{output}->add_option_msg(short_msg => "Cannot use request as it is a malformed JSON: " . $@);
+                $self->{output}->option_exit();
+            }
+        }
+    }
+
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
     $self->{cache_name} = 'activemq_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
@@ -317,6 +336,24 @@ Filter destination name (can be a regexp).
 =item B<--filter-destination-type>
 
 Filter destination type (can be a regexp).
+
+=item B<--request>
+
+EXPERIMENTAL Option : Community-supported only (no support from Centreon at this time)
+
+Set the MBean and attributes to request (will replace defaults)
+in a JSON-formatted fashion.
+
+This is useful to reduce the size of returned data by providing destination
+type and name or broker name instead of filtering afterwards, and grabbing
+exactly the wanted attributes.
+
+This can be set multiple times.
+
+Example:
+
+--request='{"mbean":"org.apache.activemq:brokerName=*,destinationName=MyQueue,destinationType=Queue,type=Broker","attributes":[{"name":"QueueSize"}]}'
+--request='{"mbean":"org.apache.activemq:brokerName=*,type=Broker,service=Health","attributes":[{"name":"CurrentStatus"}]}'
 
 =item B<--warning-status>
 

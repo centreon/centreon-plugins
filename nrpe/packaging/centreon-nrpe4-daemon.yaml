@@ -1,0 +1,92 @@
+name: "centreon-nrpe4-daemon"
+arch: "amd64"
+platform: "linux"
+version_schema: "none"
+version: "4.1.0"
+release: "${RELEASE}${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  The centreon-nrpe packages contains the Nagios Remote Plug-ins Executor.
+  Daemon which can execute predefined commands on the remote host.
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://centreon.com"
+license: "GPLv2+"
+
+contents:
+  - src: "../../nrpe-src/src/nrpe"
+    dst: "/usr/sbin/centreon-nrpe4"
+
+  - src: "../../nrpe-src/sample-config/nrpe.cfg"
+    dst: "/etc/nrpe/centreon-nrpe4.cfg"
+    type: config|noreplace
+    file_info:
+      mode: 0644
+
+  - src: "files/nrpe4.sysconfig"
+    dst: "/etc/sysconfig/centreon-nrpe4"
+    packager: rpm
+    file_info:
+      mode: 0644
+  - src: "files/nrpe4.sysconfig"
+    dst: "/etc/default/centreon-nrpe4"
+    packager: deb
+    file_info:
+      mode: 0644
+
+  - src: "files/nrpe4.rpm.service"
+    dst: "/lib/systemd/system/centreon-nrpe4.service"
+    packager: rpm
+    file_info:
+      mode: 0644
+  - src: "files/nrpe4.deb.service"
+    dst: "/lib/systemd/system/centreon-nrpe4.service"
+    packager: deb
+    file_info:
+      mode: 0644
+
+  - dst: "/var/log/nrpe"
+    type: dir
+    file_info:
+      mode: 0755
+      owner: centreon-engine
+      group: centreon-engine
+
+  - dst: "/var/log/nrpe/centplugins"
+    type: dir
+    file_info:
+      mode: 0755
+      owner: centreon-engine
+      group: centreon-engine
+
+scripts:
+  preinstall: ./scripts/centreon-nrpe4-daemon-preinstall.sh
+  postinstall: ./scripts/centreon-nrpe4-daemon-postinstall.sh
+  preremove: ./scripts/centreon-nrpe4-daemon-preremove.sh
+
+overrides:
+  rpm:
+    replaces:
+      - centreon-nrpe4-daemon-debuginfo
+      - centreon-nrpe4-daemon-debugsource
+    conflicts:
+      - centreon-nrpe4-daemon-debuginfo
+      - centreon-nrpe4-daemon-debugsource
+    provides:
+      - centreon-nrpe4-daemon-debuginfo
+      - centreon-nrpe4-daemon-debugsource
+  deb:
+    replaces:
+      - centreon-nrpe4-daemon-dbgsym
+    conflicts:
+      - centreon-nrpe4-daemon-dbgsym
+    provides:
+      - centreon-nrpe4-daemon-dbgsym
+
+rpm:
+  summary: Nagios Remote Plugins Execution daemon
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}

@@ -1,0 +1,179 @@
+{
+  "uuid": "8cba072c-7794-4ff7-ab36-158ef1abed39",
+  "lastMigration": 32,
+  "name": "Storage datacore api",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "148371c5-aaa7-4bf0-a818-e81a21aa7f9a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/pools",
+      "responses": [
+        {
+          "uuid": "003eae6e-f58f-44db-bd03-3b44ca578046",
+          "body": "[ {\n  \"Caption\" : \"Disk pool 1\",\n  \"ExtendedCaption\" : \"Disk pool 1 on StorageSvr001\",\n  \"Id\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551:{d68b8a36-0ec4-11e5-80ba-00155d651622}\",\n  \"Internal\" : false,\n  \"SequenceNumber\" : 11963,\n  \"Alias\" : \"Disk pool 1\",\n  \"AutoTieringEnabled\" : true,\n  \"ChunkSize\" : {\n    \"Value\" : 134217728\n  },\n  \"Description\" : null,\n  \"InSharedMode\" : false,\n  \"IsAuthorized\" : true,\n  \"MaxTierNumber\" : 3,\n  \"PoolMode\" : 1,\n  \"PoolStatus\" : 0,\n  \"PresenceStatus\" : 1,\n  \"SMPAApproved\" : false,\n  \"ServerId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n  \"SharedPoolId\" : null,\n  \"TierReservedPct\" : 0,\n  \"Type\" : 0,\n  \"IsBulk\" : false\n},\n{\n  \"Caption\" : \"Shared pool 1\",\n  \"ExtendedCaption\" : \"Shared pool 1 on StorageSvr002\",\n  \"Id\" : \"B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:{4dec1b5a-2577-11e5-80c3-00155d651622}\",\n  \"Internal\" : false,\n  \"SequenceNumber\" : 11967,\n  \"Alias\" : \"Shared pool 1\",\n  \"AutoTieringEnabled\" : true,\n  \"ChunkSize\" : {\n    \"Value\" : 134217728\n  },\n  \"Description\" : null,\n  \"InSharedMode\" : true,\n  \"IsAuthorized\" : true,\n  \"MaxTierNumber\" : 3,\n  \"PoolMode\" : 1,\n  \"PoolStatus\" : 0,\n  \"PresenceStatus\" : 1,\n  \"SMPAApproved\" : true,\n  \"ServerId\" : \"B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D\",\n  \"SharedPoolId\" : \"{4dec1b5a-2577-11e5-80c3-00155d651622}\",\n  \"TierReservedPct\" : 0,\n  \"Type\" : 0,\n  \"IsBulk\" : false\n} ]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "0c038179-3723-4d67-9bed-fc226629c847",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/performances/B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:%7B4dec1b5a-2577-11e5-80c3-00155d651622%7D",
+      "responses": [
+        {
+          "uuid": "0eb0a2ca-2f12-40af-ba94-0feef989b6a1",
+          "body": "[\n  {\n    \"CollectionTime\": \"/Date(1486402608775)/\",\n    \"NullCounterMap\": 0,\n    \"BytesAllocated\": 6174015488,\n    \"BytesAllocatedPercentage\": 12,\n    \"BytesAvailable\": 47110422528,\n    \"BytesAvailablePercentage\": 88,\n    \"BytesInReclamation\": 0,\n    \"BytesInReclamationPercentage\": 0,\n    \"BytesOverSubscribed\": 0,\n    \"BytesReserved\": 0,\n    \"BytesReservedPercentage\": 0,\n    \"BytesTotal\": 53284438016,\n    \"EstimatedDepletionTime\": 2592000001,\n    \"MaxPoolBytes\": 1108127332171776,\n    \"MaxReadTime\" : 0,\n    \"MaxReadWriteTime\" : 0,\n    \"MaxWriteTime\" : 0,\n    \"PercentAllocated\" : 12,\n    \"PercentAvailable\" : 88,\n    \"TotalBytesMigrated\" : 0,\n    \"TotalBytesRead\" : 307200,\n    \"TotalBytesTransferred\" : 2036756992,\n    \"TotalBytesWritten\" : 2036470272,\n    \"TotalOperations\" : 53002,\n    \"TotalReadTime\" : 0,\n    \"TotalReads\" : 18,\n    \"TotalWriteTime\" : 74994,\n    \"TotalWrites\" : 52998\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "b9f7dd2b-e1e1-4902-95ba-c6b76a1de390",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/alerts",
+      "responses": [
+        {
+          "uuid": "a1dece29-074b-4100-a764-f7ddccdec8da",
+          "body": "[ {\n \"Caller\" : \"ServerMachineGroup.UpdateServers\",\n \"HighPriority\" : true,\n \"Id\" : {\n   \"MachineId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SequenceNumber\" : 34937\n },\n \"Level\" : 2,\n \"MachineName\" : \"STORAGESVR001\",\n \"MessageData\" : [ \"StorageSvr002\" ],\n \"MessageText\" : \"Connection to server {0} has been lost.\",\n \"NeedsAcknowledge\" : false,\n \"Sources\" : [ {\n   \"SourceCaption\" : \"Group1\",\n   \"SourceId\" : \"4b428832-fd51-45df-9c21-ce267e1ceb7a\",\n   \"SourceType\" : 12\n } ],\n \"TimeStamp\" : \"/Date(1437398005546)/\",\n \"UserId\" : null,\n \"UserName\" : null,\n \"Visibility\" : 64\n}, {\n \"Caller\" : \"BasePerfMonitor`1.SetState\",\n \"HighPriority\" : true,\n \"Id\" : {\n   \"MachineId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SequenceNumber\" : 33985\n },\n \"Level\" : 3,\n \"MachineName\" : \"STORAGESVR001\",\n \"MessageData\" : null,\n \"MessageText\" : \"The Replication buffer free space of StorageSvr001 in Group1 is <= 10%\",\n \"NeedsAcknowledge\" : false,\n \"Sources\" : [ {\n   \"SourceCaption\" : \"Replication buffer free space of StorageSvr001 in Group1\",\n   \"SourceId\" : \"FallingThresholdPerfMonitor`1<A3E78CFA-DBEC-44E1-A23C-E9E262EC4551>ReplicationBufferPercentFreeSpace\",\n   \"SourceType\" : 3\n }, {\n   \"SourceCaption\" : \"StorageSvr001 in Group1\",\n   \"SourceId\" : \"A3E78CFA-DBEC-44E1-A23C-E9E262EC4551\",\n   \"SourceType\" : 12\n }, {\n   \"SourceCaption\" : \"Group1\",\n   \"SourceId\" : \"4b428832-fd51-45df-9c21-ce267e1ceb7a\",\n   \"SourceType\" : 12\n } ],\n \"TimeStamp\" : \"/Date(1437397587894)/\",\n \"UserId\" : null,\n \"UserName\" : null,\n \"Visibility\" : 64\n}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "be0b350e-f8da-4998-a045-a3cf840745c0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "RestService/rest.svc/1.0/monitors",
+      "responses": [
+        {
+          "uuid": "6f53cd5e-7417-4fdf-a310-e2a7af4b7c3a",
+          "body": "[\r\n  {\r\n    \"Caption\": \"State\",\r\n    \"ExtendedCaption\": \"State of HostVM2\",\r\n    \"Id\": \"ClientMachineStateMonitor<ed89ef91d72142dc958e02c5b7014fac>\",\r\n    \"Internal\": false,\r\n    \"SequenceNumber\": 9417,\r\n    \"Description\": \"Monitors the state of hosts.\",\r\n    \"MessageText\": \"Connected\",\r\n    \"MonitoredObjectId\": \"ed89ef91d72142dc958e02c5b7014fac\",\r\n    \"State\": 16,\r\n    \"TemplateId\": \"T(DataCore.Executive.Controller.ClientMachineStateMonitor<DataCore.Executive.Controller.ClientMachine>)\",\r\n    \"TimeStamp\": \"/Date(1486136115475-0500)/\"\r\n  },\r\n  {\r\n    \"Caption\": \"I/O latency\",\r\n    \"ExtendedCaption\": \"I/O latency of Mirror of Virtual disk 1 on StorageSvr005\",\r\n    \"Id\": \"RisingThresholdPerfMonitor`1<V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568>TotalOperationsTime\",\r\n    \"Internal\": false,\r\n    \"SequenceNumber\": 10036,\r\n    \"Description\": \"Monitors the physical disks latency.\",\r\n    \"MessageText\": \"Disabled\",\r\n    \"MonitoredObjectId\": \"V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568\",\r\n    \"State\": 1,\r\n    \"TemplateId\": \"T(DataCore.Executive.Controller.RisingThresholdPerfMonitor`1[T]<V.{2f652562-e7e3-11e6-80d7-00155d651611}-00000001_N.22690030D9218568>TotalOperationsTime)\",\r\n    \"TimeStamp\": \"/Date(1486148705910-0500)/\"\r\n  }\r\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "148371c5-aaa7-4bf0-a818-e81a21aa7f9a"
+    },
+    {
+      "type": "route",
+      "uuid": "0c038179-3723-4d67-9bed-fc226629c847"
+    },
+    {
+      "type": "route",
+      "uuid": "b9f7dd2b-e1e1-4902-95ba-c6b76a1de390"
+    },
+    {
+      "type": "route",
+      "uuid": "be0b350e-f8da-4998-a045-a3cf840745c0"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
