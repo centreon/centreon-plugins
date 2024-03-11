@@ -311,6 +311,14 @@ sub backtick {
     return (0, join("\n", @output), $return_code);
 }
 
+sub is_empty {
+    my $value = shift;
+    if (!defined($value) or $value eq '') {
+        return 1;
+    }
+    return 0;
+}
+
 sub trim {
     my ($value) = $_[0];
     
