@@ -24,10 +24,10 @@ use strict;
 use warnings;
 
 my %map_psu_status = (
-    0 => 'not supported',
+    0 => 'normal',
     1 => 'not present',
     2 => 'failed',
-    3 => 'normal',
+    3 => 'not supported',
 );
 
 my $mapping = {
