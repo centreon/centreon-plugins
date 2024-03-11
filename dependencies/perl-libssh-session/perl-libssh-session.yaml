@@ -33,7 +33,7 @@ contents:
 overrides:
   rpm:
     depends:
-      - perl
+      - perl-interpreter
       - libssh
     conflicts:
       - perl-Libssh-Session-debuginfo

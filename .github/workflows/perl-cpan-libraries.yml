@@ -148,7 +148,8 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
@@ -204,7 +205,8 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - name: Replace '::' with - in the feature path
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
@@ -213,7 +215,8 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -230,54 +233,21 @@ jobs:
         distrib: [bullseye, bookworm, jammy]
         name:
           [
-            "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
-            "boolean",
-            "Carp::Assert",
-            "Clone",
-            "Clone::Choose",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
-            "Digest::MD5::File",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
-            "FFI::CheckLib",
-            "File::SearchPath",
-            "Hash::Merge",
             "Hash::Ordered",
-            "HTTP::Daemon",
-            "HTTP::Daemon::SSL",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
-            "JSON::WebToken",
-            "LV",
-            "MIME::Types",
-            "MongoDB",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
-            "Net::NTP",
-            "Net::SMTPS",
             "Net::SMTP_auth",
-            "Net::Subnet",
-            "Net::TFTP",
-            "PBKDF2::Tiny",
-            "Schedule::Cron",
-            "Statistics::Descriptive",
             "Statistics::Regression",
-            "Sys::SigAction",
-            "Term::Clui",
-            "Term::ShellUI",
-            "Unicode::Stringprep",
-            "URI::Encode",
-            "URI::Template",
-            "URL::Encode",
-            "UUID::URandom",
             "WWW::Selenium",
-            "XML::Filter::BufferText",
-            "XML::LibXML::Simple",
-            "XML::SAX::Writer",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
           ]
@@ -297,10 +267,9 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
-          - name: "DateTime::Format::Duration::ISO8601"
           - name: "Statistics::Regression"
+            build_distribs: "bullseye"
             version: "0.53"
-          - name: "ZMQ::Constants"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"
@@ -313,9 +282,11 @@ jobs:
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Get package version
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Get package version
         id: package-version
         run: |
           apt-get update
@@ -365,7 +336,8 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
         shell: bash
 
-      - name: Replace '::' with - in the feature path
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
@@ -374,7 +346,8 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -437,7 +410,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+      - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -460,7 +433,7 @@ jobs:
       matrix:
         distrib: [bullseye, bookworm, jammy]
     steps:
-      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+      - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./
