@@ -82,7 +82,17 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $monitor_data = $self->request_monitors(%options);
+    if ($self->{cache}->read('statefile' => 'datacore_api_monitors' . md5_hex($self->{option_results}->{hostname} . $self->{option_results}->{username}))
+        and $self->{cache}->get(name => 'expires_on') > time() + 1) {
+
+        return $self->{cache}->get(name => 'monitor_data');
+    }
+
+    my $monitor_data = $options{custom}->request_api(
+        url_path => '/RestService/rest.svc/1.0/monitors');
+
+    my $datas = { last_timestamp => time(), monitor_data => $monitor_data, expires_on => time() + 60 };
+    $self->{cache}->write(data => $datas);
 
     my $monitored_count = 0;
     for my $object (@$monitor_data) {
@@ -108,23 +118,7 @@ sub manage_selection {
 
 # as --filter-caption allow to filter element to check and this api don't allow parameter filtering, we should cache
 # the output in case a client make multiples check a minute.
-sub request_monitors {
-    my ($self, %options) = @_;
 
-    if ($self->{cache}->read('statefile' => 'datacore_api_monitors' . md5_hex($self->{option_results}->{hostname} . $self->{option_results}->{username}))
-        and $self->{cache}->get(name => 'expires_on') > time() + 1) {
-
-        return $self->{cache}->get(name => 'monitor_data');
-    }
-
-    my $result = $options{custom}->request_api(
-        url_path => '/RestService/rest.svc/1.0/monitors');
-
-    my $datas = { last_timestamp => time(), monitor_data => $result, expires_on => time() + 60 };
-    $self->{cache}->write(data => $datas);
-    return $result;
-
-}
 1;
 
 __END__

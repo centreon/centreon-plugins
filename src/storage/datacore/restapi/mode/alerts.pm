@@ -92,23 +92,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $data = $options{custom}->request_api(
+    my $alerts = $options{custom}->request_api(
         url_path => '/RestService/rest.svc/1.0/alerts'
     );
-    my $alerts_count = $self->order_alerts($data);
-    $self->{alerts} = {
-        trace   => $alerts_count->{$alerts_level{trace}}->{count},
-        info    => $alerts_count->{$alerts_level{info}}->{count},
-        warning => $alerts_count->{$alerts_level{warning}}->{count},
-        error   => $alerts_count->{$alerts_level{error}}->{count},
-    };
 
-}
-
-# take a decoded json reference and send back a hash with loglevel as key and a hash with number of alert
-# and the list of alerts text as value.
-sub order_alerts {
-    my ($self, $alerts) = @_;
     my %alerts_count = (
         0 => { count => 0, list => [] },
         1 => { count => 0, list => [] },
@@ -147,8 +134,17 @@ sub order_alerts {
     $self->{output}->output_add(long_msg => "error : " . join("\n", @{$alerts_count{$alerts_level{error}}->{list}}));
     $self->{output}->output_add(long_msg => "warning : " . join("\n", @{$alerts_count{$alerts_level{warning}}->{list}}));
 
-    return \%alerts_count;
+
+
+    $self->{alerts} = {
+        trace   => $alerts_count{$alerts_level{trace}}->{count},
+        info    => $alerts_count{$alerts_level{info}}->{count},
+        warning => $alerts_count{$alerts_level{warning}}->{count},
+        error   => $alerts_count{$alerts_level{error}}->{count},
+    };
+
 }
+
 1;
 
 __END__
