@@ -51,7 +51,8 @@ sub init {
             'hostname:s@'       => { name => 'hostname' },
             'port:s@'           => { name => 'port' },
             'tds-level:s@'      => { name => 'tds_level' },
-            'database:s'        => { name => 'database' }
+            'database:s'        => { name => 'database' },
+            'encrypt-password'  => { name => 'encrypt_password' }
         }
     );
     $self->{options}->parse_options();
@@ -72,6 +73,9 @@ sub init {
             
             if ((defined($options_result->{database})) && ($options_result->{database} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{database};
+            }
+            if (defined($options_result->{encrypt_password})) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';encryptPassword=1';
             }
         }
     }
@@ -99,6 +103,10 @@ Database Server Port (default: 2638).
 =item B<--tds-level>
 
 TDS protocol level to use (default: 'CS_TDS_50')
+
+=item B<--encrypt-password>
+
+Specify the use of the client password encryption supported by CT-Lib.
 
 =back
 

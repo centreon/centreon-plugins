@@ -63,6 +63,7 @@ sub init {
             'port:s@'           => { name => 'port' },
             'server:s@'         => { name => 'server' },
             'database:s'        => { name => 'database' },
+            'encrypt-password'  => { name => 'encrypt_password' }
         }
     );
     $self->{options}->parse_options();
@@ -75,6 +76,9 @@ sub init {
             $self->{sqldefault}->{dbi}[$i] = { data_source => 'Sybase:server=' . $options_result->{server}[$i] };
             if ((defined($options_result->{database})) && ($options_result->{database} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{database};
+            }
+            if (defined($options_result->{encrypt_password})) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';encryptPassword=1';
             }
         }
     }
@@ -89,6 +93,9 @@ sub init {
             }
             if ((defined($options_result->{database})) && ($options_result->{database} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{database};
+            }
+            if (defined($options_result->{encrypt_password})) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';encryptPassword=1';
             }
         }
     }
@@ -121,6 +128,10 @@ An alternative to hostname+port. <server> will be looked up in the file freetds.
 =item B<--database>
 
 Select database .
+
+=item B<--encrypt-password>
+
+Specify the use of the client password encryption supported by CT-Lib.
 
 =back
 
