@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       OS Linux Local plugin Systemd-sc-status
+Documentation       Linux Local Systemd-sc-status
 
 Library             OperatingSystem
 Library             String
@@ -12,9 +12,9 @@ Test Timeout        120s
 ${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
-${PERCENT}                  %
-
-${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+# attempt to work around the interpretation of %{} as env variables instead of plugin macros
+#${PERCENT}                  %
+#${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
 *** Test Cases ***
 Systemd-sc-status v219 ${tc}/15
