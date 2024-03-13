@@ -71,11 +71,11 @@ sub set_counters {
                     ]
                 }
             },
-            { label => $_ . '-total', nlabel => 'mails.' . $_ . '.total.count', set => {
-                    key_values => [ { name => $_ . 'EmailsTotal', diff => 1 } ],
-                    output_template => 'total: %s',
+            { label => $_ . '-delta', nlabel => 'mails.' . $_ . '.delta.persecond', set => {
+                    key_values => [ { name => $_ . 'EmailsTotal', per_second => 1 } ],
+                    output_template => 'delta: %.2f/s',
                     perfdatas => [
-                        { template => '%s', min => 0 }
+                        { template => '%.2f', min => 0, unit => "/s" }
                     ]
                 }
             }
@@ -83,13 +83,19 @@ sub set_counters {
     }
 }
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'warning-inbound-total'  => { name => 'warning_inbound_delta' }, # compatibility
+        'critical-inbound-total'  => { name => 'critical_inbound_delta' }, # compatibility
+        'warning-outbound-total'  => { name => 'warning_outbound_delta' }, # compatibility
+        'critical-outbound-total'  => { name => 'critical_outbound_delta' }, # compatibility
+        'warning-internal-total'  => { name => 'warning_internal_delta' }, # compatibility
+        'critical-internal-total'  => { name => 'critical_internal_delta' }, # compatibility
+    });
 
     return $self;
 }
@@ -113,7 +119,9 @@ sub manage_selection {
         oids => [ map($_->{oid}, values(%$mapping)) ],
         nothing_quit => 1
     );
+
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result);
+
     $self->{inbound} = $result;
     $self->{outbound} = $result;
     $self->{internal} = $result;
@@ -135,9 +143,9 @@ Check e-mails.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'internal-hourly', 'internal-daily', 'internal-total',
-'outbound-hourly', 'outbound-daily', 'outbound-total',
-'inbound-hourly', 'inbound-daily', 'inbound-total'.
+Can be: 'internal-hourly', 'internal-daily', 'internal-delta',
+'outbound-hourly', 'outbound-daily', 'outbound-delta',
+'inbound-hourly', 'inbound-daily', 'inbound-delta'.
 
 =back
 
