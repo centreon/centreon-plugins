@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Apache-Karaf-Api",
+    "pkg_summary": "Centreon Plugin to monitor Apache Karaf using API throught Jolokia",
+    "plugin_name": "centreon_apache_karaf_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/apache/karaf/api/"
+    ]
+}
