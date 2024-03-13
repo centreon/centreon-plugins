@@ -26,6 +26,35 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
+my $statuses = [
+    { status => 'created', re => qr/Created/i },
+    { status => 'restarting', re => qr/Restarting/i },
+    { status => 'running', re => qr/Up/i },
+    { status => 'removing', re => qr/Removing/i },
+    { status => 'paused', re => qr/Paused/i },
+    { status => 'exited', re => qr/Exited/i },
+    { status => 'dead', re => qr/Dead/i },
+];
+
+sub get_status {
+    my ($self, %options) = @_;
+
+    return 'unknown' unless (defined($options{docker_status}) && $options{docker_status} ne '');
+    foreach (@$statuses) {
+        if ($options{docker_status} =~ /$_->{re}/) {
+            return $_->{status};
+        }
+    }
+
+    return 'unknown';
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Container ';
+}
+
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
@@ -36,8 +65,22 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok' }
     ];
+
+    $self->{maps_counters}->{global} = [];
+    foreach ('total', 'created', 'restarting', 'running', 'removing', 'paused', 'exited', 'dead', 'unknown') {
+        push @{$self->{maps_counters}->{global}}, {
+            label => 'containers-' . $_, display_ok => 0, nlabel => 'containers.' . $_ . '.count', set => {
+                key_values => [ { name => $_ } ],
+                output_template => $_ . ': %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        };
+    }
 
     $self->{maps_counters}->{containers} = [
          { label => 'status', type => 2, critical_default => '%{status} !~ /up/i', set => {
@@ -65,19 +108,31 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
+    
+    $self->{global} = {
+        total => 0,
+        created => 0,
+        restarting => 0,
+        running => 0,
+        removing => 0,
+        paused => 0,
+        exited => 0,
+        dead => 0,
+        unknown => 0
+    };
+    $self->{containers} = {};
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'docker ps',
         command_options => '-a'
     );
 
-    $self->{containers} = {};
-    my @lines = split(/\n/, $stdout);
-    # Header not needed
     # CONTAINER ID   IMAGE                   COMMAND                  CREATED        STATUS       PORTS                                       NAMES
     # 543c8edfea2b   registry/mariadb:10.7   "docker-entrypoint.s…"   5 months ago   Up 12 days   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp   db
 
-    shift(@lines);
+    my @lines = split(/\n/, $stdout);
+    shift(@lines); # Header not needed
+
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(.*?)\s{3,}(\S+)$/);
 
@@ -88,15 +143,13 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $id !~ /$self->{option_results}->{filter_id}/);
 
+        $self->{global}->{$self->get_status(docker_status => $status)}++;
+        $self->{global}->{total}++;
+
         $self->{containers}->{$id} = {
             name => $name,
             status => $status
         };
-    }
-
-    if (scalar(keys %{$self->{containers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No container found.");
-        $self->{output}->option_exit();
     }
 }
 
@@ -129,6 +182,15 @@ You can use the following variables: %{status}, %{name}
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /up/i').
 You can use the following variables: %{status}, %{name}
+
+=item B<--warning-containers-*> B<--critical-containers-*>
+
+Thresholds.
+Can be: 'total', 'created', 'restarting',
+'running', 'removing', 'paused', 'exited',
+'dead', 'unknown'.
+
+=back
 
 =back
 
