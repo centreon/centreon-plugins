@@ -102,6 +102,30 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'disks-space-usage', nlabel => 'disks.space.usage.bytes', set => {
+                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'disks-space-usage-free', nlabel => 'disks.space.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'disks-space-usage-prct', nlabel => 'disks.space.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
     ];
 
     $self->{maps_counters}->{disks} = [
@@ -184,7 +208,7 @@ sub manage_selection {
     }
     my $disks = $options{custom}->request_api(%cmd);
 
-    $self->{global} = { total => 0, active => 0, errors => 0 };
+    $self->{global} = { total => 0, active => 0, errors => 0, used_space => 0, total_space => 0, free_space => 0, prct_used_space => 0, prct_free_space => 0 };
     $self->{disks} = {};
     my ($max, $min) = (0, 100);
     foreach my $disk (@{$disks->{result}}) {
@@ -212,12 +236,20 @@ sub manage_selection {
         } else {
             $self->{global}->{errors}++;
         }
+
         $self->{global}->{total}++;
+
+        $self->{global}->{used_space} += $self->{disks}->{ $disk->{name} }->{used_space};
+        $self->{global}->{total_space} += $self->{disks}->{ $disk->{name} }->{total_space};
     }
 
     if ($self->{global}->{total} > 1) {
         $self->{global}->{gap} = $max - $min;
     };
+    
+    $self->{global}->{free_space} = $self->{global}->{total_space} - $self->{global}->{used_space};
+    $self->{global}->{prct_used_space} = $self->{global}->{used_space} * 100 / $self->{global}->{total_space};
+    $self->{global}->{prct_free_space} = 100 - $self->{global}->{prct_used_space};
 }
 
 1;
@@ -257,7 +289,8 @@ You can use the following variables: %{status}, %{name}
 
 Thresholds.
 Can be: 'space-usage', 'space-usage-free', 'space-usage-prct', 'reserved', 
-'disks-total', 'disks-active', 'disks-errors', 'disks-gap-repartition'.
+'disks-total', 'disks-active', 'disks-errors', 'disks-gap-repartition',
+'disks-space-usage', 'disks-space-usage-free', 'disks-space-usage-prct'
 
 =back
 
