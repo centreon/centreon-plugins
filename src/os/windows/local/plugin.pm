@@ -37,6 +37,7 @@ sub new {
          'pending-reboot'    => 'os::windows::local::mode::pendingreboot',
          'sessions'          => 'os::windows::local::mode::sessions',
          'time'              => 'os::windows::local::mode::ntp',
+         'storage'           => 'os::windows::local::mode::storage',
          'updates'           => 'os::windows::local::mode::updates'
     };
 
