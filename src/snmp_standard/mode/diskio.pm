@@ -34,8 +34,9 @@ sub set_counters {
         { name => 'sum', type => 0, cb_init => 'skip_global', cb_prefix_output => 'prefix_sum_output', cb_suffix_output => 'suffix_output' },
         { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All devices are ok' }
     ];
+
     $self->{maps_counters}->{global} = [
-        { label => 'total-read', set => {
+        { label => 'total-read', nlabel => 'io.read.usage.bytesperseconds', set => {
                 key_values => [ { name => 'total_read', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
                 output_change_bytes => 1,
@@ -45,7 +46,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-write', set => {
+        { label => 'total-write', nlabel => 'io.write.usage.bytesperseconds', set => {
                 key_values => [ { name => 'total_write', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
                 output_change_bytes => 1,
@@ -55,7 +56,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-read-iops', set => {
+        { label => 'total-read-iops', nlabel => 'iops.read.usage.count', set => {
                 key_values => [ { name => 'total_read_iops', per_second => 1 } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
@@ -64,7 +65,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-write-iops', set => {
+        { label => 'total-write-iops', nlabel => 'iops.write.usage.count', set => {
                 key_values => [ { name => 'total_write_iops', per_second => 1 } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
@@ -74,9 +75,9 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{sum} = [
-        { label => 'sum-read-write', set => {
+        { label => 'sum-read-write', nlabel => 'io.usage.bytesperseconds', set => {
                 key_values => [ { name => 'sum_read_write', per_second => 1 } ],
                 output_template => 'R+W I/O : %s %s/s', output_error_template => "R+W I/O : %s",
                 output_change_bytes => 1,
@@ -86,7 +87,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'sum-read-write-iops', set => {
+        { label => 'sum-read-write-iops', nlabel => 'iops.usage.count', set => {
                 key_values => [ { name => 'sum_read_write_iops', per_second => 1 } ],
                 output_template => 'R+W IOPs : %.2f', output_error_template => "R+W IOPs : %s",
                 perfdatas => [
@@ -98,7 +99,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{disk} = [
-        { label => 'read', set => {
+        { label => 'read', nlabel => 'disk.io.read.usage.bytesperseconds', set => {
                 key_values => [ { name => 'read', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
                 output_change_bytes => 1,
@@ -108,7 +109,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write', set => {
+        { label => 'write', nlabel => 'disk.io.write.usage.bytesperseconds', set => {
                 key_values => [ { name => 'write', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
                 output_change_bytes => 1,
@@ -118,7 +119,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'read-iops', set => {
+        { label => 'read-iops', nlabel => 'disk.iops.read.usage.count', set => {
                 key_values => [ { name => 'read_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
@@ -127,7 +128,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write-iops', set => {
+        { label => 'write-iops', nlabel => 'disk.iops.write.usage.count', set => {
                 key_values => [ { name => 'write_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
@@ -141,7 +142,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
