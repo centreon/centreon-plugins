@@ -26,6 +26,72 @@ use base qw(centreon::plugins::mode);
 use URI::Encode;
 use JSON::XS;
 
+my %color_host = (
+    up => { 
+        background => '#88B922',
+        text => '#FFFFFF' 
+    },
+    down => { 
+        background => '#FF4A4A', 
+        text => '#FFFFFF' 
+    },
+    unreachable => { 
+        background => '#E0E0E0', 
+        text => '#666666' 
+    },
+    acknowledgement => { 
+        background => '#F5F1E9', 
+        text => '#666666'
+    },
+    downtimestart => { 
+        background => '#F0E9F8', 
+        text => '#666666' 
+    },
+    downtimeend => { 
+        background => '#F0E9F8', 
+        text => '#666666'
+    },
+    downtimecancelled => { 
+        background => '#F0E9F8', 
+        text => '#666666'
+    }
+);
+
+my %color_service = (
+    ok => {
+        background => '#88B922',
+        text => '#FFFFFF'
+    },
+    warning => {
+        background => '#FD9B27',
+        text => '#FFFFFF'
+    },
+    critical => {
+        background => '#FF4A4A',
+        text => '#FFFFFF'
+    },
+    unknown => {
+        background => '#E0E0E0',
+        text => '#FFFFFF'
+    },
+    acknowledgement => {
+        background => '#F5F1E9',
+        text => '#666666'
+    },
+    downtimestart => {
+        background => '#F0E9F8',
+        text => '#666666'
+    },
+    downtimeend => {
+        background => '#F0E9F8',
+        text => '#666666'
+    },
+    downtimecancelled => {
+        background => '#F0E9F8',
+        text => '#666666'
+    }
+);
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -33,22 +99,30 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'action-links'          => { name => 'action_links' },
-        'bam'                   => { name => 'bam' },
-        'centreon-url:s'        => { name => 'centreon_url' },
-        'channel-id:s'          => { name => 'channel_id' },
-        'date:s'                => { name => 'date' },
-        'extra-info-format:s'   => { name => 'extra_info_format', default => 'Author: %s, Comment: %s'},
-        'extra-info:s'          => { name => 'extra_info'},
-        'host-name:s'           => { name => 'host_name' },
-        'host-output:s'         => { name => 'host_output', default => '' },
-        'host-state:s'          => { name => 'host_state' },
-        'legacy:s'              => { name => 'legacy' },
-        'notification-type:s'   => { name => 'notif_type'},
-        'service-description:s' => { name => 'service_name' },
-        'service-output:s'      => { name => 'service_output', default => '' },
-        'service-state:s'       => { name => 'service_state' },
-        'team-id:s'             => { name => 'team_id' }
+        'notification-type:s'    => { name => 'type'},
+        'host-id:s'              => { name => 'host_id' },
+        'host-address:s'         => { name => 'host_address'},
+        'host-name:s'            => { name => 'host_name' },
+        'host-alias:s'           => { name => 'host_alias'},
+        'host-state:s'           => { name => 'host_state' },
+        'host-output:s'          => { name => 'host_output' },
+        'host-attempts:s'        => { name => 'host_attempts'},
+        'max-host-attempts:s'    => { name => 'max_host_attempts'},
+        'host-duration:s'        => { name => 'host_duration' },
+        'service-id:s'           => { name => 'service_id' },
+        'service-description:s'  => { name => 'service_description' },
+        'service-displayname:s'  => { name => 'service_displayname' },
+        'service-state:s'        => { name => 'service_state' },
+        'service-output:s'       => { name => 'service_output' },
+        'service-longoutput:s'   => { name => 'service_longoutput' },
+        'service-attempts:s'     => { name => 'service_attempts'},
+        'max-service-attempts:s' => { name => 'max_service_attempts'},
+        'service-duration:s'     => { name => 'service_duration' },
+        'date:s'                 => { name => 'date' },
+        'notif-author:s'         => { name => 'notif_author' },
+        'notif-comment:s'        => { name => 'notif_comment' },
+        'add-link'               => { name => 'add_link' },
+        'centreon-url:s'         => { name => 'centreon_url' }
     });
 
     return $self;
@@ -58,112 +132,56 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) && $self->{option_results}->{channel_id} ne '' ?
-        $self->{option_results}->{channel_id} : undef;
-    $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) && $self->{option_results}->{channel_id} ne ''
-        ? $self->{option_results}->{team_id} : undef;
-
-    if (!defined($self->{option_results}->{notif_type}) || $self->{option_results}->{notif_type} eq '') {
+    if (!defined($self->{option_results}->{type}) || $self->{option_results}->{type} eq '') {
         $self->{output}->add_option_msg(short_msg => "You need to specify the --notification-type option.");
         $self->{output}->option_exit();
     }
-}
 
-sub build_resource_status_filters {
-    my ($self, %options) = @_;
+    if (!defined($self->{option_results}->{host_id}) || $self->{option_results}->{host_id} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --host-id option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{host_name}) || $self->{option_results}->{host_name} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --host-name option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{host_alias}) || $self->{option_results}->{host_alias} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --host-alias option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{host_state}) || $self->{option_results}->{host_state} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --host-state option.");
+        $self->{output}->option_exit();
+    }
 
-    my $data_format = URI::Encode->new({encode_reserved => 1});
-    my $raw_resource_status_filters = {
-        "id" => "",
-        "name" => "New+filter",
-        "criterias" => [
-            {
-                "name" => "resource_types",
-                "object_type" => undef,
-                "type" => "multi_select",
-                "value" => [
-                    {
-                        "id" => "service",
-                        "name" => "Service"
-                    }
-                ]                
-            },
-            {
-                "name" => "states",
-                "object_type" => undef,
-                "type" => "multi_select",
-                "value" => [
-                    
-                ]
-            },
-            {
-                "name" => "statuses",
-                "object_type" => undef,
-                "type" => "multi_select",
-                "value" => [
-                    
-                ]
-            },
-            {
-                "name" => "status_types",
-                "object_type" => undef,
-                "type" => "multi_select",
-                "value" => [
-                        
-                ]
-            },
-            {
-                "name" => "host_groups",
-                "object_type" => "host_groups",
-                "type" => "multi_select",
-                "value" => [
-                    
-                ]
-            },
-            {
-                "name" => "service_groups",
-                "object_type" => "service_groups",
-                "type" => "multi_select",
-                "value" => [
-                    
-                ]
-            },
-            {
-                "name" => "monitoring_servers",
-                "object_type" => "monitoring_servers",
-                "type" => "multi_select",
-                "value" => [
-                    
-                ]
-            },
-            {
-                "name" => "search",
-                "object_type" => undef,
-                "type" => "text",
-                "value" => sprintf(
-                    's.description:%s h.name:%s',
-                     defined($self->{option_results}->{service_name}) ? $self->{option_results}->{service_name} : '',
-                     defined($self->{option_results}->{host_name}) ? $self->{option_results}->{host_name} : ''
-                )
-            },
-            {
-                "name" => "sort",
-                "object_type" => undef,
-                "type" => "array",
-                "value" => [
-                    "status_severity_code",
-                    "asc"
-                ]
-            }
-        ]
-    };
+    if (!defined($self->{option_results}->{service_id}) || $self->{option_results}->{service_id} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --service-id option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{service_description}) || $self->{option_results}->{service_description} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --service-description option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{service_state}) || $self->{option_results}->{service_state} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --service-state option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{service_output}) || $self->{option_results}->{service_output} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --service-output option.");
+        $self->{output}->option_exit();
+    }
 
-    my $link_url_path = '/monitoring/resources?filter='; 
-    my $encoded_resource_status_filters = JSON::XS->new->utf8->encode($raw_resource_status_filters);
-    my $encoded_data_for_uri = $data_format->encode($encoded_resource_status_filters);
-    $link_url_path .= $encoded_data_for_uri;
+    if (!defined($self->{option_results}->{date}) || $self->{option_results}->{date} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --date option.");
+        $self->{output}->option_exit();
+    }
 
-    return $link_url_path;
+    if (defined($self->{option_results}->{add_link})) {
+        if (!defined($self->{option_results}->{centreon_url}) || $self->{option_results}->{centreon_url} eq ''){
+            $self->{output}->add_option_msg(short_msg => 'Please set --centreon-url option');
+            $self->{output}->option_exit();
+        }
+    }
 }
 
 sub build_payload {
@@ -175,120 +193,234 @@ sub build_payload {
         '@context'      => 'https://schema.org/extensions',
         potentialAction => $message->{potentialAction},
         sections        => $message->{sections},
-        summary         => 'Centreon ' . $message->{notif_type},
+        summary         => $message->{summary},
         themecolor      => $message->{themecolor}
     };
 
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot decode json response');
-        $self->{output}->option_exit();
+    return $self;
+}
+
+sub host_message {
+    my ($self, %options) = @_;
+
+    my $message;
+    $message->{sections} = [];
+    $message->{themecolor} = ($self->{option_results}->{type} =~ /^problem|recovery$/i) ? $color_host{lc($self->{option_results}->{host_state})}->{background} : $color_host{lc($self->{option_results}->{type})}->{background};
+    
+    my @facts = [];
+    if ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Host has been acknowledged';
+        $message->{title} = 'Host <b>' . $self->{option_results}->{host_name} . '</b> has been acknowledged';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimestart$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Host has entered a downtime period';
+        $message->{title} = 'Host <b>' . $self->{option_results}->{host_name} . '</b> has entered a downtime period';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimeend|downtimecancelled$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Host has exited a downtime period';
+        $message->{title} = 'Host <b>' . $self->{option_results}->{host_name} . '</b> has exited a downtime period';
+    } else {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Host is ' . $self->{option_results}->{host_state};
+        my $formatted_status = ucfirst(lc($self->{option_results}->{host_state}));
+        my $chip = '<span style="color:' . $color_host{lc($self->{option_results}->{host_state})}->{text} . ';background-color:' . $color_host{lc($self->{option_results}->{host_state})}->{background} . ';border-radius:10px;justify-content:center;padding-left:1em;padding-right:1em;margin-right:1em;letter-spacing:0.01071em">' . $formatted_status . '</span>';
+        $message->{title} = $chip . ' Host <b>' . $self->{option_results}->{host_name} . '</b>';
+        $message->{text} = $self->{option_results}->{host_output};
+        @facts = (
+            { name => 'Host', value => $self->{option_results}->{host_name} },
+            { name => 'Host alias', value => $self->{option_results}->{host_alias} }
+        );
+        push @facts, { name => 'Host address', value => $self->{option_results}->{host_address} } if (defined($self->{option_results}->{host_address}) && $self->{option_results}->{host_address} ne '');
     }
 
-    return $self;
+    push @{$message->{sections}}, {
+        activityTitle => $message->{title},
+        activitySubtitle => $self->{option_results}->{date}
+    };
+    $message->{sections}[0]->{text} = $message->{text} if (defined($message->{text}) && $message->{text} ne '');
+    push @{$message->{sections}[0]->{facts}}, @facts if (scalar(@facts) > 1);
+
+    if (defined($self->{option_results}->{add_link})) {        
+        my $search = {
+            criterias => [
+                {
+                    name => 'search',
+                    type => 'text',
+                    value => 'h.name:' . $self->{option_results}->{host_name}
+                },
+                {
+                    name => 'sort',
+                    type => 'array',
+                    value => [
+                        'name',
+                        'asc'
+                    ]
+                }
+            ]
+        };
+        my $details = {
+            id => $self->{option_results}->{host_id},
+            resourcesDetailsEndpoint => '/centreon/api/latest/monitoring/resources/hosts/' . $self->{option_results}->{host_id},
+            tab => 'details'
+        };
+
+        my $uri = URI::Encode->new({encode_reserved => 1});
+        my $search_encoded = $uri->encode(encode_json($search));
+        my $details_encoded = $uri->encode(encode_json($details));
+
+        push @{$message->{potentialAction}}, {
+            '@type' => 'OpenUri',
+            name    => 'View in Centreon',
+            targets => [{
+                'os'  => 'default',
+                'uri' => $self->{option_results}->{centreon_url} .'/monitoring/resources?filter=' . $search_encoded . '&details=' . $details_encoded
+            }]
+        };     
+    }
+
+    return $message;
+}
+
+sub service_message {
+    my ($self, %options) = @_;
+
+    my $message;
+    $message->{sections} = [];
+    $message->{themecolor} = ($self->{option_results}->{type} =~ /^problem|recovery$/i) ? $color_service{lc($self->{option_results}->{service_state})}->{background} : $color_service{lc($self->{option_results}->{type})}->{background};
+    
+    my @facts = [];
+    if ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Service has been acknowledged';
+        $message->{title} = 'Service <b>' . $self->{option_results}->{service_description} . '</b> on host <b>' . $self->{option_results}->{host_name} . '</b> has been acknowledged';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimestart$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Service has entered a downtime period';
+        $message->{title} = 'Service <b>' . $self->{option_results}->{service_description} . '</b> on host <b>' . $self->{option_results}->{host_name} . '</b> has entered a downtime period';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimeend|downtimecancelled$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Service has exited a downtime period';
+        $message->{title} = 'Service <b>' . $self->{option_results}->{service_description} . '</b> on host <b>' . $self->{option_results}->{host_name} . '</b> has exited a downtime period';
+    } else {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Service is ' . $self->{option_results}->{service_state};
+        my $formatted_status = ucfirst(lc($self->{option_results}->{service_state}));
+        my $chip = '<span style="color:' . $color_service{lc($self->{option_results}->{service_state})}->{text} . ';background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . ';border-radius:10px;justify-content:center;padding-left:1em;padding-right:1em;margin-right:1em;letter-spacing:0.01071em">' . $formatted_status . '</span>';
+        $message->{title} = $chip . ' Service <b>' . $self->{option_results}->{service_description} . '</b> on host <b>' . $self->{option_results}->{host_name} . '</b>';
+        $message->{text} = $self->{option_results}->{service_output};
+        @facts = (
+            { name => 'Service', value => $self->{option_results}->{service_description} },
+            { name => 'Host', value => $self->{option_results}->{host_name} },
+            { name => 'Host alias', value => $self->{option_results}->{host_alias} }
+        );
+        push @facts, { name => 'Host address', value => $self->{option_results}->{host_address} } if (defined($self->{option_results}->{host_address}) && $self->{option_results}->{host_address} ne '');
+        push @facts, { name => 'Additionnal information', value => $self->{option_results}->{service_longoutput} } if (defined($self->{option_results}->{service_longoutput}) && $self->{option_results}->{service_longoutput} ne '');
+    }
+
+    push @{$message->{sections}}, {
+        activityTitle => $message->{title},
+        activitySubtitle => $self->{option_results}->{date}
+    };
+    $message->{sections}[0]->{text} = $message->{text} if (defined($message->{text}) && $message->{text} ne '');
+    push @{$message->{sections}[0]->{facts}}, @facts if (scalar(@facts) > 1);
+
+    if (defined($self->{option_results}->{add_link})) {        
+        my $search = {
+            criterias => [
+                {
+                    name => 'search',
+                    type => 'text',
+                    value => 'h.name:' . $self->{option_results}->{host_name} . ' s.description:'. $self->{option_results}->{service_description}
+                }
+            ]
+        };
+        my $details = {
+            id => $self->{option_results}->{service_id},
+            resourcesDetailsEndpoint => '/centreon/api/latest/monitoring/resources/hosts/' . $self->{option_results}->{host_id} . '/services/' . $self->{option_results}->{service_id},
+            tab => 'details'
+        };
+
+        my $uri = URI::Encode->new({encode_reserved => 1});
+        my $search_encoded = $uri->encode(encode_json($search));
+        my $details_encoded = $uri->encode(encode_json($details));
+
+        push @{$message->{potentialAction}}, {
+            '@type' => 'OpenUri',
+            name    => 'View in Centreon',
+            targets => [{
+                'os'  => 'default',
+                'uri' => $self->{option_results}->{centreon_url} .'/monitoring/resources?filter=' . $search_encoded . '&details=' . $details_encoded
+            }]
+        };     
+    }
+
+    return $message;
+}
+
+sub bam_message {
+    my ($self, %options) = @_;
+
+    my $message;
+    $message->{sections} = [];
+    $message->{themecolor} = ($self->{option_results}->{type} =~ /^problem|recovery$/i) ? $color_service{lc($self->{option_results}->{service_state})}->{background} : $color_service{lc($self->{option_results}->{type})}->{background};
+    
+    my @facts = [];
+    if ($self->{option_results}->{type} =~ /^acknowledgement$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Business Activity has been acknowledged';
+        $message->{title} = 'Business Activity <b>' . $self->{option_results}->{service_displayname} . '</b> has been acknowledged';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimestart$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Business Activity has entered a downtime period';
+        $message->{title} = 'Business Activity <b>' . $self->{option_results}->{service_displayname} . '</b> has entered a downtime period';
+        @facts = (
+            { name => 'Author', value => $self->{option_results}->{notif_author} },
+            { name => 'Comment', value => $self->{option_results}->{notif_comment} }
+        );
+    } elsif ($self->{option_results}->{type} =~ /^downtimeend|downtimecancelled$/i) {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Business Activity has exited a downtime period';
+        $message->{title} = 'Business Activity <b>' . $self->{option_results}->{service_displayname} . '</b> has exited a downtime period';
+    } else {
+        $message->{summary} = ucfirst(lc($self->{option_results}->{type})) . ' Notification : Business Activity is ' . $self->{option_results}->{service_state};
+        my $formatted_status = ucfirst(lc($self->{option_results}->{service_state}));
+        my $chip = '<span style="color:' . $color_service{lc($self->{option_results}->{service_state})}->{text} . ';background-color:' . $color_service{lc($self->{option_results}->{service_state})}->{background} . ';border-radius:10px;justify-content:center;padding-left:1em;padding-right:1em;margin-right:1em;letter-spacing:0.01071em">' . $formatted_status . '</span>';
+        $message->{title} = $chip . ' Business Activity <b>' . $self->{option_results}->{service_displayname} . '</b>';
+        push @facts, { name => 'Additionnal information', value => $self->{option_results}->{service_longoutput} } if (defined($self->{option_results}->{service_longoutput}) && $self->{option_results}->{service_longoutput} ne '');
+    }
+
+    push @{$message->{sections}}, {
+        activityTitle => $message->{title},
+        activitySubtitle => $self->{option_results}->{date}
+    };
+    $message->{sections}[0]->{text} = $message->{text} if (defined($message->{text}) && $message->{text} ne '');
+    push @{$message->{sections}[0]->{facts}}, @facts if (scalar(@facts) > 1);
+
+    return $message;
 }
 
 sub build_message {
     my ($self, %options) = @_;
 
-    my $teams_colors = {
-        ACKNOWLEDGEMENT => 'fefc8e',
-        DOWNTIMEEND => 'f1dfff',
-        DOWNTIMESTART => 'f1dfff',
-        RECOVERY => '42f56f',
-        PROBLEM => {
-            host => {
-                up          => '42f56f',
-                down        => 'f21616',
-                unreachable => 'f21616'
-            },
-            service => {
-                ok => '42f56f',
-                warning => 'f59042',
-                critical => 'f21616',
-                unknown => '757575'
-            }
-        }
-    };
-
-    $self->{sections} = [];
-    $self->{notif_type} = $self->{option_results}->{notif_type};
-    my $resource_type = defined($self->{option_results}->{host_state}) ? 'host' : 'service';
-    my $formatted_resource = ucfirst($resource_type);
-    $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
-
-    push @{$self->{sections}}, {
-        activityTitle => $self->{notif_type} . ': ' . $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
-        activitySubtitle => $resource_type eq 'service' ? 'Host ' . $self->{option_results}->{host_name} : ''
-    };
-    $self->{themecolor} = $teams_colors->{$self->{notif_type}};
-    if ($self->{option_results}->{notif_type} eq 'PROBLEM') {
-        $self->{themecolor} = $teams_colors->{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
-    }
-
-    if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
-        push @{$self->{sections}[0]->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
-    }
-
-    if (defined($self->{option_results}->{date}) && $self->{option_results}->{date} ne '') {
-        push @{$self->{sections}[0]->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
-    }
-
-    if (defined($self->{option_results}->{extra_info}) && $self->{option_results}->{extra_info} !~ m/^\/\/$/) {
-        if ($self->{option_results}->{extra_info} =~ m/^(.*)\/\/(.*)$/) {
-            push @{$self->{sections}[0]->{facts}}, {
-                name  => 'Additional Information',
-                value => sprintf($self->{option_results}->{extra_info_format}, $1, $2)
-            };
-        }
-    }
-
-    if (defined($self->{option_results}->{action_links})) {
-        if (!defined($self->{option_results}->{centreon_url}) || $self->{option_results}->{centreon_url} eq ''){
-            $self->{output}->add_option_msg(short_msg => 'Please set --centreon-url option');
-            $self->{output}->option_exit();
-        }
-        my $uri = URI::Encode->new({encode_reserved => 0});
-        my $link_url_path;
-        
-        if (defined($self->{option_results}->{legacy})){
-            $link_url_path = '/main.php?p=2020'; # deprecated pages
-            $link_url_path .= ($resource_type eq 'service') ?
-                '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&search=' . $self->{option_results}->{service_name} :
-                '2&o=svc&host_search=' . $self->{option_results}->{host_name};
-
-            my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
+    if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
+        if (defined($self->{option_results}->{host_name}) && $self->{option_results}->{host_name} =~ /Module_BAM/i) {
+            $self->bam_message();
         } else {
-            $link_url_path = $self->build_resource_status_filters();
-        }        
-
-        my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url}) . $link_url_path;
-
-        push @{$self->{potentialAction}}, {
-            '@type' => 'OpenUri',
-            name    => 'Details',
-            targets => [{
-                'os'  => 'default',
-                'uri' => $link_uri_encoded
-            }]
-        };
-
-        if ($resource_type eq 'service') {
-            my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
-
-            $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
-            my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
-            push @{$self->{potentialAction}}, {
-                '@type' => 'OpenUri',
-                name    => 'Graph',
-                targets => [{
-                    'os'  => 'default',
-                    'uri' => $graph_uri_encoded
-                }]
-            };
+            $self->service_message();
         }
-        
+    } else {
+        $self->host_message();
     }
-    return $self;
 }
 
 sub run {
@@ -296,9 +428,7 @@ sub run {
 
     my $json_request = $self->build_payload();
     my $response = $options{custom}->teams_post_notification(
-        channel_id   => $self->{teams}->{channel_id},
-        json_request => $self->{json_payload},
-        team_id      => $self->{teams}->{team_id}
+        json_request => $self->{json_payload}
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -310,22 +440,45 @@ __END__
 
 =head1 MODE
 
-Send notifications to a Microsoft Teams Channel.
+Send notifications to a Microsoft Teams team's channel.
 
-Example for a Host:
-centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --teams-webhook='https:/teams.microsoft.com/1/channel/...'
---host-name='my_host_1' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%'
---centreon-url='https://127.0.0.1/centreon' --action-links'
+Example for a host:
+
+centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=webhookapi
+-teams-webhook='https://toto.webhook.office.com/webhookb2/...' --notification-type='PROBLEM' ---host-name='my_host_1'
+--host-alias='tha_host' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%' --host-id='342'
+--add-link --centreon-url='https://127.0.0.1/centreon'
+
+Example of configuration:
+
+centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=webhookapi
+--notification-type='$NOTIFICATIONTYPE$' --host-name='$HOSTNAME$' --host-address='$HOSTADDRESS$' --host-alias='$HOSTALIAS$'
+--host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-id='$HOSTID$' --service-description='$SERVICEDESC$'
+--service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-id='$SERVICEID$' --date='$SHORTDATETIME$'
+--notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --add-link --centreon-url='$CENTREONURL$'
+--teams-webhook='$CONTACTPAGER$' --timeout=10
 
 =over 8
 
 =item B<--notification-type>
 
-Specify the notification type (required).
+Specify the notification type.
+
+=item B<--host-id>
+
+ID of the host.
+
+=item B<--host-address>
+
+IP Address of the host (not mandatory).
 
 =item B<--host-name>
 
-Specify Host server name for the alert (required).
+Specify Host server name for the alert.
+
+=item B<--host-alias>
+
+Alias of the host.
 
 =item B<--host-state>
 
@@ -335,9 +488,17 @@ Specify Host server state for the alert.
 
 Specify Host server output message for the alert.
 
-=item B<--service-desc>
+=item B<--service-id>
+
+ID of the service.
+
+=item B<--service-description>
 
 Specify Service description name for the alert.
+
+=item B<--service-displayname>
+
+Specify Service displayname name for the alert (used by BAM alerts).
 
 =item B<--service-state>
 
@@ -347,37 +508,30 @@ Specify Service state for the alert.
 
 Specify Service output message for the alert.
 
-=item B<--action-links>
+=item B<--service-longoutput>
 
-Only to be used with Centreon.
-Add actions links buttons to the notification card (resource status & graph page).
-
-=item B<--centreon-url>
-
-Specify the Centreon interface URL (to be used with the action links).
-Syntax: --centreon-url='https://mycentreon.mydomain.local/centreon'
-
-=item B<--bam>
-
-Compatibility with Centreon BAM notifications.
+Long output of the service (not mandatory).
 
 =item B<--date>
 
 Specify the date & time of the event.
 
-=item B<--extra-info>
+=item B<--notif-author>
 
-Specify extra information about author and comment (only for ACK and DOWNTIME types).
+Author of the notification.
 
-=item B<--extra-info-format>
+=item B<--notif-comment>
 
-Specify the extra info display format (default: 'Author: %s, Comment: %s').
+Comment for the notification.
 
-=item B<--legacy>
+=item B<--add-link>
 
-Only to be used with Centreon.
-Permit redirection to Centreon legacy resource status pages.
-To be used with --action-links.
+Add a link to Centreon resource into Teams card.
+
+=item B<--centreon-url>
+
+Specify the Centreon interface URL (to be used with the action links).
+Syntax: --centreon-url='https://mycentreon.mydomain.local/centreon'
 
 =back
 
