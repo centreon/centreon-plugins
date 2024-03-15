@@ -4,6 +4,6 @@
     "plugin_name": "centreon_datacore_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-        "storage/datacore/api/"
+        "storage/datacore/restapi/"
     ]
 }
