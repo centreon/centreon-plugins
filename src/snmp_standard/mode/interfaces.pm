@@ -1208,10 +1208,9 @@ sub get_selection {
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface}) 
         && $self->{no_interfaceid_options} == 0) {
         my $regex = $self->{option_results}->{interface};
-        foreach (@{$all_ids}) {
-            my $id = $_;
+        for my $id (@{$all_ids}) {
             if ($id =~ /(^|\s|,)$regex(\s*,|$)/) {
-                $self->add_selected_interface(id => $_);
+                $self->add_selected_interface(id => $id);
             }
         }
     } else {
