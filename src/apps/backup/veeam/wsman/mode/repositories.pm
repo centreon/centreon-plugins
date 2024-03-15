@@ -225,9 +225,7 @@ __END__
 
 =head1 MODE
 
-EXPERIMENTAL Mode : Community-supported only (no support from Centreon at this time)
-
-Check repositories.
+[EXPERIMENTAL] Monitor repositories.
 
 =over 8
 

@@ -48,8 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-EXPERIMENTAL Plugin : Community-supported only (no support from Centreon at this time)
-
-Check Veeam through powershell.
+[EXPERIMENTAL] Monitor Veeam backup server using powershell script via WSMAN protocol.
 
 =cut
