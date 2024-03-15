@@ -19,3 +19,4 @@ tests/**            @centreon/owners-robot-e2e
 .github/**          @centreon/owners-pipelines
 packaging/**        @centreon/owners-pipelines
 selinux/**          @centreon/owners-pipelines
+.github/scripts/pod_spell_check.t  @centreon/owners-perl
