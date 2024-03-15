@@ -11,11 +11,12 @@ oneaccess-sys-mib
 perfdata
 powershell
 proto
-Sansymphony
 queue-messages-inflighted
+Sansymphony
 SNMP
 space-usage-prct
 SSH
 SureBackup
 topic-messages-inflighted
 Veeam
+WSMAN
