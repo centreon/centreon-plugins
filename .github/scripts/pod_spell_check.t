@@ -8,7 +8,7 @@ if (!@ARGV) {
     die "Missing perl file to check.";
 }
 
-my $stopword_filename='.github/scripts/stopwords.t';
+my $stopword_filename='tests/resources/spellcheck/stopwords.t';
 if(defined($ARGV[1])){
     $stopword_filename=$ARGV[1];
 }
