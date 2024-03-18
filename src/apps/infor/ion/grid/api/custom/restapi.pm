@@ -51,7 +51,8 @@ sub new {
             'timeout:s'              => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'cookies-file:s'         => { name => 'cookies_file' }
         });
     }
 
@@ -83,6 +84,7 @@ sub check_options {
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{cookies_file} = (defined($self->{option_results}->{cookies_file})) ? $self->{option_results}->{cookies_file} : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -109,6 +111,7 @@ sub build_options_for_httplib {
         $self->{option_results}->{username} = $self->{api_username};
         $self->{option_results}->{password} = $self->{api_password};
     }
+    $self->{option_results}->{cookies_file} = $self->{cookies_file};
 }
 
 sub settings {
