@@ -934,6 +934,7 @@ sub new {
         'add-global'               => { name => 'add_global' },
         'add-status'               => { name => 'add_status' },
         'add-duplex-status'        => { name => 'add_duplex_status' },
+        'regex-id'                 => { name => 'regex_id' },
         'warning-status:s'         => { name => 'warning_status', default => $self->default_warning_status() },
         'critical-status:s'        => { name => 'critical_status', default => $self->default_critical_status() },
         'check-metrics:s'          => { name => 'check_metrics', default => $self->default_check_metrics() },
@@ -1207,9 +1208,12 @@ sub get_selection {
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface}) 
         && $self->{no_interfaceid_options} == 0) {
-        my $regex = $self->{option_results}->{interface};
+        
         for my $id (@{$all_ids}) {
-            if ($id =~ /(^|\s|,)$regex(\s*,|$)/) {
+
+            if (defined($self->{option_results}->{regex_id}) and $id =~ /$self->{option_results}->{interface}/
+                or !defined($self->{option_results}->{regex_id}) and $self->{option_results}->{interface}  =~ /(^|\s|,)$id(\s*,|$)/ 
+               ) {
                 $self->add_selected_interface(id => $id);
             }
         }
@@ -1688,11 +1692,16 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
+Define the interface filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all interfaces will be monitored. 
+To filter on interface names, see --name.
 
 =item B<--name>
 
-Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
+With this option, the interfaces will be filtered by name (given in option --interface) instead of OID index. The name matching mode supports regular expressions.
+
+=item B<--regex-id>
+
+With this option, interface IDs will be filtered using the --interface parameter as a regular expression instead of a list of IDs.
 
 =item B<--speed>
 
