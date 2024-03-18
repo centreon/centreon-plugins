@@ -68,7 +68,7 @@ sub get_access_token {
     my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
     my $post_json = JSON::XS->new->utf8->encode($login);
     if (!defined($self->{auth_path}) || $self->{auth_path} eq '') {
-       $self->{auth_path} = $self->{auth_method};
+        $self->{auth_path} = $self->{auth_method};
     }
     my $url_path = '/v1/auth/'. $self->{auth_path} . '/login/';
     $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
