@@ -1,0 +1,275 @@
+#!/bin/bash
+case "$*" in
+    --version)
+        cat <<'EOF'
+systemd 252 (252-18.el9)
++PAM +AUDIT +SELINUX -APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS -FIDO2 +IDN2 -IDN -IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT -QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK +XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified
+EOF
+        ;;
+    '-a --no-pager --plain --legend=false')
+        cat <<'EOF'
+boot.automount                               not-found inactive dead      boot.automount
+proc-sys-fs-binfmt_misc.automount            loaded    active   waiting   Arbitrary Executable File Formats File Syst…
+dev-disk-by\x2ddiskseq-1.device              loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2did-ata\x2dVBOX_HARDDISK_VBd2… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2did-ata\x2dVBOX_HARDDISK_VBd2… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2did-ata\x2dVBOX_HARDDISK_VBd2… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2did-scsi\x2d0ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2did-scsi\x2d0ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2did-scsi\x2d0ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2did-scsi\x2d1ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2did-scsi\x2d1ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2did-scsi\x2d1ATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2did-scsi\x2dSATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2did-scsi\x2dSATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2did-scsi\x2dSATA_VBOX_HARDDIS… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2dpartuuid-44ac7039\x2d2ef4\x2… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2dpartuuid-4d2e7c69\x2d19ea\x2… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK 1
+dev-disk-by\x2dpath-pci\x2d0000:00:0d.0\x2d… loaded    active   plugged   VBOX_HARDDISK 2
+dev-disk-by\x2duuid-04468d69\x2ddd58\x2d4fc… loaded    active   plugged   VBOX_HARDDISK 2
+dev-rfkill.device                            loaded    active   plugged   /dev/rfkill
+dev-sda.device                               loaded    active   plugged   VBOX_HARDDISK
+dev-sda1.device                              loaded    active   plugged   VBOX_HARDDISK 1
+dev-sda2.device                              loaded    active   plugged   VBOX_HARDDISK 2
+dev-ttyS0.device                             loaded    active   plugged   /dev/ttyS0
+dev-ttyS1.device                             loaded    active   plugged   /dev/ttyS1
+dev-ttyS2.device                             loaded    active   plugged   /dev/ttyS2
+dev-ttyS3.device                             loaded    active   plugged   /dev/ttyS3
+sys-devices-pci0000:00-0000:00:03.0-net-enp… loaded    active   plugged   82540EM Gigabit Ethernet Controller (PRO/10…
+sys-devices-pci0000:00-0000:00:08.0-net-enp… loaded    active   plugged   82540EM Gigabit Ethernet Controller (PRO/10…
+sys-devices-pci0000:00-0000:00:0d.0-ata3-ho… loaded    active   plugged   VBOX_HARDDISK 1
+sys-devices-pci0000:00-0000:00:0d.0-ata3-ho… loaded    active   plugged   VBOX_HARDDISK 2
+sys-devices-pci0000:00-0000:00:0d.0-ata3-ho… loaded    active   plugged   VBOX_HARDDISK
+sys-devices-platform-serial8250-tty-ttyS0.d… loaded    active   plugged   /sys/devices/platform/serial8250/tty/ttyS0
+sys-devices-platform-serial8250-tty-ttyS1.d… loaded    active   plugged   /sys/devices/platform/serial8250/tty/ttyS1
+sys-devices-platform-serial8250-tty-ttyS2.d… loaded    active   plugged   /sys/devices/platform/serial8250/tty/ttyS2
+sys-devices-platform-serial8250-tty-ttyS3.d… loaded    active   plugged   /sys/devices/platform/serial8250/tty/ttyS3
+sys-devices-virtual-misc-rfkill.device       loaded    active   plugged   /sys/devices/virtual/misc/rfkill
+sys-module-configfs.device                   loaded    active   plugged   /sys/module/configfs
+sys-module-fuse.device                       loaded    active   plugged   /sys/module/fuse
+sys-subsystem-net-devices-enp0s3.device      loaded    active   plugged   82540EM Gigabit Ethernet Controller (PRO/10…
+sys-subsystem-net-devices-enp0s8.device      loaded    active   plugged   82540EM Gigabit Ethernet Controller (PRO/10…
+-.mount                                      loaded    active   mounted   Root Mount
+boot.mount                                   not-found inactive dead      boot.mount
+dev-hugepages.mount                          loaded    active   mounted   Huge Pages File System
+dev-mqueue.mount                             loaded    active   mounted   POSIX Message Queue File System
+home.mount                                   not-found inactive dead      home.mount
+proc-fs-nfsd.mount                           loaded    inactive dead      NFSD configuration filesystem
+proc-sys-fs-binfmt_misc.mount                loaded    inactive dead      Arbitrary Executable File Formats File Syst…
+run-credentials-systemd\x2dsysctl.service.m… loaded    active   mounted   /run/credentials/systemd-sysctl.service
+run-credentials-systemd\x2dtmpfiles\x2dsetu… loaded    active   mounted   /run/credentials/systemd-tmpfiles-setup.ser…
+run-credentials-systemd\x2dtmpfiles\x2dsetu… loaded    active   mounted   /run/credentials/systemd-tmpfiles-setup-dev…
+run-user-0.mount                             loaded    active   mounted   /run/user/0
+sys-fs-fuse-connections.mount                loaded    active   mounted   FUSE Control File System
+sys-kernel-config.mount                      loaded    active   mounted   Kernel Configuration File System
+sys-kernel-debug.mount                       loaded    active   mounted   Kernel Debug File System
+sys-kernel-tracing.mount                     loaded    active   mounted   Kernel Trace File System
+sysroot.mount                                not-found inactive dead      sysroot.mount
+tmp.mount                                    loaded    inactive dead      Temporary Directory /tmp
+vagrant.mount                                loaded    failed   failed    /vagrant
+var-lib-nfs-rpc_pipefs.mount                 loaded    active   mounted   RPC Pipe File System
+systemd-ask-password-console.path            loaded    active   waiting   Dispatch Password Requests to Console Direc…
+systemd-ask-password-wall.path               loaded    active   waiting   Forward Password Requests to Wall Directory…
+init.scope                                   loaded    active   running   System and Service Manager
+session-3.scope                              loaded    active   running   Session 3 of User root
+auditd.service                               loaded    active   running   Security Auditing Service
+auth-rpcgss-module.service                   loaded    inactive dead      Kernel Module supporting RPCSEC_GSS
+autofs.service                               not-found inactive dead      autofs.service
+cbd.service                                  loaded    active   running   Centreon Broker watchdog
+centengine.service                           loaded    inactive dead      Centreon Engine
+centreon.service                             loaded    active   exited    One Service to rule them all.
+centreontrapd.service                        loaded    active   running   Centreon Trapd Daemon is a Centreon program…
+chronyd.service                              loaded    active   running   NTP client/server
+crond.service                                loaded    active   running   Command Scheduler
+dbus-broker.service                          loaded    active   running   D-Bus System Message Bus
+display-manager.service                      not-found inactive dead      display-manager.service
+dnf-makecache.service                        loaded    inactive dead      dnf makecache
+dracut-cmdline.service                       loaded    inactive dead      dracut cmdline hook
+dracut-initqueue.service                     loaded    inactive dead      dracut initqueue hook
+dracut-mount.service                         loaded    inactive dead      dracut mount hook
+dracut-pre-mount.service                     loaded    inactive dead      dracut pre-mount hook
+dracut-pre-pivot.service                     loaded    inactive dead      dracut pre-pivot and cleanup hook
+dracut-pre-trigger.service                   loaded    inactive dead      dracut pre-trigger hook
+dracut-pre-udev.service                      loaded    inactive dead      dracut pre-udev hook
+dracut-shutdown-onfailure.service            loaded    inactive dead      Service executing upon dracut-shutdown fail…
+dracut-shutdown.service                      loaded    active   exited    Restore /run/initramfs on shutdown
+emergency.service                            loaded    inactive dead      Emergency Shell
+getty@tty1.service                           loaded    active   running   Getty on tty1
+gorgoned.service                             loaded    active   running   Centreon Gorgone
+gssproxy.service                             loaded    active   running   GSSAPI Proxy Daemon
+httpd-init.service                           not-found inactive dead      httpd-init.service
+httpd.service                                loaded    active   running   The Apache HTTP Server
+import-state.service                         loaded    active   exited    Import network configuration from initramfs
+initrd-cleanup.service                       loaded    inactive dead      Cleaning Up and Shutting Down Daemons
+initrd-parse-etc.service                     loaded    inactive dead      Mountpoints Configured in the Real Root
+initrd-switch-root.service                   loaded    inactive dead      Switch Root
+initrd-udevadm-cleanup-db.service            loaded    inactive dead      Cleanup udev Database
+irqbalance.service                           loaded    active   running   irqbalance daemon
+kdump.service                                loaded    active   exited    Crash recovery kernel arming
+kmod-static-nodes.service                    loaded    active   exited    Create List of Static Device Nodes
+ldconfig.service                             loaded    inactive dead      Rebuild Dynamic Linker Cache
+loadmodules.service                          loaded    inactive dead      Load legacy module configuration
+logrotate.service                            loaded    failed   failed    Rotate log files
+mariadb.service                              loaded    active   running   MariaDB 10.5.24 database server
+microcode.service                            loaded    inactive dead      Load CPU microcode update
+modprobe@configfs.service                    loaded    inactive dead      Load Kernel Module configfs
+modprobe@drm.service                         loaded    inactive dead      Load Kernel Module drm
+modprobe@fuse.service                        loaded    inactive dead      Load Kernel Module fuse
+network.service                              not-found inactive dead      network.service
+NetworkManager-wait-online.service           loaded    active   exited    Network Manager Wait Online
+NetworkManager.service                       loaded    active   running   Network Manager
+nfs-idmapd.service                           loaded    inactive dead      NFSv4 ID-name mapping service
+nfs-mountd.service                           loaded    inactive dead      NFS Mount Daemon
+nfs-server.service                           loaded    inactive dead      NFS server and services
+nfs-utils.service                            loaded    inactive dead      NFS server and client services
+nfsdcld.service                              loaded    inactive dead      NFSv4 Client Tracking Daemon
+nis-domainname.service                       loaded    active   exited    Read and set NIS domainname from /etc/sysco…
+ntpd.service                                 not-found inactive dead      ntpd.service
+ntpdate.service                              not-found inactive dead      ntpdate.service
+php-fpm.service                              loaded    active   running   The PHP FastCGI Process Manager
+plymouth-quit-wait.service                   not-found inactive dead      plymouth-quit-wait.service
+plymouth-start.service                       not-found inactive dead      plymouth-start.service
+rc-local.service                             loaded    inactive dead      /etc/rc.d/rc.local Compatibility
+rescue.service                               loaded    inactive dead      Rescue Shell
+rpc-gssd.service                             loaded    inactive dead      RPC security service for NFS client and ser…
+rpc-statd-notify.service                     loaded    active   exited    Notify NFS peers of a restart
+rpc-statd.service                            loaded    inactive dead      NFS status monitor for NFSv2/3 locking.
+rpc-svcgssd.service                          not-found inactive dead      rpc-svcgssd.service
+rpcbind.service                              loaded    active   running   RPC Bind
+rsyslog.service                              loaded    active   running   System Logging Service
+selinux-autorelabel-mark.service             loaded    inactive dead      Mark the need to relabel after reboot
+snmpd.service                                loaded    active   running   Simple Network Management Protocol (SNMP) D…
+snmptrapd.service                            loaded    active   running   Simple Network Management Protocol (SNMP) T…
+sntp.service                                 not-found inactive dead      sntp.service
+sshd-keygen@ecdsa.service                    loaded    inactive dead      OpenSSH ecdsa Server Key Generation
+sshd-keygen@ed25519.service                  loaded    inactive dead      OpenSSH ed25519 Server Key Generation
+sshd-keygen@rsa.service                      loaded    inactive dead      OpenSSH rsa Server Key Generation
+sshd.service                                 loaded    active   running   OpenSSH server daemon
+sssd-kcm.service                             loaded    inactive dead      SSSD Kerberos Cache Manager
+sssd.service                                 loaded    inactive dead      System Security Services Daemon
+syslog.service                               not-found inactive dead      syslog.service
+systemd-ask-password-console.service         loaded    inactive dead      Dispatch Password Requests to Console
+systemd-ask-password-wall.service            loaded    inactive dead      Forward Password Requests to Wall
+systemd-binfmt.service                       loaded    inactive dead      Set Up Additional Binary Formats
+systemd-boot-system-token.service            loaded    inactive dead      Store a System Token in an EFI Variable
+systemd-firstboot.service                    loaded    inactive dead      First Boot Wizard
+systemd-fsck-root.service                    loaded    inactive dead      File System Check on Root Device
+systemd-hwdb-update.service                  loaded    inactive dead      Rebuild Hardware Database
+systemd-initctl.service                      loaded    inactive dead      initctl Compatibility Daemon
+systemd-journal-catalog-update.service       loaded    inactive dead      Rebuild Journal Catalog
+systemd-journal-flush.service                loaded    active   exited    Flush Journal to Persistent Storage
+systemd-journald.service                     loaded    active   running   Journal Service
+systemd-logind.service                       loaded    active   running   User Login Management
+systemd-machine-id-commit.service            loaded    inactive dead      Commit a transient machine-id on disk
+systemd-modules-load.service                 loaded    inactive dead      Load Kernel Modules
+systemd-network-generator.service            loaded    active   exited    Generate network units from Kernel command …
+systemd-pcrphase-initrd.service              loaded    inactive dead      TPM2 PCR Barrier (initrd)
+systemd-pcrphase-sysinit.service             loaded    inactive dead      TPM2 PCR Barrier (Initialization)
+systemd-pcrphase.service                     loaded    inactive dead      TPM2 PCR Barrier (User)
+systemd-random-seed.service                  loaded    active   exited    Load/Save Random Seed
+systemd-remount-fs.service                   loaded    active   exited    Remount Root and Kernel File Systems
+systemd-repart.service                       loaded    inactive dead      Repartition Root Disk
+systemd-rfkill.service                       loaded    inactive dead      Load/Save RF Kill Switch Status
+systemd-sysctl.service                       loaded    active   exited    Apply Kernel Variables
+systemd-sysext.service                       loaded    inactive dead      Merge System Extension Images into /usr/ an…
+systemd-sysusers.service                     loaded    inactive dead      Create System Users
+systemd-timesyncd.service                    not-found inactive dead      systemd-timesyncd.service
+systemd-tmpfiles-clean.service               loaded    inactive dead      Cleanup of Temporary Directories
+systemd-tmpfiles-setup-dev.service           loaded    active   exited    Create Static Device Nodes in /dev
+systemd-tmpfiles-setup.service               loaded    active   exited    Create Volatile Files and Directories
+systemd-tmpfiles.service                     not-found inactive dead      systemd-tmpfiles.service
+systemd-udev-settle.service                  loaded    inactive dead      Wait for udev To Complete Device Initializa…
+systemd-udev-trigger.service                 loaded    active   exited    Coldplug All udev Devices
+systemd-udevd.service                        loaded    active   running   Rule-based Manager for Device Events and Fi…
+systemd-update-done.service                  loaded    inactive dead      Update is Completed
+systemd-update-utmp-runlevel.service         loaded    inactive dead      Record Runlevel Change in UTMP
+systemd-update-utmp.service                  loaded    active   exited    Record System Boot/Shutdown in UTMP
+systemd-user-sessions.service                loaded    active   exited    Permit User Sessions
+systemd-vconsole-setup.service               loaded    inactive dead      Setup Virtual Console
+user-runtime-dir@0.service                   loaded    active   exited    User Runtime Directory /run/user/0
+user@0.service                               loaded    active   running   User Manager for UID 0
+vboxadd-service.service                      loaded    failed   failed    vboxadd-service.service
+vboxadd.service                              loaded    failed   failed    vboxadd.service
+ypbind.service                               not-found inactive dead      ypbind.service
+yppasswdd.service                            not-found inactive dead      yppasswdd.service
+ypserv.service                               not-found inactive dead      ypserv.service
+ypxfrd.service                               not-found inactive dead      ypxfrd.service
+-.slice                                      loaded    active   active    Root Slice
+system-getty.slice                           loaded    active   active    Slice /system/getty
+system-modprobe.slice                        loaded    active   active    Slice /system/modprobe
+system-sshd\x2dkeygen.slice                  loaded    active   active    Slice /system/sshd-keygen
+system.slice                                 loaded    active   active    System Slice
+user-0.slice                                 loaded    active   active    User Slice of UID 0
+user.slice                                   loaded    active   active    User and Session Slice
+dbus.socket                                  loaded    active   running   D-Bus System Message Bus Socket
+rpcbind.socket                               loaded    active   running   RPCbind Server Activation Socket
+sssd-kcm.socket                              loaded    active   listening SSSD Kerberos Cache Manager responder socket
+syslog.socket                                loaded    inactive dead      Syslog Socket
+systemd-coredump.socket                      loaded    active   listening Process Core Dump Socket
+systemd-initctl.socket                       loaded    active   listening initctl Compatibility Named Pipe
+systemd-journald-dev-log.socket              loaded    active   running   Journal Socket (/dev/log)
+systemd-journald.socket                      loaded    active   running   Journal Socket
+systemd-rfkill.socket                        loaded    active   listening Load/Save RF Kill Switch Status /dev/rfkill…
+systemd-udevd-control.socket                 loaded    active   running   udev Control Socket
+systemd-udevd-kernel.socket                  loaded    active   running   udev Kernel Socket
+basic.target                                 loaded    active   active    Basic System
+blockdev@dev-disk-by\x2duuid-04468d69\x2ddd… loaded    inactive dead      Block Device Preparation for /dev/disk/by-u…
+cryptsetup-pre.target                        loaded    inactive dead      Local Encrypted Volumes (Pre)
+cryptsetup.target                            loaded    active   active    Local Encrypted Volumes
+emergency.target                             loaded    inactive dead      Emergency Mode
+first-boot-complete.target                   loaded    inactive dead      First Boot Complete
+getty-pre.target                             loaded    inactive dead      Preparation for Logins
+getty.target                                 loaded    active   active    Login Prompts
+graphical.target                             loaded    inactive dead      Graphical Interface
+initrd-fs.target                             loaded    inactive dead      Initrd File Systems
+initrd-root-device.target                    loaded    inactive dead      Initrd Root Device
+initrd-root-fs.target                        loaded    inactive dead      Initrd Root File System
+initrd-switch-root.target                    loaded    inactive dead      Switch Root
+initrd-usr-fs.target                         loaded    inactive dead      Initrd /usr File System
+initrd.target                                loaded    inactive dead      Initrd Default Target
+integritysetup.target                        loaded    active   active    Local Integrity Protected Volumes
+local-fs-pre.target                          loaded    active   active    Preparation for Local File Systems
+local-fs.target                              loaded    active   active    Local File Systems
+multi-user.target                            loaded    active   active    Multi-User System
+network-online.target                        loaded    active   active    Network is Online
+network-pre.target                           loaded    active   active    Preparation for Network
+network.target                               loaded    active   active    Network
+nfs-client.target                            loaded    active   active    NFS client services
+nss-lookup.target                            loaded    inactive dead      Host and Network Name Lookups
+nss-user-lookup.target                       loaded    active   active    User and Group Name Lookups
+paths.target                                 loaded    active   active    Path Units
+remote-cryptsetup.target                     loaded    inactive dead      Remote Encrypted Volumes
+remote-fs-pre.target                         loaded    active   active    Preparation for Remote File Systems
+remote-fs.target                             loaded    inactive dead      Remote File Systems
+remote-veritysetup.target                    loaded    inactive dead      Remote Verity Protected Volumes
+rescue.target                                loaded    inactive dead      Rescue Mode
+rpc_pipefs.target                            loaded    active   active    rpc_pipefs.target
+rpcbind.target                               loaded    active   active    RPC Port Mapper
+shutdown.target                              loaded    inactive dead      System Shutdown
+slices.target                                loaded    active   active    Slice Units
+sockets.target                               loaded    active   active    Socket Units
+sshd-keygen.target                           loaded    active   active    sshd-keygen.target
+swap.target                                  loaded    active   active    Swaps
+sysinit.target                               loaded    active   active    System Initialization
+syslog.target                                not-found inactive dead      syslog.target
+time-set.target                              loaded    inactive dead      System Time Set
+time-sync.target                             loaded    inactive dead      System Time Synchronized
+timers.target                                loaded    active   active    Timer Units
+umount.target                                loaded    inactive dead      Unmount All Filesystems
+veritysetup-pre.target                       loaded    inactive dead      Local Verity Protected Volumes (Pre)
+veritysetup.target                           loaded    active   active    Local Verity Protected Volumes
+dnf-makecache.timer                          loaded    active   waiting   dnf makecache --timer
+logrotate.timer                              loaded    active   waiting   Daily rotation of log files
+systemd-tmpfiles-clean.timer                 loaded    active   waiting   Daily Cleanup of Temporary Directories
+EOF
+        ;;
+    *)
+        echo "Unknown option"
+        ;;
+esac
+
