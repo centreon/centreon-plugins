@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Infor-Eventhub-Api",
+    "pkg_summary": "Centreon Plugin to monitor Infor EventHub using API",
+    "plugin_name": "centreon_infor_eventhub_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/infor/eventhub/"
+    ]
+}
