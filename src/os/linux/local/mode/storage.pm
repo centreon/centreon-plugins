@@ -25,13 +25,17 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+# Function to generate performance data for storage usage
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     my $label = $self->{nlabel};
     my $value_perf = $self->{result_values}->{used};
-    if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'storage.space.free.bytes';
+
+    # Adjust label and value if checking free space for a specific mount point
+    if (defined($self->{instance_mode}->{option_results}->{free_mountpoint}) &&
+        $self->{instance_mode}->{option_results}->{free_mountpoint} eq $self->{result_values}->{display}) {
+        $label = 'usage_' . $self->{result_values}->{display} . '_free';
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -52,20 +56,33 @@ sub custom_usage_perfdata {
     );
 }
 
+# Function to handle usage thresholds
 sub custom_usage_threshold {
     my ($self, %options) = @_;
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+
+    # Adjust threshold value if checking free space for a specific mount point
+    if (defined($self->{instance_mode}->{option_results}->{free_mountpoint}) &&
+        $self->{instance_mode}->{option_results}->{free_mountpoint} eq $self->{result_values}->{display}) {
+        $threshold_value = $self->{result_values}->{free};
+    }
+
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free_mountpoint}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+
+    # Perform threshold check and return exit status
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [
+        { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+        { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+    ]);
     return $exit;
 }
 
+# Function to format output message for storage usage
 sub custom_usage_output {
     my ($self, %options) = @_;
 
@@ -80,6 +97,7 @@ sub custom_usage_output {
     );
 }
 
+# Function to calculate storage usage values
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
@@ -97,49 +115,87 @@ sub custom_usage_calc {
     return 0;
 }
 
+# Function to add a prefix to the output message for each storage
 sub prefix_disks_output {
     my ($self, %options) = @_;
-    
+
     return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
+# Function to set counters for storage usage
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'disks', type => 1, cb_prefix_output => 'prefix_disks_output', message_multiple => 'All storages are ok' }
     ];
-    
+
     $self->{maps_counters}->{disks} = [
         { label => 'usage', nlabel => 'storage.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold')
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         }
     ];
+
+    foreach my $mount (keys %{$self->{disks}}) {
+        my $label = 'usage_' . $self->{disks}->{$mount}->{display};
+
+        if (defined($self->{option_results}->{free_mountpoint}) &&
+            $self->{option_results}->{free_mountpoint} eq $mount) {
+            $label .= '_free';
+        }
+
+        $self->{maps_counters}->{disks}->[0]->{set}->{threshold}->{$label . '-warning'} = { label => $label . '-warning', exit_litteral => 'warning' };
+        $self->{maps_counters}->{disks}->[0]->{set}->{threshold}->{$label . '-critical'} = { label => $label . '-critical', exit_litteral => 'critical' };
+
+        $self->{maps_counters}->{disks}->[0]->{set}->{key_values} = [ { name => 'display' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ];
+        $self->{maps_counters}->{disks}->[0]->{set}->{closure_custom_calc} = $self->can('custom_usage_calc');
+        $self->{maps_counters}->{disks}->[0]->{set}->{closure_custom_output} = $self->can('custom_usage_output');
+        $self->{maps_counters}->{disks}->[0]->{set}->{closure_custom_perfdata} = $self->can('custom_usage_perfdata');
+        $self->{maps_counters}->{disks}->[0]->{set}->{closure_custom_threshold_check} = $self->can('custom_usage_threshold');
+
+        $self->{maps_counters}->{disks}->[0]->{set}->{threshold}->{$label . '-warning'}->{threshold} = $self->{disks}->{$mount}->{threshold_warning};
+        $self->{maps_counters}->{disks}->[0]->{set}->{threshold}->{$label . '-critical'}->{threshold} = $self->{disks}->{$mount}->{threshold_critical};
+
+        $self->{maps_counters}->{disks}->[0]->{set}->{nlabel} = 'B';
+        $self->{maps_counters}->{disks}->[0]->{set}->{unit} = 'B';
+        $self->{maps_counters}->{disks}->[0]->{set}->{output} = 'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)';
+        $self->{maps_counters}->{disks}->[0]->{set}->{perf_columns_format} = {
+            label => 'B',
+            value => '%.2f',
+            warning => '%.2f',
+            critical => '%.2f',
+            min => 0, max => $self->{disks}->{$mount}->{total},
+        };
+    }
 }
 
+# Constructor for the script
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
+    # Add script-specific options
     $options{options}->add_options(arguments => {
         'filter-type:s'        => { name => 'filter_type' },
         'filter-fs:s'          => { name => 'filter_fs' },
         'exclude-fs:s'         => { name => 'exclude_fs' },
         'filter-mountpoint:s'  => { name => 'filter_mountpoint' },
         'exclude-mountpoint:s' => { name => 'exclude_mountpoint' },
-        'units:s'              => { name => 'units', default => '%' },
-        'free'                 => { name => 'free' }
+        'threshold-warning:s@' => { name => 'threshold_warning', default => [] },
+        'threshold-critical:s@' => { name => 'threshold_critical', default => [] },
+        'free-mountpoint:s'    => { name => 'free_mountpoint' },
     });
 
     return $self;
 }
 
+# Function to collect storage information using the 'df' command
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -155,6 +211,7 @@ sub manage_selection {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
 
+        # Apply filters to skip unwanted entries
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
             $fs !~ /$self->{option_results}->{filter_fs}/);
         next if (defined($self->{option_results}->{exclude_fs}) && $self->{option_results}->{exclude_fs} ne '' &&
@@ -166,6 +223,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{exclude_mountpoint}) && $self->{option_results}->{exclude_mountpoint} ne '' &&
             $mount =~ /$self->{option_results}->{exclude_mountpoint}/);
 
+        # Store disk information
         $self->{disks}->{$mount} = {
             display => $mount,
             fs => $fs,
@@ -176,6 +234,7 @@ sub manage_selection {
         };
     }
 
+    # Handle case when no disks are found
     if (scalar(keys %{$self->{disks}}) <= 0) {
         if ($exit_code != 0) {
             $self->{output}->output_add(long_msg => "command output:" . $stdout);
@@ -197,21 +256,13 @@ Command used: df -P -k -T 2>&1
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--threshold-warning>
 
-Warning threshold.
+Threshold warning for usage (percents or bytes).
 
-=item B<--critical-usage>
+=item B<--threshold-critical>
 
-Critical threshold.
-
-=item B<--units>
-
-Units of thresholds (default: '%') ('%', 'B').
-
-=item B<--free>
-
-Thresholds are on free space left.
+Threshold critical for usage (percents or bytes).
 
 =item B<--filter-mountpoint>
 
@@ -233,6 +284,11 @@ Filter filesystem (regexp can be used).
 
 Exclude filesystem (regexp can be used).
 
+=item B<--free-mountpoint>
+
+Check free space instead of used space for a specific mount point.
+
 =back
 
 =cut
+
