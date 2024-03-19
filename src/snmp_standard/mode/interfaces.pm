@@ -1690,7 +1690,7 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
@@ -1731,7 +1731,7 @@ Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32-bits counters (even with SNMP versions 2c and 3). To use when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 
