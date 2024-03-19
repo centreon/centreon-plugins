@@ -1,9 +1,16 @@
 --filter-vdom
 --force-counters32
+--oid-display
+--oid-extra-display
+--oid-filter
 Centreon
 Datacore
 Fortigate
 Fortinet
+ifAlias
+ifDesc
+ifName
+IpAddr
 license-instances-usage-prct
 MBean
 OID
