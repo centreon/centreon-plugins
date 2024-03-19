@@ -50,6 +50,7 @@ sub new {
             'proto:s'                => { name => 'proto' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'auth-method:s'          => { name => 'auth_method', default => 'token' },
+            'auth-path:s'            => { name => 'auth_path' },
             'auth-settings:s%'       => { name => 'auth_settings' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'vault-token:s'          => { name => 'vault_token'}
@@ -78,6 +79,10 @@ sub check_options {
     if ($self->{option_results}->{auth_method} eq 'token' && (!defined($self->{option_results}->{vault_token}) || $self->{option_results}->{vault_token} eq '')) {
         $self->{output}->add_option_msg(short_msg => "Please set the --vault-token option");
         $self->{output}->option_exit();
+    };
+
+    if (defined($options{option_results}->{auth_path})) {		
+        $self->{auth_path} = lc($options{option_results}->{auth_path});
     };
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
@@ -151,7 +156,10 @@ sub get_access_token {
         my $decoded;
         my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
         my $post_json = JSON::XS->new->utf8->encode($login);
-        my $url_path = '/' . $self->{api_version} . '/auth/'. $self->{auth_method} . '/login/';
+        if (!defined($self->{auth_path}) || $self->{auth_path} eq '') {
+            $self->{auth_path} = $self->{auth_method};
+        }
+        my $url_path = '/' . $self->{api_version} . '/auth/'. $self->{auth_path} . '/login/';
         $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
 
         my $content = $self->{http}->request(
@@ -283,6 +291,12 @@ If different from 'token' the "--auth-settings" options must be set.
 Specify the Vault authentication specific settings.
 Syntax: --auth-settings='<setting>=<value>'.Example for the 'userpass' method:
 --auth-method='userpass' --auth-settings='username=my_account' --auth-settings='password=my_password'
+
+=item B<--auth-path>
+
+Authentication path for 'userpass'. Is an optional setting.
+
+More information here: https://developer.hashicorp.com/vault/docs/auth/userpass#configuration
 
 =item B<--timeout>
 
