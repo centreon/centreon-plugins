@@ -14,29 +14,29 @@ Test Timeout        120s
 ${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}cloud-azure-policyinsights-policystates.json
 
-${LOGIN_ENDPOINT}       http://localhost:3001/login
+${LOGIN_ENDPOINT}       http://localhost:3000/login
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --login-endpoint=${LOGIN_ENDPOINT}
 
 &{compliance_value1}
-...                     endpoint=http://localhost:3001/ok
+...                     endpoint=http://localhost:3000/ok
 ...                     policyname=
 ...                     resourcelocation=
 ...                     resourcetype=
 ...                     result=OK: Number of non compliant policies: 0 - All compliances states are ok | 'policies.non_compliant.count'=0;;;0;
 &{compliance_value2}
-...                     endpoint=http://localhost:3001/oknextlink
+...                     endpoint=http://localhost:3000/oknextlink
 ...                     policyname=9daedab3-fb2d-461e-b861-71790eead4f6
 ...                     resourcelocation=
 ...                     resourcetype=
 ...                     result=OK: Number of non compliant policies: 0 - All compliances states are ok | 'policies.non_compliant.count'=0;;;0;
 &{compliance_value3}
-...                     endpoint=http://localhost:3001/nok1
+...                     endpoint=http://localhost:3000/nok1
 ...                     policyname=9daedab3-fb2d-461e-b861-71790eead4f6
 ...                     resourcelocation=fr
 ...                     resourcetype=
 ...                     result=CRITICAL: Compliance state for policy '9daedab3-fb2d-461e-b861-71790eead4f6' on resource 'mypubip1' is 'NonCompliant' | 'policies.non_compliant.count'=1;;;0;
 &{compliance_value4}
-...                     endpoint=http://localhost:3001/nok2
+...                     endpoint=http://localhost:3000/nok2
 ...                     policyname=9daedab3-fb2d-461e-b861-71790eead4f6
 ...                     resourcelocation=fr
 ...                     resourcetype=ip
