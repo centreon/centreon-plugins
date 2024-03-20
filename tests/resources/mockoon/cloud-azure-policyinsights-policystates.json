@@ -1,11 +1,11 @@
 {
   "uuid": "101906e9-f832-416c-8781-880c33a0a778",
-  "lastMigration": 25,
+  "lastMigration": 32,
   "name": "Azure API",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3000,
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "folders": [],
   "routes": [
     {
@@ -16,7 +16,7 @@
       "responses": [
         {
           "uuid": "0c775d57-8661-4c4f-9f30-a3a134d6d09c",
-          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'random.numeric' 10 }}\"\n}",
+          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'string.numeric' 10 }}\"\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -29,11 +29,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "3f190dd9-690a-413a-bafa-5c9d369b7d22",
@@ -56,11 +58,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "31c8940d-4623-444c-92e1-f340fe74b5b3",
@@ -83,11 +87,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "13bf6e0e-8843-4681-942e-404b01326f32",
@@ -110,11 +116,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "1eb461f8-c128-432b-a7ca-7ddd71c28fa4",
@@ -137,11 +145,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     }
   ],
   "rootChildren": [
@@ -197,5 +207,6 @@
       "value": ""
     }
   ],
-  "data": []
+  "data": [],
+  "callbacks": []
 }
