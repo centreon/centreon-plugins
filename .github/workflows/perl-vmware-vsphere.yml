@@ -41,7 +41,7 @@ jobs:
         shell: bash
 
       - name: Cache vsphere cli sources
-        uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+        uses: actions/cache/save@ab5e6d0c87105b4c9c2047343972218f562e4319 # v4.0.1
         with:
           path: vmware-vsphere-cli-distrib
           key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
@@ -98,7 +98,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Import source files
-        uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+        uses: actions/cache/restore@ab5e6d0c87105b4c9c2047343972218f562e4319 # v4.0.1
         with:
           path: vmware-vsphere-cli-distrib
           key: ${{ github.sha }}-${{ github.run_id }}-sources-perl-vmware-vsphere
