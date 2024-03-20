@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "plink",
+        "libssh-session-perl",
+        "libfilesys-smbclient-perl",
+        "libdatetime-perl"
+    ]
+}

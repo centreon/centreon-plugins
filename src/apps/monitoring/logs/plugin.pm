@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::cifs::plugin;
+package apps::monitoring::logs::plugin;
 
 use strict;
 use warnings;
@@ -30,15 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'connection'  => 'apps::protocols::cifs::mode::connection',
-        'files'       => 'apps::protocols::cifs::mode::files',
-        'files-count' => 'apps::protocols::cifs::mode::filescount',
-        'files-date'  => 'apps::protocols::cifs::mode::filesdate',
-        'files-size'  => 'apps::protocols::cifs::mode::filessize',
-        'scenario'    => 'apps::protocols::cifs::mode::scenario'
+        'parse' => 'apps::monitoring::logs::mode::parse'
     };
 
-    $self->{custom_modes}->{libcifs} = 'centreon::common::protocols::cifs::custom::libcifs';
+    $self->{custom_modes}->{web} = 'centreon::common::monitoring::logs::custom::web';
+    $self->{custom_modes}->{file} = 'centreon::common::monitoring::logs::custom::file';
+    $self->{custom_modes}->{cifs} = 'centreon::common::monitoring::logs::custom::cifs';
     return $self;
 }
 
@@ -48,8 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check a CIFS/SMB server.
-
-Need: https://github.com/garnier-quentin/Filesys-SmbClient
+Parse plain text logs in file (local, remote or cifs) or web page.
 
 =cut

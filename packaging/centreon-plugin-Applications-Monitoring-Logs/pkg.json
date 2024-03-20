@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Logs",
+    "pkg_summary": "Centreon Plugin to monitor applications or equipments by parsing logs",
+    "plugin_name": "centreon_monitoring_logs.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "centreon/common/monitoring/logs/",
+        "centreon/common/protocols/cifs/custom/libcifs.pm",
+        "apps/monitoring/logs/"
+    ]
+}
