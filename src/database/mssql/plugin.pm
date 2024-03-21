@@ -43,6 +43,8 @@ sub new {
         'failed-jobs'          => 'database::mssql::mode::failedjobs',
         'list-databases'       => 'database::mssql::mode::listdatabases',
         'locks-waits'          => 'database::mssql::mode::lockswaits',
+        'memory-grants'        => 'database::mssql::mode::memorygrants',
+        'memory-usage'         => 'database::mssql::mode::memoryusage',
         'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
