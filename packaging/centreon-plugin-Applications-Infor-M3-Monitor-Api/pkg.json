@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Infor-M3-Monitor-Api",
+    "pkg_summary": "Centreon Plugin to monitor Infor M3 Monitor using API",
+    "plugin_name": "centreon_infor_m3_monitor_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/infor/m3/monitor/api"
+    ]
+}
