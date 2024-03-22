@@ -214,6 +214,7 @@ sub do_map {
     my ($self, %options) = @_;
 
     return if (!defined($options{option_results}->{map_option}));
+
     foreach (@{$options{option_results}->{map_option}}) {
         next if (! /^(.+?)=(.+)$/);
 
@@ -223,10 +224,19 @@ sub do_map {
         while ($map =~ /\%\{(.*?)\}/g) {
             my $sub = '';
             $sub = $self->{lookup_values}->{$1} if (defined($self->{lookup_values}->{$1}));
-            $map =~ s/\%\{$1\}/$sub/g;
+            $map =~ s/\%\{$1\}/$sub/g
         }
+
         $option =~ s/-/_/g;
-        $options{option_results}->{$option} = $map;
+        if ($option =~ /\@(.*)/) {
+            push @{$options{option_results}->{$1}}, $map;
+        } elsif ($option =~ /\%(.*)/) {
+            my $opt = $1;
+            next if ($map !~ /^(.+?)=(.+)$/);
+            $options{option_results}->{$opt}->{$1} = $2;
+        } else {
+            $options{option_results}->{$option} = $map;
+        }
     }
 }
 
@@ -305,9 +315,18 @@ Overload Plugin option with K/V values.
 Use the following syntax:
 the_option_to_overload='%{key_$secret_path$}' or
 the_option_to_overload='%{value_$secret_path$}'
-Example:
---map-option='username=%{key_mysecrets/servicecredentials}'
---map-option='password=%{value_mysecrets/servicecredentials}'
+
+Examples:
+
+For simple options:
+--map-option="password=%{value_mysecrets/servicecredentials}"
+--map-option="username=%{key_mysecrets/servicecredentials}"
+
+For options that can be set multiple times (ex Jolokia plugins):
+--map-option="@username=%{key_mysecrets/servicecredentials}"
+
+For options that are used to set key/value couple (ex Collection plugins):
+--map-option="%constant=password=%{value_mysecrets/servicecredentials}"
 
 =back
 

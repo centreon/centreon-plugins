@@ -121,6 +121,7 @@ sub do_map {
     my ($self, %options) = @_;
     
     return if (!defined($options{option_results}->{keepass_map_option}));
+    
     foreach (@{$options{option_results}->{keepass_map_option}}) {
         next if (! /^(.+?)=(.+)$/);
         my ($option, $map) = ($1, $2);
@@ -129,11 +130,19 @@ sub do_map {
         while ($map =~ /\%\{(.*?)\}/g) {
             my $sub = '';
             $sub = $self->{lookup_values}->{$1} if (defined($self->{lookup_values}->{$1}));
-            $map =~ s/\%\{$1\}/$sub/g
+            $map =~ s/\%\{$1\}/$sub/g;
         }
 
         $option =~ s/-/_/g;
-        $options{option_results}->{$option} = $map;
+        if ($option =~ /\@(.*)/) {
+            push @{$options{option_results}->{$1}}, $map;
+        } elsif ($option =~ /\%(.*)/) {
+            my $opt = $1;
+            next if ($map !~ /^(.+?)=(.+)$/);
+            $options{option_results}->{$opt}->{$1} = $2;
+        } else {
+            $options{option_results}->{$option} = $map;
+        }
     }
 }
 
@@ -198,9 +207,18 @@ Example:
 =item B<--keepass-map-option>
 
 Overload plugin option.
-Example:
+
+Examples:
+
+For simple options:
 --keepass-map-option="password=%{password}"
 --keepass-map-option="username=%{username}"
+
+For options that can be set multiple times (ex Jolokia plugins):
+--keepass-map-option="@username=%{username}"
+
+For options that are used to set key/value couple (ex Collection plugins):
+--keepass-map-option="%constant=password=%{password}"
 
 =back
 
