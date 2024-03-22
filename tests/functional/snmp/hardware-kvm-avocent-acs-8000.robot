@@ -1,8 +1,7 @@
 *** Settings ***
 Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
 
-Library             OperatingSystem
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 

@@ -1,20 +1,17 @@
 *** Settings ***
 Documentation       datacore rest api plugin
 
-Library             Examples
-Library             OperatingSystem
-Library             Process
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Start Mockoon
+Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-*** Variables ***
-${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage-datacore-restapi.json
 
-${CMD}                  perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
+*** Variables ***
+${MOCKOON_JSON}     ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage-datacore-restapi.json
+
+${CMD}              perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
 
 
 *** Test Cases ***
@@ -29,9 +26,23 @@ Datacore check pool usage
     ...    ${result}
     ...    Wrong output result for pool usage :\n\n ${output} \n\n ${result}\n\n
 
-    Examples:    warning-bytesallocatedpercentage      critical-bytesallocatedpercentage    warning-oversubscribed      critical-oversubscribed    result   --
-        ...      2    5    -1    3    CRITICAL: Bytes Allocated : 12 % WARNING: Over subscribed bytes : 0 | 'datacore.pool.bytesallocated.percentage'=12%;0:2;0:5;0;100 'datacore.pool.oversubscribed.bytes'=0bytes;0:-1;0:3;0;
-        ...      70    80    10    20    OK: Bytes Allocated : 12 % - Over subscribed bytes : 0 | 'datacore.pool.bytesallocated.percentage'=12%;0:70;0:80;0;100 'datacore.pool.oversubscribed.bytes'=0bytes;0:10;0:20;0;
+    Examples:
+    ...    warning-bytesallocatedpercentage
+    ...    critical-bytesallocatedpercentage
+    ...    warning-oversubscribed
+    ...    critical-oversubscribed
+    ...    result
+    ...    --
+    ...    2
+    ...    5
+    ...    -1
+    ...    3
+    ...    CRITICAL: Bytes Allocated : 12 % WARNING: Over subscribed bytes : 0 | 'datacore.pool.bytesallocated.percentage'=12%;0:2;0:5;0;100 'datacore.pool.oversubscribed.bytes'=0bytes;0:-1;0:3;0;
+    ...    70
+    ...    80
+    ...    10
+    ...    20
+    ...    OK: Bytes Allocated : 12 % - Over subscribed bytes : 0 | 'datacore.pool.bytesallocated.percentage'=12%;0:70;0:80;0;100 'datacore.pool.oversubscribed.bytes'=0bytes;0:10;0:20;0;
 
 Datacore check alert count
     [Documentation]    Check Datacore pool usage
@@ -44,9 +55,23 @@ Datacore check alert count
     ...    ${result}
     ...    Wrong output result for alert count :\n\n ${output} \n\n ${result}\n\n
 
-    Examples:    warning-error    critical-error    warning-warning    critical-warning    result   --
-        ...      0    1    5    5    WARNING: number of error alerts : 1 | 'datacore.event.error.count'=1;0:0;0:1;0; 'datacore.alerts.warning.count'=1;0:5;0:5;0; 'datacore.alerts.info.count'=0;;;0; 'datacore.alerts.trace.count'=0;;;0;
-        ...      5    5    5    5    OK: number of error alerts : 1, number of warning alerts : 1, number of info alerts : 0, number of trace alerts : 0 | 'datacore.event.error.count'=1;0:5;0:5;0; 'datacore.alerts.warning.count'=1;0:5;0:5;0; 'datacore.alerts.info.count'=0;;;0; 'datacore.alerts.trace.count'=0;;;0;
+    Examples:
+    ...    warning-error
+    ...    critical-error
+    ...    warning-warning
+    ...    critical-warning
+    ...    result
+    ...    --
+    ...    0
+    ...    1
+    ...    5
+    ...    5
+    ...    WARNING: number of error alerts : 1 | 'datacore.event.error.count'=1;0:0;0:1;0; 'datacore.alerts.warning.count'=1;0:5;0:5;0; 'datacore.alerts.info.count'=0;;;0; 'datacore.alerts.trace.count'=0;;;0;
+    ...    5
+    ...    5
+    ...    5
+    ...    5
+    ...    OK: number of error alerts : 1, number of warning alerts : 1, number of info alerts : 0, number of trace alerts : 0 | 'datacore.event.error.count'=1;0:5;0:5;0; 'datacore.alerts.warning.count'=1;0:5;0:5;0; 'datacore.alerts.info.count'=0;;;0; 'datacore.alerts.trace.count'=0;;;0;
 
 Datacore check status monitor
     [Documentation]    Check Datacore pool usage
@@ -59,8 +84,9 @@ Datacore check status monitor
     ...    ${result}
     ...    Wrong output result for status monitor :\n${output} \nresult:\n${result}\n\n
 
-    Examples:    result   --
-        ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
+    Examples:    result    --
+    ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
+
 
 *** Keywords ***
 Start Mockoon
