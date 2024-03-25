@@ -25,8 +25,8 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ($class, %options) = @_;
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{modes} = {

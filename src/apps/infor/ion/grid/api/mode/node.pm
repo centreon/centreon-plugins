@@ -63,74 +63,81 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes are ok' },
+        { name             =>
+          'nodes',
+          type             =>
+          1,
+          cb_prefix_output =>
+          'prefix_node_output',
+          message_multiple =>
+          'All nodes are ok' },
     ];
 
     $self->{maps_counters}->{nodes} = [
         {
-            label => 'status',
-            type => 2,
+            label           => 'status',
+            type            => 2,
             warning_default => '%{state} !~ /online/',
-            set => {
-                key_values => [
+            set             => {
+                key_values                     => [
                     { name => 'state' }, { name => 'name' }, { name => 'host_name' },
                     { name => 'application_name' }, { name => 'type' }, { name => 'pid' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'log-error', nlabel => 'node.log.error.count', set => {
-                key_values => [ { name => 'logger_error' }, { name => 'pid' } ],
-                output_template => 'Log error: %d',
-                perfdatas => [
-                    { template => '%d', min => 0,
-                      label_extra_instance => 1, instance_use => 'pid' }
-                ]
-            }
+            key_values      => [{ name => 'logger_error' }, { name => 'pid' }],
+            output_template => 'Log error: %d',
+            perfdatas       => [
+                { template             => '%d', min => 0,
+                  label_extra_instance => 1, instance_use => 'pid' }
+            ]
+        }
         },
         { label => 'log-warning', nlabel => 'node.log.warning.count', set => {
-                key_values => [ { name => 'logger_warning' }, { name => 'pid' } ],
-                output_template => 'Log warning: %d',
-                perfdatas => [
-                    { template => '%d', min => 0,
-                      label_extra_instance => 1, instance_use => 'pid' }
-                ]
-            }
+            key_values      => [{ name => 'logger_warning' }, { name => 'pid' }],
+            output_template => 'Log warning: %d',
+            perfdatas       => [
+                { template             => '%d', min => 0,
+                  label_extra_instance => 1, instance_use => 'pid' }
+            ]
+        }
         },
         { label => 'uptime', nlabel => 'node.uptime.seconds', set => {
-                key_values => [ { name => 'uptime' }, { name => 'uptime_human' } ],
-                output_template => 'Uptime: %s',
-                output_use => 'uptime_human',
-                closure_custom_perfdata => sub { return 0; },
-            }
+            key_values              => [{ name => 'uptime' }, { name => 'uptime_human' }],
+            output_template         => 'Uptime: %s',
+            output_use              => 'uptime_human',
+            closure_custom_perfdata => sub { return 0; },
+        }
         },
         { label => 'cpu-usage', nlabel => 'node.cpu.usage.percentage', set => {
-                key_values => [ { name => 'cpu_percent' }, { name => 'pid' } ],
-                output_template => 'CPU usage: %.2f%%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'pid' }
-                ]
-            }
+            key_values      => [{ name => 'cpu_percent' }, { name => 'pid' }],
+            output_template => 'CPU usage: %.2f%%',
+            perfdatas       => [
+                { template             => '%.2f', min => 0, max => 100, unit => '%',
+                  label_extra_instance => 1, instance_use => 'pid' }
+            ]
+        }
         },
         { label => 'heap-usage', nlabel => 'node.heap.usage.percentage', set => {
-                key_values => [ { name => 'heap_percent' }, { name => 'heap_used' },
-                                { name => 'heap_max' }, { name => 'pid' } ],
-                closure_custom_output => $self->can('custom_heap_output'),
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%',
-                    label_extra_instance => 1, instance_use => 'pid' }
-                ]
-            }
+            key_values            => [{ name => 'heap_percent' }, { name => 'heap_used' },
+                                      { name => 'heap_max' }, { name => 'pid' }],
+            closure_custom_output => $self->can('custom_heap_output'),
+            perfdatas             => [
+                { template             => '%.2f', min => 0, max => 100, unit => '%',
+                  label_extra_instance => 1, instance_use => 'pid' }
+            ]
+        }
         }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -152,33 +159,50 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => '/grid/rest/nodes'
     );
 
     foreach my $entry (@{$result}) {
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
-            && $entry->{entityType} !~ /$self->{option_results}->{filter_type}/i);
+                 && $entry->{entityType} !~ /$self->{option_results}->{filter_type}/i);
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $entry->{name} !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_host_name}) && $self->{option_results}->{filter_host_name} ne ''
-            && $entry->{hostName} !~ /$self->{option_results}->{filter_host_name}/);
-        next if (defined($self->{option_results}->{filter_application_name}) && $self->{option_results}->{filter_application_name} ne ''
-            && $entry->{applicationName} !~ /$self->{option_results}->{filter_application_name}/);
+                 && $entry->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_host_name}) && $self->{option_results}->{filter_host_name}
+                                                                         ne ''
+                 && $entry->{hostName} !~ /$self->{option_results}->{filter_host_name}/);
+        next if (defined($self->{option_results}->{filter_application_name}) &&                                 $self
+                                                                                                                    ->{option_results}
+                                                                                                                    ->{filter_application_name}
+                                                                                                                ne ''
+                 && $entry->{applicationName} !~ /$self->{option_results}->{filter_application_name}/);
         $self->{nodes}->{$entry->{jvmId}} = {
-            type => ucfirst(lc($entry->{entityType})),
-            name => $entry->{name},
-            application_name => $entry->{applicationName},
-            host_name => $entry->{hostName},
-            uptime => ($entry->{upTime} > 0) ? $entry->{upTime} / 1000 : 0,
-            uptime_human => ($entry->{upTime} > 0) ? centreon::plugins::misc::change_seconds(value => $entry->{upTime} / 1000) : 0,
-            logger_error => $entry->{loggerErrorCount},
-            logger_warning => $entry->{loggerWarningCount},
-            heap_used => $entry->{memoryUsed},
-            heap_max => $entry->{memoryMax},
-            heap_percent => $entry->{memoryUsed} / $entry->{memoryMax} * 100,
-            cpu_percent => $entry->{cpuPercent},
-            state => ($entry->{online}) ? "online" : "offline"
+            type             =>
+            ucfirst(lc($entry->{entityType})),
+            name             =>
+            $entry->{name},
+            application_name =>
+            $entry->{applicationName},
+            host_name        =>
+            $entry->{hostName},
+            uptime           =>
+            ($entry->{upTime} > 0) ? $entry->{upTime} / 1000 : 0,
+            uptime_human     =>
+            ($entry->{upTime} > 0) ? centreon::plugins::misc::change_seconds(value => $entry->{upTime} / 1000) : 0,
+            logger_error     =>
+            $entry->{loggerErrorCount},
+            logger_warning   =>
+            $entry->{loggerWarningCount},
+            heap_used        =>
+            $entry->{memoryUsed},
+            heap_max         =>
+            $entry->{memoryMax},
+            heap_percent     =>
+            $entry->{memoryUsed} / $entry->{memoryMax} * 100,
+            cpu_percent      =>
+            $entry->{cpuPercent},
+            state            =>
+            ($entry->{online}) ? "online" : "offline"
         };
         $self->{nodes}->{$entry->{jvmId}}->{pid} = $1 if ($entry->{jvmId} =~ /-(\d+)$/); # 10.1.2.3:50156-5152
     }

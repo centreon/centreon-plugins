@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -44,18 +44,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => '/grid/rest/applications'
     );
-    
+
     my @applications;
-    foreach my $entry (@{$result}) {        
+    foreach my $entry (@{$result}) {
         push @applications, {
-            name => $entry->{name},
+            name        => $entry->{name},
             description => $entry->{description},
-            online => ($entry->{online}) ? "true" : "false",
-            started => ($entry->{started}) ? "true" : "false",
-            state => $entry->{globalState}->{stateText}
+            online      => ($entry->{online}) ? "true" : "false",
+            started     => ($entry->{started}) ? "true" : "false",
+            state       => $entry->{globalState}->{stateText}
         }
     }
 
@@ -80,7 +80,7 @@ sub run {
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List applications:'
     );
 

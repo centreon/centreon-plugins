@@ -29,7 +29,7 @@ use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -44,7 +44,7 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port'},
+            'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
             'api-username:s'         => { name => 'api_username' },
             'api-password:s'         => { name => 'api_password' },
@@ -59,7 +59,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
+    $self->{http}   = centreon::plugins::http->new(%options, default_backend => 'curl');
 
     return $self;
 }
@@ -75,16 +75,34 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 20;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-    $self->{cookies_file} = (defined($self->{option_results}->{cookies_file})) ? $self->{option_results}->{cookies_file} : '';
+    $self->{hostname}             = (defined($self->{option_results}->{hostname}))
+                                    ? $self->{option_results}->{hostname}
+                                    : '';
+    $self->{port}                 = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto}                = (defined($self->{option_results}->{proto}))
+                                    ? $self->{option_results}->{proto}
+                                    : 'https';
+    $self->{timeout}              = (defined($self->{option_results}->{timeout}))
+                                    ? $self->{option_results}->{timeout}
+                                    : 20;
+    $self->{api_username}         = (defined($self->{option_results}->{api_username}))
+                                    ? $self->{option_results}->{api_username}
+                                    : '';
+    $self->{api_password}         = (defined($self->{option_results}->{api_password}))
+                                    ? $self->{option_results}->{api_password}
+                                    : '';
+    $self->{unknown_http_status}  = (defined($self->{option_results}->{unknown_http_status})) ? $self
+        ->{option_results}
+        ->{unknown_http_status}     : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status}  = (defined($self->{option_results}->{warning_http_status})) ? $self
+        ->{option_results}
+        ->{warning_http_status}     : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self
+        ->{option_results}
+        ->{critical_http_status}    : '';
+    $self->{cookies_file}         = (defined($self->{option_results}->{cookies_file})) ? $self
+        ->{option_results}
+        ->{cookies_file}            : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -94,7 +112,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
-    
+
     return 0;
 }
 
@@ -102,14 +120,14 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{port}     = $self->{port};
+    $self->{option_results}->{proto}    = $self->{proto};
+    $self->{option_results}->{timeout}  = $self->{timeout};
     if ($self->{api_username} ne '') {
         $self->{option_results}->{credentials} = 1;
-        $self->{option_results}->{basic} = 1;
-        $self->{option_results}->{username} = $self->{api_username};
-        $self->{option_results}->{password} = $self->{api_password};
+        $self->{option_results}->{basic}       = 1;
+        $self->{option_results}->{username}    = $self->{api_username};
+        $self->{option_results}->{password}    = $self->{api_password};
     }
     $self->{option_results}->{cookies_file} = $self->{cookies_file};
 }
@@ -131,13 +149,16 @@ sub request_api {
 
     my $content = $self->{http}->request(
         %options,
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
+        unknown_status  => $self->{unknown_http_status},
+        warning_status  => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->add_option_msg(short_msg =>
+                                        "API returns empty content [code: '" . $self
+                                            ->{http}
+                                            ->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
 
@@ -146,7 +167,8 @@ sub request_api {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->add_option_msg(short_msg =>
+                                        "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
 

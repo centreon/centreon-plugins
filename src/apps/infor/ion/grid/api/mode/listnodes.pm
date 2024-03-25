@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -44,18 +44,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => '/grid/rest/nodes'
     );
-    
+
     my @nodes;
-    foreach my $entry (@{$result}) {        
+    foreach my $entry (@{$result}) {
         push @nodes, {
-            type => ucfirst(lc($entry->{entityType})),
-            name => $entry->{name},
+            type             => ucfirst(lc($entry->{entityType})),
+            name             => $entry->{name},
             application_name => $entry->{applicationName},
-            host_name => $entry->{hostName},
-            state => ($entry->{online}) ? "online" : "offline"
+            host_name        => $entry->{hostName},
+            state            => ($entry->{online}) ? "online" : "offline"
         }
     }
 
@@ -80,7 +80,7 @@ sub run {
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List nodes:'
     );
 

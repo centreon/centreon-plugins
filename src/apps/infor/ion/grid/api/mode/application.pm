@@ -51,21 +51,28 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'applications', type => 1, cb_prefix_output => 'prefix_application_output', message_multiple => 'All applications are ok' },
+        { name             =>
+          'applications',
+          type             =>
+          1,
+          cb_prefix_output =>
+          'prefix_application_output',
+          message_multiple =>
+          'All applications are ok' },
     ];
 
     $self->{maps_counters}->{applications} = [
         {
-            label => 'status',
-            type => 2,
+            label            => 'status',
+            type             => 2,
             critical_default => '%{online} =~ /true/ && %{state} !~ /^(OK)/i',
-            set => {
-                key_values => [
+            set              => {
+                key_values                     => [
                     { name => 'state' }, { name => 'online' }, { name => 'name' },
                     { name => 'description' }, { name => 'started' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -74,7 +81,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -93,19 +100,19 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => '/grid/rest/applications'
     );
 
-    foreach my $entry (@{$result}) {        
+    foreach my $entry (@{$result}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $entry->{name} !~ /$self->{option_results}->{filter_name}/);
+                 && $entry->{name} !~ /$self->{option_results}->{filter_name}/);
         $self->{applications}->{$entry->{name}} = {
-            name => $entry->{name},
+            name        => $entry->{name},
             description => $entry->{description},
-            online => ($entry->{online}) ? "true" : "false",
-            started => ($entry->{started}) ? "true" : "false",
-            state => $entry->{globalState}->{stateText}
+            online      => ($entry->{online}) ? "true" : "false",
+            started     => ($entry->{started}) ? "true" : "false",
+            state       => $entry->{globalState}->{stateText}
         }
     }
 
