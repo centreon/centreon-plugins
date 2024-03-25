@@ -63,14 +63,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name             =>
-          'nodes',
-          type             =>
-          1,
-          cb_prefix_output =>
-          'prefix_node_output',
-          message_multiple =>
-          'All nodes are ok' },
+        { name             => 'nodes',
+          type             => 1,
+          cb_prefix_output => 'prefix_node_output',
+          message_multiple => 'All nodes are ok' },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -164,45 +160,32 @@ sub manage_selection {
     );
 
     foreach my $entry (@{$result}) {
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
+        next if (defined($self->{option_results}->{filter_type})
+                 && $self->{option_results}->{filter_type} ne ''
                  && $entry->{entityType} !~ /$self->{option_results}->{filter_type}/i);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
+        next if (defined($self->{option_results}->{filter_name})
+                 && $self->{option_results}->{filter_name} ne ''
                  && $entry->{name} !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_host_name}) && $self->{option_results}->{filter_host_name}
-                                                                         ne ''
+        next if (defined($self->{option_results}->{filter_host_name})
+                 && $self->{option_results}->{filter_host_name} ne ''
                  && $entry->{hostName} !~ /$self->{option_results}->{filter_host_name}/);
-        next if (defined($self->{option_results}->{filter_application_name}) &&                                 $self
-                                                                                                                    ->{option_results}
-                                                                                                                    ->{filter_application_name}
-                                                                                                                ne ''
+        next if (defined($self->{option_results}->{filter_application_name})
+                 && $self->{option_results}->{filter_application_name} ne ''
                  && $entry->{applicationName} !~ /$self->{option_results}->{filter_application_name}/);
         $self->{nodes}->{$entry->{jvmId}} = {
-            type             =>
-            ucfirst(lc($entry->{entityType})),
-            name             =>
-            $entry->{name},
-            application_name =>
-            $entry->{applicationName},
-            host_name        =>
-            $entry->{hostName},
-            uptime           =>
-            ($entry->{upTime} > 0) ? $entry->{upTime} / 1000 : 0,
-            uptime_human     =>
-            ($entry->{upTime} > 0) ? centreon::plugins::misc::change_seconds(value => $entry->{upTime} / 1000) : 0,
-            logger_error     =>
-            $entry->{loggerErrorCount},
-            logger_warning   =>
-            $entry->{loggerWarningCount},
-            heap_used        =>
-            $entry->{memoryUsed},
-            heap_max         =>
-            $entry->{memoryMax},
-            heap_percent     =>
-            $entry->{memoryUsed} / $entry->{memoryMax} * 100,
-            cpu_percent      =>
-            $entry->{cpuPercent},
-            state            =>
-            ($entry->{online}) ? "online" : "offline"
+            type             => ucfirst(lc($entry->{entityType})),
+            name             => $entry->{name},
+            application_name => $entry->{applicationName},
+            host_name        => $entry->{hostName},
+            uptime           => ($entry->{upTime} > 0) ? $entry->{upTime} / 1000 : 0,
+            uptime_human     => ($entry->{upTime} > 0) ? centreon::plugins::misc::change_seconds(value => $entry->{upTime} / 1000) : 0,
+            logger_error     => $entry->{loggerErrorCount},
+            logger_warning   => $entry->{loggerWarningCount},
+            heap_used        => $entry->{memoryUsed},
+            heap_max         => $entry->{memoryMax},
+            heap_percent     => $entry->{memoryUsed} / $entry->{memoryMax} * 100,
+            cpu_percent      => $entry->{cpuPercent},
+            state            => ($entry->{online}) ? "online" : "offline"
         };
         $self->{nodes}->{$entry->{jvmId}}->{pid} = $1 if ($entry->{jvmId} =~ /-(\d+)$/); # 10.1.2.3:50156-5152
     }
