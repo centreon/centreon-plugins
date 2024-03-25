@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Infor-Ion-Grid-Api",
+    "pkg_summary": "Centreon Plugin to monitor ION Grid using API",
+    "plugin_name": "centreon_infor_ion_grid_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/infor/ion/grid/api"
+    ]
+}
