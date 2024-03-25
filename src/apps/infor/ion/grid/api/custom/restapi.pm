@@ -75,34 +75,34 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}             = (defined($self->{option_results}->{hostname}))
-                                    ? $self->{option_results}->{hostname}
+    $self->{hostname} = (defined($self->{option_results}->{hostname}))
+                        ? $self->{option_results}->{hostname}
+                        : '';
+    $self->{port}  = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto} = (defined($self->{option_results}->{proto}))
+                     ? $self->{option_results}->{proto}
+                     : 'https';
+    $self->{timeout} = (defined($self->{option_results}->{timeout}))
+                       ? $self->{option_results}->{timeout}
+                       : 20;
+    $self->{api_username} = (defined($self->{option_results}->{api_username}))
+                            ? $self->{option_results}->{api_username}
+                            : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password}))
+                            ? $self->{option_results}->{api_password}
+                            : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status}))
+                                   ? $self->{option_results}->{unknown_http_status}
+                                   : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status}))
+                                   ? $self->{option_results}->{warning_http_status}
+                                   : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status}))
+                                    ? $self->{option_results}->{critical_http_status}
                                     : '';
-    $self->{port}                 = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto}                = (defined($self->{option_results}->{proto}))
-                                    ? $self->{option_results}->{proto}
-                                    : 'https';
-    $self->{timeout}              = (defined($self->{option_results}->{timeout}))
-                                    ? $self->{option_results}->{timeout}
-                                    : 20;
-    $self->{api_username}         = (defined($self->{option_results}->{api_username}))
-                                    ? $self->{option_results}->{api_username}
-                                    : '';
-    $self->{api_password}         = (defined($self->{option_results}->{api_password}))
-                                    ? $self->{option_results}->{api_password}
-                                    : '';
-    $self->{unknown_http_status}  = (defined($self->{option_results}->{unknown_http_status})) ? $self
-        ->{option_results}
-        ->{unknown_http_status}     : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status}  = (defined($self->{option_results}->{warning_http_status})) ? $self
-        ->{option_results}
-        ->{warning_http_status}     : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self
-        ->{option_results}
-        ->{critical_http_status}    : '';
-    $self->{cookies_file}         = (defined($self->{option_results}->{cookies_file})) ? $self
-        ->{option_results}
-        ->{cookies_file}            : '';
+    $self->{cookies_file} = (defined($self->{option_results}->{cookies_file}))
+                            ? $self->{option_results}->{cookies_file}
+                            : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -155,10 +155,11 @@ sub request_api {
     );
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg =>
-                                        "API returns empty content [code: '" . $self
-                                            ->{http}
-                                            ->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '"
+                                                     . $self->{http}->get_code()
+                                                     . "'] [message: '"
+                                                     . $self->{http}->get_message()
+                                                     . "']");
         $self->{output}->option_exit();
     }
 
