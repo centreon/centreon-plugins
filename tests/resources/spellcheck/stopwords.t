@@ -4,8 +4,10 @@ Centreon
 Datacore
 Fortigate
 Fortinet
+Keysight
 license-instances-usage-prct
 MBean
+NVOS
 OID
 oneaccess-sys-mib
 perfdata
@@ -18,5 +20,6 @@ space-usage-prct
 SSH
 SureBackup
 topic-messages-inflighted
+traffic-out-prct
 Veeam
 WSMAN
