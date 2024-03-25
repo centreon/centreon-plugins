@@ -47,18 +47,33 @@ sub prefix_application_output {
     );
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Total applications ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name             =>
-          'applications',
-          type             =>
-          1,
-          cb_prefix_output =>
-          'prefix_application_output',
-          message_multiple =>
-          'All applications are ok' },
+        { name             => 'global',
+          type             => 0,
+          cb_prefix_output => 'prefix_global_output' },
+        { name             => 'applications',
+          type             => 1,
+          cb_prefix_output => 'prefix_application_output',
+          message_multiple => 'All applications are ok' },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label  => 'total',
+          nlabel => 'ion.grid.applications.total.count',
+          set    => {
+              key_values      => [{ name => 'total' }],
+              output_template => "Total : %s",
+              perfdatas       => [{ template => '%d', min => 0 }] }
+        }
     ];
 
     $self->{maps_counters}->{applications} = [
@@ -120,6 +135,8 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No applications found");
         $self->{output}->option_exit();
     }
+
+    $self->{global}->{total} = scalar(keys %{$self->{applications}});
 }
 
 1;
@@ -134,19 +151,22 @@ Check application status.
 
 =item B<--filter-name>
 
-Filter by name.
+Filter by application name (regexp can be used).
+Example: --filter-name='^application1$'
 
 =item B<--warning-status>
 
-Set warning threshold for status.
-Can use special variables like: %{state}, %{online}, %{started},
-%{name}, %{description}.
+Define the conditions to match for the status to be WARNING (default: '').
+Threshold can be matched on special variables like %{state}, %{online}, %{started},
+%{name} or %{description} and Regexp can be used.
+Typical syntax: --warning-status='%{state} ne "OK"'
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: "%{online} =~ /true/ && %{state} !~ /^(OK)/i").
-Can use special variables like: %{state}, %{online}, %{started},
-%{name}, %{description}.
+Define the conditions to match for the status to be CRITICAL (default: '%{online} =~ /true/ && %{state} !~ /^(OK)/i').
+Threshold can be matched on special variables like %{state}, %{online}, %{started},
+%{name} or %{description} and Regexp can be used.
+Typical syntax: --critical-status='%{started} ne "true"'
 
 =back
 
