@@ -222,7 +222,7 @@ Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'expires'.
+Can be: 'expires', 'last-update'
 
 =back
 
