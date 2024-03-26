@@ -127,6 +127,7 @@ sub new {
     });
 
     return $self;
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
