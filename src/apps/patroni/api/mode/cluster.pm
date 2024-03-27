@@ -140,7 +140,10 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'lag', nlabel => 'member.replication.lag.bytes', set => {
+        {
+            label => 'lag',
+            nlabel => 'member.replication.lag.bytes',
+            set => {
                 key_values => [
                     { name => 'lag' },
                     { name => 'name' }
