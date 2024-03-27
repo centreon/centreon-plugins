@@ -79,11 +79,16 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8008;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 20;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ?
+        $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ?
+        $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ?
+        $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ?
+        $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ?
+        $self->{option_results}->{critical_http_status} : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -134,7 +139,12 @@ sub request_api {
     );
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->add_option_msg(
+            short_msg => sprintf("API returns empty content [code: '%s'] [message: '%s']",
+                $self->{http}->get_code(),
+                $self->{http}->get_message()
+            )
+        );
         $self->{output}->option_exit();
     }
 
@@ -143,7 +153,9 @@ sub request_api {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->add_option_msg(
+            short_msg => "Cannot decode response (add --debug option to display returned content)"
+        );
         $self->{output}->option_exit();
     }
 

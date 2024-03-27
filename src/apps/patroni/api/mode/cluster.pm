@@ -201,7 +201,8 @@ sub manage_selection {
             %{$entry}
         };
         $self->{members}->{$entry->{name}}->{lag} = 0 if (!defined($self->{members}->{$entry->{name}}->{lag}) || 
-            (defined($self->{members}->{$entry->{name}}->{lag} && $self->{members}->{$entry->{name}}->{lag} =~ /unknown/)));
+            (defined($self->{members}->{$entry->{name}}->{lag} &&
+                $self->{members}->{$entry->{name}}->{lag} =~ /unknown/)));
 
         $self->{global}->{ $entry->{state} }++;
         $self->{global}->{total}++;
