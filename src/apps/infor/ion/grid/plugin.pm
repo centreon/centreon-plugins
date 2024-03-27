@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::infor::ion::grid::api::plugin;
+package apps::infor::ion::grid::plugin;
 
 use strict;
 use warnings;

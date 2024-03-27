@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::infor::ion::grid::api::custom::restapi;
+package apps::infor::ion::grid::custom::restapi;
 
 use base qw(centreon::plugins::mode);
 

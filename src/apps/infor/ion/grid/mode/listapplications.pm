@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::infor::ion::grid::api::mode::listapplications;
+package apps::infor::ion::grid::mode::listapplications;
 
 use base qw(centreon::plugins::mode);
 
