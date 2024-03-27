@@ -86,18 +86,3 @@ Datacore check status monitor
 
     Examples:    result    --
     ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
-
-
-*** Keywords ***
-Start Mockoon
-    ${process}    Start Process
-    ...    mockoon-cli
-    ...    start
-    ...    --data
-    ...    ${MOCKOON_JSON}
-    ...    --port
-    ...    3000
-    Sleep    5s
-
-Stop Mockoon
-    Terminate All Processes
