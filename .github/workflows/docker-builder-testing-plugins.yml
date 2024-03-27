@@ -1,4 +1,4 @@
-name: docker-builder-packaging-plugins
+name: docker-builder-testing-plugins
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -22,9 +22,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-22.04
-            dockerfile: centos7
-            image: centos7
           - runner: ubuntu-22.04
             dockerfile: alma8
             image: alma8
