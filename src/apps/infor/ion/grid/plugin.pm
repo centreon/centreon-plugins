@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'application'       => 'apps::infor::ion::grid::api::mode::application',
-        'list-applications' => 'apps::infor::ion::grid::api::mode::listapplications',
-        'list-nodes'        => 'apps::infor::ion::grid::api::mode::listnodes',
-        'node'              => 'apps::infor::ion::grid::api::mode::node'
+        'application'       => 'apps::infor::ion::grid::mode::application',
+        'list-applications' => 'apps::infor::ion::grid::mode::listapplications',
+        'list-nodes'        => 'apps::infor::ion::grid::mode::listnodes',
+        'node'              => 'apps::infor::ion::grid::mode::node'
     };
 
-    $self->{custom_modes}->{restapi} = 'apps::infor::ion::grid::api::custom::restapi';
+    $self->{custom_modes}->{restapi} = 'apps::infor::ion::grid::custom::restapi';
     return $self;
 }
 
