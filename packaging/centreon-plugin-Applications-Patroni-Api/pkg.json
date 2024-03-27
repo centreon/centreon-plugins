@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Patroni-Api",
+    "pkg_summary": "Centreon Plugin to monitor Patroni cluster using API",
+    "plugin_name": "centreon_patroni_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/patroni/api/"
+    ]
+}
