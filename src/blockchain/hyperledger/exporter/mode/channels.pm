@@ -183,7 +183,8 @@ sub search_metric {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options);
+
     $self->{channel} = {};
     $self->search_metric(
         metrics => $metrics,
