@@ -40,15 +40,15 @@ jobs:
 
       - name: Run Robot Framework API tests
         run: |
-          sudo mkdir -p /var/lib/centreon/centplugins/
-          sudo chmod 777 /var/lib/centreon/centplugins/
+          mkdir -p /var/lib/centreon/centplugins/
+          chmod 777 /var/lib/centreon/centplugins/
           robot tests/functional/api
 
       - name: Run Robot Framework SNMP tests
         run: |
-          sudo useradd snmp
-          sudo mkdir -p /usr/snmpsim/data
-          sudo cp -r tests/resources/snmp/* /usr/snmpsim/data/
+          useradd snmp
+          mkdir -p /usr/snmpsim/data
+          cp -r tests/resources/snmp/* /usr/snmpsim/data/
           snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
           robot tests/functional/snmp
 
