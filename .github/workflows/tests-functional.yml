@@ -22,8 +22,10 @@ jobs:
         include:
           - image: testing-plugins-alma8
             runner: ubuntu-22.04
+            package_extension: rpm
           - image: testing-plugins-bullseye
             runner: ubuntu-22.04
+            package_extension: deb
 
     runs-on: ${{ matrix.runner }}
 
@@ -37,6 +39,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install perl dependencies
+        run: |
+          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
+            dnf install -y perl-CPAN perl-DateTime
+          fi
+          echo|cpan
+          cpan install Paws
 
       - name: Run Robot Framework API tests
         run: |
