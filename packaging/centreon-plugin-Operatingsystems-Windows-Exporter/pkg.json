@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Windows-Exporter",
+    "pkg_summary": "Centreon Plugin to monitor Windows OS using Windows Exporter metrics",
+    "plugin_name": "centreon_windows_exporter.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/",
+        "os/windows/exporter/"
+    ]
+}

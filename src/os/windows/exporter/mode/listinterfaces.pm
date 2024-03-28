@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::mode::listinterfaces;
+package os::windows::exporter::mode::listinterfaces;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,7 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -43,14 +43,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'windows_net_current_bandwidth_bytes',
+        %options
+    );
 
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "windows_net_bytes_received_total" );
-
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{interfaces}->{$data->{dimensions}->{nic}}->{name} = $data->{dimensions}->{nic};
-        }
+    foreach my $data (@{$raw_metrics->{windows_net_current_bandwidth_bytes}->{data}}) {
+        $self->{interfaces}->{$data->{dimensions}->{nic}}->{name} = $data->{dimensions}->{nic};
+        $self->{interfaces}->{$data->{dimensions}->{nic}}->{speed} = $data->{value} * 8;
     }
 }
 
@@ -58,13 +58,19 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $interface (sort keys %{$self->{interfaces}}) {
-        $self->{output}->output_add(long_msg => '[name = ' . $interface . "]"
+    foreach (sort keys %{$self->{interfaces}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][speed: %s]",
+                $self->{interfaces}->{$_}->{name},
+                $self->{interfaces}->{$_}->{speed}
+            )
         );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Interfaces:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List interfaces:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -72,7 +78,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'speed']);
 }
 
 sub disco_show {
@@ -81,7 +87,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $interface (sort keys %{$self->{interfaces}}) {
         $self->{output}->add_disco_entry(
-            name => $self->{interfaces}->{$interface}->{name}
+            name => $self->{interfaces}->{$interface}->{name},
+            speed => $self->{interfaces}->{$interface}->{speed}
         );
     }
 }

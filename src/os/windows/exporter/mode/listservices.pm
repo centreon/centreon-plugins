@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::linux::mode::liststorages;
+package os::windows::exporter::mode::listservices;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
@@ -31,9 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -45,15 +43,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'windows_service_info',
+        %options
+    );
 
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "node_filesystem_files" );
-
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{storages}->{$data->{dimensions}->{mountpoint}}->{name} = $data->{dimensions}->{mountpoint};
-            $self->{storages}->{$data->{dimensions}->{mountpoint}}->{fstype} = $data->{dimensions}->{fstype};
-        }
+    foreach my $data (@{$raw_metrics->{windows_service_info}->{data}}) {
+        $self->{services}->{$data->{dimensions}->{name}}->{name} = $data->{dimensions}->{name};
+        $self->{services}->{$data->{dimensions}->{name}}->{display_name} = $data->{dimensions}->{display_name};
     }
 }
 
@@ -61,14 +58,19 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $storage (sort keys %{$self->{storages}}) {
-        $self->{output}->output_add(long_msg => '[mountpoint = ' . $storage . "]" .
-            "[fstype = '" . $self->{storages}->{$storage}->{fstype} . "']"
+    foreach (sort keys %{$self->{services}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][display name: %s]",
+                $self->{services}->{$_}->{name},
+                $self->{services}->{$_}->{display_name}
+            )
         );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Storages:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List services:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -76,17 +78,17 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'fstype']);
+    $self->{output}->add_disco_format(elements => ['name', 'display_name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $storage (sort keys %{$self->{storages}}) {
+    foreach my $service (sort keys %{$self->{services}}) {
         $self->{output}->add_disco_entry(
-            name => $self->{storages}->{$storage}->{name},
-            fstype => $self->{storages}->{$storage}->{fstype},
+            name => $self->{services}->{$service}->{name},
+            display_name => $self->{services}->{$service}->{display_name}
         );
     }
 }
@@ -97,7 +99,7 @@ __END__
 
 =head1 MODE
 
-List storages
+List services
 
 =over 8
 
