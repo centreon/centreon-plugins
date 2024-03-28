@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::linux::mode::liststorages;
+package os::linux::exporter::mode::liststorages;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
@@ -31,9 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -45,15 +43,15 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
-
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "node_filesystem_files" );
-
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{storages}->{$data->{dimensions}->{mountpoint}}->{name} = $data->{dimensions}->{mountpoint};
-            $self->{storages}->{$data->{dimensions}->{mountpoint}}->{fstype} = $data->{dimensions}->{fstype};
-        }
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'node_filesystem_size_bytes',
+        %options
+    );
+    
+    foreach my $data (@{$raw_metrics->{node_filesystem_size_bytes}->{data}}) {
+        $self->{storages}->{$data->{dimensions}->{mountpoint}}->{total} = int($data->{value});
+        $self->{storages}->{$data->{dimensions}->{mountpoint}}->{name} = $data->{dimensions}->{mountpoint};
+        $self->{storages}->{$data->{dimensions}->{mountpoint}}->{type} = $data->{dimensions}->{fstype};
     }
 }
 
@@ -61,14 +59,20 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $storage (sort keys %{$self->{storages}}) {
-        $self->{output}->output_add(long_msg => '[mountpoint = ' . $storage . "]" .
-            "[fstype = '" . $self->{storages}->{$storage}->{fstype} . "']"
+    foreach (sort keys %{$self->{storages}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][type: %s][total: %s]",
+                $self->{storages}->{$_}->{name},
+                $self->{storages}->{$_}->{type},
+                $self->{storages}->{$_}->{total}
+            )
         );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Storages:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List storages:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -76,7 +80,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'fstype']);
+    $self->{output}->add_disco_format(elements => ['name', 'type', 'total']);
 }
 
 sub disco_show {
@@ -86,7 +90,8 @@ sub disco_show {
     foreach my $storage (sort keys %{$self->{storages}}) {
         $self->{output}->add_disco_entry(
             name => $self->{storages}->{$storage}->{name},
-            fstype => $self->{storages}->{$storage}->{fstype},
+            type => $self->{storages}->{$storage}->{type},
+            total => $self->{storages}->{$storage}->{total}
         );
     }
 }

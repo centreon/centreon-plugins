@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::linux::plugin;
+package os::linux::exporter::plugin;
 
 use strict;
 use warnings;
@@ -31,13 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'cpu'             => 'apps::monitoring::nodeexporter::linux::mode::cpu',
-        'list-interfaces' => 'apps::monitoring::nodeexporter::linux::mode::listinterfaces',
-        'list-storages'   => 'apps::monitoring::nodeexporter::linux::mode::liststorages',
-        'load'            => 'apps::monitoring::nodeexporter::linux::mode::load',
-        'memory'          => 'apps::monitoring::nodeexporter::linux::mode::memory',
-        'storage'         => 'apps::monitoring::nodeexporter::linux::mode::storage',
-        'traffic'         => 'apps::monitoring::nodeexporter::linux::mode::traffic'
+        'cpu'             => 'os::linux::exporter::mode::cpu',
+        'cpu-detailed'    => 'os::linux::exporter::mode::cpudetailed',
+        'interface'       => 'os::linux::exporter::mode::interface',
+        'list-interfaces' => 'os::linux::exporter::mode::listinterfaces',
+        'list-storages'   => 'os::linux::exporter::mode::liststorages',
+        'load'            => 'os::linux::exporter::mode::load',
+        'memory'          => 'os::linux::exporter::mode::memory',
+        'storage'         => 'os::linux::exporter::mode::storage'
     );
 
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
@@ -50,6 +51,9 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Linux OS-based host metrics based on node exporter's metrics.
+Check Linux OS-based host metrics using Node Exporter's metrics.
+
+See https://github.com/prometheus/node_exporter for informations about
+available metrics.
 
 =cut

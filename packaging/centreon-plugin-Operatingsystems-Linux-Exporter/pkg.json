@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Linux-Exporter",
+    "pkg_summary": "Centreon Plugin to monitor Linux OS using Node Exporter metrics",
+    "plugin_name": "centreon_linux_exporter.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/",
+        "os/linux/exporter/"
+    ]
+}

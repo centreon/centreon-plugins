@@ -1,0 +1,6 @@
+{
+    "dependencies": [],
+    "replaces": [
+        "centreon-plugin-Applications-Monitoring-Nodeexporter-Linux"
+    ]
+}

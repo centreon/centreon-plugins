@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::linux::mode::listinterfaces;
+package os::linux::exporter::mode::listinterfaces;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
@@ -31,9 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -45,15 +43,21 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'node_network_info|node_network_speed_bytes',
+        %options
+    );
 
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "node_network_up" );
+    foreach my $data (@{$raw_metrics->{node_network_info}->{data}}) {
+        $self->{interfaces}->{$data->{dimensions}->{device}}->{status} = "-";
+        $self->{interfaces}->{$data->{dimensions}->{device}}->{status} = $data->{dimensions}->{operstate}
+            if (defined($data->{dimensions}->{operstate}) && $data->{dimensions}->{operstate} ne "");
+        $self->{interfaces}->{$data->{dimensions}->{device}}->{name} = $data->{dimensions}->{device};
+    }
 
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{interfaces}->{$data->{dimensions}->{device}}->{name} = $data->{dimensions}->{device};
-            $self->{interfaces}->{$data->{dimensions}->{device}}->{status} = ($data->{value} == 1) ? "up" : "down" ;
-        }
+    foreach my $data (@{$raw_metrics->{node_network_speed_bytes}->{data}}) {
+        $self->{interfaces}->{$data->{dimensions}->{device}}->{speed} = int($data->{value} * 8);
+        $self->{interfaces}->{$data->{dimensions}->{device}}->{name} = $data->{dimensions}->{device};
     }
 }
 
@@ -61,14 +65,20 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $interface (sort keys %{$self->{interfaces}}) {
-        $self->{output}->output_add(long_msg => '[name = ' . $interface . "]" .
-            "[status = '" . $self->{interfaces}->{$interface}->{status} . "']"
+    foreach (sort keys %{$self->{interfaces}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][status: %s][speed: %s]",
+                $self->{interfaces}->{$_}->{name},
+                $self->{interfaces}->{$_}->{status},
+                defined($self->{interfaces}->{$_}->{speed}) ? $self->{interfaces}->{$_}->{speed} : 0
+            )
         );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Interfaces:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List interfaces:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -76,7 +86,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'status']);
+    $self->{output}->add_disco_format(elements => ['name', 'status', 'speed']);
 }
 
 sub disco_show {
@@ -87,6 +97,8 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             name => $self->{interfaces}->{$interface}->{name},
             status => $self->{interfaces}->{$interface}->{status},
+            speed => defined($self->{interfaces}->{$interface}->{speed}) ? 
+                $self->{interfaces}->{$interface}->{speed} : 0
         );
     }
 }
