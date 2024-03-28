@@ -30,28 +30,68 @@ sub parse {
     my $result;
     my $response = $options{custom}->scrape();
 
+    # # HELP windows_cpu_time_total Time that processor spent in different modes (dpc, idle, interrupt, privileged, user)
+    # # TYPE windows_cpu_time_total counter
+    # windows_cpu_time_total{core="0,0",mode="dpc"} 16.203125
+    # windows_cpu_time_total{core="0,0",mode="idle"} 478712.59375
+    # windows_cpu_time_total{core="0,0",mode="interrupt"} 26.96875
+    # windows_cpu_time_total{core="0,0",mode="privileged"} 4357.109375
+    # windows_cpu_time_total{core="0,0",mode="user"} 4628.8125
+    # windows_cpu_time_total{core="0,1",mode="dpc"} 19.859375
+    # windows_cpu_time_total{core="0,1",mode="idle"} 476795.953125
+    # windows_cpu_time_total{core="0,1",mode="interrupt"} 30.46875
+    # windows_cpu_time_total{core="0,1",mode="privileged"} 4909.5
+    # windows_cpu_time_total{core="0,1",mode="user"} 5116.984375
+
     foreach my $line (split /\n/, $response) {
-        $result->{metrics}->{$1}->{type} = $2 if ($line =~ /^#\sTYPE\s(\w+)\s(.*)$/);
-        $result->{metrics}->{$1}->{help} = $2 if ($line =~ /^#\sHELP\s(\w+)\s(.*)$/);
+        if ($line =~ /^#\s(\w{4})\s(\w+)\s(.*)$/) {
+            my ($key, $metric, $string) = ($1, $2, $3);
+            next if (defined($options{filter_metrics}) && $options{filter_metrics} ne '' && $metric !~ /$options{filter_metrics}/g);
+            $result->{metrics}->{$metric}->{lc($key)} = $string;
+        } elsif ($line =~ /^[\d\/\s]*([\w.]+)(.*)?\s([\d.+-e]+)$/) {
+            my ($metric, $dimensions, $value) = ($1, $2, $3);
+            next if (defined($options{filter_metrics}) && $options{filter_metrics} ne '' && $metric !~ /$options{filter_metrics}/g);
 
-        next if ($line !~ /^[\d\/\s]*([\w.]+)(.*)?\s([\d.+-e]+)$/);
-        my ($metric, $dimensions, $value) = ($1, $2, $3);
+            $dimensions =~ s/[{}]//g;
+            $dimensions =~ s/$options{strip_chars}//g if (defined($options{strip_chars}));
 
-        $dimensions =~ s/[{}]//g;
-        $dimensions =~ s/"/'/g;
-        $dimensions =~ s/$options{strip_chars}//g if (defined($options{strip_chars}));
-        my %dimensions = ();
-        foreach (split /,/, $dimensions) {
-            my ($key, $value) = split /=/;
-            $dimensions{$key} = $value;
+            my %dimensions = $dimensions =~ /(\w+)=(?:"(.*?)")/g;
+
+            push @{$result->{metrics}->{$metric}->{data}}, {
+                value => centreon::plugins::misc::expand_exponential(value => $value),
+                dimensions => \%dimensions,
+                dimensions_string => $dimensions
+            };
         }
-
-        push @{$result->{metrics}->{$metric}->{data}}, {
-            value => centreon::plugins::misc::expand_exponential(value => $value),
-            dimensions => \%dimensions,
-            dimensions_string => $dimensions
-        };
     }
+
+    # {
+    #   'metrics' => {
+    #     'windows_cpu_time_total' => {
+    #       'help' => 'Time that processor spent in different modes (dpc, idle, interrupt, privileged, user)',
+    #       'type' => 'counter'
+    #       'data' => [
+    #         {
+    #           'dimensions' => {
+    #             'core' => '0,0',
+    #             'mode' => 'dpc'
+    #           },
+    #           'value' => '16.203125',
+    #           'dimensions_string' => 'core="0,0",mode="dpc"'
+    #         },
+    #         {
+    #           'dimensions' => {
+    #             'mode' => 'idle',
+    #             'core' => '0,0'
+    #           },
+    #           'value' => '478712.59375',
+    #           'dimensions_string' => 'core="0,0",mode="idle"'
+    #         },
+    #         ...
+    #       ]
+    #     }
+    #   }
+    # }
 
     return $result->{metrics};
 }
