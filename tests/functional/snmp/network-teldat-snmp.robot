@@ -1,15 +1,12 @@
 *** Settings ***
 Documentation       Network Teldat SNMP plugin
 
-Library             OperatingSystem
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
 ${CMD}                          perl ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
 
 # Test simple usage of the cellsradio mode

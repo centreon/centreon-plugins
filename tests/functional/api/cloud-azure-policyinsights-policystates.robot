@@ -1,17 +1,14 @@
 *** Settings ***
 Documentation       Azure PolicyInsights PolicyStates plugin
 
-Library             OperatingSystem
-Library             Process
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Start Mockoon
+Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}cloud-azure-policyinsights-policystates.json
 
 ${LOGIN_ENDPOINT}       http://localhost:3000/login
@@ -72,18 +69,3 @@ Azure PolicyInsights PolicyStates compliance
         ...    ${compliance_value.result}
         ...    Wrong output result for compliance of ${compliance_value}.{\n}Command output:{\n}${output}
     END
-
-
-*** Keywords ***
-Start Mockoon
-    ${process}    Start Process
-    ...    mockoon-cli
-    ...    start
-    ...    --data
-    ...    ${MOCKOON_JSON}
-    ...    --port
-    ...    3000
-    Sleep    5s
-
-Stop Mockoon
-    Terminate All Processes
