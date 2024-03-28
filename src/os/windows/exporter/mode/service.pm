@@ -295,7 +295,7 @@ sub manage_selection {
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
             next if (defined($self->{option_results}->{service}) &&
-                ($data->{dimensions}->{name} !~ /$self->{option_results}->{service}/i ||
+                ($data->{dimensions}->{name} !~ /$self->{option_results}->{service}/i &&
                 $services->{$data->{dimensions}->{name}} !~ /$self->{option_results}->{service}/i));
             
             $self->{service}->{$data->{dimensions}->{name}}->{name} = $data->{dimensions}->{name};
