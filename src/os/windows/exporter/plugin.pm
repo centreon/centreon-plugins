@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::plugin;
+package os::windows::exporter::plugin;
 
 use strict;
 use warnings;
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'cpu'             => 'apps::monitoring::nodeexporter::windows::mode::cpu',
-        'list-interfaces' => 'apps::monitoring::nodeexporter::windows::mode::listinterfaces',
-        'list-services'   => 'apps::monitoring::nodeexporter::windows::mode::listservices',
-        'list-storages'   => 'apps::monitoring::nodeexporter::windows::mode::liststorages',
-        'memory'          => 'apps::monitoring::nodeexporter::windows::mode::memory',
-        'services'        => 'apps::monitoring::nodeexporter::windows::mode::services',
-        'storage'         => 'apps::monitoring::nodeexporter::windows::mode::storage',
-        'traffic'         => 'apps::monitoring::nodeexporter::windows::mode::traffic'
+        'cpu'             => 'os::windows::exporter::mode::cpu',
+        'interface'       => 'os::windows::exporter::mode::interface',
+        'list-interfaces' => 'os::windows::exporter::mode::listinterfaces',
+        'list-services'   => 'os::windows::exporter::mode::listservices',
+        'list-storages'   => 'os::windows::exporter::mode::liststorages',
+        'memory'          => 'os::windows::exporter::mode::memory',
+        'service'         => 'os::windows::exporter::mode::service',
+        'storage'         => 'os::windows::exporter::mode::storage'
     );
 
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
@@ -51,6 +51,9 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Windows OS-based host metrics based on node exporter's metrics.
+Check Windows OS-based host metrics using Windows Exporter's metrics.
+
+See https://github.com/prometheus-community/windows_exporter for informations
+about available metrics.
 
 =cut

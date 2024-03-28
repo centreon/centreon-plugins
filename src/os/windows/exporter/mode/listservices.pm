@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::mode::listservices;
+package os::windows::exporter::mode::listservices;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,7 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -43,49 +43,53 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'windows_service_info',
+        %options
+    );
 
-    return $raw_metrics;
+    foreach my $data (@{$raw_metrics->{windows_service_info}->{data}}) {
+        $self->{services}->{$data->{dimensions}->{name}}->{name} = $data->{dimensions}->{name};
+        $self->{services}->{$data->{dimensions}->{name}}->{display_name} = $data->{dimensions}->{display_name};
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $raw_services = $self->manage_selection(%options);
-
-    foreach my $metric (keys %{$raw_services}) {
-        next if ($metric ne "windows_service_state" );
-
-        foreach my $service (@{$raw_services->{$metric}->{data}}) {
-            $self->{output}->output_add(long_msg => '[name = ' . $service->{dimensions}->{name} . "]") if $service->{value} == 1;
-        }
+    $self->manage_selection(%options);
+    foreach (sort keys %{$self->{services}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][display name: %s]",
+                $self->{services}->{$_}->{name},
+                $self->{services}->{$_}->{display_name}
+            )
+        );
     }
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Services:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List services:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
-
 }
 
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'display_name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $raw_services = $self->manage_selection(%options);
-
-    foreach my $metric (keys %{$raw_services}) {
-        next if ($metric ne "windows_service_state" );
-
-        foreach my $service (@{$raw_services->{$metric}->{data}}) {
-            $self->{output}->add_disco_entry(             
-                name => $service->{dimensions}->{name}
-            ) if $service->{value} == 1;
-        }
+    $self->manage_selection(%options);
+    foreach my $service (sort keys %{$self->{services}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{services}->{$service}->{name},
+            display_name => $self->{services}->{$service}->{display_name}
+        );
     }
 }
 

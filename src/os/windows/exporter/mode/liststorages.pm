@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::mode::liststorages;
+package os::windows::exporter::mode::liststorages;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,7 +31,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { });
+    $options{options}->add_options(arguments => {});
     return $self;
 }
 
@@ -43,14 +43,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
-
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "windows_logical_disk_free_bytes" );
-
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{storages}->{$data->{dimensions}->{volume}}->{name} = $data->{dimensions}->{volume};
-        }
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'windows_logical_disk_size_bytes',
+        %options
+    );
+    
+    foreach my $data (@{$raw_metrics->{windows_logical_disk_size_bytes}->{data}}) {
+        $self->{storages}->{$data->{dimensions}->{volume}}->{total} = int($data->{value});
+        $self->{storages}->{$data->{dimensions}->{volume}}->{name} = $data->{dimensions}->{volume};
     }
 }
 
@@ -58,12 +58,19 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $storage (sort keys %{$self->{storages}}) {
-        $self->{output}->output_add(long_msg => '[volume = ' . $storage . "]");
+    foreach (sort keys %{$self->{storages}}) {
+        $self->{output}->output_add(long_msg => sprintf(
+                "[name: %s][total: %s]",
+                $self->{storages}->{$_}->{name},
+                $self->{storages}->{$_}->{total}
+            )
+        );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Storages:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List storages:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -71,7 +78,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'total']);
 }
 
 sub disco_show {
@@ -80,7 +87,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $storage (sort keys %{$self->{storages}}) {
         $self->{output}->add_disco_entry(
-            name => $self->{storages}->{$storage}->{name}
+            name => $self->{storages}->{$storage}->{name},
+            total => $self->{storages}->{$storage}->{total}
         );
     }
 }

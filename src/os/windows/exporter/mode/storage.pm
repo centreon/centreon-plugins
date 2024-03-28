@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::mode::storage;
+package os::windows::exporter::mode::storage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,23 +28,30 @@ use centreon::common::monitoring::openmetrics::scrape;
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-
-    my $value_perf = $self->{result_values}->{used};
     
+    my ($label, $nlabel) = ('used', $self->{nlabel});
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        ($label, $nlabel) = ('free', 'storage.space.free.bytes');
+        $value_perf = $self->{result_values}->{free};
+    }
+
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $total_options{total} = $self->{result_values}->{windows_logical_disk_size_bytes};
+        $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
     $self->{output}->perfdata_add(
-        label => 'used', unit => 'B',
-        nlabel => 'node.storage.space.free.bytes', 
+        label => $label,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        unit => 'B',
+        nlabel => $nlabel,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{windows_logical_disk_size_bytes},
-        instances => $self->{result_values}->{display}
+        min => 0,
+        max => $self->{result_values}->{total},
     );
 }
 
@@ -53,6 +60,7 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
@@ -70,14 +78,14 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{windows_logical_disk_size_bytes});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{windows_logical_disk_free_bytes});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
         "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-        $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+            $total_size_value . " " . $total_size_unit,
+            $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+            $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
     );
 }
 
@@ -85,15 +93,15 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{windows_logical_disk_size_bytes} = $options{new_datas}->{$self->{instance} . '_windows_logical_disk_size_bytes'};    
-    $self->{result_values}->{windows_logical_disk_free_bytes} = $options{new_datas}->{$self->{instance} . '_windows_logical_disk_free_bytes'};
-    $self->{result_values}->{used} = $self->{result_values}->{windows_logical_disk_size_bytes} - $self->{result_values}->{windows_logical_disk_free_bytes};
-    $self->{result_values}->{prct_used} = ($self->{result_values}->{windows_logical_disk_size_bytes} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{windows_logical_disk_size_bytes} : 0;
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_windows_logical_disk_size_bytes'};    
+    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_windows_logical_disk_free_bytes'};
+    $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
+    $self->{result_values}->{prct_used} = ($self->{result_values}->{total} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{total} : 0;
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
 
     # limit to 100. Better output.
     if ($self->{result_values}->{prct_used} > 100) {
-        $self->{result_values}->{windows_logical_disk_free_bytes} = 0;
+        $self->{result_values}->{free} = 0;
         $self->{result_values}->{prct_used} = 100;
         $self->{result_values}->{prct_free} = 0;
     }
@@ -105,12 +113,24 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'node_storage', type => 1, message_multiple => 'All storages are ok', display_long => 1, cb_prefix_output => 'prefix_storage_output', }
+        {
+            name => 'storages',
+            type => 1,
+            message_multiple => 'All storages are ok',
+            cb_prefix_output => 'prefix_storage_output'
+        }
     ];
 
-    $self->{maps_counters}->{node_storage} = [
-        { label => 'usage', set => {
-                key_values => [ { name => 'windows_logical_disk_free_bytes' }, { name => 'windows_logical_disk_size_bytes' }, { name => 'display' } ],
+    $self->{maps_counters}->{storages} = [
+        {
+            label => 'usage',
+            nlabel => 'storage.space.usage.bytes',
+            set => {
+                key_values => [
+                    { name => 'windows_logical_disk_size_bytes' },
+                    { name => 'windows_logical_disk_free_bytes' },
+                    { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -120,15 +140,15 @@ sub set_counters {
     ];
 }
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "storage:s"     => { name => 'storage' },
-        "units:s"       => { name => 'units', default => '%' }
+        "storage:s" => { name => 'storage' },
+        "units:s"   => { name => 'units', default => '%' },
+        'free'      => { name => 'free' }
     });
 
     return $self;
@@ -140,34 +160,42 @@ sub prefix_storage_output {
     return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
 }
-
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+    $self->{storages} = {};
 
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric !~ /windows_logical_disk_free_bytes|windows_logical_disk_size_bytes/i );
+    my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(
+        filter_metrics => 'windows_logical_disk_.*_bytes',
+        %options
+    );
 
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{storage}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{storage}/i);
+    # windows_logical_disk_free_bytes{volume="C:"} 8.3850428416e+10
+    # windows_logical_disk_free_bytes{volume="HarddiskVolume1"} 7.0254592e+07
+    # windows_logical_disk_size_bytes{volume="C:"} 1.1798577152e+11
+    # windows_logical_disk_size_bytes{volume="HarddiskVolume1"} 1.00663296e+08
 
-            foreach my $volume ($data->{dimensions}->{volume}) {
-                $self->{node_storage}->{$volume}->{$metric} = $data->{value};
-                $self->{node_storage}->{$volume}->{display} = $volume;
-            }
-        }
+    foreach my $data (@{$raw_metrics->{windows_logical_disk_free_bytes}->{data}}) {
+        next if (defined($self->{option_results}->{storage}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{storage}/i);
+
+        $self->{storages}->{$data->{dimensions}->{volume}}->{windows_logical_disk_free_bytes} = int($data->{value});
+        $self->{storages}->{$data->{dimensions}->{volume}}->{display} = $data->{dimensions}->{volume};
+    }
+
+    foreach my $data (@{$raw_metrics->{windows_logical_disk_size_bytes}->{data}}) {
+        next if (defined($self->{option_results}->{storage}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{storage}/i);
+
+        $self->{storages}->{$data->{dimensions}->{volume}}->{windows_logical_disk_size_bytes} = int($data->{value});
+        $self->{storages}->{$data->{dimensions}->{volume}}->{display} = $data->{dimensions}->{volume};
     }
     
-    if (scalar(keys %{$self->{node_storage}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No disk found.");
+    if (scalar(keys %{$self->{storages}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No storages found.");
         $self->{output}->option_exit();
     }
 }
@@ -178,7 +206,9 @@ __END__
 
 =head1 MODE
 
-Check storage based on node exporter metrics.
+Check storages.
+
+Uses metrics from https://github.com/prometheus-community/windows_exporter/blob/master/docs/collector.logical_disk.md.
 
 =over 8
 
