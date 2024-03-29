@@ -32,7 +32,7 @@ APC Sensors ${tc}/9
     ...    ${output}
     ...    ${expected_result}
     ...    Wrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
-#--component 'temperature' --warning='humidity,.,45:65' --critical='humidity,.,35:70' 
+# --component 'temperature' --warning='humidity,.,45:65' --critical='humidity,.,35:70'
     Examples:        tc    component      warning                 critical               expected_result    --
             ...      1     _empty_        _empty_                 _empty_                OK: All 2 components are ok [2/2 temperatures]. | 'Main Module:Sonde de temperature#hardware.sensor.temperature.celsius'=23C;;;; 'Main Module:Sonde de temperature#hardware.sensor.humidity.percentage'=35%;;;0;100 'hardware.temperature.count'=2;;;;
             ...      2     _empty_        humidity,.,45:65        _empty_                WARNING: Humidity 'Main Module:Sonde de temperature' is 35 % | 'Main Module:Sonde de temperature#hardware.sensor.temperature.celsius'=23C;;;; 'Main Module:Sonde de temperature#hardware.sensor.humidity.percentage'=35%;45:65;;0;100 'hardware.temperature.count'=2;;;;

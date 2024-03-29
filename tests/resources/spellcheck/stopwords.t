@@ -26,6 +26,7 @@ in-mcast
 in-ucast
 interface-dsl-name
 IpAddr
+'ldap'
 license-instances-usage-prct
 MBean
 NagVis

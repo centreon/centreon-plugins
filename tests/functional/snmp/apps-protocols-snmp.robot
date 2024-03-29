@@ -15,7 +15,7 @@ Test Timeout        120s
 ${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}centreon-plugins-passwordmgr-hashicorpvault.json
 
-${CMD}                  perl ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin    --hostname=127.0.0.1
+${CMD}                  perl ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=127.0.0.1
 
 
 *** Test Cases ***
@@ -24,11 +24,11 @@ check hashicorp vault manager${Name}
     [Tags]    snmp    vault
     ${cmd_hashicorp}    Catenate
     ...    ${CMD}
-    ...    --pass-manager hashicorpvault
-    ...    --vault-address='127.0.0.1'
-    ...    --vault-port 3000
-    ...    --vault-protocol http
-    ...    --auth-method userpass
+    ...    --pass-manager=hashicorpvault
+    ...    --vault-address=127.0.0.1
+    ...    --vault-port=3000
+    ...    --vault-protocol=http
+    ...    --auth-method=userpass
     ...    --auth-settings="username=hcvaultuser"
     ...    --secret-path="path/of/the/secret"
     ...    --snmp-port=2024

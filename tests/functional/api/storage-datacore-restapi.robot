@@ -10,6 +10,7 @@ Suite Setup         Start Mockoon
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
+
 *** Variables ***
 ${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage-datacore-restapi.json
@@ -61,6 +62,7 @@ Datacore check status monitor
 
     Examples:    result   --
         ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
+
 
 *** Keywords ***
 Start Mockoon

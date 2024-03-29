@@ -9,12 +9,13 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
+${CMD}                  perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 # attempt to work around the interpretation of %{} as env variables instead of plugin macros
-#${PERCENT}                  %
-#${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+# ${PERCENT}    %
+# ${COND}    ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+
 
 *** Test Cases ***
 Systemd-sc-status v219 ${tc}/15
@@ -59,8 +60,8 @@ Systemd-sc-status v219 ${tc}/15
             ...      14    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     0           ${EMPTY}     WARNING: Total Failed: 1 | 'total_running'=34;;;0;220 'total_failed'=1;0:0;;0;220 'total_dead'=97;;;0;220 'total_exited'=25;;;0;220
             ...      15    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     0           CRITICAL: Total Failed: 1 | 'total_running'=34;;;0;220 'total_failed'=1;;0:0;0;220 'total_dead'=97;;;0;220 'total_exited'=25;;;0;220
 # not working atm
-            # ...      6     ${EMPTY}         ${EMPTY}    ${COND}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     ${EMPTY}     WARNING
-            # ...      7     ${EMPTY}         ${EMPTY}    ${EMPTY}   ${COND}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     ${EMPTY}     CRITICAL
+    # ...    6    ${EMPTY}    ${EMPTY}    ${COND}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    WARNING
+    # ...    7    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${COND}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    CRITICAL
 
 Systemd-sc-status v252 ${tc}/15
     [Documentation]    Systemd version >= 248
@@ -105,6 +106,5 @@ Systemd-sc-status v252 ${tc}/15
             ...      15    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     2           CRITICAL: Total Failed: 4 | 'total_running'=31;;;0;258 'total_failed'=4;;0:2;0;258 'total_dead'=108;;;0;258 'total_exited'=19;;;0;258
 
 # not working atm
-            # ...      6     ${EMPTY}         ${EMPTY}    ${COND}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     ${EMPTY}     WARNING
-            # ...      7     ${EMPTY}         ${EMPTY}    ${EMPTY}   ${COND}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     ${EMPTY}     CRITICAL
-
+    # ...    6    ${EMPTY}    ${EMPTY}    ${COND}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    WARNING
+    # ...    7    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${COND}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    CRITICAL

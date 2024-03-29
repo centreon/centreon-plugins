@@ -9,12 +9,13 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
-${PERCENT}                  %
+${CMD}                  perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
+${PERCENT}              %
 
-${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+${COND}                 ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+
 
 *** Test Cases ***
 List-Systemdservices v219 ${tc}/4
