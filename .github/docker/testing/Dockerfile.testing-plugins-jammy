@@ -55,6 +55,10 @@ apt-get install -y \
     libkeepass-reader-perl \
     libdatetime-perl
 
+# For AWS
+apt-get install -y cpanminus
+cpanm -n Paws
+
 apt-get update
 apt-get clean
 

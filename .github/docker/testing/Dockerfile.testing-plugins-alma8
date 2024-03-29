@@ -79,6 +79,11 @@ dnf install -y \
     perl-POSIX-strftime-Compiler \
     perl-Encode
 
+# For AWS
+dnf install -y perl-App-cpanminus perl-XML-Parser perl-XML-SAX perl-XML-Simple perl-DateTime
+dnf install -y perl-Clone perl-Data-Compare perl-Moose perl-MooseX-Getopt perl-String-CRC32 perl-URL-Encode-XS
+cpanm -n Paws
+
 dnf clean all
 
 EOF
