@@ -294,7 +294,7 @@ Syntax: --auth-settings='<setting>=<value>'.Example for the 'userpass' method:
 
 =item B<--auth-path>
 
-Authentication path for 'userpass'. Is an optional setting.
+Authentication path for 'userpass' (default: token).
 
 More information here: https://developer.hashicorp.com/vault/docs/auth/userpass#configuration
 

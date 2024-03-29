@@ -9,22 +9,23 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}                  perl ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+
 
 *** Test Cases ***
 APC Sensors ${tc}/9
-    [Tags]    hardware    Sensors    snmp
+    [Tags]    hardware    sensors    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --snmp-community=hardware/sensors/apc/sensors
 
     # Append options to command
-    ${command}    Append Option To Command    ${command}    --warning   ${warning}
-    ${command}    Append Option To Command    ${command}    --critical   ${critical}
-    ${command}    Append Option To Command    ${command}    --component   ${component}
-    
+    ${command}    Append Option To Command    ${command}    --warning    ${warning}
+    ${command}    Append Option To Command    ${command}    --critical    ${critical}
+    ${command}    Append Option To Command    ${command}    --component    ${component}
+
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
@@ -43,11 +44,10 @@ APC Sensors ${tc}/9
             ...      8     _empty_        temperature,.,22:25     temperature,.,22:25    OK: All 2 components are ok [2/2 temperatures]. | 'Main Module:Sonde de temperature#hardware.sensor.temperature.celsius'=23C;22:25;22:25;; 'Main Module:Sonde de temperature#hardware.sensor.humidity.percentage'=35%;;;0;100 'hardware.temperature.count'=2;;;;
             ...      9     _empty_        _empty_                 _empty_                OK: All 2 components are ok [2/2 temperatures]. | 'Main Module:Sonde de temperature#hardware.sensor.temperature.celsius'=23C;;;; 'Main Module:Sonde de temperature#hardware.sensor.humidity.percentage'=35%;;;0;100 'hardware.temperature.count'=2;;;;
 
-*** Keywords ***
 
+*** Keywords ***
 Append Option To Command
     [Documentation]    Concatenates the first argument (option) with the second (value) after having replaced the value with "" if its content is '_empty_'
     [Arguments]    ${cmd}    ${option}    ${value}
     ${value}    Set Variable If    '${value}' == '_empty_'    ''    ${value}
-    [return]    ${cmd} ${option}=${value}
-
+    RETURN    ${cmd} ${option}=${value}

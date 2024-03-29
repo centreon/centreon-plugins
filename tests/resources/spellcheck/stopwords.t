@@ -1,3 +1,4 @@
+--api-version
 --display-transform-dst
 --display-transform-src
 --filter-vdom
@@ -16,6 +17,7 @@ deltaps
 eth
 Fortigate
 Fortinet
+HashiCorp
 ifAlias
 ifDesc
 ifName

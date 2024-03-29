@@ -9,13 +9,14 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::socomec::netvision::snmp::plugin
+${CMD}                  perl ${CENTREON_PLUGINS} --plugin=hardware::ups::socomec::netvision::snmp::plugin
+
 
 *** Test Cases ***
 Battery ${tc}/4
-    [Tags]    hardware    UPS    snmp
+    [Tags]    hardware    ups    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=battery
@@ -25,10 +26,10 @@ Battery ${tc}/4
     ...    --snmp-community=hardware/ups/socomec/netvision/snmp/mode/battery
 
     # Append options to command
-    ${opt}        Append Option    --warning-temperature   ${w_temperature}
-    ${command}    Catenate         ${command}    ${opt}
-    ${opt}        Append Option    --critical-temperature  ${c_temperature}
-    ${command}    Catenate         ${command}    ${opt}
+    ${opt}    Append Option    --warning-temperature    ${w_temperature}
+    ${command}    Catenate    ${command}    ${opt}
+    ${opt}    Append Option    --critical-temperature    ${c_temperature}
+    ${command}    Catenate    ${command}    ${opt}
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
@@ -43,10 +44,10 @@ Battery ${tc}/4
             ...      3     10               20               CRITICAL: temperature: 22 C | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=22C;0:10;0:20;;
             ...      4     _empty_          _empty_          OK: battery status is normal - charge remaining: 100% (0 minutes remaining) | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=22C;;;;
 
+
 *** Keywords ***
 Append Option
     [Documentation]    Concatenates the first argument (option) with the second (value) after having replaced the value with "" if its content is '_empty_'
     [Arguments]    ${option}    ${value}
     ${value}    Set Variable If    '${value}' == '_empty_'    ''    ${value}
-    [return]    ${option}=${value}
-
+    RETURN    ${option}=${value}
