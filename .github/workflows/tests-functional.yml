@@ -46,18 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install perl dependencies
-        run: |
-          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
-            dnf install -y perl-DateTime
-            dnf install -y perl-App-cpanminus  perl-XML-Parser perl-XML-SAX perl-XML-Simple
-            if [[ "${{ matrix.distrib }}" == "el8" ]]; then
-              dnf install -y perl-Clone perl-Data-Compare perl-Moose perl-MooseX-Getopt perl-String-CRC32 perl-URL-Encode-XS
-          else
-            apt-get install -y cpanminus
-          fi
-          cpanm -n Paws
-
       - name: Run Robot Framework API tests
         run: |
           mkdir -p /var/lib/centreon/centplugins/
