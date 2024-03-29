@@ -80,10 +80,11 @@ dnf install -y \
     perl-Encode
 
 # For AWS
-dnf install -y perl-App-cpanminus perl-XML-Parser perl-XML-SAX perl-XML-Simple
-cpanm -n Paws
+dnf install -y perl-App-cpm expat-devel
+cpm install Paws
 # For SNMP tests
-cpanm -n Alien::SNMP Net::SNMP
+cpm install Alien::SNMP
+cpm install Net::SNMP
 
 dnf clean all
 
