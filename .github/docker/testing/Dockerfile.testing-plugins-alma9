@@ -82,6 +82,8 @@ dnf install -y \
 # For AWS
 dnf install -y perl-App-cpanminus perl-XML-Parser perl-XML-SAX perl-XML-Simple
 cpanm -n Paws
+# For SNMP tests
+cpanm -n Alien::SNMP Net::SNMP
 
 dnf clean all
 

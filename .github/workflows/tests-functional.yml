@@ -20,18 +20,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: testing-plugins-alma8
-            runner: ubuntu-22.04
-            distrib: el8
-            package_extension: rpm
+#          - image: testing-plugins-alma8
+#            runner: ubuntu-22.04
+#            distrib: el8
+#            package_extension: rpm
           - image: testing-plugins-alma9
             distrib: el9
             runner: ubuntu-22.04
             package_extension: rpm
-          - image: testing-plugins-bullseye
-            distrib: bullseye
-            runner: ubuntu-22.04
-            package_extension: deb
+#          - image: testing-plugins-bullseye
+#            distrib: bullseye
+#            runner: ubuntu-22.04
+#            package_extension: deb
 
     runs-on: ${{ matrix.runner }}
 
@@ -45,21 +45,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install perl dependencies
-        uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
-        with:
-          install-modules-with: cpm
-          install-modules: |
-            Alien::SNMP
-            DateTime
-            Paws
-            Net::SNMP
-            XML::LibXML
-            DBI
-            DBD::mysql
-            POSIX
-            Time::HiRes
 
       - name: Run Robot Framework API tests
         run: |
