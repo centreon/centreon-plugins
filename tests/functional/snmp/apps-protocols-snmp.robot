@@ -35,6 +35,7 @@ check hashicorp vault manager${Name}
     ...    --map-option="snmp_community=\\%{value_path/of/the/secret}"
     ...    --mode=string-value
     ...    --snmp-version=2c
+    ...    --snmp-community=apps/protocols/snmp
     ...    --oid='.1.3.6.1.2.1.1.1.0' ${path-param}
     ...    --format-ok='current value is: \\%{details_ok}'
     ...    --format-details-warning='current value is: \\%{details_warning}'
