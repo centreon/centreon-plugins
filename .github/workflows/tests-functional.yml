@@ -46,6 +46,15 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Install perl dependencies
+        run: |
+          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
+            dnf install -y perl-Net-SNMP
+          else
+            apt-get install -y libsnmp-perl
+          fi
+          cpanm -n Paws
+
       - name: Run Robot Framework API tests
         run: |
           mkdir -p /var/lib/centreon/centplugins/
