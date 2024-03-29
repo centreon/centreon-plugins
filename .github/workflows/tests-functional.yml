@@ -47,13 +47,19 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install perl dependencies
-        run: |
-          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
-            dnf install -y perl-Net-SNMP
-          else
-            apt-get install -y libsnmp-perl
-          fi
-          cpanm -n Paws
+        uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
+        with:
+          install-modules-with: cpm
+          install-modules: |
+            Alien::SNMP
+            DateTime
+            Paws
+            Net::SNMP
+            XML::LibXML
+            DBI
+            DBD::mysql
+            POSIX
+            Time::HiRes
 
       - name: Run Robot Framework API tests
         run: |
