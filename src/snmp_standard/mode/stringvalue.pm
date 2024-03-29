@@ -319,9 +319,9 @@ __END__
 
 =head1 MODE
 
-Check SNMP string values (can be a String or an Integer).
+Check SNMP string values (can be a string or an integer).
 
-Check values absent:
+Check absent values:
 centreon_plugins.pl --plugin=snmp_standard::plugin --mode=string-value --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public 
     --oid-table='.1.3.6.1.2.1.25.4.2.1.2' --format-ok='%{filter_rows} processes' --format-critical='processes are absent: %{details_critical}' --critical-absent='centengine' --critical-absent='crond' --filter-table-value='centengine|crond'
 
@@ -395,7 +395,7 @@ Separator uses between values (default: coma).
 =item B<--convert-custom-values>
 
 Custom code to convert values.
-Example to convert octetstring to macaddress: --convert-custom-values='join(":", unpack("(H2)*", $value))'
+Example to convert octet string to MAC address: --convert-custom-values='join(":", unpack("(H2)*", $value))'
 
 =item B<--use-perl-mod>
 
