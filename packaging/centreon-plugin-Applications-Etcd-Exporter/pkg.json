@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Etcd-Exporter",
+    "pkg_summary": "Centreon Plugin to monitor etc cluster using /metrics exporter's endpoint",
+    "plugin_name": "centreon_etcd_exporter.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/",
+        "apps/etcd/exporter/"
+    ]
+}
