@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Etcd-Api",
+    "pkg_summary": "Centreon Plugin to monitor etc cluster using API",
+    "plugin_name": "centreon_etcd_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/etcd/api/"
+    ]
+}
