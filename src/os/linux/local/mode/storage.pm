@@ -153,7 +153,7 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
-        my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
+        my ($fs, $type, $size, $available, $percent, $mount) = ($1, $2, $3, $5, $6, $7);
 
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
             $fs !~ /$self->{option_results}->{filter_fs}/);
@@ -171,8 +171,8 @@ sub manage_selection {
             fs => $fs,
             type => $type,
             total => $size * 1024,
-            used => $used * 1024,
-            free => $available * 1024
+            free => $available * 1024,
+            used => ($size - $available) * 1024
         };
     }
 
