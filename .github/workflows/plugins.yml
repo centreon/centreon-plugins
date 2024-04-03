@@ -77,15 +77,20 @@ jobs:
           PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
-
+          echo $PLUGINS
+          
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
+
         shell: bash
       - name: Get plugins for tests matrix
         id: get_plugins_list
-        if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
         run: |
+          echo ${{ steps.filter.outputs.common }}
+          echo ${{ steps.get-plugins.outputs.plugins }}
+          echo ${{ steps.get-plugins.outputs }}
+          
           PLUGINSLIST="$( sed -e 's/ /,/' '${{ steps.get-plugins.outputs.plugins }}')"
 
           echo "pluginslist=$(echo [ $PLUGINSLIST ])" >> $GITHUB_OUTPUT
