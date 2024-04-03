@@ -1,11 +1,15 @@
 *** Settings ***
 Documentation       Linux Local Systemd-sc-status
+
 # systemd changed the output format of the command starting from version 252, so we need to check for a systemd version and use the correct parameter.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}                      ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
+
 
 *** Test Cases ***
 Systemd-sc-status v219 ${tc}/15
@@ -91,4 +95,3 @@ Systemd-sc-status v252 ${tc}/15
             ...      13    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      2           ${EMPTY}     ${EMPTY}     CRITICAL: Total Exited: 19 | 'total_running'=31;;;0;258 'total_failed'=4;;;0;258 'total_dead'=108;;;0;258 'total_exited'=19;;0:2;0;258
             ...      14    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     2           ${EMPTY}     WARNING: Total Failed: 4 | 'total_running'=31;;;0;258 'total_failed'=4;0:2;;0;258 'total_dead'=108;;;0;258 'total_exited'=19;;;0;258
             ...      15    ${EMPTY}         ${EMPTY}    ${EMPTY}   ${EMPTY}  ${EMPTY}       ${EMPTY}      ${EMPTY}   ${EMPTY}  ${EMPTY}      ${EMPTY}     ${EMPTY}     2           CRITICAL: Total Failed: 4 | 'total_running'=31;;;0;258 'total_failed'=4;;0:2;0;258 'total_dead'=108;;;0;258 'total_exited'=19;;;0;258
-

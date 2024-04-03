@@ -1,20 +1,23 @@
 *** Settings ***
 Documentation       OS Linux SNMP plugin
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}                      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
 
 &{list_diskio_test1}
-...                         snmpcommunity=os/linux/snmp/list-diskio
-...                         nbresults=10
+...                     snmpcommunity=os/linux/snmp/list-diskio
+...                     nbresults=10
 &{list_diskio_test2}
-...                         snmpcommunity=os/linux/snmp/list-diskio-2
-...                         nbresults=4
+...                     snmpcommunity=os/linux/snmp/list-diskio-2
+...                     nbresults=4
 @{list_diskio_tests}
-...                         &{list_diskio_test1}
-...                         &{list_diskio_test2}
+...                     &{list_diskio_test1}
+...                     &{list_diskio_test2}
 
 
 *** Test Cases ***

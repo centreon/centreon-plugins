@@ -7,13 +7,12 @@ Test Timeout        120s
 
 
 *** Variables ***
-
-${CMD}                      ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
+${CMD}                  ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
 
 &{sql_string_test1}
-...                         result=UNKNOWN: Need to specify data_source arguments.
+...                     result=UNKNOWN: Need to specify data_source arguments.
 @{sql_string_tests}
-...                         &{sql_string_test1}
+...                     &{sql_string_test1}
 
 
 *** Test Cases ***

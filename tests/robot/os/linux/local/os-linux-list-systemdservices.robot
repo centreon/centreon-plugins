@@ -1,11 +1,15 @@
 *** Settings ***
 Documentation       Linux Local list-systemdservices
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}                      ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
-${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
+${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
+
 
 *** Test Cases ***
 List-Systemdservices v219 ${tc}/4

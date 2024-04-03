@@ -1,19 +1,22 @@
 *** Settings ***
 Documentation       Network Interfaces
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}                      ${CENTREON_PLUGINS}
-...                         --plugin=os::linux::snmp::plugin
-...                         --mode=interfaces
-...                         --hostname=127.0.0.1
-...                         --snmp-port=2024
-...                         --snmp-community=os/linux/snmp/network-interfaces
-...                         --statefile-dir=/tmp/
+${CMD}      ${CENTREON_PLUGINS}
+...         --plugin=os::linux::snmp::plugin
+...         --mode=interfaces
+...         --hostname=127.0.0.1
+...         --snmp-port=2024
+...         --snmp-community=os/linux/snmp/network-interfaces
+...         --statefile-dir=/tmp/
 
+${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
-${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
 *** Test Cases ***
 Interfaces by id ${tc}/5
@@ -22,7 +25,6 @@ Interfaces by id ${tc}/5
     ...    ${CMD}
     ...    --interface='${filter}'
     ...    ${extra_options}
-
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
@@ -39,6 +41,7 @@ Interfaces by id ${tc}/5
             ...      5     2,3,4                     --add-traffic                 OK: All interfaces are ok | 'traffic_in_eth0'=0.00b/s;;;0;1000000000 'traffic_out_eth0'=0.00b/s;;;0;1000000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000 'traffic_in_eth2'=0.00b/s;;;0;1000000000 'traffic_out_eth2'=0.00b/s;;;0;1000000000
 # theese test are linked together. The test 2 create the cache file in /tmp/, and the test 3 use this cache file
 # to calculate traffic throughput by second.
+
 Interfaces by id regexp ${tc}/6
     [Tags]    os    linux    network    interfaces
     ${command}    Catenate
@@ -46,7 +49,6 @@ Interfaces by id regexp ${tc}/6
     ...    --interface='${filter}'
     ...    --regex-id
     ...    ${extra_options}
-
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}

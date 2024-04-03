@@ -1,7 +1,10 @@
 *** Settings ***
 Documentation       Network Teldat SNMP plugin
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin

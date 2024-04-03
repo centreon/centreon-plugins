@@ -1,13 +1,18 @@
 *** Settings ***
 Documentation       Linux Local Systemd-sc-status
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}                      ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
-...                         --mode=service
-...                         --hostname=127.0.0.1
-...                         --snmp-port=2024
+${CMD}      ${CENTREON_PLUGINS}
+...         --plugin=os::windows::snmp::plugin
+...         --mode=service
+...         --hostname=127.0.0.1
+...         --snmp-port=2024
+
 
 *** Test Cases ***
 Windows Services EN ${tc}/x
@@ -32,7 +37,6 @@ Windows Services EN ${tc}/x
             ...      3     toto             --critical-active=1:    CRITICAL: Number of services active: 0 | 'services.total.count'=0;;;0; 'services.active.count'=0;;1:;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
             ...      4     ${EMPTY}         --critical-active=1:    OK: All services are ok | 'services.total.count'=168;;;0; 'services.active.count'=168;;1:;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
             ...      5     ${EMPTY}         --critical-active=1:1   CRITICAL: Number of services active: 168 | 'services.total.count'=168;;;0; 'services.active.count'=168;;1:1;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
-
 
 Windows Services FR ${tc}/x
     [Documentation]    Systemd version < 248
@@ -59,5 +63,3 @@ Windows Services FR ${tc}/x
             ...      6     .v.nement        --critical-active=1:        OK: All services are ok | 'services.total.count'=5;;;0; 'services.active.count'=5;;1:;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
             ...      7     \xe9v\xe9nement  ${EMPTY}                    OK: All services are ok | 'services.total.count'=5;;;0; 'services.active.count'=5;;;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
             ...      8     SNMP             ${EMPTY}                    OK: Service 'Service SNMP' state is 'active' [installed state: 'installed'] | 'services.total.count'=1;;;0; 'services.active.count'=1;;;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;
-
-

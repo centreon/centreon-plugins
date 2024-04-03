@@ -7,19 +7,19 @@ Test Timeout        120s
 
 
 *** Variables ***
+${CMD}      ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
 
-${CMD}              ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
 
 *** Test Cases ***
 SNMP Collection - Sputnik Environment ${tc}/3
-    [Tags]    SNMP Collection
+    [Tags]    snmp collection
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=collection
     ...    --hostname=127.0.0.1
     ...    --snmp-version=2c
     ...    --snmp-port=2024
-    ...    --snmp-community=apps/protocols/collection-sputnik
+    ...    --snmp-community=apps/protocols/snmp/collection-sputnik
     ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
     ${output}    Run    ${command}
@@ -34,10 +34,10 @@ SNMP Collection - Sputnik Environment ${tc}/3
             ...      2     OK: Sensor '1' temperature is '20.06'°C and humidity is '33'% | '1#environment.temperature.celsius'=20.06C;;;; '1#environment.humidity.percent'=33%;;;0;100
             ...      3     OK: Sensor '1' temperature is '20.06'°C and humidity is '33'% | '1#environment.temperature.celsius'=20.06C;;;; '1#environment.humidity.percent'=33%;;;0;100
 
+
 *** Keywords ***
 Append Option
     [Documentation]    Concatenates the first argument (option) with the second (value) after having replaced the value with "" if its content is '_empty_'
     [Arguments]    ${option}    ${value}
     ${value}    Set Variable If    '${value}' == '_empty_'    ''    ${value}
-    [return]    ${option}=${value}
-
+    RETURN    ${option}=${value}
