@@ -16,35 +16,54 @@ on:
 
 jobs:
   functional-tests-with-robot:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-#          - image: testing-plugins-alma8
-#            runner: ubuntu-22.04
-#            distrib: el8
-#            package_extension: rpm
-          - image: testing-plugins-alma9
-            distrib: el9
-            runner: ubuntu-22.04
-            package_extension: rpm
-#          - image: testing-plugins-bullseye
-#            distrib: bullseye
-#            runner: ubuntu-22.04
-#            package_extension: deb
-
-    runs-on: ${{ matrix.runner }}
-
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
-
-    name: test on ${{ matrix.image }}
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install libs
+        run: |
+          sudo apt update
+          sudo apt-get install -y libcurl4-openssl-dev
+          sudo apt-get install -qqy snmpsim
+
+      - name: Install Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 21
+
+      - name: Install Mockoon CLI
+        run: npm install -g -D @mockoon/cli@7.0.0
+
+      - name: Install perl dependencies
+        uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: |
+            Alien::SNMP
+            DateTime
+            Net::Curl::Easy
+            Paws
+            Net::SNMP
+            URI::Encode
+            XML::LibXML
+            DBI
+            DBD::mysql
+            POSIX
+            Time::HiRes
+            JSON::XS
+
+      - name: Install Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Install Robot Framework
+        run: |
+          pip3.11 install robotframework
+          pip3.11 install RobotFramework-Examples
+        shell: bash
 
       - name: Run Robot Framework API tests
         run: |

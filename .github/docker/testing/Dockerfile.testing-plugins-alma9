@@ -59,33 +59,6 @@ gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
 
-# Install perl dependencies
-dnf install -y \
-    perl-Digest-MD5 \
-    perl-Pod-Parser \
-    perl-Net-Curl \
-    perl-URI-Encode \
-    perl-LWP-UserAgent-Determined \
-    perl-LWP-Protocol-https \
-    perl-IO-Socket-SSL \
-    perl-URI \
-    perl-HTTP-ProxyAutoConfig \
-    perl-CryptX \
-    perl-MIME-Base64 \
-    perl-JSON-XS \
-    perl-JSON-Path \
-    perl-KeePass-Reader \
-    perl-Storable \
-    perl-POSIX-strftime-Compiler \
-    perl-Encode
-
-# For AWS
-dnf install -y perl-App-cpm expat-devel
-cpm install Paws
-# For SNMP tests
-cpm install Alien::SNMP
-cpm install Net::SNMP
-
 dnf clean all
 
 EOF
