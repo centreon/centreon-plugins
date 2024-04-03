@@ -20,7 +20,7 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ...    --snmp-version=2c
     ...    --snmp-port=2024
     ...    --snmp-community=apps/protocols/collection-sputnik
-    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
+    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
