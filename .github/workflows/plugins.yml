@@ -86,9 +86,13 @@ jobs:
         shell: bash
       - name: Get plugins for tests matrix
         id: get_plugins_list
-        run: |        
-          PLUGINSLIST="$( echo '${{ steps.get_plugins.outputs.plugins }}' |sed -e 's/ /,/' )"
-          echo "::set-output name=pluginslist::[$PLUGINSLIST]"
+        run: |   
+          packs=()
+          for f in ${{ steps.get_plugins.outputs.plugins }}; do
+            packs+=($f)
+          done
+          echo "pluginslist=$(jq -cn '$ARGS.positional' --args "${packs[@]}")" >> $GITHUB_OUTPUT
+
         shell: bash
 
   fatpacker:
