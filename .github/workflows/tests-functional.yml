@@ -1,18 +1,15 @@
 name: functional-tests
+on:
+  workflow_call:
+    inputs:
+      plugin-cache:
+        description: The plugin packaged cache name
+        type: string
+        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
-
-on:
-  workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/tests-functional.yml'
-      - 'src/**'
-      - 'tests/functional/**'
-      - 'tests/resources/mockoon/**'
-      - 'tests/resources/snmp/**'
 
 jobs:
   functional-tests-with-robot:
@@ -67,10 +64,6 @@ jobs:
 
       - name: Run Robot Framework tests
         run: |
-          sudo mkdir -p /var/lib/centreon/centplugins/
-          sudo chmod 777 /var/lib/centreon/centplugins/
           sudo useradd snmp
-          sudo mkdir -p /usr/snmpsim/data
-          sudo cp -r tests/robot/* /usr/snmpsim/data/
-          snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
+          snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
           robot tests/robot

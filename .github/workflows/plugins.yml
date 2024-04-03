@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
+      pluginslist: ${{ steps.get_plugins_list.outputs.pluginslist }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -76,15 +77,26 @@ jobs:
           PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
-
+          echo $PLUGINS
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
+
+        shell: bash
+      - name: Get plugins for tests matrix
+        id: get_plugins_list
+        run: |
+          pluginsarray=()
+          for f in ${{ steps.get_plugins.outputs.plugins }}; do
+            pluginsarray+=($f)
+          done
+          echo "pluginslist=$(jq -cn '$ARGS.positional' --args ${pluginsarray[@]})" >> $GITHUB_OUTPUT
+
         shell: bash
 
   fatpacker:
-    if: ${{ needs.get-plugins.outputs.plugins != '' }}
-    needs: [get-environment, get-plugins]
+    if: ${{needs.get-plugins.outputs.plugins != ''}}
+    needs: [ get-environment, get-plugins ]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
@@ -108,6 +120,7 @@ jobs:
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
 
   package:
     runs-on: ubuntu-22.04
@@ -243,8 +256,48 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
+  test-plugins:
+    needs: [get-environment, get-plugins, package]
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin-name: ${{fromJson(needs.get-plugins.outputs.pluginslist) }}
+        distrib: [el8, el9, jammy, bullseye, bookworm]
+        include:
+          - package_extension: rpm
+            image: testing-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: testing-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: testing-plugins-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: testing-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: testing-plugins-jammy
+            distrib: jammy
+
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/plugins-tests
+        with:
+          cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          package-extension: ${{ matrix.package_extension }}
+          plugin-name: ${{ matrix.plugin-name }}
+
   deliver:
-    needs: [get-environment, package]
+    needs: [ get-environment, package ]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
