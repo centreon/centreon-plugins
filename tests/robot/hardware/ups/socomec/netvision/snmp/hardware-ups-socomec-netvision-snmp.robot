@@ -1,17 +1,11 @@
 *** Settings ***
 Documentation       Hardware UPS Socomec Netvision SNMP plugin
-
-Library             OperatingSystem
-Library             String
-Library             Examples
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::socomec::netvision::snmp::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=hardware::ups::socomec::netvision::snmp::plugin
 
 *** Test Cases ***
 Battery ${tc}/4
@@ -35,7 +29,7 @@ Battery ${tc}/4
     Should Be Equal As Strings
     ...    ${output}
     ...    ${expected_result}
-    ...    \n${command}\nWrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    ...    ${command} \nWrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
 
     Examples:        tc    w_temperature    c_temperature    expected_result    --
             ...      1     30               50               OK: battery status is normal - charge remaining: 100% (0 minutes remaining) | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=22C;0:30;0:50;;

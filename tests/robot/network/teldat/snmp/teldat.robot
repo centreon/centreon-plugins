@@ -1,16 +1,10 @@
 *** Settings ***
 Documentation       Network Teldat SNMP plugin
-
-Library             OperatingSystem
-Library             String
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                          perl ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
+${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
 
 # Test simple usage of the cellsradio mode
 &{teldat_cellsradio_test1}
@@ -514,7 +508,7 @@ Network Teldat SNMP cells radio
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2c
         ...    --snmp-port=2024
-        ...    --snmp-community=network/teldat/snmp/memory
+        ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_cellsradio_test.filtercellid}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --filter-cell-id=${teldat_cellsradio_test.filtercellid}
@@ -629,7 +623,7 @@ Network Teldat SNMP CPU
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2c
         ...    --snmp-port=2024
-        ...    --snmp-community=network/teldat/snmp/memory
+        ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_cpu_test.warningcpuutilization5s}
         IF    ${length} > 0
             ${command}    Catenate
@@ -686,7 +680,7 @@ Network Teldat SNMP Memory
         ...    --hostname=127.0.0.1
         ...    --snmp-version=2c
         ...    --snmp-port=2024
-        ...    --snmp-community=network/teldat/snmp/memory
+        ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_memory_test.warningusage}
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --warning-usage=${teldat_memory_test.warningusage}

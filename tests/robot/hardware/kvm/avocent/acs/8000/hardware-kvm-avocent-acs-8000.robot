@@ -1,10 +1,8 @@
 *** Settings ***
 Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
-
-Library             OperatingSystem
-Library             String
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
+
 
 
 *** Variables ***
@@ -91,7 +89,7 @@ Serial Ports
 Run Avocent 8000 Plugin
     [Arguments]    ${mode}    ${extraoptions}
     ${command}    Catenate
-    ...    perl ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+    ...    ${CENTREON_PLUGINS}
     ...    --plugin=hardware::kvm::avocent::acs::8000::snmp::plugin
     ...    --mode=${mode}
     ...    --hostname=${HOSTADDRESS}

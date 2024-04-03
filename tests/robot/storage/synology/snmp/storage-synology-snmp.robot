@@ -1,7 +1,8 @@
 *** Settings ***
 Documentation       Storage Synology SNMP
-Test Timeout        120s
 Resource    ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Test Timeout        120s
+
 
 *** Variables ***
 
