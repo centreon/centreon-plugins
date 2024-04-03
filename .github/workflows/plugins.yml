@@ -88,7 +88,7 @@ jobs:
         id: get_plugins_list
         run: |        
           PLUGINSLIST="$( echo '${{ steps.get_plugins.outputs.plugins }}' |sed -e 's/ /,/' )"
-          echo "pluginslist=$(echo $PLUGINSLIST)" >> $GITHUB_OUTPUT
+          echo "::set-output name=pluginslist::[$PLUGINSLIST]"
         shell: bash
 
   fatpacker:
@@ -258,7 +258,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin-name: [${{ needs.get-plugins.outputs.pluginslist }} ]
+        plugin-name: ${{ needs.get-plugins.outputs.pluginslist }}
         distrib: [ el8, el9, jammy, bullseye, bookworm ]
         include:
           - package_extension: rpm
