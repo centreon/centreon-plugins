@@ -14,24 +14,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Checkout sources
-    uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Checkout sources
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  - name: get plugin cached
-    uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
-    with:
-      path: ./build/
-      key: ${{ inputs.cache-key }}
-      fail-on-cache-miss: true
+    - name: get plugin cached
+      uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+      with:
+        path: ./build/
+        key: ${{ inputs.cache-key }}
+        fail-on-cache-miss: true
 
-  - name: install plugin for deb distrib
-    if: ${{inputs.package-extension == "deb" }}
-    run: |
-      apt update
-      apt install -y ./build/${{inputs.plugin-name}}
+    - name: install plugin for deb distrib
+      if: ${{inputs.package-extension == "deb" }}
+      run: |
+        apt update
+        apt install -y ./build/${{inputs.plugin-name}}
 
-  - name: Run Robot Framework tests
-    run: |
-      sudo useradd snmp
-      snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
-      robot tests/robot
+    - name: Run Robot Framework tests
+      run: |
+        sudo useradd snmp
+        snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
+        robot tests/robot

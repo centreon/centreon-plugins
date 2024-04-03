@@ -84,7 +84,7 @@ jobs:
 
   fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
-    needs: [get-environment, get-plugins]
+    needs: [ get-environment, get-plugins ]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
@@ -111,7 +111,7 @@ jobs:
 
   package:
     runs-on: ubuntu-22.04
-    needs: [get-environment, get-plugins, fatpacker]
+    needs: [ get-environment, get-plugins, fatpacker ]
 
     strategy:
       fail-fast: false
@@ -243,10 +243,8 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-
   test-plugins:
-    needs: [get-environment,package]
-
+    needs: [ get-environment, get-plugins, package ]
     strategy:
       fail-fast: false
       matrix:
@@ -282,10 +280,8 @@ jobs:
           package-extension: ${{ matrix.package_extension }}
           plugin-name: ${{ matrix.plugin-name }}
 
-
-
   deliver:
-    needs: [get-environment, package]
+    needs: [ get-environment, package ]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
