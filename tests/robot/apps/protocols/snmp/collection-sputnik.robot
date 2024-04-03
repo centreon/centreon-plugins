@@ -1,17 +1,14 @@
 *** Settings ***
 Documentation       Hardware UPS Sputnik SNMP plugin
 
-Library             OperatingSystem
-Library             String
-Library             Examples
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
+${CMD}              ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
 
 *** Test Cases ***
 SNMP Collection - Sputnik Environment ${tc}/3
@@ -22,8 +19,8 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ...    --hostname=127.0.0.1
     ...    --snmp-version=2c
     ...    --snmp-port=2024
-    ...    --snmp-community=hardware/ups/inmatics/sputnik/snmp/hardware-ups-sputnik
-    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
+    ...    --snmp-community=apps/protocols/collection-sputnik
+    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}

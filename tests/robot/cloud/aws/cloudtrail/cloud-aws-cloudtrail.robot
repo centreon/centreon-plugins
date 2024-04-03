@@ -1,20 +1,17 @@
 *** Settings ***
 Documentation       AWS CloudTrail plugin
 
-Library             OperatingSystem
-Library             Process
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Start Mockoon
+Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 ${MOCKOON_JSON}                 ${CURDIR}${/}mockon.json
 
-${CMD}                          perl ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtrail::plugin --custommode=paws --region=eu-west --aws-secret-key=secret --aws-access-key=key
+${CMD}                          ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtrail::plugin --custommode=paws --region=eu-west --aws-secret-key=secret --aws-access-key=key
 
 &{checktrailstatus_value1}
 ...                             trailstatus=true
@@ -195,18 +192,3 @@ AWS CloudTrail count events
         ...    ${countevents_value.result}
         ...    Wrong output result for count events of ${countevents_value}.{\n}Command output:{\n}${output}
     END
-
-
-*** Keywords ***
-Start Mockoon
-    ${process}    Start Process
-    ...    mockoon-cli
-    ...    start
-    ...    --data
-    ...    ${MOCKOON_JSON}
-    ...    --port
-    ...    3000
-    Sleep    5s
-
-Stop Mockoon
-    Terminate All Processes

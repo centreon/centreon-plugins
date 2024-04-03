@@ -1,17 +1,14 @@
 *** Settings ***
 Documentation       Database Mysql plugin
 
-Library             OperatingSystem
-Library             Process
-Library             String
+Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
 
 &{sql_string_test1}
 ...                         result=UNKNOWN: Need to specify data_source arguments.
