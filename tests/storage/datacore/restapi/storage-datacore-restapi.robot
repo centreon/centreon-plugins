@@ -11,8 +11,8 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 *** Variables ***
-${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}storage-datacore-restapi.json
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${MOCKOON_JSON}         ${CURDIR}${/}storage-datacore-restapi.json
 
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
 

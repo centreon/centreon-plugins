@@ -11,8 +11,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSON}                 ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}cloud-aws-cloudtrail.json
+${CENTREON_PLUGINS}             ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${MOCKOON_JSON}                 ${CURDIR}${/}mockon.json
 
 ${CMD}                          perl ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtrail::plugin --custommode=paws --region=eu-west --aws-secret-key=secret --aws-access-key=key
 

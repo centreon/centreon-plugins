@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
 

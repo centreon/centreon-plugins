@@ -11,8 +11,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-${MOCKOON_JSON}         ${CURDIR}${/}..${/}..${/}resources${/}mockoon${/}cloud-azure-policyinsights-policystates.json
+${CENTREON_PLUGINS}     ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${MOCKOON_JSON}         ${CURDIR}${/}cloud-azure-policyinsights-policystates.json
 
 ${LOGIN_ENDPOINT}       http://localhost:3000/login
 ${CMD}                  perl ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --login-endpoint=${LOGIN_ENDPOINT}

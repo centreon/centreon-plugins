@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 ${PERCENT}                  %
@@ -23,7 +23,7 @@ List-Systemdservices v219 ${tc}/4
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-systemdservices
-    ...    --command-path=${CURDIR}${/}..${/}..${/}resources${/}linux${/}systemd-219
+    ...    --command-path=${CURDIR}${/}systemd-219
     ...    --filter-name='${filtername}'
     ...    --filter-description='${filterdescription}'
 
@@ -46,7 +46,7 @@ List-Systemdservices v252 ${tc}/4
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-systemdservices
-    ...    --command-path=${CURDIR}${/}..${/}..${/}resources${/}linux${/}systemd-252
+    ...    --command-path=${CURDIR}${/}systemd-252
     ...    --filter-name='${filtername}'
     ...    --filter-description='${filterdescription}'
 

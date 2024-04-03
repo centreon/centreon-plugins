@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 # attempt to work around the interpretation of %{} as env variables instead of plugin macros
@@ -23,7 +23,7 @@ Systemd-sc-status v219 ${tc}/15
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=systemd-sc-status
-    ...    --command-path=${CURDIR}${/}..${/}..${/}resources${/}linux${/}systemd-219
+    ...    --command-path=${CURDIR}${/}systemd-219
     ...    --filter-name='${filter}'
     ...    --exclude-name='${exclude}'
     ...    --warning-status='${w_stat}'
@@ -68,7 +68,7 @@ Systemd-sc-status v252 ${tc}/15
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=systemd-sc-status
-    ...    --command-path=${CURDIR}${/}..${/}..${/}resources${/}linux${/}systemd-252
+    ...    --command-path=${CURDIR}${/}}systemd-252
     ...    --filter-name='${filter}'
     ...    --exclude-name='${exclude}'
     ...    --warning-status='${w_stat}'
