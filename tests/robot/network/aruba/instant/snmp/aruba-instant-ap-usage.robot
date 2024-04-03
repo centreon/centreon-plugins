@@ -1,20 +1,14 @@
 *** Settings ***
 Documentation       Network Aruba Instant SNMP plugin - AP Usage
-
-Library             OperatingSystem
-Library             String
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}                      ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
 
 &{ap_usage_test_1}
 ...                         documentation=Test AP usage without filters
-...                         snmpcommunity=network/aruba/instant/ap-usage
+...                         snmpcommunity=network/aruba/instant/snmp/ap-usage
 ...                         filtercounters=
 ...                         filtername=
 ...                         warningclients=
@@ -23,7 +17,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::aruba::in
 
 &{ap_usage_test_2}
 ...                         documentation=Test AP usage with filter on clients
-...                         snmpcommunity=network/aruba/instant/ap-usage
+...                         snmpcommunity=network/aruba/instant/snmp/ap-usage
 ...                         filtercounters=clients
 ...                         filtername=
 ...                         warningclients=
@@ -32,7 +26,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::aruba::in
 
 &{ap_usage_test_3}
 ...                         documentation=Test AP usage with filter on clients and filter on name
-...                         snmpcommunity=network/aruba/instant/ap-usage
+...                         snmpcommunity=network/aruba/instant/snmp/ap-usage
 ...                         filtercounters=clients
 ...                         filtername=Piso 4
 ...                         warningclients=
@@ -41,7 +35,7 @@ ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::aruba::in
 
 &{ap_usage_test_4}
 ...                         documentation=Test AP usage without filters with warning when less than 20 clients
-...                         snmpcommunity=network/aruba/instant/ap-usage
+...                         snmpcommunity=network/aruba/instant/snmp/ap-usage
 ...                         filtercounters=
 ...                         filtername=
 ...                         warningclients=20:
@@ -68,7 +62,7 @@ Network Aruba Instant SNMP plugin
         ...    --critical-clients='${ap_usage_tc.criticalclients}'
         ...    --snmp-community=${ap_usage_tc.snmpcommunity}
 
-        Log To Console      ${ap_usage_tc.documentation}
+        Log To Console      ${command}
         ${output}    Run    ${command}
         ${output}    Strip String    ${output}
         Should Be Equal As Strings

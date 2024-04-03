@@ -1,14 +1,14 @@
 *** Settings ***
 Documentation       datacore rest api plugin
-
-Suite Setup         Start Mockoon
-Suite Teardown      Stop Mockoon
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
+Suite Setup         Start Mockoon     ${MOCKOON_JSON} 
+Suite Teardown      Stop Mockoon
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}storage-datacore-restapi.json
+${MOCKOON_JSON}         ${CURDIR}${/}storage-datacore-api.json
 
-${CMD}                  perl ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
+${CMD}                  ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
 
 
 *** Test Cases ***
@@ -55,17 +55,3 @@ Datacore check status monitor
 
     Examples:    result   --
         ...    CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'
-
-*** Keywords ***
-Start Mockoon
-    ${process}    Start Process
-    ...    mockoon-cli
-    ...    start
-    ...    --data
-    ...    ${MOCKOON_JSON}
-    ...    --port
-    ...    3000
-    Sleep    5s
-
-Stop Mockoon
-    Terminate All Processes

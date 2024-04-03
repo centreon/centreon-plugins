@@ -1,17 +1,10 @@
 *** Settings ***
 Documentation       Linux Local Systemd-sc-status
-
-Library             OperatingSystem
-Library             String
-Library             Examples
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
 ...                         --mode=service
 ...                         --hostname=127.0.0.1
 ...                         --snmp-port=2024

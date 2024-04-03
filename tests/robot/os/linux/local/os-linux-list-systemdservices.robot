@@ -1,19 +1,10 @@
 *** Settings ***
 Documentation       Linux Local list-systemdservices
-
-Library             OperatingSystem
-Library             String
-Library             Examples
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
-${PERCENT}                  %
-
+${CMD}                      ${CENTREON_PLUGINS} --plugin=os::linux::local::plugin
 ${COND}                     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
 *** Test Cases ***

@@ -1,17 +1,11 @@
 *** Settings ***
 Documentation       Hardware Sensors APC SNMP plugin
-
-Library             OperatingSystem
-Library             String
-Library             Examples
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}                      ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
 
 *** Test Cases ***
 APC Sensors ${tc}/9

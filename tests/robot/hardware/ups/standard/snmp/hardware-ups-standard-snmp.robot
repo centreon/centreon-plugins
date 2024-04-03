@@ -1,16 +1,10 @@
 *** Settings ***
 Documentation       Hardware UPS standard SNMP plugin
-
-Library             OperatingSystem
-Library             String
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
 
 &{ups_standard_test_with_values}
 ...                         snmpcommunity=hardware/ups/standard/snmp/ups-standard

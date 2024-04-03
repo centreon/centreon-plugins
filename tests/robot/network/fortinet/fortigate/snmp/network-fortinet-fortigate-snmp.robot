@@ -1,16 +1,10 @@
 *** Settings ***
 Documentation       Network Fortinet Fortigate SNMP plugin
-
-Library             OperatingSystem
-Library             String
-
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 Test Timeout        120s
 
-
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
-
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
 
 # Test simple usage of the linkmonitor mode
 &{fortinet_fortigate_linkmonitor_test1}
