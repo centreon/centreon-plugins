@@ -1,16 +1,11 @@
 *** Settings ***
 Documentation       Storage Synology SNMP
-
-Library             OperatingSystem
-Library             XML
-
 Test Timeout        120s
-
+Resource    ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
-${CMD}                      perl ${CENTREON_PLUGINS} --plugin=storage::synology::snmp::plugin
+${CMD}                      ${CENTREON_PLUGINS} --plugin=storage::synology::snmp::plugin
 
 &{check_components_test1}
 ...                         description=Checking disk components when all disks are ok
