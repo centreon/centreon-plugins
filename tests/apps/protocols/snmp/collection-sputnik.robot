@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
 
@@ -22,15 +22,15 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ...    --hostname=127.0.0.1
     ...    --snmp-version=2c
     ...    --snmp-port=2024
-    ...    --snmp-community=hardware-ups/hardware-ups-sputnik
-    ...    --config=${CURDIR}${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
+    ...    --snmp-community=hardware/ups/inmatics/sputnik/snmp/hardware-ups-sputnik
+    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}
     ...    ${expected_result}
-    ...    Wrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    ...    ${command}\nWrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
 
     Examples:        tc    expected_result    --
             ...      1     OK: Sensor '1' temperature is '20.06'°C and humidity is '33'% | '1#environment.temperature.celsius'=20.06C;;;; '1#environment.humidity.percent'=33%;;;0;100

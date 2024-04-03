@@ -8,15 +8,15 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
 
 &{list_diskio_test1}
-...                         snmpcommunity=os_linux_snmp_plugin
+...                         snmpcommunity=os/linux/snmp/list-diskio
 ...                         nbresults=10
 &{list_diskio_test2}
-...                         snmpcommunity=os_linux_snmp_plugin_2
+...                         snmpcommunity=os/linux/snmp/list-diskio-2
 ...                         nbresults=4
 @{list_diskio_tests}
 ...                         &{list_diskio_test1}

@@ -91,7 +91,7 @@ Serial Ports
 Run Avocent 8000 Plugin
     [Arguments]    ${mode}    ${extraoptions}
     ${command}    Catenate
-    ...    perl ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+    ...    perl ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
     ...    --plugin=hardware::kvm::avocent::acs::8000::snmp::plugin
     ...    --mode=${mode}
     ...    --hostname=${HOSTADDRESS}

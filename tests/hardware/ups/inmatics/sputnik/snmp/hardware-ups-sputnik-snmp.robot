@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::inmatics::sputnik::snmp::plugin
 
@@ -22,7 +22,7 @@ Sputnik UPS - Environment ${tc}/9
     ...    --hostname=127.0.0.1
     ...    --snmp-version=2c
     ...    --snmp-port=2024
-    ...    --snmp-community=hardware-ups/hardware-ups-sputnik
+    ...    --snmp-community=hardware/ups/inmatics/sputnik/snmp/hardware-ups-sputnik
 
     # Append options to command
     ${opt}    Append Option    --warning-temperature   ${w_temperature}

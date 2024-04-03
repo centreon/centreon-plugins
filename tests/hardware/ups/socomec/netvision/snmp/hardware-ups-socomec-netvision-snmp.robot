@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::ups::socomec::netvision::snmp::plugin
 
@@ -22,7 +22,7 @@ Battery ${tc}/4
     ...    --hostname=127.0.0.1
     ...    --snmp-version=2c
     ...    --snmp-port=2024
-    ...    --snmp-community=hardware/ups/socomec/netvision/snmp/mode/battery
+    ...    --snmp-community=hardware/ups/socomec/netvision/snmp/battery
 
     # Append options to command
     ${opt}        Append Option    --warning-temperature   ${w_temperature}
@@ -35,7 +35,7 @@ Battery ${tc}/4
     Should Be Equal As Strings
     ...    ${output}
     ...    ${expected_result}
-    ...    Wrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    ...    \n${command}\nWrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
 
     Examples:        tc    w_temperature    c_temperature    expected_result    --
             ...      1     30               50               OK: battery status is normal - charge remaining: 100% (0 minutes remaining) | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=22C;0:30;0:50;;

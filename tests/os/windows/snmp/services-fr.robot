@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
 ...                         --mode=service
@@ -22,7 +22,7 @@ Windows Services EN ${tc}/x
     [Tags]    os    linux    local
     ${command}    Catenate
     ...    ${CMD}
-    ...    --snmp-community=os_windows_services_en
+    ...    --snmp-community=os/windows/snmp/services-en
     ...    --filter-name='${filter}'
     ...    ${extra_option}
 
@@ -46,7 +46,7 @@ Windows Services FR ${tc}/x
     [Tags]    os    linux    local
     ${command}    Catenate
     ...    ${CMD}
-    ...    --snmp-community=os_windows_services_fr
+    ...    --snmp-community=os/windows/snmp/services-fr
     ...    --filter-name='${filter}'
     ...    ${extra_option}
 

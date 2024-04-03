@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src${/}centreon_plugins.pl
 
 ${CMD}                      perl ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
 
@@ -18,7 +18,7 @@ APC Sensors ${tc}/9
     [Tags]    hardware    Sensors    snmp
     ${command}    Catenate
     ...    ${CMD}
-    ...    --snmp-community=hardware/sensors/apc/sensors
+    ...    --snmp-community=hardware/sensors/apc/snmp/sensors
 
     # Append options to command
     ${command}    Append Option To Command    ${command}    --warning   ${warning}
