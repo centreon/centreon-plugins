@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
+      pluginslist: ${{ steps.get_plugins.outputs.pluginslist }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -81,6 +82,14 @@ jobs:
             echo "::notice::There are no modifications to the plugins packages"
           fi
         shell: bash
+      - name: Get plugins for tests matrix
+        id: get_plugins
+        if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
+        run: |
+          PLUGINSLIST="$( sed -e 's/ /,/' '${{ steps.get-plugins.outputs.plugins }}')"
+
+          echo "pluginslist=$(echo [ $PLUGINSLIST ])" >> $GITHUB_OUTPUT
+        shell: bash
 
   fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
@@ -108,6 +117,7 @@ jobs:
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+
 
   package:
     runs-on: ubuntu-22.04
@@ -248,7 +258,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin-name: ${{ fromJson(needs.get-plugins.outputs.plugins) }}
+        plugin-name: ${{ (needs.get-plugins.outputs.pluginslist) }}
         distrib: [ el8, el9, jammy, bullseye, bookworm ]
         include:
           - package_extension: rpm
