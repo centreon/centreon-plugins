@@ -86,14 +86,9 @@ jobs:
         shell: bash
       - name: Get plugins for tests matrix
         id: get_plugins_list
-        run: |
-          echo ${{ steps.filter.outputs.common }}
-          echo ${{ steps.get-plugins.outputs.plugins }}
-          echo ${{ steps.get-plugins.outputs }}
-          
+        run: |        
           PLUGINSLIST="$( echo '${{ steps.get_plugins.outputs.plugins }}' |sed -e 's/ /,/' )"
-
-          echo "pluginslist=$(echo [ $PLUGINSLIST ])" >> $GITHUB_OUTPUT
+          echo "pluginslist=$(echo $PLUGINSLIST)" >> $GITHUB_OUTPUT
         shell: bash
 
   fatpacker:
@@ -263,7 +258,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin-name: ${{ (needs.get-plugins.outputs.pluginslist) }}
+        plugin-name: [${{ needs.get-plugins.outputs.pluginslist }} ]
         distrib: [ el8, el9, jammy, bullseye, bookworm ]
         include:
           - package_extension: rpm
