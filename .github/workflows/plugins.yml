@@ -91,7 +91,7 @@ jobs:
           echo ${{ steps.get-plugins.outputs.plugins }}
           echo ${{ steps.get-plugins.outputs }}
           
-          PLUGINSLIST="$( sed -e 's/ /,/' '${{ steps.get_plugins.outputs.plugins }}')"
+          PLUGINSLIST="$( echo '${{ steps.get_plugins.outputs.plugins }}' |sed -e 's/ /,/' )"
 
           echo "pluginslist=$(echo [ $PLUGINSLIST ])" >> $GITHUB_OUTPUT
         shell: bash
