@@ -87,11 +87,11 @@ jobs:
       - name: Get plugins for tests matrix
         id: get_plugins_list
         run: |   
-          packs=()
+          pluginsarray=()
           for f in ${{ steps.get_plugins.outputs.plugins }}; do
-            packs+=($f)
+            pluginsarray+=($f)
           done
-          echo "pluginslist=$(jq -cn '$ARGS.positional' --args "${packs[@]}")" >> $GITHUB_OUTPUT
+          echo "pluginslist=$(jq -cn '$ARGS.positional' --args "${pluginsarray[@]}")" >> $GITHUB_OUTPUT
 
         shell: bash
 
@@ -262,7 +262,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin-name: ${{ needs.get-plugins.outputs.pluginslist }}
+        plugin-name: ${{fromJson(needs.get-plugins.outputs.pluginslist) }}
         distrib: [ el8, el9, jammy, bullseye, bookworm ]
         include:
           - package_extension: rpm
