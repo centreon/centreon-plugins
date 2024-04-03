@@ -243,6 +243,47 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
+
+  test-plugins:
+    needs: [get-environment,package]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin-name: ${{ fromJson(needs.get-plugins.outputs.plugins) }}
+        distrib: [ el8, el9, jammy, bullseye, bookworm ]
+        include:
+          - package_extension: rpm
+            image: testing-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: testing-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: testing-plugins-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: testing-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: testing-plugins-jammy
+            distrib: jammy
+
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    steps:
+      - uses: ./.github/action/tests-plugins.yml
+        with:
+          plugin-cache: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          package-extension: ${{ matrix.package_extension }}
+          plugin-name: ${{ matrix.plugin-name }}
+
+
+
   deliver:
     needs: [get-environment, package]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
