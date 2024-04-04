@@ -28,17 +28,16 @@ runs:
       run: |
         apt update
         pluginlowercase="${{inputs.plugin-name}}"
-        file "$pluginlowercase"
         echo "fichier $pluginlowercase  ls -la est : "
         ls -lha
         apt install -y ./${pluginlowercase,,}.deb # ,, make the variable lowercase
-      
 
     - name: install plugin for rpm distrib
       if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
       run: |
-        rpm -i ${{inputs.plugin-name}}.rpm
+        ls
+        rpm -i ./${{inputs.plugin-name}}.rpm
 
     - name: get list of robot file to launch from packagings configuration.
       shell: bash
