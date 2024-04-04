@@ -4,7 +4,7 @@ FROM ${REGISTRY_URL}/almalinux:9
 
 RUN bash -e <<EOF
 
-dnf install -y 'dnf-command(config-manager)' epel-release
+dnf install -y 'dnf-command(config-manager)' epel-release zstd
 dnf config-manager --set-enabled crb
 dnf clean all
 
