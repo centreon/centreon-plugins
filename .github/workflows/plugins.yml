@@ -291,7 +291,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: ./.github/action/tests-plugins.yml
+      - uses: ./.github/action/plugins-tests
         with:
           plugin-cache: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           package-extension: ${{ matrix.package_extension }}
