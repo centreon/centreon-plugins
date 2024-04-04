@@ -298,7 +298,7 @@ jobs:
 
       - uses: ./.github/actions/plugins-tests
         with:
-          plugin-cache: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           package-extension: ${{ matrix.package_extension }}
           plugin-name: ${{ matrix.plugin-name }}
 

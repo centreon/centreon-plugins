@@ -27,15 +27,15 @@ runs:
       shell: bash
       run: |
         apt update
-        plugin-lowercase=${{inputs.plugin-name}}
-        apt install -y ./build/${plugin-lowercase,,} # ,, make the variable lowercase
+        plugin-lowercase="${{inputs.plugin-name}}"
+        apt install -y ./build/${plugin-lowercase,,}.deb # ,, make the variable lowercase
       
 
     - name: install plugin for rpm distrib
       if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
       run: |
-        dnf install -y ./build/${{inputs.plugin-name}}
+        dnf install -y ./build/${{inputs.plugin-name}}.rpm
 
     - name: get list of robot file to launch from packagings configuration.
       shell: bash
