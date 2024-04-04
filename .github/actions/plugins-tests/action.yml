@@ -33,9 +33,7 @@ runs:
     - name: install plugin for rpm distrib
       if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
-      run: |
-        dnf search perl-Net-Curl
-        rpm -i ./${{inputs.plugin-name}}*.rpm
+      run: dnf install ./${{inputs.plugin-name}}*.rpm
 
     - name: get list of robot file to launch from packagings configuration.
       shell: bash
