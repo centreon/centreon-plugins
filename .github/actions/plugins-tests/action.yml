@@ -23,7 +23,7 @@ runs:
         fail-on-cache-miss: true
 
     - name: install plugin for deb distrib
-      if: ${{inputs.package-extension == "deb" }}
+      if: ${{inputs.package-extension == 'deb' }}
       shell: bash
       run: |
         apt update
