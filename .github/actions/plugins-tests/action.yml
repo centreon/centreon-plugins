@@ -49,5 +49,5 @@ runs:
         done <<< $(jq -r '.files[]' ./packaging/${{inputs.plugin-name}}/pkg.json)
         cd tests/robot/
         useradd snmp
-        snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
+        snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot' &
         robot $string
