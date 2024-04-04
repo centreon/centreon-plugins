@@ -32,7 +32,7 @@ runs:
       
 
     - name: install plugin for rpm distrib
-      if: ${{inputs.package-extension == "rpm" }}
+      if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
       run: |
         dnf install -y ./build/${{inputs.plugin-name}}
