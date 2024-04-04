@@ -35,7 +35,7 @@ runs:
       if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
       run: |
-        dnf install -y ./${{inputs.plugin-name}}.rpm
+        rpm -i ./${{inputs.plugin-name}}.rpm
 
     - name: get list of robot file to launch from packagings configuration.
       shell: bash
