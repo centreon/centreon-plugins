@@ -40,7 +40,6 @@ runs:
     - name: get list of robot file to launch from packagings configuration.
       shell: bash
       run: |
-        
         string=""
         while read i
         do
