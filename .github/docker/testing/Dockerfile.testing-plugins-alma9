@@ -59,6 +59,9 @@ gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
 
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+
 dnf clean all
 
 EOF

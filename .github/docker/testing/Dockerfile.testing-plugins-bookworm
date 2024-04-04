@@ -39,6 +39,9 @@ echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | t
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 apt-get update
 
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+
 apt-get clean
 
 EOF

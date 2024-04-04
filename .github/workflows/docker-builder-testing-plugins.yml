@@ -6,6 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/docker-builder-testing-plugins.yml"
+      - ".github/docker/testing/*"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-builder-testing-plugins.yml"
+      - ".github/docker/testing/*"
+
 
 jobs:
   create-and-push-docker:
