@@ -6,16 +6,7 @@ concurrency:
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-    paths:
-      - ".github/workflows/docker-builder-packaging-plugins.yml"
-      - ".github/docker/packaging/*"
-  pull_request:
-    paths:
-      - ".github/workflows/docker-builder-packaging-plugins.yml"
-      - ".github/docker/packaging/*"
+
 
 jobs:
   create-and-push-docker:
