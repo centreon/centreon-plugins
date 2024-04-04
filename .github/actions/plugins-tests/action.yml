@@ -28,15 +28,13 @@ runs:
       run: |
         apt update
         pluginlowercase="${{inputs.plugin-name}}"
-        echo "fichier $pluginlowercase  ls -la est : "
-        ls -lha
         apt install -y ./${pluginlowercase,,}*.deb # ,, make the variable lowercase
 
     - name: install plugin for rpm distrib
       if: ${{inputs.package-extension == 'rpm' }}
       shell: bash
       run: |
-        ls
+        dnf search perl-Net-Curl
         rpm -i ./${{inputs.plugin-name}}*.rpm
 
     - name: get list of robot file to launch from packagings configuration.
@@ -52,6 +50,6 @@ runs:
         fi
         done <<< $(jq -r '.files[]' ./packaging/${{inputs.plugin-name}}/pkg.json)
         cd tests/robot/
-        sudo useradd snmp
+        useradd snmp
         snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
         robot $string
