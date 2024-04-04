@@ -26,12 +26,25 @@ runs:
 
     - name: install plugin for deb distrib
       if: ${{inputs.package-extension == "deb" }}
+      shell: bash
       run: |
         apt update
         apt install -y ./build/${{inputs.plugin-name}}
 
-    - name: Run Robot Framework tests
+    - name: get list of robot file to launch from packagings configuration.
+      shell: bash
       run: |
+        
+        string=""
+        while read i
+        do
+          echo "aa"
+          if [[ $i == *"/" ]]
+          then
+            string="$string $i"
+        fi
+        done <<< $(jq -r '.files[]' ./packaging/${{plugin-name}}/pkg.json)
+        cd tests/robot/
         sudo useradd snmp
         snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot'&
-        robot tests/robot
+        robot $string
