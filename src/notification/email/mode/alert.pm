@@ -829,7 +829,7 @@ Use this option to disable SSL.
 
 =item B<--smtp-debug>
 
-Enable smtp-debug mode.
+Enable debugging of SMTP.
 
 =item B<--to-address>
 
