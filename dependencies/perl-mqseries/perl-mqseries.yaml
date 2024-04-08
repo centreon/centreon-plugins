@@ -16,7 +16,7 @@ homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "./src/*"
+  - src: "./src/"
     dst: "@PERL_VENDORLIB@/"
     file_info:
       mode: 0644
