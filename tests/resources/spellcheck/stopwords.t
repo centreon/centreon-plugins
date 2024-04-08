@@ -1,5 +1,7 @@
 --display-transform-dst
 --display-transform-src
+--exclude-fs
+--filter-fs
 --filter-vdom
 --force-counters32
 --force-counters64
