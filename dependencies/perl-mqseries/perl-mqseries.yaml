@@ -16,8 +16,8 @@ homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "/tmp/lib/perl5/JSON/Path.pm"
-    dst: "@PERL_VENDORLIB@/JSON/"
+  - src: "./src/*"
+    dst: "@PERL_VENDORLIB@/"
     file_info:
       mode: 0644
 

@@ -69,7 +69,7 @@ jobs:
           echo "Perl version is $PERL_VERSION"
 
           if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
-            NAME="libjson-path-perl"
+            NAME="libmqseries-perl"
             PERL_VENDORLIB="/usr/share/perl5"
           else
             NAME="perl-JSON-Path"
