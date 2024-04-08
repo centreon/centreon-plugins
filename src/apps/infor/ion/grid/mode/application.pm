@@ -168,6 +168,14 @@ Threshold can be matched on special variables like %{state}, %{online}, %{starte
 %{name} or %{description} and Regexp can be used.
 Typical syntax: --critical-status='%{started} ne "true"'
 
+=item B<--warning-total>
+
+Define the conditions to match for the total to be WARNING (default: '').
+
+=item B<--critical-total>
+
+Define the conditions to match for the total to be CRITICAL (default: '').
+
 =back
 
 =cut
