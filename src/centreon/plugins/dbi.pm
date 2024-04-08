@@ -29,6 +29,7 @@ use POSIX qw(:signal_h);
 my %handlers = ( ALRM => {} );
 
 sub new {
+
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
