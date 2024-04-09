@@ -190,27 +190,27 @@ ION Grid Rest API
 
 =item B<--hostname>
 
-Set hostname.
+Define the name or the address of the host.
 
 =item B<--port>
 
-Set port (default: '443').
+Define the port to connect to (default: '443').
 
 =item B<--proto>
 
-Specify https if needed (default: 'https').
+Select the right protocol between 'http' and 'https' (default: 'https').
 
 =item B<--api-username>
 
-API username.
+Username to access the API.
 
 =item B<--api-password>
 
-API password.
+Password to access the API.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (default: '20').
+Maximum time to wait (in seconds) for a response to HTTP requests before timeout (default: '20').
 
 =back
 

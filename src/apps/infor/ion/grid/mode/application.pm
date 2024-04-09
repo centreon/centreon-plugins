@@ -145,36 +145,36 @@ __END__
 
 =head1 MODE
 
-Check application status.
+Monitor the status of the application.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter by application name (regexp can be used).
+Define which applications should be monitored based on their names. This option will be treated as a regular expression.
 Example: --filter-name='^application1$'
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
-Threshold can be matched on special variables like %{state}, %{online}, %{started},
-%{name} or %{description} and Regexp can be used.
+The condition can be written using special variables like %{state}, %{online}, %{started},
+%{name} or %{description}. Regular expressions are supported.
 Typical syntax: --warning-status='%{state} ne "OK"'
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{online} =~ /true/ && %{state} !~ /^(OK)/i').
-Threshold can be matched on special variables like %{state}, %{online}, %{started},
-%{name} or %{description} and Regexp can be used.
+The condition can be written using special variables like %{state}, %{online}, %{started},
+%{name} or %{description}. Regular expressions are supported.
 Typical syntax: --critical-status='%{started} ne "true"'
 
 =item B<--warning-total>
 
-Define the conditions to match for the total to be WARNING (default: '').
+Define the warning threshold for the total number of applications.
 
 =item B<--critical-total>
 
-Define the conditions to match for the total to be CRITICAL (default: '').
+Define the critical threshold for the total number of applications.
 
 =back
 

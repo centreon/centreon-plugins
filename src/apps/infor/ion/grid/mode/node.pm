@@ -202,42 +202,41 @@ __END__
 
 =head1 MODE
 
-Check node status and statistics.
+Monitor the status and the statistics of the nodes.
 
 =over 8
 
 =item B<--filter-type>
 
-Filter by node type.
+Define which nodes should be monitored based on the their type. This option will be treated as a regular expression.
 
 =item B<--filter-name>
 
-Filter by node name.
+Define which nodes should be monitored based on the their name. This option will be treated as a regular expression.
 
 =item B<--filter-application-name>
 
-Filter by application name.
+Define which applications should be monitored based on the their name. This option will be treated as a regular expression.
 
 =item B<--filter-host-name>
 
-Filter by host name.
+Define which hosts should be monitored based on the their name. This option will be treated as a regular expression.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: "%{state} !~ /online/").
-Can use special variables like: %{state}, %{name}, %{host_name},
+Define the conditions to match to return a warning status (default: "%{state} !~ /online/").
+The condition can be written using the following macros: %{state}, %{name}, %{host_name},
 %{application_name}, %{type}.
 
 =item B<--critical-status>
 
-Set critical threshold for status.
-Can use special variables like: %{state}, %{name}, %{host_name},
+Define the conditions to match to return a critical status.
+The condition can be written using the following macros: %{state}, %{name}, %{host_name},
 %{application_name}, %{type}.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds.
-Can be: 'log-error', 'log-warning', 'uptime' (s), 'cpu-usage', 'heap-usage' (%).
+Thresholds for 'log-error', 'log-warning', 'uptime' (s), 'cpu-usage', 'heap-usage' (%).
 
 =back
 
