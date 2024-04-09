@@ -330,6 +330,7 @@ sub request {
     }
     if (defined($options{request}->{cookies_file})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEFILE'), parameter => $options{request}->{cookies_file});
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEJAR'), parameter => $options{request}->{cookies_file});
     }
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 1);
