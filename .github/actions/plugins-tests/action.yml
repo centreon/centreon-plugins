@@ -4,8 +4,8 @@ inputs:
   cache-key:
     description: "The plugin packaged cache key"
     required: true
-  plugin-name:
-    description: "plugin name to install from the cache"
+  plugin-list:
+    description: "plugin names to install from the cache"
     required: true
   package-extension:
     description: "either rpm or deb, used to install the plugin with the correct binary"
@@ -23,48 +23,9 @@ runs:
         fail-on-cache-miss: true
 
     - name: install plugin for deb distrib
-      if: ${{inputs.package-extension == 'deb' }}
       shell: bash
-      run: |
-        apt update
-        pluginlowercase="${{inputs.plugin-name}}"
-        apt install -y ./${pluginlowercase,,}*.deb 
-        # in bash ,, make the variable lowercase.
-
-    - name: install plugin for rpm distrib
-      if: ${{inputs.package-extension == 'rpm' }}
-      shell: bash
-      run: dnf install -y ./${{inputs.plugin-name}}*.rpm
-      # deb and rpm file contain the version/date in the name, hence the wildcard in the name.
-
-    - name: launch snmp simulator process to answer any snmp query.
-      shell: bash
-      run: |
-        useradd snmp
-        mkdir -p /var/lib/snmp/cert_indexes/ 
-        # this folder seem needed to launch snmp plugins. I didn't reproduce in my env, but without it, 
-        # the first snmp plugin launched by robot prepend the message "Created directory: /var/lib/snmp/cert_indexes". 
-        chown snmp:snmp -R /var/lib/snmp/cert_indexes/ 
-        snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot' &
-
-    - name: get list of robot file to launch from packagings configuration.
-      shell: bash
-      run: |
-        
-        string=""
-        while read i
-        do
-        testsname="./tests/robot/$i"
-          if [[ $i == *"/" && -e $testsname ]]
-          then
-            string="$string $testsname"
-        fi
-        done <<< $(jq -r '.files[]' ./packaging/${{inputs.plugin-name}}/pkg.json)
-
-        echo string
-        if [[ ! -z "$string" ]] ; then
-          robot $string
-        else
-          exit 0
-          # if no tests where found we quit. we still have tested the plugin is installable, tests will be added little by little.
-        fi
+      run: |  
+        echo "plugin list is : \n\n " 
+        echo ${{inputs.plugin-list}}
+        echo "\n\n executing....\n\n"
+        python3 .github/scripts/test-all-plugins.py ${{inputs.package-extension}} ${{inputs.plugin-list}}
