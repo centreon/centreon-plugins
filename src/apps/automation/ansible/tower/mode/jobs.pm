@@ -118,7 +118,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
             && $job->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        if (defined($job->{finished})) {
+        if ((defined($self->{option_results}->{memory}) || defined($self->{option_results}->{since_hours}))
+            && defined($job->{finished})) {
             my $finished_time = Date::Parse::str2time($job->{finished});
             if (!defined($finished_time)) {
                 $self->{output}->output_add(
