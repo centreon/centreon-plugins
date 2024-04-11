@@ -30,10 +30,10 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: 20
+          node-version: 21
 
       - name: Install Mockoon CLI
-        run: npm install -g -D @mockoon/cli@6.2.0
+        run: npm install -g -D @mockoon/cli@7.0.0
 
       - name: Install perl dependencies
         uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
@@ -65,22 +65,12 @@ jobs:
           pip3.11 install RobotFramework-Examples
         shell: bash
 
-      - name: Run Robot Framework API tests
+      - name: Run Robot Framework tests
         run: |
           sudo mkdir -p /var/lib/centreon/centplugins/
           sudo chmod 777 /var/lib/centreon/centplugins/
-          robot tests/functional/api
-
-      - name: Run Robot Framework SNMP tests
-        run: |
           sudo useradd snmp
           sudo mkdir -p /usr/snmpsim/data
-          sudo cp -r tests/resources/snmp/* /usr/snmpsim/data/
+          sudo cp -r tests/robot/* /usr/snmpsim/data/
           snmpsimd --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp &
-          robot tests/functional/snmp
-
-      - name: Run Robot Framework Database tests
-        run: robot tests/functional/database
-
-      - name: Run Robot Framework Linux tests
-        run: robot tests/functional/linux
+          robot tests/robot

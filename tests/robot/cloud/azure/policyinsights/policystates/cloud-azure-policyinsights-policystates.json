@@ -1,0 +1,212 @@
+{
+  "uuid": "101906e9-f832-416c-8781-880c33a0a778",
+  "lastMigration": 32,
+  "name": "Azure API",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "433aa2a7-20df-4682-88ef-4c87bd0882e1",
+      "documentation": "Azure login",
+      "method": "post",
+      "endpoint": "login/:tenant/oauth2/token",
+      "responses": [
+        {
+          "uuid": "0c775d57-8661-4c4f-9f30-a3a134d6d09c",
+          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'string.numeric' 10 }}\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "type": "http"
+    },
+    {
+      "uuid": "3f190dd9-690a-413a-bafa-5c9d369b7d22",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "ok/subscriptions/:subscriptionId/providers/Microsoft.PolicyInsights/policyStates/:policyStatesResource/queryResults",
+      "responses": [
+        {
+          "uuid": "06ebc038-a4f5-48d5-8fb8-2403915a9754",
+          "body": "{\r\n  \"@odata.nextLink\": null,\r\n  \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest\",\r\n  \"@odata.count\": 2,\r\n  \"value\": [\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/Enable Monitoring in Azure Security Center\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"Enable Monitoring in Azure Security Center\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"mypubip3\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "type": "http"
+    },
+    {
+      "uuid": "31c8940d-4623-444c-92e1-f340fe74b5b3",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "nok1/subscriptions/:subscriptionId/providers/Microsoft.PolicyInsights/policyStates/:policyStatesResource/queryResults",
+      "responses": [
+        {
+          "uuid": "64c245ca-0190-4b2e-89d5-87383148286c",
+          "body": "{\r\n  \"@odata.nextLink\": null,\r\n  \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest\",\r\n  \"@odata.count\": 2,\r\n  \"value\": [\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/Enable Monitoring in Azure Security Center\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": false,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"Enable Monitoring in Azure Security Center\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"NonCompliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "type": "http"
+    },
+    {
+      "uuid": "13bf6e0e-8843-4681-942e-404b01326f32",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "nok2/subscriptions/:subscriptionId/providers/Microsoft.PolicyInsights/policyStates/:policyStatesResource/queryResults",
+      "responses": [
+        {
+          "uuid": "709a35af-cf2b-41f7-a224-3a946ffce703",
+          "body": "{\r\n  \"@odata.nextLink\": null,\r\n  \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest\",\r\n  \"@odata.count\": 2,\r\n  \"value\": [\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/Enable Monitoring in Azure Security Center\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": false,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"Enable Monitoring in Azure Security Center\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"NonCompliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": false,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"NonCompliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "type": "http"
+    },
+    {
+      "uuid": "1eb461f8-c128-432b-a7ca-7ddd71c28fa4",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "oknextlink/subscriptions/:subscriptionId/providers/Microsoft.PolicyInsights/policyStates/:policyStatesResource/queryResults",
+      "responses": [
+        {
+          "uuid": "a0daaaa4-9c21-4d4d-aa0a-a99da2de7479",
+          "body": "{\r\n  \"@odata.nextLink\": \"http://localhost:3000/ok/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults\",\r\n  \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest\",\r\n  \"@odata.count\": 2,\r\n  \"value\": [\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip1\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/Enable Monitoring in Azure Security Center\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"Enable Monitoring in Azure Security Center\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/resourceGroups/myrg1/providers/Microsoft.Network/publicIPAddresses/mypubip2\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    },\r\n    {\r\n      \"@odata.id\": null,\r\n      \"@odata.context\": \"https://management.azure.com/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.PolicyInsights/policyStates/$metadata#latest/$entity\",\r\n      \"timestamp\": \"2019-10-09T17:48:05Z\",\r\n      \"resourceId\": \"mypubip3\",\r\n      \"policyAssignmentId\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852/providers/Microsoft.Authorization/policyAssignments/9ac09b0657d942e5ad4041a6\",\r\n      \"policyDefinitionId\": \"/providers/Microsoft.Authorization/policyDefinitions/9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"effectiveParameters\": null,\r\n      \"isCompliant\": true,\r\n      \"subscriptionId\": \"fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"resourceType\": \"/Microsoft.Network/publicIPAddresses\",\r\n      \"resourceLocation\": \"eastus\",\r\n      \"resourceGroup\": \"myrg1\",\r\n      \"resourceTags\": \"tbd\",\r\n      \"policyAssignmentName\": \"9ac09b0657d942e5ad4041a6\",\r\n      \"policyAssignmentOwner\": \"tbd\",\r\n      \"policyAssignmentParameters\": \"{}\",\r\n      \"policyAssignmentScope\": \"/subscriptions/fffedd8f-ffff-fffd-fffd-fffed2f84852\",\r\n      \"policyDefinitionName\": \"9daedab3-fb2d-461e-b861-71790eead4f6\",\r\n      \"policyDefinitionAction\": \"AuditIfNotExists\",\r\n      \"policyDefinitionCategory\": \"tbd\",\r\n      \"policySetDefinitionId\": \"/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionName\": \"1f3afdf9-d0c9-4c3d-847f-89da613e70a8\",\r\n      \"policySetDefinitionOwner\": null,\r\n      \"policySetDefinitionCategory\": null,\r\n      \"policySetDefinitionParameters\": null,\r\n      \"managementGroupIds\": \"mymg,fff988bf-fff1-ffff-fffb-fffcd011db47\",\r\n      \"policyDefinitionReferenceId\": null,\r\n      \"complianceState\": \"Compliant\",\r\n      \"policyDefinitionGroupNames\": [\r\n        \"myGroup\"\r\n      ],\r\n      \"policyDefinitionVersion\": \"1.0.0-preview\",\r\n      \"policySetDefinitionVersion\": \"2.0.1\",\r\n      \"policyAssignmentVersion\": \"1.0.0\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "type": "http"
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "433aa2a7-20df-4682-88ef-4c87bd0882e1"
+    },
+    {
+      "type": "route",
+      "uuid": "3f190dd9-690a-413a-bafa-5c9d369b7d22"
+    },
+    {
+      "type": "route",
+      "uuid": "1eb461f8-c128-432b-a7ca-7ddd71c28fa4"
+    },
+    {
+      "type": "route",
+      "uuid": "31c8940d-4623-444c-92e1-f340fe74b5b3"
+    },
+    {
+      "type": "route",
+      "uuid": "13bf6e0e-8843-4681-942e-404b01326f32"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
