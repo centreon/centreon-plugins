@@ -454,7 +454,7 @@ sub parse_structure {
     }
 
     my $jpath = JSON::Path->new($options{conf}->{path});
-    my @values = $jpath->values($options{content});
+    my @values = $jpath->values($content);
 
     my $local = {};
     my $i = 0;
