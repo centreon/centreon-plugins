@@ -438,7 +438,7 @@ sub parse_structure {
     } elsif ($options{rtype} eq 'xml') {
         eval {
             $SIG{__WARN__} = sub {};
-            $content = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
+            $content = XMLin($options{content}, ForceArray => $options{force_array}, KeyAttr => []);
         };
     }
     if ($@) {
