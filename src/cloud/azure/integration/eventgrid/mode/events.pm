@@ -193,7 +193,7 @@ Warning threshold where '*' can be:
 'matched-events', 'deadlettered-events', 'unmatched-events', 
 'dropped-events'.
 
-=item B<--critical-vault-capacity-percentage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
 'matched-events', 'deadlettered-events', 'unmatched-events', 
