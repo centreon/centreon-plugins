@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
-      pluginslist: ${{ steps.get_plugins_list.outputs.pluginslist }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -77,7 +76,6 @@ jobs:
           PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
-          echo $PLUGINS
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
@@ -86,7 +84,7 @@ jobs:
 
   fatpacker:
     if: ${{needs.get-plugins.outputs.plugins != ''}}
-    needs: [ get-environment, get-plugins ]
+    needs: [get-environment, get-plugins]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
@@ -111,7 +109,6 @@ jobs:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
-
   package:
     runs-on: ubuntu-22.04
     needs: [get-environment, get-plugins, fatpacker]
@@ -121,12 +118,23 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
+            image: packaging-plugins-centos7
+            distrib: el7
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
-
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -268,6 +276,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+
       - uses: ./.github/actions/plugins-tests
         with:
           cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
@@ -275,7 +284,7 @@ jobs:
           plugin-list: ${{needs.get-plugins.outputs.plugins}}
 
   deliver:
-    needs: [ get-environment, package ]
+    needs: [get-environment, package]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:

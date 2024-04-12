@@ -9,8 +9,8 @@ def get_tests_folders(plugin_name):
     folder_list = []
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
-    for file in packaging["files"]:
-        if file.endswith("/") and os.path.exists("tests/robot/" + file):
+    for file in packaging["files"]: # loop on "files" array in pkg.json file.
+        if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
             folder_list.append("tests/robot/" + file)
     return folder_list
 
@@ -22,7 +22,6 @@ def get_plugin_full_path(plugin_name):
 
 
 def test_plugin(plugin_name):
-    print("\ntesting plugin")
     folders_list = get_tests_folders(plugin_name)
     print(f"{plugin_name} folders_list : {folders_list}")
     if len(folders_list) == 0:
@@ -30,7 +29,6 @@ def test_plugin(plugin_name):
     robot_results = subprocess.run("robot -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
                    shell=True, check=False)
     return robot_results.returncode
-    # robot_status = subprocess.run("robot ")
 
 
 def try_command(cmd, error):
@@ -42,20 +40,19 @@ def try_command(cmd, error):
 
 
 def launch_snmp_sim():
-    subprocess.run("useradd snmp", shell=True,
-                   check=False)  # we don't want to quit if this fail because it often means the user already exist.
+    subprocess.run("useradd snmp", shell=True, check=False)
+    # we don't want to quit if this fail because it often means the user already exist.
 
     # this folder seem needed to launch snmp plugins. I didn't reproduce in my env, but without it,
     # the first snmp plugin launched by robot prepend the message "Created directory: /var/lib/snmp/cert_indexes".
     try_command(cmd="mkdir -p /var/lib/snmp/cert_indexes/", error="can't create /var/lib/snmp/cert_indexes/ dir")
-
     try_command(cmd="chown snmp:snmp -R /var/lib/snmp/cert_indexes/", error="can't set cert_indexes folder permissions")
+
     snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot' &"
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
 
 def install_plugin(plugin, archi):
-    output_status = 0
     if archi == "deb":
         output_status = (subprocess.run(
                 "apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
@@ -69,7 +66,6 @@ def install_plugin(plugin, archi):
 
 
 def remove_plugin(plugin, archi):
-    output_status = 0
     if archi == "deb":
         output_status = (subprocess.run(
             "apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
@@ -89,23 +85,20 @@ def remove_plugin(plugin, archi):
 if __name__ == '__main__':
     print("starting program")
     if len(sys.argv) < 2:
-        print("please provide list of plugin to test as arguments (one plugin name per argument, separated by space)")
+        print("please provide architecture (deb or rpm) and list of plugin to test as arguments (one plugin name per "
+              "argument, separated by space)")
         sys.exit(1)
 
     launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
-    script_name = sys.argv.pop(0)  # expected either deb or rpm.
-    print(f"archi is {archi}")
+    script_name = sys.argv.pop(0)
+
     error_install = 0
     error_tests = 0
     error_purge = 0
     nb_plugins = 0
     list_plugin_error = []
     for plugin in sys.argv:
-        if nb_plugins % 10 == 0:
-            print(
-                f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
-                f"errors, and {error_purge} removal error. list : {list_plugin_error}", )
         print("plugin : ", plugin)
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)

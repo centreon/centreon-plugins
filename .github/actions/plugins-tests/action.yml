@@ -1,5 +1,5 @@
-name: "deb-delivery"
-description: "Deliver DEB packages"
+name: "tests all plugins"
+description: "test all plugin passed as parameter"
 inputs:
   cache-key:
     description: "The plugin packaged cache key"
@@ -22,10 +22,7 @@ runs:
         key: ${{ inputs.cache-key }}
         fail-on-cache-miss: true
 
-    - name: install plugin for deb distrib
+    - name: install, test and remove plugin
       shell: bash
-      run: |  
-        echo "plugin list is : \n\n " 
-        echo ${{inputs.plugin-list}}
-        echo "\n\n executing....\n\n"
+      run: |
         python3 .github/scripts/test-all-plugins.py ${{inputs.package-extension}} ${{inputs.plugin-list}}
