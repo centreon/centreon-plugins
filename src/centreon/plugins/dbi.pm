@@ -26,7 +26,6 @@ use DBI;
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(:signal_h);
 
-
 my %handlers = ( ALRM => {} );
 
 sub new {
