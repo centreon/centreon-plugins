@@ -308,7 +308,7 @@ sub call_http {
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
-        backend => $self->substitute_string(value => $options{rq}->{backend}),
+        http_backend => $self->substitute_string(value => $options{rq}->{backend}),
         method => $self->substitute_string(value => $options{rq}->{method}),
         full_url => $full_url,
         hostname => $hostname,
@@ -546,38 +546,50 @@ sub collect_http_tables {
             ($headers, $content, $http) = $self->call_http(rq => $options{requests}->[$i], http => $options{http});
             $self->set_builtin();
 
-            my $local = {};
-            if (defined($options{requests}->[$i]->{parse})) {
-                foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
-                    if ($options{requests}->[$i]->{rtype} eq 'txt') {
-                        $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
-                    } else {
-                        $local = $self->parse_structure(
-                            name => $options{requests}->[$i]->{name},
-                            content => $content,
-                            conf => $conf,
-                            rtype => $options{requests}->[$i]->{rtype},
-                            force_array => $options{requests}->[$i]->{force_array}
-                        );
-                    }
-                }
-            }
-
-            $self->set_functions(
-                section => "http > requests > $options{requests}->[$i]->{name}",
-                functions => $options{requests}->[$i]->{functions},
-                default => 1
-            );
-
-            if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
-                $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand})) {
+            if (defined($options{requests}->[$i]->{scenario_stopped_first}) && $options{requests}->[$i]->{scenario_stopped_first} &&
+                $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped_first}, values => $self->{expand})) {
                 $self->{scenario_stopped} = 1;
                 if (defined($options{requests}->[$i]->{scenario_retry}) && $options{requests}->[$i]->{scenario_retry} =~ /^true|1$/i) {
                     $self->{scenario_loop}++;
                     $self->{scenario_retry} = 1;
                 }
             } else {
-                $self->save_local_http_cache(local_http_cache => $local_http_cache, local => $local);
+                my $local = {};
+                if (defined($options{requests}->[$i]->{parse})) {
+                    foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
+                        my $lentries = {};
+                        if ($options{requests}->[$i]->{rtype} eq 'txt') {
+                            $lentries = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
+                        } else {
+                            $lentries = $self->parse_structure(
+                                name => $options{requests}->[$i]->{name},
+                                content => $content,
+                                conf => $conf,
+                                rtype => $options{requests}->[$i]->{rtype},
+                                force_array => $options{requests}->[$i]->{force_array}
+                            );
+                        }
+
+                        $local = { %$local, %$lentries };
+                    }
+                }
+
+                $self->set_functions(
+                    section => "http > requests > $options{requests}->[$i]->{name}",
+                    functions => $options{requests}->[$i]->{functions},
+                    default => 1
+                );
+
+                if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
+                    $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand})) {
+                    $self->{scenario_stopped} = 1;
+                    if (defined($options{requests}->[$i]->{scenario_retry}) && $options{requests}->[$i]->{scenario_retry} =~ /^true|1$/i) {
+                        $self->{scenario_loop}++;
+                        $self->{scenario_retry} = 1;
+                    }
+                } else {
+                    $self->save_local_http_cache(local_http_cache => $local_http_cache, local => $local);
+                }
             }
         }
 
