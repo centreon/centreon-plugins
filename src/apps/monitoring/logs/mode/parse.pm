@@ -92,6 +92,22 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (!defined($self->{option_results}->{parse_regexp}) || $self->{option_results}->{parse_regexp} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --parse-regexp option.");
+        $self->{output}->option_exit();
+    }
+
+    if (!defined($self->{option_results}->{parse_mapping}) || $self->{option_results}->{parse_mapping} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify at least one --parse-mapping option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (defined($self->{option_results}->{date_regexp}) && $self->{option_results}->{date_regexp} ne '' &&
+        (!defined($self->{option_results}->{date_mapping}) || $self->{option_results}->{date_mapping} eq '')) {
+        $self->{output}->add_option_msg(short_msg => "You need to specify at least one --date-mapping option.");
+        $self->{output}->option_exit();
+    }
+
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }

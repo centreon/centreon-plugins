@@ -45,6 +45,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
 
     $self->{option_results}->{command} = 'cat'
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
