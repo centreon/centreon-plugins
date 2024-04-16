@@ -41,35 +41,36 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'sensors', type => 0}
+        { name => 'sensors', type => 0 }
     ];
 
     $self->{maps_counters}->{sensors} = [
-        { label => 'temperature', nlabel => 'sensor.temperature.celsius', set => {
-                key_values => [{ name => 'temperature' }],
+        { label => 'temperature',
+          nlabel => 'sensor.temperature.celsius',
+          set => {
+                key_values      => [{ name => 'temperature' }],
                 output_template => 'temperature: %.2f C',
-                perfdatas => [
+                perfdatas       => [
                     { template => '%s', min => 0, unit => 'C', label_extra_instance => 1, instance_use => 'id' }
                 ]
-
             }
         },
-        { label => 'status',
-            type => 2,
-            critical_default => '%{status} ne "ok"',
-            set => {
-                key_values => [{ name => 'status' }, { name => 'id' }, { name => 'type' }],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
+        { label            => 'status',
+          type             => 2,
+          critical_default => '%{status} ne "ok"',
+          set              => {
+              key_values                     => [{ name => 'status' }, { name => 'id' }, { name => 'type' }],
+              closure_custom_output          => $self->can('custom_status_output'),
+              closure_custom_perfdata        => sub { return 0; },
+              closure_custom_threshold_check => \&catalog_status_threshold_ng
+          }
         }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -80,13 +81,13 @@ sub new {
 }
 
 my $state_mapping = {
-    1  => 'ok',
-    2  => 'failure',
-    3  => 'outOfBoundary'
+    1 => 'ok',
+    2 => 'failure',
+    3 => 'outOfBoundary'
 };
 
 my $type_mapping = {
-    1  => 'mainSensor',
+    1 => 'mainSensor',
 };
 
 sub manage_selection {
@@ -97,7 +98,7 @@ sub manage_selection {
     my $oid_status      = '.1.3.6.1.4.1.46202.1.1.1.1.1.3'; # tempSensorStatus: The status of a temperature sensor.
     my $oid_temperature = '.1.3.6.1.4.1.46202.1.1.1.1.1.4'; # tempSensorValue: The temperature as measured in degrees Celsius.
 
-    my $snmp_result  = $options{snmp}->get_leef(
+    my $snmp_result = $options{snmp}->get_leef(
         oids         => [$oid_type, $oid_id, $oid_status, $oid_temperature],
         nothing_quit => 1
     );
