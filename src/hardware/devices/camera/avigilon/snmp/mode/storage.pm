@@ -84,21 +84,9 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    use Data::Dumper;
-    print Dumper
-    ($oid_storage_state);
-    print Dumper
-    ($snmp_result->{$oid_storage_state});
-    print Dumper
-    ($storage_state_mapping->{$snmp_result->{$oid_storage_state}});
-
     $self->{storage} = {
         storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
     };
-
-    print Dumper
-    ($self->{storage}{storage_state});
-
 }
 
 1;
@@ -107,11 +95,19 @@ __END__
 
 =head1 MODE
 
-Check storage state.
+Check storage state of the SD card.
 
 =over 8
 
-=item B<--to do>
+=item B<--warning-status>
+
+Define the conditions to match to return a warning status (default: "%{storage_state} =~ /errorFormatting/i || %{storage_state} =~ /errorWriting/i || %{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i").
+The condition can be written using the following macros: %{state}.
+
+=item B<--critical-status>
+
+Define the conditions to match to return a critical status (default: "%{storage_state} =~ /mediaNotPresent/i || %{storage_state} =~ /error/").
+The condition can be written using the following macros: %{state}.
 
 =back
 

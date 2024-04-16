@@ -77,14 +77,17 @@ __END__
 
 =head1 MODE
 
-Check memory usage.
+Check system memory available.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-available*>
 
-Thresholds.
-Can be: 'available' (B)
+Warning threshold for total memory available (B).
+
+=item B<--critical-available*>
+
+Critical threshold for total memory available (B).
 
 =back
 

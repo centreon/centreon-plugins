@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     %{$self->{modes}} = (
-        'health'     => 'hardware::devices::camera::avigilon::snmp::mode::health',
-        'interfaces' => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
-        'memory'     => 'hardware::devices::camera::avigilon::snmp::mode::memory',
-        'storage'    => 'hardware::devices::camera::avigilon::snmp::mode::storage',
-        'uptime'     => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
+        'interfaces'  => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
+        'memory'      => 'hardware::devices::camera::avigilon::snmp::mode::memory',
+        'storage'     => 'hardware::devices::camera::avigilon::snmp::mode::storage',
+        'temperature' => 'hardware::devices::camera::avigilon::snmp::mode::temperature',
+        'uptime'      => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
     );
 
     return $self;
