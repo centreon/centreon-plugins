@@ -31,9 +31,7 @@ Avigilon camera Storage ${tc}/3
     ...    ${expected_result}
     ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
 
-    Examples:        tc    warning_status                               critical_status                     expected_result    --
-            ...      1     ${EMPTY}                                     ${EMPTY}                            CRITICAL: state of the SD card: mediaNotPresent
-            ...      2     '\%\{storage_state\} =~ /mediaNotPresent/'  '\%\{storage_state\} =~ /error/'     WARNING: state of the SD card: mediaNotPresent
-            ...      3     ${EMPTY}                                     '\%\{storage_state\} =~ /error/'    OK: state of the SD card: mediaNotPresent
-
-
+    Examples:        tc    warning_status                               critical_status                             expected_result    --
+            ...      1     ${EMPTY}                                     ${EMPTY}                                    OK: state of the SD card: mediaNotPresent
+            ...      2     '\%{storage_state} =~ /mediaNotPresent/'   ${EMPTY}                                    WARNING: state of the SD card: mediaNotPresent
+            ...      3     ${EMPTY}                                     '\%{storage_state} =~ /mediaNotPresent/'  CRITICAL: state of the SD card: mediaNotPresent
