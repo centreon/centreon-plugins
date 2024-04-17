@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Hardware Camera Avigilon memory
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
