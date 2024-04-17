@@ -102,12 +102,12 @@ Check storage state of the SD card.
 =item B<--warning-status>
 
 Define the conditions to match to return a warning status (default: "%{storage_state} =~ /errorFormatting/i || %{storage_state} =~ /errorWriting/i || %{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i").
-The condition can be written using the following macros: %{state}.
+The condition can be written using the following macros: %{storage_state}.
 
 =item B<--critical-status>
 
-Define the conditions to match to return a critical status (default: "%{storage_state} =~ /mediaNotPresent/i || %{storage_state} =~ /error/").
-The condition can be written using the following macros: %{state}.
+Define the conditions to match to return a critical status (default: "%{storage_state} =~ /mediaNotPresent/i || %{storage_state} =~ /error/i").
+The condition can be written using the following macros: %{storage_state}.
 
 =back
 

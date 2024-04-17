@@ -128,7 +128,7 @@ The condition can be written using the following macros: %{status}.
 
 =item B<--critical-status>
 
-Define the conditions to match to return a critical status (default: "%{status} ne "ok").
+Define the conditions to match to return a critical status (default: '%{status} ne "ok"').
 The condition can be written using the following macros: %{status}.
 
 =item B<--warning-temperature*>
