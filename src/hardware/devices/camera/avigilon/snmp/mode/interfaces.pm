@@ -111,7 +111,7 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
@@ -135,7 +135,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--map-speed-dsl>
 
-Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
+Get interface speed configuration for interface type 'ADSL' and 'VDSL2'.
 
 Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
 
@@ -147,7 +147,7 @@ Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32 bits counters (even in SNMP version 2c and version 3). Should be used when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 

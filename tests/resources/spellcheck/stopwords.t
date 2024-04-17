@@ -1,3 +1,4 @@
+--add-sysdesc
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -5,6 +6,7 @@
 --filter-vdom
 --force-counters32
 --force-counters64
+--force-oid
 --map-speed-dsl
 --nagvis-perfdata
 --oid-display
@@ -12,6 +14,7 @@
 --oid-filter
 2c
 ADSL
+Avigilon
 Centreon
 Datacore
 deltaps
@@ -47,6 +50,7 @@ SureBackup
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+uptime
 VDSL2
 Veeam
 WSMAN

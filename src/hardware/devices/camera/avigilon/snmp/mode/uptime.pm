@@ -57,7 +57,7 @@ Display system description.
 
 =item B<--force-oid>
 
-Can choose your oid (numeric format only).
+Can choose your OID (numeric format only).
 
 =item B<--check-overload>
 
