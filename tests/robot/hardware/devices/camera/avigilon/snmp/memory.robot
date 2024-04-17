@@ -20,7 +20,7 @@ Avigilon camera Memory ${tc}/x
     [Tags]    hardware    avigilon    memory
     ${command}    Catenate
     ...    ${CMD}
-    ...    --snmp-community=devices/camera/avigilon/snmp/hardware-camera-avigilon
+    ...    --snmp-community=hardware/devices/camera/avigilon/snmp/hardware-camera-avigilon
     ...    --warning-available='${warning_available}'
     ...    --critical-available='${critical_available}'
 
