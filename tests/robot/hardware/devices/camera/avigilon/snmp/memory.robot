@@ -15,7 +15,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-Avigilon camera Memory ${tc}/x
+Avigilon camera Memory ${tc}/3
     [Documentation]    Hardware Camera Avigilon Memory
     [Tags]    hardware    avigilon    memory
     ${command}    Catenate
