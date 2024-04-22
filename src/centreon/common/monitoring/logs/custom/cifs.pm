@@ -61,6 +61,11 @@ sub read {
     my ($self, %options) = @_;
 
     my ($rv, $message, $data) =  $self->read_file(file => $self->{option_results}->{file});
+    if ($rv) {
+        $self->{output}->add_option_msg(short_msg => $message);
+        $self->{output}->option_exit();
+    }
+
     return $data;
 }
 
