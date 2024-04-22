@@ -36,7 +36,7 @@ sub set_counters {
     $self->{maps_counters}->{storage} = [
         { label            => 'status',
           type             => 2,
-          warning_default  => '%{storage_state} =~ /errorFormatting/i || %{storage_state} =~ /errorWriting/i || %{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i',
+          warning_default  => '%{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i',
           critical_default => '%{storage_state} =~ /mediaNotPresent/i || %{storage_state} =~ /error/i',
           set              => {
               key_values                     => [{ name => 'storage_state' }],
@@ -101,7 +101,7 @@ Check storage state of the SD card.
 
 =item B<--warning-status>
 
-Define the conditions to match to return a warning status (default: "%{storage_state} =~ /errorFormatting/i || %{storage_state} =~ /errorWriting/i || %{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i").
+Define the conditions to match to return a warning status (default: "%{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i").
 The condition can be written using the following macros: %{storage_state}.
 
 =item B<--critical-status>

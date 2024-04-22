@@ -34,7 +34,7 @@ sub new {
         'memory'      => 'hardware::devices::camera::avigilon::snmp::mode::memory',
         'storage'     => 'hardware::devices::camera::avigilon::snmp::mode::storage',
         'temperature' => 'hardware::devices::camera::avigilon::snmp::mode::temperature',
-        'uptime'      => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
+        'uptime'      => 'snmp_standard::mode::uptime',
     );
 
     return $self;
