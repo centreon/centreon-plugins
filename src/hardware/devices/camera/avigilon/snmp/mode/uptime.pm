@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, force_oid = '.1.3.6.1.4.1.46202.1.1.1.3.0');
     bless $self, $class;
 
     return $self;
