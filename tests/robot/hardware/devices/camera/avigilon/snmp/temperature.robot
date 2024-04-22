@@ -37,6 +37,6 @@ Avigilon camera Temperature ${tc}/5
             ...      1     ${EMPTY}             ${EMPTY}                ${EMPTY}                ${EMPTY}                OK: temperature: 23.00 C, sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;
             ...      2     20                   ${EMPTY}                ${EMPTY}                ${EMPTY}                WARNING: temperature: 23.00 C | 'sensor.temperature.celsius'=23C;0:20;;0;
             ...      3     ${EMPTY}             20                      ${EMPTY}                ${EMPTY}                CRITICAL: temperature: 23.00 C | 'sensor.temperature.celsius'=23C;;0:20;0;
-            ...      4     ${EMPTY}             ${EMPTY}                '\%\{status\} =~ /ok/'  ${EMPTY}                WARNING: sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;
-            ...      5     ${EMPTY}             ${EMPTY}                ${EMPTY}                '\%\{status\} =~ /ok/'  CRITICAL: sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;
+            ...      4     ${EMPTY}             ${EMPTY}                \\%\{status\} =~ /ok/   ${EMPTY}                WARNING: sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;
+            ...      5     ${EMPTY}             ${EMPTY}                ${EMPTY}                \\%\{status\} =~ /ok/   CRITICAL: sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;
 
