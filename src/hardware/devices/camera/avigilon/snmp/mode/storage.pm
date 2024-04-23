@@ -22,6 +22,7 @@ package hardware::devices::camera::avigilon::snmp::mode::storage;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_empty);
 
 use strict;
 use warnings;
@@ -85,7 +86,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    if (defined($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) && $storage_state_mapping->{$snmp_result->{$oid_storage_state}} ne ''){
+    if (is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) ){
         $self->{storage} = {
             storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
         };
