@@ -32,7 +32,7 @@ Avigilon camera Memory ${tc}/3
     ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
 
     Examples:        tc    warning_available    critical_available      expected_result    --
-            ...      1     ${EMPTY}             ${EMPTY}                OK: total system memory available: 476004 B | 'memory.available'=476004B;;;0;
-            ...      2     5000                 ${EMPTY}                WARNING: total system memory available: 476004 B | 'memory.available'=476004B;0:5000;;0;
-            ...      3     ${EMPTY}             5000                    CRITICAL: total system memory available: 476004 B | 'memory.available'=476004B;;0:5000;0;
+            ...      1     ${EMPTY}             ${EMPTY}                OK: total system memory available: 464.85 KB | 'memory.available'=476004B;;;0;
+            ...      2     5000                 ${EMPTY}                WARNING: total system memory available: 464.85 KB | 'memory.available'=476004B;0:5000;;0;
+            ...      3     ${EMPTY}             5000                    CRITICAL: total system memory available: 464.85 KB | 'memory.available'=476004B;;0:5000;0;
 
