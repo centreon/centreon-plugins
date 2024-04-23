@@ -36,6 +36,7 @@ sub set_counters {
     $self->{maps_counters}->{storage} = [
         { label            => 'status',
           type             => 2,
+          unknown_default  => '%{storage_state} =~ /Unknown/i',
           warning_default  => '%{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i',
           critical_default => '%{storage_state} =~ /mediaNotPresent/i || %{storage_state} =~ /error/i',
           set              => {
@@ -84,9 +85,16 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{storage} = {
-        storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
-    };
+    if (defined($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) && $storage_state_mapping->{$snmp_result->{$oid_storage_state}} ne ''){
+        $self->{storage} = {
+            storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
+        };
+    # If state is not in the mapping, return unkown
+    }else{
+        $self->{storage} = {
+            storage_state => "Unknown"
+        };
+    }
 }
 
 1;

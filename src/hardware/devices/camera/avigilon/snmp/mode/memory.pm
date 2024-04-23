@@ -25,6 +25,17 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_memory_output {
+    my ($self, %options) = @_;
+
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+
+    return sprintf(
+        'total system memory available: %s',
+        $total_value . " " . $total_unit
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -35,7 +46,8 @@ sub set_counters {
     $self->{maps_counters}->{memory} = [
         { label => 'available', nlabel => 'memory.available', set => {
             key_values      => [{ name => 'total' }],
-            output_template => 'total system memory available: %.d B',
+            #output_template => 'total system memory available: %.d B',
+            closure_custom_output => $self->can('custom_memory_output'),
             perfdatas       => [
                 { value => 'total', template => '%d', min => 0,
                   unit  => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'name' }
