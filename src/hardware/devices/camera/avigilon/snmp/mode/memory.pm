@@ -46,7 +46,6 @@ sub set_counters {
     $self->{maps_counters}->{memory} = [
         { label => 'available', nlabel => 'memory.available', set => {
             key_values      => [{ name => 'total' }],
-            #output_template => 'total system memory available: %.d B',
             closure_custom_output => $self->can('custom_memory_output'),
             perfdatas       => [
                 { value => 'total', template => '%d', min => 0,
