@@ -107,6 +107,11 @@ Check storage state of the SD card.
 
 =over 8
 
+=item B<--unknown-status>
+
+Define the conditions to match to return a unknown status (default: "%{storage_state} =~ /Unknown/i").
+The condition can be written using the following macros: %{storage_state}.
+
 =item B<--warning-status>
 
 Define the conditions to match to return a warning status (default: "%{storage_state} =~ /insufficientMediaCapacity/i || %{storage_state} =~ /insufficientMediaSpeed/i").
