@@ -23,6 +23,7 @@ Avigilon camera Storage ${tc}/3
     ...    --snmp-community=hardware/devices/camera/avigilon/snmp/hardware-camera-avigilon
     ...    --warning-status='${warning_status}'
     ...    --critical-status='${critical_status}'
+    ...    --unknown-status='${unknown_status}'
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
