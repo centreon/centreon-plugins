@@ -86,7 +86,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    if (is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) ){
+    if (centreon::plugins::misc::is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) ){
         $self->{storage} = {
             storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
         };
