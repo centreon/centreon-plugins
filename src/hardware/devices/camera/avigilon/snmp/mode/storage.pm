@@ -86,7 +86,11 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    if (centreon::plugins::misc::is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}}) ){
+
+    use Data::Dumper;
+    print Dumper(centreon::plugins::misc::is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}}));
+
+    if(centreon::plugins::misc::is_empty($storage_state_mapping->{$snmp_result->{$oid_storage_state}})==0){
         $self->{storage} = {
             storage_state => $storage_state_mapping->{$snmp_result->{$oid_storage_state}}
         };
