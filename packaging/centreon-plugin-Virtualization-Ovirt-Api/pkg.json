@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Ovirt-Api",
+    "pkg_summary": "Centreon Plugin to monitor oVirt using API",
+    "plugin_name": "centreon_ovirt_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/virtualization/ovirt/"
+    ]
+}
