@@ -53,32 +53,40 @@ def launch_snmp_sim():
 
 
 def install_plugin(plugin, archi):
-    if archi == "deb":
-        output_status = (subprocess.run(
-                "apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
-            shell=True, check=False)).returncode
-    elif archi == "rpm":
-        output_status = (subprocess.run("dnf install -y ./" + plugin + "*.rpm", shell=True, check=False)).returncode
-    else:
-        print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
-        exit(1)
+    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+        if archi == "deb":
+            outfile.write("apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
+            output_status = (subprocess.run(
+                    "apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
+                shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
+        elif archi == "rpm":
+            outfile.write("dnf install -y ./" + plugin + "*.rpm\n")
+            output_status = (subprocess.run("dnf install -y ./" + plugin + "*.rpm", shell=True, check=False,
+                                        stderr=subprocess.STDOUT, stdout=outfile)).returncode
+        else:
+            print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
+            exit(1)
     return output_status
 
 
 def remove_plugin(plugin, archi):
-    if archi == "deb":
-        output_status = (subprocess.run(
-            "apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
-            shell=True, check=False)).returncode
-        # -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' is an option to force apt to keep the package in
-        # /var/cache/apt/archives, so it do not re download them for every installation.
-        # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
+    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+        if archi == "deb":
+            outfile.write("apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
+            output_status = (subprocess.run(
+                "apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
+                shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            # -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' is an option to force apt to keep the package in
+            # /var/cache/apt/archives, so it do not re download them for every installation.
+            # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
 
-    elif archi == "rpm":
-        output_status = (subprocess.run("dnf remove -y " + plugin, shell=True, check=False)).returncode
-    else:
-        print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
-        exit(1)
+        elif archi == "rpm":
+            outfile.write("dnf remove -y " + plugin + "\n")
+            output_status = (subprocess.run("dnf remove -y " + plugin, shell=True, check=False,
+                                            stderr=subprocess.STDOUT, stdout=outfile)).returncode
+        else:
+            print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
+            exit(1)
     return output_status
 
 
@@ -89,7 +97,7 @@ if __name__ == '__main__':
               "argument, separated by space)")
         sys.exit(1)
 
-    launch_snmp_sim()
+   # launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
 
