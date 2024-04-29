@@ -277,11 +277,19 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
 
-      - uses: ./.github/actions/plugins-tests
+      - uses: ./.github/actions/test-plugins
         with:
           cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           package-extension: ${{ matrix.package_extension }}
           plugin-list: ${{needs.get-plugins.outputs.plugins}}
+
+      - name: Upload apt/dnf logs as artifacts if tests failed.
+        if: failure()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: plugin-installation-${{ matrix.distrib }}
+          path: /var/log/robot-plugins-installation-tests.log
+          retention-days: 1
 
   deliver:
     needs: [get-environment, package, test-plugins]
