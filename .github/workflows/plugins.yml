@@ -83,7 +83,7 @@ jobs:
         shell: bash
 
   fatpacker:
-    if: ${{needs.get-plugins.outputs.plugins != ''}}
+    if: ${{ needs.get-plugins.outputs.plugins != '' }}
     needs: [get-environment, get-plugins]
     runs-on: ubuntu-22.04
     steps:
@@ -284,7 +284,7 @@ jobs:
           plugin-list: ${{needs.get-plugins.outputs.plugins}}
 
   deliver:
-    needs: [get-environment, package]
+    needs: [get-environment, package, test-plugins]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
