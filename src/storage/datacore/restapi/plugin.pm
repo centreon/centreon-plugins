@@ -23,6 +23,5 @@ sub new {
 1;
 =head1 PLUGIN DESCRIPTION
 
-
 Check Datacore using rest API.
 
