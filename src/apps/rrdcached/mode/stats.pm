@@ -153,7 +153,7 @@ __END__
 
 =head1 MODE
 
-Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command)
+Check Updates cache of RRDCached daemon (compute delta between UpdatesReceived and DataSetsWritten from the RRDCached socket STATS command)
 
 =over 8
 
@@ -167,7 +167,7 @@ Port where the socket is listening (default: 42217)
 
 =item B<--socket-type>
 
-Specify the socket type (usually tcp or unis, default: unix)
+Specify the socket type (usually TCP or UNIX, default: unix)
 
 =item B<--unix-socket-path>
 
@@ -183,11 +183,11 @@ Critical number of cached RRD updates (One update can include several values)
 
 =item B<--warning-queue>
 
-Warning number of nodes in rrdcached queue
+Warning number of nodes in RRDCached queue
 
 =item B<--critical-queue>
 
-Critical number of nodes in rrdcached queue
+Critical number of nodes in RRDCached queue
 
 =back
 

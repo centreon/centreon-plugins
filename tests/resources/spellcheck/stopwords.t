@@ -12,11 +12,13 @@
 --oid-display
 --oid-extra-display
 --oid-filter
+--tcp
 2c
 ADSL
 Avigilon
 Centreon
 Datacore
+DataSetsWritten
 deltaps
 df
 eth
@@ -42,6 +44,8 @@ perfdata
 powershell
 proto
 queue-messages-inflighted
+RRD
+RRDCached
 Sansymphony
 SNMP
 space-usage-prct
@@ -50,6 +54,7 @@ SureBackup
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+UpdatesReceived
 uptime
 VDSL2
 Veeam
