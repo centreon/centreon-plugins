@@ -65,4 +65,3 @@ chmod 777 /var/lib/centreon/centplugins/
 dnf clean all
 
 EOF
-
