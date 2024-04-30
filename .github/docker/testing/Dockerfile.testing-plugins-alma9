@@ -66,4 +66,3 @@ dnf clean all
 
 EOF
 
-WORKDIR /tests
