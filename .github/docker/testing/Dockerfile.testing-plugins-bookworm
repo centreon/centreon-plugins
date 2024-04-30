@@ -29,6 +29,7 @@ pip3 install snmpsim-lextudio
 # Install nodejs
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
 apt-get install -y nodejs
+
 # Install mockoon (needs nodejs)
 npm install -g -D @mockoon/cli@7.0.0
 
