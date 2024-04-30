@@ -97,7 +97,7 @@ if __name__ == '__main__':
               "argument, separated by space)")
         sys.exit(1)
 
-   # launch_snmp_sim()
+    launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
 
