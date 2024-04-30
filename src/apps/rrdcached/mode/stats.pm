@@ -157,10 +157,6 @@ Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived a
 
 =over 8
 
-=item B<--tcp>
-
-Specify this option if TCP socket is used
-
 =item B<--host>
 
 Host where the socket is (should be set if --tcp is used) (default: 127.0.0.1)
@@ -169,13 +165,13 @@ Host where the socket is (should be set if --tcp is used) (default: 127.0.0.1)
 
 Port where the socket is listening (default: 42217)
 
-=item B<--unix>
+=item B<--socket-type>
 
-Specify this option if UNIX socket is used
+Specify the socket type (usually tcp or unis, default: unix)
 
-=item B<--socket-path>
+=item B<--unix-socket-path>
 
-Path to the socket (should be set if --unix is used) (default is /var/rrdtool/rrdcached/rrdcached.sock)
+Path to the unix socket (should be set if --socket-type is unix) (default is /var/rrdtool/rrdcached/rrdcached.sock)
 
 =item B<--warning-update>
 
