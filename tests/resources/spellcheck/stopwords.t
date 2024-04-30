@@ -51,6 +51,7 @@ SNMP
 space-usage-prct
 SSH
 SureBackup
+TCP
 topic-messages-inflighted
 total-oper-down
 total-oper-up
