@@ -76,10 +76,10 @@ jobs:
           PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
-
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
+
         shell: bash
 
   fatpacker:
@@ -243,8 +243,55 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
+  test-plugins:
+    needs: [get-environment, get-plugins, package]
+    strategy:
+      fail-fast: false
+      matrix:
+        distrib: [el8, el9, jammy, bullseye, bookworm]
+        include:
+          - package_extension: rpm
+            image: testing-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: testing-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: testing-plugins-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: testing-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: testing-plugins-jammy
+            distrib: jammy
+
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/test-plugins
+        with:
+          cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          package-extension: ${{ matrix.package_extension }}
+          plugin-list: ${{ needs.get-plugins.outputs.plugins }}
+
+      - name: Upload apt/dnf logs as artifacts if tests failed
+        if: failure()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: plugin-installation-${{ matrix.distrib }}
+          path: /var/log/robot-plugins-installation-tests.log
+          retention-days: 1
+
   deliver:
-    needs: [get-environment, package]
+    needs: [get-environment, package, test-plugins]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     uses: ./.github/workflows/plugin-delivery.yml
     with:
