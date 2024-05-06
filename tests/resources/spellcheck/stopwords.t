@@ -20,6 +20,7 @@ Datacore
 deltaps
 df
 eth
+fanspeed
 Fortigate
 Fortinet
 ifAlias
@@ -41,6 +42,7 @@ out-ucast
 perfdata
 powershell
 proto
+psu
 queue-messages-inflighted
 Sansymphony
 SNMP
