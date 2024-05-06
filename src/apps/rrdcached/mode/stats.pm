@@ -171,7 +171,7 @@ Specify the socket type (usually TCP or UNIX, default: unix)
 
 =item B<--unix-socket-path>
 
-Path to the unix socket (should be set if --socket-type is unix) (default is /var/rrdtool/rrdcached/rrdcached.sock)
+Path to the UNIX socket (should be set if --socket-type is unix) (default is /var/rrdtool/rrdcached/rrdcached.sock)
 
 =item B<--warning-update>
 
