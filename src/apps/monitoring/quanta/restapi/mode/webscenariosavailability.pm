@@ -135,7 +135,7 @@ Set ID of the scenario (mandatory option).
 
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 14400).
+Set timeframe in seconds (default: 900).
 
 =item B<--warning-*> B<--critical-*>
 
