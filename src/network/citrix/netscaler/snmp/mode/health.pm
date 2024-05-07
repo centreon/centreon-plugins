@@ -69,7 +69,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { "psu-new-oid:s" => { name => 'psu_new_oid', default => '' }});
+    $options{options}->add_options(arguments => { "alternative-status-mapping:s" => { name => 'alternative_status_mapping', default => '' }});
 
     return $self;
 }
@@ -119,9 +119,9 @@ Example: --warning='temperature,.,30'
 Set critical threshold for 'temperature', 'fanspeed', 'voltage'(syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,40'
 
-=item B<--psu-new-oid>
+=item B<--alternative-status-mapping>
 
-on psu mode by default, .1.3.6.1.4.1.5951.4.1.1.41.7.1.2 mean the following :
+On psu mode, by default, .1.3.6.1.4.1.5951.4.1.1.41.7.1.2 mean the following :
 
 0 => not supported, 1 => not present, 2 => failed, 3 => normal.
 

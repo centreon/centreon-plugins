@@ -32,7 +32,7 @@ sub check {
     my ($self) = @_;
     my %map_psu_status;
 
-    if (!$self->{option_results}->{psu_new_oid}) {
+    if (!$self->{option_results}->{alternative_status_mapping}) {
         %map_psu_status = (
             0 => 'not supported',
             1 => 'not present',

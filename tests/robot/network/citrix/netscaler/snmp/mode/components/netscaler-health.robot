@@ -20,7 +20,7 @@ check psu components ${tc}/2
     ...    --snmp-port='2024'
     ...    --snmp-community='network/citrix/netscaler/snmp/mode/components/${community}'
     ...    --component=psu
-    ...    --psu-new-oid='${psu_new_oid}'
+    ...    --alternative-status-mapping='${alternative_status_mapping}'
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
@@ -29,8 +29,8 @@ check psu components ${tc}/2
     ...    ${expected_result}
     ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n
 
-    Examples:        tc    psu_new_oid    community    expected_result    --
-            ...      1     1        psu-citrix-v13    OK: All 4 components are ok [4/4 psus]. | 'count_psu'=4;;;;
+    Examples:        tc    alternative_status_mapping    community    expected_result    --
+            ...      1     true        psu-citrix-v13    OK: All 4 components are ok [4/4 psus]. | 'count_psu'=4;;;;
             ...      2     ${EMPTY}    psu-citrix-v13    UNKNOWN: Power supply '1' status is 'not supported' - Power supply '2' status is 'not supported' - Power supply '3' status is 'not supported' - Power supply '4' status is 'not supported' | 'count_psu'=4;;;;
 
 
