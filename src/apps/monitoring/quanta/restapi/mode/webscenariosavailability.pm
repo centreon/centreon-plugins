@@ -131,7 +131,7 @@ Check web scenario availability metrics.
 
 =item B<--scenario-id>
 
-Set ID of the scenario.
+Set ID of the scenario (mandatory option).
 
 =item B<--timeframe>
 
