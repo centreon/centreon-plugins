@@ -42,6 +42,7 @@ perfdata
 powershell
 proto
 queue-messages-inflighted
+RRDCached
 Sansymphony
 SNMP
 space-usage-prct
