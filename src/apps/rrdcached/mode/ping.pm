@@ -104,6 +104,15 @@ __END__
 
 Check if the RRDcached daemon is answering to the basic PING command.
 
+=item B<--warning-response>
+
+Define the conditions to match for the status to be WARNING. You can use the variable '%{response}'.
+
+=item B<--critical-response>
+
+Define the conditions to match for the status to be CRITICAL.  You can use the variable '%{response}'.
+Default: '%{response} !~ /PONG/'.
+
 =over 8
 
 =back
