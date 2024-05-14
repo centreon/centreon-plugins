@@ -245,9 +245,6 @@ sub get_leef_cache {
 
 sub get_leef {
     my ($self, %options) = @_;
- #   use Data::Dumper;
- #   print Dumper(%options);
- #   print Dumper( $self->{session});
     # $options{dont_quit} = integer
     # $options{nothing_quit} = integer
     # $options{oids} = ref to array of oids (example: ['.1.2', '.1.2'])
