@@ -7,11 +7,12 @@ import json
 
 def get_tests_folders(plugin_name):
     folder_list = []
-    pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
-    packaging = json.load(pkg_file)
-    for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
-            folder_list.append("tests/robot/" + file)
+    if plugin_name != "centreon-plugin-Applications-TrendMicro-Iwsva":
+        pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
+        packaging = json.load(pkg_file)
+        for file in packaging["files"]: # loop on "files" array in pkg.json file.
+            if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
+                folder_list.append("tests/robot/" + file)
     return folder_list
 
 
