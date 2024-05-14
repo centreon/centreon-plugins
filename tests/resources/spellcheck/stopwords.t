@@ -55,3 +55,4 @@ uptime
 VDSL2
 Veeam
 WSMAN
+Kubernetes
