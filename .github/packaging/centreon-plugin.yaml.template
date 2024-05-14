@@ -47,6 +47,7 @@ overrides:
       perl(Storable),
       perl(POSIX),
       perl(Encode),
+      perl(XML::LibXML),
       @RPM_DEPENDENCIES@
     ]
     conflicts:
@@ -72,6 +73,7 @@ overrides:
       libcrypt-argon2-perl,
       libkeepass-reader-perl,
       libdatetime-perl,
+      libxml-libxml-perl,
       @DEB_DEPENDENCIES@
     ]
     conflicts:
