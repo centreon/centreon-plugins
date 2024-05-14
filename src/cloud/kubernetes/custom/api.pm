@@ -369,7 +369,7 @@ See https://kubernetes.io/docs/reference/kubernetes-api/common-parameters/common
 
 =item B<--namespace>
 
-Set namespace to get informations.
+Set namespace to get information.
 
 =back
 
