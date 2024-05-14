@@ -121,14 +121,13 @@ Example: --critical='temperature,.*,40'
 
 =item B<--alternative-status-mapping>
 
-On psu mode, by default, .1.3.6.1.4.1.5951.4.1.1.41.7.1.2 mean the following :
+Depending on the Netscaler product, the translation of OID .1.3.6.1.4.1.5951.4.1.1.41.7.1.2 may diverge. The default interpretation of this OID is:
 
 0 => not supported, 1 => not present, 2 => failed, 3 => normal.
 
-If this option is set to '1', meaning of the OID will change to the following :
+With this option set to '1', the OID will be interpreted otherwise:
 
 0 => normal, 1 => not present, 2 => failed, 3 => not supported.
-
 
 =back
 
