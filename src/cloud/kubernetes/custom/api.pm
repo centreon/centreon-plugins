@@ -192,7 +192,7 @@ sub kubernetes_list_cronjobs {
 
     my $response = $self->request_api_paginate(
         method => 'GET',
-        url_path => $self->{namespace} ne '' ? '/apis/batch/v1beta1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1beta1/cronjobs'
+        url_path => $self->{namespace} ne '' ? '/apis/batch/v1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1/cronjobs'
     );
 
     return $response;
@@ -236,7 +236,7 @@ sub kubernetes_list_ingresses {
 
     my $response = $self->request_api_paginate(
         method => 'GET',
-        url_path => $self->{namespace} ne '' ? '/apis/extensions/v1beta1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/extensions/v1beta1/ingresses'
+        url_path => $self->{namespace} ne '' ? '/apis/networking.k8s.io/v1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/networking.k8s.io/v1/ingresses'
     );
 
     return $response;
