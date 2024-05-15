@@ -53,6 +53,7 @@ jobs:
             "Digest::MD5::File",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
+            "Exporter::Shiny",
             "EV",
             "FFI::CheckLib",
             "FFI::Platypus",
@@ -121,6 +122,8 @@ jobs:
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
+          - name: "Exporter::Shiny"
+            build_distribs: el8
           - name: "EV"
           - name: "FFI::CheckLib"
           - name: "FFI::Platypus"
@@ -140,6 +143,7 @@ jobs:
             use_dh_make_perl: "false"
             version: "0.01"
             rpm_dependencies: "zeromq"
+
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest

@@ -69,11 +69,8 @@ jobs:
             dnf install -y cpanminus gcc
           fi
 
-          if [ "${{ matrix.distrib }}" = "el8" ]; then
-            cpanm -v -l /tmp JSON::Path@0.5
-          else
-            cpanm -v -l /tmp JSON::Path@1.0.4
-          fi
+          cpanm -v -l /tmp JSON::Path@1.0.4
+
         shell: bash
 
       - name: Set package name and paths according to distrib
@@ -90,7 +87,6 @@ jobs:
           else
             NAME="perl-JSON-Path"
             if [ "${{ matrix.distrib }}" = "el8" ]; then
-              VERSION="0.5" # https://github.com/centreon/centreon-plugins/issues/4540
               PERL_VENDORLIB="/usr/local/share/perl5"
             else
               PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"
