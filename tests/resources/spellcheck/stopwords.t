@@ -20,6 +20,7 @@ Datacore
 deltaps
 df
 eth
+fanspeed
 Fortigate
 Fortinet
 ifAlias
@@ -33,6 +34,7 @@ IpAddr
 license-instances-usage-prct
 MBean
 NagVis
+Netscaler
 OID
 oneaccess-sys-mib
 out-bcast
@@ -41,6 +43,7 @@ out-ucast
 perfdata
 powershell
 proto
+psu
 queue-messages-inflighted
 RRDCached
 Sansymphony
