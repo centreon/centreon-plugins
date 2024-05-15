@@ -96,7 +96,7 @@ jobs:
             "XML::SAX::Writer",
             "ZMQ::Constants",
             "ZMQ::FFI",
-            "ZMQ::LibZMQ4",
+            "ZMQ::LibZMQ4"
           ]
         include:
           - build_distribs: "el8,el9"
