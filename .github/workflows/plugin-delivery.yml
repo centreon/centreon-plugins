@@ -24,7 +24,7 @@ on:
 jobs:
   deliver-sources:
     runs-on: [self-hosted, common]
-    if: ${{ contains(fromJson('["stable"]'), inputs.stability) && github.event_name != 'workflow_dispatch' }}
+    if: ${{ contains(fromJson('["stable"]'), inputs.stability) }}
 
     steps:
       - name: Checkout sources
