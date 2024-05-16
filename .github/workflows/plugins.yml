@@ -71,7 +71,7 @@ jobs:
 
       - name: Get plugins for build
         id: get_plugins
-        if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
+        #if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
         run: |
           PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
 
