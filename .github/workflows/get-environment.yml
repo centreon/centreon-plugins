@@ -42,7 +42,7 @@ jobs:
             release* | hotfix*)
               STABILITY="testing"
               ;;
-            master)
+            master | master-tun)
               STABILITY="stable"
               ;;
             *)
