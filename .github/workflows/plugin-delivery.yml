@@ -135,7 +135,7 @@ jobs:
           artifactory_token: ${{ secrets.artifactory_token }}
 
   release-tag:
-    if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
+    if: ${{ inputs.stability == 'stable' }}
     runs-on: ubuntu-22.04
 
     steps:
