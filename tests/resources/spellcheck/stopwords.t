@@ -1,3 +1,4 @@
+--add-sysdesc
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -5,6 +6,7 @@
 --filter-vdom
 --force-counters32
 --force-counters64
+--force-oid
 --map-speed-dsl
 --nagvis-perfdata
 --oid-display
@@ -12,11 +14,13 @@
 --oid-filter
 2c
 ADSL
+Avigilon
 Centreon
 Datacore
 deltaps
 df
 eth
+fanspeed
 Fortigate
 Fortinet
 ifAlias
@@ -30,6 +34,7 @@ IpAddr
 license-instances-usage-prct
 MBean
 NagVis
+Netscaler
 OID
 oneaccess-sys-mib
 out-bcast
@@ -38,15 +43,19 @@ out-ucast
 perfdata
 powershell
 proto
+psu
 queue-messages-inflighted
+RRDCached
 Sansymphony
 SNMP
 space-usage-prct
 SSH
 SureBackup
+timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+uptime
 VDSL2
 Veeam
 WSMAN

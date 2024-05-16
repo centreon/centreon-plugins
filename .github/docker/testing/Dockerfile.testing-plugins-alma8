@@ -1,0 +1,68 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/almalinux:8
+
+RUN bash -e <<EOF
+
+dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+dnf config-manager --set-enabled powertools
+dnf clean all
+
+# Install Robotframework
+dnf install -y python3.11 python3.11-pip
+pip3.11 install robotframework robotframework-examples
+# Install snmpsim
+pip3.11 install snmpsim-lextudio
+
+# Install node
+curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
+yum install -y nodejs
+
+# Install mockoon
+npm install -g -D @mockoon/cli
+
+# Add Centreon plugins repositories
+echo -e '[centreon-plugins-stable]\n\
+name=centreon plugins stable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/stable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-stable-noarch]\n\
+name=centreon plugins stable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/stable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing]\n\
+name=centreon plugins testing x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/testing/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing-noarch]\n\
+name=centreon plugins testing noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/testing/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable]\n\
+name=centreon plugins unstable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/unstable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable-noarch]\n\
+name=centreon plugins unstable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el8/unstable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
+>> /etc/yum.repos.d/centreon-plugins.repo
+
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+
+dnf clean all
+
+EOF

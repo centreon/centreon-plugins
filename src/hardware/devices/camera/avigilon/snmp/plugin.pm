@@ -18,24 +18,25 @@
 # limitations under the License.
 #
 
-package apps::protocols::http::plugin;
+package hardware::devices::camera::avigilon::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{modes} = {
-        'collection'       => 'apps::protocols::http::mode::collection',
-        'expected-content' => 'apps::protocols::http::mode::expectedcontent',
-        'json-content'     => 'apps::protocols::http::mode::jsoncontent',
-        'response'         => 'apps::protocols::http::mode::response',
-        'soap-content'     => 'apps::protocols::http::mode::soapcontent'
-    };
+    %{$self->{modes}} = (
+        'interfaces'      => 'hardware::devices::camera::avigilon::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'hardware::devices::camera::avigilon::snmp::mode::memory',
+        'storage'         => 'hardware::devices::camera::avigilon::snmp::mode::storage',
+        'temperature'     => 'hardware::devices::camera::avigilon::snmp::mode::temperature',
+        'uptime'          => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }
@@ -46,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check a HTTP or HTTPS web page.
+Check Avigilon camera in SNMP.
 
 =cut

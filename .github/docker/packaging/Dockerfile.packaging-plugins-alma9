@@ -1,6 +1,6 @@
-ARG REGISTRY_URL
+ARG REGISTRY_URL=docker.io
 
-FROM ${REGISTRY_URL}/almalinux:8
+FROM ${REGISTRY_URL}/almalinux:9
 
 RUN bash -e <<EOF
 

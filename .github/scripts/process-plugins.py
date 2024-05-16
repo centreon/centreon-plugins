@@ -43,7 +43,7 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
     packaging_path = re.search('.*\/(centreon-plugin-.*)\/pkg.json', filepath).group(1)
 
     if not packaging_path == packaging["pkg_name"]:
-        packaging_path = packaging_path + "=>" + packaging["pkg_name"]
+        packaging_path = packaging["pkg_name"]
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
 
