@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import glob
 import subprocess
 import sys
 import os
@@ -7,12 +8,11 @@ import json
 
 def get_tests_folders(plugin_name):
     folder_list = []
-    if plugin_name != "centreon-plugin-Applications-TrendMicro-Iwsva":
-        pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
-        packaging = json.load(pkg_file)
-        for file in packaging["files"]: # loop on "files" array in pkg.json file.
-            if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
-                folder_list.append("tests/robot/" + file)
+    pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
+    packaging = json.load(pkg_file)
+    for file in packaging["files"]: # loop on "files" array in pkg.json file.
+        if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
+            folder_list.append("tests/robot/" + file)
     return folder_list
 
 
@@ -101,6 +101,10 @@ def remove_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
+    # Remove cache files
+    tmp_files = glob.glob('/tmp/centreon_*')
+    for file in tmp_files:
+        os.remove(file)
     return output_status
 
 
