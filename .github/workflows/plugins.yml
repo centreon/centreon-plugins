@@ -52,19 +52,19 @@ jobs:
 
       - name: transform to directories
         run: |
-          folders=()
-          for f in ${{ steps.filter.outputs.packages_files }}; do
-            echo "Adding $(dirname $f) to folders"
-            folders+=($(dirname $f))
-          done
+          folders=("packaging/centreon-plugin-Applications-Clamav-Ssh" "packaging/centreon-plugin-Applications-Clamav-Ssh" "packaging/centreon-plugin-Applications-Clamav-Ssh" "packaging/centreon-plugin-Applications-Database-Cassandra-Jmx" "packaging/centreon-plugin-Applications-Database-Cassandra-Jmx" "packaging/centreon-plugin-Applications-Database-Cassandra-Jmx" "packaging/centreon-plugin-Applications-Database-Couchdb-Restapi" "packaging/centreon-plugin-Applications-Database-Couchdb-Restapi" "packaging/centreon-plugin-Applications-Database-Couchdb-Restapi" "packaging/centreon-plugin-Applications-Monitoring-Quanta-Restapi" "packaging/centreon-plugin-Applications-Monitoring-Quanta-Restapi" "packaging/centreon-plugin-Applications-Monitoring-Quanta-Restapi" "packaging/centreon-plugin-Applications-Netbackup-Ssh" "packaging/centreon-plugin-Applications-Netbackup-Ssh" "packaging/centreon-plugin-Applications-Netbackup-Ssh" "packaging/centreon-plugin-Applications-Pacemaker-Ssh" "packaging/centreon-plugin-Applications-Pacemaker-Ssh" "packaging/centreon-plugin-Applications-Pacemaker-Ssh" "packaging/centreon-plugin-Applications-RRDCached" "packaging/centreon-plugin-Applications-RRDCached" "packaging/centreon-plugin-Applications-RRDCached" "packaging/centreon-plugin-Cloud-Azure-DataFactory-Factories-Api" "packaging/centreon-plugin-Cloud-Azure-DataFactory-Factories-Api" "packaging/centreon-plugin-Cloud-Azure-DataFactory-Factories-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MariaDB-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MariaDB-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MariaDB-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MySQL-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MySQL-Api" "packaging/centreon-plugin-Cloud-Azure-Database-MySQL-Api" "packaging/centreon-plugin-Cloud-Azure-Database-SqlManagedInstance-Api" "packaging/centreon-plugin-Cloud-Azure-Database-SqlManagedInstance-Api" "packaging/centreon-plugin-Cloud-Azure-Database-SqlManagedInstance-Api" "packaging/centreon-plugin-Cloud-Azure-DevTools-AppConfiguration-Api" "packaging/centreon-plugin-Cloud-Azure-DevTools-AppConfiguration-Api" "packaging/centreon-plugin-Cloud-Azure-DevTools-AppConfiguration-Api" "packaging/centreon-plugin-Cloud-Azure-Integration-EventGrid-Api" "packaging/centreon-plugin-Cloud-Azure-Integration-EventGrid-Api" "packaging/centreon-plugin-Cloud-Azure-Integration-EventGrid-Api" "packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager-Api" "packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager-Api" "packaging/centreon-plugin-Cloud-Azure-Network-TrafficManager-Api" "packaging/centreon-plugin-Hardware-Devices-Camera-Avigilon-Snmp" "packaging/centreon-plugin-Hardware-Devices-Camera-Avigilon-Snmp" "packaging/centreon-plugin-Hardware-Devices-Camera-Avigilon-Snmp" "packaging/centreon-plugin-Hardware-Sensors-Rittal-Cmc-Snmp" "packaging/centreon-plugin-Hardware-Sensors-Rittal-Cmc-Snmp" "packaging/centreon-plugin-Hardware-Sensors-Rittal-Cmc-Snmp" "packaging/centreon-plugin-Network-Dell-Os10-Snmp" "packaging/centreon-plugin-Network-Dell-Os10-Snmp" "packaging/centreon-plugin-Network-Dell-Os10-Snmp" "packaging/centreon-plugin-Network-Dell-Xseries-Snmp" "packaging/centreon-plugin-Network-Dell-Xseries-Snmp" "packaging/centreon-plugin-Network-Dell-Xseries-Snmp" "packaging/centreon-plugin-Network-Juniper-Mag-Snmp" "packaging/centreon-plugin-Network-Juniper-Mag-Snmp" "packaging/centreon-plugin-Network-Juniper-Mag-Snmp" "packaging/centreon-plugin-Network-Sonus-SBC-Snmp" "packaging/centreon-plugin-Network-Sonus-SBC-Snmp" "packaging/centreon-plugin-Network-Sonus-SBC-Snmp" "packaging/centreon-plugin-Virtualization-Ovirt-Api" "packaging/centreon-plugin-Virtualization-Ovirt-Api" "packaging/centreon-plugin-Virtualization-Ovirt-Api)
+          # for f in ${{ steps.filter.outputs.packages_files }}; do
+          #   echo "Adding $(dirname $f) to folders"
+          #   folders+=($(dirname $f))
+          # done
           unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
 
-          files=()
-          for f in ${{ steps.filter.outputs.plugins_files }}; do
-              echo "Adding $f to files"
-              files+=($f)
-          done
+          files=("src/apps/monitoring/quanta/restapi/mode/webscenariosavailability.pm"s" "src/apps/protocols/cifs/mode/filescount.pm"s" "src/apps/protocols/ftp/mode/filescount.pm"s" "src/apps/protocols/http/plugin.pm"s" "src/apps/protocols/sftp/mode/filescount.pm"s" "src/apps/rrdcached/custom/tcp.pm"s" "src/apps/rrdcached/custom/unix.pm"s" "src/apps/rrdcached/mode/ping.pm"s" "src/apps/rrdcached/mode/stats.pm"s" "src/apps/rrdcached/plugin.pm"s" "src/cloud/azure/integration/eventgrid/mode/events.pm"s" "src/hardware/devices/camera/avigilon/snmp/mode/interfaces.pm"s" "src/hardware/devices/camera/avigilon/snmp/mode/memory.pm"s" "src/hardware/devices/camera/avigilon/snmp/mode/storage.pm"s" "src/hardware/devices/camera/avigilon/snmp/mode/temperature.pm"s" "src/hardware/devices/camera/avigilon/snmp/plugin.pm"s" "src/network/citrix/netscaler/snmp/mode/components/psu.pm"s" "src/network/citrix/netscaler/snmp/mode/health.pm"s)
+          # for f in ${{ steps.filter.outputs.plugins_files }}; do
+          #     echo "Adding $f to files"
+          #     files+=($f)
+          # done
           unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
         shell: bash
