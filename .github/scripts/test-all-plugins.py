@@ -55,9 +55,9 @@ def launch_snmp_sim():
 def install_plugin(plugin, archi):
     with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
-            outfile.write("apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
+            outfile.write("apt-get update && apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
-                    "apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
+                    "apt-get update && apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             outfile.write("dnf install -y ./" + plugin + "*.rpm\n")
