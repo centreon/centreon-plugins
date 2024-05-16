@@ -164,7 +164,7 @@ jobs:
 
           dnf module reset -y ruby
           dnf module enable -y ruby:3.1
-          dnf install -y ruby
+          dnf install -y ruby ruby-devel
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
