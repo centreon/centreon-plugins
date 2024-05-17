@@ -13,7 +13,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=127.0.0.1
 ...         --snmp-port=2024
 ...         --snmp-community=os/linux/snmp/network-interfaces
-...         --statefile-dir=/tmp/
+...         --statefile-dir=/tmp/cache/
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
