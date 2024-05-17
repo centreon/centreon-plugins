@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import glob
+import shutil
 import subprocess
 import sys
 import os
@@ -101,10 +102,16 @@ def remove_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
-    # Remove cache files
-    tmp_files = glob.glob('/tmp/centreon_*')
+    # Remove tmp files (where cache files are)
+    tmp_files = glob.glob('/tmp/*')
     for file in tmp_files:
-        os.remove(file)
+        try:
+            if os.path.isfile(file):
+                os.remove(file)  # removing files
+            elif os.path.isdir(file):
+                shutil.rmtree(file)  # removing directories
+        except Exception as e:
+            print(f"Erreur while removing file {file} : {str(e)}")
     return output_status
 
 
