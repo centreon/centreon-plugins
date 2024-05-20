@@ -99,11 +99,11 @@ Count events matching the query.
 
 =item B<--time-period>
 
-Set request period, in minutes.
+Set request period, in minutes (mandatory option).
 
 =item B<--query>
 
-Set the query.
+Set the query (mandatory option).
 
 =item B<--output-field>
 

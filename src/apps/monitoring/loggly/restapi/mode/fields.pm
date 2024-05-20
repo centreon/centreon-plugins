@@ -151,15 +151,15 @@ Count unique field-values from events matching the query.
 
 =item B<--time-period>
 
-Set request period, in minutes.
+Set request period, in minutes (mandatory option).
 
 =item B<--query>
 
-Set the query.
+Set the query (mandatory option).
 
 =item B<--field>
 
-Set the field to count unique values for (example: json.host).
+Set the field to count unique values for example: json.host (mandatory option).
 
 =item B<--filter-field>
 
