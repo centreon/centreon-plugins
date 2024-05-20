@@ -163,7 +163,7 @@ Set the field to count unique values for example: json.host (mandatory option).
 
 =item B<--filter-field>
 
-Set a field filter.
+Define which fields should be counted. This option will be treated as a regular expression. If this option is empty, all fields will be counted.
 
 =item B<--warning-*> B<--critical-*>
 
