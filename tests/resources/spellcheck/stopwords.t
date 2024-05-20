@@ -1,4 +1,5 @@
 --add-sysdesc
+--api-password
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -32,6 +33,7 @@ in-ucast
 interface-dsl-name
 IpAddr
 license-instances-usage-prct
+Loggly
 MBean
 NagVis
 Netscaler
