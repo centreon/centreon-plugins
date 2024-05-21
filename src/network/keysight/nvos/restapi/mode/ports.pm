@@ -215,10 +215,25 @@ sub manage_selection {
 
     $self->{ports} = {};
     foreach (@{$result->{stats_snapshot}}) {
-        #Type may be 'Dynamic filter' but no request here by the customer.
-        next if ($_->{type} ne 'Port' && $_->{type} ne 'Port Group');
+        #Type may be 'Dynamic filter' but not request here by the customer.
+        next if ($_->{type} eq 'Dynamic Filter');
         #Exclude Loopback dedup
-        next if (defined($_->{tp_total_tx_count_bytes}) && defined($_->{np_total_deny_count_packets}));
+        #next if (defined($_->{tp_total_tx_count_bytes}) && defined($_->{np_total_deny_count_packets}));
+
+        # We will try to define type for filter-type use : 'Network Port', 'Port Group' and 'Tool Port'
+        my $type = "";
+        if (defined($_->{tp_total_tx_count_bytes})) {
+            # Port Group
+            if($_->{type} eq 'Port Group'){
+                $type =$_->{type};
+            # Tool Port
+            }else{
+                $type ="Tool Port";
+            }
+        }else{
+            #Network Port
+            $type ="Network Port";
+        }
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{default_name} !~ /$self->{option_results}->{filter_name}/){
@@ -226,8 +241,8 @@ sub manage_selection {
             next;
         };
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $_->{type} !~ /$self->{option_results}->{filter_type}$/){
-            $self->{output}->output_add(long_msg => "With filter-type: $self->{option_results}->{filter_type} - Skipping object '" . $_->{default_name} . " with type '" . $_->{type} . "'.", debug => 1);
+            $type !~ /$self->{option_results}->{filter_type}$/){
+            $self->{output}->output_add(long_msg => "With filter-type: $self->{option_results}->{filter_type} - Skipping object '" . $_->{default_name} . " with API type '" . $_->{type} . "'.". " with interpreted type '" . $type . "'.", debug => 1);
             next;
         };
 
@@ -239,6 +254,7 @@ sub manage_selection {
 
         $self->{ports}->{ $_->{default_name} } = {
             name    => $_->{default_name},
+            type    => $type,
             license => {
                 name   => $_->{default_name},
                 status => lc($info->{license_status}),
@@ -250,13 +266,7 @@ sub manage_selection {
             }
         };
 
-        if (defined($_->{tp_total_tx_count_bytes})) {
-            # Tool Port and Port Group
-            if($_->{type} eq 'Port Group'){
-                $self->{ports}->{$_->{default_name}}{type}=$_->{type};
-            }else{
-                $self->{ports}->{$_->{default_name}}{type}="Tool Port";
-            }
+        if ($type eq 'Port Group' || $type eq 'Tool Port') {
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{tp_total_tx_count_bytes};
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{tp_current_tx_utilization};
             $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{tp_total_tx_count_packets};
@@ -264,16 +274,18 @@ sub manage_selection {
             $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = $_->{tp_total_insp_count_packets};
             $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{tp_total_pass_count_packets};
         }else{
-            #Network Port
-            $self->{ports}->{$_->{default_name}}{type}="Network Port";
-            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{np_total_rx_count_bytes}; #ok
-            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{np_current_rx_utilization}; #ok
-            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{np_total_rx_count_packets}; #ok
+            #$type = Network Port
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{np_total_rx_count_bytes}; #validé
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{np_current_rx_utilization}; #validé
+            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{np_total_rx_count_packets}; #validé
 
             # Confirmation nécessaire de ces métriques
-            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #$_->{np_total_rx_count_invalid_packets};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = $_->{np_total_rx_count_crc_alignment_errors};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #$_->{np_total_deny_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #validé
+            #$_->{np_total_rx_count_invalid_packets} => valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = "undef" ; #on a pas d'équivalence dans ce groupe
+            # $_->{np_total_rx_count_crc_alignment_errors} => valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #validé
+            #$_->{np_total_deny_count_packets} => valeur supplémentaire pour ce groupe
         }
     }
 
