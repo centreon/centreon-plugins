@@ -265,6 +265,8 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
+          - name: "Paws"
+            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
