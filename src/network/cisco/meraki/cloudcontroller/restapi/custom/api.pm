@@ -261,13 +261,18 @@ sub call_datas {
     my ($self, %options) = @_;
 
     $self->get_organizations();
-    $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
+    if (!defined($options{skipNetworks})) {
+        $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
 
     if (!defined($options{skipDevices})) {
         $self->get_devices(orgs => [keys %{$self->{datas}->{orgs}}]);
     }
     if (!defined($options{skipDevicesStatus})) {
         $self->get_organization_device_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
+    if (!defined($options{skipVpnTunnelsStatus})) {
+        $self->get_organization_vpn_tunnels_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
     }
 
     if (defined($options{cache})) {
@@ -406,6 +411,25 @@ sub get_organization_device_statuses {
     }
 
     return $self->{datas}->{devices_status};
+}
+
+sub get_organization_vpn_tunnels_statuses {
+    my ($self, %options) = @_;
+
+    $self->{datas}->{vpn_tunnels_status} =  {};
+    foreach my $id (@{$options{orgs}}) {
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/appliance/vpn/statuses',
+            paginate => 300,
+            hostname => $self->get_shard_hostname(organization_id => $id)
+        );
+        foreach (@$datas) {
+            $self->{datas}->{vpn_tunnels_status}->{ $_->{deviceSerial} } = $_;
+            $self->{datas}->{vpn_tunnels_status}->{ $_->{deviceSerial} }->{organizationId} = $id;
+        }
+    }
+
+    return $self->{datas}->{vpn_tunnels_status};
 }
 
 sub get_network_device_uplink {
