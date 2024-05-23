@@ -126,7 +126,7 @@ sub manage_selection {
             (defined($self->{option_results}->{filter_organization_name}) ? $self->{option_results}->{filter_organization_name} : 'all')
         );
 
-    my $datas = $options{custom}->get_datas(skipDevices => 1, skipDevicesStatus => 1);
+    my $datas = $options{custom}->get_datas(skipDevices => 1, skipDevicesStatus => 1, skipVpnTunnelsStatus => 1);
 
     $self->{networks} = {};
     foreach my $id (keys %{$datas->{networks}}) {
