@@ -1,5 +1,6 @@
 {
     "dependencies": [
-        "perl(DateTime)"
+        "perl(DateTime)",
+        "perl(Paws)"
     ]
 }
