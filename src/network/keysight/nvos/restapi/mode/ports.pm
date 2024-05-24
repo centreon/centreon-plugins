@@ -13,6 +13,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -220,18 +221,16 @@ sub manage_selection {
         #Exclude Loopback dedup
         #next if (defined($_->{tp_total_tx_count_bytes}) && defined($_->{np_total_deny_count_packets}));
 
-        # We will try to define type for filter-type use : 'Network Port', 'Port Group' and 'Tool Port'
+        # We will try to define type for filter-type use : 'Port Group', 'Tool Port' and 'Network Port'
         my $type = "";
-        if (defined($_->{tp_total_tx_count_bytes})) {
-            # Port Group
-            if($_->{type} eq 'Port Group'){
-                $type =$_->{type};
-            # Tool Port
-            }else{
-                $type ="Tool Port";
-            }
+        # Port Group
+        if($_->{type} eq 'Port Group') {
+            $type = $_->{type};
+        # Tool Port
+        }elsif(defined($_->{tp_total_tx_count_bytes})) {
+            $type ="Tool Port";
+        #Network Port
         }else{
-            #Network Port
             $type ="Network Port";
         }
 
@@ -282,7 +281,7 @@ sub manage_selection {
             # Confirmation nécessaire de ces métriques
             $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #validé
             #$_->{np_total_rx_count_invalid_packets} => valeur supplémentaire pour ce groupe
-            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = "undef" ; #on a pas d'équivalence dans ce groupe
+            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = 0 ; #on a pas d'équivalence dans ce groupe
             # $_->{np_total_rx_count_crc_alignment_errors} => valeur supplémentaire pour ce groupe
             $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #validé
             #$_->{np_total_deny_count_packets} => valeur supplémentaire pour ce groupe
