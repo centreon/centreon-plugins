@@ -31,6 +31,7 @@ in-mcast
 in-ucast
 interface-dsl-name
 IpAddr
+Iwsva
 license-instances-usage-prct
 MBean
 NagVis
@@ -55,6 +56,7 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+TendMicro
 uptime
 VDSL2
 Veeam
