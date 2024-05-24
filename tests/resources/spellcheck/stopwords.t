@@ -1,4 +1,5 @@
 --add-sysdesc
+--api-password
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -33,6 +34,7 @@ interface-dsl-name
 IpAddr
 Iwsva
 license-instances-usage-prct
+Loggly
 MBean
 NagVis
 Netscaler

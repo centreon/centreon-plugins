@@ -29,7 +29,7 @@ use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -42,12 +42,12 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
+        $options{options}->add_options(arguments => {
             'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port'},
+            'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
             'api-password:s'         => { name => 'api_password' },
-            'timeout:s'              => { name => 'timeout', default => 30 },
+            'timeout:s'              => { name => 'timeout'},
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -57,7 +57,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http}   = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -73,14 +73,14 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{hostname}             = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{port}                 = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto}                = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{timeout}              = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{ssl_opt}              = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
+    $self->{api_password}         = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status}  = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status}  = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
     if ($self->{hostname} eq '') {
@@ -99,10 +99,10 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
-    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{port}     = $self->{port};
+    $self->{option_results}->{proto}    = $self->{proto};
+    $self->{option_results}->{ssl_opt}  = $self->{ssl_opt};
+    $self->{option_results}->{timeout}  = $self->{timeout};
 }
 
 sub settings {
@@ -119,9 +119,9 @@ sub request_api {
 
     $self->settings();
     my $content = $self->{http}->request(
-        %options, 
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
+        %options,
+        unknown_status  => $self->{unknown_http_status},
+        warning_status  => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
 
@@ -145,8 +145,8 @@ sub internal_search {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method => 'GET',
-        url_path => '/apiv2/search',
+        method    => 'GET',
+        url_path  => '/apiv2/search',
         get_param => [
             'size=1',
             'from=-' . $options{time_period} . 'm',
@@ -160,8 +160,8 @@ sub internal_events {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method => 'GET',
-        url_path => '/apiv2/events',
+        method    => 'GET',
+        url_path  => '/apiv2/events',
         get_param => ['rsid=' . $options{id}]
     );
     return $status;
@@ -172,7 +172,7 @@ sub api_events {
 
     my $id = $self->internal_search(
         time_period => $options{time_period},
-        query => $options{query}
+        query       => $options{query}
     );
     my $status = $self->internal_events(id => $id);
 
@@ -207,8 +207,8 @@ sub internal_fields {
 
     # 300 limitation comes from the API : https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/api-retrieving-data.htm
     my $status = $self->request_api(
-        method => 'GET',
-        url_path => '/apiv2/fields/' . $options{field} . '/',
+        method    => 'GET',
+        url_path  => '/apiv2/fields/' . $options{field} . '/',
         get_param => [
             'facet_size=300',
             'from=-' . $options{time_period} . 'm',
@@ -223,12 +223,12 @@ sub api_fields {
 
     my $status = $self->internal_fields(
         time_period => $options{time_period},
-        field => $options{field},
-        query => $options{query}
+        field       => $options{field},
+        query       => $options{query}
     );
 
     # Fields may be messed-up with wrongly encoded characters, let's force some cleanup
-    for (my $i = 0; $i < scalar(@{$status->{ $options{field} }}); $i++) {
+    for (my $i = 0 ; $i < scalar(@{$status->{ $options{field} }}) ; $i++) {
         $status->{ $options{field} }->[$i]->{term} =~ s/[\r\n]//g;
         $status->{ $options{field} }->[$i]->{term} =~ s/^\s+|\s+$//g;
     }
