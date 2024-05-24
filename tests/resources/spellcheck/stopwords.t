@@ -56,7 +56,7 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
-TrendMicro
+TendMicro
 uptime
 VDSL2
 Veeam
