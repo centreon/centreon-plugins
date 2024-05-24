@@ -77,6 +77,7 @@ jobs:
             "Net::SMTP_auth",
             "Net::Subnet",
             "Net::TFTP",
+            "Paws",
             "PBKDF2::Tiny",
             "Schedule::Cron",
             "Statistics::Descriptive",
@@ -103,7 +104,6 @@ jobs:
           - rpm_dependencies: ""
           - rpm_provides: ""
           - version: ""
-          - use_dh_make_perl: "true"
           - spec_file: ""
           - distrib: el8
             package_extension: rpm
@@ -113,19 +113,14 @@ jobs:
             image: packaging-plugins-alma9
           - name: "BSON"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
-          - name: "BSON::XS"
-          - name: "Convert::Binary::C"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "DBD::Sybase"
           - name: "Device::Modbus::RTU::Client"
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
           - name: "Exporter::Shiny"
             build_distribs: el8
-          - name: "EV"
-          - name: "FFI::CheckLib"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
           - name: "Net::DHCP"
@@ -133,14 +128,12 @@ jobs:
           - name: "Statistics::Regression"
             version: "0.53"
           - name: "UUID"
-            use_dh_make_perl: "false"
             version: "0.31"
           - name: "ZMQ::Constants"
             build_distribs: "el9"
           - name: "ZMQ::FFI"
             rpm_dependencies: "zeromq"
           - name: "ZMQ::LibZMQ4"
-            use_dh_make_perl: "false"
             version: "0.01"
             rpm_dependencies: "zeromq"
 
@@ -250,6 +243,7 @@ jobs:
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::SMTP_auth",
+            "Paws",
             "Statistics::Regression",
             "WWW::Selenium",
             "ZMQ::Constants",
@@ -271,6 +265,8 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
+          - name: "Paws"
+            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
