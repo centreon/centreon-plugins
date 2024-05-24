@@ -50,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Teldat equipments in SNMP.
+Check TendMicro Iwsva equipments in SNMP.
 
 =cut
