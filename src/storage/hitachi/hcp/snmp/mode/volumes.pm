@@ -229,6 +229,10 @@ Check volumes.
 
 Filter volumes by node ID (can be a regexp).
 
+=item B<--filter-label>
+
+Filter volumes by channel unit (can be a regexp).
+
 =item B<--unknown-volume-status>
 
 Define the conditions to match for the status to be UNKNOWN.

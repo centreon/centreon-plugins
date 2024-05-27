@@ -149,16 +149,10 @@ Check HTTPS statistics.
 Only display some counters (regexp can be used).
 (example: --filter-counters='^proxy')
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'request', 'client-to-proxy', 'server-to-proxy',
-'proxy-to-client', 'proxy-to-server'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'request', 'client-to-proxy', 'server-to-proxy',
+Thresholds.
+Can be: 'requests', 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 
 =back

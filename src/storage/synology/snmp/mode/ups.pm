@@ -104,8 +104,8 @@ Check ups (SYNOLOGY-UPS-MIB).
 
 =item B<--warning-*> B<--critical-*> 
 
-Thresholds
-Can be: 'charge-remaining' (%), 'lifetime-remaining' (s)
+Thresholds.
+Can be: 'charge-remaining' (%), 'lifetime-remaining' (s), 'load' (%).
 
 =back
 

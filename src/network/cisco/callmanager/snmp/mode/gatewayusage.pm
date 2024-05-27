@@ -155,13 +155,9 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /^registered/').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-
-=item B<--critical-*>
-
-Critical threshold.
+Thresholds.
 
 Can be: 'total-registered', 'total-unregistered', 'total-rejected', 
 'total-unknown', 'total-partiallyregistered'.

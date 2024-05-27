@@ -116,13 +116,13 @@ Check CPU usage.
 
 Filter on one AP name.
     
-=item B<--warning>
+=item B<--warning-cpu-usage-prct>
 
-Warning threshold for CPU.
+Warning threshold for CPU usage (%).
 
-=item B<--critical>
+=item B<--critical-cpu-usage-prct>
 
-Critical threshold for CPU.
+Critical threshold for CPU usage (%).
 
 =back
 

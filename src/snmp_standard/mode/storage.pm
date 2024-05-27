@@ -604,17 +604,16 @@ __END__
 
 =over 8
 
-=item B<--warning-usage>
 
-Warning threshold.
+=item B<--warning-*> B<--critical-*>
 
-=item B<--critical-usage>
+Thresholds.
 
-Critical threshold.
+Can be: 'count', 'usage'.
 
 =item B<--warning-access>
 
-Warning threshold. 
+Warning threshold.
 
 =item B<--critical-access>
 

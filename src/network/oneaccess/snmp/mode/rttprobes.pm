@@ -193,7 +193,7 @@ Filter probes by name.
 Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}
 
-=item B<--warning-probe-estatus>
+=item B<--warning-probe-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{adminStatus}, %{status}, %{type}, %{tag}

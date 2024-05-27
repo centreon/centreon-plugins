@@ -245,17 +245,11 @@ You can use the following variables: %{status}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /disconnected/i || %{status} =~ /shutdown/i').
 You can use the following variables: %{status}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'voltage', 'current', 'current1', 'current2', 'temperature',
-'temperature2', 'temperature2', 'amphourmeter'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'voltage', 'current', 'current1', 'current2', 'temperature',
-'temperature2', 'temperature2', 'amphourmeter'.
+'temperature1', 'temperature2', 'amphourmeter'.
 
 =back
 

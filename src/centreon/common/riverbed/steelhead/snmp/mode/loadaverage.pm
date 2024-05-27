@@ -141,14 +141,11 @@ Check system load average.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning thresholds (* can be average, 1m, 5m, 15m).
+Thresholds.
 
-=item B<--critical-*>
-
-Critical thresholds
-Can be --critical-(average|1m|5m|15m)
+Can be: 'average', '1min', '5min', '15min'.
 
 =back
 

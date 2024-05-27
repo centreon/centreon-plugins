@@ -106,8 +106,7 @@ Check input lines.
 =item B<--warning-*> B<--critical-*>
 
 Input thresholds in V
-
-Thresholds: line-a, line-c, line-c.
+Can be: 'line-a', 'line-c', 'line-b'.
 
 =back
 

@@ -128,15 +128,9 @@ Check disk utilization : usage, hits and misses.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'usage' (%), 'hits' (/s), 'misses' (/s).
-
-
-=item B<--critical-usage>
-
-Critical threshold.
+Thresholds.
 Can be: 'usage' (%), 'hits' (/s), 'misses' (/s).
 
 =back

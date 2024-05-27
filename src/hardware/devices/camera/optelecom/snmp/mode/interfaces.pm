@@ -94,7 +94,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus},
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast', 'in-volume', 'out-volume',
 'speed' (b/s).
 
 =item B<--units-traffic>

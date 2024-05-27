@@ -264,16 +264,11 @@ Warning threshold for for single port status.
 
 Critical threshold for for single port status.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'active-channels', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
-'power-apparent', 'power-factor', 'power-reactive', 'voltage'
-
-=item B<--critical-*>
-
-Can be: 'active-channels', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
-'power-apparent', 'power-factor', 'power-reactive', 'voltage'
+'power-apparent', 'power-factor', 'power-reactive', 'voltage', 'total-singleports'.
 
 =back
 

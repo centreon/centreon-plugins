@@ -446,7 +446,7 @@ You can use the following variables: %{op_mode}, %{ha_state}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-utilization', 'sessions-active', 'session-rate',
+Can be: 'cpu-utilization', 'sessions-active', 'sessions-rate',
 'memory-usage-prct', 'license-usage', 'license-free',
 'license-usage-prct', 'traffic-in', 'traffic-out', 'policies-active'.
 

@@ -175,7 +175,7 @@ Check system memory usage (FORTINET-FORTIGATE).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage-free', 'usage-prct', 'cluster-usage-prct'.
+Can be: 'usage', 'usage-free', 'usage-prct', 'cluster-usage-prct'.
 
 =item B<--cluster>
 

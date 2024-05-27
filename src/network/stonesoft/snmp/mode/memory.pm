@@ -179,7 +179,7 @@ Warning threshold in percent.
 
 Critical threshold in percent.
 
-=item B<-swap>
+=item B<--swap>
 
 Check swap also.
 

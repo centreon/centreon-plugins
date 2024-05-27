@@ -111,13 +111,9 @@ Check dhcp usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^requestv4$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-
-=item B<--critical-*>
-
-Critical threshold.
+Thresholds.
 
 General name server statistics: 'udp', 'tcp', 'requestv4', 'requestv6', 'recursion', 'response',
 'recurserej', 'duplicate', 'dropped', 'res-queryv4', 'res-queryv6', 'res-retry',

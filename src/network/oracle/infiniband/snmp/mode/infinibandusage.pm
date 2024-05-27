@@ -352,15 +352,10 @@ You can use the following variables: %{status}, %{display}
 Set critical threshold for ib status (default: '%{status} !~ /up/i').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'in', 'out'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'in', 'out'.
+Thresholds.
+Can be: 'in', 'out', 'ib-status', ibgw-status.
 
 =back
 

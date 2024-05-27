@@ -194,13 +194,9 @@ Filter based on local IP:PORT of peers (regexp allowed)
 
 Filter based on remote IP:PORT of peers (regexp allowed)
 
-=item B<--warning-updates>
+=item B<--warning-update-last> B<--critical-update-last>
 
-Warning threshold on last update (seconds)
-
-=item B<--critical-updates>
-
-Critical threshold on last update (seconds)
+Thresholds on last update (seconds)
 
 =item B<--unknown-status>
 

@@ -187,8 +187,8 @@ Ignore counters equals to 0.
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold.
-Can be: 'frequency', 'load', 'voltage', 'current', 'power'.
+Thresholds.
+Can be: 'frequence', 'load', 'voltage', 'current', 'power'.
 
 =item B<--warning-stdev-3phases>
 

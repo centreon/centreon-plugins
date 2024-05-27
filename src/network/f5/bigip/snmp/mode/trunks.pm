@@ -508,7 +508,7 @@ You can use the following variables: %{status}, %{display}
 Thresholds.
 Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
 'packets-error-out' (%), 'packets-drop-in' (%), 'packets-drop-out' (%),
-'total-interfaces'.
+'interfaces-total'.
 
 =back
 

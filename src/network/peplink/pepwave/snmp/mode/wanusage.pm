@@ -203,15 +203,10 @@ You can use the following variables: %{health_status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{health_status} =~ /fail/').
 You can use the following variables: %{health_status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'traffic-in', 'traffic-out'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: Can be: 'traffic-in', 'traffic-out'.
+Thresholds.
+Can be: Can be: 'traffic-in', 'traffic-out', 'signal'.
 
 =back
 

@@ -126,13 +126,13 @@ Check memory usage.
 
 Filter on one or several AP.
 
-=item B<--warning>
+=item B<--warning-memory-usage-prct>
 
-Warning threshold for Memory.
+Warning threshold for Memory usage (%).
 
-=item B<--critical>
+=item B<--critical-memory-usage-prct>
 
-Critical threshold for Memory.
+Critical threshold for Memory usage (%).
 
 =back
 
