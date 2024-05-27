@@ -179,7 +179,7 @@ Can be: 'usage', 'usage-free', 'usage-prct', 'cluster-usage-prct'.
 
 =item B<--cluster>
 
-Add cluster memory informations.
+Add cluster memory information.
 
 =back
 
