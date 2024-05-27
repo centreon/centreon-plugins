@@ -370,7 +370,6 @@ sub generic_performance_values_historic {
     my ($obj_vmware, $views, $perfs, $interval, %options) = @_;
     my $counter = 0;
     my %results;
-
     # overload the default sampling choosen
     if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
         $interval = $options{sampling_period};
@@ -407,6 +406,15 @@ sub generic_performance_values_historic {
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
+            use Data::Dumper;
+            $obj_vmware->{logger}->writeLogInfo("[generic_performance_values_historic] param :  " .
+                "\n obj vmware: " . Dumper($obj_vmware) .
+                "\n views :     " . Dumper($views) .
+                "\n perfs :     " . Dumper($perfs) .
+                "\n interval :  " . Dumper($interval) .
+                "\n Options :   " . Dumper(%options) .
+                "\n result perfdata : " . Dumper($perfdata) );
+
             return undef;
         }
         foreach my $val (@$perfdata) {
