@@ -33,7 +33,7 @@ sub new {
         'cpu'             => 'snmp_standard::mode::cpu',
         'interfaces'      => 'apps::trendmicro::iwsva::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'list-storage'    => 'snmp_standard::mode::liststorages',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
         'load'            => 'snmp_standard::mode::loadaverage',
         'memory'          => 'snmp_standard::mode::memory',
         'storage'         => 'snmp_standard::mode::storage',
