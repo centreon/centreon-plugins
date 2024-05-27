@@ -207,8 +207,10 @@ Filter metrics (can be: 'IncomingBytes', 'IncomingRecords',
 
 =item B<--warning-*> B<--critical-*>
 
-Warning threshold (* can be: 'incoming-bytes', 'incoming-records',
-'outgoing-volume', 'outgoing-volume').
+Thresholds.
+
+Can be: 'incoming-volume', 'incoming-records',
+'outgoing-volume', 'outgoing-records').
 
 =back
 

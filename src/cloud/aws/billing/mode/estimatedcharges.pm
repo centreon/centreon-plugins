@@ -129,6 +129,11 @@ See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metr
 
 Set the Amazon service (required) (can be defined multiple times).
 
+=item B<--currency>
+
+Set the currency (Default: 'USD').
+
+
 =item B<--warning-billing>
 
 Warning thresholds.

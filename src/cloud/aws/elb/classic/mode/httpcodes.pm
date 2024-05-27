@@ -265,9 +265,10 @@ Filter metrics (can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCod
 
 =item B<--warning-*> B<--critical-*>
 
-Warning thresholds (can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+Thresholds.
+Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
 'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
-'httpcode-elb-5xx', 'backendconnectionerrors')
+'httpcode-elb-5xx', 'backendconnectionerrors'.
 
 =back
 

@@ -190,19 +190,12 @@ Can be: NumberOfBackupJobsCompleted, NumberOfBackupJobsFailed, NumberOfBackupJob
 
 Can be regex, for example : --filter-metric="NumberOf(Backup|Copy).*Failed"
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning thresholds. Not mandatory, but if you don't specify critical or warning thresholds you will always get OK status.
+Thresholds.
 
-Can be : --warning-number-backup-jobs-completed, --warning-number-backup-jobs-failed, --warning-umber-backup-jobs-expired,
---warning-number-copy-jobs-completed, --warning-number-copy-jobs-failed, --warning-number-recovery-jobs-expired
-
-=item B<--critical-*>
-
-Critical thresholds. Not mandatory, but if you don't specify critical or warning thresholds you will always get OK status.
-
-Can be : --critical-number-backup-jobs-completed, --critical-number-backup-jobs-failed, --critical-number-backup-jobs-expired,
---critical-number-copy-jobs-completed, --critical-number-copy-jobs-failed, --critical-number-recovery-jobs-expired
+Can be: 'number-backup-jobs-completed', 'number-backup-jobs-failed', 'number-backup-jobs-expired',
+'number-copy-jobs-completed', 'number-copy-jobs-failed', 'number-recovery-jobs-expired'.
 
 =back
 

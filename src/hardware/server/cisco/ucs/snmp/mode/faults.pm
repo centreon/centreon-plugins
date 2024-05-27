@@ -223,6 +223,13 @@ You can use the following variables: %{severity}, %{description}, %{dn}
 Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /major|critical/').
 You can use the following variables: %{severity}, %{description}, %{dn}
 
+
+=item B<--warning-faults-*> B<--critical-faults-*>
+
+Thresholds.
+
+Can be: 'total', 'cleared', 'info','condition', 'warning', 'minor','major', 'critical';
+
 =item B<--memory>
 
 Only check new fault.
