@@ -270,7 +270,8 @@ You can use the following variables: %{oper_state}, %{power_state}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-accumulated-energy', 'line2neutral-real-power', 'line2neutral-apparent-power'.
+Can be: 'total-accumulated-energy', 'line2neutral-real-power', 'line2neutral-apparent-power',
+'current-neutral', 'potential-neutral'.
 
 =back
 
