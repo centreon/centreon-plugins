@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "dependencies/perl-json-path/**"
+      - ".github/workflows/perl-json-path.yml"
   push:
     branches:
       - develop
