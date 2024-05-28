@@ -17,7 +17,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin  apps::protocols::http::plugin 
 
 
 *** Test Cases ***
-Test if ${test_desc}
+Check if ${test_desc}
     [Tags]    Centreon    Collections   HTTP
     ${output}    Run
     ...    ${CMD} --config=${CURDIR}/${collection}
@@ -30,6 +30,7 @@ Test if ${test_desc}
     Examples:    test_desc                  collection                                                       expected   --
         ...      authentication succeeds    collection-centreon-web-check-auth.collection.json               OK: Authentication resulted in 200 HTTP code
         ...      hosts are down             collection-centreon-web-check-down-hosts.collection.json         OK: All hosts are UP | 'hostsRequest.down.count'=0;0;;0;1
-        ...      commands are broken        collection-centreon-web-check-broken-commands.collection.json    WARNING:  - Service FakeHostThatIsDown/Svc-BadCommand output is '(Execute command failed)' | 'commands.broken.count'=1;0;;0;
+        ...      commands are broken        collection-centreon-web-check-broken-commands.collection.json    WARNING:${SPACE} - Service FakeHostThatIsDown/Svc-BadCommand output is '(Execute command failed)' | 'commands
+        .broken.count'=1;0;;0;
 
 
