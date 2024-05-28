@@ -38,14 +38,14 @@ in-ucast
 interface-dsl-name
 IpAddr
 Iwsva
-'ldap'
+ldap
 license-instances-usage-prct
 Loggly
 MBean
 NagVis
 Netscaler
 OID
-'okta'
+okta
 oneaccess-sys-mib
 out-bcast
 out-mcast
@@ -67,7 +67,7 @@ total-oper-down
 total-oper-up
 TendMicro
 uptime
-'userpass'
+userpass
 VDSL2
 Veeam
 v1
