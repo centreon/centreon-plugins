@@ -27,5 +27,9 @@ Test if ${test_desc}
     ...    ${expected}
     ...    Wrong output result:\n\n ${output}\nInstead of:\n ${expected}\n\n
 
-    Examples:    test_desc    collection    expected   --
-        ...      authentication succeeds    apps-protocol-http-collection-centreon-web-check-auth.collection.json    OK: Authentication resulted in 200 HTTP code
+    Examples:    test_desc                  collection                                                                          expected   --
+        ...      authentication succeeds    apps-protocol-http-collection-centreon-web-check-auth.collection.json               OK: Authentication resulted in 200 HTTP code
+        ...      hosts are down             apps-protocol-http-collection-centreon-web-check-down-hosts.collection.json         OK: All hosts are UP | 'hostsRequest.down.count'=0;0;;0;1
+        ...      commands are broken        apps-protocol-http-collection-centreon-web-check-broken-commands.collection.json    WARNING:  - Service FakeHostThatIsDown/Svc-BadCommand output is '(Execute command failed)' | 'commands.broken.count'=1;0;;0;
+
+
