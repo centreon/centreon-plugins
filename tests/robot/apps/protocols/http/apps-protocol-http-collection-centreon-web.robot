@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}apps-protocol-http-collection-centreon-web.mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin  apps::protocols::http::plugin --mode collection
-...    --constant='hostname=127.0.0.1' --constant='protocol=http' --constant='port=3001'
+...    --constant='hostname=127.0.0.1' --constant='protocol=http' --constant='port=3000'
 ...    --constant='username=admin' --constant='password=myPassword'
 
 
