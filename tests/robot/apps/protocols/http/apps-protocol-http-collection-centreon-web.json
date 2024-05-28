@@ -1,0 +1,210 @@
+{
+  "uuid": "919382d8-0f30-447f-abcd-45c98e84d7fe",
+  "lastMigration": 32,
+  "name": "Centreon web mock for tests of HTTP Collections",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "82abcb5a-0a65-409f-badd-5e881b6786df",
+      "type": "http",
+      "documentation": "Authentication request",
+      "method": "post",
+      "endpoint": "centreon/api/latest/login",
+      "responses": [
+        {
+          "uuid": "b4229c90-76b3-4f8c-be0f-aceeb5566051",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "2"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "0ibb",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "d67aa94e-09c5-434d-b00a-e9e147e90220",
+      "type": "http",
+      "documentation": "Monitoring of hosts, used to look for down hosts",
+      "method": "get",
+      "endpoint": "centreon/api/latest/monitoring/hosts",
+      "responses": [
+        {
+          "uuid": "c98ea5bd-143b-414e-ae28-d094e7059682",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "fdau",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "9622753c-4c89-4f37-aa27-6088a4c5557a",
+      "type": "http",
+      "documentation": "Monitoring of resources, used to look for broken commands",
+      "method": "get",
+      "endpoint": "centreon/api/latest/monitoring/resources",
+      "responses": [
+        {
+          "uuid": "1d5391f0-9edc-4b84-b9ed-b78524ae1782",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "tpm8",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "82abcb5a-0a65-409f-badd-5e881b6786df"
+    },
+    {
+      "type": "route",
+      "uuid": "d67aa94e-09c5-434d-b00a-e9e147e90220"
+    },
+    {
+      "type": "route",
+      "uuid": "9622753c-4c89-4f37-aa27-6088a4c5557a"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "497b64fa-7c29-4741-8c57-c818aafc9482",
+      "id": "fdcz",
+      "name": "Authentication payload",
+      "documentation": "Authentication payload",
+      "value": "{\"security\":{\"credentials\":{\"password\":\"***\",\"login\":\"admin\"}}}"
+    },
+    {
+      "uuid": "e9b76766-90a5-496e-8102-3941d22feb32",
+      "id": "0ibb",
+      "name": "Authentication response",
+      "documentation": "Authentication response",
+      "value": "{\n   \"security\" : {\n      \"token\" : \"Vj77k9p53L+FTXon1UDvaYBZU8P3MnUK2siU7mst3HJ1QcnjTDWVW6TX3RlccjpV\"\n   },\n   \"contact\" : {\n      \"name\" : \"Administrateur_Centreon\",\n      \"is_admin\" : true,\n      \"email\" : \"null@localhost.local\",\n      \"alias\" : \"admin\",\n      \"id\" : 1\n   }\n}"
+    },
+    {
+      "uuid": "18e9cb4a-d822-44cd-b6a3-83dbead20130",
+      "id": "fdau",
+      "name": "Monitoring/hosts response",
+      "documentation": "Monitoring/hosts response to count down hosts",
+      "value": "{\n  \"meta\": {\n    \"search\": {},\n    \"total\": 1,\n    \"limit\": 1000,\n    \"sort_by\": {},\n    \"page\": 1\n  },\n  \"result\": [\n    {\n      \"passive_checks\": false,\n      \"timezone\": \"\",\n      \"last_check\": \"2023-11-21T21:21:14+01:00\",\n      \"checked\": true,\n      \"state\": 0,\n      \"last_time_up\": \"2023-11-21T21:21:18+01:00\",\n      \"icon_image\": \"ppm/applications-monitoring-centreon-central-centreon-128-2.png\",\n      \"icon_image_alt\": \"\",\n      \"state_type\": 1,\n      \"address_ip\": \"127.0.0.1\",\n      \"criticality\": null,\n      \"last_time_down\": null,\n      \"scheduled_downtime_depth\": 0,\n      \"name\": \"CENTREON\",\n      \"last_time_unreachable\": null,\n      \"alias\": \"Centreon Central Server\",\n      \"poller_id\": 1,\n      \"last_hard_state_change\": \"2023-09-07T20:03:53+02:00\",\n      \"execution_time\": 0.112673,\n      \"last_state_change\": \"2023-09-07T20:03:53+02:00\",\n      \"output\": \"OK - 127.0.0.1 rta 0.079ms lost 0%\\n\",\n      \"id\": 13,\n      \"max_check_attempts\": 3,\n      \"last_update\": \"2023-11-21T08:57:13+01:00\",\n      \"acknowledged\": false,\n      \"display_name\": \"CENTREON\",\n      \"check_attempt\": 1\n    }\n  ]\n}"
+    },
+    {
+      "uuid": "0fcda655-3209-4726-8ab2-18f93666b57c",
+      "id": "tpm8",
+      "name": "Monitoring/resources response",
+      "documentation": "Monitoring/resources response to check errors in commands",
+      "value": "{\n   \"meta\" : {\n      \"page\" : 1,\n      \"sort_by\" : {},\n      \"search\" : {\n         \"$and\" : {\n            \"information\" : {\n               \"$eq\" : \"(Execute command failed)\"\n            }\n         }\n      },\n      \"limit\" : 1000,\n      \"total\" : 1\n   },\n   \"result\" : [\n      {\n         \"uuid\" : \"h254-s1616\",\n         \"host_id\" : 254,\n         \"monitoring_server_name\" : \"Central\",\n         \"status\" : {\n            \"name\" : \"UNKNOWN\",\n            \"code\" : 3,\n            \"severity_code\" : 3\n         },\n         \"icon\" : null,\n         \"alias\" : null,\n         \"last_status_change\" : \"2023-11-22T11:55:30+01:00\",\n         \"short_type\" : \"s\",\n         \"name\" : \"Svc-BadCommand\",\n         \"last_check\" : \"1m 2s\",\n         \"duration\" : \"4h 28m\",\n         \"acknowledged\" : false,\n         \"in_downtime\" : false,\n         \"chart_url\" : null,\n         \"tries\" : \"1/3 (H)\",\n         \"information\" : \"(Execute command failed)\",\n         \"performance_data\" : null,\n         \"parent\" : {\n            \"status\" : {\n               \"severity_code\" : 1,\n               \"name\" : \"DOWN\",\n               \"code\" : 1\n            },\n            \"host_id\" : null,\n            \"uuid\" : \"h254\",\n            \"alias\" : \"Down\",\n            \"icon\" : null,\n            \"links\" : {\n               \"externals\" : {\n                  \"action_url\" : null,\n                  \"notes\" : null\n               },\n               \"uris\" : {\n                  \"configuration\" : null,\n                  \"reporting\" : null,\n                  \"logs\" : null\n               },\n               \"endpoints\" : {}\n            },\n            \"id\" : 254,\n            \"fqdn\" : \"1.2.3.4\",\n            \"name\" : \"FakeHostThatIsDown\",\n            \"type\" : \"host\",\n            \"short_type\" : \"h\",\n            \"service_id\" : null\n         },\n         \"links\" : {\n            \"externals\" : {\n               \"action_url\" : \"\",\n               \"notes\" : {\n                  \"url\" : \"\",\n                  \"label\" : \"\"\n               }\n            },\n            \"uris\" : {\n               \"logs\" : \"/centreon/main.php?p=20301&svc=254_1616\",\n               \"configuration\" : \"/centreon/main.php?p=60201&o=c&service_id=1616\",\n               \"reporting\" : \"/centreon/main.php?p=30702&period=yesterday&start=&end=&host_id=254&item=1616\"\n            },\n            \"endpoints\" : {\n               \"check\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/check\",\n               \"acknowledgement\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/acknowledgements?limit=1\",\n               \"timeline\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/timeline\",\n               \"performance_graph\" : null,\n               \"downtime\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/downtimes?search=%7B%22%24and%22:%5B%7B%22start_time%22:%7B%22%24lt%22:1700666614%7D,%22end_time%22:%7B%22%24gt%22:1700666614%7D,%220%22:%7B%22%24or%22:%7B%22is_cancelled%22:%7B%22%24neq%22:1%7D,%22deletion_time%22:%7B%22%24gt%22:1700666614%7D%7D%7D%7D%5D%7D\",\n               \"forced_check\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/check\",\n               \"status_graph\" : \"/centreon/api/latest/monitoring/hosts/254/services/1616/metrics/status\",\n               \"details\" : \"/centreon/api/latest/monitoring/resources/hosts/254/services/1616\"\n            }\n         },\n         \"passive_checks\" : false,\n         \"notification_enabled\" : false,\n         \"service_id\" : 1616,\n         \"type\" : \"service\",\n         \"severity\" : null,\n         \"fqdn\" : null,\n         \"active_checks\" : true,\n         \"id\" : 1616\n      }\n   ]\n}"
+    }
+  ],
+  "callbacks": []
+}
