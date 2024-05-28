@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "perl(Exporter::Easy)",
         "perl(JSON)",
         "perl(Time::HiRes)",
         "perl(XML::XPath)",

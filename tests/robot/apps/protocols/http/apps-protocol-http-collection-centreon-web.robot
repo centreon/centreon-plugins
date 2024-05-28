@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       datacore rest api plugin
+Documentation       Collections of HTTP Protocol plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -28,4 +28,4 @@ Test if ${test_desc}
     ...    Wrong output result:\n\n ${output}\nInstead of:\n ${expected}\n\n
 
     Examples:    test_desc    collection    expected   --
-        ...      authentication succeeds    check_auth.json    OK: Authentication resulted in 200 HTTP code
+        ...      authentication succeeds    apps-protocol-http-collection-centreon-web-check-auth.collection.json    OK: Authentication resulted in 200 HTTP code
