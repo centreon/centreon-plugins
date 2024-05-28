@@ -33,6 +33,7 @@ jobs:
         distrib: [el8, el9]
         name:
           [
+            "ARGV::Struct",
             "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
             "boolean",
@@ -42,9 +43,11 @@ jobs:
             "Clone",
             "Clone::Choose",
             "common::sense",
+            "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
             "Device::Modbus",
@@ -70,6 +73,8 @@ jobs:
             "MIME::Types",
             "Mojo::IOLoop::Signal",
             "MongoDB",
+            "MooseX::ClassAttribute",
+            "Net::Amazon::Signature::V4",
             "Net::DHCP",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
@@ -91,6 +96,7 @@ jobs:
             "URI::Encode",
             "URI::Template",
             "URL::Encode",
+            "URL::Encode::XS",
             "UUID",
             "UUID::URandom",
             "WWW::Selenium",
@@ -130,6 +136,8 @@ jobs:
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Statistics::Regression"
             version: "0.53"
+          - name: "URL::Encode::XS"
+            build_distribs: el9
           - name: "UUID"
             version: "0.31"
           - name: "ZMQ::Constants"
