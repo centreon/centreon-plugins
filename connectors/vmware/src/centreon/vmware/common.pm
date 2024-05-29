@@ -254,6 +254,7 @@ sub get_perf_metric_ids {
                     counterId => $options{connector}->{perfcounter_cache}->{$_->{label}}{key},
                     instance => $instance
                 );
+                $options{connector}->{logger}->writeLogInfo("Instance is : " . Dumper($metric);
                 push @$filtered_list, $metric;
             }
         } else {
@@ -276,8 +277,9 @@ sub performance_builder_specific {
             metrics => $entry->{metrics}, 
             interval => $options{interval}
         );
+        $options{connector}->{logger}->writeLogInfo("[performance_builder_specific] checking if perf_metric_ids is empty.");
         return undef if (!defined($perf_metric_ids));
-
+        $options{connector}->{logger}->writeLogInfo("[performance_builder_specific] perf_metric_ids was not empty.");
         my $tstamp = time();
         my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
         my $startTime = sprintf(
@@ -325,7 +327,9 @@ sub performance_builder_global {
         metrics => $options{metrics}, 
         interval => $options{interval}
     );
+    $options{connector}->{logger}->writeLogInfo("[performance_builder_global] checking if perf_metric_ids is empty.");
     return undef if (!defined($perf_metric_ids));
+    $options{connector}->{logger}->writeLogInfo("[performance_builder_global] perf_metric_ids was not empty.");
 
     my $tstamp = time();
     my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
@@ -406,14 +410,7 @@ sub generic_performance_values_historic {
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
-            use Data::Dumper;
-            $obj_vmware->{logger}->writeLogInfo("[generic_performance_values_historic] param :  " .
-                "\n obj vmware: " . Dumper($obj_vmware) .
-                "\n views :     " . Dumper($views) .
-                "\n perfs :     " . Dumper($perfs) .
-                "\n interval :  " . Dumper($interval) .
-                "\n Options :   " . Dumper(%options) .
-                "\n result perfdata : " . Dumper($perfdata) );
+
 
             return undef;
         }
@@ -526,7 +523,7 @@ sub search_entities {
                 }
 
                 if (scalar(@$temp_views) == 0) {
-                    set_response(code => 1, short_message => "Cannot find '$scope->[1]' object");
+                    set_response(code => 1, short_message => "[search_entity] Cannot find '$scope->[1]' object, temp_views is empty");
                     return undef;
                 }
                 push @$begin_views, @$temp_views;
@@ -555,7 +552,7 @@ sub search_entities {
             push @$results, @$views;
         }
         if (scalar(@$results) == 0) {
-            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
+            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object, result is empty");
             return undef;
         }
         return $results;
@@ -602,7 +599,7 @@ sub find_entity_views {
             return (1, []);
         }
         if (!defined($options{output_message}) || $options{output_message} != 0) {
-            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
+            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object, no output message.");
         }
         return (0, undef);
     }

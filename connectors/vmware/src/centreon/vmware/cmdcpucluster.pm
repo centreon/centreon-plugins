@@ -57,21 +57,19 @@ sub run {
     my $filters = $self->build_filter(label => 'name', search_option => 'cluster_name', is_regexp => 'filter');
     my @properties = ('name');
 
-    $self->{connector}->{logger}->writeLogInfo("[cmdcpucluster.pm::run] creating filters :" . Dumper($filters));
-
     my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => $filters);
-    $self->{connector}->{logger}->writeLogInfo("[cmdcpucluster.pm::run] views are : " . Dumper($view));
+    #$self->{connector}->{logger}->writeLogInfo("[cmdcpucluster.pm::run] views are : " . Dumper($views));
     return if (!defined($views));
 
     my $values = centreon::vmware::common::generic_performance_values_historic(
         $self->{connector},
         $views,
         [
-            { label => 'cpu.usage.average',    instances => [''] },
-            { label => 'cpu.usagemhz.average', instances => [''] }
+            { label => 'cpu.usage.average',    instances => ['*'] },
+            { label => 'cpu.usagemhz.average', instances => ['*'] }
         ],
         $self->{connector}->{perfcounter_speriod},
-        sampling_period => $self->{sampling_period},
+        sampling_period => 300, # try 20 instead of 300 here
         time_shift => $self->{time_shift},
         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1
     );
