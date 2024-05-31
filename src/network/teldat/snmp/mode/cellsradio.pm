@@ -153,7 +153,7 @@ sub set_counters {
             }
         },
         { label => 'module-cellradio-csq', nlabel => 'module.cellradio.csq.dbm', set => {
-                key_values => [ { name => 'csq' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'csq' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'csq: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
