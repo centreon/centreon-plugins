@@ -17,7 +17,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin  apps::protocols::http::plugin 
 
 
 *** Test Cases ***
-Check if ${test_desc}
+Check if ${test_desc} on Centreon
     [Tags]    Centreon    Collections   HTTP
     ${output}    Run
     ...    ${CMD} --config=${CURDIR}/${collection}
