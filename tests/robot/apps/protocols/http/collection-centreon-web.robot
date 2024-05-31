@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Collections of HTTP Protocol plugin
+Documentation       Collections of HTTP Protocol plugin testing a mock of Centreon-web API
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -31,5 +31,4 @@ Check if ${test_desc} on Centreon
         ...      authentication succeeds    collection-centreon-web-check-auth.collection.json               OK: Authentication resulted in 200 HTTP code
         ...      hosts are down             collection-centreon-web-check-down-hosts.collection.json         OK: All hosts are UP | 'hostsRequest.down.count'=0;0;;0;1
         ...      commands are broken        collection-centreon-web-check-broken-commands.collection.json    WARNING:${SPACE} - Service FakeHostThatIsDown/Svc-BadCommand output is '(Execute command failed)' | 'commands.broken.count'=1;0;;0;
-
 
