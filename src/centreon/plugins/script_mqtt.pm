@@ -27,11 +27,11 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self              = {};
     bless $self, $class;
     $self->{options} = $options{options};
-    $self->{output} = $options{output};
-    
+    $self->{output}  = $options{output};
+
     $self->{options}->add_options(
         arguments => {
             'mode:s'            => { name => 'mode_name' },
@@ -42,10 +42,10 @@ sub new {
             'pass-manager:s'    => { name => 'pass_manager' },
         }
     );
-    $self->{version} = '1.0';
+    $self->{version}  = '1.0';
     %{$self->{modes}} = ();
-    $self->{default} = undef;
-    
+    $self->{default}  = undef;
+
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
     foreach (keys %{$self->{option_results}}) {
@@ -79,20 +79,20 @@ sub init {
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
-    
+
     $self->load_password_mgr();
 
     # MQTT
     $self->{mqtt} = centreon::plugins::mqtt->new(options => $self->{options}, output => $self->{output});
-    
+
     # Load mode
     if (defined($self->{mode_name}) && $self->{mode_name} ne '') {
         $self->is_mode(mode => $self->{mode_name});
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{modes}{$self->{mode_name}}, 
+        centreon::plugins::misc::mymodule_load(output    => $self->{output}, module => $self->{modes}{$self->{mode_name}},
                                                error_msg => "Cannot load module --mode.");
         $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
-        (undef, $self->{dynmode_name}) = centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
+        (undef, $self->{dynmode_name}) = centreon::plugins::misc::mymodule_load(output    => $self->{output}, module => $self->{dynmode_name},
                                                                                 error_msg => "Cannot load module --dyn-mode.");
         $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
     } else {
@@ -114,10 +114,10 @@ sub init {
         $self->{output}->option_exit(nolabel => 1);
     }
     if (centreon::plugins::misc::minimal_version($self->{mode}->{version}, $self->{mode_version}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Not good version for plugin mode. Excepted at least: " . $self->{mode_version} . ". Get: ".  $self->{mode}->{version});
+        $self->{output}->add_option_msg(short_msg => "Not good version for plugin mode. Excepted at least: " . $self->{mode_version} . ". Get: " . $self->{mode}->{version});
         $self->{output}->option_exit();
     }
-    
+
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
 
@@ -126,18 +126,18 @@ sub init {
     $self->{mqtt}->check_options(option_results => $self->{option_results});
     $self->{mode}->check_options(
         option_results => $self->{option_results},
-        default => $self->{default},
-        modes => $self->{modes} # for meta mode multi
+        default        => $self->{default},
+        modes          => $self->{modes} # for meta mode multi
     );
 }
 
 sub load_password_mgr {
     my ($self, %options) = @_;
-    
+
     return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
 
     (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        output    => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager},
         error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
     );
     $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
@@ -163,7 +163,7 @@ sub run {
 
 sub is_mode {
     my ($self, %options) = @_;
-    
+
     # $options->{mode} = mode
     if (!defined($self->{modes}{$options{mode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{mode} . "' doesn't exist (use --list-mode option to show available modes).");
@@ -172,7 +172,7 @@ sub is_mode {
 }
 
 sub version {
-    my $self = shift;    
+    my $self = shift;
     $self->{output}->add_option_msg(short_msg => "Plugin Version: " . $self->{version});
     $self->{output}->option_exit(nolabel => 1);
 }
@@ -180,7 +180,7 @@ sub version {
 sub list_mode {
     my $self = shift;
     $self->{options}->display_help();
-    
+
     $self->{output}->add_option_msg(long_msg => 'Modes Meta:');
     $self->{output}->add_option_msg(long_msg => '   multi');
     $self->{output}->add_option_msg(long_msg => '');

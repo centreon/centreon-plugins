@@ -40,7 +40,7 @@ sub new {
             'mqtt-ssl-key:s'         => { name => 'mqtt_ssl_key' },
             'mqtt-username:s'        => { name => 'mqtt_username' },
             'mqtt-password:s'        => { name => 'mqtt_password' },
-            'mqtt-timeout:s'        => { name => 'mqtt_timeout', default => 5 }
+            'mqtt-timeout:s'         => { name => 'mqtt_timeout', default => 5 }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'SSH GLOBAL OPTIONS');
     }
@@ -77,14 +77,18 @@ sub query {
         my ($topic, $message)  = @_;
         $mqtt_received{$topic} = $message;
     });
-    while (scalar keys %mqtt_received == 0 and Time::HiRes::time()<$endtime) {
+    my $old_messages_received = 0;
+    my $new_messages_received = 0;
+    while (($new_messages_received == 0 or ($new_messages_received > 0 and $old_messages_received < $new_messages_received)) and Time::HiRes::time() < $endtime) {
         $self->{mqtt}->tick(5);
+        $old_messages_received = $new_messages_received;
+        $new_messages_received = scalar keys %mqtt_received;
     }
     eval {
         $self->{mqtt}->unsubscribe($options{topic});
     };
     if (%mqtt_received) {
-        return $mqtt_received{ (sort keys %mqtt_received)[0] };
+        return %mqtt_received;
     } else {
         $self->{output}->add_option_msg(short_msg => 'No message in topic: ' . $options{topic});
         $self->{output}->option_exit();
@@ -98,14 +102,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
         $self->{output}->option_exit();
     }
-    $self->{mqtt_host}     = $options{option_results}->{host};
-    $self->{mqtt_port}     = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
-    $self->{mqtt_ca_certificate} = $options{option_results}->{mqtt_ca_certificate};
-    $self->{mqtt_ssl_certificate}   = $options{option_results}->{mqtt_ssl_certificate};
-    $self->{mqtt_ssl_key}   = $options{option_results}->{mqtt_ssl_key};
-    $self->{mqtt_username} = $options{option_results}->{mqtt_username};
-    $self->{mqtt_password} = $options{option_results}->{mqtt_password};
-    $self->{mqtt_timeout} = $options{option_results}->{mqtt_timeout};
+    $self->{mqtt_host}            = $options{option_results}->{host};
+    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
+    $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
+    $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
+    $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
+    $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
+    $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
+    $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
 }
 
 1;

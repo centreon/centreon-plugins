@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 use Time::HiRes qw(time);
 use POSIX qw(floor);
 
-my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv      = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
 sub custom_uptime_output {
@@ -44,11 +44,11 @@ sub custom_uptime_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        nlabel   => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        value    => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        min      => 0
     );
 }
 
@@ -56,11 +56,11 @@ sub custom_uptime_threshold {
     my ($self, %options) = @_;
 
     return $self->{perfdata}->threshold_check(
-        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        value     => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         threshold => [
             { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
-            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-' . $self->{thlabel}, exit_litteral => 'unknown' }
         ]
     );
 }
@@ -74,18 +74,18 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'uptime', set => {
-                key_values => [ { name => 'uptime' } ],
-                closure_custom_output => $self->can('custom_uptime_output'),
-                closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_uptime_threshold')
-            }
+            key_values                     => [{ name => 'uptime' }],
+            closure_custom_output          => $self->can('custom_uptime_output'),
+            closure_custom_perfdata        => $self->can('custom_uptime_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_uptime_threshold')
+        }
         }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -107,12 +107,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{mqtt}->query(
+    my %results = $options{mqtt}->query(
         topic => '$SYS/broker/uptime'
     );
 
-    my $uptime;
-    if ($result =~ /^(\d+) seconds$/) {
+    my $uptime = $results{'$SYS/broker/uptime'};
+    if ($uptime =~ /^(\d+) seconds$/) {
         $uptime = $1;
     }
 
