@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cells-radio'     => 'network::teldat::snmp::mode::cellsradio',
-        'cpu'             => 'network::teldat::snmp::mode::cpu',
-        'interfaces'      => 'network::teldat::snmp::mode::interfaces',
-        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::teldat::snmp::mode::memory',
-        'uptime'          => 'network::teldat::snmp::mode::uptime'
+        'cells-radio'      => 'network::teldat::snmp::mode::cellsradio',
+        'cpu'              => 'network::teldat::snmp::mode::cpu',
+        'interfaces'       => 'network::teldat::snmp::mode::interfaces',
+        'list-cells-radio' => 'network::teldat::snmp::mode::listcellsradio',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::teldat::snmp::mode::memory',
+        'uptime'           => 'network::teldat::snmp::mode::uptime'
     };
 
     return $self;
