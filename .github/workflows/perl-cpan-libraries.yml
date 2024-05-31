@@ -122,6 +122,7 @@ jobs:
             version: "0.026"
           - name: "Exporter::Shiny"
             build_distribs: el8
+            rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
           - name: "Net::DHCP"
