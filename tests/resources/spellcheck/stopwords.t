@@ -56,6 +56,7 @@ in-mcast
 in-ucast
 interface-dsl-name
 IpAddr
+Iwsva
 Kinesis
 httpcode-elb
 license-instances-usage-prct
