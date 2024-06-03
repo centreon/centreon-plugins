@@ -1,4 +1,5 @@
 --add-sysdesc
+--api-password
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -75,7 +76,9 @@ passthrough
 perfdata
 powershell
 proto
+psu
 queue-messages-inflighted
+RRDCached
 Sansymphony
 SNMP
 space-usage-prct
@@ -88,6 +91,7 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+TendMicro
 uptime
 USD
 vdomain

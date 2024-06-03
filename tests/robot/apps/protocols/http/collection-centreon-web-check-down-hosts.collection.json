@@ -1,0 +1,132 @@
+{
+  "constants": {
+    "protocol": "https",
+    "port": "443",
+    "customPath": "centreon"
+  },
+  "http": {
+    "requests": [
+      {
+        "name": "authenticationRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/%(constants.customPath)/api/latest/login",
+        "method": "POST",
+        "headers": [
+          "Accept:application/json",
+          "Content-Type:application/json"
+        ],
+        "timeout": 30,
+        "payload": {
+          "type": "json",
+          "value": {
+            "security": {
+              "credentials": {
+                "login": "%(constants.username)",
+                "password": "%(constants.password)"
+              }
+            }
+          }
+        },
+        "scenario_stopped": "%(builtin.httpCode.authenticationRequest) != 200",
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "token",
+            "path": "$.security.token",
+            "entries": [
+              {
+                "id": "value"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "hostsRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/%(constants.customPath)/api/latest/monitoring/hosts?limit=1000",
+        "method": "GET",
+        "headers": [
+          "X-AUTH-TOKEN: %(http.tables.authenticationRequestToken.[0].value)",
+          "Accept: text/json"
+        ],
+        "timeout": 30,
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "entries",
+            "type": "body",
+            "path": "$.result[*]",
+            "entries": [
+              {
+                "id": "name"
+              },
+              {
+                "id": "state"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selection": [
+    {
+      "name": "authenticationSelection",
+      "critical": "defined(%(builtin.httpCode.authenticationRequest)) and %(builtin.httpCode.authenticationRequest) != 200",
+      "exit": "defined(%(builtin.httpCode.authenticationRequest)) and %(builtin.httpCode.authenticationRequest) != 200",
+      "formatting": {
+        "printf_msg": "Authentication resulted in %s HTTP code",
+        "printf_var": [
+          "%(builtin.httpCode.authenticationRequest)"
+        ],
+        "display_ok": false
+      }
+    },
+    {
+      "name": "hostsSelection",
+      "functions": [
+        {
+          "type": "count",
+          "src": "%(http.tables.hostsRequestEntries)",
+          "filter": "%(src.state) != 0",
+          "save": "%(downCount)"
+        },
+        {
+          "type": "count",
+          "src": "%(http.tables.hostsRequestEntries)",
+          "save": "%(hostsCount)"
+        }
+      ],
+      "perfdatas": [
+        {
+          "nlabel": "hostsRequest.down.count",
+          "value": "%(downCount)",
+          "warning": "0",
+          "min": 0,
+          "max": "%(hostsCount)"
+        }
+      ],
+      "warning": "%(downCount) > 0",
+      "formatting": {
+        "printf_msg": "Number of down hosts: %s out of %s",
+        "printf_var": [
+          "%(downCount)",
+          "%(hostsCount)"
+        ],
+        "display_ok": true
+      }
+    }
+  ],
+  "formatting": {
+    "custom_message_global": "All hosts are UP",
+    "separator": "-"
+  }
+}
+

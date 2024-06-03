@@ -20,131 +20,130 @@
 
 package apps::rrdcached::mode::stats;
 
-use base qw(centreon::plugins::mode);
-
 use strict;
 use warnings;
 use IO::Socket;
 
+use base qw(centreon::plugins::templates::counter);
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                 "host:s"               => { name => 'host', default => '127.0.0.1' },
-                                 "port:s"               => { name => 'port', default => '42217' },
-                                 "unix-socket-path:s"   => { name => 'unix_socket_path', default => '/var/rrdtool/rrdcached/rrdcached.sock' },
-                                 "warning-update:s"     => { name => 'warning_update', default => '3000' },
-                                 "critical-update:s"    => { name => 'critical_update', default => '5000' },
-                                 "warning-queue:s"      => { name => 'warning_queue', default => '70' },
-                                 "critical-queue:s"     => { name => 'critical_queue', default => '100' },
-                                 "socket-type:s"        => { name => 'socket_type', default => 'unix' },
-                                });
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
-sub check_options {
+sub set_counters {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning-update', value => $self->{option_results}->{warning_update})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-update threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-update', value => $self->{option_results}->{critical_update})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-queue', value => $self->{option_results}->{warning_queue})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-queue threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-queue', value => $self->{option_results}->{critical_queue})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-queue threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+
+    $self->{maps_counters_type} = [
+        {
+            name => 'global',
+            type => 0
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label => 'queue-length',
+            nlabel => 'rrdcached.queue-length',
+            set => {
+                key_values => [ { name => 'queue_length' } ],
+                output_template => 'queue length: %s',
+                perfdatas => [
+                    {
+                        template     => '%d',
+                        min          => 0
+                    }
+                ]
+            }
+        },
+        {
+            label => 'waiting-updates',
+            nlabel => 'rrdcached.waiting-updates',
+            set => {
+                key_values => [ { name => 'waiting_updates' } ],
+                output_template => 'waiting updates: %s',
+                perfdatas => [
+                    {
+                        template => '%d',
+                        min      => 0
+                    }
+                ]
+            }
+        }
+    ];
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
+
     my $data;
-    my @stat;
-    my @tab;
-    my $queueLenght;
-    my $socket;
-     
-    if ($self->{option_results}->{socket_type} eq 'tcp') {
-        $socket = IO::Socket::INET->new(
-        PeerHost => $self->{option_results}->{host},
-        PeerPort => $self->{option_results}->{port},
-        Proto => 'tcp',
-        ); 
-    } else {
-        my $SOCK_PATH = $self->{option_results}->{unix_socket_path};
-            $socket = IO::Socket::UNIX->new(
-                Type => SOCK_STREAM(),
-                Peer => $SOCK_PATH,
-            );
+    my %raw_data;
+
+    # open the socket of either type TCP/UNIX
+    my $socket = $options{custom}->connect();
+
+    # exit if we cannot connect/open it
+    if (!defined($socket) or !$socket->connected()) {
+        $self->{output}->output_add(severity => 'CRITICAL', short_msg => "Can't connect to socket, is RRDcached running
+         ? Is your socket path or address:port correct ?");
+        $self->{output}->display();
+        $self->{output}->exit();
     }
-    
-    if (!defined($socket)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => "Can't connect to socket, is rrdcached running ? is your socket path/address:port correct ?");
-        $self->{output}->display();
-        $self->{output}->exit();
-    } else { 
-        $socket->send("STATS\n");
-        while ($data = <$socket>) {
-            if ($data =~ /(\d+) Statistics follow/) {
-                my $stats_number = $1;
-                if ($stats_number < 9) {
-                    $self->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Stats available are incomplete, check rrdcached daemon (try again if few moments)");
-                    $self->{output}->display();
-                    $self->{output}->exit();
-                }
-            }    
-            next if $data !~ m/(^UpdatesR|Data|Queue)/;
-            push @tab,$data;
-            $socket->send("QUIT\n");
-                    
-        } 
-      
-        close($socket);
 
-        foreach my $line (@tab) {
-            my ($key, $value) = split (/:\s*/, $line,2);
-            push @stat, $value;
-            $self->{output}->output_add(long_msg => sprintf("%s = %i", $key, $value));
+    # send the STATS command and receive the response
+    $socket->send("STATS\n");
+    SOCKETREAD:
+    while ($data = <$socket>) {
+        chomp $data;
+        # there should be at least 9 statistics in the response
+        if ($data =~ /(\d+) Statistics follow/) {
+            my $stats_number = $1;
+            if ($stats_number < 9) {
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN',
+                    short_msg => "The returned statistics are incomplete. Try again later or check that the service is up.");
+                $self->{output}->display();
+                $self->{output}->exit();
+            }
+            next SOCKETREAD;
         }
-        chomp($stat[0]);  
-        my $updatesNotWritten = $stat[1] - $stat[2];
-    
-        my $exit1 = $self->{perfdata}->threshold_check(value => $updatesNotWritten, threshold => [ { label => 'critical-update', 'exit_litteral' => 'critical' }, { label => 'warning-update', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $stat[0], threshold => [ { label => 'critical-queue', 'exit_litteral' => 'critical' }, { label => 'warning-queue', exit_litteral => 'warning' } ]);
 
-        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+        # parse the stats as "Key: value" lines
+        if (my ($key, $value) = $data =~ m/^([^:]+):\s*([\d]+)$/) {
+            $raw_data{$key} = $value;
+            $self->{output}->output_add(long_msg => "Received data - $key: $value");
+        } else {
+            $self->{output}->output_add(long_msg => "Skipping data - $data");
+            next SOCKETREAD;
+        }
+        # once all the expected data has been received, we can quit the command and close the socket
+        if (defined($raw_data{QueueLength}) and defined($raw_data{UpdatesReceived}) and defined($raw_data{DataSetsWritten})) {
+            $socket->send("QUIT\n");
+            close($socket);
+            last SOCKETREAD;
+        }
+    }
 
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("RRDCached has %i updates waiting and %i node(s) in queue", $updatesNotWritten, $stat[0]));
-
-        $self->{output}->perfdata_add(label => 'QueueLenght', unit => 'nodes',
-                                      value => $stat[0],
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
- 
-        $self->{output}->perfdata_add(label => 'UpdatesWaiting', unit => 'updates',
-                                      value => $updatesNotWritten,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-                      
+    # just in case...
+    if (!defined($raw_data{QueueLength}) or !defined($raw_data{UpdatesReceived}) or !defined($raw_data{DataSetsWritten})) {
+        # all the data have not been gathered despite the socket's answer is finished
+        close($socket) if $socket->connected();
+        # exit with unknown status
+        $self->{output}->output_add(severity => 'UNKNOWN', short_msg => "The returned statistics are incomplete. Try again later.");
         $self->{output}->display();
         $self->{output}->exit();
-     }
+    }
+    # at this point, we should have the needed data, let's store it to our counter
+    $self->{global} = {
+        queue_length    => $raw_data{QueueLength},
+        waiting_updates => $raw_data{UpdatesReceived} - $raw_data{DataSetsWritten}
+    };
 }
 
 1;
@@ -153,46 +152,25 @@ __END__
 
 =head1 MODE
 
-Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command)
+Check if the cache of RRDcached daemon's queue is too long or if it has too many updates waiting (difference between
+UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command).
 
 =over 8
 
-=item B<--tcp>
+=item B<--warning-rrdcached-waiting-updates>
 
-Specify this option if TCP socket is used
+Warning threshold for cached RRD updates (one update can include several values).
 
-=item B<--host>
+=item B<--critical-rrdcached-waiting-updates>
 
-Host where the socket is (should be set if --tcp is used) (default: 127.0.0.1)
+Critical threshold for cached RRD updates (one update can include several values).
 
-=item B<--port>
+=item B<--warning-rrdcached-queue-length>
 
-Port where the socket is listening (default: 42217)
+Warning threshold for the number of nodes currently enqueued in the update queue.
 
-=item B<--unix>
+=item B<--critical-rrdcached-queue-length>
 
-Specify this option if UNIX socket is used
-
-=item B<--socket-path>
-
-Path to the socket (should be set if --unix is used) (default is /var/rrdtool/rrdcached/rrdcached.sock)
-
-=item B<--warning-update>
-
-Warning number of cached RRD updates (One update can include several values)
-
-=item B<--critical-update>
-
-Critical number of cached RRD updates (One update can include several values)
-
-=item B<--warning-queue>
-
-Warning number of nodes in rrdcached queue
-
-=item B<--critical-queue>
-
-Critical number of nodes in rrdcached queue
+Critical  threshold for the number of nodes currently enqueued in the update queue.
 
 =back
-
-=cut

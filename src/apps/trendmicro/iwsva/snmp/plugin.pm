@@ -18,23 +18,27 @@
 # limitations under the License.
 #
 
-package apps::protocols::http::plugin;
+package apps::trendmicro::iwsva::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{modes} = {
-        'collection'       => 'apps::protocols::http::mode::collection',
-        'expected-content' => 'apps::protocols::http::mode::expectedcontent',
-        'json-content'     => 'apps::protocols::http::mode::jsoncontent',
-        'response'         => 'apps::protocols::http::mode::response',
-        'soap-content'     => 'apps::protocols::http::mode::soapcontent'
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'interfaces'      => 'apps::trendmicro::iwsva::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
+        'load'            => 'snmp_standard::mode::loadaverage',
+        'memory'          => 'snmp_standard::mode::memory',
+        'storage'         => 'snmp_standard::mode::storage',
+        'swap'            => 'snmp_standard::mode::swap',
+        'tcpcon'          => 'snmp_standard::mode::tcpcon'
     };
 
     return $self;
@@ -46,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check a HTTP or HTTPS web page.
+Check TendMicro Iwsva equipments in SNMP.
 
 =cut

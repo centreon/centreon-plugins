@@ -53,6 +53,7 @@ jobs:
             "Digest::MD5::File",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
+            "Exporter::Shiny",
             "EV",
             "FFI::CheckLib",
             "FFI::Platypus",
@@ -67,6 +68,7 @@ jobs:
             "JSON::WebToken",
             "LV",
             "MIME::Types",
+            "Mojo::IOLoop::Signal",
             "MongoDB",
             "Net::DHCP",
             "Net::FTPSSL",
@@ -76,6 +78,7 @@ jobs:
             "Net::SMTP_auth",
             "Net::Subnet",
             "Net::TFTP",
+            "Paws",
             "PBKDF2::Tiny",
             "Schedule::Cron",
             "Statistics::Descriptive",
@@ -102,7 +105,6 @@ jobs:
           - rpm_dependencies: ""
           - rpm_provides: ""
           - version: ""
-          - use_dh_make_perl: "true"
           - spec_file: ""
           - distrib: el8
             package_extension: rpm
@@ -112,17 +114,15 @@ jobs:
             image: packaging-plugins-alma9
           - name: "BSON"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
-          - name: "BSON::XS"
-          - name: "Convert::Binary::C"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "DBD::Sybase"
           - name: "Device::Modbus::RTU::Client"
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
-          - name: "EV"
-          - name: "FFI::CheckLib"
+          - name: "Exporter::Shiny"
+            build_distribs: el8
+            rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
           - name: "Net::DHCP"
@@ -130,16 +130,15 @@ jobs:
           - name: "Statistics::Regression"
             version: "0.53"
           - name: "UUID"
-            use_dh_make_perl: "false"
             version: "0.31"
           - name: "ZMQ::Constants"
             build_distribs: "el9"
           - name: "ZMQ::FFI"
             rpm_dependencies: "zeromq"
           - name: "ZMQ::LibZMQ4"
-            use_dh_make_perl: "false"
             version: "0.01"
             rpm_dependencies: "zeromq"
+
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -156,11 +155,11 @@ jobs:
           yum install -y yum-utils epel-release git
           yum config-manager --set-enabled crb || true # alma 9
           yum config-manager --set-enabled powertools || true # alma 8
-          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel
+          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
 
           dnf module reset -y ruby
           dnf module enable -y ruby:3.1
-          dnf install -y ruby
+          dnf install -y ruby ruby-devel
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
@@ -243,9 +242,11 @@ jobs:
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
+            "Mojo::IOLoop::Signal",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::SMTP_auth",
+            "Paws",
             "Statistics::Regression",
             "WWW::Selenium",
             "ZMQ::Constants",
@@ -267,6 +268,8 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
+          - name: "Paws"
+            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
@@ -331,7 +334,8 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
         run: |
-          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl
+          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
+          # module-build-tiny is required for Mojo::IOLoop::Signal build.
 
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
         shell: bash
@@ -410,7 +414,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
+      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -421,7 +425,7 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -433,12 +437,12 @@ jobs:
       matrix:
         distrib: [bullseye, bookworm, jammy]
     steps:
-      - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
+      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./
 
-      - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
