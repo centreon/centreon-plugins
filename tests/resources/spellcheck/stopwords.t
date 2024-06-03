@@ -41,6 +41,7 @@ ELB
 ESSID
 essid
 eth
+fanspeed
 FORTIGATE
 Fortigate
 FORTINET
@@ -58,11 +59,13 @@ IpAddr
 Kinesis
 httpcode-elb
 license-instances-usage-prct
+Loggly
 LUN
 MBean
 Mbps
 MIB
 NagVis
+Netscaler
 NumberOfBackupJobsCompleted
 NumberOfBackupJobsExpired
 NumberOfBackupJobsFailed
@@ -86,6 +89,7 @@ SNMP
 space-usage-prct
 SSH
 SureBackup
+TendMicro
 timeframe
 topic-messages-inflighted
 total-oper-down
