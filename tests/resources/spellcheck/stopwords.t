@@ -41,6 +41,7 @@ ELB
 ESSID
 essid
 eth
+Ewon
 fanspeed
 Fortigate
 FORTINET
@@ -79,6 +80,8 @@ Sansymphony
 SNMP
 space-usage-prct
 SSH
+STONESOFT
+Stonesoft
 SureBackup
 TendMicro
 timeframe
