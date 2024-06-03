@@ -1,4 +1,5 @@
 --add-sysdesc
+--api-password
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -31,7 +32,9 @@ in-mcast
 in-ucast
 interface-dsl-name
 IpAddr
+Iwsva
 license-instances-usage-prct
+Loggly
 MBean
 NagVis
 Netscaler
@@ -55,6 +58,7 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+TendMicro
 uptime
 VDSL2
 Veeam

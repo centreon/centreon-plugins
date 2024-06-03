@@ -35,31 +35,31 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'events', nlabel => 'events.count', display_ok => 1, set => {
-                key_values => [ { name => 'events' } ],
-                output_template => 'Matching events: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [{ name => 'events' }],
+            output_template => 'Matching events: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         },
         { label => 'fields', nlabel => 'fields.count', display_ok => 1, set => {
-                key_values => [ { name => 'fields' } ],
-                output_template => 'Matching fields: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [{ name => 'fields' }],
+            output_template => 'Matching fields: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         },
     ];
 
     $self->{maps_counters}->{field} = [
         { label => 'field-events', nlabel => 'field.events.count', set => {
-                key_values => [ { name => 'count' }, { name => 'display' } ],
-                output_template => 'matching events: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
+            key_values      => [{ name => 'count' }, { name => 'display' }],
+            output_template => 'matching events: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+            ]
+        }
         }
     ];
 }
@@ -72,7 +72,7 @@ sub prefix_field_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -118,8 +118,8 @@ sub manage_selection {
 
     my $results = $options{custom}->api_fields(
         time_period => $self->{option_results}->{time_period},
-        query => $self->{option_results}->{query},
-        field => $self->{option_results}->{field}
+        query       => $self->{option_results}->{query},
+        field       => $self->{option_results}->{field}
     );
 
     my ($events, $fields) = (0, 0);
@@ -128,10 +128,10 @@ sub manage_selection {
     foreach (@{$results->{$self->{option_results}->{field}}}) {
         if (!defined($self->{option_results}->{filter_field}) || ($_->{term} =~ /$self->{option_results}->{filter_field}/i)) {
             $fields++;
-            $events += $_->{count};
+            $events+= $_->{count};
             $self->{field}->{$fields} = {
                 display => $_->{term},
-                count => $_->{count}
+                count   => $_->{count}
             };
         }
     }
@@ -151,19 +151,19 @@ Count unique field-values from events matching the query.
 
 =item B<--time-period>
 
-Set request period, in minutes.
+Set request period, in minutes (mandatory option).
 
 =item B<--query>
 
-Set the query.
+Set the query (mandatory option).
 
 =item B<--field>
 
-Set the field to count unique values for (example: json.host).
+Set the field to count unique values for example: json.host (mandatory option).
 
 =item B<--filter-field>
 
-Set the a field filter.
+Define which fields should be counted. This option will be treated as a regular expression. If this option is empty, all fields will be counted.
 
 =item B<--warning-*> B<--critical-*>
 

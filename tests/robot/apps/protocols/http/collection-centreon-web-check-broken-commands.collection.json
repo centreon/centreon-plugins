@@ -1,0 +1,160 @@
+{
+  "constants": {
+    "protocol": "https",
+    "port": "443",
+    "customPath": "centreon"
+  },
+  "http": {
+    "requests": [
+      {
+        "name": "authenticationRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/%(constants.customPath)/api/latest/login",
+        "method": "POST",
+        "headers": [
+          "Accept:application/json",
+          "Content-Type:application/json"
+        ],
+        "timeout": 30,
+        "payload": {
+          "type": "json",
+          "value": {
+            "security": {
+              "credentials": {
+                "login": "%(constants.username)",
+                "password": "%(constants.password)"
+              }
+            }
+          }
+        },
+        "scenario_stopped": "%(builtin.httpCode.authenticationRequest) != 200",
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "token",
+            "path": "$.security.token",
+            "entries": [
+              {
+                "id": "value"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "resourcesRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/%(constants.customPath)/api/latest/monitoring/resources?limit=1000&search={\"information\": {\"$eq\": \"(Execute command failed)\"}}",
+        "method": "GET",
+        "headers": [
+          "X-AUTH-TOKEN: %(http.tables.authenticationRequestToken.[0].value)",
+          "Accept: text/json"
+        ],
+        "timeout": 30,
+        "scenario_stopped": "%(builtin.httpCode.authenticationRequest) != 200",
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "meta",
+            "type": "body",
+            "path": "$.meta",
+            "entries": [
+              {
+                "id": "total"
+              }
+            ]
+          },
+          {
+            "name": "entries",
+            "type": "body",
+            "path": "$.result[*]",
+            "entries": [
+              {
+                "id": "parent.name"
+              },
+              {
+                "id": "name"
+              },
+              {
+                "id": "type"
+              },
+              {
+                "id": "information"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selection_loop": [
+    {
+      "name": "HostsLoop",
+      "source": "%(http.tables.resourcesRequestEntries)",
+      "filter": "%(resourcesRequestEntries.type) eq 'host'",
+      "formatting": {
+        "display_ok": "false",
+        "printf_msg": "Host %s's output is '%s'",
+        "printf_var": [
+          "%(resourcesRequestEntries.name)",
+          "%(resourcesRequestEntries.information)"
+        ]
+      },
+      "warning": "%(resourcesRequestEntries.information) =~ /No output returned from plugin|Execute command failed/"
+    },
+    {
+      "name": "ServicesLoop",
+      "source": "%(http.tables.resourcesRequestEntries)",
+      "filter": "%(resourcesRequestEntries.type) eq 'service'",
+      "formatting": {
+        "display_ok": "false",
+        "printf_msg": "Service %s/%s output is '%s'",
+        "printf_var": [
+          "%(resourcesRequestEntries.parent.name)",
+          "%(resourcesRequestEntries.name)",
+          "%(resourcesRequestEntries.information)"
+        ]
+      },
+      "warning": "%(resourcesRequestEntries.information) =~ /No output returned from plugin|Execute command failed/"
+    }
+  ],
+  "selection": [
+    {
+      "name": "totalSelection",
+      "functions": [
+        {
+          "type": "assign",
+          "expression": "%(http.tables.resourcesRequestMeta.[0].total)",
+          "save": "%(brokenCommandsCount)"
+        }
+      ],
+      "perfdatas": [
+        {
+          "nlabel": "commands.broken.count",
+          "value": "%(brokenCommandsCount)",
+          "warning": "0",
+          "min": 0
+        }
+      ],
+      "exit": "%(brokenCommandsCount) == 0",
+      "warning": "%(brokenCommandsCount) > 0",
+      "formatting_warning": {
+        "printf_msg": "",
+        "display_ok": false,
+        "separator": " "
+      },
+      "formatting": {
+        "printf_msg": "All commands are fine",
+        "display_ok": true,
+        "separator": ""
+      }
+    }
+  ]
+}
+

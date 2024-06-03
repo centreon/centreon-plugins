@@ -18,24 +18,29 @@
 # limitations under the License.
 #
 
-package apps::monitoring::loggly::restapi::plugin;
+package apps::trendmicro::iwsva::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $self->{modes}   = {
-        'events' => 'apps::monitoring::loggly::restapi::mode::events',
-        'fields' => 'apps::monitoring::loggly::restapi::mode::fields'
+    $self->{modes} = {
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'interfaces'      => 'apps::trendmicro::iwsva::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
+        'load'            => 'snmp_standard::mode::loadaverage',
+        'memory'          => 'snmp_standard::mode::memory',
+        'storage'         => 'snmp_standard::mode::storage',
+        'swap'            => 'snmp_standard::mode::swap',
+        'tcpcon'          => 'snmp_standard::mode::tcpcon'
     };
 
-    $self->{custom_modes}->{api} = 'apps::monitoring::loggly::restapi::custom::api';
     return $self;
 }
 
@@ -45,10 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Loggly through its HTTPS remote API.
-
-=over 8
-
-=back
+Check TendMicro Iwsva equipments in SNMP.
 
 =cut
