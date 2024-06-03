@@ -1,7 +1,9 @@
 {
     "dependencies": [
+        "libjson-maybexs-perl",
         "libjson-perl",
         "libxml-xpath-perl",
+        "libxml-libxml-perl",
         "libxml-libxml-simple-perl"
     ]
 }
