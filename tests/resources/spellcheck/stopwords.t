@@ -56,8 +56,6 @@ in-ucast
 interface-dsl-name
 IpAddr
 Iwsva
-Kinesis
-httpcode-elb
 license-instances-usage-prct
 Loggly
 LUN
@@ -66,12 +64,6 @@ Mbps
 MIB
 NagVis
 Netscaler
-NumberOfBackupJobsCompleted
-NumberOfBackupJobsExpired
-NumberOfBackupJobsFailed
-NumberOfCopyJobsCompleted
-NumberOfCopyJobsFailed
-NumberOfRecoveryPointsExpired
 OID
 oneaccess-sys-mib
 OutgoingBytes 
@@ -94,7 +86,6 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
-total-ssl-connections
 uptime
 USD
 vdomain
