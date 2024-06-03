@@ -267,7 +267,7 @@ __END__
 
 =head1 MODE
 
-Check ewon tags.
+Check Ewon tags.
 
 =over 8
 

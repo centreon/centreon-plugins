@@ -111,7 +111,7 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 

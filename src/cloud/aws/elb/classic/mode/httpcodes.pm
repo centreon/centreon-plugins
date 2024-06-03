@@ -239,7 +239,7 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::aws::elb::classic::plugin --custommode=paws --mode=http-codes --region='eu-west-1'
 --type='loadbalancer' --name='elb-www-fr' --critical-httpcode-backend-4xx='10' --verbose
 
-See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more information.
 
 Default statistic: 'sum' / Most useful statistics: 'sum'.
 
