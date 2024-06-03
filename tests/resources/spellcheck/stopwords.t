@@ -42,7 +42,6 @@ ESSID
 essid
 eth
 fanspeed
-FORTIGATE
 Fortigate
 FORTINET
 Fortinet
