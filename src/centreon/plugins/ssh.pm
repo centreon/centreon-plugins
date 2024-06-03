@@ -68,7 +68,11 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{ssh_backend} = $options{option_results}->{ssh_backend};
-    $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : 22;
+    my $default_port = 22;
+    if (defined($options{default_ssh_port}) && $options{default_ssh_port} =~ /\d+/) {
+        $default_port = $options{default_ssh_port};
+    }
+    $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : $default_port;
     $self->{ssh_backend} = 'sshcli'
         if (!defined($options{option_results}->{ssh_backend}) || $options{option_results}->{ssh_backend} eq '');
     if (!defined($self->{'backend_' . $self->{ssh_backend}})) {
