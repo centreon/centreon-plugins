@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::isg::snmp::plugin;
+package network::juniper::ex::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
-        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
-        'interfaces'        => 'snmp_standard::mode::interfaces', 
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions'
+        'cpu'             => 'network::juniper::common::junos::snmp::mode::cpu',
+        'hardware'        => 'network::juniper::common::junos::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces', 
+        'memory'          => 'network::juniper::common::junos::snmp::mode::memory',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
+        'stack'           => 'network::juniper::common::junos::snmp::mode::stack',
+        'storage'         => 'snmp_standard::mode::storage'
     };
 
     return $self;
@@ -47,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check Juniper EX in SNMP.
 
 =cut

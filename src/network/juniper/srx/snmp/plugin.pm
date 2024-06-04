@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::isg::snmp::plugin;
+package network::juniper::srx::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,18 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
-        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
-        'interfaces'        => 'snmp_standard::mode::interfaces', 
+        'hardware'          => 'network::juniper::common::junos::snmp::mode::hardware',
+        'cpu'               => 'network::juniper::common::junos::snmp::mode::cpu',
+        'cpu-forwarding'    => 'network::juniper::common::junos::snmp::mode::cpuforwarding', # packet forwarding engine
+        'memory'            => 'network::juniper::common::junos::snmp::mode::memory',
+        'memory-forwarding' => 'network::juniper::common::junos::snmp::mode::memoryforwarding', # packet forwarding engine
+        'cp-sessions'       => 'network::juniper::common::junos::mode::snmp::cpsessions', # CP = 'central point'
+        'flow-sessions'     => 'network::juniper::common::junos::mode::snmp::flowsessions',
+        'interfaces'        => 'network::juniper::common::junos::mode::snmp::interfaces',
+        'ipsec-tunnel'      => 'network::juniper::common::junos::mode::snmp::ipsectunnel',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions'
+        'list-storages'     => 'snmp_standard::mode::liststorages',
+        'storage'           => 'snmp_standard::mode::storage'
     };
 
     return $self;
@@ -47,6 +53,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check Juniper SRX in SNMP.
 
 =cut
