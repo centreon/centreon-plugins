@@ -88,14 +88,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %results = $options{mqtt}->query(
-        topic => '$SYS/broker/clients/#'
+    my %results = $options{mqtt}->queries(
+        base_topic => '$SYS/broker/clients/',
+        topics     => ['connected', 'maximum', 'active', 'inactive']
     );
 
     for my $topic (keys %results) {
-        if ($topic =~ /^\$SYS\/broker\/clients\/(.+)$/) {
-            $self->{global}->{$1} = $results{$topic};
-        }
+        $self->{global}->{$topic} = $results{$topic};
     }
 }
 

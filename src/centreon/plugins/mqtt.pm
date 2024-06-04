@@ -77,22 +77,33 @@ sub query {
         my ($topic, $message)  = @_;
         $mqtt_received{$topic} = $message;
     });
-    my $old_messages_received = 0;
-    my $new_messages_received = 0;
-    while (($new_messages_received == 0 or ($new_messages_received > 0 and $old_messages_received < $new_messages_received)) and Time::HiRes::time() < $endtime) {
+    my $messages_received = 0;
+    while ($messages_received == 0 and Time::HiRes::time() < $endtime) {
         $self->{mqtt}->tick(5);
-        $old_messages_received = $new_messages_received;
-        $new_messages_received = scalar keys %mqtt_received;
+        $messages_received = scalar keys %mqtt_received;
     }
     eval {
         $self->{mqtt}->unsubscribe($options{topic});
     };
     if (%mqtt_received) {
-        return %mqtt_received;
+        return %mqtt_received{$options{topic}};
     } else {
         $self->{output}->add_option_msg(short_msg => 'No message in topic: ' . $options{topic});
         $self->{output}->option_exit();
     }
+}
+
+sub queries {
+    my ($self, %options) = @_;
+
+    $self->connect(%options);
+
+    my %mqtt_received;
+    foreach my $topic (@{$options{topics}}) {
+        my $result             = $self->query(topic => $options{base_topic} . $topic);
+        $mqtt_received{$topic} = $result;
+    }
+    return %mqtt_received;
 }
 
 sub check_options {

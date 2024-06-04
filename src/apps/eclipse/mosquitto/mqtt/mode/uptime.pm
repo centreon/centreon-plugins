@@ -44,6 +44,7 @@ sub custom_uptime_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
+        label    => 'uptime', unit => $self->{instance_mode}->{option_results}->{unit},
         nlabel   => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         value    => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -73,12 +74,13 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'uptime', set => {
-            key_values                     => [{ name => 'uptime' }],
-            closure_custom_output          => $self->can('custom_uptime_output'),
-            closure_custom_perfdata        => $self->can('custom_uptime_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_uptime_threshold')
-        }
+        { label => 'uptime',
+          set   => {
+              key_values                     => [{ name => 'uptime' }],
+              closure_custom_output          => $self->can('custom_uptime_output'),
+              closure_custom_perfdata        => $self->can('custom_uptime_perfdata'),
+              closure_custom_threshold_check => $self->can('custom_uptime_threshold')
+          }
         }
     ];
 }
@@ -107,11 +109,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $topic   = '$SYS/broker/uptime';
     my %results = $options{mqtt}->query(
-        topic => '$SYS/broker/uptime'
+        topic => $topic
     );
 
-    my $uptime = $results{'$SYS/broker/uptime'};
+    my $uptime = $results{$topic};
     if ($uptime =~ /^(\d+) seconds$/) {
         $uptime = $1;
     }
