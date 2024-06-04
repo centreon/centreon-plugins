@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::isg::snmp::plugin;
+package network::juniper::mag::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
-        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
-        'interfaces'        => 'snmp_standard::mode::interfaces', 
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions'
+        'blade-temperature'    => 'network::juniper::mag::snmp::mode::bladetemperature',
+        'cpu'                  => 'network::juniper::common::ive::snmp::mode::cpu',
+        'disk'                 => 'network::juniper::common::ive::snmp::mode::disk',
+        'interfaces'           => 'snmp_standard::mode::interfaces',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'logfile'              => 'network::juniper::common::ive::snmp::mode::logfile',
+        'users'                => 'network::juniper::common::ive::snmp::mode::users',
+        'memory'               => 'snmp_standard::mode::memory',
+        'swap'                 => 'snmp_standard::mode::swap'
     };
 
     return $self;
@@ -47,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check Juniper MAG in SNMP.
 
 =cut
