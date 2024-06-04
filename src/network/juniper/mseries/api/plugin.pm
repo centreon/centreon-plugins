@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'   => 'network::juniper::mseries::api::mode::cpu',
-    );
+    $self->{modes} = {
+        'cpu' => 'network::juniper::common::junos::api::mode::cpu'
+    };
 
     $self->{custom_modes}->{netconf} = 'network::juniper::common::junos::api::custom::netconf';
     return $self;
