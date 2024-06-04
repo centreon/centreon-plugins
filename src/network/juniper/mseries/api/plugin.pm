@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'cpu'        => 'network::juniper::common::junos::api::mode::cpu',
         'disks'      => 'network::juniper::common::junos::api::mode::disks',
+        'hardware'   => 'network::juniper::common::junos::api::mode::hardware',
         'list-disks' => 'network::juniper::common::junos::api::mode::listdisks'
     };
 

@@ -234,33 +234,54 @@ sub get_hardware_infos {
         '<rpc>
         <get-fan-information>
         </get-fan-information>
+    </rpc>',
+        '<rpc>
+        <get-fpc-information>
+        </get-fpc-information>
     </rpc>']);
 
-    use Data::Dumper; print Data::Dumper::Dumper($content);
-    exit(1);
+    my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [] };
+    my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => ['fan-information-rpm-item']);
 
-    my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    foreach (@{$result->{'fan-information-rpm-item'}}) {
+        push @{$results->{fan}}, {
+            name => $_->{name},
+            status => $_->{status},
+            rpm => $_->{rpm}
+        };
+    }
 
-    foreach (@{$result->{'route-engine'}}) {
-        push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            cpu_1min_avg => 100 - $_->{'cpu-idle1'},
-            cpu_5min_avg => 100 - $_->{'cpu-idle2'},
-            cpu_15min_avg => 100 - $_->{'cpu-idle3'}
+    $result = $self->load_xml(data => $content, start_tag => '<power-usage-information.*?>', end_tag => '</power-usage-information>', force_array => ['power-usage-item']);
+
+    foreach (@{$result->{'power-usage-item'}}) {
+        push @{$results->{psu}}, {
+            name => $_->{name},
+            status => $_->{state},
+            dc_output_load => $_->{'dc-output-detail'}->{'dc-load'}
+        };
+    }
+
+    $result = $self->load_xml(data => $content, start_tag => '<environment-information.*?>', end_tag => '</environment-information>', force_array => ['environment-item']);
+
+    foreach (@{$result->{'environment-item'}}) {
+        my $temperature = '';
+        if ($_->{class} eq 'Temp') {
+            $temperature = $_->{temperature}->{celsius};
+        }
+        push @{$results->{env}}, {
+            name => $_->{name},
+            status => $_->{status},
+            class => $_->{class},
+            temperature => $temperature
         };
     }
 
     $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => ['fpc']);
 
     foreach (@{$result->{fpc}}) {
-        next if (!defined($_->{'cpu-1min-avg'}));
-
-        push @$results, {
+        push @{$results->{fpc}}, {
             name => 'fpc slot ' . $_->{slot},
-            cpu_1min_avg => $_->{'cpu-1min-avg'},
-            cpu_5min_avg => $_->{'cpu-5min-avg'},
-            cpu_15min_avg => $_->{'cpu-15min-avg'}
+            status => $_->{state}
         };
     }
 
