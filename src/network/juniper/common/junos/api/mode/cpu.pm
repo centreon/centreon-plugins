@@ -25,48 +25,45 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_message_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' average usage: ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output', message_separator => ' ', skipped_code => { -10 => 1 } },
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_message_output', message_multiple => 'All CPU usages are ok' }
     ];
 
-    $self->{maps_counters}->{cpu_avg} = [
-        { label => 'average-5s', nlabel => 'cpu.utilization.5s.percentage', set => {
-                key_values => [ { name => 'average_5s' } ],
-                output_template => '%.2f %% (5s)',
-                perfdatas => [
-                    { label => 'total_cpu_5s_avg', value => 'average_5s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
+    $self->{maps_counters}->{cpu} = [
         { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'average_1m' } ],
+                key_values => [ { name => 'cpu_1min_avg' } ],
                 output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { label => 'total_cpu_1m_avg', value => 'average_1m', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
-                key_values => [ { name => 'average_5m' } ],
+                key_values => [ { name => 'cpu_5min_avg' } ],
                 output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { label => 'total_cpu_5m_avg', value => 'average_5m', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
+        { label => 'average-15m', nlabel => 'cpu.utilization.15m.percentage', set => {
+                key_values => [ { name => 'cpu_15min_avg' } ],
+                output_template => '%.2f %% (15m)',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
     ];
-}
-
-sub prefix_cpu_avg_output {
-    my ($self, %options) = @_;
-
-    return 'CPU(s) average usage is ';
 }
 
 sub new {
@@ -75,6 +72,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -83,22 +81,15 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($result) = $options{custom}->execute_command(commands => [
-        '<rpc>
-        <get-fpc-information>
-        </get-fpc-information>
-    </rpc>',
-        '<rpc>
-        <get-route-engine-information>
-        </get-route-engine-information>
-    </rpc>']);
+    my $result = $options{custom}->get_cpu_infos();
 
-    use Data::Dumper; print Data::Dumper::Dumper($result);
+    $self->{cpu} = {};
+    foreach (@$result) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter_name}/);
 
-    $self->{cpu_avg} = {};
-    $self->{cpu_avg}->{average_5s} = $1 if ($result =~ /^CPU utilization.*?five\s+seconds\s*:\s*(\d+)%/mi);
-    $self->{cpu_avg}->{average_1m} = $1 if ($result =~ /^CPU utilization.*?one\s+minute\s*:\s*(\d+)%/mi);
-    $self->{cpu_avg}->{average_5m} = $1 if ($result =~ /^CPU utilization.*?five\s+minutes\s*:\s*(\d+)%/mi);
+        $self->{cpu}->{ $_->{name} } = $_;
+    }
 }
 
 1;
@@ -111,10 +102,14 @@ Check CPU usage.
 
 =over 8
 
+=item B<--filter-name>
+
+Filter CPU by name.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'average-5s', 'average-1m', 'average-5m'.
+Can be: 'average-1m' (%), 'average-5m' (%), 'average-15m' (%).
 
 =back
 

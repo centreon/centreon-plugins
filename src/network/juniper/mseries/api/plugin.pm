@@ -30,7 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu' => 'network::juniper::common::junos::api::mode::cpu'
+        'cpu'        => 'network::juniper::common::junos::api::mode::cpu',
+        'disks'      => 'network::juniper::common::junos::api::mode::disks',
+        'list-disks' => 'network::juniper::common::junos::api::mode::listdisks'
     };
 
     $self->{custom_modes}->{netconf} = 'network::juniper::common::junos::api::custom::netconf';
