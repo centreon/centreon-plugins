@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'        => 'network::juniper::common::junos::api::mode::cpu',
-        'disks'      => 'network::juniper::common::junos::api::mode::disks',
-        'hardware'   => 'network::juniper::common::junos::api::mode::hardware',
-        'interfaces' => 'network::juniper::common::junos::api::mode::interfaces',
-        'list-disks' => 'network::juniper::common::junos::api::mode::listdisks',
-        'memory'     => 'network::juniper::common::junos::api::mode::memory'
+        'cpu'             => 'network::juniper::common::junos::api::mode::cpu',
+        'disks'           => 'network::juniper::common::junos::api::mode::disks',
+        'hardware'        => 'network::juniper::common::junos::api::mode::hardware',
+        'interfaces'      => 'network::juniper::common::junos::api::mode::interfaces',
+        'list-disks'      => 'network::juniper::common::junos::api::mode::listdisks',
+        'list-interfaces' => 'network::juniper::common::junos::api::mode::listinterfaces',
+        'memory'          => 'network::juniper::common::junos::api::mode::memory'
     };
 
     $self->{custom_modes}->{netconf} = 'network::juniper::common::junos::api::custom::netconf';

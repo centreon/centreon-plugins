@@ -90,6 +90,16 @@ sub check_options {
     return 0;
 }
 
+sub get_identifier {
+    my ($self, %options) = @_;
+
+    my $id = defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me';
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $id .= ':' . $self->{ssh}->get_port();
+    }
+    return $id;
+}
+
 sub load_xml {
     my ($self, %options) = @_;
 
