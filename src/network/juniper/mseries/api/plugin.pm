@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'bgp'             => 'network::juniper::common::junos::api::mode::bgp',
         'cpu'             => 'network::juniper::common::junos::api::mode::cpu',
         'disks'           => 'network::juniper::common::junos::api::mode::disks',
         'hardware'        => 'network::juniper::common::junos::api::mode::hardware',
