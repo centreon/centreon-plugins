@@ -88,6 +88,12 @@ sub get_port {
     return $self->{ssh_port};
 }
 
+sub get_ssh_backend {
+    my ($self, %options) = @_;
+
+    return $self->{ssh_backend};
+}
+
 sub execute {
     my ($self, %options) = @_;
 
