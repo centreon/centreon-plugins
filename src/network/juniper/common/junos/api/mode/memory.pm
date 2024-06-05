@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::cpu;
+package network::juniper::common::junos::api::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,36 +28,20 @@ use warnings;
 sub prefix_message_output {
     my ($self, %options) = @_;
 
-    return "CPU '" . $options{instance_value}->{name} . "' average usage: ";
+    return "Memory '" . $options{instance_value}->{name} . "' usage: ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_message_output', message_multiple => 'All CPU usages are ok' }
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_message_output', message_multiple => 'All memory usages are ok' }
     ];
 
-    $self->{maps_counters}->{cpu} = [
-        { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'cpu_1min_avg' } ],
-                output_template => '%.2f %% (1m)',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
-                key_values => [ { name => 'cpu_5min_avg' } ],
-                output_template => '%.2f %% (5m)',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'average-15m', nlabel => 'cpu.utilization.15m.percentage', set => {
-                key_values => [ { name => 'cpu_15min_avg' } ],
-                output_template => '%.2f %% (15m)',
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage-prct', nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'mem_used' } ],
+                output_template => '%.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
@@ -81,14 +65,14 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_cpu_infos();
+    my $result = $options{custom}->get_memory_infos();
 
-    $self->{cpu} = {};
+    $self->{memory} = {};
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{cpu}->{ $_->{name} } = $_;
+        $self->{memory}->{ $_->{name} } = $_;
     }
 }
 
@@ -98,18 +82,18 @@ __END__
 
 =head1 MODE
 
-Check CPU usage.
+Check memory usage.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter CPU by name.
+Filter memory by name.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'average-1m' (%), 'average-5m' (%), 'average-15m' (%).
+Can be: 'usage-prct' (%).
 
 =back
 
