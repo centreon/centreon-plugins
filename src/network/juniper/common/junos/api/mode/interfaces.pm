@@ -27,6 +27,12 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return 'status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
+}
+
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
@@ -55,7 +61,7 @@ sub custom_traffic_perfdata {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => sprintf('%.2f', $self->{result_values}->{traffic_per_seconds}),
+            value => sprintf('%d', $self->{result_values}->{traffic_per_seconds}),
             warning => $warning,
             critical => $critical,
             min => 0, max => $self->{result_values}->{speed}
@@ -91,8 +97,7 @@ sub custom_traffic_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) / 
-        (($options{new_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} - $options{old_datas}->{$self->{instance} . '_Timestamp_Sys100NS'}) / 
-        $options{new_datas}->{$self->{instance} . '_Frequency_Sys100NS'});
+        $options{delta_time};
     $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
 
     $self->{result_values}->{traffic_per_seconds} = sprintf('%d', $self->{result_values}->{traffic_per_seconds});
@@ -129,8 +134,20 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interfaces} = [
+         {
+            label => 'status',
+            filter => 'add_status',
+            type => 2,
+            critical_default => '%{admstatus} eq "up" and %{opstatus} ne "up"',
+            set => {
+                key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'in-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'Timestamp_Sys100NS' }, { name => 'Frequency_Sys100NS' }, { name => 'speed_in' }, { name => 'display' } ],
+                key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'traffic in: %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -138,7 +155,7 @@ sub set_counters {
             }
         },
         { label => 'out-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'Timestamp_Sys100NS' }, { name => 'Frequency_Sys100NS' }, { name => 'speed_out' }, { name => 'display' } ],
+                key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'traffic out: %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -154,6 +171,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-use:s'        => { name => 'filter_use' },
+        'display-use:s'       => { name => 'display_use' },
         'add-status'          => { name => 'add_status' },
         'add-traffic'         => { name => 'add_traffic' },
         'filter-interface:s'  => { name => 'filter_interface' },
@@ -161,7 +180,7 @@ sub new {
         'units-traffic:s'     => { name => 'units_traffic', default => 'percent_delta' },
         'speed:s'             => { name => 'speed' }
     });
-    
+
     return $self;
 }
 
@@ -169,10 +188,25 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    # If no options, we set add-traffic
+    # If no options, we set add-status
     if (!defined($self->{option_results}->{add_traffic}) &&
         !defined($self->{option_results}->{add_status})) {
         $self->{option_results}->{add_status} = 1;
+    }
+
+    if (!defined($self->{option_results}->{filter_use}) || $self->{option_results}->{filter_use} eq '') {
+        $self->{option_results}->{filter_use} = 'name';
+    }
+    if ($self->{option_results}->{filter_use} !~ /name|descr/) {
+        $self->{output}->add_option_msg(short_msg => "--filter-use must be 'name' or 'descr'");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{display_use}) || $self->{option_results}->{display_use} eq '') {
+        $self->{option_results}->{display_use} = 'name';
+    }
+    if ($self->{option_results}->{display_use} !~ /name|descr/) {
+        $self->{output}->add_option_msg(short_msg => "--display-use must be 'name' or 'descr'");
+        $self->{output}->option_exit();
     }
 
     if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
@@ -200,33 +234,25 @@ sub do_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->get_interface_infos();
-    use Data::Dumper; print Data::Dumper::Dumper($results);
-    exit(1);
-
-    exit(1);
 
     $self->{interfaces} = {};
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $_->{Name} !~ /$self->{option_results}->{filter_interface}/);
+            $_->{ $self->{option_results}->{filter_use} } !~ /$self->{option_results}->{filter_interface}/);
          next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
-            $_->{Name} =~ /$self->{option_results}->{exclude_interface}/);
+            $_->{ $self->{option_results}->{filter_use} } =~ /$self->{option_results}->{exclude_interface}/);
 
-        $self->{interfaces}->{ $_->{Name} } = {
-            display => $_->{Name},
-            speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{CurrentBandwidth},
-            speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{CurrentBandwidth},
-            in => $_->{BytesReceivedPersec} * 8,
-            out => $_->{BytesSentPersec} * 8,
-            indiscard => $_->{PacketsReceivedDiscarded},
-            inerror => $_->{PacketsReceivedErrors},
-            outdiscard => $_->{PacketsOutboundDiscarded},
-            outerror => $_->{PacketsOutboundErrors},
-            total_out_packets => $_->{PacketsSentPersec},
-            total_in_packets => $_->{PacketsReceivedPersec}
+        $self->{interfaces}->{ $_->{ $self->{option_results}->{display_use} } } = {
+            display => $_->{ $self->{option_results}->{display_use} },
+            speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
+            speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
+            opstatus => $_->{opstatus},
+            admstatus => $_->{admstatus},
+            in => $_->{in},
+            out => $_->{out}
         };
     }
-    
+
     if (scalar(keys %{$self->{interfaces}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();
@@ -237,7 +263,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->do_selection(custom => $options{custom});
-    $self->{cache_name} = 'windows_wsman_' . $options{wsman}->get_hostname() . '_' . $options{wsman}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
 }
@@ -252,26 +278,40 @@ Check interfaces.
 
 =over 8
 
+=item B<--add-status>
+
+Check interface status.
+
 =item B<--add-traffic>
 
 Check interface traffic.
 
-=item B<--add-errors>
+=item B<--warning-status>
 
-Check interface errors.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'in-traffic', 'out-traffic',
 
 =item B<--units-traffic>
 
 Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
-=item B<--units-errors>
+=item B<--filter-use>
 
-Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Define the value to be used to filter interfaces (default: name) (values: name, descr).
+
+=item B<--display-use>
+
+Define the value that will be used to name the interfaces (default: name) (values: name, descr).
 
 =item B<--filter-interface>
 
