@@ -288,6 +288,102 @@ sub get_hardware_infos {
     return $results;
 }
 
+sub get_interface_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-interface-information>
+                <detail/>
+        </get-interface-information>
+    </rpc>']);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<interface-information.*?>', end_tag => '</interface-information>', force_array => ['physical-interface', 'logical-interface']);
+
+    foreach (@{$result->{'physical-interface'}}) {
+        my $speed = centreon::plugins::misc::trim($_->{'speed'});
+        my ($speed_unit, $speed_value);
+        if ($speed =~ /^\s*([0-9]+)\s*([A-Za-z])/) {
+            ($speed_value, $speed_unit) = ($1, $2);
+        }
+        $speed = centreon::plugins::misc::scale_bytesbit(
+            value => $speed_value,
+            src_quantity => $speed_unit,
+            dst_quantity => '',
+            src_unit => 'b',
+            dst_unit => 'b'
+        );
+
+        my $descr = centreon::plugins::misc::trim($_->{'description'});
+        my $name = centreon::plugins::misc::trim($_->{'name'});
+
+        push @$results, {
+            descr => defined($descr) && $descr ne '' ? $descr : $name,
+            name => $name,
+            opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
+            admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
+            in => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
+            out => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
+            speed => $speed
+        };
+
+        foreach my $logint (@{$_->{'logical-interface'}}) {
+            push @$results, {
+                descr => centreon::plugins::misc::trim($logint->{'name'}),
+                name => centreon::plugins::misc::trim($logint->{'name'}),
+                opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
+                admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
+                in => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'input-bytes'}) * 8,
+                out => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'output-bytes'}) * 8,
+                speed => $speed
+            };
+        }
+    }
+
+    return $results;
+}
+
+sub get_memory_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-fpc-information>
+        </get-fpc-information>
+    </rpc>',
+        '<rpc>
+        <get-route-engine-information>
+        </get-route-engine-information>
+    </rpc>']);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+
+    foreach (@{$result->{'route-engine'}}) {
+        push @$results, {
+            name => 'route engine slot ' . $_->{slot},
+            mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => ['fpc']);
+
+    foreach (@{$result->{fpc}}) {
+        next if (!defined($_->{'memory-heap-utilization'}));
+
+        push @$results, {
+            name => 'fpc slot ' . $_->{slot} . ' heap',
+            mem_used => $_->{'memory-heap-utilization'}
+        }, {
+           name => 'fpc slot ' . $_->{slot} . ' buffer',
+           mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    return $results;
+}
+
 1;
 
 __END__
