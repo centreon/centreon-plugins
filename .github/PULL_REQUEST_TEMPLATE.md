@@ -24,7 +24,7 @@ Any **relevant details** of the configuration to perform the test should be adde
 To integrate this pull request into our core we need to add some **automated tests** to check the proper 
 functioning of this PR. Ideally we need the following informations:
 * **SNMP**: MIB files and full snmpwalk of enterprise branch (`snmpwalk -ObentU -v 2c -c public address .1.3.6.1.4.1 > equipment.snmpwalk`) or [SNMP collections](https://thewatch.centreon.com/product-how-to-21/snmp-collection-tutorial-132).
-* **HTTP API (SOAP, Rest/Json, XML-RPC)**: the documentation and some curl examples or HTTP [collections](https://thewatch.centreon.com/data-collection-6/centreon-plugins-discover-collection-modes-131).
+* **HTTP API (SOAP, Rest/Json, XML-RPC)**: the documentation and some curl examples (command with -v + output) or HTTP [collections](https://thewatch.centreon.com/data-collection-6/centreon-plugins-discover-collection-modes-131).
 * **CLI**: command line examples (command + result).
 * **SQL**: queries + results + column types or [SQL collections](https://thewatch.centreon.com/product-how-to-21/sql-collection-tutorial-134).
 * **JMX**: mbean names and attributes.
