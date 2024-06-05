@@ -394,6 +394,112 @@ sub get_memory_infos {
     return $results;
 }
 
+sub get_bgp_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-bgp-neighbor-information>
+        </get-bgp-neighbor-information>
+    </rpc>']);
+
+    use Data::Dumper; print Data::Dumper::Dumper($content);
+    exit(1);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+
+    foreach (@{$result->{'route-engine'}}) {
+        push @$results, {
+            name => 'route engine slot ' . $_->{slot},
+            mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    return $results;
+}
+
+sub get_ldp_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-ldp-session-information>
+                <detail/>
+        </get-ldp-session-information>
+    </rpc>',
+        '<rpc>
+        <get-ldp-traffic-statistics-information>
+        </get-ldp-traffic-statistics-information>
+    </rpc>']);
+
+    use Data::Dumper; print Data::Dumper::Dumper($content);
+    exit(1);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+
+    foreach (@{$result->{'route-engine'}}) {
+        push @$results, {
+            name => 'route engine slot ' . $_->{slot},
+            mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    return $results;
+}
+
+sub get_lsp_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-mpls-lsp-information>
+                <detail/>
+        </get-mpls-lsp-information>
+    </rpc>']);
+
+    use Data::Dumper; print Data::Dumper::Dumper($content);
+    exit(1);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+
+    foreach (@{$result->{'route-engine'}}) {
+        push @$results, {
+            name => 'route engine slot ' . $_->{slot},
+            mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    return $results;
+}
+
+sub get_rsvp_infos {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [
+        '<rpc>
+        <get-rsvp-session-information>
+        </get-rsvp-session-information>
+    </rpc>']);
+
+    use Data::Dumper; print Data::Dumper::Dumper($content);
+    exit(1);
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+
+    foreach (@{$result->{'route-engine'}}) {
+        push @$results, {
+            name => 'route engine slot ' . $_->{slot},
+            mem_used => $_->{'memory-buffer-utilization'}
+        };
+    }
+
+    return $results;
+}
+
 1;
 
 __END__
