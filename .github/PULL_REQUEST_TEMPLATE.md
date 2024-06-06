@@ -13,6 +13,7 @@ If you are fixing a github Issue already existing, mention it here.
 
 - [ ] Patch fixing an issue (non-breaking change)
 - [ ] New functionality (non-breaking change)
+- [ ] Functionality enhancement or optimization (non-breaking change)
 - [ ] Breaking change (patch or feature) that might cause side effects breaking part of the Software
 
 ## How this pull request can be tested ?
@@ -58,6 +59,7 @@ If you are fixing one or more JIRA ticket, mention it here too.
 
 - [ ] Patch fixing an issue (non-breaking change)
 - [ ] New functionality (non-breaking change)
+- [ ] Functionality enhancement or optimization (non-breaking change)
 - [ ] Breaking change (patch or feature) that might cause side effects breaking part of the Software
 
 ## How this pull request can be tested ?
