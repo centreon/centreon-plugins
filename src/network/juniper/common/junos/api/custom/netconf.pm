@@ -25,6 +25,7 @@ use warnings;
 use centreon::plugins::ssh;
 use centreon::plugins::misc;
 use XML::LibXML::Simple;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -46,13 +47,15 @@ sub new {
             'timeout:s'         => { name => 'timeout', default => 45 },
             'command:s'         => { name => 'command' },
             'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options' }
+            'command-options:s' => { name => 'command_options' },
+            'cache-use'         => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SSH OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{ssh} = centreon::plugins::ssh->new(%options);
+    $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -86,6 +89,8 @@ sub check_options {
         command_options => $self->{option_results}->{command_options},
         command_path => $self->{option_results}->{command_path}
     );
+
+     $self->{cache}->check_options(option_results => $self->{option_results}, default_format => 'json');
 
     return 0;
 }
@@ -161,18 +166,112 @@ sub execute_command {
     return $content;
 }
 
+my $commands = {
+    'show chassis routing-engine' => '<rpc><get-route-engine-information></get-route-engine-information></rpc>',
+    'show chassis fpc' => '<rpc><get-fpc-information></get-fpc-information></rpc>',
+    'show system storage detail' => '<rpc><get-system-storage><detail/></get-system-storage></rpc>',
+    'show chassis environment' => '<rpc><get-environment-information></get-environment-information></rpc>',
+    'show chassis power' => '<rpc><get-power-usage-information></get-power-usage-information></rpc>',
+    'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
+    'show interfaces detail' => '<rpc><get-interface-information><detail/></get-interface-information></rpc>',
+    'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
+    'show ldp session detail' => '<rpc><get-ldp-session-information><detail/></get-ldp-session-information></rpc>',
+    'show ldp traffic-statistics' => '<rpc><get-ldp-traffic-statistics-information></get-ldp-traffic-statistics-information></rpc>',
+    'show mpls lsp detail' => '<rpc><get-mpls-lsp-information><detail/></get-mpls-lsp-information></rpc>',
+    'show rsvp session' => '<rpc><get-rsvp-session-information></get-rsvp-session-information></rpc>'
+};
+
+sub get_rpc_commands {
+    my ($self, %options) = @_;
+
+    my $rpc_commands = {};
+    foreach my $command (@{$options{commands}}) {
+        next if ($command eq '' || $command !~ /([a-z]+)/);
+        my $label = $1;
+        if ($label eq 'cpu') {
+            $rpc_commands->{'show chassis routing-engine'} = $commands->{'show chassis routing-engine'};
+            $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
+        } elsif ($label eq 'disk') {
+            $rpc_commands->{'show system storage detail'} = $commands->{'show system storage detail'};
+        } elsif ($label eq 'hardware') {
+            $rpc_commands->{'show chassis environment'} = $commands->{'show chassis environment'};
+            $rpc_commands->{'show chassis power'} = $commands->{'show chassis power'};
+            $rpc_commands->{'show chassis fan'} = $commands->{'show chassis fan'};
+            $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
+        } elsif ($label eq 'interface') {
+            $rpc_commands->{'show interfaces detail'} = $commands->{'show interfaces detail'};
+        } elsif ($label eq 'memory') {
+            $rpc_commands->{'show chassis routing-engine'} = $commands->{'show chassis routing-engine'};
+            $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
+        } elsif ($label eq 'bgp') {
+            $rpc_commands->{'show bgp neighbor'} = $commands->{'show bgp neighbor'};
+        } elsif ($label eq 'ldp') {
+            $rpc_commands->{'show ldp session detail'} = $commands->{'show ldp session detail'};
+            $rpc_commands->{'show ldp traffic-statistics'} = $commands->{'show ldp traffic-statistics'};
+        } elsif ($label eq 'lsp') {
+            $rpc_commands->{'show mpls lsp detail'} = $commands->{'show mpls lsp detail'};
+        } elsif ($label eq 'rsvp') {
+            $rpc_commands->{'show rsvp session'} = $commands->{'show rsvp session'};
+        } else {
+            $self->{output}->add_option_msg(short_msg => "unsupported command: $command");
+            $self->{output}->option_exit();
+        }
+    }
+
+    return [values(%$rpc_commands)];
+}
+
+sub get_cache_file_response_command {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_juniper_api_' . $self->get_identifier());
+    my $response = $self->{cache}->get(name => 'response');
+    if (!defined($response)) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->option_exit();
+    }
+    if (!defined($response->{ $options{command} })) {
+        $self->{output}->add_option_msg(short_msg => "Command '$options{command} missing in cache file");
+        $self->{output}->option_exit();
+    }
+
+    return $response->{ $options{command }};
+}
+
+sub cache_commands {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => $self->get_rpc_commands(commands => $options{commands}));
+    my $response = {};
+    foreach my $command (@{$options{commands}}) {
+        next if ($command eq '' || $command !~ /([a-z]+)/);
+        my $label = $1;
+        my $method = $self->can('get_' . $label . '_infos');
+        if ($method) {
+            my $result = $self->$method(content => $content);
+            $response->{$label} = $result;
+        }
+    }
+
+
+    $self->{cache}->read(statefile => 'cache_juniper_api_' . $self->get_identifier());
+    $self->{cache}->write(data => {
+        update_time => time(),
+        response => $response
+    });
+}
+
 sub get_cpu_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-fpc-information>
-        </get-fpc-information>
-    </rpc>',
-        '<rpc>
-        <get-route-engine-information>
-        </get-route-engine-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'cpu');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['cpu']));
+    }
 
     my $results = [];
     my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
@@ -205,12 +304,14 @@ sub get_cpu_infos {
 sub get_disk_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-system-storage>
-                <detail/>
-        </get-system-storage>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'disk');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['disk']));
+    }
 
     my $results = [];
     my $result = $self->load_xml(data => $content, start_tag => '<system-storage-information.*?>', end_tag => '</system-storage-information>', force_array => ['filesystem']);
@@ -232,23 +333,14 @@ sub get_disk_infos {
 sub get_hardware_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-environment-information>
-        </get-environment-information>
-    </rpc>',
-        '<rpc>
-        <get-power-usage-information>
-        </get-power-usage-information>
-    </rpc>',
-        '<rpc>
-        <get-fan-information>
-        </get-fan-information>
-    </rpc>',
-        '<rpc>
-        <get-fpc-information>
-        </get-fpc-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'hardware');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['hardware']));
+    }
 
     my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [] };
     my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => ['fan-information-rpm-item']);
@@ -301,12 +393,14 @@ sub get_hardware_infos {
 sub get_interface_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-interface-information>
-                <detail/>
-        </get-interface-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'interface');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['interface']));
+    }
 
     my $results = [];
     my $result = $self->load_xml(data => $content, start_tag => '<interface-information.*?>', end_tag => '</interface-information>', force_array => ['physical-interface', 'logical-interface']);
@@ -357,15 +451,14 @@ sub get_interface_infos {
 sub get_memory_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-fpc-information>
-        </get-fpc-information>
-    </rpc>',
-        '<rpc>
-        <get-route-engine-information>
-        </get-route-engine-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'memory');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['memory']));
+    }
 
     my $results = [];
     my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
@@ -397,11 +490,14 @@ sub get_memory_infos {
 sub get_bgp_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-bgp-neighbor-information>
-        </get-bgp-neighbor-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'bgp');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['bgp']));
+    }
 
     use Data::Dumper; print Data::Dumper::Dumper($content);
     exit(1);
@@ -422,16 +518,14 @@ sub get_bgp_infos {
 sub get_ldp_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-ldp-session-information>
-                <detail/>
-        </get-ldp-session-information>
-    </rpc>',
-        '<rpc>
-        <get-ldp-traffic-statistics-information>
-        </get-ldp-traffic-statistics-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'ldp');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['ldp']));
+    }
 
     use Data::Dumper; print Data::Dumper::Dumper($content);
     exit(1);
@@ -452,12 +546,14 @@ sub get_ldp_infos {
 sub get_lsp_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-mpls-lsp-information>
-                <detail/>
-        </get-mpls-lsp-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'lsp');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['lsp']));
+    }
 
     use Data::Dumper; print Data::Dumper::Dumper($content);
     exit(1);
@@ -478,11 +574,14 @@ sub get_lsp_infos {
 sub get_rsvp_infos {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [
-        '<rpc>
-        <get-rsvp-session-information>
-        </get-rsvp-session-information>
-    </rpc>']);
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'rsvp');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['rsvp']));
+    }
 
     use Data::Dumper; print Data::Dumper::Dumper($content);
     exit(1);
@@ -535,6 +634,10 @@ Command path.
 =item B<--command-options>
 
 Command options.
+
+=item B<--cache-use>
+
+Use the cache file (created with cache mode).
 
 =back
 
