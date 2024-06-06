@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::eclipse::mosquitto::mqtt::mode::clients;
+package apps::eclipse::mosquitto::mqtt::mode::messages;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -36,15 +36,15 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [];
-    for my $label (('connected', 'maximum', 'active', 'inactive')) {
+    for my $label (('stored', 'received', 'sent')) {
         push @{$self->{maps_counters}->{global}},
-             { label  => 'clients.' . $label,
-               nlabel => 'clients.' . $label . '.count',
+             { label  => 'messages.' . $label,
+               nlabel => 'messages.' . $label . '.count',
                set    => {
                    key_values      => [{ name => $label }],
-                   output_template => ucfirst($label) . ' clients: %d',
+                   output_template => ucfirst($label) . ' messages: %d',
                    perfdatas       => [
-                       { label => $label . '_clients', template => '%d',
+                       { label => $label . '_messages', template => '%d',
                          min   => 0 }
                    ]
                }
@@ -66,10 +66,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %results = $options{mqtt}->queries(
-        base_topic => '$SYS/broker/clients/',
-        topics     => ['connected', 'maximum', 'active', 'inactive']
+        base_topic => '$SYS/broker/messages/',
+        topics     => ['stored', 'received', 'sent']
     );
-
     for my $topic (keys %results) {
         $self->{global}->{$topic} = $results{$topic};
     }
@@ -81,14 +80,14 @@ __END__
 
 =head1 MODE
 
-Check clients statistics.
+Check messages statistics.
 
 =over 8
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'clients.connected', 'clients.max', 'clients.active', 'clients.inactive'.
+Can be: 'messages.stored', 'messages.received', 'messages.sent'.
 
 =back
 

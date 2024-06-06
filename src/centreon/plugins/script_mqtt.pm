@@ -151,7 +151,7 @@ sub run {
         $self->{output}->display_disco_format();
         $self->{output}->exit(exit_litteral => 'ok');
     }
-    $self->{mqtt}->connect();
+    $self->{mqtt}->set_mqtt_options();
     if ($self->{output}->is_disco_show()) {
         $self->{mode}->disco_show(snmp => $self->{snmp});
         $self->{output}->display_disco_show();

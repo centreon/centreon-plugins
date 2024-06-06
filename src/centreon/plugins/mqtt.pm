@@ -46,11 +46,34 @@ sub new {
     }
 
     $self->{output} = $options{output};
+    $self->{connection_set} = 0;
     return $self;
 }
 
-sub connect {
+sub check_options {
     my ($self, %options) = @_;
+
+    if (!defined($options{option_results}->{host})) {
+        $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
+        $self->{output}->option_exit();
+    }
+    $self->{mqtt_host}            = $options{option_results}->{host};
+    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
+    $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
+    $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
+    $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
+    $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
+    $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
+    $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
+}
+
+# Prepare the MQTT connection
+sub set_mqtt_options {
+    my ($self, %options) = @_;
+
+    if ($self->{connection_set} == 1) {
+        return;
+    }
 
     if (defined($self->{mqtt_ca_certificate}) && defined($self->{mqtt_ssl_certificate}) && defined($self->{mqtt_ssl_key})) {
         $self->{mqtt} = Net::MQTT::Simple::SSL->new($self->{mqtt_host}, {
@@ -63,12 +86,17 @@ sub connect {
         $self->{mqtt} = Net::MQTT::Simple->new($self->{mqtt_host} . ':' . $self->{mqtt_port});
     }
     $self->{mqtt}->login($self->{mqtt_username}, $self->{mqtt_password}) if (defined($self->{mqtt_username}) && defined($self->{mqtt_password}));
+
+    $self->{connection_set} = 1;
 }
 
+# Query a single topic
+# Returns the message
+# If no message is received, the script will exit with a message indicating that no message was received in the topic
 sub query {
     my ($self, %options) = @_;
 
-    $self->connect(%options);
+    $self->set_mqtt_options(%options);
 
     my %mqtt_received;
     my $starttime = Time::HiRes::time();
@@ -93,34 +121,20 @@ sub query {
     }
 }
 
+# Query multiple topics
+# Returns a hash with the topics as keys and the messages as values
 sub queries {
     my ($self, %options) = @_;
 
-    $self->connect(%options);
+    $self->set_mqtt_options(%options);
 
     my %mqtt_received;
     foreach my $topic (@{$options{topics}}) {
-        my $result             = $self->query(topic => $options{base_topic} . $topic);
+        my $topic_for_query    = defined($options{base_topic}) ? $options{base_topic} . $topic : $topic;
+        my $result             = $self->query(topic => $topic_for_query);
         $mqtt_received{$topic} = $result;
     }
     return %mqtt_received;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-
-    if (!defined($options{option_results}->{host})) {
-        $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
-        $self->{output}->option_exit();
-    }
-    $self->{mqtt_host}            = $options{option_results}->{host};
-    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
-    $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
-    $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
-    $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
-    $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
-    $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
-    $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
 }
 
 1;
