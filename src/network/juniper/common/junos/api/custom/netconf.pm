@@ -178,7 +178,7 @@ my $commands = {
     'show ldp session detail' => '<rpc><get-ldp-session-information><detail/></get-ldp-session-information></rpc>',
     'show ldp traffic-statistics' => '<rpc><get-ldp-traffic-statistics-information></get-ldp-traffic-statistics-information></rpc>',
     'show mpls lsp detail' => '<rpc><get-mpls-lsp-information><detail/></get-mpls-lsp-information></rpc>',
-    'show rsvp session' => '<rpc><get-rsvp-session-information></get-rsvp-session-information></rpc>'
+    'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>'
 };
 
 sub get_rpc_commands {
@@ -211,7 +211,7 @@ sub get_rpc_commands {
         } elsif ($label eq 'lsp') {
             $rpc_commands->{'show mpls lsp detail'} = $commands->{'show mpls lsp detail'};
         } elsif ($label eq 'rsvp') {
-            $rpc_commands->{'show rsvp session'} = $commands->{'show rsvp session'};
+            $rpc_commands->{'show rsvp session statistics'} = $commands->{'show rsvp session statistics'};
         } else {
             $self->{output}->add_option_msg(short_msg => "unsupported command: $command");
             $self->{output}->option_exit();
@@ -583,17 +583,25 @@ sub get_rsvp_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['rsvp']));
     }
 
-    use Data::Dumper; print Data::Dumper::Dumper($content);
-    exit(1);
+    my $result = $self->load_xml(data => $content, start_tag => '<rsvp-session-information.*?>', end_tag => '</rsvp-session-information>', force_array => ['rsvp-session-data', 'rsvp-session']);
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    foreach my $item (@{$result->{'rsvp-session-data'}}) {
+        foreach (@{$item->{'rsvp-session'}}) {
+            my $bytes = 0;
+            if ($_->{'lsp-bytes'} =~ /([0-9]+)/) {
+                $bytes = $1;
+            }
 
-    foreach (@{$result->{'route-engine'}}) {
-        push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            mem_used => $_->{'memory-buffer-utilization'}
-        };
+            push @$results, {
+                type => $item->{'session-type'},
+                name => $_->{name},
+                srcAddress => $_->{'source-address'},
+                dstAddress => $_->{'destination-address'},
+                lspState => $_->{'lsp-state'},
+                lspBytes => $bytes
+            };
+        }
     }
 
     return $results;

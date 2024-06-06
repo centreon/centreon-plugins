@@ -38,7 +38,9 @@ sub new {
         'interfaces'      => 'network::juniper::common::junos::api::mode::interfaces',
         'list-disks'      => 'network::juniper::common::junos::api::mode::listdisks',
         'list-interfaces' => 'network::juniper::common::junos::api::mode::listinterfaces',
-        'memory'          => 'network::juniper::common::junos::api::mode::memory'
+        'list-rsvp'       => 'network::juniper::common::junos::api::mode::listrsvp',
+        'memory'          => 'network::juniper::common::junos::api::mode::memory',
+        'rsvp'            => 'network::juniper::common::junos::api::mode::rsvp'
     };
 
     $self->{custom_modes}->{netconf} = 'network::juniper::common::junos::api::custom::netconf';
