@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::rsvp;
+package network::juniper::common::junos::api::mode::lsp;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
-sub custom_rsvp_perfdata {
+sub custom_lsp_perfdata {
     my ($self) = @_;
 
     my $instances = [];
@@ -45,20 +45,33 @@ sub custom_rsvp_perfdata {
     );
 }
 
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'lsp state: %s',
+        'state: %s',
         $self->{result_values}->{lspState}
     );
 }
 
-sub prefix_rsvp_output {
+sub lsp_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "RSVP session '%s' [type: %s, srcAddress: %s, dstAddress: %s] ",
+        "checking LSP session '%s' [type: %s, srcAddress: %s, dstAddress: %s]",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type},
+        $options{instance_value}->{srcAddress},
+        $options{instance_value}->{dstAddress}
+    );
+}
+
+sub prefix_lsp_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "LSP session '%s' [type: %s, srcAddress: %s, dstAddress: %s] ",
         $options{instance_value}->{name},
         $options{instance_value}->{type},
         $options{instance_value}->{srcAddress},
@@ -69,7 +82,7 @@ sub prefix_rsvp_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of RSVP sessions ';
+    return 'Number of LSP sessions ';
 }
 
 sub set_counters {
@@ -77,11 +90,17 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'rsvp', type => 1, cb_prefix_output => 'prefix_rsvp_output', message_multiple => 'All RSVP sessions are ok' }
+        { name => 'lsp', type => 3, cb_prefix_output => 'prefix_lsp_output', cb_long_output => 'lsp_long_output',
+          indent_long_output => '    ', message_multiple => 'All LSP sessions are ok',
+            group => [
+                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'traffic', type => 0, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'rsvp-sessions-detected', display_ok => 0, nlabel => 'rsvp.sessions.detected.count', set => {
+        { label => 'lsp-sessions-detected', display_ok => 0, nlabel => 'lsp.sessions.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [
@@ -91,7 +110,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{rsvp} = [
+    $self->{maps_counters}->{status} = [
         {
             label => 'status',
             type => 2,
@@ -105,12 +124,15 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
-        { label => 'rsvp-session-lsp-traffic', nlabel => 'rsvp.session.lsp.traffic.bytespersecond', set => {
+        }
+    ];
+
+    $self->{maps_counters}->{traffic} = [
+        { label => 'lsp-session-traffic', nlabel => 'lsp.session.traffic.bytespersecond', set => {
                 key_values => [ { name => 'lspBytes', per_second => 1 }, { name => 'type' }, { name => 'name' }, { name => 'srcAddress' }, { name => 'dstAddress' } ],
                 output_template => 'traffic: %s %s/s',
                 output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_rsvp_perfdata')
+                closure_custom_perfdata => $self->can('custom_lsp_perfdata')
             }
         }
     ];
@@ -122,8 +144,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s'               => { name => 'filter_name' },
         'filter-type:s'               => { name => 'filter_type' },
+        'filter-name:s'               => { name => 'filter_name' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
@@ -148,17 +170,36 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_rsvp_infos();
+    my $result = $options{custom}->get_lsp_infos();
 
     $self->{global} = { detected => 0 };
-    $self->{rsvp} = {};
-    foreach (@$result) {
+    $self->{lsp} = {};
+    foreach my $item (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_name}/);
+            $item->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $_->{type} !~ /$self->{option_results}->{filter_type}/);
+            $item->{type} !~ /$self->{option_results}->{filter_type}/);
 
-        $self->{rsvp}->{ $_->{type} . '-' . $_->{name} } = $_;
+        $self->{lsp}->{ $item->{type} . '-' . $item->{name} } = {
+            type => $item->{type},
+            name => $item->{name},
+            srcAddress => $item->{srcAddress},
+            dstAddress => $item->{dstAddress},
+            status => {
+                type => $item->{type},
+                name => $item->{name},
+                srcAddress => $item->{srcAddress},
+                dstAddress => $item->{dstAddress},
+                lspState => $item->{lspState}
+            },
+            traffic => {
+                type => $item->{type},
+                name => $item->{name},
+                srcAddress => $item->{srcAddress},
+                dstAddress => $item->{dstAddress},
+                lspBytes => $item->{lspBytes}
+            }
+        };
         $self->{global}->{detected}++;
     }
 
@@ -176,17 +217,17 @@ __END__
 
 =head1 MODE
 
-Check RSVP sessions.
+Check LSP (Label Switched Path) sessions.
 
 =over 8
 
-=item B<--filter-name>
-
-Filter RSVP session by name.
-
 =item B<--filter-type>
 
-Filter RSVP session by type.
+Filter LSP session by type.
+
+=item B<--filter-name>
+
+Filter LSP session by name.
 
 =item B<--custom-perfdata-instances>
 
@@ -210,7 +251,7 @@ You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddre
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'rsvp-sessions-detected', 'rsvp-session-lsp-traffic'.
+Can be: 'lsp-sessions-detected', 'lsp-session-traffic'.
 
 =back
 

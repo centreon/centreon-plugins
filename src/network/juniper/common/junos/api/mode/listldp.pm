@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::listrsvp;
+package network::juniper::common::junos::api::mode::listldp;
 
 use base qw(centreon::plugins::mode);
 
@@ -26,11 +26,10 @@ use strict;
 use warnings;
 
 my @labels = (
-    'type',
-    'name',
-    'srcAddress',
-    'dstAddress',
-    'lspState'
+    'id',
+    'remoteAddress',
+    'sessionState',
+    'connectionState'
 );
 
 sub new {
@@ -51,16 +50,15 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $rsvp = $options{custom}->get_rsvp_infos();
+    my $ldp = $options{custom}->get_ldp_infos();
 
     my $results = {};
-    foreach (@$rsvp) {
-        $results->{ $_->{name} } = {
-            type => $_->{type},
-            name => $_->{name},
-            srcAddress => $_->{srcAddress},
-            dstAddress => $_->{dstAddress},
-            lspState => $_->{lspState}
+    foreach (@$ldp) {
+        $results->{ $_->{id} } = {
+            id => $_->{id},
+            remoteAddress => $_->{remoteAddress},
+            sessionState => $_->{sessionState},
+            connectionState => $_->{connectionState}
         };
     }
 
@@ -79,7 +77,7 @@ sub run {
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List RSVP sessions:'
+        short_msg => 'List LDP sessions:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -108,7 +106,7 @@ __END__
 
 =head1 MODE
 
-List RSVP sessions.
+List LDP sessions.
 
 =over 8
 

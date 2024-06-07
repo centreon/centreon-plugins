@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::listrsvp;
+package network::juniper::common::junos::api::mode::listlsp;
 
 use base qw(centreon::plugins::mode);
 
@@ -51,10 +51,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $rsvp = $options{custom}->get_rsvp_infos();
+    my $lsp = $options{custom}->get_lsp_infos();
 
     my $results = {};
-    foreach (@$rsvp) {
+    foreach (@$lsp) {
         $results->{ $_->{name} } = {
             type => $_->{type},
             name => $_->{name},
@@ -79,7 +79,7 @@ sub run {
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List RSVP sessions:'
+        short_msg => 'List LSP sessions:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-List RSVP sessions.
+List LSP sessions.
 
 =over 8
 

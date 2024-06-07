@@ -36,8 +36,12 @@ sub new {
         'disks'           => 'network::juniper::common::junos::api::mode::disks',
         'hardware'        => 'network::juniper::common::junos::api::mode::hardware',
         'interfaces'      => 'network::juniper::common::junos::api::mode::interfaces',
+        'ldp'             => 'network::juniper::common::junos::api::mode::ldp',
+        'lsp'             => 'network::juniper::common::junos::api::mode::lsp',
         'list-disks'      => 'network::juniper::common::junos::api::mode::listdisks',
         'list-interfaces' => 'network::juniper::common::junos::api::mode::listinterfaces',
+        'list-ldp'        => 'network::juniper::common::junos::api::mode::listldp',
+        'list-lsp'        => 'network::juniper::common::junos::api::mode::listlsp',
         'list-rsvp'       => 'network::juniper::common::junos::api::mode::listrsvp',
         'memory'          => 'network::juniper::common::junos::api::mode::memory',
         'rsvp'            => 'network::juniper::common::junos::api::mode::rsvp'
