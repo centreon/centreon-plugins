@@ -1,5 +1,6 @@
 --add-sysdesc
 --api-password
+--critical-bytesallocatedpercentage
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -13,6 +14,7 @@
 --oid-display
 --oid-extra-display
 --oid-filter
+--warning-bytesallocatedpercentage
 2c
 ADSL
 Avigilon
