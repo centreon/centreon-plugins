@@ -84,7 +84,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $data = $options{custom}->request_api(
-        url_path => '/RestService/rest.svc/1.0/performances/' . $self->{option_results}->{pool_id},
+        url_path => '/RestService/rest.svc/1.0/performance/' . $self->{option_results}->{pool_id},
     );
     if (defined($data->[1])) {
         $self->{output}->add_option_msg(short_msg => 'multiples pools found in api response, only one is expected. Please check pool_id and datacore versions.');
