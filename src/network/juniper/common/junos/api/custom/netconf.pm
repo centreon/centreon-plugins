@@ -175,9 +175,8 @@ my $commands = {
     'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
     'show interfaces detail' => '<rpc><get-interface-information><detail/></get-interface-information></rpc>',
     'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
-    'show ldp session detail' => '<rpc><get-ldp-session-information><detail/></get-ldp-session-information></rpc>',
-    'show ldp traffic-statistics' => '<rpc><get-ldp-traffic-statistics-information></get-ldp-traffic-statistics-information></rpc>',
-    'show mpls lsp detail' => '<rpc><get-mpls-lsp-information><detail/></get-mpls-lsp-information></rpc>',
+    'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
+    'show mpls lsp' => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
     'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>'
 };
 
@@ -206,10 +205,9 @@ sub get_rpc_commands {
         } elsif ($label eq 'bgp') {
             $rpc_commands->{'show bgp neighbor'} = $commands->{'show bgp neighbor'};
         } elsif ($label eq 'ldp') {
-            $rpc_commands->{'show ldp session detail'} = $commands->{'show ldp session detail'};
-            $rpc_commands->{'show ldp traffic-statistics'} = $commands->{'show ldp traffic-statistics'};
+            $rpc_commands->{'show ldp session extensive'} = $commands->{'show ldp session extensive'};
         } elsif ($label eq 'lsp') {
-            $rpc_commands->{'show mpls lsp detail'} = $commands->{'show mpls lsp detail'};
+            $rpc_commands->{'show mpls lsp'} = $commands->{'show mpls lsp'};
         } elsif ($label eq 'rsvp') {
             $rpc_commands->{'show rsvp session statistics'} = $commands->{'show rsvp session statistics'};
         } else {
@@ -499,11 +497,11 @@ sub get_bgp_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['bgp']));
     }
 
-    use Data::Dumper; print Data::Dumper::Dumper($content);
-    exit(1);
-
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    my $result = $self->load_xml(data => $content, start_tag => '<bgp-information.*?>', end_tag => '</bgp-information>', force_array => ['bgp-peer', 'bgp-rib']);
+
+    use Data::Dumper; print Data::Dumper::Dumper($result);
+    exit(1);
 
     foreach (@{$result->{'route-engine'}}) {
         push @$results, {
@@ -527,16 +525,25 @@ sub get_ldp_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['ldp']));
     }
 
-    use Data::Dumper; print Data::Dumper::Dumper($content);
-    exit(1);
-
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    my $result = $self->load_xml(data => $content, start_tag => '<ldp-session-information.*?>', end_tag => '</ldp-session-information>', force_array => ['ldp-session', 'ldp-session-statistics']);
 
-    foreach (@{$result->{'route-engine'}}) {
+    foreach my $item (@{$result->{'ldp-session'}}) {
+        my $stats = [];
+        foreach (@{$item->{'ldp-session-statistics'}}) {
+            push @$stats, {
+                messageType => lc($_->{'ldp-message-type'}),
+                sent => $_->{'ldp-messages-sent'},
+                received => $_->{'ldp-messages-received'}
+            };
+        }
+
         push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            mem_used => $_->{'memory-buffer-utilization'}
+            id => $item->{'ldp-session-id'},
+            remoteAddress => $item->{'ldp-remote-address'},
+            sessionState => $item->{'ldp-session-state'},
+            connectionState => $item->{'ldp-connection-state'},
+            stats => $stats
         };
     }
 
@@ -555,17 +562,25 @@ sub get_lsp_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['lsp']));
     }
 
-    use Data::Dumper; print Data::Dumper::Dumper($content);
-    exit(1);
-
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    my $result = $self->load_xml(data => $content, start_tag => '<mpls-lsp-information.*?>', end_tag => '</mpls-lsp-information>', force_array => ['rsvp-session-data', 'rsvp-session']);
 
-    foreach (@{$result->{'route-engine'}}) {
-        push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            mem_used => $_->{'memory-buffer-utilization'}
-        };
+    foreach my $item (@{$result->{'rsvp-session-data'}}) {
+        foreach (@{$item->{'rsvp-session'}}) {
+            my $lsp = $_;
+            if (defined($_->{'mpls-lsp'})) {
+                $lsp = $_->{'mpls-lsp'};
+            }
+
+            push @$results, {
+                type => $item->{'session-type'},
+                name => $lsp->{name},
+                srcAddress => $lsp->{'source-address'},
+                dstAddress => $lsp->{'destination-address'},
+                lspState => $lsp->{'lsp-state'},
+                lspBytes => $lsp->{'lsp-bytes'}
+            };
+        }
     }
 
     return $results;
