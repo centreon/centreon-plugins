@@ -100,17 +100,17 @@ __END__
 
 =head1 MODE
 
-Check Datacore pool space and over subscribed usage exposed through the rest api.
+Check Datacore pool space and over subscribed usage exposed through the Rest API.
 
 =over 8
 
 =item B<--pool-id>
 
-Id of the pool to check. See list-pool autodiscovery mode to list pools id (required).
+Id of the pool to check. See list-pool auto discovery mode to list pools id (required).
 
 =item B<--warning-oversubscribed> B<--critical-oversubscribed>
 
-Warning and critical threshold on the number of Bytes suscribed over the real space of the pool.
+Warning and critical threshold on the number of Bytes subscribed over the real space of the pool.
 
 =item B<--warning-bytesallocatedpercentage> B<--critical-bytesallocatedpercentage>
 
