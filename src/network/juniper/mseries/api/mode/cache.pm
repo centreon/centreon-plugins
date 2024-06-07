@@ -42,7 +42,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{commands}) || $self->{option_results}->{commands} eq '') {
-        $self->{option_results}->{commands} = 'cpu,disk,hardware,interface,memory,rsvp';
+        $self->{option_results}->{commands} = 'bgp,cpu,disk,hardware,interface,ldp,lsp,memory,rsvp';
     }
 
     $self->{option_results}->{commands} = [split(/,/, $self->{option_results}->{commands})];
@@ -71,7 +71,7 @@ Create cache files (other modes could use it with --cache-use option).
 
 =item B<--commands>
 
-For which modes the cache file is done (default: 'cpu,disk,hardware,interface,memory,rsvp').
+For which modes the cache file is done (default: 'bgp,cpu,disk,hardware,ldp,lsp,interface,memory,rsvp').
 
 =back
 

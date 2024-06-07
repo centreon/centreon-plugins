@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::bgp;
+package network::juniper::common::junos::api::mode::ldp;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -196,7 +196,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_bgp_infos();
+    my $result = $options{custom}->get_ldp_infos();
 
     $self->{global} = { detected => 0 };
     $self->{ldp} = {};
