@@ -207,7 +207,7 @@ You can use the following variables: %{health}, %{status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be:  'busy-time' (s), 'read-iops' (iops), 'write-iops' (iops).
+Can be: 'busy-time' (s), 'read', 'write'.
 
 =back
 

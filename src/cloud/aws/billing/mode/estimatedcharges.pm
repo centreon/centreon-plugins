@@ -121,13 +121,18 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::aws::billing::plugin --custommode=paws --mode=estimated-charges
 --region='us-east-1' --service='AWSService' --verbose
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metricscollected.html' for more information.
 
 =over 8
 
 =item B<--service>
 
 Set the Amazon service (required) (can be defined multiple times).
+
+=item B<--currency>
+
+Set the currency (Default: 'USD').
+
 
 =item B<--warning-billing>
 

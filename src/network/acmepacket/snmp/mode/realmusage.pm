@@ -182,18 +182,11 @@ Check realm usage.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'current-in-sessions', 'current-in-sessions-rate', 'total-in-sessions',
-'current-out-sessions', 'current-out-sessions-rate', 'total-out-session',
-'avg-qos-rfactor', 'total-rfactor'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'current-in-sessions', 'current-in-sessions-rate', 'total-in-sessions',
-'current-out-sessions', 'current-out-sessions-rate', 'total-out-session',
+'current-out-sessions', 'current-out-sessions-rate', 'total-out-sessions',
 'avg-qos-rfactor', 'total-rfactor'.
 
 =item B<--filter-name>

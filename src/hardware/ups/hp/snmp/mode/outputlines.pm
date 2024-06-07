@@ -206,7 +206,7 @@ You can use the following variables: %{source}.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'load', 'voltage', 'current', 'power'.
+Can be: 'load', 'voltage', 'current', 'power', 'frequence'.
 
 =back
 

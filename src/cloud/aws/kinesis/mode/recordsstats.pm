@@ -229,10 +229,11 @@ Filter metrics (can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes'
 
 =item B<--warning-*> B<--critical-*>
 
-Warning thresholds (* can be: 'records-get-iteratorage', 'records-get-volume',
-'records-get-latency', 'records-get-success',
-'records-put-volume', 'records-put-latency',
-'records-get-success').
+Thresholds.
+
+Can be: 'records-get-iteratorage', 'records-get-volume', 'records-get-latency', 
+'records-get-success', 'records-put-volume', 'records-put-latency',
+'records-put-success'.
 
 =back
 

@@ -239,7 +239,7 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::aws::elb::classic::plugin --custommode=paws --mode=http-codes --region='eu-west-1'
 --type='loadbalancer' --name='elb-www-fr' --critical-httpcode-backend-4xx='10' --verbose
 
-See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more information.
 
 Default statistic: 'sum' / Most useful statistics: 'sum'.
 
@@ -265,9 +265,10 @@ Filter metrics (can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCod
 
 =item B<--warning-*> B<--critical-*>
 
-Warning thresholds (can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+Thresholds.
+Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
 'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
-'httpcode-elb-5xx', 'backendconnectionerrors')
+'httpcode-elb-5xx', 'backendconnectionerrors'.
 
 =back
 

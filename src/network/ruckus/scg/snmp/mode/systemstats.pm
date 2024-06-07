@@ -188,18 +188,11 @@ Check system statistics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'aps-count', 'users-count', 'total-traffic-in', 'total-traffic-out', 'total-packets-in',
-'total-mcast-packets-in', 'total-packets-out', 'total-mcast-packets-out', 'total-fail-packets-in',
-'total-retry-packets-out'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'aps-count', 'users-count', 'total-traffic-in', 'total-traffic-out', 'total-packets-in',
-'total-mcast-packets-in', 'total-packets-out', 'total-mcast-packets-out', 'total-fail-packets-in',
+'total-packets-out', 'total-mcast-packets-in', 'total-packets-out', 'total-mcast-packets-out', 'total-fail-packets-out',
 'total-retry-packets-out'.
 
 =back

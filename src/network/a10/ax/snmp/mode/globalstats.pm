@@ -111,15 +111,10 @@ Check global statistics.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^current-connections$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'current-connections', 'total-connections'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: 'current-connections', 'total-connections'.
+Thresholds.
+Can be: 'current-connections', 'total-connections', 'total-ssl-connections'.
 
 =back
 

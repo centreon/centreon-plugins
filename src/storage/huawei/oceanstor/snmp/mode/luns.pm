@@ -197,7 +197,7 @@ Include LUN not exposed to an iniator, usually LUN snapshots.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Can be: 'space-usage', 'space-usage-free', 'space-usage-prct', 'space-usage-prot'.
 
 =back
 

@@ -108,12 +108,17 @@ Check high-availability status.
 
 =over 8
 
-=item B<--warning-status>
+=item B<--unknown-ha-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{ha_status}, %{ha_status_last}
 
-=item B<--critical-status>
+=item B<--warning-ha-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{ha_status}, %{ha_status_last}
+
+=item B<--critical-ha-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{ha_status} ne %{ha_status_last}').
 You can use the following variables: %{ha_status}, %{ha_status_last}

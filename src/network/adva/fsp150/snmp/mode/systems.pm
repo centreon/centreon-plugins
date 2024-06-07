@@ -198,7 +198,7 @@ Check systems.
 
 =over 8
 
-=item B<--filter-network-elemet>
+=item B<--filter-network-element>
 
 Filter by network element name (can be a regexp).
 

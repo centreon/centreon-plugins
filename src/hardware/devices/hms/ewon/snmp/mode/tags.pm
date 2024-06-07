@@ -267,7 +267,7 @@ __END__
 
 =head1 MODE
 
-Check ewon tags.
+Check Ewon tags.
 
 =over 8
 
@@ -298,6 +298,11 @@ E.g: --tag-output-value='tagNameMatch,remaining: %s%%'
 Set tag value threshold (syntax: [regexp,]threshold).
 E.g: --tag-threshold-warning='tagNameMatch,50' --tag-threshold-critical='tagNameMatch,80'
 
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{name}
+
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
@@ -308,9 +313,9 @@ You can use the following variables: %{status}, %{name}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alarm/').
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--unknown-*> B<--warning-*> B<--critical-*>
 
-Warning threshold.
+Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back

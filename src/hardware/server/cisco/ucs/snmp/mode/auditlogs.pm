@@ -229,6 +229,13 @@ Filter on event message. (default: none)
 
 Event older (current time - retention time) is not checked (in seconds).
 
+=item B<--warning-*> B<--critical-*>
+
+Threshold.
+
+Can be: 'audit-total', 'audit-major', 'audit-warning', 'audit-info, 'audit-cleared', 'audit-minor' 'audit-condition', 
+'audit-critical'.
+
 =back
 
 =cut

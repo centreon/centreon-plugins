@@ -277,15 +277,9 @@ Use cache file to store dns zone.
 
 Time in minutes before reloading cache file (default: 180).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold.
-Can be: 'total-query-rate', 'total-hit-ratio', 'success-count', 'referral-count', 'nxrrset-count', 
-'failure-count'.
-
-=item B<--critical-*>
-
-Critical threshold.
+Thresholds.
 Can be: 'total-query-rate', 'total-hit-ratio',
 'success-count', 'referral-count', 'nxrrset-count', 'failure-count',
 'aa-latency-1m', 'aa-latency-5m', 'aa-latency-15m',

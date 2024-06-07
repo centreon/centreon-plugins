@@ -223,7 +223,7 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::aws::elb::application::plugin --custommode=paws --mode=http-codes
 --region='eu-west-1' --name='app/AppProd/7c8ecfbd1093c5bd' --critical-httpcode-target-4xx='10' --verbose
 
-See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html' for more information.
 
 Default statistic: 'sum' / Most useful statistics: 'sum'.
 
@@ -250,8 +250,9 @@ Filter metrics (can be: 'HTTPCode_Target_2XX_Count', 'HTTPCode_Target_3XX_Count'
 
 =item B<--warning-*> B<--critical-*>
 
-Warning thresholds (can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
-'httpcode-target-5xx', 'httpcode-elb-3xx', 'httpcode-elb-4xx', 'http-redirect')
+Threshold.
+Can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
+'httpcode-target-5xx', 'httpcode-elb-3xx', 'httpcode-elb-4xx', 'http-redirect'.
 
 =back
 

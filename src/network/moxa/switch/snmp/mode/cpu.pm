@@ -141,7 +141,7 @@ Example: --filter-counters='1m|5m'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-utilization-1s', 'cpu-utilization-1m', 'cpu-utilization-5m'.
+Can be: 'cpu-utilization-5s', 'cpu-utilization-1m', 'cpu-utilization-5m'.
 
 =back
 

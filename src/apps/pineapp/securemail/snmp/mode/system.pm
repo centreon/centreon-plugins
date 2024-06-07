@@ -265,7 +265,7 @@ You can use the following variables: %{status}
 
 Thresholds.
 Can be: 'load-1m', 'load-5m', 'load-15m', 
-'messages-priority-high', 'messages-priority-medium', 'messages-priority-low',
+'messages-priority-high', 'messages-priority-normal', 'messages-priority-low',
 'messages-queue-inbound', 'messages-queue-outbound',
 'messages-queue-total'.
 

@@ -149,6 +149,10 @@ Check memory usage.
 
 =over 8
 
+=item B<--filter-security-module>
+
+Filter security module name.
+
 =item B<--filter-switch-num>
 
 Filter switch number.

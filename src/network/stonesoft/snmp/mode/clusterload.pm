@@ -86,6 +86,14 @@ __END__
 
 Check load of cluster in percent.
 
+=item B<--warning>
+
+Warning threshold in percent.
+
+=item B<--critical>
+
+Critical threshold in percent.
+
 =over 8
 
 =back

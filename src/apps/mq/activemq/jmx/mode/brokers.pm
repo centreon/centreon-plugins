@@ -370,13 +370,13 @@ You can use the following variables: %{status}, %{name}
 Thresholds.
 Can be: 'store-usage' (%), 'temporary-usage' (%), 'memory-usage' (%),
 'queue-average-enqueue-time' (ms), 'queue-consumers-connected',
-'queue-producers-connected', 'queue-memory-usage' (%), 'queue-size',
+'queue-producers-connected', 'queue-memory-usage' (%), 'queue-size', 
 'queue-messages-enqueued', 'queue-messages-dequeued', 'queue-messages-expired',
-'queue-messages-inflighted',
+'queue-messages-inflighted', 'queue-messages-size-average' (B),
 'topic-average-enqueue-time' (ms), 'topic-consumers-connected',
 'topic-producers-connected', 'topic-memory-usage' (%), 'topic-size',
 'topic-messages-enqueued', 'topic-messages-dequeued', 'topic-messages-expired',
-'topic-messages-inflighted'.
+'topic-messages-inflighted', 'topic-messages-size-average' (B).
 
 =back
 

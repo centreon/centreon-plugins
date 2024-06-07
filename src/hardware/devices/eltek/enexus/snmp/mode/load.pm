@@ -213,7 +213,7 @@ You can use the following variables: %{status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'current', 'power'.
+Can be: 'current', 'power', 'voltage'.
 
 =back
 
