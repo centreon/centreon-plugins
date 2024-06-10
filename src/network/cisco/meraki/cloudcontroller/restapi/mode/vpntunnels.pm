@@ -121,9 +121,9 @@ sub manage_selection {
             $datas->{vpn_tunnels_status}->{$id}->{networkName} !~ /$self->{option_results}->{filter_network_name}/);
 
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $datas->{networks}->{$id}->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+            $datas->{vpn_tunnels_status}->{$id}->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
-            $datas->{orgs}->{ $datas->{networks}->{$id}->{organizationId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+            $datas->{orgs}->{ $datas->{vpn_tunnels_status}->{$id}->{organizationId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
 
         $self->{tunnels}->{$id} = {
             deviceSerial => $id,
