@@ -500,13 +500,29 @@ sub get_bgp_infos {
     my $results = [];
     my $result = $self->load_xml(data => $content, start_tag => '<bgp-information.*?>', end_tag => '</bgp-information>', force_array => ['bgp-peer', 'bgp-rib']);
 
-    use Data::Dumper; print Data::Dumper::Dumper($result);
-    exit(1);
+    foreach my $item (@{$result->{'bgp-peer'}}) {
+        my $ribs = [];
+        foreach (@{$item->{'bgp-rib'}}) {
+            push @$ribs, {
+                ribName => $_->{name},
+                sendState => $_->{'send-state'},
+                activePrefix => $_->{'active-prefix-count'}
+            };
+        }
 
-    foreach (@{$result->{'route-engine'}}) {
+        $item->{'local-address'} =~ s/\+/:/g;
+        $item->{'peer-address'} =~ s/\+/:/g;
+
         push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            mem_used => $_->{'memory-buffer-utilization'}
+            snmpIndex => $item->{'snmp-index'},
+            localAddr => $item->{'local-address'},
+            localAs => $item->{'local-as'},
+            peerAddr => $item->{'peer-address'},
+            peerAs => $item->{'peer-as'},
+            peerState => $item->{'peer-state'},
+            inBytes => $item->{'input-octets'},
+            outBytes => $item->{'output-octets'},
+            ribs => $ribs
         };
     }
 

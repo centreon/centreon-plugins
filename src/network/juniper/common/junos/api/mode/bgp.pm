@@ -27,28 +27,48 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
-sub custom_ldp_perfdata {
+sub custom_bgp_rib_perfdata {
     my ($self) = @_;
 
     my $instances = [];
-    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
-        my $value;
-        if ($_ eq 'messageType') {
-            $value = $self->{key_values}->[0]->{name};
-            $value =~ s/_/ /g;            
-        } else {
-            $value = $self->{result_values}->{$_};
-        }
-        push @$instances, $value;
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances_bgp_rib}}) {
+        push @$instances, $self->{result_values}->{$_};
     }
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         instances => $instances,
-        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
+    );
+}
+
+sub custom_bgp_peer_perfdata {
+    my ($self) = @_;
+
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances_bgp_peer}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }   
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $instances,
+        value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_rib_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'send state: %s',
+        $self->{result_values}->{sendState}
     );
 }
 
@@ -56,46 +76,54 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'connection state: %s, session state: %s',
-        $self->{result_values}->{connectionState},
-        $self->{result_values}->{sessionState}
+        'state: %s',
+        $self->{result_values}->{peerState}
     );
 }
 
-sub ldp_long_output {
+sub bgp_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking LDP session '%s'",
-        $options{instance_value}->{remoteAddress}
+        "checking BGP peer [local address '%s', AS '%s'][peer address '%s', AS '%s']",
+        $options{instance_value}->{localAddr},
+        $options{instance_value}->{localAs},
+        $options{instance_value}->{peerAddr},
+        $options{instance_value}->{peerAs}
     );
 }
 
-sub prefix_ldp_output {
+sub prefix_bgp_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "LDP session '%s' ",
-        $options{instance_value}->{remoteAddress}
+        "BGP peer [local address '%s', AS '%s'][peer address '%s', AS '%s'] ",
+        $options{instance_value}->{localAddr},
+        $options{instance_value}->{localAs},
+        $options{instance_value}->{peerAddr},
+        $options{instance_value}->{peerAs}
     );
 }
 
-sub prefix_messages_sent_output {
+sub prefix_rib_output {
     my ($self, %options) = @_;
 
-    return 'messages sent ';
+    return sprintf(
+        "RIB '%s' ",
+        $options{instance_value}->{ribName}
+    );
 }
 
-sub prefix_messages_received_output {
+sub prefix_traffic_output {
     my ($self, %options) = @_;
 
-    return 'messages received ';
+    return 'traffic ';
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of LDP sessions ';
+    return 'Number of BGP peers ';
 }
 
 sub set_counters {
@@ -103,18 +131,19 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'ldp', type => 3, cb_prefix_output => 'prefix_ldp_output', cb_long_output => 'ldp_long_output',
-          indent_long_output => '    ', message_multiple => 'All LDP sessions are ok',
+        { name => 'bgp', type => 3, cb_prefix_output => 'prefix_bgp_output', cb_long_output => 'bgp_long_output',
+          indent_long_output => '    ', message_multiple => 'All BGP peers are ok',
             group => [
                 { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'messages_sent', type => 0, cb_prefix_output => 'prefix_messages_sent_output', skipped_code => { -10 => 1 } },
-                { name => 'messages_received', type => 0, cb_prefix_output => 'prefix_messages_received_output', skipped_code => { -10 => 1 } }
+                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
+                { name => 'ribs', display_long => 1, cb_prefix_output => 'prefix_rib_output',
+                  message_multiple => 'All BGP ribs are ok', type => 1 }
             ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'ldp-sessions-detected', display_ok => 0, nlabel => 'ldp.sessions.detected.count', set => {
+        { label => 'bgp-peer-detected', display_ok => 0, nlabel => 'bgp.peers.detected.count', set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [
@@ -128,10 +157,11 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            critical_default => '%{connectionState} !~ /open$/i || %{sessionState} !~ /operational/i',
+            critical_default => '%{peerState} !~ /established/i',
             set => {
                 key_values => [
-                    { name => 'id' }, { name => 'remoteAddress' }, { name => 'sessionState' }, { name => 'connectionState' }
+                    { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
+                    { name => 'peerState' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -140,28 +170,47 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{messages_sent} = [];
-    $self->{maps_counters}->{messages_received} = [];
-    foreach (('initialization', 'keeaplive', 'notification', 'address', 'address withdraw', 
-        'label mapping', 'label request', 'label withdraw', 'label release', 'label abort')) {
-        my ($label, $nlabel) = ($_, $_);
-        $label =~ s/\s+/-/g;
-        $nlabel =~ s/\s+/_/g;
-        push @{$self->{maps_counters}->{messages_sent}}, { 
-            label => 'ldp-session-messages-' . $label . '-sent', nlabel => 'ldp.session.messages.sent.count', set => {
-                key_values => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
-                output_template => $_ . ': %s%s',
-                closure_custom_perfdata => $self->can('custom_ldp_perfdata')
+    $self->{maps_counters}->{traffic} = [
+        { label => 'bgp-peer-traffic-in', nlabel => 'bgp.peer.traffic.in.bytes', set => {
+                key_values => [ { name => 'inBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
+                output_template => 'in: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
             }
-        };
-        push @{$self->{maps_counters}->{messages_received}}, { 
-            label => 'ldp-session-messages-' . $label . '-received', nlabel => 'ldp.session.messages.received.count', set => {
-                key_values => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
-                output_template => $_ . ': %s%s',
-                closure_custom_perfdata => $self->can('custom_ldp_perfdata')
+        },
+        { label => 'bgp-peer-traffic-out', nlabel => 'bgp.peer.traffic.out.bytes', set => {
+                key_values => [ { name => 'outBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
+                output_template => 'out: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
             }
-        };
-    }
+        }
+    ];
+
+    $self->{maps_counters}->{ribs} = [
+        {
+            label => 'rib-status',
+            type => 2,
+            set => {
+                key_values => [
+                    { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
+                    { name => 'ribName' }, { name => 'sendState' }
+                ],
+                closure_custom_output => $self->can('custom_rib_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'bgp-peer-rib-prefixes-active', nlabel => 'bgp.peer.rib.prefixes.active.count', set => {
+                key_values => [
+                    { name => 'activePrefix' }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
+                    { name => 'ribName' }
+                ],
+                output_template => 'prefixes active: %d',
+                closure_custom_perfdata => $self->can('custom_bgp_rib_perfdata')
+            }
+        }
+    ];
 }
 
 sub new {
@@ -169,10 +218,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'filter-id:s'                 => { name => 'filter_id' },
-        'filter-remote-address:s'     => { name => 'filter_remote_address' },
-        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
+    $options{options}->add_options(arguments => {
+        'filter-snmp-index:s'                  => { name => 'filter_snmp_index' },        
+        'filter-local-address:s'               => { name => 'filter_local_address' },
+        'filter-peer-address:s'                => { name => 'filter_peer_address' },
+        'custom-perfdata-instances-bgp-peer:s' => { name => 'custom_perfdata_instances_bgp_peer' },
+        'custom-perfdata-instances-bgp-rib:s'  => { name => 'custom_perfdata_instances_bgp_rib' }
     });
 
     return $self;
@@ -182,14 +233,24 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(remoteAddress) %(messageType)';
+    if (!defined($self->{option_results}->{custom_perfdata_instances_bgp_peer}) || $self->{option_results}->{custom_perfdata_instances_bgp_peer} eq '') {
+        $self->{option_results}->{custom_perfdata_instances_bgp_peer} = '%(localAddr) %(peerAddr)';
     }
 
-    $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
-        option_name => '--custom-perfdata-instances',
-        instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { id => 1, remoteAddress => 1, messageType => 1 }
+    $self->{custom_perfdata_instances_bgp_peer} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances-bgp-peer',
+        instances => $self->{option_results}->{custom_perfdata_instances_bgp_peer},
+        labels => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1 }
+    );
+
+    if (!defined($self->{option_results}->{custom_perfdata_instances_bgp_rib}) || $self->{option_results}->{custom_perfdata_instances_bgp_rib} eq '') {
+        $self->{option_results}->{custom_perfdata_instances_bgp_rib} = '%(localAddr) %(peerAddr) %(ribName)';
+    }
+
+    $self->{custom_perfdata_instances_bgp_rib} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances-bgp-rib',
+        instances => $self->{option_results}->{custom_perfdata_instances_bgp_rib},
+        labels => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1, ribName => 1 }
     );
 }
 
@@ -199,36 +260,46 @@ sub manage_selection {
     my $result = $options{custom}->get_bgp_infos();
 
     $self->{global} = { detected => 0 };
-    $self->{ldp} = {};
+    $self->{bgp} = {};
     foreach my $item (@$result) {
-        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $item->{id} !~ /$self->{option_results}->{filter_id}/);
-        next if (defined($self->{option_results}->{filter_remote_address}) && $self->{option_results}->{filter_remote_address} ne '' &&
-            $item->{remoteAddress} !~ /$self->{option_results}->{filter_remote_address}/);
+        next if (defined($self->{option_results}->{filter_snmp_index}) && $self->{option_results}->{filter_snmp_index} ne '' &&
+            $item->{snmpIndex} !~ /$self->{option_results}->{filter_snmp_index}/);
+        next if (defined($self->{option_results}->{filter_local_address}) && $self->{option_results}->{filter_local_address} ne '' &&
+            $item->{localAddr} !~ /$self->{option_results}->{filter_local_address}/);
+        next if (defined($self->{option_results}->{filter_peer_address}) && $self->{option_results}->{filter_peer_address} ne '' &&
+            $item->{peerAddr} !~ /$self->{option_results}->{filter_peer_address}/);
 
-        $self->{ldp}->{ $item->{id} } = {
-            remoteAddress => $item->{remoteAddress},
+        $self->{bgp}->{ $item->{snmpIndex} } = {
+            localAddr => $item->{localAddr},
+            localAs => $item->{localAs},
+            peerAddr => $item->{peerAddr},
+            peerAs => $item->{peerAs},
             status => {
-                id => $item->{id},
-                remoteAddress => $item->{remoteAddress},
-                sessionState => $item->{sessionState},
-                connectionState => $item->{connectionState}
+                localAddr => $item->{localAddr},
+                localAs => $item->{localAs},
+                peerAddr => $item->{peerAddr},
+                peerAs => $item->{peerAs},
+                peerState => $item->{peerState}
             },
-            messages_sent => {
-                id => $item->{id},
-                remoteAddress => $item->{remoteAddress}
+            traffic => {
+                localAddr => $item->{localAddr},
+                localAs => $item->{localAs},
+                peerAddr => $item->{peerAddr},
+                peerAs => $item->{peerAs},
+                inBytes => $item->{inBytes},
+                outBytes => $item->{outBytes}
             },
-            messages_received => {
-                id => $item->{id},
-                remoteAddress => $item->{remoteAddress}
-            }
+            ribs => {}
         };
 
-        foreach (@{$item->{stats}}) {
-            my $type = $_->{messageType};
-            $type =~ s/\s+/_/g;
-            $self->{ldp}->{ $item->{id} }->{messages_sent}->{$type} = $_->{sent};
-            $self->{ldp}->{ $item->{id} }->{messages_received}->{$type} = $_->{received};
+        foreach (@{$item->{ribs}}) {
+            $self->{bgp}->{ $item->{snmpIndex} }->{ribs}->{ $_->{ribName} } = {
+                localAddr => $item->{localAddr},
+                localAs => $item->{localAs},
+                peerAddr => $item->{peerAddr},
+                peerAs => $item->{peerAs},
+                %$_
+            };
         }
 
         $self->{global}->{detected}++;
@@ -237,8 +308,9 @@ sub manage_selection {
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         md5_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
-            (defined($self->{option_results}->{filter_remote_address}) ? $self->{option_results}->{filter_remote_address} : '')
+            (defined($self->{option_results}->{filter_snmp_index}) ? $self->{option_results}->{filter_snmp_index} : '') . '_' .
+            (defined($self->{option_results}->{filter_local_address}) ? $self->{option_results}->{filter_local_address} : '') . '_' .
+            (defined($self->{option_results}->{filter_peer_address}) ? $self->{option_results}->{filter_peer_address} : '')
         );
 }
 
@@ -248,49 +320,60 @@ __END__
 
 =head1 MODE
 
-Check LDP sessions.
+Check BGP peers.
 
 =over 8
 
-=item B<--filter-id>
+=item B<--filter-snmp-index>
 
-Filter LDP session by ID.
+Filter BGP peer by SNMP index.
 
-=item B<--filter-remote-address>
+=item B<--filter-local-address>
 
-Filter LDP session by remote address.
+Filter BGP peer by local address.
 
-=item B<--custom-perfdata-instances>
+=item B<--filter-peer-address>
 
-Define perfdatas instance (default: '%(remoteAddress) %(messageType)')
+Filter BGP peer by peer address.
+
+=item B<--custom-perfdata-instances-bgp-peer>
+
+Define perfdatas instance (default: '%(localAddr) %(peerAddr)')
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{lspState} !~ /up/i').
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+Define the conditions to match for the status to be CRITICAL (default: '%{peerState} !~ /established/i').
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}
+
+=item B<--unknown-rib-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}, %{ribName}, %{sendState}
+
+=item B<--warning-rib-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}, %{ribName}, %{sendState}
+
+=item B<--critical-rib-status>
+
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}, %{ribName}, %{sendState}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'ldp-sessions-detected',
-'ldp-session-messages-initialization-sent', 'ldp-session-messages-keeaplive-sent', 'ldp-session-messages-notification-sent', 
-'ldp-session-messages-address-sent', 'ldp-session-messages-address-withdraw-sent', 
-'ldp-session-messages-label-mapping-sent', 'ldp-session-messages-label-request-sent', 'ldp-session-messages-label-withdraw-sent', 
-'ldp-session-messages-label-release-sent', 'ldp-session-messages-label-abort-sent',
-'ldp-session-messages-initialization-received', 'ldp-session-messages-keeaplive-received', 'ldp-session-messages-notification-received', 
-'ldp-session-messages-address-received', 'ldp-session-messages-address-withdraw-received', 
-'ldp-session-messages-label-mapping-received', 'ldp-session-messages-label-request-received', 'ldp-session-messages-label-withdraw-received', 
-'ldp-session-messages-label-release-received', 'ldp-session-messages-label-abort-received'
+Can be: 'bgp-peer-detected', 'bgp-peer-traffic-in', 'bgp-peer-traffic-out'.
 
 =back
 
