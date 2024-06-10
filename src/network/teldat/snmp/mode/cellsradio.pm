@@ -48,11 +48,12 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'sim status: %s [operator: %s] [imsi: %s] [interface state: %s]',
+        'sim status: %s [operator: %s] [imsi: %s] [interface state: %s] [simIcc: %s]',
         $self->{result_values}->{simStatus},
         $self->{result_values}->{operator},
         $self->{result_values}->{imsi},
-        $self->{result_values}->{interfaceState}
+        $self->{result_values}->{interfaceState},
+        $self->{result_values}->{simIcc}
     );
 }
 
@@ -169,6 +170,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-module:s'             => { name => 'filter_module' },
         'filter-imei:s'               => { name => 'filter_imei' },
+        'filter-interface-type:s'     => { name => 'filter_interface_type' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
@@ -253,6 +255,8 @@ sub manage_selection {
             $module !~ /$self->{option_results}->{filter_module}/);
         next if (defined($self->{option_results}->{filter_imei}) && $self->{option_results}->{filter_imei} ne '' &&
             $result->{imei} !~ /$self->{option_results}->{filter_imei}/);
+        next if (defined($self->{option_results}->{filter_interface_type}) && $self->{option_results}->{filter_interface_type} ne '' &&
+             $interface_types->{$interface_type} !~ /$self->{option_results}->{filter_interface_type}/);
 
         $self->{cells}->{$instance} = {
             module => $module,
@@ -324,12 +328,13 @@ Check cellular radio interfaces.
 
 Filter cellular radio interfaces by module.
 
-=item B<--filter-imodule
+=item B<--filter-imei>
 
 Filter cellular radio interfaces by IMEI.
-=item B<--filtermodulei
 
-Filter cellular radio interfaces by IMEI.
+=item B<--filter-interface-type>
+
+Filter cellular radio interfaces by type.
 
 =item B<--custom-perfdata-instances>
 
