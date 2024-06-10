@@ -41,7 +41,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "RestService/rest.svc/1.0/performances/B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:%7B4dec1b5a-2577-11e5-80c3-00155d651622%7D",
+      "endpoint": "RestService/rest.svc/1.0/performance/B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:%7B4dec1b5a-2577-11e5-80c3-00155d651622%7D",
       "responses": [
         {
           "uuid": "a5bf53e2-5edf-437e-a684-68315cfa7824",

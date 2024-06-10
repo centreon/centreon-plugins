@@ -1,4 +1,6 @@
 --add-sysdesc
+--api-password
+--critical-bytesallocatedpercentage
 --display-transform-dst
 --display-transform-src
 --exclude-fs
@@ -12,6 +14,7 @@
 --oid-display
 --oid-extra-display
 --oid-filter
+--warning-bytesallocatedpercentage
 2c
 ADSL
 Avigilon
@@ -31,7 +34,9 @@ in-mcast
 in-ucast
 interface-dsl-name
 IpAddr
+Iwsva
 license-instances-usage-prct
+Loggly
 MBean
 NagVis
 Netscaler
@@ -55,6 +60,7 @@ timeframe
 topic-messages-inflighted
 total-oper-down
 total-oper-up
+TendMicro
 uptime
 VDSL2
 Veeam
