@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Juniper-Mseries-Api",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_juniper_mseries_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "network/juniper/common/junos/api/custom/",
+        "network/juniper/common/junos/api/mode/",
+        "network/juniper/mseries/api/"
+    ]
+}
