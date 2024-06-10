@@ -1,0 +1,61 @@
+{
+  "constants": {
+    "protocol": "https",
+    "port": "443",
+    "customPath": "centreon"
+  },
+  "http": {
+    "requests": [
+      {
+        "name": "authenticationRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/%(constants.customPath)/api/latest/login",
+        "method": "POST",
+        "headers": [
+          "Accept:application/json",
+          "Content-Type:application/json"
+        ],
+        "timeout": 30,
+        "payload": {
+          "type": "json",
+          "value": {
+            "security": {
+              "credentials": {
+                "login": "%(constants.username)",
+                "password": "%(constants.password)"
+              }
+            }
+          }
+        },
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "token",
+            "path": "$.security.token",
+            "entries": [
+              {
+                "id": "value"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selection": [
+    {
+      "name": "authenticationSelection",
+      "critical": "defined(%(builtin.httpCode.authenticationRequest)) and %(builtin.httpCode.authenticationRequest) != 200",
+      "formatting": {
+        "printf_msg": "Authentication resulted in %s HTTP code",
+        "printf_var": [
+          "%(builtin.httpCode.authenticationRequest)"
+        ],
+        "display_ok": true
+      }
+    }
+  ]
+}
