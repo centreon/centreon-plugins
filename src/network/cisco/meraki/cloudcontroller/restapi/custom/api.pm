@@ -421,7 +421,8 @@ sub get_organization_vpn_tunnels_statuses {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/appliance/vpn/statuses',
             paginate => 300,
-            hostname => $self->get_shard_hostname(organization_id => $id)
+            hostname => $self->get_shard_hostname(organization_id => $id),
+            ignore_codes => { 400 => 1 } # it can be disabled
         );
         foreach (@$datas) {
             $self->{datas}->{vpn_tunnels_status}->{ $_->{deviceSerial} } = $_;
@@ -468,7 +469,7 @@ sub get_organization_uplink_loss_and_latency {
         if (defined($datas)) {
             foreach (@$datas) {
                 # sometimes uplink is undef. so we skip
-                next if (!defined($_->{uplink}));
+                next if (!defined($_->{uplink}) || !defined($_->{serial}));
 
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
                     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));

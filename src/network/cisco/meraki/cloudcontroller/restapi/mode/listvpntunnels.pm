@@ -80,7 +80,7 @@ sub manage_selection {
             organization_id => $devices->{$_}->{organizationId},
             organization_name => $organization_name,
             mode => $devices->{$_}->{vpnMode},
-            status => $devices->{$_}->{deviceStatus},
+            status => $devices->{$_}->{deviceStatus}
         };
     }
 
