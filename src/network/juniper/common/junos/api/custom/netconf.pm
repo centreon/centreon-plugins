@@ -259,6 +259,16 @@ sub cache_commands {
     });
 }
 
+sub get_command_raw_result {
+    my ($self, %options) = @_;
+
+    my $content = $self->execute_command(commands => [$options{command}]);
+    $content =~ /(<nc:rpc-reply.*<\/nc:rpc-reply>)/msg;
+    $content = $1;
+    $content =~ s/junos://msg;
+    return $content;
+}
+
 sub get_cpu_infos {
     my ($self, %options) = @_;
 
