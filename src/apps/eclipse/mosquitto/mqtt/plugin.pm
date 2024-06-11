@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes}   = {
-        'uptime'  => 'apps::eclipse::mosquitto::mqtt::mode::uptime',
-        'clients' => 'apps::eclipse::mosquitto::mqtt::mode::clients',
-        'messages' => 'apps::eclipse::mosquitto::mqtt::mode::messages',
-        'generic' => 'apps::eclipse::mosquitto::mqtt::mode::generic'
+        'uptime'        => 'apps::eclipse::mosquitto::mqtt::mode::uptime',
+        'clients'       => 'apps::eclipse::mosquitto::mqtt::mode::clients',
+        'messages'      => 'apps::eclipse::mosquitto::mqtt::mode::messages',
+        'numeric-value' => 'apps::eclipse::mosquitto::mqtt::mode::numericvalue',
+        'string-value'  => 'apps::eclipse::mosquitto::mqtt::mode::stringvalue'
     };
 
     return $self;

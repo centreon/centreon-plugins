@@ -25,6 +25,7 @@ use warnings;
 use Time::HiRes;
 use Net::MQTT::Simple;
 use Net::MQTT::Simple::SSL;
+use centreon::plugins::misc qw(is_empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -35,17 +36,19 @@ sub new {
         $options{options}->add_options(arguments => {
             'hostname|host:s'        => { name => 'host' },
             'mqtt-port:s'            => { name => 'mqtt_port', default => 1883 },
+            'mqtt-ssl:s'             => { name => 'mqtt_ssl', default => 1 },
             'mqtt-ca-certificate:s'  => { name => 'mqtt_ca_certificate' },
             'mqtt-ssl-certificate:s' => { name => 'mqtt_ssl_certificate' },
             'mqtt-ssl-key:s'         => { name => 'mqtt_ssl_key' },
             'mqtt-username:s'        => { name => 'mqtt_username' },
             'mqtt-password:s'        => { name => 'mqtt_password' },
+            'mqtt-allow-unsecure'    => { name => 'mqtt_allow_unsecure', default => 0 },
             'mqtt-timeout:s'         => { name => 'mqtt_timeout', default => 5 }
         });
-        $options{options}->add_help(package => __PACKAGE__, sections => 'SSH GLOBAL OPTIONS');
+        $options{options}->add_help(package => __PACKAGE__, sections => 'MQTT GLOBAL OPTIONS');
     }
 
-    $self->{output} = $options{output};
+    $self->{output}         = $options{output};
     $self->{connection_set} = 0;
     return $self;
 }
@@ -59,11 +62,13 @@ sub check_options {
     }
     $self->{mqtt_host}            = $options{option_results}->{host};
     $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
+    $self->{mqtt_ssl}             = $options{option_results}->{mqtt_ssl};
     $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
     $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
     $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
     $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
     $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
+    $self->{mqtt_allow_unsecure}  = $options{option_results}->{mqtt_allow_unsecure};
     $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
 }
 
@@ -75,12 +80,16 @@ sub set_mqtt_options {
         return;
     }
 
-    if (defined($self->{mqtt_ca_certificate}) && defined($self->{mqtt_ssl_certificate}) && defined($self->{mqtt_ssl_key})) {
+    if ($self->{mqtt_allow_unsecure} == 1) {
+        $ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
+    }
+
+    if ($self->{mqtt_ssl} == 1) {
         $self->{mqtt} = Net::MQTT::Simple::SSL->new($self->{mqtt_host}, {
             LocalPort     => $self->{mqtt_port},
             SSL_ca_file   => $self->{mqtt_ca_certificate},
             SSL_cert_file => $self->{mqtt_ssl_certificate},
-            SSL_key_file  => $self->{mqtt_ssl_key},
+            SSL_key_file  => $self->{mqtt_ssl_key}
         });
     } else {
         $self->{mqtt} = Net::MQTT::Simple->new($self->{mqtt_host} . ':' . $self->{mqtt_port});
@@ -161,6 +170,10 @@ Name or address of the host to monitor (mandatory).
 
 Port used by MQTT (default => 1883).
 
+=item B<--mqtt-ssl>
+
+Use SSL for MQTT connection (default: 1).
+
 =item B<--mqtt-ca-certificate>
 
 CA certificate file.
@@ -180,6 +193,10 @@ MQTT username.
 =item B<--mqtt-password>
 
 MQTT password.
+
+=item B<--mqtt-allow-unsecure>
+
+Allow unsecure login (default: 0).
 
 =item B<--mqtt-timeout>
 
