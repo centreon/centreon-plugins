@@ -77,11 +77,11 @@ Try {
             $item_service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
 
             # this works for sure on v2.0.0 of HyperV Powershell module
-            if (($vm.PrimaryStatusDescription -ne $null) -and ($vm.PrimaryStatusDescription -ne "")) {
-                $item_service.primary_operational_status = $vm.PrimaryStatusDescription
+            if (($service.PrimaryStatusDescription -ne $null) -and ($service.PrimaryStatusDescription -ne "")) {
+                $item_service.primary_operational_status = $service.PrimaryStatusDescription
             }
-            if (($vm.SecondaryStatusDescription -ne $null) -and ($vm.SecondaryStatusDescription -ne "")) {
-                $item_service.secondary_operational_status = $vm.SecondaryStatusDescription
+            if (($service.SecondaryStatusDescription -ne $null) -and ($service.SecondaryStatusDescription -ne "")) {
+                $item_service.secondary_operational_status = $service.SecondaryStatusDescription
             }
 
             $services.Add($item_service)
