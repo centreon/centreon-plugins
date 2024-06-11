@@ -33,7 +33,8 @@ sub new {
     $self->{modes}   = {
         'uptime'  => 'apps::eclipse::mosquitto::mqtt::mode::uptime',
         'clients' => 'apps::eclipse::mosquitto::mqtt::mode::clients',
-        'messages' => 'apps::eclipse::mosquitto::mqtt::mode::messages'
+        'messages' => 'apps::eclipse::mosquitto::mqtt::mode::messages',
+        'generic' => 'apps::eclipse::mosquitto::mqtt::mode::generic'
     };
 
     return $self;

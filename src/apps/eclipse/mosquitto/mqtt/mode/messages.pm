@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [];
     for my $label (('stored', 'received', 'sent')) {
         push @{$self->{maps_counters}->{global}},
-             { label  => 'messages.' . $label,
+             { label  => 'messages-' . $label,
                nlabel => 'messages.' . $label . '.count',
                set    => {
                    key_values      => [{ name => $label }],
@@ -87,7 +87,7 @@ Check messages statistics.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'messages.stored', 'messages.received', 'messages.sent'.
+Can be: 'messages-stored', 'messages-received', 'messages-sent'.
 
 =back
 

@@ -38,7 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [];
     for my $label (('connected', 'maximum', 'active', 'inactive')) {
         push @{$self->{maps_counters}->{global}},
-             { label  => 'clients.' . $label,
+             { label  => 'clients-' . $label,
                nlabel => 'clients.' . $label . '.count',
                set    => {
                    key_values      => [{ name => $label }],
@@ -88,7 +88,7 @@ Check clients statistics.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'clients.connected', 'clients.max', 'clients.active', 'clients.inactive'.
+Can be: 'clients-connected', 'clients-max', 'clients-active', 'clients-inactive'.
 
 =back
 
