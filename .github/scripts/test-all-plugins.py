@@ -27,7 +27,7 @@ def test_plugin(plugin_name):
     print(f"{plugin_name} folders_list : {folders_list}")
     if len(folders_list) == 0:
         return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
-    robot_results = subprocess.run("robot -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
+    robot_results = subprocess.run("robot -i auto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
                    shell=True, check=False)
     return robot_results.returncode
 

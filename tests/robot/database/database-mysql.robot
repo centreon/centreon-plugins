@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
+Keyword Tags    auto
+
 
 *** Variables ***
 ${CMD}                  ${CENTREON_PLUGINS} --plugin=database::mysql::plugin

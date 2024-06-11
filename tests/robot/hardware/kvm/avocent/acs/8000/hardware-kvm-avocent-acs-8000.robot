@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/i
 
 Test Timeout        120s
 
+Keyword Tags    auto
+
 
 *** Variables ***
 ${HOSTADDRESS}      127.0.0.1

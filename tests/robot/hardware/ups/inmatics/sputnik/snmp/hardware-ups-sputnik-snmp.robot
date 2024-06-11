@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/i
 
 Test Timeout        120s
 
+Keyword Tags    auto
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::ups::inmatics::sputnik::snmp::plugin

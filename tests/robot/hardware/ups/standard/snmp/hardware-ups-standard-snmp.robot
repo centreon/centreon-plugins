@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.
 
 Test Timeout        120s
 
+Keyword Tags    auto
+
 
 *** Variables ***
 ${CMD}                                              ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
