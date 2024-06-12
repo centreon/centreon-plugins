@@ -136,6 +136,11 @@ if __name__ == '__main__':
 
     for plugin in sys.argv:
         print("plugin : ", plugin)
+        folders_list = get_tests_folders(plugin)
+        if len(folders_list) == 0:
+            print(f"we don't test {plugin} as it don't have any robots tests.")
+            continue
+
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)
         if tmp > 0:
