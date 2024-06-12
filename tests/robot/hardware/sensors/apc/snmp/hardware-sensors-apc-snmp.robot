@@ -5,8 +5,6 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.
 
 Test Timeout        120s
 
-Keyword Tags    auto
-
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024

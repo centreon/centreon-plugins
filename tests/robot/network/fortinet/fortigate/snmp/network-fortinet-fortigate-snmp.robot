@@ -5,8 +5,6 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.
 
 Test Timeout        120s
 
-Keyword Tags    auto
-
 
 *** Variables ***
 ${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin

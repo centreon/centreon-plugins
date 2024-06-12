@@ -7,8 +7,6 @@ Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-Keyword Tags    auto
-
 
 *** Variables ***
 ${MOCKOON_JSON}         ${CURDIR}${/}cloud-azure-policyinsights-policystates.json
