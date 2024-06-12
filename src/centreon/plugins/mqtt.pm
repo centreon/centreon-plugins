@@ -34,7 +34,7 @@ sub new {
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
             'hostname|host:s'        => { name => 'host' },
-            'mqtt-port:s'            => { name => 'mqtt_port', default => 1883 },
+            'mqtt-port:s'            => { name => 'mqtt_port', default => 8883 },
             'mqtt-ssl:s'             => { name => 'mqtt_ssl', default => 1 },
             'mqtt-ca-certificate:s'  => { name => 'mqtt_ca_certificate' },
             'mqtt-ssl-certificate:s' => { name => 'mqtt_ssl_certificate' },
@@ -60,7 +60,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     $self->{mqtt_host}            = $options{option_results}->{host};
-    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 1883;
+    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 8883;
     $self->{mqtt_ssl}             = $options{option_results}->{mqtt_ssl};
     $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
     $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
@@ -167,7 +167,7 @@ Name or address of the host to monitor (mandatory).
 
 =item B<--mqtt-port>
 
-Port used by MQTT (default: 1883).
+Port used by MQTT (default: 8883).
 
 =item B<--mqtt-ssl>
 

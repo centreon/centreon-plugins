@@ -34,18 +34,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'topic:s'              => { name => 'topic' },
-        'format-value-pattern' => { name => 'format_value_pattern' },
+        'topic:s'            => { name => 'topic' },
+        'format-custom'      => { name => 'format_custom' },
 
-        'warning-regexp:s'     => { name => 'warning_regexp' },
-        'critical-regexp:s'    => { name => 'critical_regexp' },
-        'unknown-regexp:s'     => { name => 'unknown_regexp' },
-        'regexp-insensitive'   => { name => 'use_iregexp' },
+        'warning-regexp:s'   => { name => 'warning_regexp' },
+        'critical-regexp:s'  => { name => 'critical_regexp' },
+        'unknown-regexp:s'   => { name => 'unknown_regexp' },
+        'regexp-insensitive' => { name => 'use_iregexp' },
 
-        'format-ok:s'          => { name => 'format_ok', default => 'value: %{value}' },
-        'format-warning:s'     => { name => 'format_warning', default => 'value: %{value}' },
-        'format-critical:s'    => { name => 'format_critical', default => 'value: %{value}' },
-        'format-unknown:s'     => { name => 'format_unknown', default => 'value: %{value}' },
+        'format-ok:s'        => { name => 'format_ok', default => 'value: %{value}' },
+        'format-warning:s'   => { name => 'format_warning', default => 'value: %{value}' },
+        'format-critical:s'  => { name => 'format_critical', default => 'value: %{value}' },
+        'format-unknown:s'   => { name => 'format_unknown', default => 'value: %{value}' },
     });
 
     return $self;
@@ -118,8 +118,8 @@ sub manage_selection {
         topic => $self->{option_results}->{topic}
     );
 
-    if (!centreon::plugins::misc::is_empty($self->{option_results}->{format_value_pattern})) {
-        if ($value =~ /$self->{option_results}->{format_value_pattern}/ && defined($1)) {
+    if (!centreon::plugins::misc::is_empty($self->{option_results}->{format_custom})) {
+        if ($value =~ /$self->{option_results}->{format_custom}/ && defined($1)) {
             $value = $1;
         }
     }
