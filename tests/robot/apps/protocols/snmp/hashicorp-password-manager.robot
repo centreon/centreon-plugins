@@ -1,14 +1,15 @@
 *** Settings ***
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}vault-authentication-hashicorp.json
+${MOCKOON_JSON}     ${CURDIR}${/}vault-authentication-hashicorp.json
 
-${CMD}                  ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=127.0.0.1
+${CMD}              ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=127.0.0.1
 
 
 *** Test Cases ***
