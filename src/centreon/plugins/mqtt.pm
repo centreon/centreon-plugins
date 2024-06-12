@@ -25,7 +25,6 @@ use warnings;
 use Time::HiRes;
 use Net::MQTT::Simple;
 use Net::MQTT::Simple::SSL;
-use centreon::plugins::misc qw(is_empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,7 +41,7 @@ sub new {
             'mqtt-ssl-key:s'         => { name => 'mqtt_ssl_key' },
             'mqtt-username:s'        => { name => 'mqtt_username' },
             'mqtt-password:s'        => { name => 'mqtt_password' },
-            'mqtt-allow-unsecure'    => { name => 'mqtt_allow_unsecure', default => 0 },
+            'mqtt-allow-insecure'    => { name => 'mqtt_allow_insecure', default => 0 },
             'mqtt-timeout:s'         => { name => 'mqtt_timeout', default => 5 }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'MQTT GLOBAL OPTIONS');
@@ -80,11 +79,11 @@ sub set_mqtt_options {
         return;
     }
 
-    if ($self->{mqtt_allow_unsecure} == 1) {
+    if (!centreon::plugins::misc::is_empty($self->{mqtt_allow_insecure}) && $self->{mqtt_allow_insecure} == 1) {
         $ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
     }
 
-    if ($self->{mqtt_ssl} == 1) {
+    if (!centreon::plugins::misc::is_empty($self->{mqtt_ssl}) && $self->{mqtt_ssl} == 1) {
         $self->{mqtt} = Net::MQTT::Simple::SSL->new($self->{mqtt_host}, {
             LocalPort     => $self->{mqtt_port},
             SSL_ca_file   => $self->{mqtt_ca_certificate},
@@ -156,7 +155,7 @@ MQTT global
 
 =head1 SYNOPSIS
 
-mqtt class
+MQTT class
 
 =head1 MQTT OPTIONS
 
@@ -168,7 +167,7 @@ Name or address of the host to monitor (mandatory).
 
 =item B<--mqtt-port>
 
-Port used by MQTT (default => 1883).
+Port used by MQTT (default: 1883).
 
 =item B<--mqtt-ssl>
 
@@ -194,7 +193,7 @@ MQTT username.
 
 MQTT password.
 
-=item B<--mqtt-allow-unsecure>
+=item B<--mqtt-allow-insecure>
 
 Allow unsecure login (default: 0).
 

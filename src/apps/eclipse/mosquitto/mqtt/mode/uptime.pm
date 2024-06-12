@@ -109,17 +109,16 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $topic   = '$SYS/broker/uptime';
-    my %results = $options{mqtt}->query(
+    my $topic  = '$SYS/broker/uptime';
+    my $uptime = $options{mqtt}->query(
         topic => $topic
     );
 
-    my $uptime = $results{$topic};
     if ($uptime =~ /^(\d+) seconds$/) {
         $uptime = $1;
     }
 
-    if (!defined($uptime)) {
+    if (centreon::plugins::misc::is_empty($uptime)) {
         $self->{output}->add_option_msg(short_msg => "Cannot find uptime information");
         $self->{output}->option_exit();
     }

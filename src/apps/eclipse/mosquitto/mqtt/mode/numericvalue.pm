@@ -49,25 +49,47 @@ sub new {
     return $self;
 }
 
-sub check_options {
+sub custom_generic_output {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 
-    if (!defined($options{option_results}->{topic})) {
-        $self->{output}->add_option_msg(short_msg => 'Missing parameter --topic.');
-        $self->{output}->option_exit();
+    my $format = $self->{instance_mode}{option_results}->{perfdata_name} . ' is: %s';
+    if (defined($self->{instance_mode}{option_results}->{format})) {
+        $format = $self->{instance_mode}{option_results}->{format};
     }
-    $self->{topic} = $options{option_results}->{topic};
 
-    $self->{warning}           = $options{option_results}->{warning};
-    $self->{critical}          = $options{option_results}->{critical};
-    $self->{extracted_pattern} = $options{option_results}->{extracted_pattern};
-    $self->{format}            = $options{option_results}->{format};
-    $self->{format_custom}     = $options{option_results}->{format_custom};
-    $self->{perfdata_unit}     = $options{option_results}->{perfdata_unit};
-    $self->{perfdata_name}     = $options{option_results}->{perfdata_name};
-    $self->{perfdata_min}      = $options{option_results}->{perfdata_min};
-    $self->{perfdata_max}      = $options{option_results}->{perfdata_max};
+    my $value = $self->{result_values}->{numericvalue};
+    if (!centreon::plugins::misc::is_empty($self->{instance_mode}{option_results}->{format_custom})) {
+        $value = eval "$value $self->{instance_mode}{option_results}->{format_custom}";
+    }
+
+    return sprintf($format, $value);
+}
+
+sub custom_generic_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        label    => $options{option_results}->{perfdata_name},
+        unit     => $options{option_results}->{perfdata_unit},
+        value    => $self->{result_values}->{numericvalue},
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min      => $options{option_results}->{perfdata_min},
+        max      => $options{option_results}->{perfdata_max}
+    );
+}
+
+sub custom_generic_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value     => $self->{result_values}->{numericvalue},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-' . $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
 }
 
 sub set_counters {
@@ -89,59 +111,25 @@ sub set_counters {
     ];
 }
 
-sub custom_generic_output {
+sub check_options {
     my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
 
-    my $format = $self->{instance_mode}->{perfdata_name} . ' is: %s';
-    if (defined($self->{instance_mode}->{format})) {
-        $format = $self->{instance_mode}->{format};
+    if (!defined($options{option_results}->{topic})) {
+        $self->{output}->add_option_msg(short_msg => 'Missing parameter --topic.');
+        $self->{output}->option_exit();
     }
-
-    my $value = $self->{result_values}->{numericvalue};
-    if (!centreon::plugins::misc::is_empty($options{entry}->{format_custom})) {
-        $value = eval "$value $options{entry}->{format_custom}";
-    }
-
-    return sprintf($format, $value);
-}
-
-sub custom_generic_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        label    => $self->{instance_mode}->{perfdata_name},
-        unit     => $self->{instance_mode}->{perfdata_unit},
-        value    => $self->{result_values}->{numericvalue},
-        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min      => $self->{instance_mode}->{perfdata_min},
-        max      => $self->{instance_mode}->{perfdata_max}
-    );
-}
-
-sub custom_generic_threshold {
-    my ($self, %options) = @_;
-
-    return $self->{perfdata}->threshold_check(
-        value     => $self->{result_values}->{numericvalue},
-        threshold => [
-            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' },
-            { label => 'unknown-' . $self->{thlabel}, exit_litteral => 'unknown' }
-        ]
-    );
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %results = $options{mqtt}->query(
-        topic => $self->{topic}
+    my $value = $options{mqtt}->query(
+        topic => $self->{option_results}->{topic}
     );
 
-    my $value = $results{$self->{topic}};
-    if (!centreon::plugins::misc::is_empty($options{option_results}->{extracted_pattern})) {
-        if ($value =~ /$options{option_results}->{extracted_pattern}/ && defined($1)) {
+    if (!centreon::plugins::misc::is_empty($self->{option_results}->{extracted_pattern})) {
+        if ($value =~ /$self->{option_results}->{extracted_pattern}/ && defined($1)) {
             $value = $1;
         }
     }
@@ -167,13 +155,13 @@ __END__
 
 =head1 MODE
 
-Check a topic.
+Check an Eclipse Mosquitto MQTT topic numeric value.
 
 =over 8
 
 =item B<--topic>
 
-Topic value to check (numeric format only).
+Topic value to check.
 
 =item B<--warning>
 

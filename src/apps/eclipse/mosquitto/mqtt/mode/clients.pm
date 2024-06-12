@@ -24,9 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use Time::HiRes qw(time);
-use POSIX qw(floor);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -57,8 +54,6 @@ sub new {
     my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
     return $self;
 }
 
@@ -88,7 +83,7 @@ Check clients statistics.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'clients-connected', 'clients-max', 'clients-active', 'clients-inactive'.
+Can be: 'clients-connected', 'clients-maximum', 'clients-active', 'clients-inactive'.
 
 =back
 
