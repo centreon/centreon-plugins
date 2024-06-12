@@ -4,6 +4,7 @@
 --critical-bytesallocatedpercentage
 --display-transform-dst
 --display-transform-src
+--dyn-mode
 --exclude-fs
 --filter-fs
 --filter-vdom
@@ -11,6 +12,8 @@
 --force-counters64
 --force-oid
 --map-speed-dsl
+--mqtt
+--mqtt-ssl
 --nagvis-perfdata
 --oid-display
 --oid-extra-display
@@ -38,10 +41,13 @@ in-ucast
 interface-dsl-name
 IpAddr
 Iwsva
+keepass
 ldap
 license-instances-usage-prct
 Loggly
 MBean
+Mosquitto
+MQTT
 NagVis
 Netscaler
 OID
@@ -61,6 +67,7 @@ SNMP
 space-usage-prct
 SSH
 SureBackup
+teampass
 timeframe
 topic-messages-inflighted
 total-oper-down
