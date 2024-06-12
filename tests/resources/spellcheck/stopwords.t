@@ -1,5 +1,6 @@
 --add-sysdesc
 --api-password
+--api-version
 --critical-bytesallocatedpercentage
 --display-transform-dst
 --display-transform-src
@@ -26,6 +27,8 @@ eth
 fanspeed
 Fortigate
 Fortinet
+HashiCorp
+hashicorpvault
 ifAlias
 ifDesc
 ifName
@@ -35,12 +38,14 @@ in-ucast
 interface-dsl-name
 IpAddr
 Iwsva
+ldap
 license-instances-usage-prct
 Loggly
 MBean
 NagVis
 Netscaler
 OID
+okta
 oneaccess-sys-mib
 out-bcast
 out-mcast
@@ -62,6 +67,9 @@ total-oper-down
 total-oper-up
 TendMicro
 uptime
+userpass
 VDSL2
 Veeam
+v1
+v2
 WSMAN

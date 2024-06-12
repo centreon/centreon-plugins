@@ -24,5 +24,4 @@ runs:
 
     - name: Install, test and remove plugin
       shell: bash
-      run: |
-        python3 .github/scripts/test-all-plugins.py ${{ inputs.package-extension }} ${{ inputs.plugin-list }}
+      run: python3 .github/scripts/test-all-plugins.py ${{ inputs.package-extension }} ${{ inputs.plugin-list }}
