@@ -93,7 +93,7 @@ sub set_mqtt_options {
     } else {
         $self->{mqtt} = Net::MQTT::Simple->new($self->{mqtt_host} . ':' . $self->{mqtt_port});
     }
-    $self->{mqtt}->login($self->{mqtt_username}, $self->{mqtt_password}) if (defined($self->{mqtt_username}) && defined($self->{mqtt_password}));
+    $self->{mqtt}->login($self->{mqtt_username}, $self->{mqtt_password}) if (!centreon::plugins::misc::is_empty($self->{mqtt_username}) && !centreon::plugins::misc::is_empty($self->{mqtt_password}));
 
     $self->{connection_set} = 1;
 }
