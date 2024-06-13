@@ -32,7 +32,7 @@ Linux SNMP list diskio devices
         ...    --snmp-version=2
         ...    --snmp-port=2024
         ...    --disco-show
-        ${command}    Catenate    ${command}    --snmp-community=${list_diskio_test.snmpcommunity}
+        ...    --snmp-community=${list_diskio_test.snmpcommunity}
         ${output}    Run    ${command}
         Log To Console    ${command}
         ${nb_results}    Get Element Count

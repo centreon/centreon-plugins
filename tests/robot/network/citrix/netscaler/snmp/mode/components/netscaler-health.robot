@@ -7,7 +7,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::citrix::netscaler::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::citrix::netscaler::snmp::plugin
+
 
 *** Test Cases ***
 check psu components ${tc}/2
@@ -32,5 +33,3 @@ check psu components ${tc}/2
     Examples:        tc    alternative_status_mapping    community    expected_result    --
             ...      1     true        psu-citrix-v13    OK: All 4 components are ok [4/4 psus]. | 'count_psu'=4;;;;
             ...      2     ${EMPTY}    psu-citrix-v13    UNKNOWN: Power supply '1' status is 'not supported' - Power supply '2' status is 'not supported' - Power supply '3' status is 'not supported' - Power supply '4' status is 'not supported' | 'count_psu'=4;;;;
-
-
