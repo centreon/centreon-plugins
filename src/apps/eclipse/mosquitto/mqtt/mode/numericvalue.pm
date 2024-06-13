@@ -115,7 +115,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($options{option_results}->{topic})) {
+    if (centreon::plugins::misc::is_empty($options{option_results}->{topic})) {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --topic.');
         $self->{output}->option_exit();
     }

@@ -71,7 +71,7 @@ sub custom_stringvalue_threshold {
 
     my $severity = 'ok';
     foreach my $check_severity (('critical', 'warning', 'unknown')) {
-        next if (!defined($self->{option_results}->{$check_severity . '_regexp'}));
+        next if (centreon::plugins::misc::is_empty($self->{option_results}->{$check_severity . '_regexp'}));
         my $regexp = $self->{option_results}->{$check_severity . '_regexp'};
         if (defined($self->{option_results}->{use_iregexp}) && $options{value} =~ /$regexp/i) {
             $severity = $check_severity;
@@ -105,7 +105,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($options{option_results}->{topic})) {
+    if (centreon::plugins::misc::is_empty($options{option_results}->{topic})) {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --topic.');
         $self->{output}->option_exit();
     }
@@ -138,7 +138,7 @@ __END__
 
 =head1 MODE
 
-Check an Eclipse Mosquitto MQTT topic string value.
+Check an Eclipse Mosquitto MQTT topic value against regular expression.
 
 =over 8
 
@@ -146,17 +146,21 @@ Check an Eclipse Mosquitto MQTT topic string value.
 
 Topic value to check.
 
+=item B<--format-custom>
+
+Apply a custom change on the value.
+
 =item B<--warning-regexp>
 
-Return Warning if an oid value match the regexp.
+Return Warning if the topic value match the regexp.
 
 =item B<--critical-regexp>
 
-Return Critical if an oid value match the regexp.
+Return Critical if the topic value match the regexp.
 
 =item B<--regexp-insensitive>
 
-Allows to use regexp non case-sensitive.
+Allows to use case-insensitive regexp.
 
 =item B<--format-*>
 
