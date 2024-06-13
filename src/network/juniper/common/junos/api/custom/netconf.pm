@@ -177,7 +177,8 @@ my $commands = {
     'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
     'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
     'show mpls lsp' => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
-    'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>'
+    'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>',
+    'show services rpm probe-results' => '<rpc><get-probe-results></get-probe-results></rpc>'
 };
 
 sub get_rpc_commands {
@@ -185,7 +186,7 @@ sub get_rpc_commands {
 
     my $rpc_commands = {};
     foreach my $command (@{$options{commands}}) {
-        next if ($command eq '' || $command !~ /([a-z]+)/);
+        next if ($command eq '' || $command !~ /([a-z_]+)/);
         my $label = $1;
         if ($label eq 'cpu') {
             $rpc_commands->{'show chassis routing-engine'} = $commands->{'show chassis routing-engine'};
@@ -210,6 +211,8 @@ sub get_rpc_commands {
             $rpc_commands->{'show mpls lsp'} = $commands->{'show mpls lsp'};
         } elsif ($label eq 'rsvp') {
             $rpc_commands->{'show rsvp session statistics'} = $commands->{'show rsvp session statistics'};
+        } elsif ($label eq 'service_rpm') {
+            $rpc_commands->{'show services rpm probe-results'} = $commands->{'show services rpm probe-results'};
         } else {
             $self->{output}->add_option_msg(short_msg => "unsupported command: $command");
             $self->{output}->option_exit();
@@ -643,6 +646,44 @@ sub get_rsvp_infos {
                 lspBytes => $bytes
             };
         }
+    }
+
+    return $results;
+}
+
+sub get_service_rpm_infos {
+    my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'service_rpm');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['service_rpm']));
+    }
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<probe-results.*?>', end_tag => '</probe-results>', force_array => ['probe-test-results']);
+
+    foreach (@{$result->{'probe-test-results'}}) {
+        push @$results, {
+            testName => $_->{'test-name'},
+            targetAddress => $_->{'target-address'},
+            sourceAddress => $_->{'source-address'},
+            probeType => $_->{'probe-type'},
+            probeStatus => $_->{'probe-single-results'}->{'probe-status'},
+            lastLossPercentage => $_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'loss-percentage'},
+            lastRTTAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
+            lastRTTJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
+            lastRTTStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
+            lastPRTJAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
+            lastPRTJJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
+            lastPRTJStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
+            lastNRTJAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
+            lastNRTJJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
+            lastNRTJStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
+        };
     }
 
     return $results;

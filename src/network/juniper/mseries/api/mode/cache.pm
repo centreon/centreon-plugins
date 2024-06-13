@@ -42,7 +42,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{commands}) || $self->{option_results}->{commands} eq '') {
-        $self->{option_results}->{commands} = 'bgp,cpu,disk,hardware,interface,ldp,lsp,memory,rsvp';
+        $self->{option_results}->{commands} = 'bgp,cpu,disk,hardware,interface,ldp,lsp,memory,rsvp,service_rpm';
     }
 
     $self->{option_results}->{commands} = [split(/,/, $self->{option_results}->{commands})];
