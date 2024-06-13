@@ -30,23 +30,25 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'bgp'             => 'network::juniper::common::junos::api::mode::bgp',
-        'cache'           => 'network::juniper::mseries::api::mode::cache',
-        'collection'      => 'network::juniper::common::junos::api::mode::collection',
-        'cpu'             => 'network::juniper::common::junos::api::mode::cpu',
-        'disks'           => 'network::juniper::common::junos::api::mode::disks',
-        'hardware'        => 'network::juniper::common::junos::api::mode::hardware',
-        'interfaces'      => 'network::juniper::common::junos::api::mode::interfaces',
-        'ldp'             => 'network::juniper::common::junos::api::mode::ldp',
-        'lsp'             => 'network::juniper::common::junos::api::mode::lsp',
-        'list-bgp'        => 'network::juniper::common::junos::api::mode::listbgp',
-        'list-disks'      => 'network::juniper::common::junos::api::mode::listdisks',
-        'list-interfaces' => 'network::juniper::common::junos::api::mode::listinterfaces',
-        'list-ldp'        => 'network::juniper::common::junos::api::mode::listldp',
-        'list-lsp'        => 'network::juniper::common::junos::api::mode::listlsp',
-        'list-rsvp'       => 'network::juniper::common::junos::api::mode::listrsvp',
-        'memory'          => 'network::juniper::common::junos::api::mode::memory',
-        'rsvp'            => 'network::juniper::common::junos::api::mode::rsvp'
+        'bgp'               => 'network::juniper::common::junos::api::mode::bgp',
+        'cache'             => 'network::juniper::mseries::api::mode::cache',
+        'collection'        => 'network::juniper::common::junos::api::mode::collection',
+        'cpu'               => 'network::juniper::common::junos::api::mode::cpu',
+        'disks'             => 'network::juniper::common::junos::api::mode::disks',
+        'hardware'          => 'network::juniper::common::junos::api::mode::hardware',
+        'interfaces'        => 'network::juniper::common::junos::api::mode::interfaces',
+        'ldp'               => 'network::juniper::common::junos::api::mode::ldp',
+        'lsp'               => 'network::juniper::common::junos::api::mode::lsp',
+        'list-bgp'          => 'network::juniper::common::junos::api::mode::listbgp',
+        'list-disks'        => 'network::juniper::common::junos::api::mode::listdisks',
+        'list-interfaces'   => 'network::juniper::common::junos::api::mode::listinterfaces',
+        'list-ldp'          => 'network::juniper::common::junos::api::mode::listldp',
+        'list-lsp'          => 'network::juniper::common::junos::api::mode::listlsp',
+        'list-rsvp'         => 'network::juniper::common::junos::api::mode::listrsvp',
+        'list-services-rpm' => 'network::juniper::common::junos::api::mode::listservicesrpm',
+        'memory'            => 'network::juniper::common::junos::api::mode::memory',
+        'rsvp'              => 'network::juniper::common::junos::api::mode::rsvp',
+        'services-rpm'      => 'network::juniper::common::junos::api::mode::servicesrpm'
     };
 
     $self->{custom_modes}->{netconf} = 'network::juniper::common::junos::api::custom::netconf';
