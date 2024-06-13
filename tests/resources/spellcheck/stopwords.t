@@ -13,7 +13,15 @@
 --force-oid
 --map-speed-dsl
 --mqtt
+--mqtt-allow-insecure
+--mqtt-ca-certificate
+--mqtt-password
+--mqtt-port
 --mqtt-ssl
+--mqtt-ssl-certificate
+--mqtt-ssl-key
+--mqtt-timeout
+--mqtt-username
 --nagvis-perfdata
 --oid-display
 --oid-extra-display
