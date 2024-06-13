@@ -67,7 +67,7 @@ sub check_options {
     $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
     $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
     $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
-    $self->{mqtt_allow_unsecure}  = $options{option_results}->{mqtt_allow_unsecure};
+    $self->{mqtt_allow_insecure}  = $options{option_results}->{mqtt_allow_insecure};
     $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
 }
 
@@ -195,7 +195,7 @@ MQTT password.
 
 =item B<--mqtt-allow-insecure>
 
-Allow unsecure login (default: 0).
+Allow insecure login (default: 0).
 
 =item B<--mqtt-timeout>
 
@@ -205,6 +205,6 @@ MQTT timeout (default: 5).
 
 =head1 DESCRIPTION
 
-B<mqtt>.
+B<MQTT>.
 
 =cut
