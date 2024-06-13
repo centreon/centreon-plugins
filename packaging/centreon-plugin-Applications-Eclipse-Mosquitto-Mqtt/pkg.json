@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Eclipse-Mosquitto-Mqtt",
+    "pkg_summary": "Centreon Plugin to monitor Eclipse Mosquitto throught MQTT",
+    "plugin_name": "centreon_eclipse_mosquitto_mqtt.pl",
+    "files": [
+        "centreon/plugins/script_mqtt.pm",
+        "centreon/plugins/mqtt.pm",
+        "apps/eclipse/mosquitto/mqtt/"
+    ]
+}
