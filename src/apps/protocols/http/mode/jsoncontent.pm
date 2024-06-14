@@ -381,7 +381,7 @@ __END__
 
 =head1 MODE
 
-Check JSON webservice. Can send the json request with option '--data'. Example:
+Check JSON web service. Can send the json request with option '--data'. Example:
 centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=json-content --data='/home/user/request.json' --hostname='myws.site.com' --urlpath='/get/payment'
 --lookup='$..expiration' --header='Content-Type: application/json'
 
