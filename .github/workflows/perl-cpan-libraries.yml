@@ -318,6 +318,7 @@ jobs:
         image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
         name:
           [
+            "Paws",
             "Authen::SCRAM::Client",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
@@ -333,7 +334,6 @@ jobs:
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
             "Net::SMTP_auth",
-            "Paws",
             "Statistics::Regression",
             "WWW::Selenium",
             "ZMQ::Constants",
@@ -362,8 +362,6 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
-          - name: "Paws"
-            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
