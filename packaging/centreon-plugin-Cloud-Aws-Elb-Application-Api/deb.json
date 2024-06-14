@@ -1,5 +1,6 @@
 {
     "dependencies": [
-        "libdatetime-perl"
+        "libdatetime-perl",
+        "libpaws-perl"
     ]
 }
