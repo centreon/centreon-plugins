@@ -88,3 +88,4 @@ Veeam
 v1
 v2
 WSMAN
+Kubernetes
