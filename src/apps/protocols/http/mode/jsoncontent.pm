@@ -193,6 +193,8 @@ sub lookup {
 
     $self->decode_json_response();
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
+        next if ($xpath_find eq '');
+
         eval {
             my $jpath = JSON::Path->new($xpath_find);
             @values = $jpath->values($self->{json_response_decoded});
