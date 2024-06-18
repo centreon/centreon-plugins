@@ -64,7 +64,13 @@ sub prefix_traffic_output {
     return 'traffic out: ';
 }
 
-sub prefix_packet_output {
+sub prefix_packet_other_port_output {
+    my ($self, %options) = @_;
+
+    return 'packets ';
+}
+
+sub prefix_packet_network_port_output {
     my ($self, %options) = @_;
 
     return 'packets ';
@@ -75,9 +81,8 @@ sub custom_signal_perfdata {
 
     my $instances = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
-        push @$instances, $self->{result_values}->{$_};
+        push @{$instances}, $self->{result_values}->{$_};
     }
-
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         instances => $instances,
@@ -98,7 +103,8 @@ sub set_counters {
                 { name => 'license', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'link', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
-                { name => 'packet', type => 0, cb_prefix_output => 'prefix_packet_output', skipped_code => { -10 => 1 } }
+                { name => 'packet_network_port', type => 0, cb_prefix_output => 'prefix_packet_network_port_output', skipped_code => { -10 => 1 } },
+                { name => 'packet_other_port', type => 0, cb_prefix_output => 'prefix_packet_other_port_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -155,7 +161,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{packet} = [
+    $self->{maps_counters}->{packet_other_port} = [
         { label => 'packets-out', nlabel => 'port.packets.out.count', set => {
                 key_values => [ { name => 'packets_out', diff => 1 } ],
                 output_template => 'out: %s',
@@ -183,6 +189,49 @@ sub set_counters {
         { label => 'packets-insp', nlabel => 'port.packets.insp.count', set => {
                 key_values => [ { name => 'packets_insp', diff => 1 } ],
                 output_template => 'insp: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{packet_network_port} = [
+        { label => 'packets-out', nlabel => 'port.packets.out.count', set => {
+                key_values => [ { name => 'packets_out', diff => 1 } ],
+                output_template => 'out: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-pass', nlabel => 'port.packets.pass.count', set => {
+                key_values => [ { name => 'packets_pass', diff => 1 } ],
+                output_template => 'pass: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-invalid', nlabel => 'port.packets.invalid.count', set => {
+                key_values => [ { name => 'packets_invalid', diff => 1 } ],
+                output_template => 'invalid: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-deny', nlabel => 'port.packets.deny.count', set => {
+                key_values => [ { name => 'packets_deny', diff => 1 } ],
+                output_template => 'deny: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-crc-alignment-errors', nlabel => 'port.crc.alignment.errors.count', set => {
+                key_values => [ { name => 'packets_crc_alignment_errors', diff => 1 } ],
+                output_template => 'crc alignment errors: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
@@ -268,23 +317,19 @@ sub manage_selection {
         if ($type eq 'Port Group' || $type eq 'Tool Port') {
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{tp_total_tx_count_bytes};
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{tp_current_tx_utilization};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{tp_total_tx_count_packets};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{tp_total_drop_count_packets};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = $_->{tp_total_insp_count_packets};
-            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{tp_total_pass_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_out} = $_->{tp_total_tx_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_dropped} = $_->{tp_total_drop_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_insp} = $_->{tp_total_insp_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_pass} = $_->{tp_total_pass_count_packets};
         }else{
             #$type = Network Port
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{np_total_rx_count_bytes}; #validé
             $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{np_current_rx_utilization}; #validé
-            $self->{ports}->{$_->{default_name}}{packet}{packets_out} = $_->{np_total_rx_count_packets}; #validé
-
-            # Confirmation nécessaire de ces métriques
-            $self->{ports}->{$_->{default_name}}{packet}{packets_dropped} = $_->{np_total_drop_count_packets}; #validé
-            #$_->{np_total_rx_count_invalid_packets} => valeur supplémentaire pour ce groupe
-            $self->{ports}->{$_->{default_name}}{packet}{packets_insp} = 0 ; #on a pas d'équivalence dans ce groupe
-            # $_->{np_total_rx_count_crc_alignment_errors} => valeur supplémentaire pour ce groupe
-            $self->{ports}->{$_->{default_name}}{packet}{packets_pass} = $_->{np_total_pass_count_packets};  #validé
-            #$_->{np_total_deny_count_packets} => valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_out} = $_->{np_total_rx_count_packets}; #validé
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_pass} = $_->{np_total_pass_count_packets};  #validé
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_invalid} = $_->{np_total_rx_count_invalid_packets}; #=> valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_deny} = $_->{np_total_deny_count_packets}; #=> valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_crc_alignment_errors} = $_->{np_total_rx_count_crc_alignment_errors}; #=> valeur supplémentaire pour ce groupe
         }
     }
 
