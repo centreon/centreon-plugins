@@ -81,7 +81,7 @@ sub custom_signal_perfdata {
 
     my $instances = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
-        push @{$instances}, $self->{result_values}->{$_};
+        push @$instances, $self->{result_values}->{$_};
     }
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
