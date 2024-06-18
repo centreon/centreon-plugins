@@ -382,7 +382,7 @@ sub service_message {
     ' . $self->{option_results}->{service_output} . '
     ' . $self->{option_results}->{service_longoutput};
 
-    $self->{option_results}->{service_longoutput} =~ s/\\n/<br \/>/g;
+    $self->{option_results}->{service_longoutput} =~ s/\n/<br \/>/g;
     my $output = $self->{option_results}->{service_output} . $line_break . $self->{option_results}->{service_longoutput};
 
     my $background_color= 'white';
@@ -829,7 +829,7 @@ Use this option to disable SSL.
 
 =item B<--smtp-debug>
 
-Enable smtp-debug mode.
+Enable debugging of SMTP.
 
 =item B<--to-address>
 

@@ -1,0 +1,48 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/debian:bookworm
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# fix locale
+RUN bash -e <<EOF
+
+apt-get update
+apt-get install -y locales libcurl4-openssl-dev curl wget zstd jq
+rm -rf /var/lib/apt/lists/*
+localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+apt-get clean
+
+EOF
+
+ENV LANG en_US.utf8
+
+RUN bash -e <<EOF
+apt-get update
+# Install Robotframework
+apt-get install -y python3-dev python3-pip
+rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED
+pip3 install robotframework robotframework-examples
+# Install snmpsim
+pip3 install snmpsim-lextudio
+
+# Install nodejs
+curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
+apt-get install -y nodejs
+
+# Install mockoon (needs nodejs)
+npm install -g -D @mockoon/cli
+
+# Add Centreon plugins repositories
+echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+apt-get update
+
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+
+apt-get clean
+
+EOF

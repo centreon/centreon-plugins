@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Quanta-Restapi",
+    "pkg_summary": "Centreon Plugin to check Quanta.io application probes results.",
+    "plugin_name": "centreon_monitoring_quanta_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/quanta/restapi"
+    ]
+}

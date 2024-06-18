@@ -106,27 +106,28 @@ sub countFiles {
                 # Cannot list we skip
                 next;
             }
-
+            # this loop is recursive, when we find a directory we add it to the list used by the for loop.
+            # max_depth is used to limit the depth we search.
+            # same behaviour as ftp and sftp protocol.
             foreach my $file (@$files) {
-                next if ($file->[0] != SMBC_FILE && $file->[0] != SMBC_DIR); 
+                next if ($file->[0] != SMBC_FILE && $file->[0] != SMBC_DIR);
                 next if ($file->[1] eq '.' || $file->[1] eq '..');
 
                 my $name = $dir . '/' . $file->[1];
-    
-                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
-                    $name !~ /$self->{option_results}->{filter_file}/) {
-                    $self->{output}->output_add(long_msg => sprintf("skipping '%s'", $name), debug => 1);
-                    next;
-                }
 
                 if ($file->[0] == SMBC_DIR) {
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
                         push @$list, { name => $name, level => $level + 1 };
                     }
-                } else {
-                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
-                    $self->{global}->{detected}++;
+                    next;
+                } elsif (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_file})
+                    # if this is a file check the filter_file regex
+                    && $name !~ /$self->{option_results}->{filter_file}/) {
+                    $self->{output}->output_add(long_msg => sprintf("skipping '%s'", $name), debug => 1);
+                    next;
                 }
+                $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
+                $self->{global}->{detected}++;
             }        
         }
     }

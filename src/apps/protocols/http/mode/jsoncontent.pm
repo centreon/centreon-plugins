@@ -193,6 +193,8 @@ sub lookup {
 
     $self->decode_json_response();
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
+        next if ($xpath_find eq '');
+
         eval {
             my $jpath = JSON::Path->new($xpath_find);
             @values = $jpath->values($self->{json_response_decoded});
@@ -379,7 +381,7 @@ __END__
 
 =head1 MODE
 
-Check JSON webservice. Can send the json request with option '--data'. Example:
+Check JSON web service. Can send the json request with option '--data'. Example:
 centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=json-content --data='/home/user/request.json' --hostname='myws.site.com' --urlpath='/get/payment'
 --lookup='$..expiration' --header='Content-Type: application/json'
 
@@ -389,7 +391,7 @@ JSON OPTIONS:
 
 =item B<--data>
 
-Set the JSON request or specify a file with the request inside.
+Set the JSON request or specify a file with the request inside.
 
 =item B<--lookup>
 
@@ -398,8 +400,8 @@ See: http://goessner.net/articles/JsonPath/
 
 =item B<--lookup-perfdatas-nagios>
 
-Take perfdatas from the JSON response (JSON XPath string)
-Chain must be formated in Nagios format.
+Take perfdata from the JSON response (JSON XPath string)
+Chain must be formatted in Nagios format.
 Ex : "rta=10.752ms;50.000;100.000;0; pl=0%;20;40;; rtmax=10.802ms;;;;"
 
 =back
@@ -473,11 +475,11 @@ Returns a UNKNOWN status if the value matches the string.
 
 =item B<--warning-time>
 
-Warning threshold in seconds of webservice response time
+Warning threshold in seconds of web service response time.
 
 =item B<--critical-time>
 
-Critical threshold in seconds of webservice response time
+Critical threshold in seconds of web service response time.
 
 =back
 
@@ -523,7 +525,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLMv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
@@ -551,11 +553,11 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--get-param>
 
-Set GET params (multiple option. Example: --get-param='key=value').
+Set a parameter for GET requests (multiple option. Example: --get-param='key=value').
 
 =item B<--header>
 
-Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
+Set HTTP headers(multiple option). Example: --header='Content-Type: application/json'.
 
 =item B<--unknown-status>
 

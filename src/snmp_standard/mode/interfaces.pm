@@ -32,7 +32,7 @@ use Safe;
 # Calc functions
 #########################
 sub custom_threshold_output {
-    my ($self, %options) = @_; 
+    my ($self, %options) = @_;
     my $status = 'ok';
 
     if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
@@ -278,7 +278,7 @@ sub custom_traffic_threshold {
 sub custom_traffic_output {
     my ($self, %options) = @_;
 
-    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);
     return sprintf(
         'Traffic %s : %s/s (%s)',
         ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
@@ -298,7 +298,7 @@ sub custom_traffic_calc {
     my $diff_traffic = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} });
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
     $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
-    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
+    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) &&
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
@@ -402,10 +402,10 @@ sub custom_errors_calc {
     }
 
     my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
-    my $errors_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } - 
+    my $errors_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } -
         $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} });
     my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
-    my $total_diff = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
+    my $total_diff = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} -
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
 
     $self->{result_values}->{prct} = 0;
@@ -456,7 +456,7 @@ sub custom_speed_calc {
 sub set_counters_global {
     my ($self, %options) = @_;
 
-    push @{$self->{maps_counters}->{global}}, 
+    push @{$self->{maps_counters}->{global}},
         { label => 'total-port', filter => 'add_global', nlabel => 'total.interfaces.count', set => {
                 key_values => [ { name => 'total_port' } ],
                 output_template => 'Total port : %s', output_error_template => 'Total port : %s',
@@ -509,7 +509,7 @@ sub set_counters_global {
 sub set_counters_status {
     my ($self, %options) = @_;
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'status', filter => 'add_status', threshold => 0, set => {
                 key_values => $self->set_key_values_status(),
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -526,7 +526,7 @@ sub set_counters_traffic {
 
     return if ($self->{no_traffic} != 0 && $self->{no_set_traffic} != 0);
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'in-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => $self->set_key_values_in_traffic(),
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -551,7 +551,7 @@ sub set_counters_errors {
 
     return if ($self->{no_errors} != 0 && $self->{no_set_errors} != 0);
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'in-discard', filter => 'add_errors', nlabel => 'interface.packets.in.discard.count', set => {
                 key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
@@ -592,7 +592,7 @@ sub set_counters_cast {
 
     return if ($self->{no_cast} != 0 && $self->{no_set_cast} != 0);
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'in-ucast', filter => 'add_cast', nlabel => 'interface.packets.in.unicast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_cast_calc'),
@@ -655,7 +655,7 @@ sub set_counters_speed {
 
     return if ($self->{no_speed} != 0 && $self->{no_set_speed} != 0);
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'speed', filter => 'add_speed', nlabel => 'interface.speed.bitspersecond', set => {
                 key_values => [ { name => 'speed' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_speed_calc'),
@@ -676,7 +676,7 @@ sub set_counters_volume {
 
     return if ($self->{no_volume} != 0 && $self->{no_set_volume} != 0);
 
-    push @{$self->{maps_counters}->{int}}, 
+    push @{$self->{maps_counters}->{int}},
         { label => 'in-volume', filter => 'add_volume', nlabel => 'interface.volume.in.bytes', set => {
                 key_values => [ { name => 'in_volume', diff => 1 }, { name => 'display' } ],
                 output_template => 'Volume In : %.2f %s',
@@ -927,13 +927,14 @@ sub new {
     bless $self, $class;
 
     $self->{no_oid_options} = defined($options{no_oid_options}) && $options{no_oid_options} =~ /^[01]$/ ? $options{no_oid_options} : 0;
-    $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ? 
+    $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ?
         $options{no_interfaceid_options} : 0;
 
     $options{options}->add_options(arguments => {
         'add-global'               => { name => 'add_global' },
         'add-status'               => { name => 'add_status' },
         'add-duplex-status'        => { name => 'add_duplex_status' },
+        'regex-id'                 => { name => 'regex_id' },
         'warning-status:s'         => { name => 'warning_status', default => $self->default_warning_status() },
         'critical-status:s'        => { name => 'critical_status', default => $self->default_critical_status() },
         'check-metrics:s'          => { name => 'check_metrics', default => $self->default_check_metrics() },
@@ -1042,7 +1043,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Cannot use option --add-speed with --speed, --speed-in or --speed-out options.');
         $self->{output}->option_exit();
     }
-    
+
     # If no options, we set status
     if (!defined($self->{option_results}->{add_global}) &&
         !defined($self->{option_results}->{add_status}) && !defined($self->{option_results}->{add_traffic}) &&
@@ -1143,7 +1144,7 @@ sub reload_cache {
     if ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_display} }->{get})) {
         $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_display});
     }
-    if (defined($self->{option_results}->{oid_extra_display}) && 
+    if (defined($self->{option_results}->{oid_extra_display}) &&
         ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_extra_display} }->{get}))) {
         $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_extra_display});
     }
@@ -1166,12 +1167,12 @@ sub reload_cache {
         $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_display}}->{cache});
         $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_display});
     }
-    if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
+    if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} &&
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
         $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{cache});
         $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_extra_display});
     }
-    
+
     $self->{statefile_cache}->write(data => $datas);
 }
 
@@ -1205,11 +1206,17 @@ sub get_selection {
     }
 
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
-    if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface}) 
+    if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})
         && $self->{no_interfaceid_options} == 0) {
-        foreach (@{$all_ids}) {
-            if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
-                $self->add_selected_interface(id => $_);
+
+        for my $id (@{$all_ids}) {
+
+            if (defined($self->{option_results}->{regex_id})            # with option regex_id
+                    and $id =~ /$self->{option_results}->{interface}/   # id must match the regex
+                or !defined($self->{option_results}->{regex_id})        # without the option
+                   and $self->{option_results}->{interface}  =~ /(^|\s|,)$id(\s*,|$)/  # the id must be part of the list
+               ) {
+                $self->add_selected_interface(id => $id);
             }
         }
     } else {
@@ -1305,7 +1312,7 @@ sub load_cast {
     my ($self, %options) = @_;
 
     $self->set_oids_cast();
-    if (!defined($self->{option_results}->{force_counters64})) {  
+    if (!defined($self->{option_results}->{force_counters64})) {
         $self->{snmp}->load(
             oids => [
                 $self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
@@ -1360,7 +1367,7 @@ sub manage_selection {
     my $custom_add_result_method = $self->can('custom_add_result');
 
     $self->get_selection();
-    $self->{array_interface_selected} = [keys %{$self->{int}}];    
+    $self->{array_interface_selected} = [keys %{$self->{int}}];
     $self->load_status() if (defined($self->{option_results}->{add_status}) || defined($self->{option_results}->{add_global}));
     $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
@@ -1372,7 +1379,7 @@ sub manage_selection {
     $self->{results} = $self->{snmp}->get_leef();
 
     $self->pre_result();
-    $self->add_result_global() if (defined($self->{option_results}->{add_global}));    
+    $self->add_result_global() if (defined($self->{option_results}->{add_global}));
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
@@ -1383,7 +1390,7 @@ sub manage_selection {
         $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
     }
 
-    $self->{cache_name} = 'snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
+    $self->{cache_name} = 'snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all')) . '_' .
         md5_hex($self->{checking});
@@ -1444,12 +1451,12 @@ sub pre_result {
                     $self->{map_speed_dsl}->[$i]->{speed_in} = $results->{ $self->{oid_adslAturCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
                         if (defined($results->{ $self->{oid_adslAturCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
                     $self->{map_speed_dsl}->[$i]->{speed_out} = $results->{ $self->{oid_adslAtucCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
-                        if (defined($results->{ $self->{oid_adslAtucCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));                    
+                        if (defined($results->{ $self->{oid_adslAtucCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
                 } elsif ($self->{results}->{ $self->{oid_iftype} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} } == 251) {
                     $self->{map_speed_dsl}->[$i]->{speed_in} = $results->{ $self->{oid_xdsl2LineStatusAttainableRateDs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
                         if (defined($results->{ $self->{oid_xdsl2LineStatusAttainableRateDs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
                     $self->{map_speed_dsl}->[$i]->{speed_out} = $results->{ $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
-                        if (defined($results->{ $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));     
+                        if (defined($results->{ $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
                 }
             }
         }
@@ -1458,7 +1465,7 @@ sub pre_result {
 
 sub add_result_status {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
     $self->{int}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
     $self->{int}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
@@ -1466,7 +1473,7 @@ sub add_result_status {
 
 sub add_result_errors {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
@@ -1475,7 +1482,7 @@ sub add_result_errors {
 
 sub add_result_traffic {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{mode_traffic} = 32;
     $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
@@ -1510,7 +1517,7 @@ sub add_result_traffic {
         } else {
             $interface_speed = $self->{results}->{$self->{oid_speed32} . '.' . $options{instance}};
         }
-        
+
         $self->{int}->{$options{instance}}->{speed_in} = $interface_speed;
         $self->{int}->{$options{instance}}->{speed_out} = $interface_speed;
 
@@ -1526,10 +1533,10 @@ sub add_result_traffic {
         $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     }
 }
-    
+
 sub add_result_cast {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{mode_cast} = 32;
     $self->{int}->{$options{instance}}->{iucast} = $self->{results}->{$self->{oid_ifInUcastPkts} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}} : 0;
@@ -1551,11 +1558,11 @@ sub add_result_cast {
             $self->{int}->{$options{instance}}->{mode_cast} = 64;
         }
     }
-    
+
     foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{int}->{$options{instance}}->{$_} = 0 if (!defined($self->{int}->{$options{instance}}->{$_}));
     }
-    
+
     # https://tools.ietf.org/html/rfc3635 : The IF-MIB octet counters
     # count the number of octets sent to or received from the layer below
     # this interface, whereas the packet counters count the number of
@@ -1585,13 +1592,13 @@ sub add_result_speed {
     } else {
         $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
     }
-    
+
     $self->{int}->{$options{instance}}->{speed} = $interface_speed;
 }
 
 sub add_result_volume {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{mode_traffic} = 32;
     $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
@@ -1683,15 +1690,20 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
+Define the interface filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all interfaces will be monitored. 
+To filter on interface names, see --name.
 
 =item B<--name>
 
-Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
+With this option, the interfaces will be filtered by name (given in option --interface) instead of OID index. The name matching mode supports regular expressions.
+
+=item B<--regex-id>
+
+With this option, interface IDs will be filtered using the --interface parameter as a regular expression instead of a list of IDs.
 
 =item B<--speed>
 
@@ -1707,7 +1719,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--map-speed-dsl>
 
-Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
+Get interface speed configuration for interfaces of type 'ADSL' and 'VDSL2'.
 
 Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
 
@@ -1719,7 +1731,7 @@ Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32-bits counters (even with SNMP versions 2c and 3). To use when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 

@@ -102,6 +102,7 @@ sub settings {
 # output : deserialized json from the api if not error found in http call.
 sub request_api {
     my ($self, %options) = @_;
+    $self->settings();
 
     # datacore api require a ServerHost header with the hostname used to query the api to respond.
     # authentication is http standard basic auth.

@@ -34,12 +34,12 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'files-detected', nlabel => 'files.detected.count', set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'number of files: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [ { name => 'detected' } ],
+            output_template => 'number of files: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         }
     ];
 }
@@ -93,7 +93,7 @@ sub manage_selection {
 sub countFiles {
     my ($self, %options) = @_;
     my @listings;
-    
+
     foreach my $dir (@{$self->{option_results}->{directory}}) {
         push @listings, [ { name => $dir, level => 0 } ];
     }
@@ -111,26 +111,27 @@ sub countFiles {
                 # Cannot list we skip
                 next;
             }
-
+            # this loop is recursive, when we find a directory we add it to the list used by the for loop.
+            # max_depth is used to limit the depth we search.
+            # same behaviour as cifs(samba) and ftp protocol.
             foreach my $file (@{$rv->{files}}) {
                 next if ($file->{name} eq '.' || $file->{name} eq '..');
                 my $name = $dir . '/' . $file->{name};
-    
-                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
-                    $name !~ /$self->{option_results}->{filter_file}/) {
-                    $self->{output}->output_add(long_msg => sprintf("skipping '%s'", $name), debug => 1);
-                    next;
-                }
 
                 if ($file->{type} == 2) {
+                    # case of a directory
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
                         push @$list, { name => $name, level => $level + 1 };
                     }
-                } else {
-                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
-                    $self->{global}->{detected}++;
+                    next;
+                } elsif (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_file})
+                    && $name !~ /$self->{option_results}->{filter_file}/) {
+                    $self->{output}->output_add(long_msg => sprintf("skipping '%s'", $name), debug => 1);
+                    next;
                 }
-            }        
+                $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
+                $self->{global}->{detected}++;
+            }
         }
     }
 }
