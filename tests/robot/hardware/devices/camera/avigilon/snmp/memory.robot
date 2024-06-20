@@ -35,4 +35,3 @@ Avigilon camera Memory ${tc}/3
             ...      1     ${EMPTY}             ${EMPTY}                OK: total system memory available: 464.85 KB | 'memory.available'=476004B;;;0;
             ...      2     5000                 ${EMPTY}                WARNING: total system memory available: 464.85 KB | 'memory.available'=476004B;0:5000;;0;
             ...      3     ${EMPTY}             5000                    CRITICAL: total system memory available: 464.85 KB | 'memory.available'=476004B;;0:5000;0;
-

@@ -18,6 +18,6 @@ Start Mockoon
     ...    ${MOCKOON_JSON}
     ...    --port
     ...    3000
-    Sleep    5s
+    Sleep    10s
 Stop Mockoon
     Terminate All Processes

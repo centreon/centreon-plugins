@@ -45,6 +45,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'auth-method:s'    => { name => 'auth_method', default => 'token' },
+        'auth-path:s'      => { name => 'auth_path' },
         'auth-settings:s%' => { name => 'auth_settings' },
         'map-option:s@'    => { name => 'map_option' },
         'secret-path:s@'   => { name => 'secret_path' },
@@ -66,7 +67,10 @@ sub get_access_token {
     my $decoded;
     my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
     my $post_json = JSON::XS->new->utf8->encode($login);
-    my $url_path = '/v1/auth/'. $self->{auth_method} . '/login/';
+    if (!defined($self->{auth_path}) || $self->{auth_path} eq '') {
+        $self->{auth_path} = $self->{auth_method};
+    }
+    my $url_path = '/v1/auth/'. $self->{auth_path} . '/login/';
     $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
 
     my $content = $self->{http}->request(
@@ -143,6 +147,10 @@ sub settings {
     if (!defined($options{option_results}->{secret_path}) || $options{option_results}->{secret_path} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please set the --secret-path option");
         $self->{output}->option_exit();
+    }
+
+    if (defined($options{option_results}->{auth_path})) {		
+        $self->{auth_path} = lc($options{option_results}->{auth_path});
     }
 
     $self->{auth_method} = lc($options{option_results}->{auth_method});
@@ -276,6 +284,12 @@ Can be: 'http', 'https' (default: http).
 
 Authentication method to log in against the Vault server.
 Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (default: 'token');
+
+=item B<--auth-path>
+
+Authentication path for 'userpass'. Is an optional setting.
+
+More information here: https://developer.hashicorp.com/vault/docs/auth/userpass#configuration
 
 =item B<--vault-token>
 
