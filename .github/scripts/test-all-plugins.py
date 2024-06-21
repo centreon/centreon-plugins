@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import glob
 import subprocess
 import sys
 import os
@@ -26,7 +27,7 @@ def test_plugin(plugin_name):
     print(f"{plugin_name} folders_list : {folders_list}")
     if len(folders_list) == 0:
         return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
-    robot_results = subprocess.run("robot -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
+    robot_results = subprocess.run("robot --exclude notauto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
                    shell=True, check=False)
     return robot_results.returncode
 
@@ -100,6 +101,13 @@ def remove_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
+    # Remove cache files
+    tmp_files = glob.glob('/tmp/cache/*')
+    for file in tmp_files:
+        try:
+            os.remove(file)
+        except Exception as e:
+            print(f"Erreur while removing file {file} : {str(e)}")
     return output_status
 
 
@@ -114,6 +122,9 @@ if __name__ == '__main__':
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
 
+    # Create a directory for cache files
+    os.mkdir("/tmp/cache")
+
     error_install = 0
     error_tests = 0
     error_purge = 0
@@ -125,6 +136,11 @@ if __name__ == '__main__':
 
     for plugin in sys.argv:
         print("plugin : ", plugin)
+        folders_list = get_tests_folders(plugin)
+        if len(folders_list) == 0:
+            print(f"we don't test {plugin} as it don't have any robots tests.")
+            continue
+
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)
         if tmp > 0:
