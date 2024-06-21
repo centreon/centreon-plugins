@@ -235,16 +235,34 @@ sub manage_selection {
         my $services = (ref($node->{services}) eq 'ARRAY') ? $node->{services} : [ $node->{services} ];
 
         foreach my $service (@$services) {
+            my $primary_status;
+            my $secondary_status;
+            if ( defined($service->{primary_operational_status}) ) {
+                if ( defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status}}) ) {
+                    $primary_status = $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} };
+                } else {
+                    $primary_status = $service->{primary_operational_status};
+                }
+            } else {
+                $primary_status = '-';
+            }
+            if ( defined($service->{secondary_operational_status}) ) {
+                if ( defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status}}) ) {
+                    $secondary_status = $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} };
+                } else {
+                    $secondary_status = $service->{secondary_operational_status};
+                }
+            } else {
+                $secondary_status = '-';
+            }
+
+
             $self->{vm}->{$id}->{service}->{$id2} = {
                 vm => $node->{name},
                 service => $service->{service},
                 enabled => $service->{enabled} =~ /True|1/i ? 1 : 0,
-                primary_status => 
-                    defined($service->{primary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} } : '-',
-                secondary_status =>
-                    defined($service->{secondary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} } : '-'
+                primary_status => $primary_status,
+                secondary_status => $secondary_status
             };
             $id2++;
         }
