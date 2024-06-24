@@ -406,7 +406,7 @@ sub generic_performance_values_historic {
         return undef if (!defined($perfdata));
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
-            set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
+            set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode) check option --time-shift and ensure this specific metric is retrieved and not late in the vcenter)');
             return undef;
         }
         foreach my $val (@$perfdata) {
