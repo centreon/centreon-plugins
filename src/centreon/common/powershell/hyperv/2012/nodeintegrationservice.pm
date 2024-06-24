@@ -110,6 +110,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get hyper-v informations.
+Method to get Hyper-V information.
 
 =cut
