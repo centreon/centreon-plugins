@@ -18,4 +18,22 @@
         <header_sessionname>SESSION</header_sessionname>
         <header_state>^.*?TAT</header_state>
     </qwinsta>
+    <qwinsta language="it">
+        <created>Totale sessioni create</created>
+        <disconnected>Totale sessioni disconnesse</disconnected>
+        <reconnected>Totale sessioni riconnesse</reconnected>
+        <activestate>Attivo</activestate>
+        <disconnectedstate>Disc</disconnectedstate>
+        <header_sessionname>NOMESESSIONE</header_sessionname>
+        <header_state>STATO</header_state>
+    </qwinsta>
+    <qwinsta language="de">
+        <created>Erstellte Sitzungen gesamt</created>
+        <disconnected>Getrennte Sitzungen gesamt</disconnected>
+        <reconnected>Erneut verbundene Sitzungen gesamt</reconnected>
+        <activestate>Aktiv</activestate>
+        <disconnectedstate>Getr\.</disconnectedstate>
+        <header_sessionname>SITZUNGSNAME</header_sessionname>
+        <header_state>STATUS</header_state>
+    </qwinsta>
 </root>
