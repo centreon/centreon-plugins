@@ -199,7 +199,7 @@ You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{displ
 
 =item B<--filter-name>
 
-Filter by LDP instance name (can be a regexp).
+Filter alarm input (tmnxSasAlarmInputDescription) (can be a regexp).
 
 =back
 
