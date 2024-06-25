@@ -241,16 +241,17 @@ sub write_cache_file {
 
 sub get_cache_file_response {
     my ($self, %options) = @_;
+    my $cache_filename = 'cache_meraki_'
+                         . md5_hex($self->{api_token} . '_' .(defined($self->{option_results}->{api_filter_orgs}) ?
+                                                              $self->{option_results}->{api_filter_orgs} : '')
+                                  );
 
     $self->{cache}->read(
-        statefile => 'cache_meraki_' . md5_hex(
-            $self->{api_token} . '_' . 
-            (defined($self->{option_results}->{api_filter_orgs}) ? $self->{option_results}->{api_filter_orgs} : '')
-        )
+        statefile => $cache_filename
     );
     $self->{datas} = $self->{cache}->get(name => 'response');
     if (!defined($self->{datas})) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing or could not load ' . $cache_filename);
         $self->{output}->option_exit();
     }
 
@@ -579,7 +580,7 @@ Meraki REST API
 
 =head1 SYNOPSIS
 
-api_token Rest API custom mode
+Rest API custom mode
 
 =head1 REST API OPTIONS
 
@@ -587,23 +588,23 @@ api_token Rest API custom mode
 
 =item B<--hostname>
 
-Meraki api hostname (default: 'api.meraki.com')
+Meraki API hostname (default: 'api.meraki.com')
 
 =item B<--port>
 
-Port used (default: 443)
+Define the TCP port to use to reach the API (default: 443).
 
 =item B<--proto>
 
-Specify https if needed (default: 'https')
+Define the protocol to reach the API (default: 'https').
 
 =item B<--api-token>
 
-Meraki api token.
+Meraki API token.
 
 =item B<--timeout>
 
-Set HTTP timeout
+Define the timeout for HTTP requests.
 
 =item B<--ignore-permission-errors>
 
@@ -611,15 +612,15 @@ Ignore permission errors (403 status code).
 
 =item B<--ignore-orgs-api-disabled>
 
-Ignore organizations with api disabled.
+Ignore organizations where the API is disabled.
 
 =item B<--api-filter-orgs>
 
-Filter organizations (regexp).
+Define the organizations to monitor (regular expression).
 
 =item B<--cache-use>
 
-Use the cache file (created with cache mode).
+Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
 
 =back
 
