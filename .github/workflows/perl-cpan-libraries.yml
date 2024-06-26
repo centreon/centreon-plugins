@@ -445,7 +445,6 @@ jobs:
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
 
-
   merge-package-deb-artifacts:
     needs: [package-deb]
     runs-on: ubuntu-22.04
