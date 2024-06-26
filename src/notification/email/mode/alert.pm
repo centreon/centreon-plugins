@@ -210,7 +210,7 @@ sub host_message {
 
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : Host: ' . $self->{option_results}->{host_name} . ' ' . $self->{option_results}->{host_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -330,7 +330,7 @@ sub service_message {
         && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
         my $content = $self->{http}->request(
             hostname => '',
-            full_url => $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
+            full_url => $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
             timeout => $self->{option_results}->{timeout},
             unknown_status => '',
             warning_status => '',
@@ -356,7 +356,7 @@ sub service_message {
     my $line_break = '<br />';
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
 
    
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : ' . $self->{option_results}->{service_description} . ' '. $self->{option_results}->{service_state} . ' on ' . $self->{option_results}->{host_name} . ' ***';
@@ -478,7 +478,7 @@ sub bam_message {
     $self->{option_results}->{service_description} =~ /ba_(\d+)/;
     my $ba_id = $1;
    
-    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/main.php?p=20701&o=d&ba_id=' . $ba_id;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/main.php?p=20701&o=d&ba_id=' . $ba_id;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' BAM: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -591,7 +591,7 @@ sub metaservice_message {
         && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
         my $content = $self->{http}->request(
             hostname => '',
-            full_url => $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
+            full_url => $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
             timeout => $self->{option_results}->{timeout},
             unknown_status => '',
             warning_status => '',
@@ -617,7 +617,7 @@ sub metaservice_message {
     my $line_break = '<br />';
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . '/' . $self->{option_results}->{centreon_pathname} . '/monitoring/resources?details=' . $encoded_data;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' Meta Service: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
