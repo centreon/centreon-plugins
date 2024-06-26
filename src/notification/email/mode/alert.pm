@@ -941,7 +941,7 @@ URL of the Centreon web interface. Use either HTTP or HTTPS protocol depending o
 
 =item B<--centreon-pathname>
 
-Pathname for Centreon (default: centren) 
+Pathname for Centreon (default: centreon) 
 --centreon-pathname='monitor'
 
 =item B<--type>
