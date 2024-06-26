@@ -204,7 +204,7 @@ sub host_message {
 
     my $details = {
         id => $host_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id",
+        resourcesDetailsEndpoint => "/" . $self->{option_results}->{centreon_pathname} . "/api/latest/monitoring/resources/hosts/$host_id",
         tab => "details"
     };
 
@@ -349,7 +349,7 @@ sub service_message {
 
     my $details = {
         id => $service_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        resourcesDetailsEndpoint => "/" . $self->{option_results}->{centreon_pathname} . "/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
         tab => 'details'
     };
 
@@ -610,7 +610,7 @@ sub metaservice_message {
 
     my $details = {
         id => $service_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        resourcesDetailsEndpoint => "/" . $self->{option_results}->{centreon_pathname} . "/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
         tab => 'details'
     };
 
