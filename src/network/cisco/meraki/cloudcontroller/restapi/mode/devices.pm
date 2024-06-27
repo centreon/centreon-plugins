@@ -619,7 +619,7 @@ Don't monitor clients traffic on device.
 
 =item B<--skip-performance>
 
-Don't monitor appliance perfscore.
+Don't monitor appliance performance score.
 
 =item B<--skip-connections>
 
