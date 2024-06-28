@@ -156,7 +156,7 @@ jobs:
 
       - if: ${{ matrix.distrib == 'el7' }}
         # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
