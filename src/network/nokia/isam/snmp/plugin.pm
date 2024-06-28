@@ -33,11 +33,12 @@ sub new {
     %{$self->{modes}} = (
         'cpu'               => 'network::nokia::isam::snmp::mode::cpu',
         'hardware'          => 'network::nokia::isam::snmp::mode::hardware',
+        'hub-sap-usage'     => 'network::nokia::isam::snmp::mode::hubsapusage',
         'interfaces'        => 'snmp_standard::mode::interfaces',
         'list-hub-sap'      => 'network::nokia::isam::snmp::mode::listhubsap',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'memory'            => 'network::nokia::isam::snmp::mode::memory',
-        'hub-sap-usage'     => 'network::nokia::isam::snmp::mode::hubsapusage',
+        'uptime'            => 'snmp_standard::mode::uptime',
     );
 
     return $self;
@@ -49,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Nokia (formerly Alcatel) DSL ISAM devices (also ASAM) using SNMP.
+Monitor Nokia (formerly Alcatel) DSL ISAM devices (also ASAM) using SNMP.
 
 =cut
