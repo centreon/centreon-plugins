@@ -1,5 +1,7 @@
 --add-sysdesc
+--api-filter-orgs
 --api-password
+--api-token
 --api-version
 --cacert-file
 --cert-pkcs12
@@ -15,6 +17,7 @@
 --force-counters64
 --force-oid
 --get-param
+--ignore-orgs-api-disabled
 --lookup-perfdatas-nagios
 --map-speed-dsl
 --mqtt
@@ -47,6 +50,7 @@ Iwsva
 Loggly
 MBean
 MQTT
+Meraki
 Mosquitto
 NTLMv2
 NagVis
@@ -59,11 +63,16 @@ SNMP
 SSH
 Sansymphony
 SureBackup
+TCP
 TendMicro
 VDSL2
+VPN
 Veeam
 WSMAN
 XPath
+api.meraki.com
+connections-dhcp
+connections-dns
 deltaps
 df
 eth
@@ -93,6 +102,8 @@ space-usage-prct
 teampass
 timeframe
 topic-messages-inflighted
+total-offline-prct
+total-online-prct
 total-oper-down
 total-oper-up
 uptime
