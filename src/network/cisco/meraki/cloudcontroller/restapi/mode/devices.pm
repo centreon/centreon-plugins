@@ -589,6 +589,10 @@ Check devices.
 
 Filter devices by name (can be a regexp).
 
+=item B<--filter-link-name>
+
+Filter VPN links by name (can be a regexp).
+
 =item B<--filter-network-id>
 
 Filter devices by network ID (can be a regexp).
