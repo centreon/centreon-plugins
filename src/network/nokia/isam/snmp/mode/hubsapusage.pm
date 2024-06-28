@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::hubsapusage;
+package network::nokia::isam::snmp::mode::hubsapusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -334,7 +334,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_alcatel_isam_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_nokia_isam_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 || !defined($timestamp_cache) ||
         ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
@@ -404,7 +404,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = 'alcatel_isam_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'nokia_isam_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

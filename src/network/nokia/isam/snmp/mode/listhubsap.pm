@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::listhubsap;
+package network::nokia::isam::snmp::mode::listhubsap;
 
 use base qw(centreon::plugins::mode);
 

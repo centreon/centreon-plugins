@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::plugin;
+package network::nokia::isam::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'               => 'network::alcatel::isam::snmp::mode::cpu',
-        'hardware'          => 'network::alcatel::isam::snmp::mode::hardware',
+        'cpu'               => 'network::nokia::isam::snmp::mode::cpu',
+        'hardware'          => 'network::nokia::isam::snmp::mode::hardware',
         'interfaces'        => 'snmp_standard::mode::interfaces',
-        'list-hub-sap'      => 'network::alcatel::isam::snmp::mode::listhubsap',
+        'list-hub-sap'      => 'network::nokia::isam::snmp::mode::listhubsap',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::alcatel::isam::snmp::mode::memory',
-        'hub-sap-usage'     => 'network::alcatel::isam::snmp::mode::hubsapusage',
+        'memory'            => 'network::nokia::isam::snmp::mode::memory',
+        'hub-sap-usage'     => 'network::nokia::isam::snmp::mode::hubsapusage',
     );
 
     return $self;
@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alcatel DSL ISAM Family (also ASAM) in SNMP.
+Check Nokia (formerly Alcatel) DSL ISAM devices (also ASAM) using SNMP.
 
 =cut

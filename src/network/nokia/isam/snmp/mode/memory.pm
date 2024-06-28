@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::memory;
+package network::nokia::isam::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 

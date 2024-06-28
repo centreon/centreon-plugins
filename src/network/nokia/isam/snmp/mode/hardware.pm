@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::hardware;
+package network::nokia::isam::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -40,7 +40,7 @@ sub set_system {
         ]
     };
     
-    $self->{components_path} = 'network::alcatel::isam::snmp::mode::components';
+    $self->{components_path} = 'network::nokia::isam::snmp::mode::components';
     $self->{components_module} = ['cardtemperature', 'sfp'];
 }
 
