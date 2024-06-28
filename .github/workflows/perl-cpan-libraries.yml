@@ -139,6 +139,9 @@ jobs:
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
+          - name: "Mojo::IOLoop::Signal"
+            rpm_dependencies: "perl-Mojolicious"
+
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -442,7 +445,6 @@ jobs:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
-
 
   merge-package-deb-artifacts:
     needs: [package-deb]
