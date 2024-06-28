@@ -434,7 +434,7 @@ Define the actual maximum incoming traffic speed you can have on the interfaces 
 
 =item B<--speed-out>
 
-Define the actual maximum outcoming traffic speed you can have on the interfaces in megabits per second.
+Define the actual maximum outgoing traffic speed you can have on the interfaces in megabits per second.
 
 =item B<--speed-total-in>
 
@@ -461,11 +461,11 @@ You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>
 
-Warning thresholdss for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
+Warning thresholds for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
-Critical thresholdss for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
+Critical thresholds for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--reload-cache-time>
 
