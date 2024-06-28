@@ -76,7 +76,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (default: '.*').
+Define which component to check (default: '.*').
 Can be: 'cardtemperature', 'sfp'.
 
 =item B<--filter>
@@ -88,7 +88,6 @@ You can also exclude items from specific instances: --filter=cardtemperature,108
 
 Define the expected status if no components are found (default: critical).
 
-
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
@@ -96,12 +95,12 @@ Example: --threshold-overload='sfp,OK,^los$'
 
 =item B<--warning>
 
-Set warning threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
+Define the warning thresholds for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold).
 Example: --warning='sfp.temperature,1.1,30'
 
 =item B<--critical>
 
-Set critical threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
+Define the critical thresholds for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold).
 Example: --warning='sfp.temperature,1.1,40'
 
 =back

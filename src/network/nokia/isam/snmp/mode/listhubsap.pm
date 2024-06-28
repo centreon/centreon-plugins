@@ -137,7 +137,7 @@ __END__
 
 =head1 MODE
 
-List SAP.
+List Service Access Points (SAP) for service discovery.
 
 =over 8
 

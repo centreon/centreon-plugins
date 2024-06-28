@@ -415,62 +415,61 @@ __END__
 
 =head1 MODE
 
-Check SAP QoS usage.
+Check Service Access Points (SAP) QoS usage.
 
 =over 8
 
 =item B<--display-name>
 
-Display name (default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
-Can also be: %{SapDescription}, %{SapPortId}
+Define the name to display (default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
+Other available macros: %{SapDescription}, %{SapPortId}
 
 =item B<--filter-name>
 
-Filter by SAP name (can be a regexp).
+Filter by Service Access Point (SAP) name (can be a regexp).
 
 =item B<--speed-in>
 
-Set interface speed for incoming traffic (in Mb).
+Define the actual maximum incoming traffic speed you can have on the interfaces in megabits per second.
 
 =item B<--speed-out>
 
-Set interface speed for outgoing traffic (in Mb).
+Define the actual maximum outcoming traffic speed you can have on the interfaces in megabits per second.
 
 =item B<--speed-total-in>
 
-Set interface speed for total incoming traffic (in Mb).
+Define the actual maximum total incoming traffic speed you can have on the interfaces in megabits per second.
 
 =item B<--speed-total-out>
 
-Set interface speed for total outgoing traffic (in Mb).
+Define the actual maximum total outgoing traffic speed you can have on the interfaces in megabits per second.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (default: '%') ('%', 'b/s').
+Define the unit to use to apply to thresholds (default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
-Set warning threshold for ib status.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for ib status (default: '%{admin} =~ /up/i and %{status} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL.
+Default: '%{admin} =~ /up/i and %{status} !~ /up/i'.
 You can use the following variables: %{admin}, %{status}, %{display}
 
 =item B<--warning-*>
 
-Warning threshold.
-Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
+Warning thresholdss for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
-Critical threshold.
-Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
+Critical thresholdss for: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 300).
+Time in seconds before reloading the cache file (default: 300).
 
 =back
 

@@ -95,7 +95,7 @@ __END__
 
 =head1 MODE
 
-Check CPU usages.
+Monitor the CPU usage.
 
 =over 8
 

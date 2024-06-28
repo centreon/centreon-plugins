@@ -159,7 +159,7 @@ sub manage_selection {
         my $name = $result->{eqptBoardInventorySerialNumber} . '_' . $result->{eqptSlotActualType};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': not matching filter.", debug => 1);
             next;
         }
         $self->{memory}->{$name} = { display => $name, total => $result->{totalMemSize} * 1024 * 1024, used => $result->{memAbsoluteUsage} * 1024 * 1024 };
@@ -170,7 +170,7 @@ sub manage_selection {
         my $name = 'SD Card';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': not matching filter.", debug => 1);
         } else {
              $self->{memory}->{$name} = { display => $name, total => $snmp_result->{$oid_asamSwmTotalSpaceOnFileDisk}, 
                 used => $snmp_result->{$oid_asamSwmTotalSpaceOnFileDisk} - $snmp_result->{$oid_asamSwmFreeSpaceOnFileDisk} };
@@ -189,17 +189,14 @@ __END__
 
 =head1 MODE
 
-Check memory usages.
+Monitor memory usage.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter memory name (can be a regexp).
-
-=item B<--filter-project>
-
-Filter project name (can be a regexp).
+Define which memory component to monitor based on their name.
+This option will be treated as a regular expression.
 
 =item B<--warning-usage>
 
@@ -211,11 +208,11 @@ Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (default: '%') ('%', 'B').
+Define the unit to use to apply to thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
-Thresholds are on free space left.
+Apply the thresholds on free space left instead of on used space.
 
 =back
 
