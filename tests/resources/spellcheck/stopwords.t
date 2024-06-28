@@ -63,7 +63,6 @@ SNMP
 SSH
 Sansymphony
 SureBackup
-TendMicro
 TrendMicro
 VDSL2
 VM
