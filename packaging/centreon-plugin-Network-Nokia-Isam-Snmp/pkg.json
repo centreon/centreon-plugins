@@ -7,7 +7,7 @@
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	    "snmp_standard/mode/resources/",
+        "snmp_standard/mode/resources/",
         "snmp_standard/mode/uptime.pm",
         "network/nokia/isam/snmp/"
     ]
