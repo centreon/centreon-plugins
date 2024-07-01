@@ -13,6 +13,7 @@
 --exclude-fs
 --filter-fs
 --filter-vdom
+--filter-vm
 --force-counters32
 --force-counters64
 --force-oid
@@ -37,6 +38,9 @@
 --oid-filter
 --urlpath
 --warning-bytesallocatedpercentage
+-EncodedCommand
+-InputFormat
+-NoLogo
 2c
 ADSL
 Avigilon
@@ -64,10 +68,11 @@ SSH
 Sansymphony
 SureBackup
 TCP
-TendMicro
+TrendMicro
 VDSL2
-VPN
+VM
 Veeam
+VPN
 WSMAN
 XPath
 api.meraki.com
@@ -95,6 +100,7 @@ out-mcast
 out-ucast
 perfdata
 powershell
+powershell.exe
 proto
 psu
 queue-messages-inflighted
