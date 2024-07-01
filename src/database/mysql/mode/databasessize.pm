@@ -172,7 +172,20 @@ sub manage_selection {
     $innodb_per_table = 1 if ($value =~ /on/i);
 
     $options{sql}->query(
-        query => q{SELECT table_schema, table_name, engine, data_free, data_length+index_length as data_used, (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine IN ('InnoDB', 'MyISAM')}
+        query => q{
+            SELECT
+                table_schema,
+                table_name,
+                engine,
+                data_free,
+                data_length + index_length as data_used,
+                (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG
+            FROM
+                information_schema.tables
+            WHERE
+                table_type = 'BASE TABLE'
+                AND engine IN ('InnoDB', 'MyISAM')
+        }
     );
     my $result = $options{sql}->fetchall_arrayref();
 
