@@ -1,0 +1,480 @@
+{
+  "uuid": "a1da12c3-97f5-4ab7-bec7-a30e1c36309a",
+  "lastMigration": 32,
+  "name": "Meraki.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "77da22e2-4161-4be7-a598-62e372cf0438",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations",
+      "responses": [
+        {
+          "uuid": "4c2ab123-f20d-4e65-a422-096ecec496ce",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "xl8l",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "3d572355-f7f4-4558-abc6-0e4c2c8b06f9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/appliance/vpn/statuses",
+      "responses": [
+        {
+          "uuid": "4baedfc4-2a1d-4dd1-aff6-e07f6c4144e9",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "zqoq",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "c8872c69-c290-4c5e-aa4b-18f8ffaf084b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/networks",
+      "responses": [
+        {
+          "uuid": "0723def4-07b5-4549-962a-e041423a9733",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "e7b443c0-4b6e-41b0-bfad-6b23fd14a9cd",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/devices",
+      "responses": [
+        {
+          "uuid": "c1d9369d-ee0e-4b4c-b6df-5f64f4112382",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "83ae251f-e2ac-4eb0-bed3-9d024d2d4055",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/devices/statuses",
+      "responses": [
+        {
+          "uuid": "e459d826-8630-498d-983f-5259052584b7",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "05351271-5695-4ccc-bdd2-75fd0ab68def",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/uplinks/statuses",
+      "responses": [
+        {
+          "uuid": "e6e461fe-86d2-43c1-adb9-73047593e783",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "1ee10c37-cb78-4594-9fd9-006a3927f6f2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/organizations/123456789123456789/devices/uplinksLossAndLatency",
+      "responses": [
+        {
+          "uuid": "18e3e93c-302d-4fda-86d1-9ffd1a8b8abd",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "77da22e2-4161-4be7-a598-62e372cf0438"
+    },
+    {
+      "type": "route",
+      "uuid": "3d572355-f7f4-4558-abc6-0e4c2c8b06f9"
+    },
+    {
+      "type": "route",
+      "uuid": "c8872c69-c290-4c5e-aa4b-18f8ffaf084b"
+    },
+    {
+      "type": "route",
+      "uuid": "e7b443c0-4b6e-41b0-bfad-6b23fd14a9cd"
+    },
+    {
+      "type": "route",
+      "uuid": "83ae251f-e2ac-4eb0-bed3-9d024d2d4055"
+    },
+    {
+      "type": "route",
+      "uuid": "05351271-5695-4ccc-bdd2-75fd0ab68def"
+    },
+    {
+      "type": "route",
+      "uuid": "1ee10c37-cb78-4594-9fd9-006a3927f6f2"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "80e9ddfd-1272-45d6-a29e-c927f0f8cebd",
+      "id": "xl8l",
+      "name": "Organizations",
+      "documentation": "",
+      "value": "[\n  {\n    \"id\": \"123456789123456789\",\n    \"name\": \"Endor\",\n    \"url\": \"http://127.0.0.1:3000/o/NQkU0cWc/manage/organization/overview\",\n    \"samlConsumerUrl\": \"http://127.0.0.1:3000/saml/login/NQkU0cWc/RV3RrcB2UCVa\",\n    \"samlConsumerUrls\": [\n      \"http://127.0.0.1:3000/saml/login/NQkU0cWc/RV3RrcB2UCVa\"\n    ],\n    \"api\": {\n      \"enabled\": true\n    },\n    \"licensing\": {\n      \"model\": \"per-device\"\n    },\n    \"cloud\": {\n      \"region\": {\n        \"name\": \"Europe\",\n        \"host\": {\n          \"name\": \"Europe\"\n        }\n      }\n    },\n    \"management\": {\n      \"details\": [\n        {\n          \"name\": \"customer number\",\n          \"value\": \"56417983\"\n        }\n      ]\n    }\n  }\n]\n"
+    },
+    {
+      "uuid": "337987b2-984c-4882-9e6e-83a2c2b714f5",
+      "id": "zqoq",
+      "name": "VPN Tunnels",
+      "documentation": "",
+      "value": "[\n  {\n    \"networkId\": \"Z_000000000000000001\",\n    \"networkName\": \"ALDERAAN\",\n    \"deviceSerial\": \"C3PO-R2P2-BB88\",\n    \"deviceStatus\": \"dormant\",\n    \"uplinks\": [],\n    \"vpnMode\": \"spoke\",\n    \"exportedSubnets\": [\n      {\n        \"name\": \"Single LAN Settings\",\n        \"subnet\": \"172.16.254.24/29\"\n      }\n    ],\n    \"merakiVpnPeers\": [\n      {\n        \"networkId\": \"Z_000000000000000002\",\n        \"networkName\": \"KASHYYYK\",\n        \"reachability\": \"unreachable\"\n      },\n      {\n        \"networkId\": \"Z_000000000000000003\",\n        \"networkName\": \"TATOOINE\",\n        \"reachability\": \"unreachable\"\n      },\n      {\n        \"networkId\": \"Z_000000000000000004\",\n        \"networkName\": \"HOTH\",\n        \"reachability\": \"unreachable\"\n      }\n    ],\n    \"thirdPartyVpnPeers\": []\n  }\n]"
+    }
+  ],
+  "callbacks": []
+}
