@@ -243,7 +243,7 @@ __END__
 
 =head1 MODE
 
-Check MySQL databases size and tables.
+Check MySQL/MariaDB databases and tables sizes.
 
 =over 8
 
@@ -253,7 +253,7 @@ Filter the databases to monitor with a regular expression.
 
 =item B<--filter-table>
 
-Filter table name (can be a regexp).
+Filter tables by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
