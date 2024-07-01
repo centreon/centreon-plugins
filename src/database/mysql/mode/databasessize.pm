@@ -179,7 +179,7 @@ sub manage_selection {
                 engine,
                 data_free,
                 data_length + index_length as data_used,
-                (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG
+                DATA_FREE / (DATA_LENGTH + INDEX_LENGTH + DATA_FREE) as TAUX_FRAG
             FROM
                 information_schema.tables
             WHERE
