@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::listhubsap;
+package network::nokia::isam::snmp::mode::listhubsap;
 
 use base qw(centreon::plugins::mode);
 
@@ -137,7 +137,7 @@ __END__
 
 =head1 MODE
 
-List SAP.
+List Service Access Points (SAP) for service discovery.
 
 =over 8
 

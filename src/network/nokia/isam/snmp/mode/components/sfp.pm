@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::components::sfp;
+package network::nokia::isam::snmp::mode::components::sfp;
 
 use strict;
 use warnings;
-use network::alcatel::isam::snmp::mode::components::resources qw($mapping_slot);
+use network::nokia::isam::snmp::mode::components::resources qw($mapping_slot);
 
 my %map_los = (1 => 'los', 2 => 'noLos', 3 => 'notAvailable');
 

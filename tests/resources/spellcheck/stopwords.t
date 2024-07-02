@@ -116,3 +116,9 @@ uptime
 userpass
 v1
 v2
+sfp.temperature
+cardtemperature
+QoS
+ASAM
+ISAM
+Alcatel
