@@ -1,7 +1,9 @@
+--3cx-version
 --add-sysdesc
 --api-filter-orgs
 --api-password
 --api-token
+--api-username
 --api-version
 --cacert-file
 --cert-pkcs12
@@ -44,6 +46,7 @@
 -InputFormat
 -NoLogo
 2c
+3CX
 ADSL
 ASAM
 Alcatel
@@ -79,8 +82,8 @@ TrendMicro
 UCD
 VDSL2
 VM
-Veeam
 VPN
+Veeam
 WSMAN
 XPath
 api.meraki.com
