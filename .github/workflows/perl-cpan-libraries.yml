@@ -318,7 +318,6 @@ jobs:
         image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
         name:
           [
-            "Paws",
             "Authen::SCRAM::Client",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
@@ -334,6 +333,7 @@ jobs:
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
             "Net::SMTP_auth",
+            "Paws",
             "Statistics::Regression",
             "WWW::Selenium",
             "ZMQ::Constants",
