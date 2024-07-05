@@ -118,7 +118,7 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
-            image: packaging-plugins-centos7
+            image: packaging-plugins-alma8
             distrib: el7
           - package_extension: rpm
             image: packaging-plugins-alma8
