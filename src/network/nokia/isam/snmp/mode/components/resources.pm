@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::components::resources;
+package network::nokia::isam::snmp::mode::components::resources;
 
 use strict;
 use warnings;

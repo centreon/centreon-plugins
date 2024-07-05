@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::hardware;
+package network::nokia::isam::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -40,7 +40,7 @@ sub set_system {
         ]
     };
     
-    $self->{components_path} = 'network::alcatel::isam::snmp::mode::components';
+    $self->{components_path} = 'network::nokia::isam::snmp::mode::components';
     $self->{components_module} = ['cardtemperature', 'sfp'];
 }
 
@@ -76,7 +76,7 @@ Check Hardware.
 
 =item B<--component>
 
-Which component to check (default: '.*').
+Define which component to check (default: '.*').
 Can be: 'cardtemperature', 'sfp'.
 
 =item B<--filter>
@@ -88,7 +88,6 @@ You can also exclude items from specific instances: --filter=cardtemperature,108
 
 Define the expected status if no components are found (default: critical).
 
-
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
@@ -96,13 +95,19 @@ Example: --threshold-overload='sfp,OK,^los$'
 
 =item B<--warning>
 
-Set warning threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
-Example: --warning='sfp.temperature,1.1,30'
+Define the warning thresholds for an instance of a certain type of sensor.
+Syntax: <type>,<regexp>,<threshold>.
+Supported types of sensors: 'sfp.temperature', 'cardtemperature'.
+Instances are identified by the last two parts of the OID, separated by a period (example: 1.1) and are filtered as a regular expression.
+Example: --warning='sfp.temperature,1\.1,30'
 
 =item B<--critical>
 
-Set critical threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
-Example: --warning='sfp.temperature,1.1,40'
+Define the critical thresholds for an instance of a certain type of sensor.
+Syntax: <type>,<regexp>,<threshold>.
+Supported types of sensors: 'sfp.temperature', 'cardtemperature'.
+Instances are identified by the last two parts of the OID, separated by a period (example: 1.1) and are filtered as a regular expression.
+Example: --critical='sfp.temperature,1\.1,40'
 
 =back
 
