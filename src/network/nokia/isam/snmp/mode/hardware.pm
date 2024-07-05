@@ -95,13 +95,19 @@ Example: --threshold-overload='sfp,OK,^los$'
 
 =item B<--warning>
 
-Define the warning thresholds for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold).
-Example: --warning='sfp.temperature,1.1,30'
+Define the warning thresholds for an instance of a certain type of sensor.
+Syntax: <type>,<regexp>,<threshold>.
+Supported types of sensors: 'sfp.temperature', 'cardtemperature'.
+Instances are identified by the last two parts of the OID, separated by a period (example: 1.1) and are filtered as a regular expression.
+Example: --warning='sfp.temperature,1\.1,30'
 
 =item B<--critical>
 
-Define the critical thresholds for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold).
-Example: --warning='sfp.temperature,1.1,40'
+Define the critical thresholds for an instance of a certain type of sensor.
+Syntax: <type>,<regexp>,<threshold>.
+Supported types of sensors: 'sfp.temperature', 'cardtemperature'.
+Instances are identified by the last two parts of the OID, separated by a period (example: 1.1) and are filtered as a regular expression.
+Example: --critical='sfp.temperature,1\.1,40'
 
 =back
 
