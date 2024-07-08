@@ -23,9 +23,6 @@ jobs:
       matrix:
         include:
           - runner: ubuntu-22.04
-            dockerfile: packaging-plugins-centos7
-            image: packaging-plugins-centos7
-          - runner: ubuntu-22.04
             dockerfile: packaging-plugins-alma8
             image: packaging-plugins-alma8
           - runner: ubuntu-22.04
