@@ -43,12 +43,15 @@
 -NoLogo
 2c
 ADSL
+ASAM
+Alcatel
 Avigilon
 Centreon
 Datacore
 Fortigate
 Fortinet
 HashiCorp
+ISAM
 IpAddr
 Iwsva
 Loggly
@@ -62,6 +65,7 @@ Nagios
 Netscaler
 OID
 PKCS1
+QoS
 RRDCached
 SNMP
 SSH
@@ -76,6 +80,7 @@ VPN
 WSMAN
 XPath
 api.meraki.com
+cardtemperature
 connections-dhcp
 connections-dns
 deltaps
@@ -104,6 +109,7 @@ powershell.exe
 proto
 psu
 queue-messages-inflighted
+sfp.temperature
 space-usage-prct
 teampass
 timeframe
