@@ -54,6 +54,8 @@ HashiCorp
 ISAM
 IpAddr
 Iwsva
+Keysight
+license-instances-usage-prct
 Loggly
 MBean
 MQTT
@@ -63,6 +65,7 @@ NTLMv2
 NagVis
 Nagios
 Netscaler
+NVOS
 OID
 PKCS1
 QoS
@@ -118,7 +121,10 @@ total-offline-prct
 total-online-prct
 total-oper-down
 total-oper-up
+traffic-out-prct
 uptime
 userpass
 v1
 v2
+Veeam
+WSMAN

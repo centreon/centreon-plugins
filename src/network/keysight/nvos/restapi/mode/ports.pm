@@ -13,6 +13,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -41,8 +42,9 @@ sub port_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking port '%s'",
-        $options{instance_value}->{name}
+        "checking port '%s' - type '%s'",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
@@ -50,8 +52,9 @@ sub prefix_port_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "port '%s' ",
-        $options{instance_value}->{name}
+        "port '%s' - type:'%s' - ",
+        $options{instance_value}->{name},
+        $options{instance_value}->{type}
     );
 }
 
@@ -61,10 +64,33 @@ sub prefix_traffic_output {
     return 'traffic out: ';
 }
 
-sub prefix_packet_output {
+sub prefix_packet_other_port_output {
     my ($self, %options) = @_;
 
     return 'packets ';
+}
+
+sub prefix_packet_network_port_output {
+    my ($self, %options) = @_;
+
+    return 'packets ';
+}
+
+sub custom_signal_perfdata {
+    my ($self) = @_;
+
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $instances,
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub set_counters {
@@ -77,7 +103,8 @@ sub set_counters {
                 { name => 'license', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'link', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
-                { name => 'packet', type => 0, cb_prefix_output => 'prefix_packet_output', skipped_code => { -10 => 1 } }
+                { name => 'packet_network_port', type => 0, cb_prefix_output => 'prefix_packet_network_port_output', skipped_code => { -10 => 1 } },
+                { name => 'packet_other_port', type => 0, cb_prefix_output => 'prefix_packet_other_port_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -105,10 +132,10 @@ sub set_counters {
             critical_default => '%{adminStatus} eq "enabled" and %{operationalStatus} ne "up"',
             set => {
                 key_values => [
-                    { name => 'adminStatus' }, { name => 'operationalStatus' } , { name => 'name' }
+                    { name => 'adminStatus' }, { name => 'operationalStatus' } , { name => 'name' }, { name => 'type' }
                 ],
-                closure_custom_output => $self->can('custom_link_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output => sub { return 0; },
+                closure_custom_perfdata => $self->can('custom_signal_perfdata'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -134,7 +161,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{packet} = [
+    $self->{maps_counters}->{packet_other_port} = [
         { label => 'packets-out', nlabel => 'port.packets.out.count', set => {
                 key_values => [ { name => 'packets_out', diff => 1 } ],
                 output_template => 'out: %s',
@@ -168,6 +195,49 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{packet_network_port} = [
+        { label => 'packets-out', nlabel => 'port.packets.out.count', set => {
+                key_values => [ { name => 'packets_out', diff => 1 } ],
+                output_template => 'out: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-pass', nlabel => 'port.packets.pass.count', set => {
+                key_values => [ { name => 'packets_pass', diff => 1 } ],
+                output_template => 'pass: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-invalid', nlabel => 'port.packets.invalid.count', set => {
+                key_values => [ { name => 'packets_invalid', diff => 1 } ],
+                output_template => 'invalid: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-deny', nlabel => 'port.packets.deny.count', set => {
+                key_values => [ { name => 'packets_deny', diff => 1 } ],
+                output_template => 'deny: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-crc-alignment-errors', nlabel => 'port.crc.alignment.errors.count', set => {
+                key_values => [ { name => 'packets_crc_alignment_errors', diff => 1 } ],
+                output_template => 'crc alignment errors: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
@@ -176,7 +246,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-type:s' => { name => 'filter_type' }
     });
 
     return $self;
@@ -194,10 +265,34 @@ sub manage_selection {
 
     $self->{ports} = {};
     foreach (@{$result->{stats_snapshot}}) {
-        next if ($_->{type} ne 'Port');
+        #Type may be 'Dynamic filter' but not request here by the customer.
+        next if ($_->{type} eq 'Dynamic Filter');
+        #Exclude Loopback dedup
+        #next if (defined($_->{tp_total_tx_count_bytes}) && defined($_->{np_total_deny_count_packets}));
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{default_name} !~ /$self->{option_results}->{filter_name}/);
+        # We will try to define type for filter-type use : 'Port Group', 'Tool Port' and 'Network Port'
+        my $type = "";
+        # Port Group
+        if($_->{type} eq 'Port Group') {
+            $type = $_->{type};
+        # Tool Port
+        }elsif(defined($_->{tp_total_tx_count_bytes})) {
+            $type ="Tool Port";
+        #Network Port
+        }else{
+            $type ="Network Port";
+        }
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $_->{default_name} !~ /$self->{option_results}->{filter_name}/){
+            $self->{output}->output_add(long_msg => "With filter-name: $self->{option_results}->{filter_name} - Skipping object '" . $_->{default_name} . "'.", debug => 1);
+            next;
+        };
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $type !~ /$self->{option_results}->{filter_type}$/){
+            $self->{output}->output_add(long_msg => "With filter-type: $self->{option_results}->{filter_type} - Skipping object '" . $_->{default_name} . " with API type '" . $_->{type} . "'.". " with interpreted type '" . $type . "'.", debug => 1);
+            next;
+        };
 
         my $info = $options{custom}->request_api(
             method => 'GET',
@@ -206,27 +301,36 @@ sub manage_selection {
         );
 
         $self->{ports}->{ $_->{default_name} } = {
-            name => $_->{default_name},
+            name    => $_->{default_name},
+            type    => $type,
             license => {
-                name => $_->{default_name},
+                name   => $_->{default_name},
                 status => lc($info->{license_status}),
             },
-            link => {
+            link    => {
                 name              => $_->{default_name},
                 adminStatus       => $info->{enabled} =~ /true|1/i ? 'enabled' : 'disabled',
                 operationalStatus => $info->{link_status}->{link_up} =~ /true|1/i ? 'up' : 'down'
-            },
-            traffic => {
-                traffic_out => $_->{tp_total_tx_count_bytes},
-                traffic_out_util => $_->{tp_current_tx_utilization}
-            },
-            packet => {
-                packets_out => $_->{tp_total_tx_count_packets},
-                packets_dropped => $_->{tp_total_drop_count_packets},
-                packets_insp => $_->{tp_total_insp_count_packets},
-                packets_pass => $_->{tp_total_pass_count_packets}
             }
         };
+
+        if ($type eq 'Port Group' || $type eq 'Tool Port') {
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{tp_total_tx_count_bytes};
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{tp_current_tx_utilization};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_out} = $_->{tp_total_tx_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_dropped} = $_->{tp_total_drop_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_insp} = $_->{tp_total_insp_count_packets};
+            $self->{ports}->{$_->{default_name}}{packet_other_port}{packets_pass} = $_->{tp_total_pass_count_packets};
+        }else{
+            #$type = Network Port
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out} = $_->{np_total_rx_count_bytes}; #validé
+            $self->{ports}->{$_->{default_name}}{traffic}{traffic_out_util} = $_->{np_current_rx_utilization}; #validé
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_out} = $_->{np_total_rx_count_packets}; #validé
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_pass} = $_->{np_total_pass_count_packets};  #validé
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_invalid} = $_->{np_total_rx_count_invalid_packets}; #=> valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_deny} = $_->{np_total_deny_count_packets}; #=> valeur supplémentaire pour ce groupe
+            $self->{ports}->{$_->{default_name}}{packet_network_port}{packets_crc_alignment_errors} = $_->{np_total_rx_count_crc_alignment_errors}; #=> valeur supplémentaire pour ce groupe
+        }
     }
 
     $self->{cache_name} = 'keysight_nvos_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' . $options{custom}->get_port() . '_' .
@@ -249,6 +353,11 @@ Check ports.
 =item B<--filter-name>
 
 Filter ports by name (can be a regexp).
+
+=item B<--filter-type>
+
+Filter ports by type (can be a regexp).
+You can use the following types: 'Network Port', 'Port Group' and 'Tool Port'
 
 =item B<--unknown-license-status>
 
