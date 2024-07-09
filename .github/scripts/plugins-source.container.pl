@@ -102,10 +102,29 @@ foreach my $plugin (@plugins) {
 
         # Fatpack plugin.
         my $fatpacker = App::FatPacker->new();
-        my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
-        open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
-        print $fh $content;
-        close($fh);
-        chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
+        #my $content = $fatpacker->trace(
+        #    args => ["centreon_plugins.pl"],
+        #);
+        #my $content = $fatpacker->packlists_containing(["centreon_plugins.pl"]);
+        #my $content = $fatpacker->packlists_to_tree('/tmp/toto', ["centreon_plugins.pl"]);
+        my $file = "centreon_plugins.pl";
+        my $shebang = "";
+        my $script = "";
+        if ( defined $file and -r $file ) {
+            ($shebang, $script) = $fatpacker->load_main_script($file);
+        }
+
+        my @dirs = $fatpacker->collect_dirs();
+        my %files;
+        $fatpacker->collect_files($_, \%files) for @dirs;
+        print "impacted files of plugin $plugin";
+        while (my ($k,$v)=each %files){print "$k\n"}
+        #use Data::Dumper;
+        #print Dumper(\%files);
+        #my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
+        #open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
+        #print $fh $content;
+        #close($fh);
+        #chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
     }
 }
