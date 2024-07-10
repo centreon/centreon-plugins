@@ -11,7 +11,7 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}storage-datacore-api.json
 
-${CMD}              ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=3000 --hostname=127.0.0.1 --proto=http
+${CMD}              ${CENTREON_PLUGINS} --plugin=storage::datacore::restapi::plugin --password=pass --username=user --port=${APIPORT} --hostname=${HOSTNAME} --proto=http
 
 
 *** Test Cases ***

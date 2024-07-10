@@ -3,21 +3,21 @@ Documentation       Check the hosts mode with api custom mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
 Test Timeout        120s
-
-Test Setup       Set Test Variable      ${cnt}    ${1}
-Test Teardown    Set Test Variable    ${cnt}    ${cnt + 1}
-
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS}
-...         --plugin=apps::automation::ansible::tower::plugin
-...         --custommode=api
-...         --hostname=host.docker.internal
-...         --username=username
-...         --password=password
-...         --port=3000
+${MOCKOON_JSON}     ${CURDIR}${/}ansible_tower.json
+
+${CMD}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::automation::ansible::tower::plugin
+...                 --custommode=api
+...                 --hostname=${HOSTNAME}
+...                 --username=username
+...                 --password=password
+...                 --port=${APIPORT}
 
 
 *** Test Cases ***

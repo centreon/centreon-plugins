@@ -508,9 +508,9 @@ Network Teldat SNMP cells radio
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=cells-radio
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_cellsradio_test.filtercellid}
         IF    ${length} > 0
@@ -623,9 +623,9 @@ Network Teldat SNMP CPU
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=cpu
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_cpu_test.warningcpuutilization5s}
         IF    ${length} > 0
@@ -680,9 +680,9 @@ Network Teldat SNMP Memory
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=memory
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/teldat/snmp/teldat
         ${length}    Get Length    ${teldat_memory_test.warningusage}
         IF    ${length} > 0

@@ -306,9 +306,9 @@ Network Fortinet Fortigate SNMP link monitor
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=link-monitor
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/fortinet/fortigate/snmp/linkmonitor
         ${length}    Get Length    ${fortinet_fortigate_linkmonitor_test.filterid}
         IF    ${length} > 0
@@ -399,9 +399,9 @@ Network Fortinet Fortigate SNMP list link monitor
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=list-link-monitors
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/fortinet/fortigate/snmp/linkmonitor
         ${length}    Get Length    ${fortinet_fortigate_listlinkmonitors_test.filterstate}
         IF    ${length} > 0

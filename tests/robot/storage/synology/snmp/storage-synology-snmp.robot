@@ -63,9 +63,9 @@ Components
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=components
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=${check_components_test.snmpcommunity}
 
         ${output}    Run    ${command}
@@ -81,9 +81,9 @@ Uptime
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=uptime
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=${test_item.snmpcommunity}
         ...    --warning-uptime=${test_item.warning}
         ...    --critical-uptime=${test_item.critical}

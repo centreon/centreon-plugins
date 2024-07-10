@@ -16,9 +16,9 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=collection
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2c
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=apps/protocols/snmp/collection-sputnik
     ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
