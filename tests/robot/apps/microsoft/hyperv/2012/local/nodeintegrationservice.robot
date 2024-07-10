@@ -13,7 +13,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --command=cat
 ...         --command-path=/usr/bin
 ...         --no-ps
-...         --command-options=nodeintegrationservice-2022.json
+...         --command-options=${CURDIR}/nodeintegrationservice-2022.json
 
 *** Test Cases ***
 HyperV 2022 ${tc}/3
