@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                  ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}                  ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=${HOSTNAME} --snmp-version=${SNMPVERSION} --snmp-port=${SNMPPORT}
 
 &{ap_usage_test_1}
 ...                     documentation=Test AP usage without filters

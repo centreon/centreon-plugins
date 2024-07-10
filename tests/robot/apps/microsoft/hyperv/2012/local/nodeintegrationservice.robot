@@ -15,6 +15,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --no-ps
 ...         --command-options=${CURDIR}/nodeintegrationservice-2022.json
 
+
 *** Test Cases ***
 HyperV 2022 ${tc}/3
     [Documentation]    Apps Microsoft HyperV 2022
@@ -34,4 +35,3 @@ HyperV 2022 ${tc}/3
             ...      1     ${EMPTY}        CRITICAL: 1 problem(s) detected
             ...      2     VSERVER05       OK: VM 'VSERVER05' 0 problem(s) detected - VM 'VSERVER05' 0 problem(s) detected
             ...      3     VSERVER07       CRITICAL: VM 'VSERVER07' 1 problem(s) detected
-

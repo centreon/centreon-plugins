@@ -9,7 +9,7 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}vault-authentication-hashicorp.json
 
-${CMD}              ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=127.0.0.1
+${CMD}              ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=${HOSTNAME}
 
 
 *** Test Cases ***
@@ -19,16 +19,16 @@ check hashicorp vault manager${Name}
     ${cmd_hashicorp}    Catenate
     ...    ${CMD}
     ...    --pass-manager=hashicorpvault
-    ...    --vault-address=127.0.0.1
-    ...    --vault-port=3000
+    ...    --vault-address=${HOSTNAME}
+    ...    --vault-port=${APIPORT}
     ...    --vault-protocol=http
     ...    --auth-method=userpass
     ...    --auth-settings="username=hcvaultuser"
     ...    --secret-path="path/of/the/secret"
-    ...    --snmp-port=2024
+    ...    --snmp-port=${SNMPPORT}
     ...    --map-option="snmp_community=\\%{value_path/of/the/secret}"
     ...    --mode=string-value
-    ...    --snmp-version=2c
+    ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-community=apps/protocols/snmp/snmp-single-oid
     ...    --oid='.1.3.6.1.2.1.1.1.0' ${path-param}
     ...    --format-ok='current value is: \\%{details_ok}'

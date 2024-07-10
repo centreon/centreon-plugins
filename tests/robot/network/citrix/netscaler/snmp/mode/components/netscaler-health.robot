@@ -17,8 +17,8 @@ check psu components ${tc}/2
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=health
-    ...    --hostname='127.0.0.1'
-    ...    --snmp-port='2024'
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community='network/citrix/netscaler/snmp/mode/components/${community}'
     ...    --component=psu
     ...    --alternative-status-mapping='${alternative_status_mapping}'

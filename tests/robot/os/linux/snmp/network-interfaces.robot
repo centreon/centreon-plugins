@@ -10,8 +10,8 @@ Test Timeout        120s
 ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=os::linux::snmp::plugin
 ...         --mode=interfaces
-...         --hostname=127.0.0.1
-...         --snmp-port=2024
+...         --hostname=${HOSTNAME}
+...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=os/linux/snmp/network-interfaces
 ...         --statefile-dir=/tmp/cache/
 

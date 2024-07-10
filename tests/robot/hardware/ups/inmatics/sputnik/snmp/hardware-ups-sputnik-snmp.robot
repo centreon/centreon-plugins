@@ -16,9 +16,9 @@ Sputnik UPS - Environment ${tc}/9
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=environment
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2c
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=hardware/ups/inmatics/sputnik/snmp/hardware-ups-sputnik
 
     # Append options to command

@@ -16,9 +16,9 @@ Battery ${tc}/4
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=battery
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2c
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=hardware/ups/socomec/netvision/snmp/battery
 
     # Append options to command

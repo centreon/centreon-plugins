@@ -1,12 +1,19 @@
 *** Settings ***
 Documentation       Centreon Plugins for Robot Framework
+
 Library             Process
 
+
 *** Variables ***
-${CENTREON_PLUGINS}         perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
-${PERCENT}                  %
+${HOSTNAME}             127.0.0.1
+${APIPORT}              3000
+${SNMPPORT}             2024
+${SNMPVERSION}          2c
+${PERCENT}              %
+
 
 *** Keywords ***
 Start Mockoon
@@ -19,5 +26,6 @@ Start Mockoon
     ...    --port
     ...    3000
     Sleep    10s
+
 Stop Mockoon
     Terminate All Processes

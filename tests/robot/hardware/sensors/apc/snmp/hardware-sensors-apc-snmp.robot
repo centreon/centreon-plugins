@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::sensors::apc::snmp::plugin --mode=sensors --hostname=${HOSTNAME} --snmp-version=${SNMPVERSION} --snmp-port=${SNMPPORT}
 
 
 *** Test Cases ***
