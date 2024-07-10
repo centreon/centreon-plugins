@@ -149,6 +149,8 @@ jobs:
             rpm_dependencies: "zeromq"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
+            rpm_provides: "perl(Mojo::IOLoop::Signal)"
+            no-auto-depends: true
 
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
@@ -188,6 +190,10 @@ jobs:
             for PACKAGE_DEPENDENCY in `echo ${{ matrix.rpm_dependencies }}`; do
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
+          fi
+
+          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
           if [ -z "${{ matrix.rpm_provides }}" ]; then
