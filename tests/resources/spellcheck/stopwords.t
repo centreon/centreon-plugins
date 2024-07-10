@@ -12,6 +12,7 @@
 --dyn-mode
 --exclude-fs
 --filter-fs
+--filter-imei
 --filter-vdom
 --filter-vm
 --force-counters32
