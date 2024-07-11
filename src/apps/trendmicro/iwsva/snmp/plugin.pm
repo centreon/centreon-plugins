@@ -50,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check TendMicro Iwsva equipments in SNMP.
+Check TrendMicro Iwsva equipments in SNMP.
 
 =cut

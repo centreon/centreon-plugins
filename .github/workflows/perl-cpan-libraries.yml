@@ -33,6 +33,7 @@ jobs:
         distrib: [el8, el9]
         name:
           [
+            "ARGV::Struct",
             "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
             "boolean",
@@ -42,9 +43,11 @@ jobs:
             "Clone",
             "Clone::Choose",
             "common::sense",
+            "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
             "Device::Modbus",
@@ -70,6 +73,8 @@ jobs:
             "MIME::Types",
             "Mojo::IOLoop::Signal",
             "MongoDB",
+            "MooseX::ClassAttribute",
+            "Net::Amazon::Signature::V4",
             "Net::DHCP",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
@@ -91,6 +96,7 @@ jobs:
             "URI::Encode",
             "URI::Template",
             "URL::Encode",
+            "URL::Encode::XS",
             "UUID",
             "UUID::URandom",
             "WWW::Selenium",
@@ -130,6 +136,8 @@ jobs:
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Statistics::Regression"
             version: "0.53"
+          - name: "URL::Encode::XS"
+            build_distribs: el9
           - name: "UUID"
             version: "0.31"
           - name: "ZMQ::Constants"
@@ -139,6 +147,11 @@ jobs:
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
+          - name: "Mojo::IOLoop::Signal"
+            rpm_dependencies: "perl-Mojolicious"
+            rpm_provides: "perl(Mojo::IOLoop::Signal)"
+            no-auto-depends: true
+
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -179,6 +192,10 @@ jobs:
             done
           fi
 
+          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
+          fi
+
           if [ -z "${{ matrix.rpm_provides }}" ]; then
             PACKAGE_PROVIDES=""
           else
@@ -216,7 +233,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -354,8 +371,6 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
-          - name: "Paws"
-            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
@@ -437,12 +452,11 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
           retention-days: 1
-
 
   merge-package-deb-artifacts:
     needs: [package-deb]

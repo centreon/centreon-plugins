@@ -93,7 +93,7 @@ jobs:
           fetch-depth: 1
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@28eae78d12c2bba1163aec45d123f6d9228bc307 # v1.29.0
+        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
@@ -118,7 +118,7 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
-            image: packaging-plugins-centos7
+            image: packaging-plugins-alma8
             distrib: el7
           - package_extension: rpm
             image: packaging-plugins-alma8
@@ -156,7 +156,7 @@ jobs:
 
       - if: ${{ matrix.distrib == 'el7' }}
         # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/cache/restore@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -284,7 +284,7 @@ jobs:
 
       - name: Upload apt/dnf logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: plugin-installation-${{ matrix.distrib }}
           path: /var/log/robot-plugins-installation-tests.log

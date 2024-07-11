@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::mode::components::cardtemperature;
+package network::nokia::isam::snmp::mode::components::cardtemperature;
 
 use strict;
 use warnings;
-use network::alcatel::isam::snmp::mode::components::resources qw($mapping_slot);
+use network::nokia::isam::snmp::mode::components::resources qw($mapping_slot);
 
 my $oid_eqptBoardThermalSensorActualTemperature = '.1.3.6.1.4.1.637.61.1.23.10.1.2';
 
