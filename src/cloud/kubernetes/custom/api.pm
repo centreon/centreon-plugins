@@ -51,7 +51,7 @@ sub new {
             'limit:s'       => { name => 'limit' },
             'config-file:s' => { name => 'config_file' },
             'namespace:s'   => { name => 'namespace' },
-            'legacy:s'       => { name => 'legacy' },
+            'legacy:s'       => { name => 'legacy' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
