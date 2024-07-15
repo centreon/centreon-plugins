@@ -376,6 +376,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Getopt::Long"
+            use_dh_make_perl: "false"
           - name: "Paws"
             use_dh_make_perl: "false"
           - name: "Statistics::Regression"
