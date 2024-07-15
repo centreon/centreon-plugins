@@ -41,6 +41,7 @@
 -EncodedCommand
 -InputFormat
 -NoLogo
+/api
 2c
 ADSL
 ASAM
