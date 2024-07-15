@@ -371,6 +371,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Paws"
+            use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
@@ -430,6 +432,8 @@ jobs:
           cpanm Module::Install
 
           gem install fpm
+          # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
+          patch -i .github/patchs/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
           fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
