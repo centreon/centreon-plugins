@@ -37,6 +37,7 @@
 --oid-extra-display
 --oid-filter
 --urlpath
+--use-ucd
 --warning-bytesallocatedpercentage
 -EncodedCommand
 -InputFormat
@@ -73,6 +74,7 @@ Sansymphony
 SureBackup
 TCP
 TrendMicro
+UCD
 VDSL2
 VM
 Veeam
