@@ -19,6 +19,7 @@
 --force-oid
 --get-param
 --ignore-orgs-api-disabled
+--legacy-api-beta
 --lookup-perfdatas-nagios
 --map-speed-dsl
 --mqtt
@@ -54,7 +55,6 @@ HashiCorp
 ISAM
 IpAddr
 Iwsva
-kubernetes-api
 Loggly
 MBean
 MQTT
