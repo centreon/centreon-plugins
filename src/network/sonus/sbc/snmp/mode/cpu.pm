@@ -20,7 +20,7 @@
 
 package network::sonus::sbc::snmp::mode::cpu;
 
-use base qw(snmp_standard::mode::cpudetailed);
+use base qw(snmp_standard::mode::cpu);
 
 use strict;
 use warnings;
