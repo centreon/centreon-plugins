@@ -384,7 +384,7 @@ Set namespace to get information.
 
 =item B<--legacy-api-beta>
 
-If this option is set the legacy API path are set for this api calls:
+If this option is set the legacy API path are set for this API calls:
 kubernetes_list_cronjobs will use this path: /apis/batch/v1beta1/namespaces/
 kubernetes_list_ingresses will use this path: /apis/extensions/v1beta1/namespaces/
 

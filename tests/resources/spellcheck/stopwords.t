@@ -19,6 +19,7 @@
 --force-oid
 --get-param
 --ignore-orgs-api-disabled
+--legacy-api
 --lookup-perfdatas-nagios
 --map-speed-dsl
 --mqtt
@@ -41,7 +42,6 @@
 -EncodedCommand
 -InputFormat
 -NoLogo
-/api
 2c
 ADSL
 ASAM
