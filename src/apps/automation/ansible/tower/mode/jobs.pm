@@ -70,6 +70,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-name:s'       => { name => 'filter_name' },
+        'since-hours:s'       => { name => 'since_hours' },
         'display-failed-jobs' => { name => 'display_failed_jobs' },
         'memory'              => { name => 'memory' }
     });
@@ -82,13 +83,19 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{memory})) {
+    if (defined($self->{option_results}->{memory}) || defined($self->{option_results}->{since_hours})) {
         $self->{statefile_cache}->check_options(%options);
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'Date::Parse',
             error_msg => "Cannot load module 'Date::Parse'."
         );
+    }
+
+    if (defined($self->{option_results}->{since_hours})
+        && !($self->{option_results}->{since_hours} =~ /^\d+$/ && $self->{option_results}->{since_hours} > 0)) {
+        $self->{output}->add_option_msg(short_msg => "--since-hours should be a positive integer to count hours");
+        $self->{output}->option_exit();
     }
 }
 
@@ -111,7 +118,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
             && $job->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        if (defined($self->{option_results}->{memory}) && defined($job->{finished})) {
+        if ((defined($self->{option_results}->{memory}) || defined($self->{option_results}->{since_hours}))
+            && defined($job->{finished})) {
             my $finished_time = Date::Parse::str2time($job->{finished});
             if (!defined($finished_time)) {
                 $self->{output}->output_add(
@@ -120,7 +128,15 @@ sub manage_selection {
                 );
                 next;
             }
-            next if (defined($last_time) && $last_time > $finished_time);
+
+            if (defined($self->{option_results}->{memory})) {
+                next if (defined($last_time) && $last_time > $finished_time);
+            }
+
+            if (defined($self->{option_results}->{since_hours})) {
+                my $cutoff_time = $current_time - ($self->{option_results}->{since_hours} * 3600);
+                next if $finished_time < $cutoff_time;
+            }
         }
 
         $self->{global}->{ $job->{status} }++;
@@ -152,6 +168,10 @@ Check jobs.
 =item B<--filter-name>
 
 Filter job name (can use regexp).
+
+=item B<--since-hours>
+
+Only check jobs that finished less than X hours ago
 
 =item B<--display-failed-jobs>
 
