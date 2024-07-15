@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}         ${CURDIR}${/}cloud-azure-policyinsights-policystates.json
 
 ${LOGIN_ENDPOINT}       http://localhost:3000/login
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --login-endpoint=${LOGIN_ENDPOINT}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --statefile-dir=/tmp/cache/ --login-endpoint=${LOGIN_ENDPOINT}
 
 &{compliance_value1}
 ...                     endpoint=http://localhost:3000/ok

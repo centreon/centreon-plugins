@@ -1,0 +1,238 @@
+{
+  "uuid": "98b9aab1-da6e-46a5-a2c2-5c001be49806",
+  "lastMigration": 27,
+  "name": "Apps hashicorp vault",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "6b8dd80b-3ea0-48c0-8e9d-609d618e980e",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/auth/userpass/login/hcvaultuser",
+      "responses": [
+        {
+          "uuid": "edc924ee-c73b-44e9-8402-d3d75a514083",
+          "body": "{\r\n    \"request_id\":\r\n    \"9a423954-2109-1e23-b0e4-f694d557031f\", \"lease_id\":\r\n    \"\", \"renewable\":\r\n    false, \"lease_duration\":\r\n    0, \"data\":\r\n    null, \"wrap_info\":\r\n    null, \"warnings\":\r\n    [ \"Endpoint replaced the value of these parameters with the values captured from the endpoint's path: [username]\" ], \"auth\":\r\n    {\r\n        \"client_token\":\r\n        \"hvs.CAESIHR511IiIwmAXLTrXQnLJ0Pq-NHQYgfiv4m1ZYVQHVt_Gh4KHGh2cy5HRTZidHZ0b0s3NzE5UG41cE10aUtrQjg\", \"accessor\":\r\n        \"fYX782sU7MPQH2Xhf8q0BfSP\", \"policies\":\r\n        [ \"default\", \"inf-icinga.ro\" ], \"token_policies\":\r\n        [ \"default\", \"inf-icinga.ro\" ], \"metadata\":\r\n        {\r\n            \"username\":\r\n            \"hcvaultuser\"\r\n        }, \"lease_duration\":\r\n        604800, \"renewable\":\r\n        true, \"entity_id\":\r\n        \"cc0f1543-6838-46d1-c97e-d61a5899fc9b\", \"token_type\":\r\n        \"service\", \"orphan\":\r\n        true, \"mfa_requirement\":\r\n        null, \"num_uses\":\r\n        0\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "if password ok",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "password",
+              "value": "secrethashicorpPassword",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "body",
+              "modifier": "username",
+              "value": "hcvaultuser",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false
+        },
+        {
+          "uuid": "fc4cc190-618b-480d-ae22-296248292297",
+          "body": "{\r\n  \"errors\": [\r\n    \"wrong user/password\"\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "error",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "8fdb70c1-a874-40eb-8b9f-542dca268992",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/path/of/the/secret",
+      "responses": [
+        {
+          "uuid": "2dec61d5-f84d-4223-b993-a91d127e0e71",
+          "body": "{\r\n   \"request_id\":\"76aa492b-acc0-52dc-1f2c-3e2f959a5dfd\",\r\n   \"lease_id\":\"\",\r\n   \"renewable\":false,\r\n   \"lease_duration\":0,\r\n   \"data\":{\r\n      \"data\":{\r\n         \"monitor\":\"apps/protocols/snmp/snmp-single-oid\"\r\n      },\r\n      \"metadata\":{\r\n         \"created_time\":\"2023-11-17T13:46:39.240097987Z\",\r\n         \"custom_metadata\":null,\r\n         \"deletion_time\":\"\",\r\n         \"destroyed\":false,\r\n         \"version\":1\r\n      }\r\n   },\r\n   \"wrap_info\":null,\r\n   \"warnings\":null,\r\n   \"auth\":null\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "8ef8c935-ff40-4817-8211-52cc1d0c64b4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/otherPath",
+      "responses": [
+        {
+          "uuid": "894d68aa-3f3b-463c-a1dd-cf9dd3565d7c",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "2686745a-9783-4b64-9376-068c159aa725",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/auth/specific-url/login/hcvaultuser",
+      "responses": [
+        {
+          "uuid": "400e5fea-c3f3-4abc-bc24-73afa75111c6",
+          "body": "{\r\n    \"request_id\":\r\n    \"9a423954-2109-1e23-b0e4-f694d557031f\", \"lease_id\":\r\n    \"\", \"renewable\":\r\n    false, \"lease_duration\":\r\n    0, \"data\":\r\n    null, \"wrap_info\":\r\n    null, \"warnings\":\r\n    [ \"Endpoint replaced the value of these parameters with the values captured from the endpoint's path: [username]\" ], \"auth\":\r\n    {\r\n        \"client_token\":\r\n        \"hvs.CAESIHR511IiIwmAXLTrXQnLJ0Pq-NHQYgfiv4m1ZYVQHVt_Gh4KHGh2cy5HRTZidHZ0b0s3NzE5UG41cE10aUtrQjg\", \"accessor\":\r\n        \"fYX782sU7MPQH2Xhf8q0BfSP\", \"policies\":\r\n        [ \"default\", \"inf-icinga.ro\" ], \"token_policies\":\r\n        [ \"default\", \"inf-icinga.ro\" ], \"metadata\":\r\n        {\r\n            \"username\":\r\n            \"hcvaultuser\"\r\n        }, \"lease_duration\":\r\n        604800, \"renewable\":\r\n        true, \"entity_id\":\r\n        \"cc0f1543-6838-46d1-c97e-d61a5899fc9b\", \"token_type\":\r\n        \"service\", \"orphan\":\r\n        true, \"mfa_requirement\":\r\n        null, \"num_uses\":\r\n        0\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "if password ok",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "password",
+              "value": "secrethashicorpPassword",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "body",
+              "modifier": "username",
+              "value": "hcvaultuser",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false
+        },
+        {
+          "uuid": "21593d10-e496-4a39-ac84-0ef9e0de6bbf",
+          "body": "{\r\n  \"errors\": [\r\n    \"wrong user/password\"\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "error",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "6b8dd80b-3ea0-48c0-8e9d-609d618e980e"
+    },
+    {
+      "type": "route",
+      "uuid": "8fdb70c1-a874-40eb-8b9f-542dca268992"
+    },
+    {
+      "type": "route",
+      "uuid": "8ef8c935-ff40-4817-8211-52cc1d0c64b4"
+    },
+    {
+      "type": "route",
+      "uuid": "2686745a-9783-4b64-9376-068c159aa725"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": []
+}

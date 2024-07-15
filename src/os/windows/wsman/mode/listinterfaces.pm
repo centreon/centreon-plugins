@@ -52,7 +52,7 @@ my $map_status = {
     7  => 'mediaDisconnect', 
     8  => 'auth', 
     9  => 'authSucceeded', 
-    10 => 'ÁuthFailed', 
+    10 => 'AuthFailed', 
     11 => 'invalidAddress', 
     12 => 'credentialsRequired'
 };

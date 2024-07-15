@@ -34,19 +34,19 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'events', nlabel => 'events.count', set => {
-                key_values => [ { name => 'events' } ],
-                output_template => 'Matching events: %s',
-                perfdatas => [
-                    { template => '%s', value => 'events', min => 0 }
-                ]
-            }
+            key_values      => [{ name => 'events' }],
+            output_template => 'Matching events: %s',
+            perfdatas       => [
+                { template => '%s', value => 'events', min => 0 }
+            ]
+        }
         }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -77,8 +77,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->api_events(
-        time_period => $self->{option_results}->{time_period},
-        query => $self->{option_results}->{query},
+        time_period  => $self->{option_results}->{time_period},
+        query        => $self->{option_results}->{query},
         output_field => $self->{option_results}->{output_field}
     );
     $self->{global} = { events => $results->{total_events} };
@@ -99,11 +99,11 @@ Count events matching the query.
 
 =item B<--time-period>
 
-Set request period, in minutes.
+Set request period, in minutes (mandatory option).
 
 =item B<--query>
 
-Set the query.
+Set the query (mandatory option).
 
 =item B<--output-field>
 

@@ -1,4 +1,4 @@
-ARG REGISTRY_URL
+ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/debian:bullseye
 

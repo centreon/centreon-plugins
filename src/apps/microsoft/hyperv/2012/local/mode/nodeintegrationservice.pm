@@ -134,6 +134,20 @@ sub check_options {
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
 
+sub determine_operational_status {
+    my ($operational_status) = @_;
+
+    if ( defined($operational_status) ) {
+        if ( defined($node_vm_integration_service_operational_status->{ $operational_status}) ) {
+            return $node_vm_integration_service_operational_status->{ $operational_status };
+        } else {
+            return $operational_status;
+        }
+    } else {
+        return '-';
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -235,16 +249,13 @@ sub manage_selection {
         my $services = (ref($node->{services}) eq 'ARRAY') ? $node->{services} : [ $node->{services} ];
 
         foreach my $service (@$services) {
+
             $self->{vm}->{$id}->{service}->{$id2} = {
                 vm => $node->{name},
                 service => $service->{service},
                 enabled => $service->{enabled} =~ /True|1/i ? 1 : 0,
-                primary_status => 
-                    defined($service->{primary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} } : '-',
-                secondary_status =>
-                    defined($service->{secondary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} } : '-'
+                primary_status => determine_operational_status($service->{primary_operational_status}),
+                secondary_status => determine_operational_status($service->{secondary_operational_status})
             };
             $id2++;
         }

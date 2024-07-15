@@ -241,16 +241,17 @@ sub write_cache_file {
 
 sub get_cache_file_response {
     my ($self, %options) = @_;
+    my $cache_filename = 'cache_meraki_'
+                         . md5_hex($self->{api_token} . '_' .(defined($self->{option_results}->{api_filter_orgs}) ?
+                                                              $self->{option_results}->{api_filter_orgs} : '')
+                                  );
 
     $self->{cache}->read(
-        statefile => 'cache_meraki_' . md5_hex(
-            $self->{api_token} . '_' . 
-            (defined($self->{option_results}->{api_filter_orgs}) ? $self->{option_results}->{api_filter_orgs} : '')
-        )
+        statefile => $cache_filename
     );
     $self->{datas} = $self->{cache}->get(name => 'response');
     if (!defined($self->{datas})) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing or could not load ' . $cache_filename);
         $self->{output}->option_exit();
     }
 
@@ -261,13 +262,18 @@ sub call_datas {
     my ($self, %options) = @_;
 
     $self->get_organizations();
-    $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
+    if (!defined($options{skipNetworks})) {
+        $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
 
     if (!defined($options{skipDevices})) {
         $self->get_devices(orgs => [keys %{$self->{datas}->{orgs}}]);
     }
     if (!defined($options{skipDevicesStatus})) {
         $self->get_organization_device_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
+    if (!defined($options{skipVpnTunnelsStatus})) {
+        $self->get_organization_vpn_tunnels_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
     }
 
     if (defined($options{cache})) {
@@ -408,6 +414,26 @@ sub get_organization_device_statuses {
     return $self->{datas}->{devices_status};
 }
 
+sub get_organization_vpn_tunnels_statuses {
+    my ($self, %options) = @_;
+
+    $self->{datas}->{vpn_tunnels_status} =  {};
+    foreach my $id (@{$options{orgs}}) {
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/appliance/vpn/statuses',
+            paginate => 300,
+            hostname => $self->get_shard_hostname(organization_id => $id),
+            ignore_codes => { 400 => 1 } # it can be disabled
+        );
+        foreach (@$datas) {
+            $self->{datas}->{vpn_tunnels_status}->{ $_->{deviceSerial} } = $_;
+            $self->{datas}->{vpn_tunnels_status}->{ $_->{deviceSerial} }->{organizationId} = $id;
+        }
+    }
+
+    return $self->{datas}->{vpn_tunnels_status};
+}
+
 sub get_network_device_uplink {
     my ($self, %options) = @_;
 
@@ -444,7 +470,7 @@ sub get_organization_uplink_loss_and_latency {
         if (defined($datas)) {
             foreach (@$datas) {
                 # sometimes uplink is undef. so we skip
-                next if (!defined($_->{uplink}));
+                next if (!defined($_->{uplink}) || !defined($_->{serial}));
 
                 $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
                     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
@@ -554,7 +580,7 @@ Meraki REST API
 
 =head1 SYNOPSIS
 
-api_token Rest API custom mode
+Rest API custom mode
 
 =head1 REST API OPTIONS
 
@@ -562,23 +588,23 @@ api_token Rest API custom mode
 
 =item B<--hostname>
 
-Meraki api hostname (default: 'api.meraki.com')
+Meraki API hostname (default: 'api.meraki.com')
 
 =item B<--port>
 
-Port used (default: 443)
+Define the TCP port to use to reach the API (default: 443).
 
 =item B<--proto>
 
-Specify https if needed (default: 'https')
+Define the protocol to reach the API (default: 'https').
 
 =item B<--api-token>
 
-Meraki api token.
+Meraki API token.
 
 =item B<--timeout>
 
-Set HTTP timeout
+Define the timeout for HTTP requests.
 
 =item B<--ignore-permission-errors>
 
@@ -586,15 +612,15 @@ Ignore permission errors (403 status code).
 
 =item B<--ignore-orgs-api-disabled>
 
-Ignore organizations with api disabled.
+Ignore organizations where the API is disabled.
 
 =item B<--api-filter-orgs>
 
-Filter organizations (regexp).
+Define the organizations to monitor (regular expression).
 
 =item B<--cache-use>
 
-Use the cache file (created with cache mode).
+Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
 
 =back
 
