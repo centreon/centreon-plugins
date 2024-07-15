@@ -327,13 +327,17 @@ jobs:
         image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
         name:
           [
+            "ARGV::Struct",
             "Authen::SCRAM::Client",
+            "Config::AWS",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
+            "Getopt::Long",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
@@ -344,6 +348,7 @@ jobs:
             "Net::SMTP_auth",
             "Paws",
             "Statistics::Regression",
+            "Throwable::Error",
             "WWW::Selenium",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
@@ -418,8 +423,6 @@ jobs:
         run: |
           apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
 
-          PACKAGE_NAME=`echo ${{ matrix.name }} | sed -e 's/::/-/g' | tr '[A-Z]' '[a-z]' | sed -e 's/^/lib/g' | sed -e 's/$/-perl/g' | sed -e 's/liblib/lib/g'`
-
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
@@ -433,8 +436,8 @@ jobs:
 
           gem install fpm
           # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
-          patch -i .github/patchs/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
-          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test -n $PACKAGE_NAME$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+          patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
