@@ -43,15 +43,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'    => { name => 'hostname' },
-            'port:s'        => { name => 'port' },
-            'proto:s'       => { name => 'proto' },
-            'token:s'       => { name => 'token' },
-            'timeout:s'     => { name => 'timeout' },
-            'limit:s'       => { name => 'limit' },
-            'config-file:s' => { name => 'config_file' },
-            'namespace:s'   => { name => 'namespace' },
-            'legacy-api-beta:s'       => { name => 'legacy_api_beta' }
+            'hostname:s'        => { name => 'hostname' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'token:s'           => { name => 'token' },
+            'timeout:s'         => { name => 'timeout' },
+            'limit:s'           => { name => 'limit' },
+            'config-file:s'     => { name => 'config_file' },
+            'namespace:s'       => { name => 'namespace' },
+            'legacy-api-beta:s' => { name => 'legacy_api_beta' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
