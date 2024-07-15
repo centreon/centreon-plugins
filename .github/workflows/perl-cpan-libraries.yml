@@ -341,6 +341,7 @@ jobs:
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
+            "Pod::Usage",
             "Mojo::IOLoop::Signal",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
@@ -383,6 +384,8 @@ jobs:
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
+          - name: "Throwable::Error"
+            use_dh_make_perl: "false"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"
