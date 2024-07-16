@@ -341,13 +341,13 @@ jobs:
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
-            "Pod::Usage",
             "Mojo::IOLoop::Signal",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
             "Net::SMTP_auth",
             "Paws",
+            "Pod::Usage",
             "Statistics::Regression",
             "Throwable::Error",
             "WWW::Selenium",
@@ -380,6 +380,8 @@ jobs:
           - name: "Getopt::Long"
             use_dh_make_perl: "false"
           - name: "Paws"
+            use_dh_make_perl: "false"
+          - name: "Pod::Usage"
             use_dh_make_perl: "false"
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
