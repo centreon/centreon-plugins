@@ -23,7 +23,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 jobs ${tc}
     [Documentation]    Check the number of returned jobs
-    [Tags]    apps    automation    ansible    service-disco
+    [Tags]    apps    automation    ansible    jobs
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=jobs
