@@ -11,7 +11,7 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}ansible_tower.json
 
-${CMD}              ${CENTREON_PLUGINS}
+${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::automation::ansible::tower::plugin
 ...                 --custommode=api
 ...                 --hostname=${HOSTNAME}
@@ -25,9 +25,10 @@ jobs ${tc}
     [Documentation]    Check the number of returned jobs
     [Tags]    apps    automation    ansible    jobs
     ${command}    Catenate
-    ...    ${CMD}
+    ...    ${cmd}
     ...    --mode=jobs
     ...    ${extraoptions}
+    Log    ${cmd}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
