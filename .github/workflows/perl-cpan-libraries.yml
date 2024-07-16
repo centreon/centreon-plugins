@@ -337,7 +337,6 @@ jobs:
             "Device::Modbus",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
-            "Getopt::Long",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
@@ -347,9 +346,7 @@ jobs:
             "Net::MQTT::Simple",
             "Net::SMTP_auth",
             "Paws",
-            "Pod::Usage",
             "Statistics::Regression",
-            "Throwable::Error",
             "WWW::Selenium",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
@@ -377,17 +374,12 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
-          - name: "Getopt::Long"
-            use_dh_make_perl: "false"
           - name: "Paws"
             use_dh_make_perl: "false"
-          - name: "Pod::Usage"
-            use_dh_make_perl: "false"
+            no-auto-depends: true
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
-          - name: "Throwable::Error"
-            use_dh_make_perl: "false"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"
@@ -436,6 +428,10 @@ jobs:
             for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
+          fi
+          
+          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
           cpanm Module::Build::Tiny
