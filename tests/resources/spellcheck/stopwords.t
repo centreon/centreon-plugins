@@ -37,6 +37,7 @@
 --oid-extra-display
 --oid-filter
 --urlpath
+--use-ucd
 --warning-bytesallocatedpercentage
 -EncodedCommand
 -InputFormat
@@ -56,6 +57,7 @@ IpAddr
 Iwsva
 Loggly
 MBean
+MIB
 MQTT
 Meraki
 Mosquitto
@@ -73,6 +75,7 @@ Sansymphony
 SureBackup
 TCP
 TrendMicro
+UCD
 VDSL2
 VM
 Veeam

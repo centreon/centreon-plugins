@@ -20,7 +20,7 @@
 
 package network::sonus::sbc::snmp::mode::cpu;
 
-use base qw(snmp_standard::mode::cpudetailed);
+use base qw(snmp_standard::mode::cpu);
 
 use strict;
 use warnings;
@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Check system CPUs.
+Check system CPU.
 (The average, over the last minute, of the percentage
 of time that this processor was not idle)
 
@@ -47,7 +47,7 @@ of time that this processor was not idle)
 
 =item B<--use-ucd>
 
-Use UCD mib for CPU average.
+Use UCD MIB for CPU average.
 
 =item B<--warning-average>
 
