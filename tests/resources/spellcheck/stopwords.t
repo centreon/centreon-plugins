@@ -19,6 +19,7 @@
 --force-oid
 --get-param
 --ignore-orgs-api-disabled
+--legacy-api-beta
 --lookup-perfdatas-nagios
 --map-speed-dsl
 --mqtt
@@ -125,3 +126,7 @@ uptime
 userpass
 v1
 v2
+VDSL2
+Veeam
+WSMAN
+Kubernetes
