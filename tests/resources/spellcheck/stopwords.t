@@ -45,6 +45,7 @@
 ADSL
 ASAM
 Alcatel
+Ansible
 Avigilon
 Centreon
 Datacore
@@ -66,6 +67,7 @@ Netscaler
 OID
 PKCS1
 QoS
+RestAPI
 RRDCached
 SNMP
 SSH
@@ -118,6 +120,7 @@ total-offline-prct
 total-online-prct
 total-oper-down
 total-oper-up
+tower-cli
 uptime
 userpass
 v1
