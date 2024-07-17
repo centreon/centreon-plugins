@@ -376,7 +376,7 @@ jobs:
             runner_name: ["self-hosted", "collect-arm64"]
           - name: "Paws"
             use_dh_make_perl: "false"
-            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl"
+            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: true
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
