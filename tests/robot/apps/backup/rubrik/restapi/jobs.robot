@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Applications Rubrik Restapi plugin
+Documentation       Applications Rubrik Restapi jobs
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
