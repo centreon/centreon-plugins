@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'disk-status'  => 'storage::hp::primera::restapi::mode::diskstatus',
+        'capacity'  => 'storage::hp::primera::restapi::mode::capacity',
 
     };
 
