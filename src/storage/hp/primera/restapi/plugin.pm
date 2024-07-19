@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'disk-status'  => 'storage::hp::primera::restapi::mode::diskstatus',
-        'capacity'  => 'storage::hp::primera::restapi::mode::capacity',
-
+            'disk-status' => 'storage::hp::primera::restapi::mode::diskstatus',
+            'capacity'    => 'storage::hp::primera::restapi::mode::capacity',
+            'licenses'    => 'storage::hp::primera::restapi::mode::licenses',
     };
 
     $self->{custom_modes}->{api} = 'storage::hp::primera::restapi::custom::api';
