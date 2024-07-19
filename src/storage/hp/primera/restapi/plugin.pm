@@ -33,6 +33,7 @@ sub new {
             'disk-status' => 'storage::hp::primera::restapi::mode::diskstatus',
             'capacity'    => 'storage::hp::primera::restapi::mode::capacity',
             'licenses'    => 'storage::hp::primera::restapi::mode::licenses',
+            'volumeusage' => 'storage::hp::primera::restapi::mode::volumeusage'
     };
 
     $self->{custom_modes}->{api} = 'storage::hp::primera::restapi::custom::api';

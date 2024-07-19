@@ -53,7 +53,7 @@ sub custom_license_perfdata {
     return if ($self->{result_values}->{expires_seconds} eq 'permanent');
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{result_values}->{name} . "#" . $self->{nlabel},
+        nlabel => $self->{nlabel},
         unit => 's',
         instances => $self->{result_values}->{name},
         value => $self->{result_values}->{expires_seconds},
@@ -101,7 +101,7 @@ sub set_counters {
                 ]
             }
         },
-            {
+        {
             label => 'expired',
             nlabel => 'licenses.expired.count',
             set => {
@@ -147,7 +147,7 @@ sub manage_selection {
     my ($total_licenses, $expired_licenses) = (0, 0);
     for my $license_item (@{$licenses}) {
         # skip if filter does not match
-        next if (defined($self->{option_results}->{filter_name}) and $license_item->{name} !~ $self->{option_results}->{filter_name});
+        next if (defined($self->{option_results}->{filter_name}) and $self->{option_results}->{filter_name} ne '' and $license_item->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $total_licenses = $total_licenses + 1;
         $self->{license_expiration}->{$license_item->{name}} = {
