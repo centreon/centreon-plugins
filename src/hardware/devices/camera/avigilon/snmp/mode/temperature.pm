@@ -131,11 +131,11 @@ The condition can be written using the following macros: %{status}.
 Define the conditions to match to return a critical status (default: '%{status} ne "ok"').
 The condition can be written using the following macros: %{status}.
 
-=item B<--warning-temperature*>
+=item B<--warning-temperature>
 
 Warning threshold for temperature (Celsius).
 
-=item B<--critical-temperature*>
+=item B<--critical-temperature>
 
 Critical threshold for temperature (Celsius).
 

@@ -92,11 +92,11 @@ Check system memory available.
 
 =over 8
 
-=item B<--warning-available*>
+=item B<--warning-available>
 
 Warning threshold for total memory available (B).
 
-=item B<--critical-available*>
+=item B<--critical-available>
 
 Critical threshold for total memory available (B).
 
