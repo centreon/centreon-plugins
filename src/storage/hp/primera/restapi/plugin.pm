@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-            'capacity'    => 'storage::hp::primera::restapi::mode::capacity',
-            'disk-status' => 'storage::hp::primera::restapi::mode::diskstatus',
-            'licenses'    => 'storage::hp::primera::restapi::mode::licenses',
-            'list-disks'    => 'storage::hp::primera::restapi::mode::listdisks',
-            'nodes'       => 'storage::hp::primera::restapi::mode::nodes',
-            'volumeusage' => 'storage::hp::primera::restapi::mode::volumeusage'
+            'capacity'     => 'storage::hp::primera::restapi::mode::capacity',
+            'disk-status'  => 'storage::hp::primera::restapi::mode::diskstatus',
+            'licenses'     => 'storage::hp::primera::restapi::mode::licenses',
+            'list-disks'   => 'storage::hp::primera::restapi::mode::listdisks',
+            'list-volumes' => 'storage::hp::primera::restapi::mode::listvolumes',
+            'nodes'        => 'storage::hp::primera::restapi::mode::nodes',
+            'volumeusage'  => 'storage::hp::primera::restapi::mode::volumeusage',
     };
 
     $self->{custom_modes}->{api} = 'storage::hp::primera::restapi::custom::api';
