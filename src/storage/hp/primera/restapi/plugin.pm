@@ -33,6 +33,7 @@ sub new {
             'capacity'    => 'storage::hp::primera::restapi::mode::capacity',
             'disk-status' => 'storage::hp::primera::restapi::mode::diskstatus',
             'licenses'    => 'storage::hp::primera::restapi::mode::licenses',
+            'list-disks'    => 'storage::hp::primera::restapi::mode::listdisks',
             'nodes'       => 'storage::hp::primera::restapi::mode::nodes',
             'volumeusage' => 'storage::hp::primera::restapi::mode::volumeusage'
     };
