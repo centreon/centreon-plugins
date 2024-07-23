@@ -122,8 +122,6 @@ sub get_token {
 
     my $has_cache_file = $self->{cache}->read(statefile => 'hpe_primera_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $auth_key = $self->{cache}->get(name => 'auth_key');
-    #my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
-   # my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 || !defined($auth_key) || $auth_key eq '' ) {
         my $json_request = {
@@ -184,7 +182,6 @@ sub request_api {
     if (defined($options{get_param})) {
         $get_param = $options{get_param};
     }
-    push @$get_param, 'limit=10000';
 
     $self->settings();
     my $token = $self->get_token();
@@ -196,20 +193,6 @@ sub request_api {
         warning_status => '',
         critical_status => ''
     );
-
-    # Maybe token is invalid. so we retry
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->clean_token();
-        $token = $self->get_token();
-        $content = $self->{http}->request(
-            url_path => '/automation-api' . $options{endpoint},
-            get_param => $get_param,
-            header => ['Authorization: Bearer ' . $token],
-            unknown_status => $self->{unknown_http_status},
-            warning_status => $self->{warning_http_status},
-            critical_status => $self->{critical_http_status}
-        );
-    }
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -234,11 +217,11 @@ __END__
 
 =head1 NAME
 
-HPE Primera API
+HPE Primera REST API
 
 =head1 HPE PRIMERA API OPTIONS
 
-HPE Primera API
+HPE Primera REST API
 
 =over 8
 
