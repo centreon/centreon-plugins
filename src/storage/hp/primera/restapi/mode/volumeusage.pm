@@ -95,16 +95,11 @@ sub prefix_volume_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->request_api(
-        endpoint => '/api/v1/volumes'
-    );
+    my $response = $options{custom}->request_api(endpoint => '/api/v1/volumes');
     my $volumes = $response->{members};
-
     $self->{volume} = {};
 
     for my $volume (@{$volumes}) {
-
-        #my ($name, $total, $snap_used, $adm_used, $usr_used) = ($1, $2 * 1024 * 1024, $4 * 1024 * 1024, $6 * 1024 * 1024, $8 * 1024 * 1024);
         my $name = $volume->{name};
 
         if (defined($self->{option_results}->{filter_name}) and $self->{option_results}->{filter_name} ne '' and
@@ -113,17 +108,17 @@ sub manage_selection {
             next;
         }
 
-        my $total = $volume->{sizeMiB} * 1024 * 1024;
+        my $total     = $volume->{sizeMiB} * 1024 * 1024;
         my $snap_used = $volume->{snapshotSpace}->{usedMiB};
-        my $adm_used = $volume->{adminSpace}->{usedMiB};
-        my $usr_used = $volume->{userSpace}->{usedMiB};
+        my $adm_used  = $volume->{adminSpace}->{usedMiB};
+        my $usr_used  = $volume->{userSpace}->{usedMiB};
 
         my $used = ($snap_used + $adm_used + $usr_used) * 1024 * 1024;
         $self->{volume}->{$name} = {
-            display => $name,
-            total => $total,
-            used => $used,
-            free => ($total - $used) >= 0 ? ($total - $used) : 0,
+            display   => $name,
+            total     => $total,
+            used      => $used,
+            free      => ($total - $used) >= 0 ? ($total - $used) : 0,
             prct_used => $used * 100 / $total,
             prct_free => (100 - ($used * 100 / $total) >= 0) ? (100 - ($used * 100 / $total)) : 0
         };
