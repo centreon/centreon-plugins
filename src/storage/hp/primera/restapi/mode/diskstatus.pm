@@ -38,8 +38,11 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Disk %s (position %s) is %s",
-        $self->{result_values}->{name},
+        "Disk #%s (%s/%s, serial: %s) located %s is %s",
+        $self->{result_values}->{id},
+        $self->{result_values}->{manufacturer},
+        $self->{result_values}->{model},
+        $self->{result_values}->{serial},
         $self->{result_values}->{position},
         $self->{result_values}->{status}
     );
@@ -115,8 +118,9 @@ sub set_counters {
             type => 2,
             warning_default => '%{status} =~ /^(new|degraded|unknown)$/',
             critical_default => '%{status} =~ /failed/',
+            unknown_default => '%{status} =~ /NOT_DOCUMENTED$/',
             set => {
-                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'position' } ],
+                key_values => [ { name => 'status' }, { name => 'id' }, { name => 'manufacturer' }, { name => 'model' }, { name => 'serial' }, { name => 'position' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -130,7 +134,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+            'filter-id:s' => { name => 'filter_id' },
+            'filter-manufacturer:s' => { name => 'filter_manufacturer' },
+            'filter-model:s' => { name => 'filter_model' },
+            'filter-position:s' => { name => 'filter_position' },
+            'filter-serial:s' => { name => 'filter_serial' }
+    });
 
     return $self;
 }
@@ -142,25 +152,74 @@ sub manage_selection {
         endpoint => '/api/v1/disks'
     );
 
+    my $disks = $api_response->{members};
+
     $self->{global} = {
-        total    => $api_response->{total},
+        total    => 0,
         normal   => 0,
         degraded => 0,
         new      => 0,
         failed   => 0,
-        unknown => 0
+        unknown  => 0
     };
-    my $disks = $api_response->{members};
+
+
 
     for my $disk (@{$disks}) {
-        my $state = $map_state{$disk->{state}};
 
-        # increment adequate global counter
+        my $disk_intro = "disk #" . $disk->{id} . " (" . $disk->{manufacturer} . "/" . $disk->{model}
+                        . ", serial: " . $disk->{serialNumber} . ") located '" . $disk->{position};
+        # skip if filtered by id
+        if (defined($self->{option_results}->{filter_id})
+                 and $self->{option_results}->{filter_id} ne ''
+                 and $disk->{id} !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "Skipping $disk_intro because the id does not match the filter.", debug => 1);
+            next;
+        }
+        # skip if filtered by manufacturer
+        if (defined($self->{option_results}->{filter_manufacturer})
+                 and $self->{option_results}->{filter_manufacturer} ne ''
+                 and $disk->{manufacturer} !~ /$self->{option_results}->{filter_manufacturer}/) {
+            $self->{output}->output_add(long_msg => "Skipping $disk_intro because the manufacturer does not match the filter.", debug => 1);
+            next;
+        }
+        # skip if filtered by model
+        if (defined($self->{option_results}->{filter_model})
+                 and $self->{option_results}->{filter_model} ne ''
+                 and $disk->{model} !~ /$self->{option_results}->{filter_model}/) {
+            $self->{output}->output_add(long_msg => "Skipping $disk_intro because the model does not match the filter.", debug => 1);
+            next;
+        }
+        # skip if filtered by position
+        if (defined($self->{option_results}->{filter_position})
+                 and $self->{option_results}->{filter_position} ne ''
+                 and $disk->{position} !~ /$self->{option_results}->{filter_position}/) {
+            $self->{output}->output_add(long_msg => "Skipping $disk_intro because the position does not match the filter.", debug => 1);
+            next;
+        }
+        # skip if filtered by serial
+        if (defined($self->{option_results}->{filter_serial})
+                 and $self->{option_results}->{filter_serial} ne ''
+                 and $disk->{serial} !~ /$self->{option_results}->{filter_serial}/) {
+            $self->{output}->output_add(long_msg => "Skipping $disk_intro because the serial does not match the filter.", debug => 1);
+            next;
+        }
+
+        my $state = defined($map_state{$disk->{state}}) ? $map_state{$disk->{state}} : 'NOT_DOCUMENTED';
+
+        # increment adequate global counters
+        $self->{global}->{total}  = $self->{global}->{total} + 1;
         $self->{global}->{$state} = $self->{global}->{$state} + 1;
 
         # add the instance
-        my $instance = $disk->{manufacturer} . '-' . $disk->{model} . '-' . $disk->{serialNumber};
-        $self->{disks}->{$instance} = { name => $instance, status => $state, position => $disk->{position} };
+        $self->{disks}->{ $disk->{id} } = {
+            status       => $state,
+            position     => $disk->{position},
+            id           => $disk->{id},
+            manufacturer => $disk->{manufacturer},
+            model        => $disk->{model},
+            serial       => $disk->{serialNumber}
+        };
     }
 }
 
@@ -174,10 +233,35 @@ Monitor the states of the physical disks.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--filter-id>
 
-Thresholds. '*' may stand for 'disks-total', 'disks-normal', 'disks-degraded', 'disks-new',
-'disks-failed', 'disks-unknown'.
+Define which volumes should be monitored based on the disk ID.
+This option will be treated as a regular expression.
+
+=item B<--filter-manufacturer>
+
+Define which volumes should be monitored based on the disk manufacturer.
+This option will be treated as a regular expression.
+
+=item B<--filter-model>
+
+Define which volumes should be monitored based on the disk model.
+This option will be treated as a regular expression.
+
+=item B<--filter-serial>
+
+Define which volumes should be monitored based on the disk serial number.
+This option will be treated as a regular expression.
+
+=item B<--filter-position>
+
+Define which volumes should be monitored based on the disk position.
+The position is composed of 3 integers, separated by colons:
+- Cage number where the physical disk is in.
+- Magazine number where the physical disk is in.
+- For DC4 cages, disk position within the magazine. For non-DC4 cages, 0.
+Example: 7:5:0
+This option will be treated as a regular expression.
 
 =item B<--warning-status>
 
@@ -192,6 +276,12 @@ Default: '%{status} =~ /failed/'
 =item B<--unknown-status>
 
 Define the condition to match for the returned status to be UNKNOWN.
+Default: '%{status} =~ /NOT_DOCUMENTED$/'
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds. '*' may stand for 'disks-total', 'disks-normal', 'disks-degraded', 'disks-new',
+'disks-failed', 'disks-unknown'.
 
 =back
 
