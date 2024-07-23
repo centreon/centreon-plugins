@@ -32,7 +32,9 @@ Hosts ${tc}
     Should Be Equal As Strings
     ...    ${expected_result}
     ...    ${output}
-    ...    Wrong output result for command:{\n}{\n}${command}{\n}{\n}Command output:{\n}{\n}${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
 
     Examples:         tc  snmpcommunity                     expected_result    --
             ...       1   os/linux/snmp/list-diskio         OK: Hosts total: 10, failed: 0 - All hosts are ok | 'hosts.total.count'=10;;;0; 'hosts.failed.count'=0;;;0;10
