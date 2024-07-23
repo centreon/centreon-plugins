@@ -19,7 +19,7 @@ jobs:
     runs-on: ["self-hosted", "collect-arm64"]
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-bullseye
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-bullseye-arm64
       credentials:
         username: ${{ secrets.DOCKER_REGISTRY_ID }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
