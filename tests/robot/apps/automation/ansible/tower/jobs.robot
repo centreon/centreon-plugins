@@ -34,7 +34,9 @@ jobs ${tc}
     Should Be Equal As Strings
     ...    ${expected_result}
     ...    ${output}
-    ...    Wrong output result for command:{\n}{\n}${command}{\n}{\n}Command output:{\n}{\n}${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
 
     Examples:         tc  extraoptions                                 expected_result    --
             ...       1   --filter-name=''                             OK: Jobs total: 2, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=2;;;0; 'jobs.successful.count'=0;;;0;2 'jobs.failed.count'=0;;;0;2 'jobs.running.count'=0;;;0;2 'jobs.canceled.count'=0;;;0;2 'jobs.pending.count'=0;;;0;2 'jobs.default.count'=0;;;0;2
