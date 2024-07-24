@@ -33,5 +33,5 @@ jobs:
       - run: |
           echo "deb https://packages.centreon.com/apt-plugins-stable/ bullseye main" | tee /etc/apt/sources.list.d/centreon-plugins.list
           apt update
-          apt install centreon-plugin-virtualization-vmware2-connector-plugin
+          apt install -y centreon-plugin-virtualization-vmware2-connector-plugin
         shell: bash
