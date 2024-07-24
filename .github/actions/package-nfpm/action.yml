@@ -135,7 +135,7 @@ runs:
         key: ${{ inputs.cache_key }}
 
     # Update if condition to true to get packages as artifacts
-    - if: ${{ false }}
+    - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
       name: Upload package artifacts
       uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
       with:
