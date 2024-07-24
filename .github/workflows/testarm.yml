@@ -31,6 +31,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - run: |
+          echo "deb https://packages.centreon.com/apt-plugins-stable/ bullseye main" | tee /etc/apt/sources.list.d/centreon-plugins.list
           apt update
           apt install centreon-plugin-virtualization-vmware2-connector-plugin
         shell: bash
