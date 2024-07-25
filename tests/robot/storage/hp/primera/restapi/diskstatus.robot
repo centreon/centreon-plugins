@@ -1,9 +1,10 @@
 *** Settings ***
-Documentation       HPE Primera Storage
+Documentation       HPE Primera Storage REST API
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 

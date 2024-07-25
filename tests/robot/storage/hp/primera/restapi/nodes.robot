@@ -1,9 +1,10 @@
 *** Settings ***
-Documentation       HPE Primera Storage
+Documentation       HPE Primera Storage REST API
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 *** Variables ***
@@ -22,7 +23,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --statefile-dir=/dev/shm/
 
 *** Test Cases ***
-Licenses ${tc}
+Nodes ${tc}
     [Tags]    storage     api    hpe    hp
     ${output}    Run    ${CMD} ${extraoptions}
 

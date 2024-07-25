@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
             'capacity'     => 'storage::hp::primera::restapi::mode::capacity',
             'disk-status'  => 'storage::hp::primera::restapi::mode::diskstatus',
+            'disk-usage'   => 'storage::hp::primera::restapi::mode::diskusage',
             'licenses'     => 'storage::hp::primera::restapi::mode::licenses',
             'list-disks'   => 'storage::hp::primera::restapi::mode::listdisks',
             'list-volumes' => 'storage::hp::primera::restapi::mode::listvolumes',
