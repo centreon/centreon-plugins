@@ -37,9 +37,8 @@ Nodes ${tc}
     ...    collapse_spaces=True
 
     Examples:    tc        extraoptions                                                     expected_result   --
-        ...      1        ${EMPTY}                                                          WARNING: node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;;0;2
-        ...      2        --warning-node-status='${PERCENT}\\{status\\} ne "offline"'       WARNING: node 1 is online | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;;0;2
-        ...      3        --warning-online=2:2                                              WARNING: Number of online nodes: 1 - node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;2:2;;0;2
-        ...      4        --critical-online=2:2                                             CRITICAL: Number of online nodes: 1 WARNING: node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;2:2;0;2
-
-
+        ...      1        ${EMPTY}                                                          WARNING: node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;;0;2 'nodes.offline.count'=1;;;0;2
+        ...      2        --warning-node-status='${PERCENT}\\{status\\} ne "offline"'       WARNING: node 1 is online | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;;0;2 'nodes.offline.count'=1;;;0;2
+        ...      3        --warning-online=2:2                                              WARNING: Number of online nodes: 1 - node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;2:2;;0;2 'nodes.offline.count'=1;;;0;2
+        ...      4        --critical-online=2:2                                             CRITICAL: Number of online nodes: 1 WARNING: node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;2:2;0;2 'nodes.offline.count'=1;;;0;2
+        ...      5        --critical-offline=0:0                                            CRITICAL: Number of offline nodes: 1 WARNING: node 0 is offline | 'nodes.total.count'=2;;;0; 'nodes.online.count'=1;;;0;2 'nodes.offline.count'=1;;0:0;0;2

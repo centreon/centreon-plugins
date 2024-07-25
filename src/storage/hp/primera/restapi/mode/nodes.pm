@@ -67,6 +67,17 @@ sub set_counters {
                 ]
             }
         },
+        {
+            label => 'offline',
+            nlabel => 'nodes.offline.count',
+            set => {
+                key_values => [ { name => 'offline' }, { name => 'total' } ],
+                output_template => 'Number of offline nodes: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -110,6 +121,7 @@ sub manage_selection {
     );
     my $total_nodes = 0;
     my $online_nodes = 0;
+    my $offline_nodes = 0;
 
     # Typical content of onlineNodes is [0, 1]
     # %online_nodes_statuses associates 'online' to every online node is as key
@@ -126,16 +138,22 @@ sub manage_selection {
                  and $node !~ /$self->{option_results}->{filter_node}/);
 
         $total_nodes = $total_nodes + 1;
-        $online_nodes = $online_nodes + 1 if ($all_nodes_statuses{$node} eq 'online');
+        if ($all_nodes_statuses{$node} eq 'online') {
+            $online_nodes = $online_nodes + 1;
+        } else {
+            $offline_nodes = $offline_nodes + 1;
+        }
+
 
         $self->{nodes}->{$node} = {
-                id     => $node,
-                status => $all_nodes_statuses{$node}
+            id     => $node,
+            status => $all_nodes_statuses{$node}
         }
     }
     $self->{global} = {
-        total  => $total_nodes,
-        online => $online_nodes
+        total   => $total_nodes,
+        online  => $online_nodes,
+        offline => $offline_nodes
     }
 }
 
@@ -163,6 +181,30 @@ You can use the %{status} variables.
 
 Define the conditions to match for the status to be CRITICAL
 You can use the %{status} variables.
+
+=item B<--warning-total>
+
+Thresholds for the total number of nodes.
+
+=item B<--critical-total>
+
+Thresholds for the total number of nodes.
+
+=item B<--warning-online>
+
+Thresholds for the number of online nodes.
+
+=item B<--critical-online>
+
+Thresholds for the number of online nodes.
+
+=item B<--warning-offline>
+
+Thresholds for the number of offline nodes.
+
+=item B<--critical-offline>
+
+Thresholds for the number of offline nodes.
 
 =back
 
