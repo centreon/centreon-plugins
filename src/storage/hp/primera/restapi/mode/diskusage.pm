@@ -275,7 +275,7 @@ This option will be treated as a regular expression.
 
 Thresholds for disk usage metrics. * may be replaced with:
 - For individual disks: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
-- For global statics: 'total-usage' (B), 'total-free' (B), 'total-usage-prct' (%).
+- For global statistics: 'total-usage' (B), 'total-free' (B), 'total-usage-prct' (%).
 
 =back
 
