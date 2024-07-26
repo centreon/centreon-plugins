@@ -116,6 +116,7 @@ queue-messages-inflighted
 sfp.temperature
 space-usage-prct
 teampass
+Teldat
 timeframe
 topic-messages-inflighted
 total-offline-prct
