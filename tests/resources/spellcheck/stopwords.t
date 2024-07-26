@@ -132,5 +132,3 @@ VDSL2
 Veeam
 WSMAN
 Kubernetes
-
-    datasource, dbi, snmp, sql
