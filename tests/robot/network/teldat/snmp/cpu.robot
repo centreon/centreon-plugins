@@ -1,0 +1,76 @@
+*** Settings ***
+Documentation       Network Teldat SNMP plugin
+
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
+Test Timeout        120s
+
+
+*** Variables ***
+${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
+
+
+*** Test Cases ***
+CPU ${tc}
+    [Tags]    network    teldat    snmp
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --mode=cpu
+    ...    --hostname=127.0.0.1
+    ...    --snmp-version=2c
+    ...    --snmp-port=2024
+    ...    --snmp-community=network/teldat/snmp/teldat
+    ${length}    Get Length    ${warningcpuutilization5s}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --warning-cpu-utilization-5s=${warningcpuutilization5s}
+        END
+    ${length}    Get Length    ${criticalcpuutilization5s}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --critical-cpu-utilization-5s=${criticalcpuutilization5s}
+    END
+    ${length}    Get Length    ${warningcpuutilization1m}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --warning-cpu-utilization-1m=${warningcpuutilization1m}
+    END
+    ${length}    Get Length    ${criticalcpuutilization1m}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --critical-cpu-utilization-1m=${criticalcpuutilization1m}
+    END
+    ${length}    Get Length    ${warningcpuutilization5m}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --warning-cpu-utilization-5m=${warningcpuutilization5m}
+    END
+    ${length}    Get Length    ${criticalcpuutilization5m}
+    IF    ${length} > 0
+        ${command}    Catenate
+        ...    ${command}
+        ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
+    END
+    ${output}    Run    ${command}
+    Log To Console    .    no_newline=true
+    ${output}    Strip String    ${output}
+    Should Be Equal As Strings
+    ...    ${output}
+    ...    ${result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${result}\n
+    ...    values=False
+    ...    collapse_spaces=True
+
+    Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  result    --
+            ...       1   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  OK: cpu average usage: 1.00 % (5s), 1.00 % (1m), 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+            ...       2   0.5                      ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  WARNING: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;0:0.5;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+            ...       3   ${EMPTY}                 0.5                       ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  CRITICAL: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;;0:0.5;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+            ...       4   ${EMPTY}                 ${EMPTY}                  0.5                      ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  WARNING: cpu average usage: 1.00 % (1m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;0:0.5;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+            ...       5   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 0.5                       ${EMPTY}                 ${EMPTY}                  CRITICAL: cpu average usage: 1.00 % (1m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;0:0.5;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
+            ...       6   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  0.5                      ${EMPTY}                  WARNING: cpu average usage: 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;0:0.5;;0;100
+            ...       7   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 0.5                       CRITICAL: cpu average usage: 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;0:0.5;0;100
