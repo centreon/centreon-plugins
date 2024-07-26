@@ -338,7 +338,7 @@ Filter cellular radio interfaces by type.
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(module) %(interfaceType) %(imei)').
+Customize the name composition rule for the instances the metrics will be attached to (default: '%(module) %(interfaceType) %(imei)').
 You can use the following variables: %(module), %(interfaceType), %(imei), %(operator), %(simIcc)
 
 =item B<--unknown-status>
