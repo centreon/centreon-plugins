@@ -32,12 +32,34 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        "Used: %s of %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_used_value . " " . $total_used_unit,
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit,
+        $self->{result_values}->{prct_free}
     );
 }
+
+sub custom_global_total_usage_output {
+    my ($self, %options) = @_;
+
+    my ($used_human, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_human, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my $msg = "Total Used: $used_human $used_unit / $total_human $total_unit" ;
+
+    return $msg;
+}
+
+sub custom_global_total_free_output {
+    my ($self, %options) = @_;
+
+    my ($free_human, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my $msg = "Total Free: $free_human $free_unit" ;
+
+    return $msg;
+}
+
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -52,9 +74,9 @@ sub set_counters {
             nlabel => 'disks.total.space.usage.bytes',
             set => {
                 key_values => [ { name => 'used' }, { name => 'total' } ],
-                output_template => 'Total used space: %sB',
+                closure_custom_output => $self->can('custom_global_total_usage_output'),
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -63,7 +85,7 @@ sub set_counters {
             nlabel => 'disks.total.space.usage.percent',
             set => {
                 key_values => [ { name => 'used_prct' }],
-                output_template => 'Percentage used: %.2f %%',
+                output_template => 'Total percentage used: %.2f %%',
                 perfdatas => [
                     { template => '%s', uom => '%', min => 0, max => 100 }
                 ]
@@ -74,7 +96,7 @@ sub set_counters {
             nlabel => 'disks.total.space.free.bytes',
             set => {
                 key_values => [ { name => 'free' }, { name => 'total' } ],
-                output_template => 'Total free space: %sB',
+                closure_custom_output => $self->can('custom_global_total_free_output'),
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
                 ]
@@ -130,7 +152,7 @@ sub prefix_disk_output {
     
     #return "Disk '" . $options{instance_value}->{display} . "' ";
     return sprintf(
-        "Disk #%s (%s/%s, serial: %s) located %s is ",
+        "Disk #%s (%s/%s, serial: %s) located %s has ",
         $options{instance_value}->{id},
         $options{instance_value}->{manufacturer},
         $options{instance_value}->{model},
