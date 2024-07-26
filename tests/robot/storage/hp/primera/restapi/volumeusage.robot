@@ -13,7 +13,7 @@ ${HOSTNAME}             127.0.0.1
 ${APIPORT}              3000
 ${CMD}              ${CENTREON_PLUGINS} 
 ...                 --plugin=storage::hp::primera::restapi::plugin
-...                 --mode=volumeusage
+...                 --mode=volume-usage
 ...                 --hostname=${HOSTNAME}
 ...                 --api-username=toto
 ...                 --api-password=toto
