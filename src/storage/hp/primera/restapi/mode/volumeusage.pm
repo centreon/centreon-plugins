@@ -48,26 +48,26 @@ sub set_counters {
     
     $self->{maps_counters}->{volume} = [
         { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, , { name => 'name' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                key_values => [ { name => 'prct_used' }, { name => 'name' }, { name => 'id' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
@@ -79,7 +79,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'filter-id:s'   => { name => 'filter_id' },
         'filter-name:s' => { name => 'filter_name' }
     });
     
@@ -89,7 +90,7 @@ sub new {
 sub prefix_volume_output {
     my ($self, %options) = @_;
     
-    return "Volume '" . $options{instance_value}->{display} . "' ";
+    return "Volume '" . $options{instance_value}->{name} . "' (#" . $options{instance_value}->{id} . ") ";
 }
 
 sub manage_selection {
@@ -101,10 +102,16 @@ sub manage_selection {
 
     for my $volume (@{$volumes}) {
         my $name = $volume->{name};
+        my $id   = $volume->{id};
 
         if (defined($self->{option_results}->{filter_name}) and $self->{option_results}->{filter_name} ne '' and
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping volume '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "Skipping volume named '" . $name . "': not matching filter /" . $self->{option_results}->{filter_name} . "/.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_id}) and $self->{option_results}->{filter_id} ne '' and
+            $id !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "Skipping volume #" . $id . ": not matching filter /" . $self->{option_results}->{filter_id} . "/.", debug => 1);
             next;
         }
 
@@ -115,7 +122,8 @@ sub manage_selection {
 
         my $used = ($snap_used + $adm_used + $usr_used) * 1024 * 1024;
         $self->{volume}->{$name} = {
-            display   => $name,
+            id        => $id,
+            name      => $name,
             total     => $total,
             used      => $used,
             free      => ($total - $used) >= 0 ? ($total - $used) : 0,
@@ -144,6 +152,11 @@ Check volume usage.
 
 Define which counters (filtered by regular expression) should be monitored.
 Example: --filter-counters='^usage$'
+
+=item B<--filter-id>
+
+Define which volumes should be monitored based on their IDs.
+This option will be treated as a regular expression.
 
 =item B<--filter-name>
 

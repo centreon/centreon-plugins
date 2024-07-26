@@ -235,7 +235,7 @@ Monitor the states of the physical disks.
 
 =item B<--filter-id>
 
-Define which volumes should be monitored based on the disk ID.
+Define which disks should be monitored based on their IDs.
 This option will be treated as a regular expression.
 
 =item B<--filter-manufacturer>
