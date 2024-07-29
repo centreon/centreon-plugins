@@ -98,7 +98,7 @@ sub manage_selection {
             limit => undef,
             start => 0
         },
-        reports => '/technology/management/snmp/communities'
+        reports => '/management/snmp/communities'
     }; 
 
     my $snmp_community_api_results = $options{custom}->request_api(
@@ -110,7 +110,7 @@ sub manage_selection {
         for my $index (0 .. $#disco_data){
             next if (!defined($disco_data[$index]->{hostname}));
             if ($snmp_device->{hostname} eq $disco_data[$index]->{hostname}){
-                $disco_data[$index]->{snmp_community} = $snmp_device->{name}->{data};
+                $disco_data[$index]->{snmp_community} = $snmp_device->{name};
             }
         }
     }
