@@ -67,7 +67,8 @@ def refresh_packet_manager(archi):
     return output_status
 
 def install_plugin(plugin, archi):
-    with open('/var/log/robot-tests/installation-' + plugin + '.log', "a") as outfile:
+    filepath = '/var/log/robot-tests/installation-' + plugin + '.log'
+    with open(filepath, "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
@@ -80,11 +81,14 @@ def install_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
+    if output_status == 0:
+        os.remove(filepath)
     return output_status
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/robot-tests/uninstallation-' + plugin + '.log', "a") as outfile:
+    filepath = '/var/log/robot-tests/uninstallation-' + plugin + '.log'
+    with open(filepath, "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
             output_status = (subprocess.run(
@@ -108,6 +112,8 @@ def remove_plugin(plugin, archi):
             os.remove(file)
         except Exception as e:
             print(f"Erreur while removing file {file} : {str(e)}")
+    if output_status == 0:
+        os.remove(filepath)
     return output_status
 
 
