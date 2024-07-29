@@ -53,7 +53,7 @@ def launch_snmp_sim():
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
 def refresh_packet_manager(archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/robot-tests/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
@@ -67,7 +67,8 @@ def refresh_packet_manager(archi):
     return output_status
 
 def install_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    filepath = '/var/log/robot-tests/installation-' + plugin + '.log'
+    with open(filepath, "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
@@ -80,11 +81,14 @@ def install_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
+    if output_status == 0:
+        os.remove(filepath)
     return output_status
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    filepath = '/var/log/robot-tests/uninstallation-' + plugin + '.log'
+    with open(filepath, "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
             output_status = (subprocess.run(
@@ -108,6 +112,8 @@ def remove_plugin(plugin, archi):
             os.remove(file)
         except Exception as e:
             print(f"Erreur while removing file {file} : {str(e)}")
+    if output_status == 0:
+        os.remove(filepath)
     return output_status
 
 
@@ -124,6 +130,8 @@ if __name__ == '__main__':
 
     # Create a directory for cache files
     os.mkdir("/tmp/cache")
+    # Directory for logs
+    os.mkdir("/var/log/robot-tests")
 
     error_install = 0
     error_tests = 0
@@ -137,23 +145,19 @@ if __name__ == '__main__':
     for plugin in sys.argv:
         print("plugin : ", plugin)
         folders_list = get_tests_folders(plugin)
-        if len(folders_list) == 0:
-            print(f"we don't test {plugin} as it don't have any robots tests.")
-            continue
-
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_install += tmp
+            error_install += 1
         tmp = test_plugin(plugin)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_tests += tmp
+            error_tests += 1
         tmp = remove_plugin(plugin, archi)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_purge += tmp
+            error_purge += 1
 
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
           f"errors, and {error_purge} removal error list of error : {list_plugin_error}",)

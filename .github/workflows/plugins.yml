@@ -287,7 +287,7 @@ jobs:
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: plugin-installation-${{ matrix.distrib }}
-          path: /var/log/robot-plugins-installation-tests.log
+          path: /var/log/robot-tests
           retention-days: 1
 
   deliver:
