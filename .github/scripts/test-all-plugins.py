@@ -67,7 +67,7 @@ def refresh_packet_manager(archi):
     return output_status
 
 def install_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/installation-' + plugin + '.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
@@ -84,7 +84,7 @@ def install_plugin(plugin, archi):
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/uninstallation-' + plugin + '.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
             output_status = (subprocess.run(
@@ -134,23 +134,19 @@ if __name__ == '__main__':
     for plugin in sys.argv:
         print("plugin : ", plugin)
         folders_list = get_tests_folders(plugin)
-        if len(folders_list) == 0:
-            print(f"we don't test {plugin} as it don't have any robots tests.")
-            continue
-
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_install += tmp
+            error_install += 1
         tmp = test_plugin(plugin)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_tests += tmp
+            error_tests += 1
         tmp = remove_plugin(plugin, archi)
         if tmp > 0:
             list_plugin_error.append(plugin)
-        error_purge += tmp
+            error_purge += 1
 
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
           f"errors, and {error_purge} removal error list of error : {list_plugin_error}",)
