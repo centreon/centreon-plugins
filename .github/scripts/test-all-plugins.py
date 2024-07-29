@@ -53,7 +53,7 @@ def launch_snmp_sim():
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
 def refresh_packet_manager(archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/robot-tests/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
@@ -67,7 +67,7 @@ def refresh_packet_manager(archi):
     return output_status
 
 def install_plugin(plugin, archi):
-    with open('/var/log/installation-' + plugin + '.log', "a") as outfile:
+    with open('/var/log/robot-tests/installation-' + plugin + '.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
@@ -84,7 +84,7 @@ def install_plugin(plugin, archi):
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/uninstallation-' + plugin + '.log', "a") as outfile:
+    with open('/var/log/robot-tests/uninstallation-' + plugin + '.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
             output_status = (subprocess.run(
@@ -121,6 +121,9 @@ if __name__ == '__main__':
     launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
+
+    # Create a directory for logs
+    os.mkdir("/var/log/robot-tests")
 
     error_install = 0
     error_tests = 0
