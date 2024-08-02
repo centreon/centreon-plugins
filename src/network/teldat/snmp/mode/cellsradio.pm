@@ -264,14 +264,14 @@ sub manage_selection {
             interfaceType => $interface_types->{$interface_type},
             imei => $result->{imei},
             status => {
-                module => 'module' . $module_num,
+                module => $module,
                 interfaceType => $interface_types->{$interface_type},
                 imei => $result->{imei},
                 imsi => $result->{imsi},
                 simIcc  => $result->{simIcc}
             },
             signal => {
-                module => 'module' . $module_num,
+                module => $module
                 interfaceType => $interface_types->{$interface_type},
                 imei => $result->{imei},
                 imsi => $result->{imsi},
