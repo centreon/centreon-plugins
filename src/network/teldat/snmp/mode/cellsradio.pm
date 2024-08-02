@@ -271,7 +271,7 @@ sub manage_selection {
                 simIcc  => $result->{simIcc}
             },
             signal => {
-                module => $module
+                module => $module,
                 interfaceType => $interface_types->{$interface_type},
                 imei => $result->{imei},
                 imsi => $result->{imsi},
