@@ -20,44 +20,14 @@ CPU ${tc}
     ...    --snmp-version=2c
     ...    --snmp-port=2024
     ...    --snmp-community=network/teldat/snmp/teldat
-    ${length}    Get Length    ${warningcpuutilization5s}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --warning-cpu-utilization-5s=${warningcpuutilization5s}
-        END
-    ${length}    Get Length    ${criticalcpuutilization5s}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --critical-cpu-utilization-5s=${criticalcpuutilization5s}
-    END
-    ${length}    Get Length    ${warningcpuutilization1m}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --warning-cpu-utilization-1m=${warningcpuutilization1m}
-    END
-    ${length}    Get Length    ${criticalcpuutilization1m}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --critical-cpu-utilization-1m=${criticalcpuutilization1m}
-    END
-    ${length}    Get Length    ${warningcpuutilization5m}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --warning-cpu-utilization-5m=${warningcpuutilization5m}
-    END
-    ${length}    Get Length    ${criticalcpuutilization5m}
-    IF    ${length} > 0
-        ${command}    Catenate
-        ...    ${command}
-        ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
-    END
+    ...    --warning-cpu-utilization-5s=${warningcpuutilization5s}
+    ...    --critical-cpu-utilization-5s=${criticalcpuutilization5s}
+    ...    --warning-cpu-utilization-1m=${warningcpuutilization1m}
+    ...    --critical-cpu-utilization-1m=${criticalcpuutilization1m}
+    ...    --warning-cpu-utilization-5m=${warningcpuutilization5m}
+    ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
+
     ${output}    Run    ${command}
-    Log To Console    .    no_newline=true
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}

@@ -20,32 +20,14 @@ Memory ${tc}
     ...    --snmp-version=2c
     ...    --snmp-port=2024
     ...    --snmp-community=network/teldat/snmp/teldat
-    ${length}    Get Length    ${warningusage}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --warning-usage=${warningusage}
-    END
-    ${length}    Get Length    ${criticalusage}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --critical-usage=${criticalusage}
-    END
-    ${length}    Get Length    ${warningusagefree}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --warning-usage-free=${warningusagefree}
-    END
-    ${length}    Get Length    ${criticalusagefree}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --critical-usage-free=${criticalusagefree}
-    END
-    ${length}    Get Length    ${warningusageprct}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --warning-usage-prct=${warningusageprct}
-    END
-    ${length}    Get Length    ${criticalusageprct}
-    IF    ${length} > 0
-        ${command}    Catenate    ${command}    --critical-usage-prct=${criticalusageprct}
-    END
+    ...    --warning-usage=${warningusage}
+    ...    --critical-usage=${criticalusage}
+    ...    --warning-usage-free=${warningusagefree}
+    ...    --critical-usage-free=${criticalusagefree}
+    ...    --warning-usage-prct=${warningusageprct}
+    ...    --critical-usage-prct=${criticalusageprct}
+    
     ${output}    Run    ${command}
-    Log To Console    .    no_newline=true
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
     ...    ${output}
