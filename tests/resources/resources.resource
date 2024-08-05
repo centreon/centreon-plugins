@@ -29,3 +29,14 @@ Start Mockoon
 
 Stop Mockoon
     Terminate All Processes
+
+Ctn Run Command And Check Result As Strings
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Be Equal As Strings
+    ...    ${expected_result}
+    ...    ${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
