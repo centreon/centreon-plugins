@@ -382,6 +382,10 @@ Network Fortinet Fortigate SNMP link monitor
             ...    ${command}
             ...    --critical-packet-loss=${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
         END
+<<<<<<< HEAD
+=======
+        Log To Console    .    no_newline=true
+>>>>>>> d2f6ed1b7b934e98662f00ec0f40e2f063b33828
         Ctn Run Command And Check Result As Strings    ${command}    ${fortinet_fortigate_linkmonitor_test.result}
     END
 

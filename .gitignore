@@ -1,5 +1,3 @@
 log.html
 output.xml
 report.html
-
-.github/docker/testing/Dockerfile.local-tests
