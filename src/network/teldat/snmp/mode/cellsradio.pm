@@ -48,10 +48,12 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'sim status: %s [imsi: %s] [interface state: %s]',
+        'sim status: %s [operator: %s] [imsi: %s] [interface state: %s] [simIcc: %s]',
         $self->{result_values}->{simStatus},
+        $self->{result_values}->{operator},
         $self->{result_values}->{imsi},
-        $self->{result_values}->{interfaceState}
+        $self->{result_values}->{interfaceState},
+        $self->{result_values}->{simIcc}
     );
 }
 
@@ -59,10 +61,10 @@ sub cell_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking cellular radio module '%s' [sim icc: %s, operator: %s]",
-        $options{instance_value}->{cellId},
-        $options{instance_value}->{simIcc},
-        $options{instance_value}->{operator}
+        "checking cellular radio module '%s' interface '%s' [imei: %s] ",
+        $options{instance_value}->{module_num},
+        $options{instance_value}->{interfaceType},
+        $options{instance_value}->{imei}
     );
 }
 
@@ -70,17 +72,17 @@ sub prefix_cell_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "cellular radio module '%s' [sim icc: %s, operator: %s] ",
-        $options{instance_value}->{cellId},
-        $options{instance_value}->{simIcc},
-        $options{instance_value}->{operator}
+        "cellular radio module '%s' interface '%s' [imei: %s] ",
+        $options{instance_value}->{module_num},
+        $options{instance_value}->{interfaceType},
+        $options{instance_value}->{imei}
     );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of cellular radio modules ';
+    return 'Number of cellular radio interfaces';
 }
 
 sub set_counters {
@@ -89,7 +91,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'cells', type => 3, cb_prefix_output => 'prefix_cell_output', cb_long_output => 'cell_long_output',
-          indent_long_output => '    ', message_multiple => 'All cellular radio modules are ok',
+          indent_long_output => '    ', message_multiple => 'All cellular radio interfaces are ok',
             group => [
                 { name => 'status', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'signal', type => 0, skipped_code => { -10 => 1 } }
@@ -102,7 +104,7 @@ sub set_counters {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name'}
+                    { template => '%s', min => 0 }
                 ]
             }
         }
@@ -112,11 +114,11 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            warning_default => '%{interfaceState} =~ /disconnect/',
-            critical_default => '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/',
+            warning_default => '%{interfaceState} =~ /disconnect/ && %{interfaceType} =~ /data primary/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'operator' }, { name => 'imsi' }, { name => 'simIcc' },
+                    { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' },
+                    { name => 'operator' }, { name => 'imsi' }, 
                     { name => 'simStatus' }, { name => 'interfaceState' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -128,31 +130,31 @@ sub set_counters {
 
     $self->{maps_counters}->{signal} = [
         { label => 'module-cellradio-rsrp', nlabel => 'module.cellradio.rsrp.dbm', set => {
-                key_values      => [ { name => 'rsrp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values      => [ { name => 'rsrp' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrp: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-rsrq', nlabel => 'module.cellradio.rsrq.dbm', set => {
-                key_values => [ { name => 'rsrq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'rsrq' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rsrq: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-snr', nlabel => 'module.cellradio.snr.db', set => {
-                key_values => [ { name => 'snr' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'snr' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'snr: %s dB',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-rscp', nlabel => 'module.cellradio.rscp.dbm', set => {
-                key_values => [ { name => 'rscp' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'rscp' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'rscp: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
         },
         { label => 'module-cellradio-csq', nlabel => 'module.cellradio.csq.dbm', set => {
-                key_values => [ { name => 'csq' }, { name => 'cellId' }, { name => 'simIcc' }, { name => 'operator' } ],
+                key_values => [ { name => 'csq' }, { name => 'module' }, { name => 'interfaceType' }, { name => 'imei' }, { name => 'simIcc' }, { name => 'operator' } ],
                 output_template => 'csq: %s dBm',
                 closure_custom_perfdata => $self->can('custom_signal_perfdata')
             }
@@ -166,7 +168,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-cell-id:s'            => { name => 'filter_cell_id' },
+        'filter-module:s'             => { name => 'filter_module' },
+        'filter-imei:s'               => { name => 'filter_imei' },
+        'filter-interface-type:s'     => { name => 'filter_interface_type' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
@@ -178,128 +182,137 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(cellId) %(operator)';
+        $self->{option_results}->{custom_perfdata_instances} = '%(module) %(interfaceType) %(imei)';
     }
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
         instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { cellId => 1, operator => 1, simIcc => 1}
+        labels => { module => 1, interfaceType => 1, imei => 1, imsi => 1, operator => 1, simIcc => 1}
     );
 }
 
 my $mapping_info_interface = {
-    imei    => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.5' }, # teldatCellularInfoInterfaceModuleIMEI : Cellular module IMEI.
-    imsi    => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.6' }, # teldatCellularInfoInterfaceModuleIMSI : Cellular module IMSI.
-    simIcc   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.8' }, # teldatCellularInfoInterfaceSIMIcc : Cellular active SIM ICC.
+    imei   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.5' }, # teldatCellularInfoInterfaceModuleIMEI : Cellular module IMEI.
+    imsi   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.6' }, # teldatCellularInfoInterfaceModuleIMSI : Cellular module IMSI.
+    simIcc => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1.8' } # teldatCellularInfoInterfaceSIMIcc : Cellular active SIM ICC.
 };
 
-my $mapping_state_interface = {
-    interfaceState  => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.1.1.2' } # teldatCellularStateInterfaceState : Call state.
-};
-
-my $mapping_state_mobile = {
-    techno      => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.6' }, # teldatCellularStateMobileRadioTechnology : Cellular mobile current radio access tecnology used (!GETRAT).
-    rscp        => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.8' }, # teldatCellularStateMobileRxSignalCodePwr : Cellular mobile received signal code power (RSCP).
-    csq         => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.10' }, # teldatCellularStateMobileSignalQuality : Cellular mobile reception signal quality (+CSQ).
-    rsrp        => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.22' }, # teldatCellularStateMobileRxRSRP : Cellular mobile reference symbol received power (RSRP).
-    rsrq        => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.23' }, # teldatCellularStateMobileRxRSRQ : Cellular mobile reference signal received quality (RSRQ).
-    snr         => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.24' }, # teldatCellularStateMobileRxSINR : Cellular mobile signal versus noise ratio (SINR).
-    simStatus   => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.26' } # teldatCellularStateMobileSIMStatus : Cellular mobile SIM status.
-};
-
-my $mapping_prof_dial = {
-    operator  => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.4.1.2' } # teldatCellularProfDialName1 : Dial Profile Name(1) associated to cellular interface.
+my $mapping_data_interface = {
+    interfaceState => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.1.1.2' }, # teldatCellularStateInterfaceState : Call state.
+    techno         => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.6' }, # teldatCellularStateMobileRadioTechnology : Cellular mobile current radio access tecnology used (!GETRAT).
+    rscp           => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.8' }, # teldatCellularStateMobileRxSignalCodePwr : Cellular mobile received signal code power (RSCP).
+    csq            => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.10' }, # teldatCellularStateMobileSignalQuality : Cellular mobile reception signal quality (+CSQ).
+    rsrp           => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.22' }, # teldatCellularStateMobileRxRSRP : Cellular mobile reference symbol received power (RSRP).
+    rsrq           => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.23' }, # teldatCellularStateMobileRxRSRQ : Cellular mobile reference signal received quality (RSRQ).
+    snr            => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.24' }, # teldatCellularStateMobileRxSINR : Cellular mobile signal versus noise ratio (SINR).
+    simStatus      => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1.26' }, # teldatCellularStateMobileSIMStatus : Cellular mobile SIM status.
+    operator       => { oid => '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.4.1.2' }
 };
 
 my $oid_teldatCellularInfoInterfaceEntry = '.1.3.6.1.4.1.2007.4.1.2.2.2.18.1.1'; # teldatInfoInterfaceTable
-my $oid_teldatCellularStateMobileEntry = '.1.3.6.1.4.1.2007.4.1.2.2.2.18.3.2.1'; # teldatStateMobileTable
+
+my $interface_types = {
+    1 => 'control vocal',
+    2 => 'data primary',
+    3 => 'data auxiliary'
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = { detected => 0 };
-    $self->{cells} = {};
-
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mapping_state_interface->{interfaceState}->{oid} },
-            { oid => $mapping_prof_dial->{operator}->{oid} },
-            { oid => $oid_teldatCellularInfoInterfaceEntry, start => $mapping_info_interface->{imei}->{oid}, end => $mapping_info_interface->{simIcc}->{oid} },
-            { oid => $oid_teldatCellularStateMobileEntry, start => $mapping_state_mobile->{techno}->{oid}, end => $mapping_state_mobile->{simStatus}->{oid} }
-        ],
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_teldatCellularInfoInterfaceEntry,
+        start => $mapping_info_interface->{imei}->{oid},
+        end => $mapping_info_interface->{simIcc}->{oid},
         nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$snmp_result->{$oid_teldatCellularInfoInterfaceEntry}}) {
+    $self->{global} = { detected => 0 };
+    $self->{cells} = {};
+    my $modules = {};
+    my $module_num = 0;
+    my $interface_type = 0;
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping_info_interface->{imei}->{oid}\.(.*)$/);
         my $instance = $1;
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping_info_interface, results => $snmp_result->{$oid_teldatCellularInfoInterfaceEntry}, instance => $instance);
-        my $result2 = $options{snmp}->map_instance(mapping => $mapping_state_interface, results => $snmp_result->{$mapping_state_interface->{interfaceState}->{oid}}, instance => $instance);
-        my $result3 = $options{snmp}->map_instance(mapping => $mapping_prof_dial, results => $snmp_result->{$mapping_prof_dial->{operator}->{oid}}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping_info_interface, results => $snmp_result, instance => $instance);
+        next if ($result->{imei} !~ /^[0-9]+$/);
 
-        my $cell_id = $result->{imei};
-        next if ($cell_id !~ /^(?:[0-9]+)$/);
-        next if (defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '' &&
-            $cell_id !~ /$self->{option_results}->{filter_cell_id}/ && $result->{simIcc} !~ /$self->{option_results}->{filter_cell_id}/);
-
-        my $operator = $result3->{operator};
-        if($result3->{operator} =~ /^-+$/){
-            $operator = "N/A";
+        if (!defined($modules->{$module_num}) || $result->{imei} ne $modules->{$module_num}) {
+            $module_num++;
+            $interface_type = 0;
+            $modules->{$module_num} = $result->{imei};
         }
+        if (defined($modules->{$module_num})) {
+            $interface_type++;
+        }
+
+        my $module = 'module' . $module_num;
+
+        next if (defined($self->{option_results}->{filter_module}) && $self->{option_results}->{filter_module} ne '' &&
+            $module !~ /$self->{option_results}->{filter_module}/);
+        next if (defined($self->{option_results}->{filter_imei}) && $self->{option_results}->{filter_imei} ne '' &&
+            $result->{imei} !~ /$self->{option_results}->{filter_imei}/);
+        next if (defined($self->{option_results}->{filter_interface_type}) && $self->{option_results}->{filter_interface_type} ne '' &&
+             $interface_types->{$interface_type} !~ /$self->{option_results}->{filter_interface_type}/);
+
         $self->{cells}->{$instance} = {
-            cellId => $cell_id,
-            simIcc  => $result->{simIcc},
-            operator => $operator,
+            module => $module,
+            module_num => $module_num,
+            interfaceType => $interface_types->{$interface_type},
+            imei => $result->{imei},
             status => {
-                cellId => $cell_id,
-                simIcc  => $result->{simIcc},
-                operator => $operator,
-                imsi   => $result->{imsi},
-                interfaceState => $result2->{interfaceState}
+                module => $module,
+                interfaceType => $interface_types->{$interface_type},
+                imei => $result->{imei},
+                imsi => $result->{imsi},
+                simIcc  => $result->{simIcc}
             },
             signal => {
-                cellId => $cell_id,
-                simIcc  => $result->{simIcc},
-                operator => $operator
+                module => $module,
+                interfaceType => $interface_types->{$interface_type},
+                imei => $result->{imei},
+                imsi => $result->{imsi},
+                simIcc  => $result->{simIcc}
             }
         };
-    }
-
-    if (scalar(keys %{$self->{cells}}) <= 0 && defined($self->{option_results}->{filter_cell_id}) && $self->{option_results}->{filter_cell_id} ne '') {
-        $self->{output}->add_option_msg(short_msg => "No Cell ID found matching with filter : ".$self->{option_results}->{filter_cell_id});
-        $self->{output}->option_exit();
-    }
-    # Return : OK:  | 'modules.cellradio.detected.count'=0;;;0;
-    # return if (scalar(keys %{$self->{cells}}) <= 0);
-
-    foreach my $instance (keys %{$self->{cells}}) {
-        my $result4 = $options{snmp}->map_instance(mapping => $mapping_state_mobile, results => $snmp_result->{$oid_teldatCellularStateMobileEntry}, instance => $instance);
-
-        $self->{cells}->{$instance}->{status}->{simStatus} = $result4->{simStatus};
-
-        if ($self->{cells}->{$instance}->{status}->{simIcc} ne '') {
-            if($result4->{rsrp} ne '' && $result4->{rsrp} ne 0){
-                $self->{cells}->{$instance}->{signal}->{rsrp} = $result4->{rsrp};
-            }
-            if($result4->{rsrq} ne '' && $result4->{rsrq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rsrq} = $result4->{rsrq};
-            }
-            if($result4->{snr} ne '' && $result4->{snr} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{snr} = $result4->{snr};
-            }
-            if($result4->{rscp} ne '' && $result4->{rscp} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{rscp} = $result4->{rscp};
-            }
-            if($result4->{csq} ne '' && $result4->{csq} ne 0) {
-                $self->{cells}->{$instance}->{signal}->{csq} = $result4->{csq};
-            }
-        }
 
         $self->{global}->{detected}++;
     }
-}
+
+    if (scalar(keys %{$self->{cells}}) <= 0 &&
+        (defined($self->{option_results}->{filter_module}) && $self->{option_results}->{filter_module} ne '') ||
+        (defined($self->{option_results}->{filter_imei}) && $self->{option_results}->{filter_imei} ne '')) {
+        $self->{output}->add_option_msg(short_msg => 'No interfaces found matching with filter');
+        $self->{output}->option_exit();
+    }
+ 
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping_data_interface)) ],
+        instances => [ map($_, keys(%{$self->{cells}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+ 
+    foreach (keys %{$self->{cells}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping_data_interface, results => $snmp_result, instance => $_);
+
+        $self->{cells}->{$_}->{status}->{simStatus} = $result->{simStatus};
+        $self->{cells}->{$_}->{status}->{interfaceState} = $result->{interfaceState};
+        $self->{cells}->{$_}->{status}->{operator} = $result->{operator};
+        $self->{cells}->{$_}->{signal}->{operator} = $result->{operator};
+
+        next if ($self->{cells}->{$_}->{status}->{simIcc} eq '');
+
+        $self->{cells}->{$_}->{signal}->{rsrp} = $result->{rsrp} if ($result->{rsrp} ne '' && $result->{rsrp} != 0);
+        $self->{cells}->{$_}->{signal}->{rsrq} = $result->{rsrq} if ($result->{rsrq} ne '' && $result->{rsrq} != 0);
+        $self->{cells}->{$_}->{signal}->{snr} = $result->{snr} if ($result->{snr} ne '' && $result->{snr} != 0);
+        $self->{cells}->{$_}->{signal}->{rscp} = $result->{rscp} if ($result->{rscp} ne '' && $result->{rscp} != 0);
+        $self->{cells}->{$_}->{signal}->{csq} = $result->{csq} if ($result->{csq} ne '' && $result->{csq} != 0);
+    }
+ }
 
 1;
 
@@ -307,33 +320,41 @@ __END__
 
 =head1 MODE
 
-Check cellular radio modules.
+Check cellular radio interfaces.
 
 =over 8
 
-=item B<--filter-cell-id>
+=item B<--filter-module>
 
-Filter cell modules by IMEI ID.
+Filter cellular radio interfaces by module.
+
+=item B<--filter-imei>
+
+Filter cellular radio interfaces by IMEI.
+
+=item B<--filter-interface-type>
+
+Filter cellular radio interfaces by type.
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(cellId) %(operator)').
-You can use the following variables: %{cellId}, %{simIcc}, %{operator}
+Customize the name composition rule for the instances the metrics will be attached to (default: '%(module) %(interfaceType) %(imei)').
+You can use the following variables: %(module), %(interfaceType), %(imei), %(operator), %(simIcc)
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
+You can use the following variables: %{module}, %{interfaceType}, %{imei}, %{operator}, %{imsi}, %{simIcc}, %{simStatus}, %{interfaceState}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{interfaceState} =~ /disconnect/').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
+Define the conditions to match for the status to be WARNING (default: '%{interfaceState} =~ /disconnect/ && %{interfaceType} =~ /data primary/').
+You can use the following variables: %{module}, %{interfaceType}, %{imei}, %{operator}, %{imsi}, %{simIcc}, %{simStatus}, %{interfaceState}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{simStatus} =~ /LOCKED/ || %{simStatus} =~ /DETECTING/').
-You can use the following variables: %{simStatus}, %{interfaceState}, %{cellId}, %{simIcc}, %{operator}, %{imsi}
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{module}, %{interfaceType}, %{imei}, %{operator}, %{imsi}, %{simIcc}, %{simStatus}, %{interfaceState}
 
 =item B<--warning-*> B<--critical-*>
 
