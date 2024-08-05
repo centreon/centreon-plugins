@@ -15,7 +15,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License. 
+# limitations under the License.
 #
 
 package network::teldat::snmp::plugin;
@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cells-radio'     => 'network::teldat::snmp::mode::cellsradio',
-        'cpu'             => 'network::teldat::snmp::mode::cpu',
-        'interfaces'      => 'network::teldat::snmp::mode::interfaces',
-        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::teldat::snmp::mode::memory',
-        'uptime'          => 'network::teldat::snmp::mode::uptime'
+        'cells-radio'      => 'network::teldat::snmp::mode::cellsradio',
+        'cpu'              => 'network::teldat::snmp::mode::cpu',
+        'interfaces'       => 'network::teldat::snmp::mode::interfaces',
+        'list-cells-radio' => 'network::teldat::snmp::mode::listcellsradio',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::teldat::snmp::mode::memory',
+        'uptime'           => 'network::teldat::snmp::mode::uptime'
     };
 
     return $self;
