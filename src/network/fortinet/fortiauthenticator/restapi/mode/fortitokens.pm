@@ -145,11 +145,11 @@ Check Fortitokens.
 
 =over 8
 
-=item B<--warning-tokens-usage-prct>
+=item B<--warning-assigned-prct>
 
 Warning threshold in percent.
 
-=item B<--critical-tokens-usage-prct>
+=item B<--critical-assigned-prct>
 
 Critical threshold in percent.
 
