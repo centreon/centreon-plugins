@@ -39,5 +39,5 @@ Edge Status ${tc}
 
 
     Examples:    tc        extraoptions                  expected_result   --
-        ...      1        ${EMPTY}                       CRITICAL: Edge 'KONECTA-SDWAN-EDGE' State is 'OFFLINE', Service State is 'IN_SERVICE', HA State is 'READY', Activation State is 'ACTIVATED'
+        ...      1        ${EMPTY}                       CRITICAL: Edge 'MYEDGE#02' State is 'OFFLINE', Service State is 'IN_SERVICE', HA State is 'READY', Activation State is 'ACTIVATED'
         ...      2        --critical-status=''           OK: All edges status are ok
