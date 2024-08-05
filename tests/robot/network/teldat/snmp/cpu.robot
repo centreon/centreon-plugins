@@ -27,14 +27,8 @@ CPU ${tc}
     ...    --warning-cpu-utilization-5m=${warningcpuutilization5m}
     ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${result}
-    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${result}\n
-    ...    values=False
-    ...    collapse_spaces=True
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
 
     Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  result    --
             ...       1   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  OK: cpu average usage: 1.00 % (5s), 1.00 % (1m), 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100

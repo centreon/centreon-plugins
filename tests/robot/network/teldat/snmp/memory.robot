@@ -27,14 +27,8 @@ Memory ${tc}
     ...    --warning-usage-prct=${warningusageprct}
     ...    --critical-usage-prct=${criticalusageprct}
     
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
-    ...    values=False
-    ...    collapse_spaces=True
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
 
     Examples:         tc  warningusage  criticalusage  warningusagefree  criticalusagefree  warningusageprct  criticalusageprct    expected_result    --
             ...       1   ${EMPTY}      ${EMPTY}       ${EMPTY}          ${EMPTY}           ${EMPTY}           ${EMPTY}            OK: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
