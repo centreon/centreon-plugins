@@ -67,12 +67,8 @@ Components
         ...    --snmp-version=${SNMPVERSION}
         ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=${check_components_test.snmpcommunity}
-
-        ${output}    Run    ${command}
-        Should Be Equal As Strings
-        ...    ${check_components_test.expected_output}
-        ...    ${output}
-        ...    ${check_components_test.description} failed. Wrong output for components mode: ${check_components_test}.{\n}Command output:{\n}${output}
+            
+        Ctn Run Command And Check Result As Strings    ${command}    ${check_components_test.expected_output}
     END
 
 Uptime
@@ -87,10 +83,6 @@ Uptime
         ...    --snmp-community=${test_item.snmpcommunity}
         ...    --warning-uptime=${test_item.warning}
         ...    --critical-uptime=${test_item.critical}
-
-        ${output}    Run    ${command}
-        Should Be Equal As Strings
-        ...    ${test_item.expected_output}
-        ...    ${output}
-        ...    ${test_item.description} failed. Wrong output for components mode: ${test_item}.{\n}Command output:{\n}${output}
+            
+        Ctn Run Command And Check Result As Strings    ${command}    ${test_item.expected_output}
     END
