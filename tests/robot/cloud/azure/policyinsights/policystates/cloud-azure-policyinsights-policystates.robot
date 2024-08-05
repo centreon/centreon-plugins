@@ -63,10 +63,6 @@ Azure PolicyInsights PolicyStates compliance
         IF    ${length} > 0
             ${command}    Catenate    ${command}    --resource-type=${compliance_value.resourcetype}
         END
-        ${output}    Run    ${command}
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${compliance_value.result}
-        ...    Wrong output result for compliance of ${compliance_value}.{\n}Command output:{\n}${output}
+       
+        Ctn Run Command And Check Result As Strings    ${command}    ${compliance_value.result}
     END

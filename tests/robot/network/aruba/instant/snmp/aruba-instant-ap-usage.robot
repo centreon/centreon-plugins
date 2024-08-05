@@ -66,10 +66,5 @@ Network Aruba Instant SNMP plugin
         ...    --snmp-community=${ap_usage_tc.snmpcommunity}
 
         Log To Console    ${command}
-        ${output}    Run    ${command}
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${ap_usage_tc.result}
-        ...    Wrong output result for compliance of ${ap_usage_tc.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+        Ctn Run Command And Check Result As Strings    ${command}    ${ap_usage_tc.result}
     END

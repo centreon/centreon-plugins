@@ -382,14 +382,8 @@ Network Fortinet Fortigate SNMP link monitor
             ...    ${command}
             ...    --critical-packet-loss=${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
         END
-        ${output}    Run    ${command}
         Log To Console    .    no_newline=true
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${fortinet_fortigate_linkmonitor_test.result}
-        ...    Wrong result output for:${\n}Command: ${\n}${command}${\n}${\n}Expected output: ${\n}${fortinet_fortigate_linkmonitor_test.result}${\n}${\n}Obtained output:${\n}${output}${\n}${\n}${\n}
-        ...    values=False
+        Ctn Run Command And Check Result As Strings    ${command}    ${fortinet_fortigate_linkmonitor_test.result}
     END
 
 Network Fortinet Fortigate SNMP list link monitor
@@ -421,12 +415,6 @@ Network Fortinet Fortigate SNMP list link monitor
             ...    ${command}
             ...    --filter-vdom=${fortinet_fortigate_listlinkmonitors_test.filtervdom}
         END
-        ${output}    Run    ${command}
         Log To Console    .    no_newline=true
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${fortinet_fortigate_listlinkmonitors_test.result}
-        ...    Wrong result output for:${\n}Command: ${\n}${command}${\n}${\n}Expected output: ${\n}${fortinet_fortigate_listlinkmonitors_test.result}${\n}${\n}Obtained output:${\n}${output}${\n}${\n}${\n}
-        ...    values=False
+        Ctn Run Command And Check Result As Strings    ${command}    ${fortinet_fortigate_listlinkmonitors_test.result}
     END
