@@ -64,6 +64,7 @@ sub new {
     });
 
     $self->{option_results} = {};
+
     $self->{option_msg} = [];
 
     $self->{nodisplay} = 0;
