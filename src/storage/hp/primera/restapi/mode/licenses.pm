@@ -147,7 +147,9 @@ sub manage_selection {
     my ($total_licenses, $expired_licenses) = (0, 0);
     for my $license_item (@{$licenses}) {
         # skip if filter does not match
-        next if (defined($self->{option_results}->{filter_name}) and $self->{option_results}->{filter_name} ne '' and $license_item->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_name})
+                and $self->{option_results}->{filter_name} ne ''
+                and $license_item->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $total_licenses = $total_licenses + 1;
         $self->{license_expiration}->{$license_item->{name}} = {

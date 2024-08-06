@@ -124,9 +124,13 @@ sub manage_selection {
     my $offline_nodes = 0;
 
     # Typical content of onlineNodes is [0, 1]
-    # %online_nodes_statuses associates 'online' to every online node is as key
-    # Example {[0] => 'online'}
+    # This is the list of the nodes that are currently connected
+    # Each number is the ID of a node
+    # %online_nodes_statuses associates 'online' to every online node with the node ID as key.
+    # Example {'0' => 'online',  '1' => 'online'} if both nodes are online (corresponding to input [0, 1])
+    # Example {'0' => 'online'} if only the node of ID 0 is online (corresponding to input [0])
     my %online_nodes_statuses = map { $_ => 'online' } @{ $response->{onlineNodes} };
+
     # Typical content of clusterNodes is [0, 1]
     # %all_nodes_statuses uses this data and the data from %online_nodes_statuses to give the status of all nodes
     # Example: {[0] => 'online', [1] => 'offline'}

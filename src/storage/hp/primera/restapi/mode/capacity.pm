@@ -186,7 +186,6 @@ sub manage_selection {
         my $free        = $response->{$type}->{freeMiB} * 1024 * 1024;
         my $unavailable = $response->{$type}->{unavailableCapacityMiB} * 1024 * 1024;
         my $failed      = $response->{$type}->{failedCapacityMiB} * 1024 * 1024;
-        #my $allocated   = $response->{$type}->{allocated}->{totalAllocatedMiB} * 1024 * 1024;
 
         $self->{storages}->{$type} = {
             type  => $type,

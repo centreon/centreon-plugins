@@ -50,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Control-M through Automation API.
+Monitor HPE Primera storage controller.
 
 =cut
