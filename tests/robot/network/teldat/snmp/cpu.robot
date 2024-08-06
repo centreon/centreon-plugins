@@ -30,7 +30,7 @@ CPU ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
 
-    Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  result    --
+    Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  expected_result    --
             ...       1   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  OK: cpu average usage: 1.00 % (5s), 1.00 % (1m), 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
             ...       2   0.5                      ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  WARNING: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;0:0.5;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
             ...       3   ${EMPTY}                 0.5                       ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  CRITICAL: cpu average usage: 1.00 % (5s) | 'cpu.utilization.5s.percentage'=1.00%;;0:0.5;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100
