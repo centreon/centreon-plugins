@@ -39,7 +39,7 @@ sub new {
         'schedules'     => 'apps::automation::ansible::tower::mode::schedules'
     };
 
-    $self->{custom_modes}->{api} = 'apps::automation::ansible::tower::custom::api';
+    $self->{custom_modes}->{api}      = 'apps::automation::ansible::tower::custom::api';
     $self->{custom_modes}->{towercli} = 'apps::automation::ansible::tower::custom::towercli';
     
     return $self;

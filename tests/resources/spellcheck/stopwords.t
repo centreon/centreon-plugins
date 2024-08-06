@@ -48,6 +48,7 @@
 ADSL
 ASAM
 Alcatel
+Ansible
 Avigilon
 Centreon
 cpu-utilization-1m
@@ -80,6 +81,7 @@ Netscaler
 OID
 PKCS1
 QoS
+RestAPI
 RRDCached
 SNMP
 SSH
@@ -134,6 +136,7 @@ total-offline-prct
 total-online-prct
 total-oper-down
 total-oper-up
+tower-cli
 uptime
 usage-prct
 userpass

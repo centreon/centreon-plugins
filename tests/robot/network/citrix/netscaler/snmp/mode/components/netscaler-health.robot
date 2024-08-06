@@ -17,18 +17,13 @@ check psu components ${tc}/2
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=health
-    ...    --hostname='127.0.0.1'
-    ...    --snmp-port='2024'
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community='network/citrix/netscaler/snmp/mode/components/${community}'
     ...    --component=psu
     ...    --alternative-status-mapping='${alternative_status_mapping}'
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    alternative_status_mapping    community    expected_result    --
             ...      1     true        psu-citrix-v13    OK: All 4 components are ok [4/4 psus]. | 'count_psu'=4;;;;

@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
 
 
 *** Test Cases ***
@@ -17,9 +17,9 @@ List diskio ${tc}
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-diskio
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --disco-show
     ...    --snmp-community=${snmpcommunity}
     ${output}    Run    ${command}
@@ -32,5 +32,5 @@ List diskio ${tc}
     ...    Wrong output result for command:{\n}{\n}${command}{\n}{\n}Command output:{\n}{\n}${output}
 
     Examples:         tc  snmpcommunity                     expected_result    --
-            ...       1   os/linux/snmp/list-diskio         10                 
-            ...       2   os/linux/snmp/list-diskio-2       4                   
+            ...       1   os/linux/snmp/list-diskio         10
+            ...       2   os/linux/snmp/list-diskio-2       4

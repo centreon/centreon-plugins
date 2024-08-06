@@ -10,8 +10,8 @@ Test Timeout        120s
 ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=hardware::devices::camera::avigilon::snmp::plugin
 ...         --mode=temperature
-...         --hostname=127.0.0.1
-...         --snmp-port=2024
+...         --hostname=${HOSTNAME}
+...         --snmp-port=${SNMPPORT}
 
 
 *** Test Cases ***
@@ -26,12 +26,7 @@ Avigilon camera Temperature ${tc}/5
     ...    --warning-status='${warning_status}'
     ...    --critical-status='${critical_status}'
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    warning_temperature  critical_temperature    warning_status          critical_status         expected_result    --
             ...      1     ${EMPTY}             ${EMPTY}                ${EMPTY}                ${EMPTY}                OK: temperature: 23.00 C, sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;

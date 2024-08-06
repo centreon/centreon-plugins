@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                  ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=127.0.0.1 --snmp-version=2c --snmp-port=2024
+${CMD}                  ${CENTREON_PLUGINS} --plugin=network::aruba::instant::snmp::plugin --mode=ap-usage --hostname=${HOSTNAME} --snmp-version=${SNMPVERSION} --snmp-port=${SNMPPORT}
 
 &{ap_usage_test_1}
 ...                     documentation=Test AP usage without filters
@@ -66,10 +66,5 @@ Network Aruba Instant SNMP plugin
         ...    --snmp-community=${ap_usage_tc.snmpcommunity}
 
         Log To Console    ${command}
-        ${output}    Run    ${command}
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${ap_usage_tc.result}
-        ...    Wrong output result for compliance of ${ap_usage_tc.result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+        Ctn Run Command And Check Result As Strings    ${command}    ${ap_usage_tc.result}
     END

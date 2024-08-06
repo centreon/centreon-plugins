@@ -16,9 +16,9 @@ Battery ${tc}/4
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=battery
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2c
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=hardware/ups/socomec/netvision/snmp/battery
 
     # Append options to command
@@ -27,12 +27,7 @@ Battery ${tc}/4
     ${opt}    Append Option    --critical-temperature    ${c_temperature}
     ${command}    Catenate    ${command}    ${opt}
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    ${command} \nWrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    w_temperature    c_temperature    expected_result    --
             ...      1     30               50               OK: battery status is normal - charge remaining: 100% (0 minutes remaining) | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=22C;0:30;0:50;;
