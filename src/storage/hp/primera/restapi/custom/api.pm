@@ -43,12 +43,12 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'    => { name => 'api_username' },
-            'api-password:s'    => { name => 'api_password' },
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'timeout:s'         => { name => 'timeout' },
+            'api-username:s'         => { name => 'api_username' },
+            'api-password:s'         => { name => 'api_password' },
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto' },
+            'timeout:s'              => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -57,8 +57,8 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'HPE PRIMERA API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{http}   = centreon::plugins::http->new(%options, default_backend => 'curl');
+    $self->{cache}  = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -74,15 +74,15 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname}))                ? $self->{option_results}->{hostname}               : '';
+    $self->{option_results}->{port}     = (defined($self->{option_results}->{port}))                    ? $self->{option_results}->{port}                   : 443;
+    $self->{option_results}->{proto}    = (defined($self->{option_results}->{proto}))                   ? $self->{option_results}->{proto}                  : 'https';
+    $self->{option_results}->{timeout}  = (defined($self->{option_results}->{timeout}))                 ? $self->{option_results}->{timeout}                : 30;
+    $self->{api_username}               = (defined($self->{option_results}->{api_username}))            ? $self->{option_results}->{api_username}           : '';
+    $self->{api_password}               = (defined($self->{option_results}->{api_password}))            ? $self->{option_results}->{api_password}           : '';
+    $self->{unknown_http_status}        = (defined($self->{option_results}->{unknown_http_status}))     ? $self->{option_results}->{unknown_http_status}    : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status}        = (defined($self->{option_results}->{warning_http_status}))     ? $self->{option_results}->{warning_http_status}    : '';
+    $self->{critical_http_status}       = (defined($self->{option_results}->{critical_http_status}))    ? $self->{option_results}->{critical_http_status}   : '';
 
     if ($self->{option_results}->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
@@ -159,7 +159,7 @@ sub get_token {
 
         $auth_key = $decoded->{key};
         my $data = {
-            updated => time(),
+            updated  => time(),
             auth_key => $auth_key
         };
         $self->{cache}->write(data => $data);
@@ -186,11 +186,11 @@ sub request_api {
     $self->settings();
     my $token = $self->get_token();
     my ($content) = $self->{http}->request(
-        url_path => $options{endpoint},
-        get_param => $get_param,
-        header => ['Authorization: Bearer ' . $token],
-        unknown_status => '',
-        warning_status => '',
+        url_path        => $options{endpoint},
+        get_param       => $get_param,
+        header          => [ 'Authorization: Bearer ' . $token ],
+        unknown_status  => '',
+        warning_status  => '',
         critical_status => ''
     );
 
