@@ -136,7 +136,7 @@ Specify the Workflow full URI (required).
 
 =item B<--port>
 
-API port (default: 443)
+Define the API port (default: 443).
 
 =item B<--proto>
 
