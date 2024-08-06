@@ -140,7 +140,7 @@ API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (default: 'https')
+Define the protocol if needed (default: 'https').
 
 =item B<--timeout>
 
