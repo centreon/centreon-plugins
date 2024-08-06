@@ -132,7 +132,7 @@ O365 Teams Workflows API
 
 =item B<--teams-workflow>
 
-Specify the Workflow full URI (required).
+Define the Workflow full URI (required).
 
 =item B<--port>
 
