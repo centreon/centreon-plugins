@@ -353,6 +353,9 @@ sub build_workflow_message {
     if ($self->{notif_type} eq 'PROBLEM') {
         $themecolor = $teams_colors->{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
     }
+    if (!defined($themecolor)) {
+        $themecolor = 'default';
+    }
 
     push @{$self->{body}}, {
         type     => "TextBlock",
@@ -360,7 +363,7 @@ sub build_workflow_message {
         "size"   => "Large",
         "weight" => "Bolder",
         "style"  => "heading",
-        "color"  => "$themecolor"
+        "color"  => $themecolor
     };
     push @{$self->{body}}, {
         type     => "TextBlock",
@@ -368,7 +371,7 @@ sub build_workflow_message {
         "size"   => "Medium",
         "weight" => "Bolder",
         "style"  => "heading",
-        "color"  => "$themecolor"
+        "color"  => $themecolor
     };
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
