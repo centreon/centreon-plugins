@@ -326,7 +326,9 @@ sub manage_selection {
             $last_exec_times->{ $job_exec->{objectId} } = {
                 jobName => $job_exec->{objectName},
                 jobType => $job_exec->{jobType},
-                epoch => $dt->epoch()
+                epoch => $dt->epoch(),
+                objectType => $job_exec->{objectType},
+                locationName => $job_exec->{locationName}
             };
         }
 
@@ -355,6 +357,8 @@ sub manage_selection {
         $self->{jobs}->{$objectId} = {
             name => $last_exec_times->{$objectId}->{jobName},
             jobType => $last_exec_times->{$objectId}->{jobType},
+            objectType => $last_exec_times->{$objectId}->{objectType},
+            locationName => $last_exec_times->{$objectId}->{locationName},
             timers => {
                 jobName => $last_exec_times->{$objectId}->{jobName},
                 jobType => $last_exec_times->{$objectId}->{jobType},

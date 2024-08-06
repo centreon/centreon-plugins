@@ -112,6 +112,7 @@ in-bcast
 in-mcast
 in-ucast
 interface-dsl-name
+job-executions-failed-prct
 keepass
 ldap
 license-instances-usage-prct
