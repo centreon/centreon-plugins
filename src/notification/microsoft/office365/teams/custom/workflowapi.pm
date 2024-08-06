@@ -144,7 +144,7 @@ Define the protocol if needed (default: 'https').
 
 =item B<--timeout>
 
-Set HTTP timeout
+Define the HTTP timeout.
 
 =back
 
