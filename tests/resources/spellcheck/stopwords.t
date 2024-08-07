@@ -1,3 +1,4 @@
+--3cx-version
 --add-sysdesc
 --api-filter-orgs
 --api-password
@@ -49,6 +50,7 @@
 -InputFormat
 -NoLogo
 2c
+3CX
 ADSL
 ASAM
 Alcatel
