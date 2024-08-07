@@ -118,7 +118,7 @@ Specify the command to execute (required).
 Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning--status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{name}
