@@ -200,7 +200,7 @@ __END__
 
 HPE Primera REST API
 
-=head1 HPE PRIMERA API OPTIONS
+=head1 HPE Primera API OPTIONS
 
 HPE Primera REST API
 
