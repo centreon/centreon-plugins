@@ -38,6 +38,7 @@
 --oid-display
 --oid-extra-display
 --oid-filter
+--sql-errors-exit
 --urlpath
 --use-ucd
 --warning-bytesallocatedpercentage
@@ -100,6 +101,7 @@ api.meraki.com
 cardtemperature
 connections-dhcp
 connections-dns
+datasource
 deltaps
 df
 eth

@@ -248,8 +248,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distrib: [el8, el9, jammy, bullseye, bookworm]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
         include:
+          - runner_name: ubuntu-22.04
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
@@ -265,8 +266,13 @@ jobs:
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
+          - package_extension: deb
+            image: testing-plugins-bullseye-arm64
+            distrib: bullseye
+            arch: arm64
+            runner_name: ["self-hosted", "collect-arm64"]
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.runner_name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
       credentials:

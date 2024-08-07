@@ -26,11 +26,11 @@ use DBI;
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(:signal_h);
 
-my %handlers = ( ALRM => {} );
+my %handlers = (ALRM => {});
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self              = {};
     bless $self, $class;
     # $options{options} = options object
     # $options{output} = output object
@@ -60,16 +60,16 @@ sub new {
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
 
-    $self->{output} = $options{output};
-    $self->{sqlmode_name} = $options{sqlmode_name};
-    $self->{instance} = undef;
+    $self->{output}           = $options{output};
+    $self->{sqlmode_name}     = $options{sqlmode_name};
+    $self->{instance}         = undef;
     $self->{statement_handle} = undef;
-    $self->{version} = undef;
+    $self->{version}          = undef;
 
-    $self->{data_source} = undef;
-    $self->{username} = undef;
-    $self->{password} = undef;
-    $self->{connect_options} = undef;
+    $self->{data_source}          = undef;
+    $self->{username}             = undef;
+    $self->{password}             = undef;
+    $self->{connect_options}      = undef;
     $self->{connect_options_hash} = {};
 
     # Sometimes, we need to set ENV
@@ -87,7 +87,7 @@ sub prepare_destroy {
 sub set_signal_handlers {
     my $self = shift;
 
-    $SIG{ALRM} = \&class_handle_ALRM;
+    $SIG{ALRM}               = \&class_handle_ALRM;
     $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
 }
 
@@ -103,7 +103,7 @@ sub handle_ALRM {
     $self->prepare_destroy();
     $self->disconnect();
     $self->{output}->output_add(
-        severity => $self->{sql_errors_exit},
+        severity  => $self->{sql_errors_exit},
         short_msg => 'Timeout'
     );
     $self->{output}->display();
@@ -136,7 +136,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
-    $self->{username} = undef;
+    $self->{username}    = undef;
     if (defined($self->{option_results}->{username})) {
         $self->{username} = ref($self->{option_results}->{username}) eq 'ARRAY' ? shift(@{$self->{option_results}->{username}}) : $self->{option_results}->{username};
     }
@@ -144,10 +144,10 @@ sub check_options {
     if (defined($self->{option_results}->{password})) {
         $self->{password} = ref($self->{option_results}->{password}) eq 'ARRAY' ? shift(@{$self->{option_results}->{password}}) : $self->{option_results}->{password};
     }
-    
+
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
-    $self->{connect_query} = (defined($self->{option_results}->{connect_query})) ? shift(@{$self->{option_results}->{connect_query}}) : undef;
-    $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
+    $self->{connect_query}   = (defined($self->{option_results}->{connect_query})) ? shift(@{$self->{option_results}->{connect_query}}) : undef;
+    $self->{env}             = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
 
     $self->{timeout} = 10;
@@ -192,10 +192,10 @@ sub quote {
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
-    
+
     my @version_src = split /\./, $self->{version};
-    my @versions = split /\./, $options{version};
-    for (my $i = 0; $i < scalar(@versions); $i++) {
+    my @versions    = split /\./, $options{version};
+    for (my $i      = 0; $i < scalar(@versions); $i++) {
         return 1 if ($versions[$i] eq 'x');
         return 1 if (!defined($version_src[$i]));
         $version_src[$i] =~ /^([0-9]*)/;
@@ -222,10 +222,10 @@ sub disconnect {
         $self->{instance} = undef;
     }
 }
-    
+
 sub connect {
     my ($self, %options) = @_;
-    my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
+    my $dontquit         = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
     return if (defined($self->{instance}));
 
@@ -241,7 +241,7 @@ sub connect {
     eval {
         alarm($self->{timeout}) if (defined($self->{timeout}));
         $self->{instance} = DBI->connect(
-            "DBI:". $self->{data_source},
+            "DBI:" . $self->{data_source},
             $self->{username},
             $self->{password},
             { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
@@ -257,8 +257,8 @@ sub connect {
     if (!defined($self->{instance})) {
         my $err_msg = sprintf(
             'Cannot connect: %s',
-            defined($DBI::errstr) ? $DBI::errstr : 
-                (defined($connect_error) ? $connect_error : '(no error string)')
+            defined($DBI::errstr) ? $DBI::errstr :
+            (defined($connect_error) ? $connect_error : '(no error string)')
         );
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => $err_msg);
@@ -306,7 +306,7 @@ sub fetchrow_hashref {
 
 sub query {
     my ($self, %options) = @_;
-    my $continue_error = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
+    my $continue_error   = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
 
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
@@ -318,7 +318,7 @@ sub query {
 
     my $rv;
     if (defined($self->{exec_timeout})) {
-        my $mask = POSIX::SigSet->new(SIGALRM);
+        my $mask   = POSIX::SigSet->new(SIGALRM);
         my $action = POSIX::SigAction->new(
             sub { $self->handle_ALRM() },
             $mask,
@@ -335,7 +335,7 @@ sub query {
         sigaction(SIGALRM, $oldaction);
     } else {
         $rv = $self->{statement_handle}->execute();
-    }   
+    }
 
     if (!$rv) {
         return 1 if ($continue_error == 1);
@@ -343,7 +343,7 @@ sub query {
         $self->disconnect();
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
-    
+
     return 0;
 }
 
@@ -357,7 +357,7 @@ DBI global
 
 =head1 SYNOPSIS
 
-dbi class
+DBI class
 
 =head1 DBI OPTIONS
 
@@ -402,6 +402,6 @@ Timeout in seconds for query execution
 
 =head1 DESCRIPTION
 
-B<snmp>.
+B<DBI>.
 
 =cut
