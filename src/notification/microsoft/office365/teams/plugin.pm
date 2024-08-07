@@ -36,6 +36,7 @@ sub new {
 
     $self->{custom_modes}->{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
     $self->{custom_modes}->{webhookapi} = 'notification::microsoft::office365::teams::custom::webhookapi';
+    $self->{custom_modes}->{workflowapi} = 'notification::microsoft::office365::teams::custom::workflowapi';
 
     return $self;
 }
