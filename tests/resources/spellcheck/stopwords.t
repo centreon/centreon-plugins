@@ -3,6 +3,7 @@
 --api-filter-orgs
 --api-password
 --api-password
+--api-path
 --api-token
 --api-username
 --api-version
@@ -165,5 +166,7 @@ v1
 v2
 VDSL2
 Veeam
+VeloCloud
+VMware
 WSMAN
 Kubernetes
