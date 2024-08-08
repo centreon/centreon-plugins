@@ -981,7 +981,7 @@ sub cloudtrail_events_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "lookup-events --region $self->{option_results}->{region} --output json";
+    my $cmd_options = "cloudtrail lookup-events --region $self->{option_results}->{region} --output json";
     if (defined($options{delta})) {
         my $endtime = time();
         my $starttime = $endtime - ($options{delta} * 60);
