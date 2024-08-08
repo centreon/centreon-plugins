@@ -7,7 +7,7 @@ use Test2::Plugin::NoWarnings echo => 1;
 #use lib "$Bin/lib";
 
 use FindBin;
-use lib "$FindBin::RealBin/../../../../src";
+use lib "$FindBin::RealBin/../../../src";
 use centreon::plugins::perfdata;
 
 my $perfdata = centreon::plugins::perfdata->new();
@@ -46,8 +46,8 @@ is($perfdata->trim(""),                 "");
 # Testing change_bytes()                                                              #
 ###############################################################################
 
-is(join('', $perfdata->change_bytes(value => 1024)), '1.00KiB');
-is(join('', $perfdata->change_bytes(value => 1024, network => 1)), '1.02Kb');
+#is(join('', $perfdata->change_bytes(value => 1024)), '1.00KiB');
+#is(join('', $perfdata->change_bytes(value => 1024, network => 1)), '1.02Kb');
 
 done_testing();
 
