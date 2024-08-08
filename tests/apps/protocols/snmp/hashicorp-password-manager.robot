@@ -1,5 +1,5 @@
 *** Settings ***
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon

@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Meraki VPN Tunnels
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Test Timeout        120s

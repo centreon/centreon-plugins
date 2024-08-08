@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Azure PolicyInsights PolicyStates plugin
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
@@ -13,7 +13,7 @@ ${MOCKOON_JSON}         ${CURDIR}${/}cloud-azure-policyinsights-policystates.jso
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
 ${LOGIN_ENDPOINT}       ${BASE_URL}/login
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --statefile-dir=/tmp/cache/ --login-endpoint=${LOGIN_ENDPOINT}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --statefile-dir=/dev/shm/ --login-endpoint=${LOGIN_ENDPOINT}
 
 &{compliance_value1}
 ...                     endpoint=${BASE_URL}/ok

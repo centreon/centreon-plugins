@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Check the hosts mode with api custom mode
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon

@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Check the list-diskio mode
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 

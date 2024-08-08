@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Collections of HTTP Protocol plugin testing a mock of Centreon-web API
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon

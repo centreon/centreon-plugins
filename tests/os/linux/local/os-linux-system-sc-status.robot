@@ -2,7 +2,7 @@
 Documentation       Linux Local Systemd-sc-status
 
 # systemd changed the output format of the command starting from version 252, so we need to check for a systemd version and use the correct parameter.
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 

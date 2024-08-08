@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Hardware UPS Sputnik SNMP plugin
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
@@ -20,7 +20,7 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=apps/protocols/snmp/collection-sputnik
-    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
+    ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 

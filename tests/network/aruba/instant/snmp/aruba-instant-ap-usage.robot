@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Network Aruba Instant SNMP plugin - AP Usage
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 

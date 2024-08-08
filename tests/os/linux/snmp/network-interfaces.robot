@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Network Interfaces
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
@@ -13,13 +13,13 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=os/linux/snmp/network-interfaces
-...         --statefile-dir=/tmp/cache/
+...         --statefile-dir=/dev/shm/
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
 
 *** Test Cases ***
-Interfaces by id ${tc}/5
+Interfaces by id ${tc}
     [Tags]    os    linux    network    interfaces
     ${command}    Catenate
     ...    ${CMD}
@@ -30,14 +30,14 @@ Interfaces by id ${tc}/5
 
     Examples:        tc    filter                    extra_options                 expected_result    --
             ...      1     1                         ${EMPTY}                      OK: Interface 'lo' Status : up (admin: up)
-            ...      2     1,3                       --add-traffic                 OK: All interfaces are ok
+            ...      2     1,3                       ${EMPTY}                      OK: All interfaces are ok
             ...      3     1,3                       --add-traffic                 OK: All interfaces are ok | 'traffic_in_lo'=0.00b/s;;;0;10000000 'traffic_out_lo'=0.00b/s;;;0;10000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000
-            ...      4     2,3,4                     --add-traffic                 OK: All interfaces are ok
+            ...      4     2,3,4                     ${EMPTY}                      OK: All interfaces are ok
             ...      5     2,3,4                     --add-traffic                 OK: All interfaces are ok | 'traffic_in_eth0'=0.00b/s;;;0;1000000000 'traffic_out_eth0'=0.00b/s;;;0;1000000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000 'traffic_in_eth2'=0.00b/s;;;0;1000000000 'traffic_out_eth2'=0.00b/s;;;0;1000000000
 # theese test are linked together. The test 2 create the cache file in /tmp/, and the test 3 use this cache file
 # to calculate traffic throughput by second.
 
-Interfaces by id regexp ${tc}/6
+Interfaces by id regexp ${tc}
     [Tags]    os    linux    network    interfaces
     ${command}    Catenate
     ...    ${CMD}
@@ -50,7 +50,7 @@ Interfaces by id regexp ${tc}/6
     Examples:        tc    filter         extra_options      expected_result    --
             ...      1     ^1$            ${EMPTY}           OK: Interface 'lo' Status : up (admin: up)
             ...      2     1              ${EMPTY}           OK: Interface 'lo' Status : up (admin: up)
-            ...      3     [13]           --add-traffic      OK: All interfaces are ok
+            ...      3     [13]           ${EMPTY}           OK: All interfaces are ok
             ...      4     [13]           --add-traffic      OK: All interfaces are ok | 'traffic_in_lo'=0.00b/s;;;0;10000000 'traffic_out_lo'=0.00b/s;;;0;10000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000
-            ...      5     [234]          --add-traffic      OK: All interfaces are ok
+            ...      5     [234]          ${EMPTY}           OK: All interfaces are ok
             ...      6     [234]          --add-traffic      OK: All interfaces are ok | 'traffic_in_eth0'=0.00b/s;;;0;1000000000 'traffic_out_eth0'=0.00b/s;;;0;1000000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000 'traffic_in_eth2'=0.00b/s;;;0;1000000000 'traffic_out_eth2'=0.00b/s;;;0;1000000000

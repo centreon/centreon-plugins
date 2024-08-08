@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation       Linux Local Systemd-sc-status
 
-Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
 
