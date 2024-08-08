@@ -82,9 +82,49 @@ jobs:
 
         shell: bash
 
+  unit-tests:
+    needs: [get-environment, get-plugins]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
+        include:
+          - runner_name: ubuntu-22.04
+          - package_extension: rpm
+            image: unit-tests-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: unit-tests-alma9
+            distrib: el9
+          - package_extension: deb
+            image: unit-tests-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: unit-tests-bookworm
+            distrib: bookworm
+
+    runs-on: ${{ matrix.runner_name }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/unit-tests
+      - name: Upload logs as artifacts if tests failed
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: plugin-installation-${{ matrix.distrib }}
+          path: /tmp/*.jsonl
+          retention-days: 1
+
   fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
-    needs: [get-environment, get-plugins]
+    needs: [get-environment, get-plugins, unit-tests]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
