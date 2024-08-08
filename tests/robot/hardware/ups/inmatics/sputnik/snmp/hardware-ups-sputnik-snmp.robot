@@ -16,9 +16,9 @@ Sputnik UPS - Environment ${tc}/9
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=environment
-    ...    --hostname=127.0.0.1
-    ...    --snmp-version=2c
-    ...    --snmp-port=2024
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=hardware/ups/inmatics/sputnik/snmp/hardware-ups-sputnik
 
     # Append options to command
@@ -33,12 +33,7 @@ Sputnik UPS - Environment ${tc}/9
     ${opt}    Append Option    --filter-id    ${filter_id}
     ${command}    Catenate    ${command}    ${opt}
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    Wrong output result for compliance of ${expected_result}{\n}Command output:{\n}${output}{\n}{\n}{\n}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter_id    w_temperature    c_temperature    w_humidity    c_humidity    expected_result    --
             ...      1     1            30               50               50            70            OK: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;0:30;0:50;; 'Sensor 1#environment.humidity.percentage'=33%;0:50;0:70;0;100

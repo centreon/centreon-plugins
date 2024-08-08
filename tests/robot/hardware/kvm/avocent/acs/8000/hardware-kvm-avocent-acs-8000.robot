@@ -7,9 +7,6 @@ Test Timeout        120s
 
 
 *** Variables ***
-${HOSTADDRESS}      127.0.0.1
-${SNMPPORT}         2024
-${SNMPVERSION}      2c
 ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 
@@ -93,7 +90,7 @@ Run Avocent 8000 Plugin
     ...    ${CENTREON_PLUGINS}
     ...    --plugin=hardware::kvm::avocent::acs::8000::snmp::plugin
     ...    --mode=${mode}
-    ...    --hostname=${HOSTADDRESS}
+    ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=${SNMPCOMMUNITY}

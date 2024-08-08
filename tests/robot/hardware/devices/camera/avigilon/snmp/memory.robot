@@ -10,8 +10,8 @@ Test Timeout        120s
 ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=hardware::devices::camera::avigilon::snmp::plugin
 ...         --mode=memory
-...         --hostname=127.0.0.1
-...         --snmp-port=2024
+...         --hostname=${HOSTNAME}
+...         --snmp-port=${SNMPPORT}
 
 
 *** Test Cases ***
@@ -24,12 +24,7 @@ Avigilon camera Memory ${tc}/3
     ...    --warning-available='${warning_available}'
     ...    --critical-available='${critical_available}'
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    warning_available    critical_available      expected_result    --
             ...      1     ${EMPTY}             ${EMPTY}                OK: total system memory available: 464.85 KB | 'memory.available'=476004B;;;0;

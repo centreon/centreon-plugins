@@ -43,14 +43,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'    => { name => 'hostname' },
-            'port:s'        => { name => 'port' },
-            'proto:s'       => { name => 'proto' },
-            'token:s'       => { name => 'token' },
-            'timeout:s'     => { name => 'timeout' },
-            'limit:s'       => { name => 'limit' },
-            'config-file:s' => { name => 'config_file' },
-            'namespace:s'   => { name => 'namespace' }
+            'hostname:s'        => { name => 'hostname' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'token:s'           => { name => 'token' },
+            'timeout:s'         => { name => 'timeout' },
+            'limit:s'           => { name => 'limit' },
+            'config-file:s'     => { name => 'config_file' },
+            'namespace:s'       => { name => 'namespace' },
+            'legacy-api-beta:s' => { name => 'legacy_api_beta' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -190,9 +191,14 @@ sub request_api_paginate {
 sub kubernetes_list_cronjobs {
     my ($self, %options) = @_;
 
+    my $url_path=$self->{namespace} ne '' ? '/apis/batch/v1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1/cronjobs';
+    if (defined($self->{legacy_api_beta})){
+        $url_path=$self->{namespace} ne '' ? '/apis/batch/v1beta1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1beta1/cronjobs';
+    };
+
     my $response = $self->request_api_paginate(
         method => 'GET',
-        url_path => $self->{namespace} ne '' ? '/apis/batch/v1beta1/namespaces/' . $self->{namespace} . '/cronjobs' : '/apis/batch/v1beta1/cronjobs'
+        url_path => $url_path
     );
 
     return $response;
@@ -234,9 +240,14 @@ sub kubernetes_list_events {
 sub kubernetes_list_ingresses {
     my ($self, %options) = @_;
 
+    my $url_path=$self->{namespace} ne '' ? '/apis/networking.k8s.io/v1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/networking.k8s.io/v1/ingresses';
+    if (defined($self->{legacy_api_beta})){
+        $url_path=$self->{namespace} ne '' ? '/apis/extensions/v1beta1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/extensions/v1beta1/ingresses';
+    };
+
     my $response = $self->request_api_paginate(
         method => 'GET',
-        url_path => $self->{namespace} ne '' ? '/apis/extensions/v1beta1/namespaces/' . $self->{namespace} . '/ingresses' : '/apis/extensions/v1beta1/ingresses'
+        url_path => $url_path
     );
 
     return $response;
@@ -369,7 +380,13 @@ See https://kubernetes.io/docs/reference/kubernetes-api/common-parameters/common
 
 =item B<--namespace>
 
-Set namespace to get informations.
+Set namespace to get information.
+
+=item B<--legacy-api-beta>
+
+If this option is set the legacy API path are set for this API calls:
+kubernetes_list_cronjobs will use this path: /apis/batch/v1beta1/namespaces/
+kubernetes_list_ingresses will use this path: /apis/extensions/v1beta1/namespaces/
 
 =back
 

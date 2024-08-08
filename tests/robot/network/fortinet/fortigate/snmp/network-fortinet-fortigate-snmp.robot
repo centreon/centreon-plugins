@@ -306,9 +306,9 @@ Network Fortinet Fortigate SNMP link monitor
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=link-monitor
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/fortinet/fortigate/snmp/linkmonitor
         ${length}    Get Length    ${fortinet_fortigate_linkmonitor_test.filterid}
         IF    ${length} > 0
@@ -382,14 +382,9 @@ Network Fortinet Fortigate SNMP link monitor
             ...    ${command}
             ...    --critical-packet-loss=${fortinet_fortigate_linkmonitor_test.criticalpacketloss}
         END
-        ${output}    Run    ${command}
+
         Log To Console    .    no_newline=true
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${fortinet_fortigate_linkmonitor_test.result}
-        ...    Wrong result output for:${\n}Command: ${\n}${command}${\n}${\n}Expected output: ${\n}${fortinet_fortigate_linkmonitor_test.result}${\n}${\n}Obtained output:${\n}${output}${\n}${\n}${\n}
-        ...    values=False
+        Ctn Run Command And Check Result As Strings    ${command}    ${fortinet_fortigate_linkmonitor_test.result}
     END
 
 Network Fortinet Fortigate SNMP list link monitor
@@ -399,9 +394,9 @@ Network Fortinet Fortigate SNMP list link monitor
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=list-link-monitors
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=network/fortinet/fortigate/snmp/linkmonitor
         ${length}    Get Length    ${fortinet_fortigate_listlinkmonitors_test.filterstate}
         IF    ${length} > 0
@@ -421,12 +416,5 @@ Network Fortinet Fortigate SNMP list link monitor
             ...    ${command}
             ...    --filter-vdom=${fortinet_fortigate_listlinkmonitors_test.filtervdom}
         END
-        ${output}    Run    ${command}
-        Log To Console    .    no_newline=true
-        ${output}    Strip String    ${output}
-        Should Be Equal As Strings
-        ...    ${output}
-        ...    ${fortinet_fortigate_listlinkmonitors_test.result}
-        ...    Wrong result output for:${\n}Command: ${\n}${command}${\n}${\n}Expected output: ${\n}${fortinet_fortigate_listlinkmonitors_test.result}${\n}${\n}Obtained output:${\n}${output}${\n}${\n}${\n}
-        ...    values=False
+        Ctn Run Command And Check Result As Strings    ${command}    ${fortinet_fortigate_listlinkmonitors_test.result}
     END

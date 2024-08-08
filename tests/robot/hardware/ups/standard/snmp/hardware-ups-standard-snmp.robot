@@ -65,9 +65,9 @@ Hardware UPS Standard SNMP input lines
         ${command}    Catenate
         ...    ${CMD}
         ...    --mode=input-lines
-        ...    --hostname=127.0.0.1
-        ...    --snmp-version=2c
-        ...    --snmp-port=2024
+        ...    --hostname=${HOSTNAME}
+        ...    --snmp-version=${SNMPVERSION}
+        ...    --snmp-port=${SNMPPORT}
         ...    --snmp-community=${ups_standard_test.snmpcommunity}
         ${length}    Get Length    ${ups_standard_test.warningpower}
         IF    ${length} > 0

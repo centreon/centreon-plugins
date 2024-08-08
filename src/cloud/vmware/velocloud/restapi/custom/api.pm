@@ -283,7 +283,8 @@ sub get_entreprise_id {
 
     my $response = $self->request_api(
         method => 'POST',
-        endpoint => '/enterprise/getEnterprise'
+        endpoint => '/enterprise/getEnterprise',
+        query_form_post => {}
     );
 
     $self->{entreprise_id} = $response->{id};

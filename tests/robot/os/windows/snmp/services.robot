@@ -10,12 +10,12 @@ Test Timeout        120s
 ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=os::windows::snmp::plugin
 ...         --mode=service
-...         --hostname=127.0.0.1
-...         --snmp-port=2024
+...         --hostname=${HOSTNAME}
+...         --snmp-port=${SNMPPORT}
 
 
 *** Test Cases ***
-Windows Services EN ${tc}/x
+Windows Services EN ${tc}
     [Documentation]    Full ASCII
     [Tags]    os    linux    local
     ${command}    Catenate
@@ -24,12 +24,7 @@ Windows Services EN ${tc}/x
     ...    --filter-name='${filter}'
     ...    ${extra_option}
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter           extra_option            expected_result    --
             ...      1     ${EMPTY}         ${EMPTY}                OK: All services are ok | 'services.total.count'=168;;;0; 'services.active.count'=168;;;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;

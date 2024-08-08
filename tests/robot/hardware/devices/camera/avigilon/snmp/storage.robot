@@ -10,8 +10,8 @@ Test Timeout        120s
 ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=hardware::devices::camera::avigilon::snmp::plugin
 ...         --mode=storage
-...         --hostname=127.0.0.1
-...         --snmp-port=2024
+...         --hostname=${HOSTNAME}
+...         --snmp-port=${SNMPPORT}
 
 
 *** Test Cases ***
@@ -25,12 +25,7 @@ Avigilon camera Storage ${tc}/3
     ...    --critical-status='${critical_status}'
     ...    --unknown-status='${unknown_status}'
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    warning_status                              critical_status                            unknown_status                                expected_result    --
             ...      1     ${EMPTY}                                    ${EMPTY}                                   ${EMPTY}                                      OK: state of the SD card: mediaNotPresent
