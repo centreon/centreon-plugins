@@ -163,7 +163,6 @@ Perfdata class
 
 =head1 SYNOPSIS
 
--
 
 =head1 DESCRIPTION
 
