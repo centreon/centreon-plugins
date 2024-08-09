@@ -11,8 +11,8 @@ def get_tests_folders(plugin_name):
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
     for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
-            folder_list.append("tests/robot/" + file)
+        if file.endswith("/") and os.path.exists("tests/" + file): # if this is a directory and there is test for it.
+            folder_list.append("tests/" + file)
     return folder_list
 
 
@@ -49,7 +49,7 @@ def launch_snmp_sim():
     try_command(cmd="mkdir -p /var/lib/snmp/cert_indexes/", error="can't create /var/lib/snmp/cert_indexes/ dir")
     try_command(cmd="chown snmp:snmp -R /var/lib/snmp/cert_indexes/", error="can't set cert_indexes folder permissions")
 
-    snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot' &"
+    snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &"
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
 def refresh_packet_manager(archi):
