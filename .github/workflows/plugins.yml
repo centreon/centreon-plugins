@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
         include:
           - runner_name: ubuntu-22.04
           - package_extension: rpm
