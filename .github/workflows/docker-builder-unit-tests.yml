@@ -1,4 +1,4 @@
-name: docker-builder-testing-code
+name: docker-builder-unit-tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -10,11 +10,11 @@ on:
     branches:
       - develop
     paths:
-      - ".github/workflows/docker-builder-testing-code.yml"
+      - ".github/workflows/docker-builder-unit-tests.yml"
       - ".github/docker/unit-tests/*"
   pull_request:
     paths:
-      - ".github/workflows/docker-builder-testing-code.yml"
+      - ".github/workflows/docker-builder-unit-tests.yml"
       - ".github/docker/unit-tests/*"
 
 jobs:

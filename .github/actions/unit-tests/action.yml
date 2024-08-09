@@ -1,4 +1,4 @@
-name: "test-code"
+name: "unit-tests"
 description: "Unit tests that control the code itself"
 
 runs:
