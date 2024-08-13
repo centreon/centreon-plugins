@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use Test2::V0;
 use Test2::Plugin::NoWarnings echo => 1;
-#use FindBin qw($Bin);
-#use lib "$Bin/lib";
 
 use FindBin;
 use lib "$FindBin::RealBin/../../../src";
