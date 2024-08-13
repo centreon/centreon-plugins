@@ -115,7 +115,7 @@ jobs:
 
       - name: Run unit tests
         uses: ./.github/actions/unit-tests
-     
+
       - name: Upload logs as artifacts if tests failed
         if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
