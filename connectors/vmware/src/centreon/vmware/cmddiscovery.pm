@@ -162,19 +162,22 @@ sub run {
                         push @$customValuesEsx, { key => $customFields->{ $_->{key} }, value => $_->{value} };
                     }
                 }
-                $esx{type} = 'esx';
-                $esx{name} = $esx->name;
-                $esx{os} = $esx->{'config.product.productLineId'} . ' ' . $esx->{'config.product.version'};
-                $esx{hardware} = $esx->{'hardware.systemInfo.vendor'} . ' ' . $esx->{'hardware.systemInfo.model'};
-                $esx{power_state} = $esx->{'runtime.powerState'}->val;
-                $esx{connection_state} = $esx->{'runtime.connectionState'}->val;
-                $esx{maintenance} = $esx->{'runtime.inMaintenanceMode'};
-                $esx{datacenter} = $datacenter->name;
-                $esx{cluster} = $cluster->name;
+
+                $esx{type}              = 'esx';
+                $esx{name}              = $esx->name;
+                $esx{hardware}          = $esx->{'hardware.systemInfo.vendor'} . ' ' . $esx->{'hardware.systemInfo.model'};
+                $esx{power_state}       = $esx->{'runtime.powerState'}->val;
+                $esx{connection_state}  = $esx->{'runtime.connectionState'}->val;
+                $esx{maintenance}       = $esx->{'runtime.inMaintenanceMode'};
+                $esx{datacenter}        = $datacenter->name;
+                $esx{cluster}           = $cluster->name;
                 $esx{custom_attributes} = $customValuesEsx;
-                $esx{tags} = [];
-                if (defined($tags)) {
-                    $esx{tags} = $tags->{esx}->{ $esx->{mo_ref}->{value} } if (defined($tags->{esx}->{ $esx->{mo_ref}->{value} }));
+                $esx{tags}              = [];
+                $esx{os} = defined($esx->{'config.product.productLineId'}) ? $esx->{'config.product.productLineId'} . ' ' : ''
+                    . defined($esx->{'config.product.version'}) ? $esx->{'config.product.version'} : '';
+
+                if (defined($tags) and defined($tags->{esx}->{ $esx->{mo_ref}->{value} })) {
+                    $esx{tags} = $tags->{esx}->{ $esx->{mo_ref}->{value} };
                 }
 
                 foreach my $nic (@{$esx->{'config.virtualNicManagerInfo.netConfig'}}) {

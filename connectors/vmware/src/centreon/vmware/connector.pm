@@ -237,7 +237,7 @@ sub run {
     my ($connector) = shift;
     my $timeout_process = 0;
 
-    $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' init begin");  
+    $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' ZMQ init begin");
     my $context = zmq_init();
 
     $backend = zmq_socket($context, ZMQ_DEALER);

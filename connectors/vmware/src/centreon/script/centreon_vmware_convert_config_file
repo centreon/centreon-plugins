@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+use strict;
+use warnings FATAL => 'all';
+use JSON::XS;
+use Data::Dumper;
+
+die "Usage: centreon_vmware_convert_config_file /etc/centreon/centreon_vmware.pm > /etc/centreon/centreon_vmware.json" if (scalar(@ARGV) < 1);
+my $config_file = $ARGV[0];
+
+die "Config file $config_file does not exist.\n" if (! -f $config_file);
+
+our %centreon_vmware_config;
+require($config_file) or die "Error while loading file $config_file";
+
+my $new_config_structure = {
+    vsphere_server => []
+};
+
+
+for my $config_entry_key (keys %centreon_vmware_config){
+    if ($config_entry_key eq 'vsphere_server') {
+        for my $server_config_entry_key (keys %{$centreon_vmware_config{vsphere_server}}) {
+            my $config_entry_content = $centreon_vmware_config{vsphere_server}->{$server_config_entry_key};
+            $config_entry_content->{name} = $server_config_entry_key;
+            push @{$new_config_structure->{vsphere_server}}, $config_entry_content;
+        }
+    } else {
+        $new_config_structure->{$config_entry_key} = $centreon_vmware_config{$config_entry_key};
+    }
+
+
+}
+
+my $new_json_config = encode_json($new_config_structure) or die "Unable to convert this object to JSON:\n" . Dumper($new_config_structure);
+print($new_json_config);
+
+exit(0);

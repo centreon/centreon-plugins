@@ -52,7 +52,6 @@ BEGIN {
 }
 
 use base qw(centreon::vmware::script);
-use vars qw(%centreon_vmware_config);
 
 my $VERSION = '3.2.6';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
@@ -108,7 +107,8 @@ sub new {
 
     bless $self, $class;
     $self->add_options(
-        'config-extra=s' => \$self->{opt_extra}
+            'config-extra=s' => \$self->{opt_extra},
+            'check-config' => \$self->{opt_check_config}
     );
 
     %{$self->{centreon_vmware_default_config}} =
@@ -145,6 +145,73 @@ sub new {
     return $self;
 }
 
+# parse_json_file: reads the content of a JSON file, loads it as an object and returns it
+sub parse_json_file {
+    my ($self, %options) = @_;
+
+    $self->{logger}->writeLogDebug("Reading JSON file " . $self->{opt_extra});
+
+    my $fh;
+    my $json_as_object;
+    my $json_data = '';
+
+    open($fh, '<', $self->{opt_extra}) or $self->{logger}->writeLogFatal("Cannot open " . $self->{opt_extra});
+    for my $line (<$fh>) {
+        chomp $line;
+        $json_data .= $line;
+    }
+    close($fh);
+
+    $self->{logger}->writeLogDebug("Evaluating JSON content of file " . $self->{opt_extra});
+    eval {
+        $json_as_object = decode_json($json_data);
+    };
+    if ($@) {
+        $self->{logger}->writeLogFatal("Could not decode JSON from $self->{opt_extra}");
+    }
+    return($json_as_object);
+}
+
+# read_configuration: reads the configuration file given as parameter
+sub read_configuration {
+    my ($self, %options) = @_;
+
+    $self->{logger}->writeLogDebug("Reading configuration from " . $self->{opt_extra});
+    my $centreon_vmware_config_from_json;
+
+    if ($self->{opt_extra} =~ /.*\.pm$/i) {
+        our %centreon_vmware_config;
+        # loads the .pm configuration (compile time)
+        require($self->{opt_extra});
+        # Concatenation of the default parameters with the ones from the config file
+        $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
+    } elsif ($self->{opt_extra} =~ /.*\.json$/i) {
+        $centreon_vmware_config_from_json = $self->parse_json_file();
+        # The structure of the JSON is different from the .pm file. The code was designed to work with the latter, so
+        # the structure of $self->{centreon_vmware_config} must be adapted after parsing to avoid a massive refactoring of
+        # the whole program. The wanted structure is a key-object dictionary instead of an array of objects.
+        my %vsphere_server_dict = map { lc($_->{name}) => $_ } @{$centreon_vmware_config_from_json->{vsphere_server}};
+        # Replace the "raw" structure from the JSON file.
+        $centreon_vmware_config_from_json->{vsphere_server} = \%vsphere_server_dict;
+        # Concatenation of the default parameters with the ones from the config file
+        $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %$centreon_vmware_config_from_json};
+    }
+}
+
+# report_config_check: writes a report of what has been loaded from the configuration file
+sub report_config_check {
+    my ($self, %options) = @_;
+
+    my $nb_server_entries = scalar(keys %{$self->{centreon_vmware_config}->{vsphere_server}});
+    my $entry_spelling    = ($nb_server_entries > 1) ? 'entries' : 'entry';
+
+    my $report = "Configuration file " . $self->{opt_extra} . " has been read correctly and has ";
+    $report .=         $nb_server_entries . " " . $entry_spelling . ".";
+
+    $self->{logger}->writeLogInfo($report);
+    return $report;
+}
+
 sub init {
     my $self = shift;
     $self->SUPER::init();
@@ -152,21 +219,23 @@ sub init {
     # redefine to avoid out when we try modules
     $SIG{__DIE__} = undef;
 
-    if (!defined($self->{opt_extra})) {
+    if ( ! defined($self->{opt_extra}) ) {
         $self->{opt_extra} = "/etc/centreon/centreon_vmware.pm";
     }
-    if (-f $self->{opt_extra}) {
-        require $self->{opt_extra};
-    } else {
-        $self->{logger}->writeLogInfo("Can't find extra config file $self->{opt_extra}");
+
+    if ( ! -f $self->{opt_extra} ) {
+        my $msg = "Can't find config file '$self->{opt_extra}'. If a migration from "
+            . "/etc/centreon/centreon_vmware.pm to /etc/centreon/centreon_vmware.json is required, you may "
+            . "centreon_vmware_convert_config_file /etc/centreon/centreon_vmware.pm > /etc/centreon/centreon_vmware.json";
+        $self->{logger}->writeLogFatal($msg);
     }
 
-    $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
-
-    foreach my $name (keys %{$self->{centreon_vmware_config}->{vsphere_server}}) {
-        my $iname = lc($name);
-        $self->{centreon_vmware_config}->{vsphere_server}->{$iname} = delete $self->{centreon_vmware_config}->{vsphere_server}->{$name};
+    if ( ! $self->{opt_extra} =~ /\.(pm|json)$/i) {
+        my $msg = "Configuration file " . $self->{opt_extra} . " seems to be neither JSON nor PM file.";
+        $self->{logger}->writeLogFatal($msg);
     }
+
+    $self->read_configuration(filename => $self->{opt_extra});
 
     ##### Load modules
     $self->load_module(@load_modules);
@@ -208,8 +277,14 @@ sub init {
         }
     }
 
+    my $config_check_report = $self->report_config_check();
+    if (defined($self->{opt_check_config})) {
+        print($config_check_report . " Exiting now.");
+        exit(0);
+    }
     $self->set_signal_handlers;
 }
+
 
 sub set_signal_handlers {
     my $self = shift;
@@ -253,7 +328,7 @@ sub handle_TERM {
 
 sub handle_HUP {
     my $self = shift;
-    $self->{logger}->writeLogInfo("$$ Receiving order to reload...");
+    $self->{logger}->writeLogInfo("$$ Receiving order to reload but it has not been implemented yet...");
     # TODO
 }
 
@@ -276,7 +351,7 @@ sub load_module {
         require $file;
         my $obj = $_->new(logger => $self->{logger}, case_insensitive => $self->{centreon_vmware_config}->{case_insensitive});
         $self->{modules_registry}->{ $obj->getCommandName() } = $obj;
-    }    
+    }
 }
 
 sub verify_child_vsphere {
@@ -317,7 +392,7 @@ sub verify_child_vsphere {
             time() - $self->{centreon_vmware_config}->{dynamic_timeout_kill} > $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{last_request}) {
             $self->{logger}->writeLogError("Send TERM signal for process '" . $_ . "': too many times without requests. We clean it.");
             kill('TERM', $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{pid});
-        }        
+        }
     }
 
     return $count;
@@ -333,7 +408,7 @@ sub waiting_ready {
 
     my $time = time();
     # We wait 10 seconds
-    while ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 0 && 
+    while ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 0 &&
            time() - $time < 10) {
         zmq_poll($self->{poll}, 5000);
     }
@@ -368,7 +443,7 @@ sub request_dynamic {
         };
         $self->{logger}->writeLogError(
             sprintf(
-                "Dynamic creation: identity = %s [address: %s] [username: %s] [password: %s]", 
+                "Dynamic creation: identity = %s [address: %s] [username: %s] [password: %s]",
                 $container, $options{result}->{vsphere_address}, $options{result}->{vsphere_username}, $options{result}->{vsphere_password}
             )
         );
@@ -436,7 +511,7 @@ sub request {
     return if ($self->waiting_ready(
         container => $result->{container}, manager => $options{manager},
         identity => $options{identity}) == 0);
-    
+
     $self->{counter_stats}->{ $result->{container} }++;
 
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
@@ -465,7 +540,7 @@ sub repserver {
     my $identity = 'client-' . pack('H*', $1);
 
     centreon::vmware::common::response(
-        token => 'RESPSERVER', endpoint => $frontend, 
+        token => 'RESPSERVER', endpoint => $frontend,
         identity => $identity, force_response => $options{data}
     );
 }
@@ -498,7 +573,7 @@ sub router_event {
         }
 
         centreon::vmware::common::free_response();
-        my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);        
+        my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);
         last unless $more;
     }
 }
@@ -507,8 +582,9 @@ sub check_childs {
     my ($self, %options) = @_;
 
     my $count = $self->verify_child_vsphere();
+    $self->{logger}->writeLogDebug("$count child(ren) found. Stop ? : " . $self->{stop});
     if ($self->{stop} == 1) {
-        # No childs
+        # No children
         if ($count == 0) {
             $self->{logger}->writeLogInfo("Quit main process");
             zmq_close($frontend);
@@ -516,7 +592,7 @@ sub check_childs {
         }
     }
 }
-    
+
 sub create_vsphere_child {
     my ($self, %options) = @_;
 
@@ -527,7 +603,7 @@ sub create_vsphere_child {
 
     my $child_vpshere_pid = fork();
     if (!defined($child_vpshere_pid)) {
-        $self->{logger}->writeLogError("Cannot fork for '" . $options{vsphere_name} . "': $!");   
+        $self->{logger}->writeLogError("Cannot fork for '" . $options{vsphere_name} . "': $!");
         return -1;
     }
     if ($child_vpshere_pid == 0) {
@@ -577,21 +653,21 @@ sub run {
     my $context = zmq_init();
     $frontend = zmq_socket($context, ZMQ_ROUTER);
     if (!defined($frontend)) {
-        $centreon_vmware->{logger}->writeLogError("Can't setup server: $!");
-        exit(1);
+        $centreon_vmware->{logger}->writeLogFatal("Can't setup server: $!");
     }
 
-    zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
+    zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard
     zmq_bind($frontend, 'tcp://' . $centreon_vmware->{centreon_vmware_config}->{bind} . ':' . $centreon_vmware->{centreon_vmware_config}->{port});
     $centreon_vmware->bind_ipc(socket => $frontend, ipc_file => $centreon_vmware->{centreon_vmware_config}->{ipc_file});
 
     foreach (keys %{$centreon_vmware->{centreon_vmware_config}->{vsphere_server}}) {
         $centreon_vmware->{counter_stats}->{$_} = 0;
+        $centreon_vmware->{logger}->writeLogDebug("Creating vSphere child for $_");
         $centreon_vmware->create_vsphere_child(vsphere_name => $_, dynamic => 0);
     }
 
     $centreon_vmware->{logger}->writeLogInfo("[Server accepting clients]");
-    
+
     # Initialize poll set
     $centreon_vmware->{poll} = [
         {
@@ -600,10 +676,10 @@ sub run {
             callback => \&router_event
         }
     ];
-
+    $centreon_vmware->{logger}->writeLogDebug("Global loop starting...");
     # Switch messages between sockets
     while (1) {
-        $centreon_vmware->check_childs();    
+        $centreon_vmware->check_childs();
         zmq_poll($centreon_vmware->{poll}, 5000);
     }
 }

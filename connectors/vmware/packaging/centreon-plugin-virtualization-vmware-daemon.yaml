@@ -39,6 +39,11 @@ contents:
     dst: "/usr/share/perl5/centreon/script/centreon_vmware.pm"
     packager: deb
 
+  - src: "../src/centreon/script/centreon_vmware_convert_config_file"
+    dst: "/usr/bin/centreon_vmware_convert_config_file"
+    file_info:
+      mode: 0755
+
   - src: "../src/centreon_vmware.pl"
     dst: "/usr/bin/centreon_vmware.pl"
     file_info:
