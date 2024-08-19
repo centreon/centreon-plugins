@@ -21,26 +21,26 @@ runs:
   using: "composite"
   steps:
     - name: Remove previously delivered DEBs
-      if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'stable') }}
+      if: ${{ ! (inputs.distrib == 'jammy') }}
       run: rm -f ./*.deb
       shell: bash
 
     - name: Use cache DEB files
-      if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'stable') }}
+      if: ${{ ! (inputs.distrib == 'jammy') }}
       uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ./*.deb
         key: ${{ inputs.cache_key }}
         fail-on-cache-miss: true
 
-    - if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'stable') }}
+    - if: ${{ ! (inputs.distrib == 'jammy') }}
       uses: jfrog/setup-jfrog-cli@26da2259ee7690e63b5410d7451b2938d08ce1f9 # v4.0.0
       env:
         JF_URL: https://centreon.jfrog.io
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
     - name: Publish DEBs to artifactory
-      if: ${{ ! (inputs.distrib == 'jammy' && inputs.stability == 'stable') }}
+      if: ${{ ! (inputs.distrib == 'jammy') }}
       run: |
         FILES="*.deb"
 

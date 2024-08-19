@@ -24,13 +24,13 @@ jobs:
 
   package-deb:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    # if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
     runs-on: ${{ matrix.runner_name }}
     strategy:
       fail-fast: false
       matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy]
         name:
           [
             "JMX::Jmx4Perl",
@@ -53,11 +53,6 @@ jobs:
           - distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
-          - distrib: bullseye
-            package_extension: deb
-            image: packaging-plugins-bullseye-arm64
-            arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -179,7 +174,7 @@ jobs:
 
   deliver-deb:
     needs: [get-environment, download-and-cache-deb]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    # if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
