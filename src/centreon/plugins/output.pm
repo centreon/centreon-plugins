@@ -523,7 +523,7 @@ sub output_txt_short {
          eval "\$stdout =~ s{$pattern}{$replace}$modifier";
     }
 
-    my $exit = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{myerrors}->{ $self->{global_status} };
+    my $exit = defined($options{exit_litteral}) ? uc($options{exit_litteral}) : uc($self->{myerrors}->{ $self->{global_status} });
     foreach (@{$self->{change_output_adv}}) {
         if ($self->test_eval(test => $_->{expr}, values => { short_output => $stdout, exit_code => $self->{errors}->{$exit} })) {
             if (defined($_->{short_output}) && $_->{short_output} ne '') {
