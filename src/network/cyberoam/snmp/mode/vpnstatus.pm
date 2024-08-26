@@ -288,6 +288,29 @@ VPN-Connection-Status: inactive, active, partiallyActive
 
 =over 8
 
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='^total$|^total-normal$'
+
+=item B<--filter-name>
+
+Filter vpn name (can be a regexp).
+
+=item B<--filter-vpn-activated>
+
+Filter by the activation status of the vpn (can be a regexp).
+Values: active, inactive
+
+=item B<--filter-connection-mode>
+
+Filter by the connection mode of the vpn (can be a regexp).
+
+=item B<--connection-type>
+
+Filter by the connection type of the vpn (can be a regexp).
+Values: host-to-host, site-to-site, tunnel-interface
+
 =item B<--warning-status>
 
 Trigger warning on %{connection_status} values.
