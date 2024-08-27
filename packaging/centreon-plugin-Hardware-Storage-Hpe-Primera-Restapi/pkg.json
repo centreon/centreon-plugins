@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hpe-Primera-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hpe_primera_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/hp/primera/restapi/"
+    ]
+}

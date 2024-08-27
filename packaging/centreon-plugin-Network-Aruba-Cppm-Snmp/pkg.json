@@ -6,6 +6,7 @@
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/swap.pm",
         "snmp_standard/mode/listinterfaces.pm",
         "snmp_standard/mode/resources/",
         "snmp_standard/mode/interfaces.pm",

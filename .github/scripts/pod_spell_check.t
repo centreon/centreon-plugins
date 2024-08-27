@@ -8,7 +8,7 @@ if (!@ARGV) {
     die "Usage: perl pod_spell_check.t module.pm stopwords.t";
 }
 
-my $stopword_filename='tests/resources/spellcheck/stopwords.t';
+my $stopword_filename='tests/resources/spellcheck/stopwords.txt';
 if(defined($ARGV[1])){
     $stopword_filename=$ARGV[1];
 }

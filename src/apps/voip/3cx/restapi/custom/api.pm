@@ -42,12 +42,13 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
             'hostname:s'             => { name => 'hostname' },
             'port:s'                 => { name => 'port'},
             'proto:s'                => { name => 'proto' },
+            '3cx-version:s'          => { name => 'version_3cx' },
             'api-username:s'         => { name => 'api_username' },
             'api-password:s'         => { name => 'api_password' },
             'timeout:s'              => { name => 'timeout', default => 30 },
@@ -56,7 +57,7 @@ sub new {
             'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
-    
+
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
@@ -77,16 +78,17 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{hostname}               = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{port}                   = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto}                  = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{version_3cx}            = (defined($self->{option_results}->{version_3cx})) ? $self->{option_results}->{version_3cx} : '';
+    $self->{timeout}                = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{ssl_opt}                = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
+    $self->{api_username}           = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password}           = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status}    = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status}    = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status}   = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
@@ -100,7 +102,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
         $self->{output}->option_exit();
     }
-
+    $self->{option_results}->{api_version} = $self->get_api_version(version_3cx => $self->{option_results}->{version_3cx});
     $self->{cache}->check_options(option_results => $self->{option_results});
 
     return 0;
@@ -123,8 +125,12 @@ sub settings {
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     if (defined($self->{cookie})) {
         $self->{http}->add_header(key => 'Cookie', value => $self->{cookie});
-        if (defined($self->{xsrf})) {
-            $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+
+        if (defined($self->{auth_header})) {
+            my $auth_header_key = ( $self->{option_results}->{api_version} == 1 )
+                                ? 'X-XSRF-TOKEN'
+                                : 'Authorization';
+            $self->{http}->add_header(key => $auth_header_key, value => $self->{auth_header});
         }
     }
     $self->{http}->set_options(%{$self->{option_results}});
@@ -135,10 +141,10 @@ sub authenticate {
 
     my $has_cache_file = $options{statefile}->read(statefile => '3cx_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $cookie = $options{statefile}->get(name => 'cookie');
-    my $xsrf = $options{statefile}->get(name => 'xsrf');
+    my $auth_header = $options{statefile}->get(name => 'auth_header');
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     
-    if ($has_cache_file == 0 || !defined($cookie) || !defined($xsrf) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 || !defined($cookie) || !defined($auth_header) || (($expires_on - time()) < 10)) {
         my $post_data = '{"Username":"' . $self->{api_username} . '",' .
             '"Password":"' . $self->{api_password} . '"}';
         
@@ -161,17 +167,49 @@ sub authenticate {
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
-        # 3CX 16.0.5.611 does not use XSRF-TOKEN anymore
-        if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
-            $xsrf = $1;
+
+        my $data;
+        if ($self->{option_results}->{api_version} == 1)
+        {
+            # for 3CX versions prior to 18.0.5
+            # 3CX 16.0.5.611 does not use XSRF-TOKEN anymore
+            if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
+                $auth_header = $1;
+            }
+            $data = { last_timestamp => time(), cookie => $cookie, xsrf => $auth_header, expires_on => time() + (3600 * 24) };
+        } else {
+            # for 3CX versions higher or equal to 18.0.5
+            $self->{http}->add_header(key => 'Cookie', value => $cookie);
+            $content = $self->{http}->request(
+                method => 'GET',
+                url_path => '/api/Token',
+                unknown_status => $self->{unknown_http_status},
+                warning_status => $self->{warning_http_status},
+                critical_status => $self->{critical_http_status}
+            );
+            my $decoded;
+            eval {
+                $decoded = JSON::XS->new->decode($content);
+            };
+            if ($@) {
+                $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+                $self->{output}->option_exit();
+            }
+            if (!defined($decoded)) {
+                $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+                $self->{output}->option_exit();
+            }
+            $auth_header = $decoded->{token_type} . " " . $decoded->{access_token};
+            $expires_on = time() + ($decoded->{expires_in} * 60);
+
+            $data = { last_timestamp => time(), cookie => $cookie, bearer => $auth_header, expires_on => $expires_on };
         }
 
-        my $datas = { last_timestamp => time(), cookie => $cookie, xsrf => $xsrf, expires_on => time() + (3600 * 24) };
-        $options{statefile}->write(data => $datas);
+        $options{statefile}->write(data => $data);
     }
 
     $self->{cookie} = $cookie;
-    $self->{xsrf} = $xsrf;
+    $self->{auth_header} = $auth_header;
 }
 
 sub request_api {
@@ -271,7 +309,7 @@ sub api_system_status {
     return $status;
 }
 
-sub internal_update_checker {
+sub internal_update_checker_v1 {
     my ($self, %options) = @_;
     
     my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams', eval_content => 1);
@@ -285,11 +323,65 @@ sub internal_update_checker {
     return $status;
 }
 
+sub internal_update_checker_v2 {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(method => 'GET', url_path =>'/xapi/v1/GetUpdatesStats()');
+    if (ref($status) eq 'HASH') {
+        $status = $status->{TcxUpdate};
+        if (ref($status) ne 'ARRAY') {
+            # See above note about strange content
+            $status = JSON::XS->new->decode($status);
+        }
+    }
+    return $status;
+}
+
+
 sub api_update_checker {
     my ($self, %options) = @_;
 
-    my $status = $self->internal_update_checker();
-    return $status;
+    if ($self->{option_results}->{api_version} == 1){
+        return $self->internal_update_checker_v1();
+    }
+    return $self->internal_update_checker_v2();
+}
+
+sub get_api_version {
+    my ($self, %options) = @_;
+
+    # Given the provided (or not) 3cx version, determine once and for all the API version
+    # This API version is an internal reference in centreon-plugins
+    # Version 1 corresponds to versions prior to v18 update 5 (<= 18.0.4.x)
+    # Version 2 corresponds to versions greater or equal to v18 update 5 (> 18.0.5.0)
+
+    # assuming the lastest API version if not provided
+    return 2 if ( !defined($options{version_3cx}) );
+
+    my @version_decomposition = $options{version_3cx} =~ /^([0-9]+)\.?([0-9]*)\.?([0-9]*)\.?([0-9]*)$/;
+
+    if (scalar(@version_decomposition) == 0){
+        $self->{output}->add_option_msg(
+            debug => 1,
+            long_msg => "Version '" . $options{version_3cx} . "' not formatted properly. Switching to latest supported version.");
+        return 2;
+    }
+
+    if ($version_decomposition[0] < 18
+        or $version_decomposition[0] == 18
+            and defined($version_decomposition[1]) and $version_decomposition[1] == 0
+            and defined($version_decomposition[2]) and $version_decomposition[2] < 5) {
+
+        $self->{output}->add_option_msg(
+            debug => 1,
+            long_msg => "Version '" . $options{version_3cx} . "' identified as prior to 18 update 5. Using old API.");
+        return 1;
+    } else {
+        $self->{output}->add_option_msg(
+            debug => 1,
+            long_msg => "Version '" . $options{version_3cx} . "' identified as higher or equal to 18 update 5. Using new API.");
+        return 2;
+    }
 }
 
 1;
@@ -298,7 +390,7 @@ __END__
 
 =head1 NAME
 
-3CX Rest API
+3CX Rest API module
 
 =head1 REST API OPTIONS
 
@@ -306,37 +398,48 @@ __END__
 
 =item B<--hostname>
 
-Set hostname or IP of 3CX server.
+Define the name or the address of the 3CX server.
 
 =item B<--port>
 
-Set 3CX Port (default: '443').
+Define the port to connect to (default: '443').
 
 =item B<--proto>
 
-Specify http if needed (default: 'https').
+Define the protocol to reach the API (default: 'https').
+
+=item B<--3cx-version>
+
+Define the version of 3CX to monitor for the plugin to adapt to the API version. If this option is omitted, the plugin will assume the API is in the latest supported version.
+Example: 18.0.9.20 for version 18 update 9.
+
 
 =item B<--api-username>
 
-Set 3CX Username.
+Define the username for authentication.
 
 =item B<--api-password>
 
-Set 3CX Password.
+Define the password associated with the username.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (default: '30').
+Define the timeout in seconds (default: 30).
 
 =item B<--unknown-http-status>
-Threshold unknown for http response code.
-(default: '%{http_code} < 200 or %{http_code} >= 300')
+
+Define the conditions to match on the HTTP Status for the returned status to be UNKNOWN.
+Default: '%{http_code} < 200 or %{http_code} >= 300'
 
 =item B<--warning-http-status>
-Warning threshold for http response code.
+
+Define the conditions to match on the HTTP Status for the returned status to be WARNING.
+Example: '%{http_code} == 500'
 
 =item B<--critical-http-status>
-Critical threshold for http response code.
+
+Define the conditions to match on the HTTP Status for the returned status to be CRITICAL.
+Example: '%{http_code} == 500'
 
 =back
 

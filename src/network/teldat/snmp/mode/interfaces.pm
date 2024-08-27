@@ -111,7 +111,7 @@ Units of thresholds for communication types (Default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
@@ -119,7 +119,7 @@ Set the interface (number expected) ex: 1,2,... (empty means 'check all interfac
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows to use interface name with option --interface instead of interface OID index (Can be a regexp)
 
 =item B<--speed>
 
@@ -135,7 +135,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--map-speed-dsl>
 
-Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
+Get interface speed configuration for interface type 'ADSL' and 'VDSL2'.
 
 Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
 
@@ -147,7 +147,7 @@ Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32 bits counters (even in SNMP version 2c and version 3). Should be used when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 
@@ -165,13 +165,11 @@ Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias,
 
 Add an OID to display.
 
-=item B<--display-transform-src>
+=item B<--display-transform-src> B<--display-transform-dst>
 
-Regexp src to transform display value.
+Modify the interface name displayed by using a regular expression.
 
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value.
+Example: adding --display-transform-src='eth' --display-transform-dst='ens' will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

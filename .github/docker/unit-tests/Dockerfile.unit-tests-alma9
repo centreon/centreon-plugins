@@ -1,0 +1,54 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/almalinux:9
+
+RUN bash -e <<EOF
+
+dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+dnf config-manager --set-enabled crb
+
+# Add Centreon plugins repositories
+echo -e '[centreon-plugins-stable]\n\
+name=centreon plugins stable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-stable-noarch]\n\
+name=centreon plugins stable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing]\n\
+name=centreon plugins testing x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/testing/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing-noarch]\n\
+name=centreon plugins testing noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/testing/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable]\n\
+name=centreon plugins unstable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/unstable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable-noarch]\n\
+name=centreon plugins unstable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/unstable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
+>> /etc/yum.repos.d/centreon-plugins.repo
+dnf install -y make cpan perl-Test2-Suite.noarch 'perl(Authen::Radius)' 'perl(Convert::Binary::C)' 'perl(Crypt::OpenSSL::RSA)' 'perl(Data::Dumper)' 'perl(Date::Parse)' 'perl(DateTime)' 'perl(DateTime::Duration)' 'perl(DateTime-Format-Duration-ISO8601)' 'perl(DateTime::Format::Strptime)' 'perl(DBD::mysql)' 'perl(DBD::ODBC)' 'perl(DBD::Pg)' 'perl(DBD::Sybase)' 'perl(DBI)' 'perl(Device::Modbus::RTU::Client)' 'perl(Device::Modbus::TCP::Client)' 'perl(Digest::CRC)' 'perl(Digest::MD5)' 'perl(Digest::SHA)' 'perl(Email::MIME)' 'perl(Email::Sender)' 'perl(Email::Send::SMTP::Gmail)' 'perl(Email::Simple)' 'perl(File::Basename)' 'perl(Filesys::SmbClient)' 'perl(Hash::Ordered)' 'perl(HTML::Template)' 'perl(IO::Select)' 'perl(IO::Socket)' 'perl(IO::Socket::INET)' 'perl(IO::Socket::INET6)' 'perl(IO::Socket::SSL)' 'perl(JMX::Jmx4Perl)' 'perl(JSON)' 'perl(JSON::Path)' 'perl(JSON::WebToken)' 'perl(JSON::XS)' 'perl(Libssh::Session)' 'perl-Mail-IMAPClient' 'perl(MIME::Base64)' 'perl(MongoDB)' 'perl(NetAddr::IP)' 'perl(Net::DHCP::Constants)' 'perl(Net::DHCP::Packet)' 'perl(Net::DNS)' 'perl(Net::FTP)' 'perl(Net::FTPSSL)' 'perl(Net::LDAP)' 'perl(Net::MQTT::Simple)' 'perl(Net::NTP)' 'perl(Net::SSLeay)' 'perl(Net::Subnet)' 'perl(Net::Telnet)' 'perl(Net::TFTP)' 'perl(openwsman)' 'perl(Pod::Parser)' 'perl(POSIX)' 'perl(Redis)' 'perl(RRDs)' 'perl(SNMP)' 'perl(Socket)' 'perl(Text::CSV)' 'perl(Time::HiRes)' 'perl(URI::Encode)' 'perl(URI::Escape)' 'perl(UUID)' 'perl(WWW::Selenium)' 'perl(XML::LibXML)' 'perl(XML::LibXML::Simple)' 'perl(XML::Simple)' 'perl(XML::XPath)' 'perl(ZMQ::LibZMQ4)' 'perl(Data::UUID)'
+dnf clean all
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+NONINTERACTIVE_TESTING=1 PERL_MM_USE_DEFAULT=1 cpan Test2::Harness Test2::Plugin::NoWarnings UUID
+rm -fr /root/.cpan*
+EOF

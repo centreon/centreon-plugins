@@ -243,7 +243,7 @@ Filter disks by name (can be a regexp).
 Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning--status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{status} =~ /noReady|busy|hwFailureOk|hwFailurePerf|Protected|rebuilding/i').
 You can use the following variables: %{status}, %{name}
