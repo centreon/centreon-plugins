@@ -70,6 +70,13 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
         shell: bash
 
+      - name: Prepare FatPacker
+        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: App::FatPacker File::Copy::Recursive JSON
+
       - name: Get plugins for build
         id: get_plugins
         if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
@@ -82,13 +89,9 @@ jobs:
           fi
         shell: bash
 
-      - name: Prepare FatPacker
-        if: ${{ steps.get_plugins.outputs.plugins != '' }}
-        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
-        with:
-          perl-version: '5.34'
-          install-modules-with: cpm
-          install-modules: App::FatPacker File::Copy::Recursive JSON
+      - name: Plugins changes
+        run: |
+          perl .github/scripts/plugin-files.pl "${{ steps.get_plugins.outputs.plugins }}"
 
       - name: Run FatPacker
         if: ${{ steps.get_plugins.outputs.plugins != '' }}
