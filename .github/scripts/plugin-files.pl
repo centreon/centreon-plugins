@@ -7,6 +7,8 @@ use File::Basename;
 use JSON;
 use Cwd qw(getcwd);
 
+my $plugins = $ARGV[0];
+
 my $pwd = (getcwd . '/');
 my $plugins_dir = ($pwd . 'src');
 my $packaging_dir = ($pwd . 'packaging');
