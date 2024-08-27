@@ -111,7 +111,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
         'filter-note:s'     => { name => 'filter_note' },
-        'filter-status:s'   => { name => 'filter_status', default => 'running' }
+        'filter-status:s'   => { name => 'filter_status', default => 'Running' }
     });
 
     return $self;
