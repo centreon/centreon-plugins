@@ -21,6 +21,7 @@ chdir($packaging_dir);
 
 my @plugins = split / /, $plugins;
 foreach my $plugin (@plugins) {
+    print "\n\n\n$plugin\n"
     chdir($packaging_dir);
 
     # Load plugin configuration file.
