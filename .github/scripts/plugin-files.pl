@@ -7,6 +7,8 @@ use File::Basename;
 use JSON;
 use Cwd qw(getcwd);
 
+my $plugins = $ARGV[0];
+
 my $pwd = (getcwd . '/');
 my $plugins_dir = ($pwd . 'src');
 my $packaging_dir = ($pwd . 'packaging');
@@ -17,30 +19,11 @@ File::Path::remove_tree($build_dir);
 File::Path::make_path($build_dir);
 
 
-# Set version within sources.
-my $plugins = $ARGV[0];
-my $global_version = $ARGV[1];
-do {
-    local $^I = '.bak';
-    local @ARGV = ($plugins_dir . '/centreon/plugins/script.pm');
-    while (<>) {
-        s/^my \$global_version = .*$/my \$global_version = '$global_version';/ig;
-        print;
-    }
-};
-do {
-    local $^I = '.bak';
-    local @ARGV = ($plugins_dir . '/centreon/plugins/script.pm');
-    while (<>) {
-        s/^my \$alternative_fatpacker = 0;$/my \$alternative_fatpacker = 1;/ig;
-        print;
-    }
-};
-
 chdir($packaging_dir);
 
 my @plugins = split / /, $plugins;
 foreach my $plugin (@plugins) {
+    print "\n\n\n$plugin\n";
     chdir($packaging_dir);
 
     # Load plugin configuration file.

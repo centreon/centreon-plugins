@@ -25,7 +25,8 @@ jobs:
     uses: ./.github/workflows/get-environment.yml
 
   get-plugins:
-    runs-on: ubuntu-22.04
+    needs: [get-environment]
+    runs-on: ubuntu-24.04
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
     steps:
@@ -69,6 +70,13 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
         shell: bash
 
+      - name: Prepare FatPacker
+        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
+        with:
+          perl-version: '5.34'
+          install-modules-with: cpm
+          install-modules: App::FatPacker File::Copy::Recursive JSON
+
       - name: Get plugins for build
         id: get_plugins
         if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
@@ -79,273 +87,263 @@ jobs:
           if [ "$PLUGINS" == '' ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
-
         shell: bash
 
-  unit-tests:
-    needs: [get-environment, get-plugins]
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
-        include:
-          - runner_name: ubuntu-22.04
-          - package_extension: rpm
-            image: unit-tests-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: unit-tests-alma9
-            distrib: el9
-          - package_extension: deb
-            image: unit-tests-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bookworm
-            distrib: bookworm
-
-    runs-on: ${{ matrix.runner_name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Run unit tests
-        uses: ./.github/actions/unit-tests
-
-      - name: Upload logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
-        with:
-          name: plugin-installation-${{ matrix.distrib }}
-          path: /tmp/*.jsonl
-          retention-days: 1
-
-  fatpacker:
-    if: ${{ needs.get-plugins.outputs.plugins != '' }}
-    needs: [get-environment, get-plugins, unit-tests]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 1
-
-      - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
-        with:
-          perl-version: '5.34'
-          install-modules-with: cpm
-          install-modules: App::FatPacker File::Copy::Recursive JSON
+      - name: Plugins changes
+        run: |
+          perl .github/scripts/plugin-files.pl "${{ steps.get_plugins.outputs.plugins }}"
 
       - name: Run FatPacker
+        if: ${{ steps.get_plugins.outputs.plugins != '' }}
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          PLUGINS=$(perl .github/scripts/plugins-source.container.pl "${{ steps.get_plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)")
+          echo "hihi"
+          echo $PLUGINS
 
       - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
-  package:
-    runs-on: ubuntu-22.04
-    needs: [get-environment, get-plugins, fatpacker]
+  # unit-tests:
+  #   needs: [get-environment, get-plugins]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
+  #       include:
+  #         - runner_name: ubuntu-22.04
+  #         - package_extension: rpm
+  #           image: unit-tests-alma8
+  #           distrib: el8
+  #         - package_extension: rpm
+  #           image: unit-tests-alma9
+  #           distrib: el9
+  #         - package_extension: deb
+  #           image: unit-tests-bullseye
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: unit-tests-bookworm
+  #           distrib: bookworm
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - package_extension: rpm
-            image: packaging-plugins-alma8
-            distrib: el7
-          - package_extension: rpm
-            image: packaging-plugins-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: packaging-plugins-alma9
-            distrib: el9
-          - package_extension: deb
-            image: packaging-plugins-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: packaging-plugins-bookworm
-            distrib: bookworm
-          - package_extension: deb
-            image: packaging-plugins-jammy
-            distrib: jammy
+  #   runs-on: ${{ matrix.runner_name }}
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+  #     credentials:
+  #       username: ${{ secrets.DOCKER_REGISTRY_ID }}
+  #       password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+  #     - name: Run unit tests
+  #       uses: ./.github/actions/unit-tests
 
-    name: "package ${{ matrix.distrib }}"
+  #     - name: Upload logs as artifacts if tests failed
+  #       if: failure()
+  #       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+  #       with:
+  #         name: plugin-installation-${{ matrix.distrib }}
+  #         path: /tmp/*.jsonl
+  #         retention-days: 1
 
-    steps:
-      - name: Checkout sources
-        if: ${{ matrix.distrib == 'el7' }}
-        # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+  # package:
+  #   if: ${{ needs.get-plugins.outputs.plugins != '' }}
+  #   runs-on: ubuntu-24.04
+  #   needs: [get-environment, get-plugins]
 
-      - name: Checkout sources
-        if: ${{ matrix.distrib != 'el7' }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - package_extension: rpm
+  #           image: packaging-plugins-alma8
+  #           distrib: el7
+  #         - package_extension: rpm
+  #           image: packaging-plugins-alma8
+  #           distrib: el8
+  #         - package_extension: rpm
+  #           image: packaging-plugins-alma9
+  #           distrib: el9
+  #         - package_extension: deb
+  #           image: packaging-plugins-bullseye
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: packaging-plugins-bookworm
+  #           distrib: bookworm
+  #         - package_extension: deb
+  #           image: packaging-plugins-jammy
+  #           distrib: jammy
 
-      - if: ${{ matrix.distrib == 'el7' }}
-        # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: ./build/
-          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+  #     credentials:
+  #       username: ${{ secrets.DOCKER_REGISTRY_ID }}
+  #       password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-      - if: ${{ matrix.distrib != 'el7' }}
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: ./build/
-          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
+  #   name: "package ${{ matrix.distrib }}"
 
-      - run: |
-          PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
-          for PLUGIN in $PLUGINS; do
-            PACKAGE_PATH=$PLUGIN
+  #   steps:
+  #     - name: Checkout sources
+  #       if: ${{ matrix.distrib == 'el7' }}
+  #       # el7 is not compatible with checkout v4 which uses node20
+  #       uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
-            if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
-                PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
-                PLUGIN=$(echo ${BASH_REMATCH[2]})
-            fi
+  #     - name: Checkout sources
+  #       if: ${{ matrix.distrib != 'el7' }}
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-            PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
+  #     - if: ${{ matrix.distrib == 'el7' }}
+  #       # el7 is not compatible with checkout v4 which uses node20
+  #       uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+  #       with:
+  #         path: ./build/
+  #         key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+  #         fail-on-cache-miss: true
 
-            echo "::group::Preparing $PLUGIN_NAME_LOWER"
+  #     - if: ${{ matrix.distrib != 'el7' }}
+  #       uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+  #       with:
+  #         path: ./build/
+  #         key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+  #         fail-on-cache-miss: true
 
-            # Process package files
-            pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
-            pkg_summary=$(echo "${pkg_values[0]}")
-            plugin_name=$(echo "${pkg_values[1]}")
-            conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
-            replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
-            provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
-            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
-            deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
-            deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
-            deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
-            rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
-            rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
-            rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
-            rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
+  #     - run: |
+  #         PLUGINS="${{ needs.get-plugins.outputs.plugins }}"
+  #         for PLUGIN in $PLUGINS; do
+  #           PACKAGE_PATH=$PLUGIN
 
-            sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
-              -e "s/@SUMMARY@/$pkg_summary/g" \
-              -e "s/@CONFLICTS@/$conflicts/g" \
-              -e "s/@REPLACES@/$replaces/g" \
-              -e "s/@PROVIDES@/$provides/g" \
-              -e "s/@DEB_DEPENDENCIES@/$deb_dependencies/g" \
-              -e "s/@DEB_CONFLICTS@/$deb_conflicts/g" \
-              -e "s/@DEB_REPLACES@/$deb_replaces/g" \
-              -e "s/@DEB_PROVIDES@/$deb_provides/g" \
-              -e "s/@RPM_DEPENDENCIES@/$rpm_dependencies/g" \
-              -e "s/@RPM_CONFLICTS@/$rpm_conflicts/g" \
-              -e "s/@RPM_REPLACES@/$rpm_replaces/g" \
-              -e "s/@RPM_PROVIDES@/$rpm_provides/g" \
-              < .github/packaging/centreon-plugin.yaml.template \
-              >> .github/packaging/$PLUGIN.yaml
+  #           if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
+  #               PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
+  #               PLUGIN=$(echo ${BASH_REMATCH[2]})
+  #           fi
 
-            if [ "${{ matrix.package_extension }}" = "rpm" ]; then
-              sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
-                .github/packaging/$PLUGIN.yaml
-            else
-              sed -i "s/@PACKAGE_NAME@/$PLUGIN_NAME_LOWER/g" \
-                .github/packaging/$PLUGIN.yaml
-            fi
+  #           PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
 
-            cat .github/packaging/$PLUGIN.yaml
+  #           echo "::group::Preparing $PLUGIN_NAME_LOWER"
 
-            echo "::endgroup::"
-          done
-        shell: bash
+  #           # Process package files
+  #           pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
+  #           pkg_summary=$(echo "${pkg_values[0]}")
+  #           plugin_name=$(echo "${pkg_values[1]}")
+  #           conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
+  #           replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
+  #           provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
+  #           deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
+  #           deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
+  #           deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
+  #           deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
+  #           rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
+  #           rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
+  #           rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
+  #           rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
 
-      - uses: ./.github/actions/package-nfpm
-        with:
-          nfpm_file_pattern: ".github/packaging/*.yaml"
-          distrib: ${{ matrix.distrib }}
-          package_extension: ${{ matrix.package_extension }}
-          version: ${{ needs.get-environment.outputs.version }}
-          release: ${{ needs.get-environment.outputs.release }}
-          commit_hash: ${{ github.sha }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
-          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
-          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+  #           sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
+  #             -e "s/@SUMMARY@/$pkg_summary/g" \
+  #             -e "s/@CONFLICTS@/$conflicts/g" \
+  #             -e "s/@REPLACES@/$replaces/g" \
+  #             -e "s/@PROVIDES@/$provides/g" \
+  #             -e "s/@DEB_DEPENDENCIES@/$deb_dependencies/g" \
+  #             -e "s/@DEB_CONFLICTS@/$deb_conflicts/g" \
+  #             -e "s/@DEB_REPLACES@/$deb_replaces/g" \
+  #             -e "s/@DEB_PROVIDES@/$deb_provides/g" \
+  #             -e "s/@RPM_DEPENDENCIES@/$rpm_dependencies/g" \
+  #             -e "s/@RPM_CONFLICTS@/$rpm_conflicts/g" \
+  #             -e "s/@RPM_REPLACES@/$rpm_replaces/g" \
+  #             -e "s/@RPM_PROVIDES@/$rpm_provides/g" \
+  #             < .github/packaging/centreon-plugin.yaml.template \
+  #             >> .github/packaging/$PLUGIN.yaml
 
-  test-plugins:
-    needs: [get-environment, get-plugins, package]
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
-        include:
-          - runner_name: ubuntu-22.04
-          - package_extension: rpm
-            image: testing-plugins-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: testing-plugins-alma9
-            distrib: el9
-          - package_extension: deb
-            image: testing-plugins-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: testing-plugins-bookworm
-            distrib: bookworm
-          - package_extension: deb
-            image: testing-plugins-jammy
-            distrib: jammy
-          - package_extension: deb
-            image: testing-plugins-bullseye-arm64
-            distrib: bullseye
-            arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+  #           if [ "${{ matrix.package_extension }}" = "rpm" ]; then
+  #             sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
+  #               .github/packaging/$PLUGIN.yaml
+  #           else
+  #             sed -i "s/@PACKAGE_NAME@/$PLUGIN_NAME_LOWER/g" \
+  #               .github/packaging/$PLUGIN.yaml
+  #           fi
 
-    runs-on: ${{ matrix.runner_name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #           cat .github/packaging/$PLUGIN.yaml
 
-      - uses: ./.github/actions/test-plugins
-        with:
-          cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          package-extension: ${{ matrix.package_extension }}
-          plugin-list: ${{ needs.get-plugins.outputs.plugins }}
+  #           echo "::endgroup::"
+  #         done
+  #       shell: bash
 
-      - name: Upload apt/dnf logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
-        with:
-          name: plugin-installation-${{ matrix.distrib }}
-          path: /var/log/robot-plugins-installation-tests.log
-          retention-days: 1
+  #     - uses: ./.github/actions/package-nfpm
+  #       with:
+  #         nfpm_file_pattern: ".github/packaging/*.yaml"
+  #         distrib: ${{ matrix.distrib }}
+  #         package_extension: ${{ matrix.package_extension }}
+  #         version: ${{ needs.get-environment.outputs.version }}
+  #         release: ${{ needs.get-environment.outputs.release }}
+  #         commit_hash: ${{ github.sha }}
+  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+  #         rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+  #         rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+  #         rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+  #         stability: ${{ needs.get-environment.outputs.stability }}
 
-  deliver:
-    needs: [get-environment, package, test-plugins]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    uses: ./.github/workflows/plugin-delivery.yml
-    with:
-      version: ${{ needs.get-environment.outputs.version }}
-      release: ${{ needs.get-environment.outputs.release }}
-      stability: ${{ needs.get-environment.outputs.stability }}
-    secrets:
-      artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-      token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
+  # test-plugins:
+  #   needs: [get-environment, get-plugins, package]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
+  #       include:
+  #         - runner_name: ubuntu-22.04
+  #         - package_extension: rpm
+  #           image: testing-plugins-alma8
+  #           distrib: el8
+  #         - package_extension: rpm
+  #           image: testing-plugins-alma9
+  #           distrib: el9
+  #         - package_extension: deb
+  #           image: testing-plugins-bullseye
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: testing-plugins-bookworm
+  #           distrib: bookworm
+  #         - package_extension: deb
+  #           image: testing-plugins-jammy
+  #           distrib: jammy
+  #         - package_extension: deb
+  #           image: testing-plugins-bullseye-arm64
+  #           distrib: bullseye
+  #           arch: arm64
+  #           runner_name: ["self-hosted", "collect-arm64"]
+
+  #   runs-on: ${{ matrix.runner_name }}
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+  #     credentials:
+  #       username: ${{ secrets.DOCKER_REGISTRY_ID }}
+  #       password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+  #     - uses: ./.github/actions/test-plugins
+  #       with:
+  #         cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+  #         package-extension: ${{ matrix.package_extension }}
+  #         plugin-list: ${{ needs.get-plugins.outputs.plugins }}
+
+  #     - name: Upload apt/dnf logs as artifacts if tests failed
+  #       if: failure()
+  #       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+  #       with:
+  #         name: plugin-installation-${{ matrix.distrib }}
+  #         path: /var/log/robot-plugins-installation-tests.log
+  #         retention-days: 1
+
+  # deliver:
+  #   needs: [get-environment, package, test-plugins]
+  #   if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+  #   uses: ./.github/workflows/plugin-delivery.yml
+  #   with:
+  #     version: ${{ needs.get-environment.outputs.version }}
+  #     release: ${{ needs.get-environment.outputs.release }}
+  #     stability: ${{ needs.get-environment.outputs.stability }}
+  #   secrets:
+  #     artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  #     token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
