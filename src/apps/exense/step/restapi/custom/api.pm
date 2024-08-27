@@ -48,6 +48,7 @@ sub new {
             'proto:s'        => { name => 'proto' },
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
+            'token:s'        => { name => 'token' },
             'timeout:s'      => { name => 'timeout' }
         });
     }
@@ -76,6 +77,7 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{token} = (defined($self->{option_results}->{token})) ? $self->{option_results}->{token} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
@@ -85,8 +87,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
+    if ($self->{token} ne '') {
+        return 0;
+    }
+
     if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username or --token option.");
         $self->{output}->option_exit();
     }
     if ($self->{api_password} eq '') {
@@ -211,41 +217,56 @@ sub get_session_id {
     return $session_id;
 }
 
+sub credentials {
+    my ($self, %options) = @_;
+
+    my $creds = {};
+    if ($self->{token} ne '') {
+        $creds = {
+            header => ['Authorization: Bearer ' . $self->{token}],
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        };
+    } else {
+        my $session_id = $self->get_session_id();
+        $creds = {
+            header => ['Cookie: sessionid=' . $session_id],
+            warning_status => '',
+            unknown_status => '',
+            critical_status => ''
+        };
+    }
+
+    return $creds;
+}
+
 sub request {
     my ($self, %options) = @_;
 
     my $endpoint = $options{endpoint};
 
     $self->settings();
-    my $session_id = $self->get_session_id();
+    my $creds = $self->credentials();
 
     my $content = $self->{http}->request(
         method => 'GET',
         url_path => $endpoint,
         get_param => $options{get_param},
-        header => [
-            'Cookie: sessionid=' . $session_id,
-            'Content-Type: application/json'
-        ],
-        warning_status => '',
-        unknown_status => '',
-        critical_status => ''
+        %$creds
     );
 
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session_id();
-        $session_id = $self->get_session_id();
+        $creds = $self->credentials();
+        $creds->{unknown_status} = $self->{unknown_http_status};
+        $creds->{warning_status} = $self->{warning_status};
+        $creds->{critical_http_status} = $self->{critical_http_status};
         $content = $self->{http}->request(
             url_path => $endpoint,
             get_param => $options{get_param},
-            header => [
-                'Cookie: sessionid=' . $session_id,
-                'Content-Type: application/json'
-            ],
-            unknown_status => $self->{unknown_http_status},
-            warning_status => $self->{warning_http_status},
-            critical_status => $self->{critical_http_status}
+            %$creds
         );
     }
 
@@ -285,6 +306,10 @@ API port (default: 443)
 =item B<--proto>
 
 Specify https if needed (default: 'https')
+
+=item B<--token>
+
+Use token authentication.
 
 =item B<--api-username>
 
