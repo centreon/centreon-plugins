@@ -141,7 +141,7 @@ sub set_counters {
                 { name => 'exec_detect', type => 0 },
                 { name => 'failed', type => 0 },
                 { name => 'timers', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'executions', type => 1, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { -10 => 1 } }
+                { name => 'executions', type => 1, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, sort_method => 'num', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -295,7 +295,8 @@ sub manage_selection {
 
         my ($last_exec, $older_running_exec);
         my ($failed, $total) = (0, 0);
-        foreach my $plan_exec (@$executions) {
+        my $i = 0;
+        foreach my $plan_exec (reverse @$executions) {
             next if ($plan_exec->{planId} ne $plan->{id});
             $plan_exec->{startTimeSec} = $plan_exec->{startTime} / 1000;
             next if ($plan_exec->{startTimeSec} < ($ctime - $self->{option_results}->{since_timeperiod}));
@@ -317,7 +318,7 @@ sub manage_selection {
             my $timeraised = sprintf(
                 '%02d-%02d-%02dT%02d:%02d:%02d (%s)', $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second, $self->{option_results}->{timezone}
             );
-            $self->{plans}->{ $plan->{id} }->{executions}->{ $plan_exec->{id} } = {
+            $self->{plans}->{ $plan->{id} }->{executions}->{$i} = {
                 executionId => $plan_exec->{id},
                 planName => $plan->{attributes}->{name},
                 environment => $plan_exec->{executionParameters}->{customParameters}->{env},
@@ -325,6 +326,7 @@ sub manage_selection {
                 status => lc($plan_exec->{status}),
                 result => lc($plan_exec->{result})
             };
+            $i++;
         }
 
         $self->{plans}->{ $plan->{id} }->{failed}->{failedPrct} = $total > 0 ? $failed * 100 / $total : 0;
