@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,12 +204,12 @@ Check cluster health indicators ('consistency-state','shared-memory-efficiency-l
 
 =item B<--filter>
 
-Filter some parts (comma seperated list)
+Filter some parts (comma separated list)
 You can also exclude items from specific instances: --filter=cluster,CLUSTER-NAME
 
 =item B<--threshold-overload>
 
-Overload a specific threshold, e.g --threshold-overload="consistency-state,Xtremio,CRITICAL,healthy"
+Overload a specific threshold. Example: --threshold-overload="consistency-state,Xtremio,CRITICAL,healthy"
 
 =back
 

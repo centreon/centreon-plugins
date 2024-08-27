@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -359,8 +359,7 @@ Time period to get plans execution informations (in seconds. Default: 86400).
 
 =item B<--unit>
 
-Select the unit for last execution time threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the last execution time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is secondss.
 
 =item B<--unknown-execution-status>
 
@@ -374,7 +373,7 @@ You can use the following variables: %{status}, %{planName}
 
 =item B<--critical-execution-status>
 
-Set critical threshold for last plan execution status (Default: '{status} =~ /execution_failed/i').
+Set critical threshold for last plan execution status (default: '{status} =~ /execution_failed/i').
 You can use the following variables: %{status}, %{planName}
 
 =item B<--warning-*> B<--critical-*>

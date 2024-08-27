@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,7 +114,7 @@ Check peripherals device connected (since TC 7.2).
 
 =item B<--filter-since>
 
-Filter by since X seconds (Default: 86400).
+Filter by since X seconds (default: 86400).
 
 =item B<--warning-*> B<--critical-*>
 

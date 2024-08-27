@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,7 +140,7 @@ Filter category name (can be a regexp).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='^(?!(category)$)')
+(example: --filter-counters='^(?!(category)$)')
 
 =item B<--warning-*>
 

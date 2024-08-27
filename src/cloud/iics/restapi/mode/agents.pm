@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -233,7 +233,7 @@ You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--critical-agent-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{active} eq "yes" and %{readyToRun} eq "no"').
+Define the conditions to match for the status to be CRITICAL (default: '%{active} eq "yes" and %{readyToRun} eq "no"').
 You can use the following variables: %{active}, %{readyToRun}, %{id}, %{name}
 
 =item B<--unknown-engine-status>

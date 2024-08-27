@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -146,7 +146,7 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =item B<--warning>
 

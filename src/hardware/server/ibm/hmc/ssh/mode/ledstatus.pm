@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -152,22 +152,22 @@ Format of names: systemname[:lparname]
 
 =item B<--warning-physical-status>
 
-Set warning threshold (Default: '').
+Set warning threshold (default: '').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--critical-physical-status>
 
-Set critical threshold (Default: '%{ledstate} =~ /on/').
+Set critical threshold (default: '%{ledstate} =~ /on/').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--warning-virtuallpar-status>
 
-Set warning threshold (Default: '').
+Set warning threshold (default: '').
 You can use the following variables: %{ledstate}, %{display}
 
 =item B<--critical-virtuallpar-status>
 
-Set critical threshold (Default: '%{ledstate} =~ /on/').
+Set critical threshold (default: '%{ledstate} =~ /on/').
 You can use the following variables: %{ledstate}, %{display}
 
 =back

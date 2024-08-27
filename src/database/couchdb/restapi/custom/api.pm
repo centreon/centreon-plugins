@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,11 +175,11 @@ CouchDB hostname.
 
 =item B<--port>
 
-Port used (Default: 5984)
+Port used (default: 5984)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 
@@ -191,11 +191,11 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =item B<--unknown-http-status>
 
-Threshold unknown for http response code (Default: '%{http_code} < 200 or (%{http_code} >= 300 && %{http_code} != 404)')
+Threshold unknown for http response code (default: '%{http_code} < 200 or (%{http_code} >= 300 && %{http_code} != 404)')
 
 =item B<--warning-http-status>
 

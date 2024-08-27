@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -227,7 +227,7 @@ You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{displ
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admin_state} eq "inService" and %{ipv4_oper_state} !~ /inService|transition/').
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_state} eq "inService" and %{ipv4_oper_state} !~ /inService|transition/').
 You can use the following variables: %{ipv4_oper_state}, %{admin_state}, %{display}
 
 =item B<--filter-name>

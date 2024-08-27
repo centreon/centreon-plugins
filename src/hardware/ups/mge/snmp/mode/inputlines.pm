@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,12 +198,12 @@ Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{badstatus} =~ /yes/').
+Define the conditions to match for the status to be CRITICAL (default: '%{badstatus} =~ /yes/').
 You can use the following variables: %{badstatus}, %{failcause}
 
 =back

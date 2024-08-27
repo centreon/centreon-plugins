@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -176,7 +176,7 @@ sub add_option_msg {
 sub set_ignore_label {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{output_ignore_label} = 1; 
+    $self->{option_results}->{output_ignore_label} = 1;
 }
 
 sub set_status {
@@ -208,7 +208,7 @@ sub output_add {
         } else {
             $self->{global_short_concat_outputs}->{uc($options->{severity})} = $options->{short_msg};
         }
-        
+
         push @{$self->{global_short_outputs}->{uc($options->{severity})}}, $options->{short_msg};
         $self->set_status(exit_litteral => $options->{severity});
     }
@@ -231,7 +231,7 @@ sub perfdata_add {
         $perfdata->{$_} = $options{$_};
     }
 
-    if ((defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) && 
+    if ((defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) &&
         defined($options{nlabel})) {
         $perfdata->{label} = $options{nlabel};
     }
@@ -293,7 +293,7 @@ sub output_json {
             outputs => [],
             perfdatas => []
         }
-    };    
+    };
 
     foreach my $code_litteral (keys %{$self->{global_short_outputs}}) {
         foreach (@{$self->{global_short_outputs}->{$code_litteral}}) {
@@ -343,7 +343,7 @@ sub output_xml {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
-    my ($child_plugin_name, $child_plugin_mode, $child_plugin_exit, $child_plugin_output, $child_plugin_perfdata); 
+    my ($child_plugin_name, $child_plugin_mode, $child_plugin_exit, $child_plugin_output, $child_plugin_perfdata);
 
     my $root = $self->{xml_output}->createElement('plugin');
     $self->{xml_output}->setDocumentElement($root);
@@ -411,7 +411,7 @@ sub output_xml {
         foreach my $perf (@{$self->{perfdatas}}) {
             next if ($self->filter_perfdata(perf => $perf));
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
-        
+
             my ($child_perfdata);
             $child_perfdata = $self->{xml_output}->createElement('perfdata');
             $child_plugin_perfdata->addChild($child_perfdata);
@@ -593,8 +593,8 @@ sub display {
         $self->create_xml_document();
         if ($self->{is_output_xml}) {
             $self->output_xml(
-                exit_litteral => $self->get_litteral_status(), 
-                nolabel => $nolabel, 
+                exit_litteral => $self->get_litteral_status(),
+                nolabel => $nolabel,
                 force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
             );
             return ;
@@ -603,7 +603,7 @@ sub display {
         $self->create_json_document();
         if ($self->{is_output_json}) {
             $self->output_json(
-                exit_litteral => $self->get_litteral_status(), 
+                exit_litteral => $self->get_litteral_status(),
                 nolabel => $nolabel,
                 force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
             );
@@ -615,7 +615,7 @@ sub display {
     }
 
     $self->output_txt(
-        exit_litteral => $self->get_litteral_status(), 
+        exit_litteral => $self->get_litteral_status(),
         nolabel => $nolabel,
         force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
     );
@@ -642,7 +642,7 @@ sub die_exit {
             $self->output_json(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1);
             $self->exit(exit_litteral => $exit_litteral);
         }
-    } 
+    }
 
     $self->output_txt(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1);
     $self->exit(exit_litteral => $exit_litteral);
@@ -729,13 +729,13 @@ sub get_litteral_status {
 
 sub is_status {
     my ($self, %options) = @_;
-    # $options{value} = string status 
+    # $options{value} = string status
     # $options{litteral} = value is litteral
-    # $options{compare} = string status 
+    # $options{compare} = string status
 
     if (defined($options{litteral})) {
         my $value = defined($options{value}) ? $options{value} : $self->get_litteral_status();
-    
+
         if (uc($value) eq uc($options{compare})) {
             return 1;
         }
@@ -906,7 +906,7 @@ sub parameter {
 
 sub add_disco_entry {
     my ($self, %options) = @_;
-    
+
     push @{$self->{disco_entries}}, {%options};
 }
 
@@ -950,7 +950,7 @@ sub load_eval {
     my ($self) = @_;
 
     my ($code) = centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => 'Safe', 
+        output => $self->{output}, module => 'Safe',
         no_quit => 1
     );
     if ($code == 0) {
@@ -1140,8 +1140,8 @@ sub apply_pfdata_scale {
 
     if (defined(${$options{perf}}->{max}) && ${$options{perf}}->{max} ne '') {
         ($value) = centreon::plugins::misc::scale_bytesbit(value => ${$options{perf}}->{max},
-            src_quantity => $src_quantity, src_unit => $src_unit, 
-            dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+            src_quantity => $src_quantity, src_unit => $src_unit,
+            dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity},
             dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
         ${$options{perf}}->{max} = sprintf('%.2f', $value);
     }
@@ -1153,14 +1153,14 @@ sub apply_pfdata_scale {
 
         if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
             ($result->{start}) = centreon::plugins::misc::scale_bytesbit(value => $result->{start},
-                src_quantity => $src_quantity, src_unit => $src_unit, 
-                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+                src_quantity => $src_quantity, src_unit => $src_unit,
+                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity},
                 dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
         }
         if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
             ($result->{end}) = centreon::plugins::misc::scale_bytesbit(value => $result->{end},
-                src_quantity => $src_quantity, src_unit => $src_unit, 
-                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+                src_quantity => $src_quantity, src_unit => $src_unit,
+                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity},
                 dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
         }
 
@@ -1216,7 +1216,7 @@ sub apply_pfdata_percent {
         ${$options{perf}}->{$threshold} = centreon::plugins::misc::get_threshold_litteral(%$result);
     }
 
-    ${$options{perf}}->{max} = 100; 
+    ${$options{perf}}->{max} = 100;
 }
 
 sub apply_pfdata_eval {
@@ -1364,7 +1364,7 @@ sub parse_perfdata_extend_args {
     my ($self, %options) = @_;
 
     # --extend-perfdata=searchlabel,newlabel,method[,[newuom],[min],[max],[warning],[critical]]
-    my ($pfdata_match, $pfdata_substitute, $method, $uom_sub, $min_sub, $max_sub, $warn_sub, $crit_sub) = 
+    my ($pfdata_match, $pfdata_substitute, $method, $uom_sub, $min_sub, $max_sub, $warn_sub, $crit_sub) =
         split /,/, $options{arg};
     return if ((!defined($pfdata_match) || $pfdata_match eq '') && $options{type} != 3);
 
@@ -1525,7 +1525,7 @@ Display debug messages.
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
-Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
+Example: adding --filter-perfdata='avg' will remove all metrics that do not contain
 'avg' from performance data.
 
 =item B<--filter-perfdata-adv>
@@ -1533,35 +1533,35 @@ Eg: adding --filter-perfdata='avg' will remove all metrics that do not contain
 Filter perfdata based on a "if" condition using the following variables:
 label, value, unit, warning, critical, min, max.
 Variables must be written either %{variable} or %(variable).
-Eg: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
+Example: adding --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")' will
 remove all metrics whose value equals 0 and that don't have a maximum value.
 
 =item B<--explode-perfdata-max>
 
 Create a new metric for each metric that comes with a maximum limit. The new
-metric will be named identically with a '_max' suffix). 
-Eg: it will split 'used_prct'=26.93%;0:80;0:90;0;100
+metric will be named identically with a '_max' suffix).
+Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
 into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 
 
-=item B<--change-perfdata> B<--extend-perfdata> 
+=item B<--change-perfdata> B<--extend-perfdata>
 
-Change or extend perfdata. 
+Change or extend perfdata.
 Syntax: --extend-perfdata=searchlabel,newlabel,target[,[newuom],[min],[max]]
 
 Common examples:
 
 =over 4
 
-Convert storage free perfdata into used: --change-perfdata=free,used,invert()
+Convert storage free perfdata into used: --change-perfdata='free,used,invert()'
 
-Convert storage free perfdata into used: --change-perfdata=used,free,invert()
+Convert storage free perfdata into used: --change-perfdata='used,free,invert()'
 
-Scale traffic values automatically: --change-perfdata=traffic,,scale(auto)
+Scale traffic values automatically: --change-perfdata='traffic,,scale(auto)'
 
-Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
+Scale traffic values in Mbps: --change-perfdata='traffic_in,,scale(Mbps),mbps'
 
-Change traffic values in percent: --change-perfdata=traffic_in,,percent()
+Change traffic values in percent: --change-perfdata='traffic_in,,percent()'
 
 =back
 
@@ -1591,12 +1591,12 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 Modify the short/long output that is returned by the plugin.
 Syntax: --change-short-output=pattern~replacement~modifier
 Most commonly used modifiers are i (case insensitive) and g (replace all occurrences).
-Eg: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
+Example: adding --change-short-output='OK~Up~gi' will replace all occurrences of 'OK', 'ok', 'Ok' or 'oK' with 'Up'
 
 =item B<--change-exit>
 
 Replace an exit code with one of your choice.
-Eg: adding --change-exit=unknown=critical will result in a CRITICAL state
+Example: adding --change-exit=unknown=critical will result in a CRITICAL state
 instead of an UNKNOWN state.
 
 =item B<--range-perfdata>
@@ -1622,9 +1622,9 @@ and an output.
 
 =item B<--output-ignore-label>
 
-Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the 
+Remove the status label ("OK:", "WARNING:", "UNKNOWN:", CRITICAL:") from the
 beginning of the output.
-Eg: 'OK: Ram Total:...' will become 'Ram Total:...'
+Example: 'OK: Ram Total:...' will become 'Ram Total:...'
 
 =item B<--output-xml>
 

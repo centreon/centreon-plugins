@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,12 +132,12 @@ Check features licensing.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} eq "activated" && %{expiry_days} < 60').
+Define the conditions to match for the status to be WARNING. (default: '%{status} eq "activated" && %{expiry_days} < 60').
 Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{status} eq "activated" && %{expiry_days} < 30').
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} eq "activated" && %{expiry_days} < 30').
 Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and alarm monitoring for
@@ -214,7 +214,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-sensor-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /^paired/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /^paired/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-trafficdrop-status>
@@ -224,7 +224,7 @@ You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--warning-trafficdrop-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{trafficDropStatus} =~ /warning|unknown|skip/i').
+Define the conditions to match for the status to be WARNING (default: '%{trafficDropStatus} =~ /warning|unknown|skip/i').
 You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--critical-trafficdrop-status>
@@ -234,17 +234,17 @@ You can use the following variables: %{trafficDropStatus}, %{name}
 
 =item B<--unknown-connectivity-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{connectivityStatus} =~ /unknown/i').
+Define the conditions to match for the status to be WARNING (default: '%{connectivityStatus} =~ /unknown/i').
 You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--warning-connectivity-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{connectivityStatus} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{connectivityStatus} =~ /warning/i').
 You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--critical-connectivity-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connectivityStatus} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{connectivityStatus} =~ /critical/i').
 You can use the following variables: %{connectivityStatus}, %{name}
 
 =item B<--unknown-interface-status>
@@ -259,7 +259,7 @@ You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--critical-interface-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{interfaceName}, %{sensorName}
 
 =item B<--warning-*> B<--critical-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -161,7 +161,7 @@ Check cloudwatch logs.
 
 =item B<--group-name>
 
-Set log group name (Required).
+Set log group name (required).
 
 =item B<--stream-name>
 
@@ -174,17 +174,17 @@ If not set: lookup logs since the last execution.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '')
+Define the conditions to match for the status to be UNKNOWN (default: '')
 You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{message}, %{stream_name}, %{since}
 
 =back

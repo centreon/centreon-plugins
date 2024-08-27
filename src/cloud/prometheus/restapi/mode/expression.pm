@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -248,27 +248,27 @@ This query type uses --step, --timeframe and --aggregation options to compute th
 
 =item B<--instance>
 
-Set the instance label on which the results should be calculate for (Example: --instance='name').
+Set the instance label on which the results should be calculate for (example: --instance='name').
 
 =item B<--output>
 
-Set the output for each instances (Example: --output='Container %{instance} value is %{label}').
+Set the output for each instances (example: --output='Container %{instance} value is %{label}').
 
 =item B<--multiple-output>
 
 Set the global output in case everything is fine for multiple instances
-(Example: --multiple-output='Containers are OK').
+(example: --multiple-output='Containers are OK').
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 
 Can use special variables like %{instance} and any other
 labels you set through --query and --query-range options.
@@ -276,17 +276,17 @@ labels you set through --query and --query-range options.
 =item B<--timeframe>
 
 Set timeframe in seconds (i.e. 3600 to check last hour)
-(Required for --query-range queries, Default: '900').
+(required for --query-range queries, Default: '900').
 
 =item B<--step>
 
-Set the step of the metric query (Examples: '30s', '1m', '15m', '1h')
-(Required for --query-range queries, Default: '1m').
+Set the step of the metric query (examples: '30s', '1m', '15m', '1h')
+(required for --query-range queries, Default: '1m').
 
 =item B<--aggregation>
 
-Set the aggregation on metric values (Can be: 'average', 'min', 'max', 'sum')
-(Required for --query-range queries, Default: 'average').
+Set the aggregation on metric values (can be: 'average', 'min', 'max', 'sum')
+(required for --query-range queries, Default: 'average').
 
 =back
 

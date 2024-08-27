@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,7 +42,8 @@ sub new {
         'warning-regexp:s'        => { name => 'warning_regexp' },
         'critical-regexp:s'       => { name => 'critical_regexp' },
         'unknown-regexp:s'        => { name => 'unknown_regexp' },
-        'regexp-isensitive'       => { name => 'use_iregexp' },
+        'regexp-isensitive'       => { name => 'use_iregexp' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_iregexp' },
 
         'warning-absent:s@'       => { name => 'warning_absent' },
         'critical-absent:s@'      => { name => 'critical_absent' },
@@ -122,14 +123,17 @@ sub get_change_value {
     
     my $value = $options{value};
     return '' if (!defined($options{value}));
-    if (defined($self->{map_values}->{$options{value}})) {
+    
+    if (defined($self->{option_results}->{convert_custom_values}) && $self->{option_results}->{convert_custom_values} ne '') {
+        eval "\$value = $self->{option_results}->{convert_custom_values}";
+    }
+
+    if (defined($value) && defined($self->{map_values}->{$value})) {
+        $value = $self->{map_values}->{$value}
+    } elsif (defined($self->{map_values}->{$options{value}})) {
         $value = $self->{map_values}->{$options{value}};
     } elsif (defined($self->{option_results}->{map_value_other}) && $self->{option_results}->{map_value_other} ne '') {
         $value = $self->{option_results}->{map_value_other};
-    }
-
-    if (defined($self->{option_results}->{convert_custom_values}) && $self->{option_results}->{convert_custom_values} ne '') {
-        eval "\$value = $self->{option_results}->{convert_custom_values}";
     }
 
     return $value;
@@ -315,9 +319,9 @@ __END__
 
 =head1 MODE
 
-Check SNMP string values (can be a String or an Integer).
+Check SNMP string values (can be a string or an integer).
 
-Check values absent:
+Check absent values:
 centreon_plugins.pl --plugin=snmp_standard::plugin --mode=string-value --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public 
     --oid-table='.1.3.6.1.2.1.25.4.2.1.2' --format-ok='%{filter_rows} processes' --format-critical='processes are absent: %{details_critical}' --critical-absent='centengine' --critical-absent='crond' --filter-table-value='centengine|crond'
 
@@ -360,7 +364,7 @@ Return Warning if an oid value match the regexp.
 
 Return Critical if an oid value match the regexp.
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive.
 
@@ -391,7 +395,7 @@ Separator uses between values (default: coma).
 =item B<--convert-custom-values>
 
 Custom code to convert values.
-Example to convert octetstring to macaddress: --convert-custom-values='join(":", unpack("(H2)*", $value))'
+Example to convert octet string to MAC address: --convert-custom-values='join(":", unpack("(H2)*", $value))'
 
 =item B<--use-perl-mod>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -280,17 +280,17 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--warning-offline-disks>
 
-Set warning threshold for offline disks (Default: '(%{offline_disks} > 0 && %{type} eq "extern") || (%{offline_disks} > 1 && %{type} eq "high")').
+Set warning threshold for offline disks (default: '(%{offline_disks} > 0 && %{type} eq "extern") || (%{offline_disks} > 1 && %{type} eq "high")').
 You can use the following variables: %{offline_disks}, %{type}, %{display}
 
 =item B<--critical-offline-disks>
 
-Set critical threshold for offline disks (Default: '%{offline_disks} > 0 && %{type} =~ /^normal|high$/').
+Set critical threshold for offline disks (default: '%{offline_disks} > 0 && %{type} =~ /^normal|high$/').
 You can use the following variables: %{offline_disks}, %{type}, %{display}
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

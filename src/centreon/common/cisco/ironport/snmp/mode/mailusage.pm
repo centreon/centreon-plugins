@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -251,17 +251,17 @@ Check email security usage.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
+Define the conditions to match for the status to be WARNING (default: '%{resource_conservation} =~ /memoryShortage|queueSpaceShortage/i || %{queue_status} =~ /queueSpaceShortage/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{resource_conservation} =~ /queueFull/i || %{queue_status} =~ /queueFull/i').
 You can use the following variables: %{queue_status}, %{resource_conservation}
 
 =item B<--warning-*> B<--critical-*> 

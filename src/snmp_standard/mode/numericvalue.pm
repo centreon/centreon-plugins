@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -267,7 +267,7 @@ Critical threshold.
 
 =item B<--oid-type>
 
-Type of the OID (Default: 'gauge').
+Type of the OID (default: 'gauge').
 Can be 'counter' also. 'counter' will use a retention file.
 
 =item B<--counter-per-seconds>
@@ -276,16 +276,16 @@ Convert counter value on a value per seconds (only with type 'counter').
 
 =item B<--extracted-pattern>
 
-Set pattern to extracted a number.
+Define a pattern to extract a number from the returned string.
 
 =item B<--format>
 
-Output format (Default: 'current value is %s')
+Output format (default: 'current value is %s')
 
 =item B<--format-custom>
 
 Apply a custom change on the value 
-(Example to multiply the value: --format-custom='* 8').
+(example to multiply the value: --format-custom='* 8').
 
 =item B<--format-scale>
 
@@ -293,25 +293,25 @@ Scale bytes value. We'll display value in output.
 
 =item B<--format-scale-type>
 
-Could be 'network' (value divide by 1000) or 'other' (divide by 1024) (Default: 'other')
+Could be 'network' (value divide by 1000) or 'other' (divide by 1024) (default: 'other')
 
-Output format (Default: 'current value is %s')
+Output format (default: 'current value is %s')
 
 =item B<--perfdata-unit>
 
-Perfdata unit in perfdata output (Default: '')
+Perfdata unit in perfdata output (default: '')
 
 =item B<--perfdata-name>
 
-Perfdata name in perfdata output (Default: 'value')
+Perfdata name in perfdata output (default: 'value')
 
 =item B<--perfdata-min>
 
-Minimum value to add in perfdata output (Default: '')
+Minimum value to add in perfdata output (default: '')
 
 =item B<--perfdata-max>
 
-Maximum value to add in perfdata output (Default: '')
+Maximum value to add in perfdata output (default: '')
 
 =item B<--config-json>
 

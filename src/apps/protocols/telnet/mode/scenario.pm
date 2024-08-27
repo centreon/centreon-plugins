@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -174,12 +174,12 @@ Check telnet scenario execution
 
 =item B<--scenario>
 
-Scenario used (Required).
+Scenario used (required).
 Can be a file or json content.
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50)
+Set global execution timeout (default: 50)
 
 =item B<--hostname>
 
@@ -193,11 +193,11 @@ Could be used if you want to use the same scenario for X hosts.
 
 =item B<--warning>
 
-Warning threshold in seconds (Scenario execution time)
+Warning threshold in seconds (scenario execution time)
 
 =item B<--critical>
 
-Critical threshold in seconds (Scenario execution time)
+Critical threshold in seconds (scenario execution time)
 
 =back
 

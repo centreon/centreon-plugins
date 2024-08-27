@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -190,7 +190,7 @@ Example: --filter-counters='status'
 
 =item B<--account>
 
-Check account name (Required. Multiple option).
+Check account name (required. Multiple option).
 
 =item B<--filter-license-name>
 
@@ -208,7 +208,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-license-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /in compliance/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /in compliance/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

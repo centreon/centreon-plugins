@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,7 +172,20 @@ sub manage_selection {
     $innodb_per_table = 1 if ($value =~ /on/i);
 
     $options{sql}->query(
-        query => q{SELECT table_schema, table_name, engine, data_free, data_length+index_length as data_used, (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine IN ('InnoDB', 'MyISAM')}
+        query => q{
+            SELECT
+                table_schema,
+                table_name,
+                engine,
+                data_free,
+                data_length + index_length as data_used,
+                DATA_FREE / (DATA_LENGTH + INDEX_LENGTH + DATA_FREE) as TAUX_FRAG
+            FROM
+                information_schema.tables
+            WHERE
+                table_type = 'BASE TABLE'
+                AND engine IN ('InnoDB', 'MyISAM')
+        }
     );
     my $result = $options{sql}->fetchall_arrayref();
 
@@ -230,21 +243,21 @@ __END__
 
 =head1 MODE
 
-Check MySQL databases size and tables.
+Check MySQL/MariaDB databases and tables sizes.
 
 =over 8
 
 =item B<--filter-database>
 
-Filter database to checks (Can be a regexp).
+Filter the databases to monitor with a regular expression.
 
 =item B<--filter-table>
 
-Filter table name (can be a regexp).
+Filter tables by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'total-usage', 'total-free', 'db-usage',
+Thresholds (can be: 'total-usage', 'total-free', 'db-usage',
 'db-free', 'table-usage', 'table-free', 'table-frag').
 
 =back

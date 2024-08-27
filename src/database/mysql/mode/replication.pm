@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -377,22 +377,22 @@ You can use the following variables:  %{status}, %{error_message}, %{display}
 
 =item B<--critical-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "ok"').
 You can use the following variables: %{status}, %{error_message}, %{display}
 
 =item B<--unknown-replication-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{replication_status} =~ /configurationIssue/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{replication_status} =~ /configurationIssue/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-replication-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{replication_status} =~ /inProgress/i').
+Define the conditions to match for the status to be WARNING (default: '%{replication_status} =~ /inProgress/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--critical-replication-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{replication_status} =~ /connectIssueToMaster/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{replication_status} =~ /connectIssueToMaster/i').
 You can use the following variables: %{replication_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

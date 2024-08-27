@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -372,7 +372,7 @@ Filter pool to check (can use regexp).
 =item B<--check-order>
 
 Check memory in standard cisco mib. If you have some issue (wrong memory information in a specific mib), you can change the order 
-(Default: 'enhanced_pool,pool,process,system_ext').
+(default: 'enhanced_pool,pool,process,system_ext').
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -248,15 +248,15 @@ Example: --filter-counters='total'
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--filter-fru-id>
 
-Filter field replaceable units by id (can be a regexp).
+Filter field replaceable units by ID (can be a regexp).
 
 =item B<--filter-cell-tdd-id>
 
-Filter tdd cells by id (can be a regexp).
+Filter tdd cells by ID (can be a regexp).
 
 =item B<--unknown-node-sync-status>
 
@@ -270,7 +270,7 @@ You can use the following variables: %{node_id}, %{sync_status}
 
 =item B<--critical-node-sync-status>
 
-Set critical threshold for synchronization status (Default: '%{sync_status} =~ /unsynchronized/i').
+Set critical threshold for synchronization status (default: '%{sync_status} =~ /unsynchronized/i').
 You can use the following variables: %{node_id}, %{sync_status}
 
 =item B<--unknown-fru-status>

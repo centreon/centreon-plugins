@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -404,7 +404,7 @@ sub get_cache_file_response {
 sub cache_jobs_monitoring {
     my ($self, %options) = @_;
 
-    my $datas = $self->get_jobs_monitoring(disable_cache => 1, limit => $options{limit});
+    my $datas = $self->get_jobs_monitoring(disable_cache => 1, get_param => $options{get_param});
     $self->write_cache_file(
         statefile => 'jobs_monitoring',
         response => $datas
@@ -422,7 +422,7 @@ sub get_jobs_monitoring {
     return $self->request_api(
         endpoint => '/api/v1/job_monitoring',
         label => 'jobMonitoringInfoList',
-        get_param => ['limit=' . $options{limit}]
+        get_param => $options{get_param}
     );
 }
 
@@ -446,11 +446,11 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--service-account>
 
@@ -478,7 +478,7 @@ Use token authentication. If option is empty, token is created.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (default: 30).
 
 =item B<--cache-use>
 

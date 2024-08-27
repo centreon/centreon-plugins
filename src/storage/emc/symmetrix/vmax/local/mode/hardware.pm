@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -276,7 +276,7 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'module', 'temperature', 'director, 'cabling', 'power', 'voltage', 'sparedisk'.
 
 =item B<--filter>
@@ -313,11 +313,11 @@ Set pattern to match the most recent directory (getting the hexa value).
 
 =item B<--file-health-name>
 
-Name of the global storage file status (Default: HealthCheck.log).
+Name of the global storage file status (default: HealthCheck.log).
 
 =item B<--file-health-env-name>
 
-Name of the environment storage file status (Default: sympl_env_health.log).
+Name of the environment storage file status (default: sympl_env_health.log).
 
 =back
 

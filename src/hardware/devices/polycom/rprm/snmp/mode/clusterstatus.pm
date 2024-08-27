@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,23 +102,23 @@ Check Polycom HA SuperCluster status
 
 =item B<--warning-cluster-status>
 
-Custom Warning threshold of the cluster state (Default: none)
+Custom Warning threshold of the cluster state (default: none)
 Syntax: --warning-cluster-status='%{cluster_status} =~ /busyOut/i'
 
 =item B<--critical-cluster-status>
 
 Custom Critical threshold of the cluster state
-(Default: '%{cluster_status} =~ /outOfService/i' )
+(default: '%{cluster_status} =~ /outOfService/i' )
 Syntax: --critical-cluster-status='%{cluster_status} =~ /failed/i'
 
 =item B<--warning-cluster-change-cause>
 
-Custom Warning threshold of the cluster state change cause (Default: none)
+Custom Warning threshold of the cluster state change cause (default: none)
 Syntax: --warning-cluster-change-cause='%{cluster_change_cause} =~ /manualFailover/i'
 
 =item B<--critical-cluster-change-cause>
 
-Custom Critical threshold of the cluster state change cause (Default: none)
+Custom Critical threshold of the cluster state change cause (default: none)
 Syntax: --critical-cluster-change-cause='%{cluster_change_cause} =~ /manualFailover/i'
 
 =back

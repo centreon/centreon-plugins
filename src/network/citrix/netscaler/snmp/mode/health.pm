@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -69,7 +69,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => { "alternative-status-mapping:s" => { name => 'alternative_status_mapping', default => '' }});
 
     return $self;
 }
@@ -86,7 +86,7 @@ Check System Health Status.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'temperature', 'voltage', 'fanspeed', 'psu'.
 
 =item B<--filter>
@@ -101,7 +101,7 @@ Define the expected status if no components are found (default: critical).
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=psu,1
 
 =item B<--threshold-overload>
@@ -118,6 +118,16 @@ Example: --warning='temperature,.,30'
 
 Set critical threshold for 'temperature', 'fanspeed', 'voltage'(syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,40'
+
+=item B<--alternative-status-mapping>
+
+Depending on the Netscaler product, the translation of OID .1.3.6.1.4.1.5951.4.1.1.41.7.1.2 may diverge. The default interpretation of this OID is:
+
+0 => not supported, 1 => not present, 2 => failed, 3 => normal.
+
+With this option set to '1', the OID will be interpreted otherwise:
+
+0 => normal, 1 => not present, 2 => failed, 3 => not supported.
 
 =back
 

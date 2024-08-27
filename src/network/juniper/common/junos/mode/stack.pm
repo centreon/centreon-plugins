@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -213,32 +213,32 @@ Check stack members.
 
 =item B<--unknown-member-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{role}, %{roleLast}
 
 =item B<--warning-member-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{role}, %{roleLast}
 
 =item B<--critical-member-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast}').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast}').
 You can use the following variables: %{role}, %{roleLast}
 
 =item B<--unknown-port-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--warning-port-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--critical-port-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admin_status} eq "up"  and %{oper_status} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_status} eq "up"  and %{oper_status} ne "up"').
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =back

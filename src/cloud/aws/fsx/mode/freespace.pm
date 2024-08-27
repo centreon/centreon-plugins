@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,20 +131,20 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/efs-metrics.html' for more inform
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--statistic>
 
-Set the metric calculation method (Default: Average)
+Set the metric calculation method (default: Average)
 Can be 'minimum', 'average'
 
 =item B<--warning-storage-free-bytes>
 
-Thresholds warning on remaining available bytes.
+Warning thresholds for remaining available bytes.
 
 =item B<--critical-storage-free-bytes>
 
-Thresholds warning on remaining available bytes.
+Critical thresholds for remaining available bytes.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,13 +127,13 @@ Check VPN gateway site traffic metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
 --resource=MyResource --resource-group=MYRGROUP --aggregation='average' --aggregation='total' --critical-bandwidth-average='10' 
 --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx'
@@ -145,16 +145,16 @@ Default aggregation: 'average' (*Bandwidth), 'total' (P2SConnectionCount)
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
-(Can be a regexp).
+Filter metrics (can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
+(can be a regexp).
 
 =item B<--warning-$label$>
 

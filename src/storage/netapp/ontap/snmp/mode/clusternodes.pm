@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -382,7 +382,7 @@ Filter nodes by name (can be a regexp).
 
 =item B<--filter-port-id>
 
-Filter ports by id (can be a regexp).
+Filter ports by ID (can be a regexp).
 
 =item B<--filter-port-role>
 
@@ -400,7 +400,7 @@ You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{node_status} eq "clusterComLost"').
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} eq "clusterComLost"').
 You can use the following variables: %{node_status}, %{node_name}
 
 =item B<--unknown-bbu-status>
@@ -415,7 +415,7 @@ You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--critical-bbu-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{bbu_status} !~ /fullyCharged|ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{bbu_status} !~ /fullyCharged|ok/i').
 You can use the following variables: %{bbu_status}, %{node_name}
 
 =item B<--unknown-port-link-status>
@@ -430,7 +430,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{no
 
 =item B<--critical-port-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{port_id}, %{node_name}
 
 =item B<--unknown-port-health>
@@ -440,7 +440,7 @@ You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--warning-port-health>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} eq "degraded"').
+Define the conditions to match for the status to be WARNING (default: '%{health} eq "degraded"').
 You can use the following variables: %{health}, %{port_id}, %{node_name}
 
 =item B<--critical-port-health>

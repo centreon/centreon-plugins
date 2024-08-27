@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -244,7 +244,7 @@ Warning threshold for channel status.
 
 =item B<--critical-status>
 
-Critical threshold for channel status (Default: '%{status} !~ /valid/i')
+Critical threshold for channel status (default: '%{status} !~ /valid/i')
 
 =item B<--warning-ovp-status>
 
@@ -252,7 +252,7 @@ Warning threshold for OVP (OverVoltage Protection) status.
 
 =item B<--critical-ovp-status>
 
-Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_status} !~ /ok/i')
+Critical threshold for OVP (OverVoltage Protection) status (default: '%{ovp_status} !~ /ok/i')
 
 =item B<--warning-ps-status>
 
@@ -260,7 +260,7 @@ Warning threshold for power supply status.
 
 =item B<--critical-ps-status>
 
-Critical threshold for power supply status (Default: '%{ps_status} !~ /up/i')
+Critical threshold for power supply status (default: '%{ps_status} !~ /up/i')
 
 =item B<--warning-*>
 

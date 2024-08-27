@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,23 +147,23 @@ Default statistic: 'sum' / Valid statistics: 'sum'.
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'AllRequests', 'GetRequests', 'PutRequests',
+Filter metrics (can be: 'AllRequests', 'GetRequests', 'PutRequests',
 'DeleteRequests', 'HeadRequests', 'PostRequests', 'ListRequests') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
+Warning thresholds ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
 'deleterequests', 'headrequests', 'postrequests', 'listrequests', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
+Critical thresholds ($metric$ can be: 'allrequests', 'getrequests', 'putrequests',
 'deleterequests', 'headrequests', 'postrequests', 'listrequests', 
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 

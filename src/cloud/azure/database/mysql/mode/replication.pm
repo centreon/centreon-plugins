@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,13 +129,13 @@ Check Azure Database for MySQL replication status.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mysql::plugin --mode=connections --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
 --warning-replication-lag='1000' --critical-replication-lag='2000'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMySQL/servers/<db_id>'
@@ -147,15 +147,15 @@ Default aggregation: 'maximum' / 'average', 'minimum' and 'total' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--resource-type>
 
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
+Set resource type (default: 'servers'). Can be 'servers', 'flexibleServers'.
 
 =item B<--warning-*>
 

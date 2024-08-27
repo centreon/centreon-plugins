@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -111,13 +111,13 @@ Check Azure Functions App.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-execution-count='80' --critical-execution-count='90'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
@@ -129,11 +129,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

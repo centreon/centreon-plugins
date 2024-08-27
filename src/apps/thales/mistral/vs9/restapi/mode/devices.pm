@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -971,12 +971,12 @@ You can use the following variables: %{revoked}, %{sn}, %{certSn}, %{subjectComm
 
 =item B<--unknown-connection-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{connectionStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{connectionStatus} =~ /unknown/i').
 You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
+Define the conditions to match for the status to be WARNING (default: '%{connectionStatus} =~ /disconnected|unpaired/i').
 You can use the following variables: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>
@@ -996,7 +996,7 @@ You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--critical-operating-state>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{operatingState} !~ /operating/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{operatingState} !~ /operating/i').
 You can use the following variables: %{sn}, %{operatingState}
 
 =item B<--unknown-autotest-state>
@@ -1011,7 +1011,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-autotest-state>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{state} !~ /success/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} !~ /success/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
@@ -1026,7 +1026,7 @@ You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--critical-interface-status>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{operatingStatus} !~ /up/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{operatingStatus} !~ /up/i').
 You can use the following variables: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--unknown-vpn-ike-service-state>
@@ -1041,7 +1041,7 @@ You can use the following variables: %{sn}, %{state}
 
 =item B<--critical-vpn-ike-service-state>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /stopped/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /stopped/i').
 You can use the following variables: %{sn}, %{state}
 
 =item B<--unknown-vpn-ike-sa-state>
@@ -1056,7 +1056,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-ike-sa-state>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /down/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--unknown-vpn-sa-state>
@@ -1071,7 +1071,7 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--critical-vpn-sa-state>
 
-Define the conditions to match for the status to be CRITICAL  (Default: '%{state} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL  (default: '%{state} =~ /down/i').
 You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--ntp-hostname>
@@ -1080,7 +1080,7 @@ Set the ntp hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (Default: 123).
+Set the ntp port (default: 123).
 
 =item B<--time-connection-unit>
 
@@ -1099,7 +1099,7 @@ Select the time unit for certificate threshold. May be 's' for seconds, 'm' for 
 
 =item B<--traffic-unit>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--speed>
 

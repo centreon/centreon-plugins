@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-RRDCached",
+    "pkg_summary": "Centreon Plugin to check RRDCached related informations",
+    "plugin_name": "centreon_rrdcached.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/rrdcached/"
+    ]
+}

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -233,7 +233,7 @@ IP Addr/FQDN of the radius host
 
 =item B<--port>
 
-Radius port (Default: 1812)
+Radius port (default: 1812)
 
 =item B<--secret>
 
@@ -241,19 +241,19 @@ Secret of the radius host
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 5)
+Connection timeout in seconds (default: 5)
 
 =item B<--retry>
 
-Number of retry connection (Default: 0)
+Number of retry connection (default: 0)
 
 =item B<--radius-attribute>
 
@@ -267,12 +267,12 @@ Set radius-dictionary file (mandatory with --radius-attribute) (multiple option)
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "accepted"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "accepted"').
 You can use the following variables: %{status}, %{error_msg}, %{attributes}.
 
 =item B<--warning-time>

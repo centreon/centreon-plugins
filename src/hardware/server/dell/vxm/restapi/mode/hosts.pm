@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -217,11 +217,11 @@ Check hosts.
 
 =item B<--filter-host-sn>
 
-Filter hosts by serial number (Can be a regexp).
+Filter hosts by serial number (can be a regexp).
 
 =item B<--filter-host-name>
 
-Filter hosts by name (Can be a regexp).
+Filter hosts by name (can be a regexp).
 
 =item B<--unknown-host-status>
 
@@ -230,12 +230,12 @@ You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--warning-host-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--critical-host-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|error/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|error/i').
 You can use the following variables: %{status}, %{name}, %{sn}
 
 =item B<--unknown-nic-status>
@@ -265,7 +265,7 @@ You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--critical-disk-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /OK/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /OK/i').
 You can use the following variables: %{status}, %{sn}, %{bay}, %{slot}
 
 =item B<--warning-*> B<--critical-*>

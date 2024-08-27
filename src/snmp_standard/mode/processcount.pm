@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -284,7 +284,7 @@ sub run {
                                       min => 0);
     }
 
-    # Check cpu
+    # Check CPU
     if (defined($self->{option_results}->{cpu}) && $num_processes_match > 0) {
         my $datas = {};
         $datas->{last_timestamp} = time();
@@ -354,14 +354,14 @@ __END__
 =head1 MODE
 
 Check system number of processes.
-Can also check memory usage and cpu usage.
+Can also check memory usage and CPU usage.
 
 =over 8
 
 =item B<--process-status>
 
 Filter process status. Can be a regexp. 
-(Default: 'running|runnable').
+(default: 'running|runnable').
 
 =item B<--process-name>
 
@@ -434,19 +434,19 @@ memory used by matching processes (in Bytes).
 
 =item B<--cpu>
 
-Check cpu usage. Should be used with fix processes.
+Check CPU usage. Should be used with fix processes.
 If processes pid changes too much, the plugin can't compute values.
 
 =item B<--warning-cpu-total>
 
-Warning threshold of cpu usage for all processes (in percent).
-CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
+Warning threshold of CPU usage for all processes (in percent).
+CPU usage is in % of one CPU, so maximum can be 100% * number of CPU 
 and a process can have a value greater than 100%.
 
 =item B<--critical-cpu-total>
 
-Critical threshold of cpu usage for all processes (in percent).
-CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
+Critical threshold of CPU usage for all processes (in percent).
+CPU usage is in % of one CPU, so maximum can be 100% * number of CPU 
 and a process can have a value greater than 100%.
 
 =item B<--top>
@@ -455,12 +455,12 @@ Enable top memory usage display.
 
 =item B<--top-num>
 
-Number of processes in top memory display (Default: 5).
+Number of processes in top memory display (default: 5).
 
 =item B<--top-size>
 
 Minimum memory usage to be in top memory display 
-(Default: 52428800 -> 50 MB).
+(default: 52428800 -> 50 MB).
 
 =back
 

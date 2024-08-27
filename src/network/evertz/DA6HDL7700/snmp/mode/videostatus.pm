@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,7 +134,7 @@ You can use the following variables: %{video_locked}, %{display}
 
 =item B<--critical-video-status>
 
-Set critical threshold for device connection status (Default: '%{video_locked} =~ /notLocked/i').
+Set critical threshold for device connection status (default: '%{video_locked} =~ /notLocked/i').
 You can use the following variables: %{video_locked}, %{display}
 
 =back

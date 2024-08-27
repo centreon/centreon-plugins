@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -130,7 +130,7 @@ You can use the following variables: %{health}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} !~ /green/').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} !~ /green/').
 You can use the following variables: %{health}, %{display}
 
 =back

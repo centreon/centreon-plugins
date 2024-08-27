@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -105,7 +105,7 @@ Check databases size
 
 =item B<--filter-database>
 
-Filter database to checks (Can use regexp).
+Filter the databases to monitor with a regular expression.
 
 =item B<--warning-size>
 

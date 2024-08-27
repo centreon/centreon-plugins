@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -203,27 +203,27 @@ perl centreon_plugins.pl --plugin=cloud::google::gcp::management::stackdriver::p
 
 =item B<--api>
 
-Set GCP API (Required).
+Set GCP API (required).
 
 =item B<--metric>
 
-Set stackdriver metric (Required).
+Set stackdriver metric (required).
 
 =item B<--dimension-name>
 
-Set dimension name (Required).
+Set dimension name (required).
 
 =item B<--dimension-operator>
 
-Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 
-Set dimension value (Required).
+Set dimension value (required).
 
 =item B<--instance-key>
 
-Set instance key (By default, --dimension-name option is used).
+Set instance key (by default, --dimension-name option is used).
 
 =item B<--timeframe>
 
@@ -231,7 +231,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 

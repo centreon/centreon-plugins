@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -203,13 +203,13 @@ Filter by autoscaling group name (can be a regexp).
 
 =item B<--warning-instances>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Can use special variables like: %{health}, %{lifecycle}
 
 =item B<--critical-instances>
 
 Set critical threshold for instances states
-(Default: '%{health} =~ /Healthy/ && %{lifecycle} !~ /InService/').
+(default: '%{health} =~ /Healthy/ && %{lifecycle} !~ /InService/').
 Can use special variables like: %{health}, %{lifecycle}
 
 =item B<--warning-asg-instance-current>

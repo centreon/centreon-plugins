@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -113,12 +113,12 @@ Check Efficient IP SOLIDserver role and status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /upgrading|split-brain/')
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /upgrading|split-brain/')
 Can be used with special variables like: %{status}, %{role}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /invalid credentials|replication stopped|timeout/')
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} =~ /invalid credentials|replication stopped|timeout/')
 Can be used with special variables like: %{status}, %{role}
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -155,11 +155,11 @@ Elasticsearch hostname.
 
 =item B<--port>
 
-Port used (Default: 9200)
+Port used (default: 9200)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--username>
 

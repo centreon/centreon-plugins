@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package apps::rrdcached::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,9 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'stats' => 'apps::rrdcached::mode::stats',
-    );
+        'ping'  => 'apps::rrdcached::mode::ping'
+    };
+
+    $self->{custom_modes}->{tcp}  = 'apps::rrdcached::custom::tcp';
+    $self->{custom_modes}->{unix} = 'apps::rrdcached::custom::unix';
 
     return $self;
 }
@@ -43,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check RRDCached related informations
+Check RRDCached status and statistics.
 
 =cut

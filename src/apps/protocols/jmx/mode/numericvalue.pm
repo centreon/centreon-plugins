@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -275,7 +275,7 @@ Critical threshold.
 
 =item B<--type>
 
-Type (Default: 'gauge').
+Type (default: 'gauge').
 Can be 'counter' also. 'counter' will use a retention file.
 
 =item B<--counter-per-seconds>
@@ -284,7 +284,7 @@ Convert counter value on a value per seconds (only with type 'counter'.
 
 =item B<--format>
 
-Output format (Default: 'current valueX is %s')
+Output format (default: 'current valueX is %s')
 
 =item B<--format-scale>
 
@@ -292,23 +292,23 @@ Scale bytes value. We'll display value in output.
 
 =item B<--format-scale-type>
 
-Could be 'network' (value divide by 1000) or 'other' (divide by 1024) (Default: 'other')
+Could be 'network' (value divide by 1000) or 'other' (divide by 1024) (default: 'other')
 
 =item B<--perfdata-unit>
 
-Perfdata unit in perfdata output (Default: '')
+Perfdata unit in perfdata output (default: '')
 
 =item B<--perfdata-name>
 
-Perfdata name in perfdata output (Default: 'valueX')
+Perfdata name in perfdata output (default: 'valueX')
 
 =item B<--perfdata-min>
 
-Minimum value to add in perfdata output (Default: '')
+Minimum value to add in perfdata output (default: '')
 
 =item B<--perfdata-max>
 
-Maximum value to add in perfdata output (Default: '')
+Maximum value to add in perfdata output (default: '')
 
 =back
 

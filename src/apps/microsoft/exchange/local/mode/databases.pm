@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -405,7 +405,7 @@ Don't check copy status.
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -413,16 +413,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-exec-only>
 
@@ -451,7 +451,7 @@ You can use the following variables: %{mounted}, %{database}, %{server}
 
 =item B<--critical-status>
 
-Set critical threshold (Default: '%{mounted} == 0').
+Set critical threshold (default: '%{mounted} == 0').
 You can use the following variables: %{mounted}, %{database}, %{server}
 
 =item B<--warning-mapi>
@@ -461,7 +461,7 @@ You can use the following variables: %{mapi_result}, %{database}, %{server}
 
 =item B<--critical-mapi>
 
-Set critical threshold (Default: '%{mapi_result} !~ /Success/i').
+Set critical threshold (default: '%{mapi_result} !~ /Success/i').
 You can use the following variables: %{mapi_result}, %{database}, %{server}
 
 =item B<--warning-mailflow>
@@ -471,7 +471,7 @@ You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--critical-mailflow>
 
-Set critical threshold (Default: '%{mailflow_result} !~ /Success/i').
+Set critical threshold (default: '%{mailflow_result} !~ /Success/i').
 You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--warning-copystatus>
@@ -481,7 +481,7 @@ You can use the following variables: %{mailflow_result}, %{database}, %{server}
 
 =item B<--critical-copystatus>
 
-Set critical threshold (Default: '%{contentindexstate} !~ /Healthy/i').
+Set critical threshold (default: '%{contentindexstate} !~ /Healthy/i').
 You can use the following variables: %{copystatus_indexstate}, %{database}, %{server}
 
 =back

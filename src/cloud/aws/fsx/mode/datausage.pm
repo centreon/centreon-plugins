@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -171,11 +171,11 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/efs-metrics.html' for more inform
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter on a specific metric 
+Filter on a specific metric. 
 Can be: DataReadBytes, DataWriteBytes, DataReadOperations, DataWriteOperations, MetaDataOperations
 
 =item B<--statistic>
@@ -184,11 +184,11 @@ Set the metric calculation method (Only Sum is relevant).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Warning thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Critical thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
 
 =back
 

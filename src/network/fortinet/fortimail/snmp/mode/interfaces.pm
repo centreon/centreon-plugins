@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,7 +45,7 @@ Check interfaces.
 
 =item B<--add-global>
 
-Check global port statistics (By default if no --add-* option is set).
+Check global port statistics (by default if no --add-* option is set).
 
 =item B<--add-status>
 
@@ -99,15 +99,15 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for communication types (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -115,11 +115,11 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows to use interface name with option --interface instead of interface oid index (can be a regexp)
 
 =item B<--speed>
 
@@ -169,11 +169,11 @@ Add an OID to display.
 
 Modify the interface name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 
-Display cache interface datas.
+Display cache interface data.
 
 =back
 

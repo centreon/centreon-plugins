@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,11 +94,11 @@ Hostname to query.
 
 =item B<--port>
 
-Database Server Port (Default: 2638).
+Database Server Port (default: 2638).
 
 =item B<--tds-level>
 
-TDS protocol level to use (Default: 'CS_TDS_50')
+TDS protocol level to use (default: 'CS_TDS_50')
 
 =back
 

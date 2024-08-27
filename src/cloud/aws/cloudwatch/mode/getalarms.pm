@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -163,12 +163,12 @@ Filter by alarm name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state_value} =~ /INSUFFICIENT_DATA/i')
+Define the conditions to match for the status to be WARNING (default: '%{state_value} =~ /INSUFFICIENT_DATA/i')
 You can use the following variables: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state_value} =~ /ALARM/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state_value} =~ /ALARM/i').
 You can use the following variables: %{alarm_name}, %{state_value}, %{metric_name}, %{last_update}
 
 =item B<--memory>

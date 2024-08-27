@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -513,11 +513,11 @@ Set hostname or IP of Proxmox VE Cluster node
 
 =item B<--port>
 
-Set Proxmox VE Port (Default: '8006')
+Set Proxmox VE Port (default: '8006')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--api-username>
 
@@ -531,7 +531,7 @@ Set Proxmox VE Password
 
 =item B<--realm>
 
-Set Proxmox VE Realm (pam, pve or custom) (Default: 'pam').
+Set Proxmox VE Realm (pam, pve or custom) (default: 'pam').
 
 =item B<--timeout>
 

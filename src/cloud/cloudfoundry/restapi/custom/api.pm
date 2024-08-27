@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -269,7 +269,7 @@ Cloud Foundry API hostname.
 
 =item B<--api-path>
 
-Cloud Foundry API url path (Default: '/v2')
+Cloud Foundry API url path (default: '/v2')
 
 =item B<--api-username>
 
@@ -281,19 +281,19 @@ Cloud Foundry API password.
 
 =item B<--port>
 
-Cloud Foundry API port (Default: 443)
+Cloud Foundry API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 
-Authorization endpoint username (Default: 'cf')
+Authorization endpoint username (default: 'cf')
 
 =item B<--password>
 
-Authorization endpoint password (Default: '')
+Authorization endpoint password (default: '')
 
 =item B<--timeout>
 

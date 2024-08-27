@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,8 +182,8 @@ Check files modified time.
 
 =item B<--folder>
 
-Folder to check. (No WQL wildcard allowed)
-Ex: 'C:/Users/Administrator/'.
+Folder to check (no WQL wildcard allowed).
+Example: 'C:/Users/Administrator/'.
 
 =item B<--filter-filename>
 

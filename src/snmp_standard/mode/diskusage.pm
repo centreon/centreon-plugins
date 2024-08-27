@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -123,6 +123,7 @@ sub new {
         'diskpath:s'              => { name => 'diskpath' }, # legacy
         'regexp'                  => { name => 'use_regexp' }, # legacy
         'regexp-isensitive'       => { name => 'use_regexpi' }, # legacy
+        'regexp-insensitive'      => { name => 'use_regexpi' }, # legacy
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
@@ -373,7 +374,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--filter-counters>
 
-Filter counters to be displayed (Can be: 'usage', 'count', 'inodes').
+Filter counters to be displayed (can be: 'usage', 'count', 'inodes').
 
 =item B<--disk-index>
 
@@ -395,16 +396,16 @@ Time in minutes before reloading cache file (default: 180).
 
 Modify the disk name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 
-Display cache disk path datas.
+Display cache disk path data.
 
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none) (results like 'df' command).
+The value is in percent of total (default: none) (results like 'df' command).
 
 =item B<--force-use-mib-percent>
 
@@ -416,7 +417,7 @@ Force to use 32 bits counters. Should be used when 64 bits high/low components a
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
+Thresholds (can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
 
 =back
 

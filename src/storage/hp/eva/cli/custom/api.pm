@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -178,7 +178,7 @@ Manager system.
 
 =item B<--timeout>
 
-Set timeout (Default: 50).
+Set timeout (default: 50).
 
 =item B<--sudo>
 
@@ -186,16 +186,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'sssu_linux_x64').
+Command to get information (default: 'sssu_linux_x64').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =back
 

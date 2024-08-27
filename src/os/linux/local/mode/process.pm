@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -382,7 +382,7 @@ bash -c 'tail -n +1 /proc/{pid1,pid2,...}/{statm,stat,io}'
 
 =item B<--add-cpu>
 
-Monitor cpu usage.
+Monitor CPU usage.
 
 =item B<--add-memory>
 

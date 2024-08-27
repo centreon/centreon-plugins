@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and cluster monitoring for
@@ -152,21 +152,21 @@ More information on'https://apidocs.netbiter.net/?page=methods&show=getSystemLog
 
 =item B<--system-id>
 
-Set the Netbiter Argos System ID (Mandatory).
+Set the Netbiter Argos System ID (mandatory).
 
 =item B<--filter-id>
 
-Filter by sensor ID (Regexp can be used).
+Filter by sensor ID (regexp can be used).
 Example: --filter-id='^1234.5678$'
 
 =item B<--filter-device>
 
-Filter by device name (Regexp can be used).
+Filter by device name (regexp can be used).
 Example: --filter-device='^ZONE(1|2)$'
 
 =item B<--filter-name>
 
-Filter by sensor name (Regexp can be used).
+Filter by sensor name (regexp can be used).
 Example: --filter-name='^temperature_(in|out)$'
 
 =item B<--warning-sensor-value>

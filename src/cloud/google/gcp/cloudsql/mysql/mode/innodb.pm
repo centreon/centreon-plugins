@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -152,20 +152,20 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
+Set dimension name (default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
 
 =item B<--dimension-operator>
 
-Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 
-Set dimension value (Required).
+Set dimension value (required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
-'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
+Filter metrics (can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
+'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -173,13 +173,13 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
+Thresholds (can be: 'fsyncs-calls', 'fsync-calls-logfile',
 'pages-read', 'pages-written').
 
 =item B<--per-second>

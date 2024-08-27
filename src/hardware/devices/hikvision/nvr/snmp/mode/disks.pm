@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -210,14 +210,14 @@ Filter disks by name (can be a regexp).
 Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning--status>
+=item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /reparing|formatting/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /reparing|formatting/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /abnormal|smartfailed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /abnormal|smartfailed/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

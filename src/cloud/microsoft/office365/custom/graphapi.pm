@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -529,15 +529,15 @@ Set Office 365 client secret.
 
 =item B<--login-endpoint>
 
-Set Office 365 login endpoint URL (Default: 'https://login.microsoftonline.com')
+Set Office 365 login endpoint URL (default: 'https://login.microsoftonline.com')
 
 =item B<--graph-endpoint>
 
-Set Office 365 graph endpoint URL (Default: 'https://graph.microsoft.com')
+Set Office 365 graph endpoint URL (default: 'https://graph.microsoft.com')
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

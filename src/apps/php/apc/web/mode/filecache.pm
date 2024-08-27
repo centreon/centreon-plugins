@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -252,7 +252,7 @@ Check file cache informations.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host
 
 =item B<--port>
 
@@ -264,7 +264,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/apc.php')
+Set path to get server-status page in auto mode (default: '/apc.php')
 
 =item B<--credentials>
 
@@ -272,23 +272,23 @@ Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--basic>
 
-Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
 Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 30)
+Threshold for HTTP timeout (default: 30)
 
 =item B<--warning-*>
 

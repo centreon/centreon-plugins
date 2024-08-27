@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -234,28 +234,28 @@ Remote hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 8086)
+Port used (default: 8086)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--username>
 
-Specify username for authentication.
+Specify the username for authentication.
 
 =item B<--password>
 
-Specify password for authentication.
+Specify the password for authentication.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =item B<--unknown-http-status>
 
 Threshold unknown for http response code.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+(default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
 

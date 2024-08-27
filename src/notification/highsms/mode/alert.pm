@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -122,11 +122,11 @@ url of the HighSMS Server.
 
 =item B<--port>
 
-Port used by HighSMS API. (Default: 443)
+Port used by HighSMS API. (default: 443)
 
 =item B<--proto>
 
-Specify http or https protocol. (Default: https)
+Specify http or https protocol. (default: https)
 
 =item B<--username>
 

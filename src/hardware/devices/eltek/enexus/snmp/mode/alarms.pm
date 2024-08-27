@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -152,17 +152,17 @@ Filter name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{state}, %{status}, %{lastOpError}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{name}, %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "alarm").
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "alarm").
 You can use the following variables: %{name}, %{status}
 
 =item B<--warning-*> B<--critical-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'api-requests' => 'network::cisco::meraki::cloudcontroller::restapi::mode::apirequests',
-        'cache'        => 'network::cisco::meraki::cloudcontroller::restapi::mode::cache',
-        'devices'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
-        'discovery'    => 'network::cisco::meraki::cloudcontroller::restapi::mode::discovery',
-        'list-devices' => 'network::cisco::meraki::cloudcontroller::restapi::mode::listdevices',
-        'list-tags'    => 'network::cisco::meraki::cloudcontroller::restapi::mode::listtags',
-        'networks'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
+        'api-requests'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::apirequests',
+        'cache'            => 'network::cisco::meraki::cloudcontroller::restapi::mode::cache',
+        'devices'          => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
+        'discovery'        => 'network::cisco::meraki::cloudcontroller::restapi::mode::discovery',
+        'list-devices'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::listdevices',
+        'list-tags'        => 'network::cisco::meraki::cloudcontroller::restapi::mode::listtags',
+        'list-vpn-tunnels' => 'network::cisco::meraki::cloudcontroller::restapi::mode::listvpntunnels',
+        'networks'         => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks',
+        'vpn-tunnels'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::vpntunnels'
     };
 
     $self->{custom_modes}->{api} = 'network::cisco::meraki::cloudcontroller::restapi::custom::api';

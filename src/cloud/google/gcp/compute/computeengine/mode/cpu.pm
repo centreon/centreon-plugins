@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,20 +109,20 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'metric.labels.instance_name').
+Set dimension name (default: 'metric.labels.instance_name').
 
 =item B<--dimension-operator>
 
-Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--dimension-value>
 
-Set dimension value (Required).
+Set dimension value (required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/cpu/utilization',
-'instance/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (can be: 'instance/cpu/utilization',
+'instance/cpu/reserved_cores') (can be a regexp).
 
 =item B<--timeframe>
 
@@ -130,13 +130,13 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'utilization', 'cores-reserved').
+Thresholds (can be: 'utilization', 'cores-reserved').
 
 =back
 

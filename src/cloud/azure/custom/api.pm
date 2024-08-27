@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -1257,7 +1257,7 @@ To connect to the Azure Rest API, you must register an application.
 
 Follow the 'How-to guide' at https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
-The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
+The application needs the 'Monitoring Reader' role (see https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 
@@ -1283,11 +1283,11 @@ Set Azure client secret.
 
 =item B<--login-endpoint>
 
-Set Azure login endpoint URL (Default: 'https://login.microsoftonline.com')
+Set Azure login endpoint URL (default: 'https://login.microsoftonline.com')
 
 =item B<--management-endpoint>
 
-Set Azure management endpoint URL (Default: 'https://management.azure.com')
+Set Azure management endpoint URL (default: 'https://management.azure.com')
 
 =item B<--timeframe>
 
@@ -1295,11 +1295,11 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--interval>
 
-Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 
@@ -1310,7 +1310,7 @@ undefined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

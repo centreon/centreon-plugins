@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,12 +204,12 @@ You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-pool-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{raid_status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (default: '%{raid_status} =~ /degraded/i').
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--critical-pool-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{raid_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{raid_status} =~ /failed/i').
 You can use the following variables: %{raid_status}, %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

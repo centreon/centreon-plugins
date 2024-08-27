@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -218,37 +218,37 @@ Check Stormshield nodes status (state, role and health) and dead nodes.
 
 =item B<--filter-node>
 
-Filter name with regexp (based on serial)
+Filter name with regexp (based on serial).
 
 =item B<--warning-health>
 
-Warning on health level. (e.g --warning 90:)
+Warning threshold on health level (example: --warning 90:).
 
 =item B<--critical-health>
 
-Critical on health level. (e.g --critical 80:)
+Critical threshold on health level (example --critical 80:).
 
 =item B<--warning-dead-nodes>
 
-Warning on deadnode (absolute unless --percent is used)
+Warning threshold on deadnode (absolute unless --percent is used).
 
 =item B<--critical-dead-nodes>
 
-Critical on deadnode (absolute unless --percent is used)
+Critical threshold on deadnode (absolute unless --percent is used).
 
 =item B<--warning-state>
 
 Set warning threshold for state.
-You can use the following variables: %{state}, %{role}
+You can use the following variables: %{state}, %{role}.
 
 =item B<--critical-state>
 
-Set critical threshold for state. (Default: '%{state} =~ /offline/i').
-You can use the following variables: %{state}, %{role}
+Set critical threshold for state. (default: '%{state} =~ /offline/i').
+You can use the following variables: %{state}, %{role}.
 
 =item B<--percent>
 
-Set this option if you want to warn on percent 
+Set this option if you want to warn on percent .
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,35 +107,35 @@ url of the Foxbox Server.
 
 =item B<--urlpath>
 
-The url path. (Default: /source/send_sms.php)
+The url path. (default: /source/send_sms.php)
 
 =item B<--foxbox-username>
 
-Specify username for API authentification (Default: centreon).
+Specify username for API authentification (default: centreon).
 
 =item B<--foxbox-password>
 
-Specify password for API authentification (Required).
+Specify password for API authentification (required).
 
 =item B<--proto>
 
-Specify http or https protocol. (Default: http)
+Specify http or https protocol. (default: http)
 
 =item B<--phonenumber>
 
-Specify phone number (Required).
+Specify phone number (required).
 
 =item B<--texto>
 
-Specify the content of your SMS message (Required).
+Specify the content of your SMS message (required).
 
 =item B<--from>
 
-Specify the sender. It should NOT start with a number and have a max of 11 characters (Default: centreon).
+Specify the sender. It should NOT start with a number and have a max of 11 characters (default: centreon).
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 10).
+Timeout in seconds for the command (default: 10).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -331,8 +331,8 @@ Kubernetes CLI (kubectl)
 
 =item B<--config-file>
 
-Kubernetes configuration file path (Default: '~/.kube/config').
-(Example: --config-file='/root/.kube/config').
+Kubernetes configuration file path (default: '~/.kube/config').
+(example: --config-file='/root/.kube/config').
 
 =item B<--context>
 
@@ -344,7 +344,7 @@ Set namespace to get informations.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =item B<--sudo>
 
@@ -352,16 +352,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'kubectl').
+Command to get information (default: 'kubectl').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =item B<--proxyurl>
 

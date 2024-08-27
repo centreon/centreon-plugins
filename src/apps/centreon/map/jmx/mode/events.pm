@@ -1,4 +1,4 @@
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,7 +114,7 @@ perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='session')
+(example: --filter-counters='session')
 
 =item B<--warning-*>
 

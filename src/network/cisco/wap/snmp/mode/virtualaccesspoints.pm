@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -174,7 +174,7 @@ You can use the following variables: %{description}, %{admin_status}, %{operatio
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admin_status} eq "up" and %{operational_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_status} eq "up" and %{operational_status} eq "down"').
 You can use the following variables: %{description}, %{admin_status}, %{operational_status}
 
 =item B<--warning-*> B<--critical-*>

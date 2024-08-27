@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -78,9 +78,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {});
-    
+
+    $options{options}->add_options(arguments => {
+        'exclude-id:s' => { name => 'exclude_id' }
+    });
+
     return $self;
 }
 
@@ -102,11 +104,15 @@ sub manage_selection {
         next if ($oid !~ /^(.*)\.(.*?)\.(.*?)$/);
         my ($base, $instance) = ($1 . '.' . $2, $3);
         next if (!defined($oids->{$base}));
-        next if ($results->{$oid} !~ /\d/ || $results->{$oid} == 0);
+        next if ($results->{$oid} !~ /\d/);
+        next if (defined($self->{option_results}->{exclude_id}) && $self->{option_results}->{exclude_id} ne '' &&
+                $self->{option_results}->{exclude_id} =~ /$instance(,|\h|$)/);
 
         $self->{line}->{$instance} = { display => $instance } if (!defined($self->{line}->{$instance}));
         $self->{line}->{$instance}->{$oids->{$base}->{name}} = $results->{$oid} * $oids->{$base}->{factor};
     }
+
+
 }
 
 1;
@@ -123,6 +129,11 @@ Check input lines metrics (frequence, voltage, current and true power).
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^power$'
+
+=item B<--exclude-id>
+
+Define the IDs of the instances to exclude in result.
+Example: --exclude-id=2,3
 
 =item B<--warning-*> B<--critical-*>
 

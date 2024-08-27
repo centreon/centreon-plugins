@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,6 +134,20 @@ sub check_options {
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
 
+sub determine_operational_status {
+    my ($operational_status) = @_;
+
+    if ( defined($operational_status) ) {
+        if ( defined($node_vm_integration_service_operational_status->{ $operational_status}) ) {
+            return $node_vm_integration_service_operational_status->{ $operational_status };
+        } else {
+            return $operational_status;
+        }
+    } else {
+        return '-';
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -235,16 +249,13 @@ sub manage_selection {
         my $services = (ref($node->{services}) eq 'ARRAY') ? $node->{services} : [ $node->{services} ];
 
         foreach my $service (@$services) {
+
             $self->{vm}->{$id}->{service}->{$id2} = {
                 vm => $node->{name},
                 service => $service->{service},
                 enabled => $service->{enabled} =~ /True|1/i ? 1 : 0,
-                primary_status => 
-                    defined($service->{primary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} } : '-',
-                secondary_status =>
-                    defined($service->{secondary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} } : '-'
+                primary_status => determine_operational_status($service->{primary_operational_status}),
+                secondary_status => determine_operational_status($service->{secondary_operational_status})
             };
             $id2++;
         }
@@ -265,7 +276,7 @@ Check virtual machine integration services on hyper-v node.
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -273,16 +284,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -302,28 +313,28 @@ Filter by VM notes (can be a regexp).
 
 =item B<--filter-status>
 
-Filter virtual machine status (can be a regexp) (Default: 'running').
+Filter virtual machine status (can be a regexp) (default: 'running').
 
 =item B<--warning-global-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{integration_service_state} =~ /Update required/i').
+Define the conditions to match for the status to be WARNING (default: '%{integration_service_state} =~ /Update required/i').
 You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--critical-global-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{vm}, %{integration_service_state}, 
 %{integration_service_version}, %{state}
 
 =item B<--warning-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{primary_status} !~ /Ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{primary_status} !~ /Ok/i').
 You can use the following variables: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =back

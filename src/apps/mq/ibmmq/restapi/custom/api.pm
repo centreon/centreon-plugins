@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -174,15 +174,15 @@ Administrative server hostname.
 
 =item B<--port>
 
-Port used (Default: 9443)
+Port used (default: 9443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--url-path>
 
-API url path (Default: '/ibmmq/rest/v1/admin')
+API url path (default: '/ibmmq/rest/v1/admin')
 
 =item B<--api-username>
 
@@ -194,7 +194,7 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =back
 

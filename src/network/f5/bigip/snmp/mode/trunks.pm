@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -461,11 +461,11 @@ Filter by trunks name (regexp can be used).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--speed>
 
-Set trunk speed in Mbps (Default: sysTrunkOperBw).
+Set trunk speed in Mbps (default: sysTrunkOperBw).
 If not set and sysTrunkOperBw OID value is 0,
 percentage thresholds will not be applied on traffic metrics.
 
@@ -485,7 +485,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /uninitialized|down/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /uninitialized|down/').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-interface-status>

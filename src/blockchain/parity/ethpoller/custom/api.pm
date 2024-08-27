@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -181,15 +181,15 @@ Parity eth-poller API hostname.
 
 =item B<--port>
 
-API port (Default: 8000)
+API port (default: 8000)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--url-path>
 
-API URL path (Default: '')
+API URL path (default: '')
 
 =item B<--timeout>
 

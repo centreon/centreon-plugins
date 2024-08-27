@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -158,21 +158,21 @@ Default statistic: 'average' / Valid statistic: 'average'.
 
 =item B<--id>
 
-Set the instance id (Required) (can be defined multiple times).
+Set the instance ID (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
-(Can be a regexp).
+Filter metrics (can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
+(can be a regexp).
 
 =item B<--warning-*>
 
-Thresholds warning (Can be: 'errorrate-total',
+Warning thresholds (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =item B<--critical-*>
 
-Thresholds critical (Can be: 'errorrate-total',
+Critical thresholds (can be: 'errorrate-total',
 'errorrate-4xx', 'errorrate-5xx').
 
 =back

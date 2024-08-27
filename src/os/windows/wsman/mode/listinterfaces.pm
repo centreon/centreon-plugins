@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,7 +52,7 @@ my $map_status = {
     7  => 'mediaDisconnect', 
     8  => 'auth', 
     9  => 'authSucceeded', 
-    10 => 'ÁuthFailed', 
+    10 => 'AuthFailed', 
     11 => 'invalidAddress', 
     12 => 'credentialsRequired'
 };

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -196,12 +196,12 @@ List virtual machine resources sizes.
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--filter-type>
 
 Filter by virtual machine type (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
+(can be: 'general', 'compute', 'memory', 'storage', 'gpu', 'high_performance')
 
 =item B<--filter-size>
 

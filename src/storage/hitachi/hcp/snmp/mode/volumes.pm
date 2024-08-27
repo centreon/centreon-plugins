@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -227,7 +227,7 @@ Check volumes.
 
 =item B<--filter-node-id>
 
-Filter volumes by node id (can be a regexp).
+Filter volumes by node ID (can be a regexp).
 
 =item B<--unknown-volume-status>
 
@@ -236,12 +236,12 @@ You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-volume-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--critical-volume-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /broken/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /broken/').
 You can use the following variables: %{status}, %{node_id}, %{label}
 
 =item B<--warning-*> B<--critical-*>

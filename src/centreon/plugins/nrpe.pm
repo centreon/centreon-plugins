@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -423,15 +423,15 @@ NRPE class
 
 =item B<--nrpe-version>
 
-Version: 2 for NRPE v2 (Default), 3 for NRPE v3, 4 for NRPE v4.
+Version: 2 for NRPE v2 (default), 3 for NRPE v3, 4 for NRPE v4.
 
 =item B<--nrpe-port>
 
-Port (Default: 5666).
+Port (default: 5666).
 
 =item B<--nrpe-payload>
 
-Buffer payload (For v2 only) (Default: 1024).
+Buffer payload (For v2 only) (default: 1024).
 
 =item B<--nrpe-bindaddr>
 
@@ -447,7 +447,7 @@ Use IPv6 only
 
 =item B<--nrpe-timeout>
 
-Timeout in secondes (Default: 10).
+Timeout in seconds (default: 10).
 
 =item B<--ssl-opt>
 

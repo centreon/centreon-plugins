@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -471,11 +471,11 @@ Set Redis database index.
 
 =item B<--failback-file>
 
-Failback on a local file if redis connection failed.
+Failback on a local file if Redis connection fails.
 
 =item B<--memexpiration>
 
-Time to keep data in seconds (Default: 86400).
+Time to keep data in seconds (default: 86400).
 
 =item B<--statefile-dir>
 
@@ -483,7 +483,7 @@ Define the cache directory (default: '/var/lib/centreon/centplugins').
 
 =item B<--statefile-suffix>
 
-Define a suffix to customize the statefile name (Default: '').
+Define a suffix to customize the statefile name (default: '').
 
 =item B<--statefile-concat-cwd>
 
@@ -501,7 +501,7 @@ Define the key to encrypt/decrypt the cache.
 
 =item B<--statefile-cipher>
 
-Define the cipher algorithm to encrypt the cache (Default: 'AES').
+Define the cipher algorithm to encrypt the cache (default: 'AES').
 
 =back
 

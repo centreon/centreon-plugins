@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -162,17 +162,17 @@ Check hardware.
 
 =item B<--unknown-temperature-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default : '%{status} eq "unknown"').
+Define the conditions to match for the status to be UNKNOWN (default : '%{status} eq "unknown"').
 You can use the following variables: %{status}, %{class}
 
 =item B<--warning-temperature-status>
 
-Define the conditions to match for the status to be WARNING (Default : '%{status} eq "warn"').
+Define the conditions to match for the status to be WARNING (default : '%{status} eq "warn"').
 You can use the following variables: %{status}, %{class}
 
 =item B<--critical-temperature-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "hot"');
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "hot"');
 You can use the following variables: %{status}, %{class}
 
 =item B<--unknown-psu-status>
@@ -187,7 +187,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "bad"');
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "bad"');
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

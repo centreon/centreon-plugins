@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -159,7 +159,7 @@ You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_st
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ike_phase1_state} eq "down" or %{state} ne "active"').
+Define the conditions to match for the status to be CRITICAL (default: '%{ike_phase1_state} eq "down" or %{state} ne "active"').
 You can use the following variables: %{ike_phase1_state}, %{state}, %{monitor_status}, %{display}.
 
 =item B<--warning-*> B<--critical-*>

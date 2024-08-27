@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,14 +135,14 @@ Check components.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'ad' (audio device), 'aic' (audio input connectors), 'aoc' (audio output connectors),
 'camera', 'st' (speakerTrack), 'software', 'temperature', 'vic' (video input connectors),
 'vis' (video input source), 'voc', (video output connectors), 'webex'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter='aic,Microphone.1'
 
 =item B<--no-component>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -156,19 +156,19 @@ List devices.
 
 =item B<--filter-network-id>
 
-Filter devices by network id (Can be a regexp).
+Filter devices by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (Can be a regexp).
+Filter devices by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter devices by organization name (Can be a regexp).
+Filter devices by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter devices by tags (Can be a regexp).
+Filter devices by tags (can be a regexp).
 
 =back
 

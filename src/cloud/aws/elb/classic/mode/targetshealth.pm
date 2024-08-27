@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -223,11 +223,11 @@ Default statistic: 'average' / Most useful statistics: 'average', 'minimum', 'ma
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
@@ -235,12 +235,12 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HealthyHostCount', 'UnHealthyHostCount') 
-(Can be a regexp).
+Filter metrics (can be: 'HealthyHostCount', 'UnHealthyHostCount') 
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'healthyhostcount', 'unhealthyhostcount').
+Warning thresholds (can be: 'healthyhostcount', 'unhealthyhostcount').
 
 =back
 

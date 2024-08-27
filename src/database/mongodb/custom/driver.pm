@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -210,7 +210,7 @@ Port used by MongoDB.
 
 =item B<--protocol>
 
-Protocol used (Default: mongodb)
+Protocol used (default: mongodb)
 DNS Seedlist Connection Format can be specified, i.e. 'mongodb+srv'
 
 =item B<--username>
@@ -223,7 +223,7 @@ MongoDB password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =item B<--ssl-opt>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and cluster monitoring for
@@ -199,7 +199,7 @@ More information on'https://apidocs.netbiter.net/?page=methods&show=getSystemAla
 
 =item B<--system-id>
 
-Set the Netbiter Argos System ID (Mandatory).
+Set the Netbiter Argos System ID (mandatory).
 
 =item B<--filter-acked>
 
@@ -217,22 +217,22 @@ Only one value can be set (no multiple values).
 
 =item B<--warning-active-status>
 
-Set warning threshold for active status (Default: '').
+Set warning threshold for active status (default: '').
 Typical syntax: --warning-active-status='%{active} =~ "true"'
 
 =item B<--critical-active-status>
 
-Set critical threshold for active status (Default: '%{active} =~ "true"').
+Set critical threshold for active status (default: '%{active} =~ "true"').
 Typical syntax: --critical-active-status='%{active} =~ "true"'
 
 =item B<--warning-acked-status>
 
-Set warning threshold for acked status (Default: '%{acked} =~ "false"').
+Set warning threshold for acked status (default: '%{acked} =~ "false"').
 Typical syntax: --warning-acked-status='%{acked} =~ "false"'
 
 =item B<--critical-acked-status>
 
-Set critical threshold for acked status (Default: '').
+Set critical threshold for acked status (default: '').
 Typical syntax: --critical-acked-status='%{acked} =~ "false"'
 
 =item B<--warning-*> B<--critical-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -275,15 +275,15 @@ Centreon address.
 
 =item B<--url-path>
 
-API url path (Default: '/centreon/api/')
+API url path (default: '/centreon/api/')
 
 =item B<--api-port>
 
-API port (Default: 80)
+API port (default: 80)
 
 =item B<--api-proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-username>
 

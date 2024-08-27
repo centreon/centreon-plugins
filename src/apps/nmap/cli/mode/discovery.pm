@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -196,7 +196,7 @@ Timeout defaults to 120 seconds.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (Mandatory).
+resources (must be <ip>/<cidr> format) (mandatory).
 
 =item B<--nmap-options>
 

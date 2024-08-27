@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,7 +132,7 @@ Check status of alcatel hardware (AlcatelIND1Chassis.mib).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'other', 'unknown', 'chassis', 'backplane', 'container', 'psu', 'fan', 
 'sensor', 'module', 'port, 'stack'.
 Some not exists ;)

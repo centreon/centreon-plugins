@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,17 +120,17 @@ Check controller status.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{h248_link_status} =~ /down/i || %{registration_state} =~ /notRegistred/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{h248_link_status} =~ /down/i || %{registration_state} =~ /notRegistred/i').
 You can use the following variables: %{h248_link_status}, %{registration_state}
 
 =back

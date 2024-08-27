@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -266,17 +266,17 @@ Explicitly ask vmware to refreshes free-space and capacity values (slower).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{accessible} !~ /^true|1$/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{accessible} !~ /^true|1$/i').
 You can use the following variables: %{accessible}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{accessible}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{accessible}
 
 =item B<--warning-*> B<--critical-*>

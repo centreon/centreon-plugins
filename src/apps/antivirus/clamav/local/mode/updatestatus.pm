@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -239,40 +239,40 @@ The system configuration is used by default.
 
 =item B<--maindb-file>
 
-Antivirus main.cvd file (Default: '/var/lib/clamav/main.cvd').
+Antivirus main.cvd file (default: '/var/lib/clamav/main.cvd').
 
 =item B<--dailydb-file>
 
-Antivirus daily.cvd file (Default: '/var/lib/clamav/daily.cvd').
+Antivirus daily.cvd file (default: '/var/lib/clamav/daily.cvd').
 
 =item B<--warning-engine-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{last_engine_version}, %{current_engine_version}
 
 =item B<--critical-engine-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{last_engine_version} ne %{current_engine_version}').
+Define the conditions to match for the status to be CRITICAL (default: '%{last_engine_version} ne %{current_engine_version}').
 You can use the following variables: %{last_engine_version}, %{current_engine_version}
 
 =item B<--warning-maindb-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--critical-maindb-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{last_maindb_version} ne %{current_maindb_version}').
+Define the conditions to match for the status to be CRITICAL (default: '%{last_maindb_version} ne %{current_maindb_version}').
 You can use the following variables: %{last_maindb_version}, %{current_maindb_version}, %{current_maindb_timediff}
 
 =item B<--warning-dailydb-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =item B<--critical-dailydb-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000').
+Define the conditions to match for the status to be CRITICAL (default: '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000').
 You can use the following variables: %{last_dailydb_version}, %{current_dailydb_version}, %{current_dailydb_timediff}
 
 =back

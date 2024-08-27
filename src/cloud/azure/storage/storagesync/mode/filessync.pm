@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,13 +120,13 @@ Check Azure Storage Sync Service Files Synced and Errors.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=files-synced --custommode=api
 --resource=<syncservice_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-item-errors='15' --critical-item-errors='20'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=files-synced --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'
@@ -138,11 +138,11 @@ Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-*>
 

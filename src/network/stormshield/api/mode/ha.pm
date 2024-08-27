@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -236,7 +236,7 @@ You can use the following variables: %{state}, %{name}
 
 =item B<--unknown-member-link-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{linkStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{linkStatus} =~ /unknown/i').
 You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--warning-member-link-status>
@@ -246,7 +246,7 @@ You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--critical-member-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{linkStatus} =~ /failed|failing/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{linkStatus} =~ /failed|failing/i').
 You can use the following variables: %{linkStatus}, %{name}
 
 =item B<--unknown-member-config>
@@ -256,7 +256,7 @@ You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--warning-member-config>
 
-Define the conditions to match for the status to be WARNING  (Default: '%{isConfigSync} eq "no"').
+Define the conditions to match for the status to be WARNING  (default: '%{isConfigSync} eq "no"').
 You can use the following variables: %{isConfigSync}, %{name}
 
 =item B<--critical-member-config>

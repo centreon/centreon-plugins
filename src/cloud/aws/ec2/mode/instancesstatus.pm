@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -265,7 +265,7 @@ Example: --filter-counters='^running$'
 
 =item B<--filter-instanceid>
 
-Filter by instance id (can be a regexp).
+Filter by instance ID (can be a regexp).
 
 =item B<--add-uptime>
 

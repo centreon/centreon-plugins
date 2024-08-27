@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -145,24 +145,24 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::virtualnetwork::plugin 
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--resource>
 
-Set virtual network name (Required).
+Set virtual network name (required).
 
 =item B<--filter-name>
 
-Filter peering name (Can be a regexp).
+Filter peering name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{peering_state}, %{provisioning_state}, %{peer}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (default: '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"').
 You can use the following variables: %{peering_state}, %{provisioning_state}, %{peer}, %{display}
 
 =back

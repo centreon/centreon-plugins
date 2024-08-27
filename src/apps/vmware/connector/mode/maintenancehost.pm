@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -144,27 +144,27 @@ Search in following cluster(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{status}
 
 =item B<--warning-maintenance-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{maintenance}
 
 =item B<--critical-maintenance-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{maintenance} !~ /false/').
+Define the conditions to match for the status to be CRITICAL (default: '%{maintenance} !~ /false/').
 You can use the following variables: %{maintenance}
 
 

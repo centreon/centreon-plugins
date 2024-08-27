@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -266,7 +266,7 @@ Check adaptive flash cache.
 
 =item B<--filter-node-id>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by ID (can be a regexp).
 
 =item B<--filter-volume-name>
 

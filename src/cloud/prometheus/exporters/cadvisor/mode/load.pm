@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,11 +141,11 @@ Check containers load.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
 
 =item B<--warning-load>
 

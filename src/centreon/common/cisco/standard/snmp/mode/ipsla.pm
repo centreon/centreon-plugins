@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -949,7 +949,7 @@ Check RTT Controls (CISCO-RTT-MON)
 
 =item B<--filter-tag>
 
-Filter tag (Default: '.*')
+Filter tag (default: '.*')
 
 =item B<--threshold-overload>
 

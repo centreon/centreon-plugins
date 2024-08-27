@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,18 +198,18 @@ Default statistic: 'sum' / Valid statistics are: sum, average.
 
 =item B<--topic-name>
 
-Filter on a specific SNS topic (Can be multiple, one instance per --topic-name option).
+Filter on a specific SNS topic (can be multiple, one instance per --topic-name option).
 Example: --topic-name="my_sns_topic_1" --topic-name="my_sns_topic_2".
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NumberOfMessagesPublished', 'NumberOfNotificationsDelivered',
+Filter metrics (can be: 'NumberOfMessagesPublished', 'NumberOfNotificationsDelivered',
 'NumberOfNotificationsFailed', 'NumberOfNotificationsFilteredOut').
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be 'notifications-published', 'notifications-delivered',
+Warning thresholds (can be 'notifications-published', 'notifications-delivered',
 'notifications-failed', 'notifications-filtered).
 
 =back

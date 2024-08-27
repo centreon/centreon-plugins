@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -354,7 +354,7 @@ You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--critical-peer-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{role_last}').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{role_last}').
 You can use the following variables: %{role}, %{role_last}, %{domain_id}
 
 =item B<--unknown-keepalive-status>
@@ -369,7 +369,7 @@ You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--critical-keepalive-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{keepalive_status} ne "alive"').
+Define the conditions to match for the status to be CRITICAL (default: '%{keepalive_status} ne "alive"').
 You can use the following variables: %{keepalive_status}, %{domain_id}
 
 =item B<--unknown-link-status>
@@ -379,12 +379,12 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{link_status} =~ /downStar/i')
+Define the conditions to match for the status to be WARNING (default: '%{link_status} =~ /downStar/i')
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

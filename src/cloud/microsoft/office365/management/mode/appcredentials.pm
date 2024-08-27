@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -243,7 +243,7 @@ You can use the following variables: %{status}, %{id}, %{app_name}.
 
 =item B<--critical-key-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /expired/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired/i').
 You can use the following variables: %{status}, %{id}, %{app_name}.
 
 =item B<--warning-password-status>
@@ -253,13 +253,12 @@ You can use the following variables: %{status}, %{id}, %{app_name}.
 
 =item B<--critical-password-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /expired/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired/i').
 You can use the following variables: %{status}, %{id}, %{app_name}.
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is secondss.
 
 =item B<--warning-*> B<--critical-*>
 

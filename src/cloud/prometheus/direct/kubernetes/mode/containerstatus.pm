@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -207,20 +207,20 @@ Check container status.
 
 =item B<--container>
 
-Filter on a specific container (Must be a PromQL filter, Default: 'container=~".*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container=~".*"')
 
 =item B<--pod>
 
-Filter on a specific pod (Must be a PromQL filter, Default: 'pod=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /running/ || %{state} !~ /ready/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /running/ || %{state} !~ /ready/').
 You can use the following variables: %{status}, %{state}, %{reason}
 
 =item B<--warning-restarts-count>

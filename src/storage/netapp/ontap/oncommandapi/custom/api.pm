@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -202,15 +202,15 @@ NetApp hostname.
 
 =item B<--url-path>
 
-OnCommand API url path (Default: '/api/4.0/ontap')
+OnCommand API url path (default: '/api/4.0/ontap')
 
 =item B<--port>
 
-OnCommand API port (Default: 8443)
+OnCommand API port (default: 8443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 

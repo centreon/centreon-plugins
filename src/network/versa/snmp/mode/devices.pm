@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -178,7 +178,7 @@ Example: --filter-counters='cpu_load'
 
 =item B<--filter-vsn-id>
 
-Filter monitoring on vsn id (can be a regexp).
+Filter monitoring on vsn ID (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

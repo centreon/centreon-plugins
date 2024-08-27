@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -242,7 +242,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--step>
 
-Set the step of the metric query (Examples: '30s', '1m', '15m', '1h').
+Set the step of the metric query (examples: '30s', '1m', '15m', '1h').
 
 =item B<--hostname>
 
@@ -250,15 +250,15 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api/v1')
+API url path (default: '/api/v1')
 
 =item B<--port>
 
-API port (Default: 9090)
+API port (default: 9090)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--credentials>
 
@@ -266,19 +266,19 @@ Specify this option if you access the API with authentication
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--basic>
 
-Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
 Specify this option if you access the API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 
@@ -286,7 +286,7 @@ Set HTTP timeout
 
 =item B<--header>
 
-Set HTTP header (Can be multiple, example: --header='Authorization:Bearer ABCD')
+Set HTTP header (can be multiple, example: --header='Authorization:Bearer ABCD')
 
 Useful to access Prometheus API hosted in a specific environment.
 

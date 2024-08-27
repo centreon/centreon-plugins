@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -237,25 +237,25 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster').
+Set the instance type (required) (can be: 'cluster').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'VolumeBytesUsed', 'VolumeReadIOPs', 'VolumeWriteIOPs') 
-(Can be a regexp).
+Filter metrics (can be: 'VolumeBytesUsed', 'VolumeReadIOPs', 'VolumeWriteIOPs') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
+Warning thresholds ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
+Critical thresholds ($metric$ can be: 'volumebytesused', 'volumereadiops', 'volumewriteiops',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back

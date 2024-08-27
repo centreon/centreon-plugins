@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,12 +140,12 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Define the conditions to match for the status to be UNKNOWN  (Default: '%{replicationStatus} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN  (default: '%{replicationStatus} =~ /unknown/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{replicationStatus} =~ /not_synchronized/i').
+Define the conditions to match for the status to be WARNING (default: '%{replicationStatus} =~ /not_synchronized/i').
 You can use the following variables: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
@@ -160,7 +160,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /disconnected/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /disconnected/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--critical-node-status>

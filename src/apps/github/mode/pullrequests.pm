@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -118,19 +118,19 @@ Check GitHub's number of pull requests for a repository
 
 =item B<--hostname>
 
-IP Addr/FQDN of the GitHub's API (Default: api.gitub.com)
+IP Addr/FQDN of the GitHub's API (default: api.gitub.com)
 
 =item B<--port>
 
-Port used by GitHub's API (Default: '443')
+Port used by GitHub's API (default: '443')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Threshold for HTTP timeout (default: 5)
 
 =item B<--warning>
 

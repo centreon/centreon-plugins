@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -187,21 +187,21 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'asg', 'instance').
+Set the instance type (required) (can be: 'asg', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NetworkIn', 'NetworkOut', 
+Filter metrics (can be: 'NetworkIn', 'NetworkOut', 
 'NetworkPacketsIn', 'NetworkPacketsOut') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be 'network-in', 'network-out',
+Warning thresholds (can be 'network-in', 'network-out',
 'network-packets-in', 'network-packets-out'.
 
 =item B<--per-sec>

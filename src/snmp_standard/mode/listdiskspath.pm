@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,7 +39,8 @@ sub new {
         'diskpath:s'              => { name => 'diskpath' },
         'name'                    => { name => 'use_name' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive'      => { name => 'use_regexpi' },
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'skip-total-size-zero'    => { name => 'skip_total_size_zero' }
@@ -210,7 +211,7 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) ex: 1, 2,... (empty means 'check all disks path').
+Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 
@@ -220,7 +221,7 @@ Allows to use disk path name with option --diskpath instead of disk path oid ind
 
 Allows to use regexp to filter diskpath (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -228,7 +229,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 Modify the disk path name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--skip-total-size-zero>
 

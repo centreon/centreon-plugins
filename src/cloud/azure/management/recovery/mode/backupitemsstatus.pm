@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -180,19 +180,19 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::recovery::plugin --c
 
 =item B<--vault-name>
 
-Set vault name (Required).
+Set vault name (required).
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--filter-name>
 
-Filter item name (Can be a regexp).
+Filter item name (can be a regexp).
 
 =item B<--filter-vmid>
 
-Filter item virtualMachineId (Can be a regexp).
+Filter item virtualMachineId (can be a regexp).
 
 =item B<--filter-counters>
 
@@ -201,12 +201,12 @@ Example: --filter-counters='^total-completed$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{precheck_status}, %{last_backup_status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
+Define the conditions to match for the status to be CRITICAL (default: '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"').
 You can use the following variables: %{precheck_status}, %{last_backup_status}, %{display}
 
 =item B<--warning-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -225,7 +225,7 @@ Can be: 'num-active', 'num-idle'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'absolute').
+Units of thresholds (default: '%') ('%', 'absolute').
 
 =back
 

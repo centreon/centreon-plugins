@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,7 +167,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 =over 8
 
 =item B<--workspace-id>
-(Mandatory)
+(mandatory)
 Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>

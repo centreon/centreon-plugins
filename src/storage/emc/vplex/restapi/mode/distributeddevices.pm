@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -115,7 +115,7 @@ You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--critical-operational-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{operational_status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (default: '%{operational_status} ne "ok"').
 You can use the following variables: %{operational_status}, %{device_name}
 
 =item B<--warning-health-status>
@@ -125,7 +125,7 @@ You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--critical-health-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health_state} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (default: '%{health_state} ne "ok"').
 You can use the following variables: %{health_state}, %{device_name}
 
 =item B<--warning-service-status>
@@ -135,7 +135,7 @@ You can use the following variables: %{service_status}, %{device_name}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{service_status} ne "running"').
+Define the conditions to match for the status to be CRITICAL (default: '%{service_status} ne "running"').
 You can use the following variables: %{service_status}, %{device_name}
 
 =back

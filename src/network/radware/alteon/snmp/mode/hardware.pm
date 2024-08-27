@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -81,12 +81,12 @@ Check hardware (ALTEON-CHEETAH-SWITCH-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'temperature', 'psu', 'fan'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=cpu,1
 
 =item B<--no-component>

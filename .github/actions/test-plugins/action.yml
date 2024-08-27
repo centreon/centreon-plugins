@@ -1,0 +1,27 @@
+name: "test-plugins"
+description: "Test plugin that are passed as parameters"
+inputs:
+  cache-key:
+    description: "The packaged plugin's cache key"
+    required: true
+  plugin-list:
+    description: "List of plugins to install from the cache"
+    required: true
+  package-extension:
+    description: "Either 'rpm' or 'deb'. Needed to determine the package manager command (dnf or apt-get)."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: get the cached plugin
+      uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+      with:
+        path: ./*.${{ inputs.package-extension }}
+        key: ${{ inputs.cache-key }}
+        fail-on-cache-miss: true
+
+    - name: Install, test and remove plugin
+      shell: bash
+      run: python3 .github/scripts/test-all-plugins.py ${{ inputs.package-extension }} ${{ inputs.plugin-list }}

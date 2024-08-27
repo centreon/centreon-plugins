@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -150,7 +150,7 @@ Check management entities.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{role} =~ /unknown/ or %{status} eq "unknown" or %{services_status} eq "unknown"')
+Define the conditions to match for the status to be UNKNOWN (default: '%{role} =~ /unknown/ or %{status} eq "unknown" or %{services_status} eq "unknown"')
 You can use the following variables: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-status>
@@ -160,7 +160,7 @@ You can use the following variables: %{dn}, %{role}, %{services_status}, %{statu
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} =~ /electionFailed|inapplicable/ or %{status} eq "down" or %{services_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} =~ /electionFailed|inapplicable/ or %{status} eq "down" or %{services_status} eq "down"').
 You can use the following variables: %{dn}, %{role}, %{services_status}, %{status}
 
 =item B<--warning-*> B<--critical-*>

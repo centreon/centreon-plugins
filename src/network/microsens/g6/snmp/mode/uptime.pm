@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,7 @@ With that option, we manage the counter going back. But there is a few chance we
 
 =item B<--reboot-window>
 
-To be used with check-overload option. Time in milliseconds (Default: 5000)
+To be used with check-overload option. Time in milliseconds (default: 5000)
 You increase the chance of not missing a reboot if you decrease that value.
 
 =item B<--unit>

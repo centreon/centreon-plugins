@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,23 +136,23 @@ SQL statement that returns a number.
 
 =item B<--format>
 
-Output format (Default: 'SQL statement result : %i.').
+Output format (default: 'SQL statement result : %i.').
 
 =item B<--perfdata-unit>
 
-Perfdata unit in perfdata output (Default: '')
+Perfdata unit in perfdata output (default: '')
 
 =item B<--perfdata-name>
 
-Perfdata name in perfdata output (Default: 'value')
+Perfdata name in perfdata output (default: 'value')
 
 =item B<--perfdata-min>
 
-Minimum value to add in perfdata output (Default: '')
+Minimum value to add in perfdata output (default: '')
 
 =item B<--perfdata-max>
 
-Maximum value to add in perfdata output (Default: '')
+Maximum value to add in perfdata output (default: '')
 
 =item B<--warning-*> B<--critical-*>
 

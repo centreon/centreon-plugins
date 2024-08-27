@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -328,7 +328,7 @@ Port used by Selenium server.
 
 =item B<--browser>
 
-Browser used by Selenium server (Default : '*firefox').
+Browser used by Selenium server (default : '*firefox').
 
 =item B<--directory>
 
@@ -344,21 +344,21 @@ Don't stop if error.
 
 =item B<--timeout>
 
-Set scenario execution timeout in second (Default: 50).
+Set scenario execution timeout in second (default: 50).
 
 =item B<--action-timeout>
 
-Set action execution timeout in second (Default: 10).
+Set action execution timeout in second (default: 10).
 
 =item B<--warning-*>
 
 Warning threshold for steps state count
-(Can be: 'failed', 'successful').
+(can be: 'failed', 'successful').
 
 =item B<--critical-*>
 
 Critical threshold for steps state count
-(Can be: 'failed', 'successful').
+(can be: 'failed', 'successful').
 
 =item B<--warning-time-scenario>
 
@@ -387,7 +387,7 @@ Warning threshold for step state.
 =item B<--critical-state>
 
 Critical threshold for step state
-(Default: '%{state} !~ /OK/i').
+(default: '%{state} !~ /OK/i').
 
 =back
 

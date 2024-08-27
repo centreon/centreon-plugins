@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -195,7 +195,7 @@ Specify navicli command (default: 'SMcli').
 
 =item B<--extra-option>
 
-Set SMcli extras options (Default: '-quick -S').
+Set SMcli extras options (default: '-quick -S').
 
 =item B<--sudo>
 
@@ -220,7 +220,7 @@ Password to connect.
 
 =item B<--timeout>
 
-Set timeout for system command (Default: '30').
+Set timeout for system command (default: '30').
 
 =back
 

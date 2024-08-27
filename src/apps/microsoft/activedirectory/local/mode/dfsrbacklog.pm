@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -121,7 +121,7 @@ Check dfsr backlog.
 
 =item B<--sending-member>
 
-Name of the member that is sending the replication data. (Mandatory)
+Name of the member that is sending the replication data. (mandatory)
 
 =item B<--receiving-member>
 
@@ -129,15 +129,15 @@ Name of the member that is receiving the replication data. (NOT Mandatory)
 
 =item B<--replication-group>
 
-Name for the replication group. (Mandatory)
+Name for the replication group. (mandatory)
 
 =item B<--replicated-folder>
 
-Name name for the replicated folder. (Mandatory)
+Name name for the replicated folder. (mandatory)
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--warning-backlog>
 

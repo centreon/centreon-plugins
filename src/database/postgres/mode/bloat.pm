@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -215,7 +215,7 @@ Filter indexes by name (can be a regexp).
 
 =item B<--filter-size>
 
-Filter tables and indexes if size (in bytes) is over X.
+Filter tables and indexes by size (in bytes) keeping only sizes greater than the given value.
 
 =item B<--warning-*> B<--critical-*>
 

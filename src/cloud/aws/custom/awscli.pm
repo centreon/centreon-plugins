@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -1090,7 +1090,7 @@ Override AWS service endpoint URL if necessary.
 
 =item B<--region>
 
-Set the region name (Required).
+Set the region name (required).
 
 =item B<--period>
 
@@ -1102,7 +1102,7 @@ Set timeframe in seconds.
 
 =item B<--statistic>
 
-Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
+Set cloudwatch statistics (can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 
@@ -1111,7 +1111,7 @@ does not return value when not defined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--sudo>
 
@@ -1119,16 +1119,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'aws').
+Command to get information (default: 'aws').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 Only use for testing purpose, when you want to set ALL parameters of a command by yourself.
 
 =item B<--proxyurl>
@@ -1137,9 +1137,9 @@ Proxy URL if any
 
 =item B<--skip-ssl-check>
 
-Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party. 
+Avoid certificate issuer verification. Useful when AWS resources are hosted by a third party. 
 
-Note that it strips all stderr from the command result. Will be enhanced someday. Debug will only display CLI instead of evreything. 
+Note that it strips all stderr from the command result. Debug will only display CLI instead of evreything.
 
 =back
 

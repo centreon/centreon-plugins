@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -306,22 +306,22 @@ Critical threshold in percent for 'out' traffic.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "RU"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "RU"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--units>
 
-Units of thresholds (Default: 'b/s') ('%', 'b/s').
+Units of thresholds (default: 'b/s') ('%', 'b/s').
 Percent can be used only if --speed is set.
 
 =item B<--filter-interface>

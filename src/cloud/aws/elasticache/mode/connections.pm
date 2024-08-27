@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -228,25 +228,25 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the cluster name (Required) (can be defined multiple times).
+Set the cluster name (required) (can be defined multiple times).
 
 =item B<--node-id>
 
-Set the node id (Optional).
+Set the node ID (optional).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'CurrConnections', 'NewConnections') 
-(Can be a regexp).
+Filter metrics (can be: 'CurrConnections', 'NewConnections') 
+(can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'currconnections', 'newconnections',
+Warning thresholds ($metric$ can be: 'currconnections', 'newconnections',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'currconnections', 'newconnections',
+Critical thresholds ($metric$ can be: 'currconnections', 'newconnections',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--per-sec>

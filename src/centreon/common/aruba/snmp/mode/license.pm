@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,13 +172,13 @@ Check license (WLSX-SYSTEMEXT-MIB).
 
 Warning threshold.
 Can use special variables like:%{key},
-%{service}, %{flag}, %{expires} (Default: '')
+%{service}, %{flag}, %{expires} (default: '')
 
 =item B<--critical-status>
 
 Critical threshold.
 Can use special variables like: %{key},
-%{service}, %{flag}, %{expires} (Default: '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)')
+%{service}, %{flag}, %{expires} (default: '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)')
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -130,12 +130,12 @@ Check database status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{up} !~ /true/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{up} !~ /true/i').
 Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
 
 =back

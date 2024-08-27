@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -138,19 +138,19 @@ Define source ID to retrieve only one source health status (useful with service 
 
 =item B<--filter-name>
 
-Filter source name (Can be a regexp).
+Filter source name (can be a regexp).
 
 =item B<--filter-type>
 
-Filter source type (Can be a regexp).
+Filter source type (can be a regexp).
 
 =item B<--warning-health-status>
 
-Set warning threshold for each source health status (Default: none).
+Set warning threshold for each source health status (default: none).
 
 =item B<--critical-health-status>
 
-Set critical threshold for each source health status (Default: '%{status} ne "SOURCE_STATE_HEALTHY"').
+Set critical threshold for each source health status (default: '%{status} ne "SOURCE_STATE_HEALTHY"').
 
 =item B<--warning-sources-*> B<--critical-sources-*>
 

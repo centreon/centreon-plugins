@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -312,6 +312,7 @@ sub new {
         'filter-tags:s'                => { name => 'filter_tags' },
         'add-switch-ports'             => { name => 'add_switch_ports' },
         'filter-switch-port:s'         => { name => 'filter_switch_port' },
+        'filter-link-name:s'           => { name => 'filter_link_name' },
         'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
         'skip-clients'                 => { name => 'skip_clients' },
         'skip-performance'             => { name => 'skip_performance' },
@@ -373,6 +374,10 @@ sub add_uplink {
         foreach (@$links) {
             my $interface = lc($_->{interface});
             $interface =~ s/\s+//g;
+
+            next if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+                $interface !~ /$self->{option_results}->{filter_link_name}/);
+
             $self->{devices}->{ $options{serial} }->{device_links}->{$interface} = {
                 display => $interface,
                 link_status => lc($_->{status})
@@ -396,7 +401,10 @@ sub add_uplink_loss_latency {
     foreach (values %$links) {
         my $interface = lc($_->{uplink});
         $interface =~ s/\s+//g;
+
         next if (!defined($self->{devices}->{ $options{serial} }->{device_links}->{$interface}));
+        next if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+            $interface !~ /$self->{option_results}->{filter_link_name}/);
 
         my ($latency, $loss, $count) = (0, 0, 0);
         foreach my $ts (@{$_->{timeSeries}}) {
@@ -579,23 +587,27 @@ Check devices.
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
+
+=item B<--filter-link-name>
+
+Filter VPN links by name (can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter devices by network id (Can be a regexp).
+Filter devices by network ID (can be a regexp).
 
 =item B<--filter-organization-id>
 
-Filter devices by organization id (Can be a regexp).
+Filter devices by organization ID (can be a regexp).
 
 =item B<--filter-organization-name>
 
-Filter devices by organization name (Can be a regexp).
+Filter devices by organization name (can be a regexp).
 
 =item B<--filter-tags>
 
-Filter devices by tags (Can be a regexp).
+Filter devices by tags (can be a regexp).
 
 =item B<--add-switch-ports>
 
@@ -603,7 +615,7 @@ Add switch port statuses and traffic.
 
 =item B<--filter-switch-port>
 
-Filter switch port (Can be a regexp).
+Filter switch port (can be a regexp).
 
 =item B<--skip-clients>
 
@@ -611,7 +623,7 @@ Don't monitor clients traffic on device.
 
 =item B<--skip-performance>
 
-Don't monitor appliance perfscore.
+Don't monitor appliance performance score.
 
 =item B<--skip-connections>
 
@@ -633,7 +645,7 @@ You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /alerting/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /alerting/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--unknown-link-status>
@@ -648,7 +660,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} =~ /failed/i').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--unknown-port-status>
@@ -663,7 +675,7 @@ You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--critical-port-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
 =item B<--warning-*> B<--critical-*>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -361,19 +361,19 @@ Only display some counters.
 
 =item B<--filter-shelf-id>
 
-Filter channels by shelf id (can be a regexp).
+Filter channels by shelf ID (can be a regexp).
 
 =item B<--filter-slot-id>
 
-Filter channels by slot id (can be a regexp).
+Filter channels by slot ID (can be a regexp).
 
 =item B<--filter-port-id>
 
-Filter channels by port id (can be a regexp).
+Filter channels by port ID (can be a regexp).
 
 =item B<--filter-channel-id>
 
-Filter channels by channel id (can be a regexp).
+Filter channels by channel ID (can be a regexp).
 
 =item B<--warning-status>
 

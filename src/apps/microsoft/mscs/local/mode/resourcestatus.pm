@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,17 +131,17 @@ Filter resource name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: none).
+Define the conditions to match for the status to be WARNING (default: none).
 You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /failed|offline/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /failed|offline/').
 You can use the following variables: %{state}, %{display}, %{owner_node}
 
 =back

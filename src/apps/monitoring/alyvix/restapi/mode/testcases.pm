@@ -1,5 +1,5 @@
 #
-## Copyright 2023 Centreon (http://www.centreon.com/)
+## Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,19 +198,19 @@ Filter on specific test case.
 
 =item B<--warning-*-state>
 
-Set warning status (Default: '') where '*' can be 'testcase' or 'transaction'.
+Set warning status (default: '') where '*' can be 'testcase' or 'transaction'.
 
 =item B<--critical-*-state>
 
-Set critical status (Default: '%{state} eq "FAILED"') where '*' can be 'testcase' or 'transaction'.
+Set critical status (default: '%{state} eq "FAILED"') where '*' can be 'testcase' or 'transaction'.
 
 =item B<--warning-*-duration>
 
-Set warning threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'. 
+Set warning threshold for test cases or transactions duration (default: '') where '*' can be 'testcase' or 'transaction'. 
 
 =item B<--critical-*-duration>
 
-Set critical threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'.
+Set critical threshold for test cases or transactions duration (default: '') where '*' can be 'testcase' or 'transaction'.
 
 =back
 

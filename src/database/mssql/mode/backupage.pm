@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -350,8 +350,7 @@ Last incremental backup time uses last full backup time only if full is newer th
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is days.
+Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is days.
 
 =item B<--warning-*> B<--critical-*>
 

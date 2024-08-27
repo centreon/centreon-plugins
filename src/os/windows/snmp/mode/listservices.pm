@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,7 +134,7 @@ __END__
 
 =head1 MODE
 
-List windows services.
+List Windows services.
 
 =over 8
 

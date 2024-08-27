@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -203,7 +203,7 @@ perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cl
 
 =item B<--namespace>
 
-Set cloudwatch namespace (Required).
+Set cloudwatch namespace (required).
 
 =item B<--dimension>
 
@@ -211,7 +211,7 @@ Set cloudwatch dimensions.
 
 =item B<--metric>
 
-Set cloudwatch metrics (Required).
+Set cloudwatch metrics (required).
 
 =item B<--warning-metric>
 

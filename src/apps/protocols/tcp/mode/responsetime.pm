@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -168,11 +168,11 @@ Port used
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 5).
+Set timeout in seconds (default: 5).
 
 =item B<--packets>
 
-Number of packets to send (Default: 5).
+Number of packets to send (default: 5).
 
 =item B<--warning-rta>
 

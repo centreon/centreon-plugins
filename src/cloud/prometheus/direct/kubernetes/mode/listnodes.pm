@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -138,27 +138,27 @@ List nodes.
 
 =item B<--node>
 
-Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
+Filter on a specific node (must be a PromQL filter, Default: 'node=~".*"')
 
 =item B<--os-image>
 
-Filter on a specific os image (Must be a PromQL filter, Default: 'os_image=~".*"')
+Filter on a specific os image (must be a PromQL filter, Default: 'os_image=~".*"')
 
 =item B<--kubelet-version>
 
-Filter on a specific kubelet version (Must be a PromQL filter, Default: 'kubelet_version=~".*"')
+Filter on a specific kubelet version (must be a PromQL filter, Default: 'kubelet_version=~".*"')
 
 =item B<--kubeproxy-version>
 
-Filter on a specific kubeproxy version (Must be a PromQL filter, Default: 'kubeproxy_version=~".*"')
+Filter on a specific kubeproxy version (must be a PromQL filter, Default: 'kubeproxy_version=~".*"')
 
 =item B<--kernel-version>
 
-Filter on a specific kernel version (Must be a PromQL filter, Default: 'kernel_version=~".*"')
+Filter on a specific kernel version (must be a PromQL filter, Default: 'kernel_version=~".*"')
 
 =item B<--container-runtime-version>
 
-Filter on a specific container runtime version (Must be a PromQL filter, Default: 'container_runtime_version=~".*"')
+Filter on a specific container runtime version (must be a PromQL filter, Default: 'container_runtime_version=~".*"')
 
 =item B<--extra-filter>
 

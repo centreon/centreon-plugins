@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,12 +201,12 @@ Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: -)
+Define the conditions to match for the status to be WARNING (default: -)
 You can use the following variables: %{name}, %{status}, %{error}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i').
 You can use the following variables: %{name}, %{status}, %{error}.
 
 =back

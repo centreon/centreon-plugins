@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -507,8 +507,8 @@ Can be 'totalhost','totalservice','groups'. Better to manage it in config file
 
 =item B<--warning-*>
 
-Can be 'total' for host and service, 'groups' for groups
-e.g --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
+Can be 'total' for host and service, 'groups' for groups.
+Example: --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
 
 =item B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -242,7 +242,7 @@ sub collect_snmp_tables {
         my $used_instance = defined($table->{used_instance}) && $table->{used_instance} ne '' ? $table->{used_instance} : '\.(\d+)$';
         my $snmp_result = $options{snmp}->get_table(oid => $table->{oid});
         foreach (keys %$snmp_result) {
-            /$used_instance/;
+            /$used_instance/ or next;
             next if (defined($self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}));
             my $instance = $1;
     
@@ -1646,24 +1646,24 @@ __END__
 
 =head1 MODE
 
-Collect and compute SNMP datas.
+Collect and compute SNMP data.
 
 =over 8
 
 =item B<--config>
 
-config used (Required).
+config used (required).
 Can be a file or json content.
 
 =item B<--filter-selection>
 
 Filter selections.
-Eg: --filter-selection='name=test'
+Example: --filter-selection='name=test'
 
 =item B<--constant>
 
 Add a constant.
-Eg: --constant='warning=30' --constant='critical=45'
+Example: --constant='warning=30' --constant='critical=45'
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -216,17 +216,17 @@ Filter controller name (can be a regexp).
 
 =item B<--unknown-controller-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-controller-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /rpaParErr|degraded/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /rpaParErr|degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-controller-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

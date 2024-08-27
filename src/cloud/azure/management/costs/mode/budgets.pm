@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -190,15 +190,15 @@ you may have to increase timeout.
 
 =item B<--budget-name>
 
-Set budget name (Required).
+Set budget name (required).
 
 =item B<--resource-group>
 
-Set resource group (Optional).
+Set resource group (optional).
 
 =item B<--lookup-days>
 
-Days backward to look up (Default: '30').
+Days backward to look up (default: '30').
 
 =item B<--warning-cost>
 
@@ -209,7 +209,7 @@ Set warning threshold for cost).
 Define the conditions to match for the status to be CRITICAL.
 
 =item B<--units>
-Unit of thresholds (Default: '%') ('%', 'count').
+Unit of thresholds (default: '%') ('%', 'count').
 
 =back
 

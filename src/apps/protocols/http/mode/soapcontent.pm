@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -329,11 +329,11 @@ SOAP OPTIONS:
 
 =item B<--service-soap>
 
-Service Soap Action (Required)
+Service Soap Action (required)
 
 =item B<--data>
 
-Set file with SOAP request (Required)
+Set file with SOAP request (required)
 
 =item B<--lookup>
 
@@ -347,25 +347,25 @@ FORMAT OPTIONS:
 
 =item B<--format-ok>
 
-Customize the format of the output when the status is OK (Default: '%{count} element(s) found')
+Customize the format of the output when the status is OK (default: '%{count} element(s) found')
 You can use the following variables:
 '%{values}' = display all values (also text string)
-'%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
+'%{values_ok}' = values from attributes and text node only (separated by option values-separator)
 '%{values_warning}' and '%{values_critical}'
 
 =item B<--format-warning>
 
-Customize the format of the output when the status is WARNING (Default: '%{count} element(s) found')
+Customize the format of the output when the status is WARNING (default: '%{count} element(s) found')
 You can use the variables described in --format-ok
 
 =item B<--format-critical>
 
-Customize the format of the output when the status is CRITICAL (Default: '%{count} element(s) found')
+Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found')
 You can use the variables described in --format-ok
 
 =item B<--values-separator>
 
-Separator used for values in format option (Default: ', ')
+Separator used for values in format option (default: ', ')
 
 =back
 
@@ -375,24 +375,24 @@ THRESHOLD OPTIONS:
 
 =item B<--warning-numeric>
 
-Warning threshold (Default: on total matching elements)
+Warning threshold (default: on total matching elements)
 
 =item B<--critical-numeric>
 
-Critical threshold (Default: on total matching elements)
+Critical threshold (default: on total matching elements)
 
 =item B<--threshold-value>
 
-Which value to use (Default: 'count')
-Can be: 'values' (only check numeric values)
+Define the scope to which the numeric thresholds apply.
+Possible values for this option: 'value' to check numeric values, 'count' to check the number of values (default: count).
 
 =item B<--warning-string>
 
-Warning threshold if the string match
+Returns a WARNING status if the value matches the string.
 
 =item B<--critical-string>
 
-Critical threshold if the string match
+Returns a CRITICAL status if the value matches the string.
 
 =item B<--warning-time>
 
@@ -410,83 +410,81 @@ HTTP OPTIONS:
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Webserver host
+IP Addr/FQDN of the web server host.
 
 =item B<--port>
 
-Port used by Webserver
+Port used by web server.
 
 =item B<--proto>
 
-Specify https if needed
+Specify https if needed (default: 'http').
 
 =item B<--urlpath>
 
-Set path to get Webpage (Default: '/')
+Set path to get the web page (default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
 
 =item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
+Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Define the timeout in seconds (default: 10).
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify certificate to send to the web server.
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify key to send to the web server.
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify root certificate to send to the web server.
 
 =item B<--cert-pwd>
 
-Specify certificate's password
+Specify certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS1
+Specify that the type of certificate is PKCS1.
 
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
 
 =item B<--unknown-status>
 
-Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--warning-status>
 
-Warning threshold for http response code
+Warning conditions for http response code.
 
 =item B<--critical-status>
 
-Critical threshold for http response code
+Critical conditions for http response code.
 
 =back
 

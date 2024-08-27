@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,7 +147,7 @@ Filter virtual machines by name.
 
 =item B<--vm-tag-name>
 
-Virtual machine tag to be used for the name (Default: 'name').
+Virtual machine tag to be used for the name (default: 'name').
 
 =item B<--unknown-vm-status>
 

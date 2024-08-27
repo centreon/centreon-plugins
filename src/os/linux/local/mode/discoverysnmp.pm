@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -211,23 +211,23 @@ Resources discovery.
 =item B<--subnet>
 
 Specify subnet from which discover
-resources (Must be <ip>/<cidr> format) (Mandatory).
+resources (must be <ip>/<cidr> format) (mandatory).
 
 =item B<--snmp-port>
 
-Specify SNMP port (Default: 161).
+Specify SNMP port (default: 161).
 
 =item B<--snmp-version>
 
-Specify SNMP version (can be defined multiple times) (Mandatory).
+Specify SNMP version (can be defined multiple times) (mandatory).
 
 =item B<--snmp-community>
 
-Specify SNMP community (can be defined multiple times) (Mandatory).
+Specify SNMP community (can be defined multiple times) (mandatory).
 
 =item B<--snmp-timeout>
 
-Specify SNMP timeout in second (Default: 1).
+Specify SNMP timeout in second (default: 1).
 
 =item B<--prettify>
 
@@ -235,7 +235,7 @@ Prettify JSON output.
 
 =item B<--extra-oids>
 
-Specify extra OIDs to get (Eg: --extra-oids='hrSystemInitialLoadParameters=1.3.6.1.2.1.25.1.4.0,sysDescr=.1.3.6.1.2.1.1.1.0').
+Specify extra OIDs to get (example: --extra-oids='hrSystemInitialLoadParameters=1.3.6.1.2.1.25.1.4.0,sysDescr=.1.3.6.1.2.1.1.1.0').
 
 =back
 

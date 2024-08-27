@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -294,23 +294,23 @@ Graylog hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api/')
+API url path (default: '/api/')
 
 =item B<--port>
 
-API port (Default: 9000)
+API port (default: 9000)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--timeout>
 
@@ -318,7 +318,7 @@ Set HTTP timeout
 
 =item B<--requested-by>
 
-Set request HTTP header (Default: 'cli')
+Set request HTTP header (default: 'cli')
 
 =back
 

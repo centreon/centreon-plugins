@@ -81,7 +81,7 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (PEPLINK-BALANCE-MIB).
+Check CPU usage (PEPLINK-BALANCE-MIB).
 
 =over 8
 

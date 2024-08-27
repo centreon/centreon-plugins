@@ -1,0 +1,73 @@
+name: docker-builder-testing-plugins
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/docker-builder-testing-plugins.yml"
+      - ".github/docker/testing/*"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-builder-testing-plugins.yml"
+      - ".github/docker/testing/*"
+
+jobs:
+  create-and-push-docker:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            dockerfile: alma8
+            image: alma8
+          - runner: ubuntu-22.04
+            dockerfile: alma9
+            image: alma9
+          - runner: ubuntu-22.04
+            dockerfile: bullseye
+            image: bullseye
+          - runner: ["self-hosted", "collect-arm64"]
+            dockerfile: bullseye
+            image: bullseye-arm64
+          - runner: ubuntu-22.04
+            dockerfile: bookworm
+            image: bookworm
+          - runner: ubuntu-22.04
+            dockerfile: jammy
+            image: jammy
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Login to Registry
+        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        with:
+          registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+      - name: Login to proxy registry
+        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        with:
+          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
+          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+
+      - uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
+
+      - uses: docker/build-push-action@15560696de535e4014efeff63c48f16952e52dd1 # v6.2.0
+        with:
+          file: .github/docker/testing/Dockerfile.testing-plugins-${{ matrix.dockerfile }}
+          context: .
+          build-args: "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
+          pull: true
+          push: true
+          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-${{ matrix.image }}:latest

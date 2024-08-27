@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -352,7 +352,7 @@ Example: --filter-counters='^cpu'
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -368,7 +368,7 @@ You can use the following variables: %{status}, %{shard_list},
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 

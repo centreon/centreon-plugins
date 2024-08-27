@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -474,7 +474,7 @@ You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--critical-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connection_status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_status} =~ /failed/i').
 You can use the following variables: %{connection_status}, %{connection_error}
 
 =item B<--warning-quorum-status>
@@ -484,7 +484,7 @@ You can use the following variables: %{quorum_status}
 
 =item B<--critical-quorum-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{quorum_status} =~ /noQuorum/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{quorum_status} =~ /noQuorum/i').
 You can use the following variables: %{quorum_status}
 
 =item B<--warning-resource-status>
@@ -494,7 +494,7 @@ You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged
 
 =item B<--critical-resource-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /stopped|failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /stopped|failed/i').
 You can use the following variables: %{name}, %{status}, %{node}, %{is_unmanaged}
 
 =item B<--warning-clone-resource-status>
@@ -504,7 +504,7 @@ You can use the following variables: %{name}, %{status}, %{masters_nodes_name}, 
 
 =item B<--critical-clone-resource-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/i').
 You can use the following variables: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
 
 =item B<--ignore-failed-actions>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -65,7 +65,7 @@ Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -73,7 +73,7 @@ Thresholds are on free space left.
 
 =item B<--storage>
 
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
+Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
 
 =item B<--name>
 
@@ -83,7 +83,7 @@ Allows to use storage name with option --storage instead of storage oid index.
 
 Allows to use regexp to filter storage (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -93,11 +93,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--show-cache>
 
-Display cache storage datas.
+Display cache storage data.
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^hrStorageRam$').
+Filter storage types with a regexp (default: '^hrStorageRam$').
 
 =back
 

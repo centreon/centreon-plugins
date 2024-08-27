@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -113,7 +113,7 @@ Do Centreon bam-service checks.
 
 =item B<--centreon-config>
 
-Centreon Database Config File (Default: '/etc/centreon/centreon-config.pm').
+Centreon Database Config File (default: '/etc/centreon/centreon-config.pm').
 
 =item B<--bam-id>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -221,7 +221,7 @@ Check HTTP proxy status and statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(Example: --filter-counters='responses')
+(example: --filter-counters='responses')
 
 =item B<--warning-*> B<--critical-*>
 
@@ -237,7 +237,7 @@ Can use special variables like: %{status}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "Active"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "Active"').
 Can use special variables like: %{status}.
 
 =back

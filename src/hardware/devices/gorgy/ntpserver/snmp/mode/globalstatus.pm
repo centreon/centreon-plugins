@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,22 +175,22 @@ Example: --filter-counters='^sync-status$'
 
 =item B<--warning-sync-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{sync_status} =~ /Running with autonomy|Free running/i').
+Define the conditions to match for the status to be WARNING (default: '%{sync_status} =~ /Running with autonomy|Free running/i').
 You can use the following variables: %{sync_status}
 
 =item B<--critical-sync-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i').
 You can use the following variables: %{sync_status}
 
 =item B<--warning-timebase-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
+Define the conditions to match for the status to be WARNING (default: '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i').
 You can use the following variables: %{timebase_status}
 
 =item B<--critical-timebase-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{timebase_status} =~ /^XO$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{timebase_status} =~ /^XO$/i').
 You can use the following variables: %{timebase_status}
 
 =item B<--warning-*>

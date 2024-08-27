@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -309,6 +309,14 @@ sub backtick {
     }
 
     return (0, join("\n", @output), $return_code);
+}
+
+sub is_empty {
+    my $value = shift;
+    if (!defined($value) or $value eq '') {
+        return 1;
+    }
+    return 0;
 }
 
 sub trim {

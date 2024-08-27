@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,47 +219,47 @@ Send a SNMP trap to set a downtime.
 
 =item B<--oid-trap>
 
-Specify OID trap (Default: '.1.3.6.1.4.1.50000.1.1')
+Specify OID trap (default: '.1.3.6.1.4.1.50000.1.1')
 
 =item B<--oid-hostname>
 
-Specify OID for hostname (Default: '.1.3.6.1.4.1.50000.2.1')
+Specify OID for hostname (default: '.1.3.6.1.4.1.50000.2.1')
 
 =item B<--oid-start>
 
-Specify OID for downtime start time (Default: '.1.3.6.1.4.1.50000.2.2')
+Specify OID for downtime start time (default: '.1.3.6.1.4.1.50000.2.2')
 
 =item B<--oid-end>
 
-Specify OID for downtime end time (Default: '.1.3.6.1.4.1.50000.2.3')
+Specify OID for downtime end time (default: '.1.3.6.1.4.1.50000.2.3')
 
 =item B<--oid-author>
 
-Specify OID for downtime author (Default: '.1.3.6.1.4.1.50000.2.4')
+Specify OID for downtime author (default: '.1.3.6.1.4.1.50000.2.4')
 
 =item B<--oid-comment>
 
-Specify OID for downtime comment (Default: '.1.3.6.1.4.1.50000.2.5')
+Specify OID for downtime comment (default: '.1.3.6.1.4.1.50000.2.5')
 
 =item B<--oid-duration>
 
-Specify OID for downtime duration (Default: '.1.3.6.1.4.1.50000.2.6')
+Specify OID for downtime duration (default: '.1.3.6.1.4.1.50000.2.6')
 
 =item B<--centreon-server>
 
-Address of centreon server to send the trap (Required)
+Address of centreon server to send the trap (required)
 
 =item B<--author>
 
-Set the downtime author (Default: 'system reboot').
+Set the downtime author (default: 'system reboot').
 
 =item B<--comment>
 
-Set the downtime comment (Default: 'the system reboots.').
+Set the downtime comment (default: 'the system reboots.').
 
 =item B<--duration>
 
-Set the downtime duration in seconds (Default: 300)
+Set the downtime duration in seconds (default: 300)
 
 =item B<--wait>
 
@@ -267,7 +267,7 @@ Time in seconds to wait
 
 =item B<--snmptrap-command>
 
-snmptrap command used (Default: 'snmptrap').
+snmptrap command used (default: 'snmptrap').
 Use if the SNMP perl module is not installed.
 
 =item B<--display-options>

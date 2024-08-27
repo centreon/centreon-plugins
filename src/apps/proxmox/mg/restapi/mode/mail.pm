@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -220,11 +220,11 @@ Check mail statistics.
 
 =item B<--hours>
 
-How many hours of statistics you want (Default: 12)
+How many hours of statistics you want (default: 12)
 
 =item B<--timespan>
 
-Timespan for datapoints in hours timeframe (Default: 1800)
+Timespan for datapoints in hours timeframe (default: 1800)
 
 =item B<--warning-*> B<--critical-*>
 

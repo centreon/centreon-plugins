@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -426,11 +426,11 @@ Check interface errors.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--unknown-status>
 
@@ -444,7 +444,7 @@ You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: "%{state} eq 'enabled' and %{plugged} eq 'unplugged'")
+Define the conditions to match for the status to be CRITICAL (default: "%{state} eq 'enabled' and %{plugged} eq 'unplugged'")
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--warning-*> B<--critical-*>

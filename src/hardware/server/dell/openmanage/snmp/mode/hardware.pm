@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -95,7 +95,7 @@ Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature, Storage)
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery',
 'physicaldisk', 'logicaldrive', 'battery', 'controller', 'connector'.
 

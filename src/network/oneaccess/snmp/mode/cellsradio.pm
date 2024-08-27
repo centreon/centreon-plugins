@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -322,7 +322,7 @@ Check cellular radio modules.
 
 =item B<--filter-cell-id>
 
-Filter cell modules by id (IMEI or MEID).
+Filter cell modules by ID (IMEI or MEID).
 
 =item B<--custom-perfdata-instances>
 

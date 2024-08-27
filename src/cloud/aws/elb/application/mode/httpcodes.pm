@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -231,7 +231,7 @@ Default statistic: 'sum' / Most useful statistics: 'sum'.
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
@@ -243,14 +243,14 @@ Add target group dimension.
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HTTPCode_Target_2XX_Count', 'HTTPCode_Target_3XX_Count',
+Filter metrics (can be: 'HTTPCode_Target_2XX_Count', 'HTTPCode_Target_3XX_Count',
 'HTTPCode_Target_4XX_Count', 'HTTPCode_Target_5XX_Count', 'HTTPCode_ELB_3XX_Count',
 'HTTPCode_ELB_4XX_Count', 'HTTP_Redirect_Count') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
+Warning thresholds (can be: 'httpcode-target-2xx', 'httpcode-target-3xx', 'httpcode-target-4xx',
 'httpcode-target-5xx', 'httpcode-elb-3xx', 'httpcode-elb-4xx', 'http-redirect')
 
 =back

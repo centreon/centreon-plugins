@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,15 +108,15 @@ my tsm cli
 
 =item B<--tsm-hostname>
 
-TSM hostname to query (Required).
+TSM hostname to query (required).
 
 =item B<--tsm-username>
 
-TSM username (Required).
+TSM username (required).
 
 =item B<--tsm-password>
 
-TSM password (Required).
+TSM password (required).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -138,19 +138,19 @@ Send SMS with OVH API (https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_une_ur
 
 =item B<--hostname>
 
-Hostname of the OVH SMS API (Default: 'www.ovh.com')
+Hostname of the OVH SMS API (default: 'www.ovh.com')
 
 =item B<--port>
 
-Port used by API (Default: '443')
+Port used by API (default: '443')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify https if needed (default: 'https').
 
 =item B<--urlpath>
 
-Set path to the SMS API (Default: '/cgi-bin/sms/http2sms.cgi').
+Set path to the SMS API (default: '/cgi-bin/sms/http2sms.cgi').
 
 =item B<--account>
 
@@ -178,15 +178,15 @@ Specify the message to send.
 
 =item B<--class>
 
-Specify the class of message. (Default : '1').
+Specify the class of message. (default : '1').
 
 =item B<--nostop>
 
-Specify the nostop option. (Default : '1').
+Specify the nostop option. (default : '1').
 
 =item B<--smsdoding>
 
-Specify the coding of message. (Default : '1').
+Specify the coding of message. (default : '1').
 
 =item B<--timeout>
 

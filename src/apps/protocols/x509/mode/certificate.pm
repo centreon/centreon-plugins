@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -126,12 +126,12 @@ Check X509's certificate validity (for SMTPS, POPS, IMAPS, HTTPS)
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{expiration} < 60').
+Define the conditions to match for the status to be WARNING. (default: '%{expiration} < 60').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{expiration} < 30').
+Define the conditions to match for the status to be CRITICAL. (default: '%{expiration} < 30').
 Can use special variables like: %{expiration}, %{subject}, %{issuer}, %{alt_subjects}.
 
 Examples :

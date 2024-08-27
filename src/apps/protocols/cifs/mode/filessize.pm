@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,12 +172,12 @@ Check files size.
 
 =item B<--directory>
 
-Check directory size (Multiple option).
+Check directory size (multiple option).
 Can get sub directory size with --max-depth option.
 
 =item B<--file>
 
-Check file (Multiple option)
+Check file (multiple option)
 
 =item B<--filter-file>
 
@@ -185,7 +185,7 @@ Filter files (can be a regexp. Directory in the name).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Don't check fewer levels (default: '0'. Means current dir only).
 
 =item B<--warning-*> B<--critical-*>
 

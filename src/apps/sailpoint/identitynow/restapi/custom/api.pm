@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -356,15 +356,15 @@ SailPoint IdentityNow API tenant.
 
 =item B<--domain>
 
-SailPoint IdentityNow API domain  (Default: identitynow)
+SailPoint IdentityNow API domain  (default: identitynow)
 
 =item B<--port>
 
-SailPoint IdentityNow API port (Default: 443)
+SailPoint IdentityNow API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--client-id>
 

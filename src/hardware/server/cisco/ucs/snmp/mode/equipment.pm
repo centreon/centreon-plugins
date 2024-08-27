@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,7 @@ Check Hardware (Fans, Power supplies, chassis, io cards, blades, fabric extender
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'.
 
 =item B<--filter>
@@ -76,7 +76,7 @@ You can also exclude items from specific instances: --filter=fan,/sys/chassis-7/
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=fan,/sys/chassis-7/fan-module-1-7/fan-1
 
 =item B<--no-component>
@@ -86,7 +86,7 @@ Define the expected status if no components are found (default: critical).
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Eg: --threshold-overload='fan.operability,OK,poweredOff|removed' 
+Example: --threshold-overload='fan.operability,OK,poweredOff|removed' 
 --threshold-overload='presence,OK,missing' 
 --threshold-overload='operability,OK,removed'
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,7 +258,7 @@ Check jobs.
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -266,16 +266,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -303,7 +303,7 @@ Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
-Filter job with end time greater than current time less value in seconds (Default: 86400).
+Filter job with end time greater than current time less value in seconds (default: 86400).
 
 =item B<--warning-status>
 
@@ -312,7 +312,7 @@ You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, 
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: 'not %{status} =~ /succeeded/i').
+Define the conditions to match for the status to be CRITICAL (default: 'not %{status} =~ /succeeded/i').
 You can use the following variables: %{name}, %{status}, %{subStatus}, %{type}, %{isActive}.
 
 =item B<--warning-long>

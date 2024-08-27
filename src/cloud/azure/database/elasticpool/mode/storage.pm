@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,13 +258,13 @@ Check Azure SQL Elastic Pool Storage metrics.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=storage
 --resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
 --allocated-data-storage-percent='90' --verbose
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=sessions
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Sql/servers/xxx/elasticpools/xxx'
@@ -276,16 +276,16 @@ Default aggregation: 'average' / 'minimum' and 'maximum' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
 Filter on specific metrics. The Azure format must be used, for example: 'allocated_data_storage_percent'
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -195,21 +195,21 @@ Display virtual machine description.
 
 =item B<--device>
 
-Device to check (Required) (Example: --device='VirtualCdrom').
+Device to check (required) (example: --device='VirtualCdrom').
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{connection_state} !~ /^connected$/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{connection_state} !~ /^connected$/i').
 You can use the following variables: %{connection_state}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{connection_state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{connection_state}
 
 =item B<--warning-*>

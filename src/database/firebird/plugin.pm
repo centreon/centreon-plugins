@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -99,7 +99,7 @@ Database Server Port.
 
 =item B<--database>
 
-Path to Database. (eg:/opt/firebird/examples/empbuild/employee.fdb)
+Path to Database. (example: /opt/firebird/examples/empbuild/employee.fdb)
 
 =back
 

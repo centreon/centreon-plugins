@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -64,7 +64,7 @@ Check storage access (readOnly, readWrite).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 
@@ -72,7 +72,7 @@ Thresholds are on free space left.
 
 =item B<--storage>
 
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
+Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
 
 =item B<--name>
 
@@ -82,7 +82,7 @@ Allows to use storage name with option --storage instead of storage oid index.
 
 Allows to use regexp to filter storage (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -106,16 +106,16 @@ Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageD
 
 Modify the storage name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 
-Display cache storage datas.
+Display cache storage data.
 
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none) (results like 'df' command).
+The value is in percent of total (default: none) (results like 'df' command).
 
 =item B<--filter-duplicate>
 
@@ -123,7 +123,7 @@ Filter duplicate storages (in used size and total size).
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
+Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 

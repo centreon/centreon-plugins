@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -368,17 +368,17 @@ Check filesystem usage (volumes, snapshots and aggregates also).
 
 =item B<--unknown-vserver-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-vserver-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--critical-vserver-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '').
+Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-*>
@@ -393,7 +393,7 @@ Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

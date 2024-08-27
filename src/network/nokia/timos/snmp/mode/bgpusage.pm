@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -207,7 +207,7 @@ You can use the following variables: %{display}, %{state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} =~ /outOfService/')
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /outOfService/')
 You can use the following variables:  %{display}, %{state}
 
 =item B<--filter-name>

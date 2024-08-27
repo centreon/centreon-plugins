@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -81,7 +81,7 @@ Check devices (DEV-CFG-MIB).
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'cpu', 'psu', 'fan'.
 
 =item B<--filter>
@@ -91,7 +91,7 @@ You can also exclude items from specific instances: --filter=cpu,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'present' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=psu,2
 
 =item B<--no-component>

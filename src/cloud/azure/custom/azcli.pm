@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -634,7 +634,7 @@ For futher informations, visit https://docs.microsoft.com/en-us/cli/azure/instal
 
 =item B<--subscription>
 
-Set Azure subscription (Required if logged to several subscriptions).
+Set Azure subscription (required if logged to several subscriptions).
 
 =item B<--timeframe>
 
@@ -642,11 +642,11 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--interval>
 
-Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--aggregation>
 
-Aggregate monitoring. Can apply to: 'minimum', 'maximum', 'average', 'total'
+Define how the data must be aggregated. Available aggregations: 'minimum', 'maximum', 'average', 'total'
 and 'count'.
 Can be called multiple times.
 
@@ -657,7 +657,7 @@ undefined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 50).
+Set timeout in seconds (default: 50).
 
 =item B<--sudo>
 
@@ -665,16 +665,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'az').
+Command to get information (default: 'az').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =item B<--proxyurl>
 

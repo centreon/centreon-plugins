@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -107,7 +107,7 @@ __END__
 
 =head1 MODE
 
-Check eventlogs.
+Check event logs.
 
 =over 8
 
@@ -117,12 +117,12 @@ Use warning return instead 'critical'.
 
 =item B<--filter-severity>
 
-Filter on severity. (Default: hard|severe)
+Filter on severity. (default: hard|severe)
 Can be: severe, hard, mild, informational. 
 
 =item B<--filter-message>
 
-Filter on event message. (Default: none)
+Filter on event message. (default: none)
 
 =back
 

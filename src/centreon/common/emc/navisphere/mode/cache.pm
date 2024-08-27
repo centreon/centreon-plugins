@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -195,11 +195,11 @@ Check status of the read and write cache.
 
 =item B<--cache-command>
 
-Set cache command (Default: 'getcache').
+Set cache command (default: 'getcache').
 
 =item B<--cache-options>
 
-Set option for cache command (Default: '-pdp -state -mirror').
+Set option for cache command (default: '-pdp -state -mirror').
 
 =item B<--warning>
 

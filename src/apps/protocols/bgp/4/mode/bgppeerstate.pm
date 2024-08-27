@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -218,14 +218,14 @@ Critical threshold on last update (seconds)
 Specify admin and peer state that trigger a warning.
 Can use special variables like %{adminstate}, %{peerstate},
 %{local}, %{remote}, %{as}, %{display}
-(Default: '')
+(default: '')
 
 =item B<--critical-status>
 
 Specify admin and peer state that trigger a critical.
 Can use special variables like %{adminstate}, %{peerstate},
 %{local}, %{remote}, %{as}, %{display}
-(Default: '%{adminstate} =~ /start/ && %{peerstate} !~ /established/')
+(default: '%{adminstate} =~ /start/ && %{peerstate} !~ /established/')
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -139,32 +139,32 @@ Check high availability status.
 
 =item B<--unknown-ha-status>
 
-Define the conditions to match for the status to be UNKNOWN. (Default: '%{ha_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN. (default: '%{ha_status} =~ /unknown/i').
 Can use special variables like: %{ha_status}
 
 =item B<--warning-ha-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--critical-ha-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{ha_status} =~ /down|partialFail|monitorFail|completeFail|partialFailSsl|routemonitorFail/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{ha_status} =~ /down|partialFail|monitorFail|completeFail|partialFailSsl|routemonitorFail/i').
 Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--unknown-peer-status>
 
-Define the conditions to match for the status to be UNKNOWN. (Default: '%{peer_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN. (default: '%{peer_status} =~ /unknown/i').
 Can use special variables like: %{peer_status}, %{ha_mode}
 
 =item B<--warning-peer-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '').
+Define the conditions to match for the status to be WARNING. (default: '').
 Can use special variables like: %{peer_status}
 
 =item B<--critical-peer-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '').
+Define the conditions to match for the status to be CRITICAL. (default: '').
 Can use special variables like: %{peer_status}
 
 =back

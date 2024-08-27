@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -159,19 +159,19 @@ OpenWeatherMap Rest API
 
 =item B<--hostname>
 
-OpenWeatherMap API hostname (Default: 'api.openweathermap.org')
+OpenWeatherMap API hostname (default: 'api.openweathermap.org')
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--url-path>
 
-API URL path (Default: '/data/2.5')
+API URL path (default: '/data/2.5')
 
 =item B<--timeout>
 

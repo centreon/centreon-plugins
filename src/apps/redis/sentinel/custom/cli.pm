@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -216,7 +216,7 @@ Sentinel server.
 
 =item B<--port>
 
-Sentinel port (Default: 26379).
+Sentinel port (default: 26379).
 
 =item B<--tls>
 
@@ -228,7 +228,7 @@ CA Certificate file to verify with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 
-Allow insecure TLS connection by skipping cert validation (Since redis-cli 6.2.0).
+Allow insecure TLS connection by skipping cert validation (since redis-cli 6.2.0).
 
 =item B<--username>
 
@@ -244,7 +244,7 @@ Remote ssh redis-cli execution.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 10).
+Timeout in seconds for the command (default: 10).
 
 =back
 

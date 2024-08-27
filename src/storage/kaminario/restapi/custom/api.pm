@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,11 +160,11 @@ Kaminario password.
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (Default: '10').
+Set HTTP timeout in seconds (default: '10').
 
 =item B<--resolution>
 
-Selected data performance resolution (Default: '5m').
+Selected data performance resolution (default: '5m').
 
 =back
 

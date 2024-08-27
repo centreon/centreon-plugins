@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,12 +74,12 @@ Check hardware.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'entity'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
+Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=entity,CT1.FC0
 
 =item B<--no-component>

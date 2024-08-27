@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -214,19 +214,19 @@ TFTP server name (required).
 
 =item B<--port>
 
-TFTP port (Default: 69).
+TFTP port (default: 69).
 
 =item B<--timeout>
 
-TFTP timeout in seconds (Default: 5).
+TFTP timeout in seconds (default: 5).
 
 =item B<--retries>
 
-TFTP number of retries (Default: 5).
+TFTP number of retries (default: 5).
 
 =item B<--block-size>
 
-TFTP size of blocks to use in the transfer (Default: 512).
+TFTP size of blocks to use in the transfer (default: 512).
 
 =item B<--filter-counters>
 
@@ -235,12 +235,12 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "ok"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "ok"').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-time>

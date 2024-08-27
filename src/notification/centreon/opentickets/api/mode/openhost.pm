@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,19 +120,19 @@ Open a host ticket.
 
 =item B<--rule-name>
 
-Rule name used (Required).
+Rule name used (required).
 
 =item B<--host-id>
 
-Centreon host ID (Required).
+Centreon host ID (required).
 
 =item B<--host-state>
 
-Host state (Eg: UP, DOWN, UNREACHABLE) (Required).
+Host state (example: UP, DOWN, UNREACHABLE) (required).
 
 =item B<--host-output>
 
-Host output (Required).
+Host output (required).
 
 =item B<--contact-name>
 
@@ -161,12 +161,12 @@ Last host state change.
 =item B<--extra-property>
 
 Add a extra property.
-Eg: --extra-property='custom_message=test my message'
+Example: --extra-property='custom_message=test my message'
 
 =item B<--select>
 
 Add a select property (open-ticket list).
-Eg: --select='list-id=value'
+Example: --select='list-id=value'
 
 =back
 

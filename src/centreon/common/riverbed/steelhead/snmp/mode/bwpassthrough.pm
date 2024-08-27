@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -120,11 +120,11 @@ Check passthrough bandwidth in both directions (STEELHEAD-MIB and STEELHEAD-EX-M
 
 =item B<--warning-traffic-*>
 
-Warning threshold (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
+Warning threshold (can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
 =item B<--critical-traffic-*>
 
-Critical threshold (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
+Critical threshold (can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
 =over 8
 

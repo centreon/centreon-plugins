@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,18 +198,17 @@ note: Outgoing* metrics are only available when enhanced stats are enabled (paid
 
 =item B<--stream-name>
 
-Set the stream name (Required) (can be defined multiple times).
+Set the stream name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords',
+Filter metrics (can be: 'IncomingBytes', 'IncomingRecords',
 'OutgoingBytes', 'OutgoingRecords') 
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning
-can be: 'incoming-bytes', 'incoming-records',
-'outgoing-volume', 'outgoing-volume'.
+Warning threshold (* can be: 'incoming-bytes', 'incoming-records',
+'outgoing-volume', 'outgoing-volume').
 
 =back
 

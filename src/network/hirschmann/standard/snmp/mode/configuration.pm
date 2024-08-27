@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -113,7 +113,7 @@ Check configuration status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default : '%{config_status} =~ /notInSync|outOfSync/').
+Define the conditions to match for the status to be WARNING (default : '%{config_status} =~ /notInSync|outOfSync/').
 You can use the following variables: %{config_status}
 
 =item B<--critical-status>

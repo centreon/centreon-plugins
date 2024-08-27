@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,6 +45,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'auth-method:s'    => { name => 'auth_method', default => 'token' },
+        'auth-path:s'      => { name => 'auth_path' },
         'auth-settings:s%' => { name => 'auth_settings' },
         'map-option:s@'    => { name => 'map_option' },
         'secret-path:s@'   => { name => 'secret_path' },
@@ -66,7 +67,10 @@ sub get_access_token {
     my $decoded;
     my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
     my $post_json = JSON::XS->new->utf8->encode($login);
-    my $url_path = '/v1/auth/'. $self->{auth_method} . '/login/';
+    if (!defined($self->{auth_path}) || $self->{auth_path} eq '') {
+        $self->{auth_path} = $self->{auth_method};
+    }
+    my $url_path = '/v1/auth/'. $self->{auth_path} . '/login/';
     $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
 
     my $content = $self->{http}->request(
@@ -143,6 +147,10 @@ sub settings {
     if (!defined($options{option_results}->{secret_path}) || $options{option_results}->{secret_path} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please set the --secret-path option");
         $self->{output}->option_exit();
+    }
+
+    if (defined($options{option_results}->{auth_path})) {		
+        $self->{auth_path} = lc($options{option_results}->{auth_path});
     }
 
     $self->{auth_method} = lc($options{option_results}->{auth_method});
@@ -261,21 +269,27 @@ To be used with K/V engines
 
 =item B<--vault-address>
 
-IP address of the HashiCorp Vault server (Mandatory).
+IP address of the HashiCorp Vault server (mandatory).
 
 =item B<--vault-port>
 
-Port of the HashiCorp Vault server (Default: '8200').
+Port of the HashiCorp Vault server (default: '8200').
 
 =item B<--vault-protocol>
 
 HTTP of the HashiCorp Vault server.
-Can be: 'http', 'https' (Default: http).
+Can be: 'http', 'https' (default: http).
 
 =item B<--auth-method>
 
 Authentication method to log in against the Vault server.
-Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (Default: 'token');
+Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (default: 'token');
+
+=item B<--auth-path>
+
+Authentication path for 'userpass'. Is an optional setting.
+
+More information here: https://developer.hashicorp.com/vault/docs/auth/userpass#configuration
 
 =item B<--vault-token>
 
@@ -292,7 +306,7 @@ More information here: https://www.vaultproject.io/api-docs/auth
 
 =item B<--secret-path>
 
-Location of the secret in the Vault K/V engine (Mandatory - Can be multiple).
+Location of the secret in the Vault K/V engine (mandatory - Can be multiple).
 Examples:
 for v1 engine: --secret-path='mysecrets/servicecredentials'
 for v2 engine: --secret-path='mysecrets/data/servicecredentials?version=12'

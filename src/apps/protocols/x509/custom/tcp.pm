@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -268,7 +268,7 @@ Port used by host.
 
 =item B<--servername>
 
-Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (eg: foo.bar.com).
+Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (example: foo.bar.com).
 
 =item B<--ssl-opt>
 
@@ -286,7 +286,7 @@ Ignore SSL handshake errors. For example: 'SSL error: SSL wants a read first'.
 
 =item B<--timeout>
 
-Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::SSL >= 1.984).
+Set timeout in seconds for SSL connection (default: '3') (only with IO::Socket::SSL >= 1.984).
 
 =item B<--starttls>
 

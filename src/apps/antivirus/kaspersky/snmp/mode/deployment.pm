@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -297,12 +297,12 @@ Check antivirus software deployment status.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (Default: '%{status} =~ /Warning/i').
+Define the conditions to match for the status to be WARNING. (default: '%{status} =~ /Warning/i').
 Can use special variables like: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (Default: '%{status} =~ /Critical/i').
+Define the conditions to match for the status to be CRITICAL. (default: '%{status} =~ /Critical/i').
 Can use special variables like: %{status}
 
 =item B<--warning-*>

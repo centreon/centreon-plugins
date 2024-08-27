@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,7 +102,7 @@ Check services.
 =item B<--filter-service>
 
 Only display some counters (regexp can be used).
-(Example: --filter-service='spool|smtp|pop')
+(example: --filter-service='spool|smtp|pop')
 
 =item B<--unknown-status>
 
@@ -116,7 +116,7 @@ You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} !~ /running/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /running/').
 You can use the following variables: %{state}, %{display}
 
 =back

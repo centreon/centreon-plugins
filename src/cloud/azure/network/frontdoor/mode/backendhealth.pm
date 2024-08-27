@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,13 +103,13 @@ Check Azure Front Door backend health.
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=backendhealth --custommode=api
 --resource=<frontdoor_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-backend-health-percentage='100:' --critical-backend-health-percentage='90:'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=backendhealth --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/frontdoors/<frontdoor_id>'
@@ -121,11 +121,11 @@ Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
 =item B<--resource>
 
-Set resource name or id (Required).
+Set resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--warning-backend-health-percentage>
 

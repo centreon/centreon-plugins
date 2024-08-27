@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -143,7 +143,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /normal|mirrored/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /normal|mirrored/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--unknown-state>
@@ -158,7 +158,7 @@ You can use the following variables: %{state}, %{name}
 
 =item B<--critical-state>
 
-Set critical threshold for state (Default: '%{state} =~ /offline/i').
+Set critical threshold for state (default: '%{state} =~ /offline/i').
 You can use the following variables: %{state}, %{name}
 
 =back

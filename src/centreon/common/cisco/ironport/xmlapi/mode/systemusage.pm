@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -260,7 +260,7 @@ Check system usage.
 
 =item B<--hostname>
 
-IP Address or FQDN of the webserver host
+IP Address or FQDN of the web server host
 
 =item B<--port>
 
@@ -268,19 +268,19 @@ Port used.
 
 =item B<--proto>
 
-Protocol used http or https (Default: https)
+Protocol used http or https (default: https)
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/xml/status')
+Set path to get server-status page in auto mode (default: '/xml/status')
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication
 
 =item B<--timeout>
 
@@ -288,7 +288,7 @@ Threshold for HTTP timeout
 
 =item B<--unknown-http-status>
 
-Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Threshold unknown for http response code (default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
 
@@ -300,12 +300,12 @@ Critical threshold for http response code
 
 =item B<--warning-system-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{system_status}
 
 =item B<--critical-system-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{system_status} !~ /online/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{system_status} !~ /online/i').
 You can use the following variables: %{system_status}
 
 =item B<--warning-*> B<--critical-*> 

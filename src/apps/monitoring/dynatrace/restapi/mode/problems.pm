@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,7 +182,7 @@ Check open problems.
 
 =item B<--relative-time>
 
-Set request relative time (Default: '2h').
+Set request relative time (default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
 =item B<--filter-management-zone>
@@ -207,7 +207,7 @@ Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{m
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} eq "OPEN"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "OPEN"').
 Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{managementZone}, %{entityName}, %{entityId}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-*> B<--critical-*>

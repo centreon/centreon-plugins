@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,14 +201,14 @@ Check controller status (WLSX-SYSTEMEXT-MIB).
 Warning threshold.
 Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
-%{status}, %{ip}, %{role}, %{location} (Default: '')
+%{status}, %{ip}, %{role}, %{location} (default: '')
 
 =item B<--critical-*>
 
 Critical threshold.
 Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
-%{status}, %{ip}, %{role}, %{location} (Default: '%{status} !~ /active/i')
+%{status}, %{ip}, %{role}, %{location} (default: '%{status} !~ /active/i')
 
 =item B<--filter-*>
 

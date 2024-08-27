@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,10 +35,10 @@ sub custom_status_output {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $label = 'pool.space.usage.bytes';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        $label = 'pool.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -49,12 +49,14 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $label,
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total}
+        min => 0,
+        max => $self->{result_values}->{total}
     );
 }
 
@@ -141,7 +143,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -201,12 +203,12 @@ Filter pool name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /degraded/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /offline/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /offline/i').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
@@ -216,7 +218,7 @@ Can be: 'usage'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

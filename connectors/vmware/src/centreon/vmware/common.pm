@@ -45,7 +45,7 @@ sub init_response {
     my (%options) = @_;
 
     $manager_response->{code} = 0;
-    $manager_response->{vmware_connector_version} = '3.2.5';
+    $manager_response->{vmware_connector_version} = '3.2.6';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
@@ -406,7 +406,7 @@ sub generic_performance_values_historic {
         return undef if (!defined($perfdata));
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
-            set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
+            set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode) check option --time-shift and ensure this specific metric is retrieved and not late in the vcenter)');
             return undef;
         }
         foreach my $val (@$perfdata) {

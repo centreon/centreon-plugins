@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,7 +49,7 @@ Try {
 
     Foreach ($update in $updates) {
         $item = @{
-            title = $update.Title;
+            title = $update.Title.Normalize([Text.NormalizationForm]::FormD) -replace "\p{M}", "" -replace "\p{Z}", " ";
             isMandatory = $update.IsMandatory;
         }
 

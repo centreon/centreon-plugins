@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -240,7 +240,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-device-con-status>
 
-Set critical threshold for device connection status (Default: '%{status} =~ /down/i').
+Set critical threshold for device connection status (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-device-db-status>

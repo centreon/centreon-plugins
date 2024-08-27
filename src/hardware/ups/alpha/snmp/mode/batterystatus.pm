@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,17 +160,17 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /batteryLow/i').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /batteryLow/i').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /batteryDepleted/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /batteryDepleted/i').
 You can use the following variables: %{status}
 
 =item B<--warning-*>

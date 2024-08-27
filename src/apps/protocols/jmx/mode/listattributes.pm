@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,7 @@ List JMX attributes.
 
 =item B<--max-depth>
 
-Maximum nesting level of the returned JSON structure for a certain MBean (Default: 6)
+Maximum nesting level of the returned JSON structure for a certain MBean (default: 6)
 
 =item B<--max-collection-size>
 
@@ -78,7 +78,7 @@ Maximum overall objects to fetch for a mbean (default: 10000)
 
 =item B<--mbean-pattern>
 
-Pattern matching (Default: '*:*').
+Pattern matching (default: '*:*').
 For details: http://docs.oracle.com/javase/1.5.0/docs/api/javax/management/ObjectName.html
 
 =back

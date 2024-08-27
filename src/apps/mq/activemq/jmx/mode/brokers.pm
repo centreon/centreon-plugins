@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,7 +204,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-broker-name:s'      => { name => 'filter_broker_name' },
         'filter-destination-name:s' => { name => 'filter_destination_name' },
-        'filter-destination-type:s' => { name => 'filter_destination_type' }
+        'filter-destination-type:s' => { name => 'filter_destination_type' },
+        'request:s@'                => { name => 'request' }
     });
 
     return $self;
@@ -238,6 +239,24 @@ sub manage_selection {
             ]
         }
     ];
+
+    if (defined($self->{option_results}->{request}) && $self->{option_results}->{request} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'JSON::XS',
+            error_msg => "Cannot load module 'JSON::XS'."
+        );
+        $request = undef;
+        foreach (@{$self->{option_results}->{request}}) {
+            eval {
+                push @$request, JSON::XS->new->utf8->decode($_);
+            };
+            if ($@) {
+                $self->{output}->add_option_msg(short_msg => "Cannot use request as it is a malformed JSON: " . $@);
+                $self->{output}->option_exit();
+            }
+        }
+    }
+
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
     $self->{cache_name} = 'activemq_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
@@ -308,15 +327,33 @@ Check brokers.
 
 =item B<--filter-broker-name>
 
-Filter broker name (Can be a regexp).
+Filter broker name (can be a regexp).
 
 =item B<--filter-destination-name>
 
-Filter destination name (Can be a regexp).
+Filter destination name (can be a regexp).
 
 =item B<--filter-destination-type>
 
-Filter destination type (Can be a regexp).
+Filter destination type (can be a regexp).
+
+=item B<--request>
+
+EXPERIMENTAL Option : Community-supported only (no support from Centreon at this time)
+
+Set the MBean and attributes to request (will replace defaults)
+in a JSON-formatted fashion.
+
+This is useful to reduce the size of returned data by providing destination
+type and name or broker name instead of filtering afterwards, and grabbing
+exactly the wanted attributes.
+
+This can be set multiple times.
+
+Example:
+
+--request='{"mbean":"org.apache.activemq:brokerName=*,destinationName=MyQueue,destinationType=Queue,type=Broker","attributes":[{"name":"QueueSize"}]}'
+--request='{"mbean":"org.apache.activemq:brokerName=*,type=Broker,service=Health","attributes":[{"name":"CurrentStatus"}]}'
 
 =item B<--warning-status>
 
@@ -325,7 +362,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /Good/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /Good/i').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>

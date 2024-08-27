@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,103 +204,103 @@ Check Webpage response and size.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the webserver host
+IP Addr/FQDN of the web server host.
 
 =item B<--port>
 
-Port used by Webserver
+Port used by web server.
 
 =item B<--method>
 
-Specify http method used (Default: 'GET')
+Specify http method used (default: 'GET').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http').
 
 =item B<--urlpath>
 
-Set path to get webpage (Default: '/')
+Define the path of the web page to get (default: '/').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
+Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (default: 5).
 
 =item B<--no-follow>
 
-Do not follow http redirect
+Do not follow http redirections.
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify the certificate to send to the web server.
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify the key to send to the web server.
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify the root certificate to send to the web server.
 
 =item B<--cert-pwd>
 
-Specify certificate's password
+Specify the certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
-
-=item B<--header>
-
-Set HTTP headers (Multiple option)
+Specify that the type of certificate is PKCS1.
 
 =item B<--get-param>
 
-Set GET params (Multiple option. Example: --get-param='key=value')
+Set GET params (multiple option. Example: --get-param='key=value').
+
+=item B<--header>
+
+Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
 
 =item B<--post-param>
 
-Set POST params (Multiple option. Example: --post-param='key=value')
+Set POST params (multiple option. Example: --post-param='key=value').
 
 =item B<--cookies-file>
 
-Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
+Save cookies in a file (example: '/tmp/lwp_cookies.dat').
 
 =item B<--unknown-status>
 
-Warning threshold for http response code
+Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
 
 =item B<--warning-status>
 
-Warning threshold for http response code
+Warning conditions for http response code.
 
 =item B<--critical-status>
 
-Critical threshold for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Critical conditions for http response code.
 
 =item B<--extra-stats>
 

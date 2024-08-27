@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -245,7 +245,7 @@ Filter jobs by policy name (can be a regexp).
 
 =item B<--filter-policy-id>
 
-Filter jobs by policy id (can be a regexp).
+Filter jobs by policy ID (can be a regexp).
 
 =item B<--filter-type>
 
@@ -265,12 +265,12 @@ Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /abnormal/i')
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /abnormal/i')
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /errors|failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /errors|failed/i').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>

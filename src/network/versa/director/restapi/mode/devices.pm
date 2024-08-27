@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -481,15 +481,15 @@ Check device under an organization name.
 
 =item B<--filter-org-name>
 
-Filter organizations by name (Can be a regexp).
+Filter organizations by name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter device by name (Can be a regexp).
+Filter device by name (can be a regexp).
 
 =item B<--filter-device-type>
 
-Filter device by type (Can be a regexp).
+Filter device by type (can be a regexp).
 
 =item B<--add-paths>
 
@@ -507,7 +507,7 @@ You can use the following variables: %{ping_status}, %{service_sstatus}, %{sync_
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
+Define the conditions to match for the status to be CRITICAL (default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
 You can use the following variables: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

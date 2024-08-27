@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -241,32 +241,32 @@ Check disk limits (since vsphere 5.0).
 
 =item B<--warning-disk-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-disk-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-cpu-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-cpu-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--warning-memory-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =item B<--critical-memory-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Define the conditions to match for the status to be CRITICAL (default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
 You can use the following variables: %{connection_state}, %{power_state}, %{limit}
 
 =back

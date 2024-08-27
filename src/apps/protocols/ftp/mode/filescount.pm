@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,7 +89,7 @@ sub run {
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $count,
                                                        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
+
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("Number of files : %s", $count));
     $self->{output}->perfdata_add(label => 'files',
@@ -105,7 +105,7 @@ sub countFiles {
     my ($self) = @_;
     my @listings;
     my $count = 0;
-    
+
     if (!defined($self->{option_results}->{directory}) || scalar(@{$self->{option_results}->{directory}}) == 0) {
         push @listings, [ { name => '.', level => 0 } ];
     } else {
@@ -121,36 +121,39 @@ sub countFiles {
             my $hash = pop @$list;
             my $dir = $hash->{name};
             my $level = $hash->{level};
-                        
+
             if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
                 # Cannot list we skip
                 next;
             }
-
+            # this loop is recursive, when we find a directory we add it to the list used by the for loop.
+            # max_depth is used to limit the depth we search.
+            # same behaviour as cifs(samba) and sftp protocol.
             foreach my $line (@files) {
                 # IIS: 05-13-15  10:59AM              1184403 test.jpg
                 next if ($line !~ /(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(.*)/ &&
-                         $line !~ /^\s*\S+\s*\S+\s*(\S+)\s+(.*)/);
+                    $line !~ /^\s*\S+\s*\S+\s*(\S+)\s+(.*)/);
                 my ($rights, $filename) = ($1, $2);
                 my $bname = basename($filename);
                 next if ($bname eq '.' || $bname eq '..');
                 my $name = $dir . '/' . $bname;
-                
-                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
-                    $name !~ /$self->{option_results}->{filter_file}/) {
+
+                if ($rights =~ /^(d|<DIR>)/i) {
+                    # in the case of a directory and the max level is not reached yet, we add it to the recursive browsing
+                    if (defined($self->{option_results}->{max_depth})
+                        && $level + 1 <= $self->{option_results}->{max_depth}) {
+                        push @$list, { name => $name, level => $level + 1 };
+                    }
+                    next;
+                } elsif (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_file})
+                    && $name !~ /$self->{option_results}->{filter_file}/) {
                     $self->{output}->output_add(long_msg => sprintf("Skipping '%s'", $name));
+                     # in the case of a file that does not match the filter, we skip
                     next;
                 }
-            
-                if ($rights =~ /^(d|<DIR>)/i) {
-                    if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
-                        push @$list, { name => $name, level => $level + 1};
-                    }
-                } else {
-                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
-                    $count++;
-                }
-            }        
+                $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
+                $count++;
+            }
         }
     }
     return $count;
@@ -194,7 +197,7 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =item B<--warning>
 
@@ -206,11 +209,11 @@ Critical threshold (number of files)
 
 =item B<--directory>
 
-Check files in the directory (Multiple option)
+Check files in the directory (multiple option)
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Don't check fewer levels (default: '0'. Means current dir only).
 
 =item B<--filter-file>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -1142,7 +1142,7 @@ How many OID values per SNMP request (default: 50) (for get_leef method. Be caut
 =item B<--snmp-autoreduce>
  
 Progressively reduce the number of requested OIDs in bulk mode. Use it in case of
-SNMP errors (By default, the number is divided by 2).
+SNMP errors (by default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 

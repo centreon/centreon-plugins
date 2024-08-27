@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,18 +141,18 @@ Exemple: 'Number of Syslog message collected %d'
 
 =item B<--query>
 
-Set query (Required).
+Set query (required).
 Syntax: https://docs.microsoft.com/en-us/azure/kusto/query/
 
 =item B<--workspace-id>
 
-Set workspace id (Required).
+Set workspace ID (required).
 
 =item B<--timespan>
 
 Set Timespan of the query (Do not use it if time filters is included in the 
 query)
-(Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+(can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--warning-match> B<--critical-match>
 

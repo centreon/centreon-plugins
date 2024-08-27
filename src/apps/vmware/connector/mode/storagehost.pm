@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -360,7 +360,7 @@ Filter paths by name (can be a regexp).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
 You can use the following variables: %{status}, %{maintenance}
 
 =item B<--warning-status>
@@ -380,17 +380,17 @@ You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-adapter-status>
 
-Set critical threshold for adapter status (Default: '%{status} =~ /fault/').
+Set critical threshold for adapter status (default: '%{status} =~ /fault/').
 You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-lun-status>
 
-Set warning threshold for lun status (Default: '%{status} =~ /degraded|quiesced/').
+Set warning threshold for lun status (default: '%{status} =~ /degraded|quiesced/').
 You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-lun-status>
 
-Set critical threshold for lun status (Default: '%{status} =~ /lostcommunication|error/').
+Set critical threshold for lun status (default: '%{status} =~ /lostcommunication|error/').
 You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-path-status>
@@ -400,7 +400,7 @@ You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--critical-path-status>
 
-Set critical threshold for path status (Default: '%{status} =~ /dead/').
+Set critical threshold for path status (default: '%{status} =~ /dead/').
 You can use the following variables: %{name}, %{host}, %{status}
 
 =item B<--warning-*> B<--critical-*>

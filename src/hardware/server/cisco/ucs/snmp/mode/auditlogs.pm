@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -209,12 +209,12 @@ Check audit logs.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{severity} =~ /minor|warning/')
+Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /minor|warning/')
 You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{severity} =~ /major|critical/').
+Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /major|critical/').
 You can use the following variables: %{severity}, %{description}, %{dn}
 
 =item B<--memory>
@@ -223,7 +223,7 @@ Only check new audit.
 
 =item B<--filter-message>
 
-Filter on event message. (Default: none)
+Filter on event message. (default: none)
 
 =item B<--retention>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -374,43 +374,43 @@ IP Addr/FQDN of the cadvisor node (can be multiple).
 
 =item B<--port>
 
-Port used (Default: 8080)
+Port used (default: 8080)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (default: 'http')
 
 =item B<--api-path>
 
-Path used (Default: '/containers/docker')
+Define the path of the endpoint to query  (default: '/containers/docker')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 10)
+Threshold for HTTP timeout (default: 10)
 
 =item B<--cert-file>
 
-Specify certificate to send to the webserver
+Specify certificate to send to the web server
 
 =item B<--key-file>
 
-Specify key to send to the webserver
+Specify key to send to the web server
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the webserver
+Specify root certificate to send to the web server
 
 =item B<--cert-pwd>
 
@@ -418,7 +418,7 @@ Specify certificate's password
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
+Specify that the type of certificate is PKCS1.
 
 =back
 

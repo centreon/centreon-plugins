@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -158,19 +158,19 @@ Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified)
 
 =item B<--basic>
 
-Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
 Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 
@@ -178,7 +178,7 @@ Threshold for HTTP timeout
 
 =item B<--urlpath>
 
-Path to the Tomcat Manager List (Default: Tomcat 7 '/manager/text/list')
+Path to the Tomcat Manager List (default: Tomcat 7 '/manager/text/list')
 Tomcat 6: '/manager/list'
 Tomcat 7: '/manager/text/list'
 
@@ -193,7 +193,7 @@ Can be for example: '/STORAGE/context/test1'.
 
 =item B<--unknown-http-status>
 
-Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Threshold unknown for http response code (default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
 
@@ -205,17 +205,17 @@ Critical threshold for http response code
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{state} ne "running"').
+Define the conditions to match for the status to be UNKNOWN (default: '%{state} ne "running"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{state}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} eq "stopped"').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "stopped"').
 You can use the following variables: %{state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

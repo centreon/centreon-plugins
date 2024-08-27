@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -223,7 +223,7 @@ Hostname to query in ssh.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--sudo>
 
@@ -231,7 +231,7 @@ Use 'sudo' to execute the command.
 
 =item B<--broker-stats-file>
 
-Specify the centreon-broker json stats file (Required). Can be multiple.
+Specify the centreon-broker json stats file (required). Can be multiple.
 
 =item B<--filter-name>
 
@@ -249,7 +249,7 @@ You can use the following variables: %{queue_file_enabled}, %{state}, %{status},
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
 You can use the following variables: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =back

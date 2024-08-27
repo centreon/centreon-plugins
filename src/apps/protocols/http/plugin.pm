@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{modes} = {
@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check HTTP or HTTPS webpage.
+Check a HTTP or HTTPS web page.
 
 =cut

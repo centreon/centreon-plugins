@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -82,7 +82,8 @@ sub new {
         'storage:s'               => { name => 'storage' },
         'name'                    => { name => 'use_name' },
         'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'regexp-insensitive'      => { name => 'use_regexpi' },
+        'regexp-isensitive'       => { name => 'use_regexpi' }, # compatibility
         'oid-filter:s'            => { name => 'oid_filter', default => 'hrStorageDescr'},
         'oid-display:s'           => { name => 'oid_display', default => 'hrStorageDescr'},
         'display-transform-src:s' => { name => 'display_transform_src' },
@@ -291,7 +292,7 @@ __END__
 
 =item B<--storage>
 
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
+Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
 
 =item B<--name>
 
@@ -301,7 +302,7 @@ Allows to use storage name with option --storage instead of storage oid index.
 
 Allows to use regexp to filter storage (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 
@@ -317,11 +318,11 @@ Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageD
 
 Modify the storage name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
+Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 

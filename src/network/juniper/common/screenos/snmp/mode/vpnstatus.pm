@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -170,16 +170,16 @@ You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
+Define the conditions to match for the status to be CRITICAL (default: '%{p1state} eq "inactive" || %{p2state} eq "inactive"').
 You can use the following variables: %{p1state}, %{p2state}
 
 =item B<--warning-update-time>
 
-Warning threshold for update time (in secondes).
+Warning threshold for update time (in seconds).
 
 =item B<--critical-update-time>
 
-Critical threshold for update time (in secondes).
+Critical threshold for update time (in seconds).
 
 =back
 

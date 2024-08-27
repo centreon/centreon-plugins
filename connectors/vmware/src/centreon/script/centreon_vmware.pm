@@ -40,9 +40,9 @@ BEGIN {
     # it's a hack if you unset that
     #$ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "Net::SSL";
 
-    # The option is not omit to verify the certificate chain. 
+    # The option is not omit to verify the certificate chain.
     $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
-    
+
     eval {
         # required for new IO::Socket::SSL versions
         require IO::Socket::SSL;
@@ -54,7 +54,7 @@ BEGIN {
 use base qw(centreon::vmware::script);
 use vars qw(%centreon_vmware_config);
 
-my $VERSION = '3.2.5';
+my $VERSION = '3.2.6';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (

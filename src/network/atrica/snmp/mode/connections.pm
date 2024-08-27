@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -393,7 +393,7 @@ Check connections (A-Series.mib).
 
 =item B<--add-status>
 
-Check interface status (By default if no --add-* option is set).
+Check interface status (by default if no --add-* option is set).
 
 =item B<--add-traffic>
 
@@ -405,7 +405,7 @@ Check interface errors.
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (Default: '%{opstatus} eq "up" or %{opstatus} eq "inService"').
+If the expression is true, metrics are checked (default: '%{opstatus} eq "up" or %{opstatus} eq "inService"').
 
 =item B<--warning-status>
 
@@ -427,15 +427,15 @@ Can be: 'in-cir', 'in-eir', 'out-cir', 'out-eir', 'in-eir-discard', 'out-eir-dis
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interfaces').
+Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -473,11 +473,11 @@ Add an OID to display.
 
 Modify the interface name displayed by using a regular expression.
 
-Eg: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 
-Display cache interface datas.
+Display cache interface data.
 
 =back
 

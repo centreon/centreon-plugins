@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -273,28 +273,28 @@ Check Cisco Stack (CISCO-STACKWISE-MIB).
 
 =item B<--warning-*> B<--critical-*>
 
-Set thresholds on members count for each states.
-(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+Set thresholds for members count for each states.
+(can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
 'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
 
 =item B<--warning-stack-status>
 
-Set warning threshold for stack status (Default: '').
+Set warning threshold for stack status (default: '').
 You can use the following variables: %{stack_status}
 
 =item B<--critical-stack-status>
 
-Set critical threshold for stack status (Default: '%{stack_status} =~ /notredundant/').
+Set critical threshold for stack status (default: '%{stack_status} =~ /notredundant/').
 You can use the following variables: %{stack_status}
 
 =item B<--warning-status>
 
-Set warning threshold for members status (Default: '').
+Set warning threshold for members status (default: '').
 You can use the following variables: %{name}, %{role}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for member status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
+Set critical threshold for member status (default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
 You can use the following variables: %{name}, %{role}, %{state}
 
 Role can be: 'master', 'member', 'notMember', 'standby'.

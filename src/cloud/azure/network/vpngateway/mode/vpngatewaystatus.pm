@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,20 +127,20 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --cu
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group (required).
 
 =item B<--filter-name>
 
-Filter vpn name (Can be a regexp).
+Filter vpn name (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (default: '%{provisioning_state} ne "Succeeded"').
 You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -172,23 +172,23 @@ Default statistic: 'average' / All satistics are valid.
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--storage-type>
 
-Set the storage type of the bucket (Default: 'StandardStorage')
-((can be defined multiple times): 'StandardStorage', 'StandardIAStorage', 'ReducedRedundancyStorage').
+Set the storage type of the bucket (can be defined multiple times).
+Available values: 'StandardStorage', 'StandardIAStorage' and 'ReducedRedundancyStorage' (default: 'StandardStorage').
 
 =item B<--warning-$metric$-$storagetype$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'bucketsizebytes',
+Warning thresholds ($metric$ can be: 'bucketsizebytes',
 $storagetype$ can be: 'standardstorage',
 'standardiastorage', 'reducedredundancystorage',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$storagetype$-$statistic$>
 
-Thresholds critical ($metric$ can be: 'bucketsizebytes',
+Critical thresholds ($metric$ can be: 'bucketsizebytes',
 $storagetype$ can be: 'standardstorage',
 'standardiastorage', 'reducedredundancystorage',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').

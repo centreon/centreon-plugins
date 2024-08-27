@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -220,12 +220,12 @@ You can use the following variables:  %{status}, %{primaryMember}, %{standbyMemb
 
 =item B<--warning-connection-status>
 
-Set warning threshold for connection status (Default: '%{status} eq "congested"').
+Set warning threshold for connection status (default: '%{status} eq "congested"').
 You can use the following variables:  %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--critical-connection-status>
 
-Set critical threshold for connection status (Default: '%{status} eq "disconnected"').
+Set critical threshold for connection status (default: '%{status} eq "disconnected"').
 You can use the following variables: %{status}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--unknown-state>
@@ -240,7 +240,7 @@ You can use the following variables: %{state}, %{primaryMember}, %{standbyMember
 
 =item B<--critical-state>
 
-Set critical threshold for state (Default: '%{state} ne "peer"').
+Set critical threshold for state (default: '%{state} ne "peer"').
 You can use the following variables: %{state}, %{primaryMember}, %{standbyMember}, %{standbyId}
 
 =item B<--unknown-role>

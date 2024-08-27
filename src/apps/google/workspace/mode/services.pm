@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -162,17 +162,17 @@ Check Google workspace service status.
 =item B<--filter-name>
 
 Only display the status for a specific servie
-(Example: --filter-service='gmail')
+(example: --filter-service='gmail')
 
 =item B<--warning-status>
 
 Set warning threshold for the service status
-(Default: '%{status} eq "disruption"').
+(default: '%{status} eq "disruption"').
 
 =item B<--critical-status>
 
 Set warning threshold for the service status
-(Default: '%{status} eq "outage"').
+(default: '%{status} eq "outage"').
 
 =back
 

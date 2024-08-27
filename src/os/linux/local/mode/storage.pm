@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -153,7 +153,7 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
-        my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
+        my ($fs, $type, $used, $available, $percent, $mount) = ($1, $2, $4, $5, $6, $7);
 
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
             $fs !~ /$self->{option_results}->{filter_fs}/);
@@ -170,9 +170,9 @@ sub manage_selection {
             display => $mount,
             fs => $fs,
             type => $type,
-            total => $size * 1024,
             used => $used * 1024,
-            free => $available * 1024
+            free => $available * 1024,
+            total => ($used + $available) * 1024
         };
     }
 
@@ -207,7 +207,7 @@ Critical threshold.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

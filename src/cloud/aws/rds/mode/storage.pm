@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -341,11 +341,11 @@ Default statistic: 'average' / All statistics are valid.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'cluster', 'instance').
+Set the instance type (required) (can be: 'cluster', 'instance').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 

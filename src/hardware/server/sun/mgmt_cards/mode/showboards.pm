@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -265,7 +265,7 @@ Hostname to query.
 
 =item B<--port>
 
-telnet port (Default: 23).
+telnet port (default: 23).
 
 =item B<--username>
 
@@ -281,7 +281,7 @@ Returns new errors (retention file is used by the following option).
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--command-plink>
 
@@ -293,7 +293,7 @@ Use ssh (with plink) instead of telnet.
 
 =item B<--exclude>
 
-Exclude some slots (comma seperated list) (Example: --exclude=IDO,PS0)
+Exclude some slots (comma separated list) (example: --exclude=IDO,PS0)
 
 =item B<--no-component>
 

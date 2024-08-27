@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -126,7 +126,7 @@ Command used: '/opt/PCsensor/TEMPered/utils/tempered'
 
 =item B<--filter-drive>
 
-Filter by drive name (e.g --filter-drive raw4)
+Filter by drive name (example: --filter-drive raw4)
 
 =item B<--warning-*> B<--critical-*>
 

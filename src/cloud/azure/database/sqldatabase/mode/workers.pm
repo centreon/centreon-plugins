@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -112,13 +112,13 @@ Metrics are available with:
 
 Example:
 
-Using resource name :
+Using resource name:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=workers --custommode=api
 --resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='total'
 --critical-workers='10'
 
-Using resource id :
+Using resource ID:
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=workers --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'
@@ -130,15 +130,15 @@ Default aggregation: 'average', other are not identified as relevant nor availab
 
 =item B<--resource>
 
-Set resource name or id (Required). It is the database name. 
+Set resource name or ID (required). It is the database name. 
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group (required if resource's name is used).
 
 =item B<--server>
 
-Set server name (Required if resource's name is used).
+Set server name (required if resource's name is used).
 
 =item B<--warning-workers>
 

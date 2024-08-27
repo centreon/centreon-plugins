@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -157,12 +157,12 @@ Database name (default: 'Framework').
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '')
+Define the conditions to match for the status to be WARNING (default: '')
 You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '1 == 1'. We match all errors).
+Define the conditions to match for the status to be CRITICAL (default: '1 == 1'. We match all errors).
 You can use the following variables: %{description}, %{workstation_id}, %{since}
 
 =item B<--timezone>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -206,35 +206,33 @@ Query NSClient Legacy API.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the host
+IP Addr/FQDN of the host.
 
 =item B<--port>
 
-Port used (Default: 8443)
+Port used (default: 8443).
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify http if needed (default: 'https').
 
 =item B<--credentials>
 
-Specify this option if you access webpage with authentication
+Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--basic>
 
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
 
 =item B<--legacy-password>
 
@@ -242,7 +240,7 @@ Specify password for old authentification system.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5)
+Define the timeout in seconds (default: 5).
 
 =item B<--command>
 
@@ -250,12 +248,12 @@ Set command.
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1')
+Set arguments (multiple option. Example: --arg='arg1').
 
 =item B<--unknown-status>
 
 Warning threshold for http response code.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+Default: '%{http_code} < 200 or %{http_code} >= 300'.
 
 =item B<--warning-status>
 

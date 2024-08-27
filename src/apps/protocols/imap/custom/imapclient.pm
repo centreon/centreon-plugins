@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -207,7 +207,7 @@ IP Addr/FQDN of the imap host
 
 =item B<--port>
 
-Port used (Default: 143).
+Port used (default: 143).
 
 =item B<--ssl>
 
@@ -219,7 +219,7 @@ Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_v
 
 =item B<--insecure>
 
-Allow insecure TLS connection by skipping cert validation (Since redis-cli 6.2.0).
+Allow insecure TLS connection by skipping cert validation (since redis-cli 6.2.0).
 
 =item B<--username>
 
@@ -231,7 +231,7 @@ Specify password for authentification
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (default: 30)
 
 =back
 

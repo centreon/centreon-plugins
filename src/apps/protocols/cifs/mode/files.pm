@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -267,15 +267,15 @@ Check files.
 
 =item B<--directory>
 
-Check directory (Multiple option).
+Check directory (multiple option).
 
 =item B<--max-depth>
 
-Don't check fewer levels (Default: '0'. Means current dir only). Used for directory counting files and size.
+Don't check fewer levels (default: '0'. Means current dir only). Used for directory counting files and size.
 
 =item B<--file>
 
-Check file (Multiple option).
+Check file (multiple option).
 
 =item B<--filter-file>
 
@@ -288,8 +288,7 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--unit>
 
-Select the unit for modified time threshold. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the modified time thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 

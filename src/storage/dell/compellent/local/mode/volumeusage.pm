@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -305,27 +305,27 @@ Check storage center and volume usages.
 
 =item B<--cem-host>
 
-Compellent Entreprise Manager hostname (Required).
+Compellent Entreprise Manager hostname (required).
 
 =item B<--cem-user>
 
-Compellent Entreprise Manager username (Required).
+Compellent Entreprise Manager username (required).
 
 =item B<--cem-password>
 
-Compellent Entreprise Manager password (Required).
+Compellent Entreprise Manager password (required).
 
 =item B<--cem-port>
 
-Compellent Entreprise Manager port (Default: 3033).
+Compellent Entreprise Manager port (default: 3033).
 
 =item B<--sdk-path-dll>
 
-Path to 'DellStorage.ApiCommandSet.dll' (Required).
+Path to 'DellStorage.ApiCommandSet.dll' (required).
 
 =item B<--timeout>
 
-Set timeout time for command execution (Default: 50 sec)
+Set timeout time for command execution (default: 50 sec)
 
 =item B<--no-ps>
 
@@ -333,16 +333,16 @@ Don't encode powershell. To be used with --command and 'type' command.
 
 =item B<--command>
 
-Command to get information (Default: 'powershell.exe').
+Command to get information (default: 'powershell.exe').
 Can be changed if you have output in a file. To be used with --no-ps option!!!
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
@@ -362,7 +362,7 @@ Filter Volume Name to display.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

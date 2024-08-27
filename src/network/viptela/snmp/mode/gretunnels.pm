@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -285,7 +285,7 @@ You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{adminState} eq "up" and %{operState} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{adminState} eq "up" and %{operState} ne "up"').
 You can use the following variables: %{adminState}, %{operState}, %{sourceIp}, %{destIp}
 
 =item B<--warning-*> B<--critical-*>

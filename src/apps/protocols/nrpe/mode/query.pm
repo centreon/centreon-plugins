@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,7 +114,7 @@ In nrpe use following command to get server version: --command='_NRPE_CHECK'
 
 =item B<--arg>
 
-Set arguments (Multiple option. Example: --arg='arg1' --arg='arg2').
+Set arguments (multiple option. Example: --arg='arg1' --arg='arg2').
 
 =item B<--extra-args>
 

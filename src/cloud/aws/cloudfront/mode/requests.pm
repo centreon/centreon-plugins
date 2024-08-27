@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -154,15 +154,15 @@ Default statistic: 'sum' / Valid statistic: 'sum'.
 
 =item B<--id>
 
-Set the instance id (Required) (can be defined multiple times).
+Set the instance ID (required) (can be defined multiple times).
 
 =item B<--warning-requests>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-requests>
 
-Thresholds critical.
+Critical thresholds.
 
 =item B<--per-sec>
 

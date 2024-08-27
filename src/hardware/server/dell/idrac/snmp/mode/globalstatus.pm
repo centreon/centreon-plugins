@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -171,32 +171,32 @@ Check the overall status of iDrac card.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /nonCritical|other/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /nonCritical|other/').
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|nonRecoverable/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|nonRecoverable/').
 You can use the following variables: %{status}
 
 =item B<--unknown-storage-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /unknown/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}
 
 =item B<--warning-storage-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /nonCritical|other/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /nonCritical|other/').
 You can use the following variables: %{status}
 
 =item B<--critical-storage-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /critical|nonRecoverable/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical|nonRecoverable/').
 You can use the following variables: %{status}
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -311,11 +311,11 @@ Set MMC hostname.
 
 =item B<--port>
 
-Port used (Default: 5572)
+Port used (default: 5572)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-username>
 
@@ -327,7 +327,7 @@ API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (default: 30).
 
 =back
 

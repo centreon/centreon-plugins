@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,7 +129,7 @@ Critical threshold (number of long queries).
 
 =item B<--seconds>
 
-Filter queries over X seconds (Default: 60).
+Filter queries over X seconds (default: 60).
 
 =item B<--filter-user>
 

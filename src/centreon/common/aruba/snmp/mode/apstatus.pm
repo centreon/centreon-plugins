@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -254,7 +254,7 @@ Can be: 'connected-current' (global), 'uptime',
 'controller-bootstrap', 'reboot', 'status' (per AP).
 
 'status' can use special variables like: %{name},
-%{status}, %{ip}, %{group}, %{location} (Default: '')
+%{status}, %{ip}, %{group}, %{location} (default: '')
 
 =item B<--filter-*>
 

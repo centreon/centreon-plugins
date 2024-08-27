@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -256,14 +256,14 @@ __END__
 
 =head1 MODE
 
-Check cpu usage.
+Check CPU usage.
 
 =over 8
 
 =item B<--check-order>
 
-Check cpu in standard dlink mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
-(Default: 'common,industrial,agent').
+Check CPU in standard dlink mib. If you have some issue (wrong CPU information in a specific mib), you can change the order 
+(default: 'common,industrial,agent').
 
 =item B<--warning-*> B<--critical-*>
 

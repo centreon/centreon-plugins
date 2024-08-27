@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,7 +219,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html' fo
 =item B<--filter-family>
 
 Filter by instance family (regexp)
-(Can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
+(can be: 'general', 'compute', 'memory', 'storage', 'accelerated')
 
 =item B<--filter-type>
 

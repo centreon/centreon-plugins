@@ -20,7 +20,7 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: nrpe/packaging/centreon-nrpe3-daemon.yaml
+      version_file: nrpe/packaging/centreon-nrpe4-daemon.yaml
 
   package:
     needs: [get-environment]
@@ -38,6 +38,12 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -49,11 +55,11 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Download nrpe sources
         run: |
-          curl -Lo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
+          curl -sLo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ needs.get-environment.outputs.version }}/nrpe-${{ needs.get-environment.outputs.version }}.tar.gz" | tar zxpf -
           mv nrpe-${{ needs.get-environment.outputs.version }} nrpe-src
         shell: bash
 
@@ -61,7 +67,7 @@ jobs:
         run: |
           cd nrpe-src
 
-          patch -p1 < ../nrpe/packaging/files/nrpe3_add_centreon_cmd.patch
+          patch -p1 < ../nrpe/packaging/files/nrpe4_add_centreon_cmd.patch
 
           if [ "${{ matrix.package_extension }}" = "deb" ]; then
             NAGIOS_PLUGINS_PATH="/usr/lib/nagios/plugins"
@@ -94,7 +100,7 @@ jobs:
         shell: bash
 
       - name: Package
-        uses: ./.github/actions/package
+        uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "nrpe/packaging/*.yaml"
           distrib: ${{ matrix.distrib }}
@@ -106,6 +112,7 @@ jobs:
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
   deliver-rpm:
     needs: [get-environment, package]
@@ -118,7 +125,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
@@ -130,17 +137,17 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-deb:
-    needs: [get-environment ,package]
+    needs: [get-environment, package]
     if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
     runs-on: [self-hosted, common]
 
     strategy:
       matrix:
-        distrib: [bullseye]
+        distrib: [bullseye, bookworm, jammy]
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Delivery
         uses: ./.github/actions/deb-delivery

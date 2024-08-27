@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -199,12 +199,12 @@ Example: --filter-counters='^memory-usage$'
 
 =item B<--warning-replication-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 You can use the following variables: %{replication_state}
 
 =item B<--critical-replication-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{replication_state} =~ /outOfService/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{replication_state} =~ /outOfService/i').
 You can use the following variables: %{replication_state}
 
 =item B<--warning-*>

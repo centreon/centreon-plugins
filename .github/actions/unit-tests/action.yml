@@ -1,0 +1,10 @@
+name: "unit-tests"
+description: "Unit tests that control the code itself"
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Recursively run all unit tests
+      shell: bash
+      run: yath -L test ./tests

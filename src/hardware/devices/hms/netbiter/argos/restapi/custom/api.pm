@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -264,19 +264,19 @@ Netbiter Argos RestAPI
 
 =item B<--hostname>
 
-Argos API hostname (Default: api.netbiter.net).
+Argos API hostname (default: api.netbiter.net).
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--api-endpoint>
 
-Argos API requests endpoint (Default: '/operation/v1/rest/json')
+Argos API requests endpoint (default: '/operation/v1/rest/json')
 
 =item B<--access-key>
 
@@ -295,7 +295,7 @@ Must be used with --api-username option.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

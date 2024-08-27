@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,32 +141,32 @@ Filter replication name (can be a regexp).
 
 =item B<--unknown-health-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{health_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{health_status} =~ /unknown/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--warning-health-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health_status} =~ /ok_but|degraded|minor/i').
+Define the conditions to match for the status to be WARNING (default: '%{health_status} =~ /ok_but|degraded|minor/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--critical-health-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health_status} =~ /major|critical|non_recoverable/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health_status} =~ /major|critical|non_recoverable/i').
 You can use the following variables: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{repl_status} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{repl_status} =~ /unknown/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{repl_status} =~ /syncing/i').
+Define the conditions to match for the status to be WARNING (default: '%{repl_status} =~ /syncing/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =item B<--critical-repl-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{repl_status} =~ /inconsistent/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{repl_status} =~ /inconsistent/i').
 You can use the following variables: %{repl_status}, %{display}
 
 =back

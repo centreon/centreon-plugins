@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,17 +201,17 @@ Filter stores by hostname.
 
 =item B<--unknown-health>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{health} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{health} =~ /unknown/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--warning-health>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /warning/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--critical-health>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /critical/i').
 You can use the following variables: %{health}, %{name}
 
 =item B<--warning-*> B<--critical-*>

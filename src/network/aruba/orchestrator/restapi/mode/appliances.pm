@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -168,12 +168,12 @@ Filter appliances by group.
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{state} =~ /unknown|unreachable/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown|unreachable/i').
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /unsupportedVersion|outOfSynchronization/i').
 You can use the following variables: %{state}, %{hostname}
 
 =item B<--critical-status>

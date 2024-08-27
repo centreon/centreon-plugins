@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,6 @@ sub check {
             );
         }
         $self->{output}->perfdata_add(
-            label => "sstat",
             nlabel => 'hardware.systemstats.current.count',
             instances => $_->{stat_name},
             value => $_->{stat_current},

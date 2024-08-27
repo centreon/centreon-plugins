@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -151,19 +151,19 @@ Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#,UNKNOWN,Command prob
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 30).
+Timeout in seconds for the command (default: 30).
 
 =item B<--command>
 
-Command to test (Default: none).
+Command to test (default: none).
 
 =item B<--command-path>
 
-Command path (Default: none).
+Command path (default: none).
 
 =item B<--command-options>
 
-Command options (Default: none).
+Command options (default: none).
 
 =item B<--warning-time>
 

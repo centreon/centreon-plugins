@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -240,31 +240,31 @@ PVX hostname.
 
 =item B<--url-path>
 
-PVX url path (Default: '/api')
+PVX url path (default: '/api')
 
 =item B<--port>
 
-API port (Default: 443)
+API port (default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 
-Specify username for authentication
+Specify the username for authentication
 
 =item B<--password>
 
-Specify password for authentication
+Specify the password for authentication
 
 =item B<--basic>
 
-Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
 Specify this option if you access the API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(Use with --credentials)
+(use with --credentials)
 
 =item B<--timeout>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,23 +23,34 @@ package network::citrix::netscaler::snmp::mode::components::psu;
 use strict;
 use warnings;
 
-my %map_psu_status = (
-    0 => 'not supported',
-    1 => 'not present',
-    2 => 'failed',
-    3 => 'normal',
-);
 
-my $mapping = {
-    sysHealthCounterName    => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.7.1.1' },
-    sysHealthCounterValue   => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.7.1.2', map => \%map_psu_status  },
-};
 my $oid_nsSysHealthEntry = '.1.3.6.1.4.1.5951.4.1.1.41.7.1';
 
 sub load {}
 
 sub check {
     my ($self) = @_;
+    my %map_psu_status;
+
+    if (!$self->{option_results}->{alternative_status_mapping}) {
+        %map_psu_status = (
+            0 => 'not supported',
+            1 => 'not present',
+            2 => 'failed',
+            3 => 'normal',
+        );
+    } else {
+        %map_psu_status = (
+            0 => 'normal',
+            1 => 'not present',
+            2 => 'failed',
+            3 => 'not supported',
+        );
+    }
+    my $mapping = {
+        sysHealthCounterName  => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.7.1.1' },
+        sysHealthCounterValue => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.7.1.2', map => \%map_psu_status },
+    };
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};

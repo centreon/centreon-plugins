@@ -1,5 +1,7 @@
 {
     "dependencies": [
+        "libdatetime-perl",
+        "libxml-libxml-perl",
         "net-tools",
         "quota"
     ]

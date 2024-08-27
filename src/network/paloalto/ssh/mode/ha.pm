@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,47 +189,47 @@ Check high availability.
 
 =item B<--unknown-sync-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--warning-sync-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--critical-sync-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{enabled} eq "yes" and %{status} ne "synchronized"').
+Define the conditions to match for the status to be CRITICAL (default: '%{enabled} eq "yes" and %{status} ne "synchronized"').
 Can use special variables like: %{enabled}, %{status}
 
 =item B<--unknown-member-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne %{stateLast}').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne %{stateLast}').
 Can use special variables like: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '').
+Define the conditions to match for the status to be UNKNOWN (default: '').
 Can use special variables like: %{status}, %{display}
 
 =item B<--warning-link-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be WARNING (default: '').
 Can use special variables like: %{status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "up"').
 Can use special variables like: %{status}, %{display}
 
 =back

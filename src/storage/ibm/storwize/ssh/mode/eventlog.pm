@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,15 +28,15 @@ use DateTime;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'warning:s'           => { name => 'warning', },
-        'critical:s'          => { name => 'critical', },
-        'filter-event-id:s'   => { name => 'filter_event_id'  },
-        'filter-message:s'    => { name => 'filter_message' },
-        'retention:s'         => { name => 'retention' }
+    $options{options}->add_options(arguments => {
+        'warning:s'         => { name => 'warning', },
+        'critical:s'        => { name => 'critical', },
+        'filter-event-id:s' => { name => 'filter_event_id' },
+        'filter-message:s'  => { name => 'filter_message' },
+        'retention:s'       => { name => 'retention' }
     });
 
     return $self;
@@ -72,24 +72,35 @@ sub run {
     my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
 
     my ($num_eventlog_checked, $num_errors) = (0, 0);
-    foreach (@$result) {
+    foreach my $event (@$result) {
         $num_eventlog_checked++;
         if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' &&
-            $_->{description} !~ /$self->{option_results}->{filter_message}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $_->{description} . "': no matching filter description.", debug => 1);
+            $event->{description} !~ /$self->{option_results}->{filter_message}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $event->{description} . "': no matching filter description.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_event_id}) && $self->{option_results}->{filter_event_id} ne '' &&
-            $_->{event_id} !~ /$self->{option_results}->{filter_event_id}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $_->{event_id} . "': no matching filter event id.", debug => 1);
+            $event->{event_id} !~ /$self->{option_results}->{filter_event_id}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $event->{event_id} . "': no matching filter event id.", debug => 1);
             next;
         }
 
+        my @array = ($event->{last_timestamp} =~ m/../g); # format expected is YYMMDDHHMMSS
+        my $date = DateTime->new(
+            "year"   => "20" . $array[0], # DateTime expect 4 digit year, as this is log the chance of decade old data is slim.
+            "month"  => $array[1],
+            "day"    => $array[2],
+            "hour"   => $array[3],
+            "minute" => $array[4],
+            "second" => $array[5],
+
+        );
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                '%s : %s - %s', 
-                scalar(localtime($_->{last_timestamp})),
-                $_->{event_id}, $_->{description}
+                '%s : %s - %s',
+                $date->strftime("%a %b %d %T %Y"),
+                $event->{event_id}, $event->{description}
             )
         );
         $num_errors++;
@@ -98,15 +109,16 @@ sub run {
     $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
     my $exit = $self->{perfdata}->threshold_check(value => $num_errors, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(
-        severity => $exit,
+        severity  => $exit,
         short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
     );
+
     $self->{output}->perfdata_add(
-        label => 'problems',
-        value => $num_errors,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        nlabel   => 'eventlogs.problems.count',
+        value    => $num_errors,
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-        min => 0
+        min      => 0
     );
 
     $self->{output}->display();
@@ -119,7 +131,7 @@ __END__
 
 =head1 MODE
 
-Check eventlogs.
+Check event logs.
 
 =over 8
 

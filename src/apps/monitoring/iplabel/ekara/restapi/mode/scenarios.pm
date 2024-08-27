@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -250,12 +250,12 @@ Check IP Label Ekara scenarios.
 
 =item B<--timeframe>
 
-Set timeframe period in seconds. (Default: 900)
+Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
 
 =item B<--filter-id>
 
-Filter by monitor id (can be a regexp).
+Filter by monitor ID (can be a regexp).
 
 =item B<--filter-name>
 
@@ -283,12 +283,12 @@ Can be: 'WEB', 'HTTPR', 'BROWSER PAGE LOAD'
 
 =item B<--warning-scenario-status>
 
-Warning threshold for scenario status (Default: '%{status} !~ "Success"').
+Warning threshold for scenario status (default: '%{status} !~ "Success"').
 Syntax: --warning-scenario-status='%{status} =~ "xxx"'
 
 =item B<--critical-scenario-status>
 
-Critical threshold for scenario status (Default: '%{status} =~ "Failure"').
+Critical threshold for scenario status (default: '%{status} =~ "Failure"').
 Syntax: --critical-scenario-status='%{status} =~ "xxx"'
 
 =item B<--warning-*> B<--critical-*>

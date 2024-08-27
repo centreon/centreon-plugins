@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -87,11 +87,11 @@ Create cache files (other modes could use it with --cache-use option).
 
 =item B<--filter-org-name>
 
-Filter organizations by name (Can be a regexp).
+Filter organizations by name (can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter devices by name (Can be a regexp).
+Filter devices by name (can be a regexp).
 
 =item B<--paths-by-orgs>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,15 +127,15 @@ See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metr
 
 =item B<--service>
 
-Set the Amazon service (Required) (can be defined multiple times).
+Set the Amazon service (required) (can be defined multiple times).
 
 =item B<--warning-billing>
 
-Thresholds warning.
+Warning thresholds.
 
 =item B<--critical-billing>
 
-Thresholds critical.
+Critical thresholds.
 
 =back
 

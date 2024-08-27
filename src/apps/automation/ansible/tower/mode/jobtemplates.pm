@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -179,11 +179,11 @@ Check job templates.
 
 =item B<--filter-name>
 
-Filter job template name (Can use regexp).
+Filter job template name (can use regexp).
 
 =item B<--launch-job-template-id>
 
-The job_template id to launch.
+The job_template ID to launch.
 
 =item B<--launch-inventory>
 
@@ -207,15 +207,15 @@ yaml format text that contains extra variables to pass on.
 
 =item B<--launch-max-retries>
 
-Number of retries to get job result once launched (Default: 5).
+Number of retries to get job result once launched (default: 5).
 
 =item B<--launch-retry-interval>
 
-Number of seconds between retries (Default : 10).
+Number of seconds between retries (default : 10).
 
 =item B<--unknown-job-status>
 
-Define the conditions to match for the status to be UNKNOWN (Default: '%{last_job_status} =~ /default/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{last_job_status} =~ /default/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-job-status>
@@ -225,7 +225,7 @@ You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--critical-job-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{last_job_status} =~ /failed/').
+Define the conditions to match for the status to be CRITICAL (default: '%{last_job_status} =~ /failed/').
 You can use the following variables: %{last_job_status}, %{display}
 
 =item B<--warning-*> B<--critical-*> 

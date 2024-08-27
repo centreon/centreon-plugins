@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -162,7 +162,7 @@ Can be: 'order-critical', 'order-warning'.
 
 =item B<--timeframe>
 
-Set the timeframe to query in seconds (Default: 14400).
+Set the timeframe to query in seconds (default: 14400).
 
 =item B<--filter-module>
 

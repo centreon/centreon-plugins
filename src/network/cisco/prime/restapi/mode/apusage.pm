@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -235,12 +235,12 @@ Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
 
 =item B<--warning-ap-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
+Define the conditions to match for the status to be WARNING (default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--critical-ap-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
 You can use the following variables: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--reload-cache-time>

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -214,7 +214,7 @@ Check sentinel clusters informations.
 
 =item B<--filter-cluster-name>
 
-Filter clusters by name (Can be a regexp).
+Filter clusters by name (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -228,7 +228,7 @@ You can use the following variables: %{status}, %{address}, %{port}, %{cluster_n
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
 You can use the following variables: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--unknown-status>
@@ -243,7 +243,7 @@ You can use the following variables: %{status}, %{address}, %{port}, %{cluster_n
 
 =item B<--critical-quorum-status>
 
-Set critical threshold for quorum status (Default: '%{status} =~ /noQuorum/').
+Set critical threshold for quorum status (default: '%{status} =~ /noQuorum/').
 You can use the following variables: %{status}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>

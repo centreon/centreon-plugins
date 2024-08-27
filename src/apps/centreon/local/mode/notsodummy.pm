@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -71,11 +71,11 @@ sub check_options {
 
     foreach my $status (split(',', $self->{option_results}->{status_sequence})) {
         if (!defined($self->{option_results}->{host}) && $status !~ /^[0-3]$/ && $status !~ /ok|warning|critical|unknown/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case insensitive).");
             $self->{output}->option_exit();
         }
         if (defined($self->{option_results}->{host}) && $status !~ /^[0-1]$/ && $status !~ /up|down/i) {
-            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case isensitive).");
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case insensitive).");
             $self->{output}->option_exit();
         }
         push @{$self->{status_sequence}}, $status;
@@ -273,7 +273,7 @@ perl centreon_plugins.pl --plugin=apps::centreon::local::plugin
 
 Comma separated sequence of statuses from which the mode should pick is
 return code from.
-(Example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
+(example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
 (Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown, up, down).
 
 =item B<--host>
@@ -290,13 +290,13 @@ Number of metrics to generate.
 
 =item B<--metrics-name>
 
-Name of the metrics (Default: 'metrics.number').
+Name of the metrics (default: 'metrics.number').
 
 Metrics are suffixed by a number between 1 and metrics count.
 
 =item B<--metrics-values-range>
 
-Range of values from which metrics values can be picked (Default: '0:100').
+Range of values from which metrics values can be picked (default: '0:100').
 
 =item B<--show-sequence>
 

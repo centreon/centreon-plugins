@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,7 +135,7 @@ Critical threshold in seconds.
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone)
+Timezone of oracle server (if not set, we use current server execution timezone)
 
 =back
 

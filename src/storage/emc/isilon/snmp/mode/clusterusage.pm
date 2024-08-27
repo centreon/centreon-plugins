@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -223,12 +223,12 @@ Example: --filter-counters='^status$'
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} =~ /attn/).
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /attn/).
 You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down|invalid/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down|invalid/').
 You can use the following variables: %{status}
 
 =item B<--warning-*>
@@ -243,7 +243,7 @@ Can be: 'ifs-usage', 'health'.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--free>
 

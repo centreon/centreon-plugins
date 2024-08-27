@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -333,7 +333,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /active/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /active/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
@@ -348,7 +348,7 @@ You can use the following variables: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i').
 You can use the following variables: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
@@ -363,7 +363,7 @@ You can use the following variables: %{link_status}, %{display}
 
 =item B<--critical-link-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_status} eq "down"').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

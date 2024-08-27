@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -331,42 +331,42 @@ Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
-Filter job with end time greater than current time less value in seconds (Default: 86400).
+Filter job with end time greater than current time less value in seconds (default: 86400).
 
 =item B<--ok-status>
 
-Define the conditions to match for the status to be OK (Default: '%{status} == 0')
+Define the conditions to match for the status to be OK (default: '%{status} == 0')
 You can use the following variables: %{display}, %{status}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{status} == 1')
+Define the conditions to match for the status to be WARNING (default: '%{status} == 1')
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} > 1').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} > 1').
 You can use the following variables: %{display}, %{status}, %{type}
 
 =item B<--warning-long>
 
-Set warning threshold for long jobs (Default: none)
+Set warning threshold for long jobs (default: none)
 You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--critical-long>
 
-Set critical threshold for long jobs (Default: none).
+Set critical threshold for long jobs (default: none).
 You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
 
 =item B<--warning-frozen>
 
-Set warning threshold for frozen jobs (Default: none)
+Set warning threshold for frozen jobs (default: none)
 You can use the following variables:
 %{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 
 =item B<--critical-frozen>
 
-Set critical threshold for frozen jobs (Default: '%{state} =~ /active|queue/ && %{kb} == 0').
+Set critical threshold for frozen jobs (default: '%{state} =~ /active|queue/ && %{kb} == 0').
 You can use the following variables: 
 %{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 

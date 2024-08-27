@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -478,7 +478,7 @@ Define path for scenario files (required. Example: 'sahitests/small.suite')
 
 =item B<--sahi-http-timeout>
 
-Timeout for each HTTP requests (Default: 5)
+Timeout for each HTTP requests (default: 5)
 
 =item B<--sahi-threads>
 
@@ -486,11 +486,11 @@ Number of simultaneous browser instances that can be executed (default: 1)
 
 =item B<--sahi-startwith>
 
-Define the start mode (Default: BROWSER)
+Define the start mode (default: BROWSER)
 
 =item B<--sahi-browsertype>
 
-Browser used for script executions (Default: chrome)
+Browser used for script executions (default: chrome)
 
 =item B<--sahi-baseurl>
 
@@ -511,7 +511,7 @@ Define time interval to get scenario status in seconds (default: 10).
 =item B<--unknown-run-status>
 
 Unknown threshold for running scenario rest api response.
-(Default: '%{http_code} < 200 or %{http_code} >= 300')
+(default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-run-status>
 

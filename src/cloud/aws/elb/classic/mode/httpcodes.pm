@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -247,11 +247,11 @@ Default statistic: 'sum' / Most useful statistics: 'sum'.
 
 =item B<--type>
 
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
+Set the instance type (required) (can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
-Set the instance name (Required) (can be defined multiple times).
+Set the instance name (required) (can be defined multiple times).
 
 =item B<--availability-zone>
 
@@ -259,13 +259,13 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX',
+Filter metrics (can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX',
 'HTTPCode_Backend_5XX', 'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX', 'BackendConnectionErrors') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+Warning thresholds (can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
 'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
 'httpcode-elb-5xx', 'backendconnectionerrors')
 

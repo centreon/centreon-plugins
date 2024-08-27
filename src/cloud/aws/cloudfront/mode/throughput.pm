@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -163,20 +163,20 @@ Default statistic: 'sum' / Valid statistic: 'sum'.
 
 =item B<--id>
 
-Set the instance id (Required) (can be defined multiple times).
+Set the instance ID (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'BytesDownloaded', 'BytesUploaded') 
-(Can be a regexp).
+Filter metrics (can be: 'BytesDownloaded', 'BytesUploaded') 
+(can be a regexp).
 
 =item B<--warning-*>
 
-Thresholds warning (Can be: 'bytes-downloaded', 'bytes-uploaded').
+Warning thresholds (can be: 'bytes-downloaded', 'bytes-uploaded').
 
 =item B<--critical-*>
 
-Thresholds critical (Can be: 'bytes-downloaded', 'bytes-uploaded')
+Critical thresholds (can be: 'bytes-downloaded', 'bytes-uploaded')
 
 =item B<--per-sec>
 

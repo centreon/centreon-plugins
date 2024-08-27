@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -302,7 +302,7 @@ You can use the following variables: %{status}, %{state}, %{license_error}, %{di
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{state} ne "running" or %{status} ne "online"').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "running" or %{status} ne "online"').
 You can use the following variables: %{status}, %{state}, %{license_error}, %{display}
 
 =item B<--unknown-aep-status>
@@ -317,7 +317,7 @@ You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--critical-aep-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{link_state} ne "online" or %{session_state} ne "online"').
+Define the conditions to match for the status to be CRITICAL (default: '%{link_state} ne "online" or %{session_state} ne "online"').
 You can use the following variables: %{link_state}, %{session_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>

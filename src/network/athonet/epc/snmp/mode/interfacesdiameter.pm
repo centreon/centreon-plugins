@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -225,7 +225,7 @@ You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{name}, %{owner}
 
 =item B<--unknown-transport-status>
@@ -240,7 +240,7 @@ You can use the following variables: %{transport_status}, %{transport_type}, %{n
 
 =item B<--critical-transport-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{transport_status} =~ /down/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{transport_status} =~ /down/i').
 You can use the following variables: %{transport_status}, %{transport_type}, %{name}
 
 =item B<--warning-*> B<--critical-*>

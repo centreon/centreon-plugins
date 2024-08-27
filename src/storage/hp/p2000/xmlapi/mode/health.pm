@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,7 +89,7 @@ Check health status of storage.
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check (default: '.*').
 Can be: 'disk', 'enclosure', 'fan', 'fru', 'psu', 'saslink', 'sensor', 'vdisk'.
 
 =item B<--filter>

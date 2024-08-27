@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -176,12 +176,12 @@ You can use the following variables: %{health}, %{service}
 
 =item B<--warning-service-status>
 
-Define the conditions to match for the status to be WARNING (Default: '%{health} =~ /minor/i').
+Define the conditions to match for the status to be WARNING (default: '%{health} =~ /minor/i').
 You can use the following variables: %{health}, %{service}
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{health} =~ /major/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{health} =~ /major/i').
 You can use the following variables: %{health}, %{service}
 
 =back

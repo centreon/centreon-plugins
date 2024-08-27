@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -145,10 +145,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name'              => { name => 'use_name' },
-        'device:s'          => { name => 'device' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }                               
+        'name'               => { name => 'use_name' },
+        'device:s'           => { name => 'device' },
+        'regexp'             => { name => 'use_regexp' },
+        'regexp-isensitive'  => { name => 'use_regexpi' }, # compatibility
+        'regexp-insensitive' => { name => 'use_regexpi' }
     });
 
     return $self;
@@ -303,7 +304,7 @@ __END__
 
 =head1 MODE
 
-Check read/write I/O disks (bytes per secondes, IOPs). 
+Check read/write I/O disks (bytes per second, IOPs). 
 
 =over 8
 
@@ -323,7 +324,7 @@ Can be: 'read', 'write', 'read-iops', 'write-iops',
 
 =item B<--device>
 
-Set the device (number expected) ex: 1, 2,... (empty means 'check all devices').
+Set the device (number expected) example: 1, 2,... (empty means 'check all devices').
 
 =item B<--name>
 
@@ -333,7 +334,7 @@ Allows to use device name with option --device instead of devoce oid index.
 
 Allows to use regexp to filter devices (with option --name).
 
-=item B<--regexp-isensitive>
+=item B<--regexp-insensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
 

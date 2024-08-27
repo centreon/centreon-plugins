@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,7 +131,7 @@ Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Hea
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (default: 'all').
 Can be: 'ambient', 'powermodule', 'fanpack', 'chassisfan', 
 'blower', 'blade', 'systemhealth', 'chassisstatus', 'switchmodule'.
 
@@ -142,7 +142,7 @@ You can also exclude items from specific instances: --filter=blower,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'notAvailable' (default is skipping) (comma seperated list)
+Return an error if an entity is not 'notAvailable' (default is skipping) (comma separated list)
 Can be specific or global: --absent-problem=powermodule,2
 
 =item B<--no-component>

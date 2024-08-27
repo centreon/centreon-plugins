@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -206,22 +206,22 @@ Default statistic: 'sum', 'average'.
 
 =item B<--name>
 
-Set the function name (Required) (can be defined multiple times).
+Set the function name (required) (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Duration', 'Invocations', 'Errors',
+Filter metrics (can be: 'Duration', 'Invocations', 'Errors',
 'DeadLetterErrors', 'Throttles', 'IteratorAge') 
-(Can be a regexp).
+(can be a regexp).
 
 =item B<--warning-*>
 
-Thresholds warning (Can be: 'invocations', 'errors',
+Warning thresholds (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =item B<--critical-*>
 
-Thresholds critical (Can be: 'invocations', 'errors',
+Critical thresholds (can be: 'invocations', 'errors',
 'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =back

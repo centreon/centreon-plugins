@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -484,15 +484,15 @@ Set GCP key file path.
 
 =item B<--authorization-endpoint>
 
-Set GCP authorization endpoint URL (Default: 'https://www.googleapis.com/oauth2/v4/token')
+Set GCP authorization endpoint URL (default: 'https://www.googleapis.com/oauth2/v4/token')
 
 =item B<--monitoring-endpoint>
 
-Set GCP monitoring endpoint URL (Default: 'https://monitoring.googleapis.com/v3')
+Set GCP monitoring endpoint URL (default: 'https://monitoring.googleapis.com/v3')
 
 =item B<--scope-endpoint>
 
-Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/cloud-platform')
+Set GCP scope endpoint URL (default: 'https://www.googleapis.com/auth/cloud-platform')
 
 =item B<--zeroed>
 
@@ -501,7 +501,7 @@ does not return value when not defined.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (default: 10).
 
 =back
 

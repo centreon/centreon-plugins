@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,11 +131,11 @@ Check web scenario availability metrics.
 
 =item B<--scenario-id>
 
-Set ID of the scenario.
+Set ID of the scenario (mandatory option).
 
 =item B<--timeframe>
 
-Set timeframe in seconds (Default: 14400).
+Set timeframe in seconds (default: 900).
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -245,7 +245,7 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{status} !~ /no_split/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /no_split/i').
 You can use the following variables: %{status}
 
 =item B<--unknown-member-status>
@@ -260,7 +260,7 @@ You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--critical-member-status>
 
-Define the conditions to match for the status to be CRITICAL (Default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{role} ne %{roleLast} || %{status} !~ /ready|booting/i').
 You can use the following variables: %{status}, %{role}, %{roleLast}, %{id}
 
 =item B<--warning-*> B<--critical-*>
