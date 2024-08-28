@@ -32,5 +32,5 @@ swap ${tc}
             ...      4     --warning-usage-free=''         CRITICAL: No active swap 
             ...      5     --warning-usage-prct=''         CRITICAL: No active swap
             ...      6     --critical-usage=''             CRITICAL: No active swap
-            ...      4     --critical-usage-free=''        CRITICAL: No active swap
-            ...      5     --critical-usage-prct=''        CRITICAL: No active swap 
+            ...      7     --critical-usage-free=''        CRITICAL: No active swap
+            ...      8     --critical-usage-prct=''        CRITICAL: No active swap 
