@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check list processes
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

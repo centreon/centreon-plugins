@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check inodes table
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

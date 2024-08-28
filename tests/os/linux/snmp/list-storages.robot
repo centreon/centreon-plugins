@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check list storages
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

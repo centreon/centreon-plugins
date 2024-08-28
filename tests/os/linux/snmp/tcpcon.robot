@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check tcpcon table
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

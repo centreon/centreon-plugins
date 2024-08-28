@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check list interfaces
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

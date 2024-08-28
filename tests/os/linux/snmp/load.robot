@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check load table
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

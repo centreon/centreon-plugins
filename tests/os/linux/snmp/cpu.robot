@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check cpu table
+Documentation       Check CPU
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

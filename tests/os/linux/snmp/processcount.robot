@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check processcount table
+Documentation       Check table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
