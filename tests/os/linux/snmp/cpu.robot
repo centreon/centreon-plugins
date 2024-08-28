@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check CPU
+Documentation       Check arp table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

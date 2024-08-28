@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check table
+Documentation       Check the list-diskio mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
