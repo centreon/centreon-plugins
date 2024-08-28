@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check udpcon table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

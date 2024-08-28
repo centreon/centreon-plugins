@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check tcpcon table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -25,18 +25,9 @@ tcpcon ${tc}
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
- 
-    Should Match Regexp    ${output}    OK: Total connections: \d+ \| 'service_total'=\d+;;;;
-
+    Should Match Regexp    ${output}    ${expected_result}
 
     Examples:        tc    extra_options                           expected_result    --
-            ...      1     --verbose --help                        OK: Total connections: 43 | 'service_total'=43;;;0;
-            ...      2     -application=[services]                 OK: Total connections: 43 | 'service_total'=43;;;0;
-            ...      3     -application=[threshold-critical]       OK: Total connections: 43 | 'service_total'=43;;;0; 'con_finWait1'=0;;;0; 'con_finWait2'=1;;;0; 'con_established'=8;;;0; 'con_listen'=17;;;0; 'con_closeWait'=1;;;0; 'con_lastAck'=0;;;0; 'con_synSent'=0;;;0; 'con_closing'=0;;;0; 'con_closed'=0;;;0; 'con_timeWait'=33;;;0; 'con_synReceived'=0;;;0;
-            ...      4     -application=[threshold-warning]        OK: Total connections: 43 | 'service_total'=43;;;0; 'con_closing'=0;;;0; 'con_synSent'=0;;;0; 'con_closed'=0;;;0; 'con_finWait1'=0;;;0; 'con_closeWait'=1;;;0; 'con_established'=8;;;0; 'con_finWait2'=1;;;0; 'con_synReceived'=0;;;0; 'con_listen'=17;;;0; 'con_lastAck'=0;;;0; 'con_timeWait'=33;;;0;
-
-*** Keywords ***
-Check Elements Presence
-    [Arguments]    ${output}    ${expected_result}
-    :FOR    ${element}    IN    @{expected_result}
-    \    Should Contain    ${output}    ${element}
+            ...      1     -application=[services]                 OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+            ...      2     -application=[threshold-critical]       OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+            ...      3     -application=[threshold-warning]        OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;

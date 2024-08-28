@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check swap table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
