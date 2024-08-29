@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check load table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

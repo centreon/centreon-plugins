@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check disk-usage table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

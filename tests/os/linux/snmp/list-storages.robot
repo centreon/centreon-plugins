@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check arp table
+Documentation       Check list-storages table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
