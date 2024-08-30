@@ -31,7 +31,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'tenant-name:s' => { name => 'tenant_name' }
+    });
 
     return $self;
 }
@@ -39,12 +41,19 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{tenant_name}) || $self->{option_results}->{tenant_name} eq '') {
+        $self->{option_results}->{tenant_name} = '[All]';
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $payload = {
+    my $payload = $self->{option_results}->{tenant_name};
+    $options{custom}->request(method => 'POST', endpoint => '/rest/tenants/current', query_form_post => $payload, skip_decode => 1);
+
+    $payload = {
         skip => 0,
         limit => 4000000,
         filters => [
@@ -130,6 +139,10 @@ __END__
 List plans.
 
 =over 8
+
+=item B<--tenant-name>
+
+Check plan of a tenant (default: '[All]').
 
 =back
 

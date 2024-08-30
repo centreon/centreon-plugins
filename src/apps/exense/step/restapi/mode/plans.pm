@@ -227,6 +227,7 @@ sub new {
         'since-timeperiod:s'   => { name => 'since_timeperiod' },
         'status-failed:s'      => { name => 'status_failed' },
         'only-last-execution'  => { name => 'only_last_execution' },
+        'tenant-name:s'        => { name => 'tenant_name' },
         'timezone:s'           => { name => 'timezone' },
         'unit:s'               => { name => 'unit', default => 's' }
     });
@@ -244,6 +245,10 @@ sub check_options {
 
     if (!defined($self->{option_results}->{since_timeperiod}) || $self->{option_results}->{since_timeperiod} eq '') {
         $self->{option_results}->{since_timeperiod} = 86400;
+    }
+
+    if (!defined($self->{option_results}->{tenant_name}) || $self->{option_results}->{tenant_name} eq '') {
+        $self->{option_results}->{tenant_name} = '[All]';
     }
 
     $self->{tz} = {};
@@ -270,7 +275,10 @@ sub manage_selection {
         $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
     }
 
-    my $payload = {
+    my $payload = $self->{option_results}->{tenant_name};
+    $options{custom}->request(method => 'POST', endpoint => '/rest/tenants/current', query_form_post => $payload, skip_decode => 1);
+
+    $payload = {
         skip => 0,
         limit => 4000000,
         filters => [
@@ -406,6 +414,10 @@ Check plans.
 
 =over 8
 
+=item B<--tenant-name>
+
+Check plan of a tenant (default: '[All]').
+
 =item B<--filter-plan-id>
 
 Filter plans by plan ID.
@@ -420,7 +432,7 @@ Filter plan executions by environment name.
 
 =item B<--since-timeperiod>
 
-Time period to get plans execution informations (in seconds. Default: 86400).
+Time period to get plans execution informations (in seconds. default: 86400).
 
 =item B<--only-last-execution>
 
