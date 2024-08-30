@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use DateTime;
-use POSIX;  
+use POSIX; 
+use JSON::XS;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
 
@@ -225,6 +226,7 @@ sub new {
         'filter-environment:s' => { name => 'filter_environment' },
         'since-timeperiod:s'   => { name => 'since_timeperiod' },
         'status-failed:s'      => { name => 'status_failed' },
+        'only-last-execution'  => { name => 'only_last_execution' },
         'timezone:s'           => { name => 'timezone' },
         'unit:s'               => { name => 'unit', default => 's' }
     });
@@ -268,10 +270,32 @@ sub manage_selection {
         $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
     }
 
-    my $plans = $options{custom}->request(endpoint => '/rest/plans/all');
-    my $executions = $options{custom}->request(endpoint => '/rest/executions');
-
     my $ctime = time();
+    my $filterTime = ($ctime - $self->{option_results}->{since_timeperiod}) * 1000;
+    
+    my $payload = {
+        skip => 0,
+        limit => 4000000,
+        filters => [
+            {
+                collectionFilter => { type => 'Gte', field => 'startTime', value => $filterTime }
+            }
+        ],
+        'sort' => {
+            'field' => 'startTime',
+            'direction' => 'DESCENDING'
+        }
+    };
+    eval {
+        $payload = encode_json($payload);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+        $self->{output}->option_exit();
+    }
+
+    my $plans = $options{custom}->request(method => 'GET', endpoint => '/rest/plans/all');
+    my $executions = $options{custom}->request(method => 'POST', endpoint => '/rest/table/executions', query_form_post => $payload);
 
     $self->{global} = { detected => 0 };
     $self->{plans} = {};
@@ -296,7 +320,8 @@ sub manage_selection {
         my ($last_exec, $older_running_exec);
         my ($failed, $total) = (0, 0);
         my $i = 0;
-        foreach my $plan_exec (reverse @$executions) {
+        foreach my $plan_exec (@{$executions->{data}}) {
+            next if (!defined($plan_exec->{planId}));
             next if ($plan_exec->{planId} ne $plan->{id});
             $plan_exec->{startTimeSec} = $plan_exec->{startTime} / 1000;
             next if ($plan_exec->{startTimeSec} < ($ctime - $self->{option_results}->{since_timeperiod}));
@@ -327,6 +352,8 @@ sub manage_selection {
                 result => lc($plan_exec->{result})
             };
             $i++;
+
+            last if (defined($self->{option_results}->{only_last_execution}));
         }
 
         $self->{plans}->{ $plan->{id} }->{failed}->{failedPrct} = $total > 0 ? $failed * 100 / $total : 0;
@@ -372,6 +399,10 @@ Filter plan executions by environment name.
 =item B<--since-timeperiod>
 
 Time period to get plans execution informations (in seconds. Default: 86400).
+
+=item B<--only-last-execution>
+
+Check only last plan execution.
 
 =item B<--timezone>
 

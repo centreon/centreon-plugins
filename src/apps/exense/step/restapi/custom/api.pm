@@ -125,10 +125,9 @@ sub get_port {
 sub json_decode {
     my ($self, %options) = @_;
 
-    $options{content} =~ s/\r//mg;
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
+        $decoded = JSON::XS->new->decode($self->{output}->decode($options{content}));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -250,9 +249,10 @@ sub request {
     my $creds = $self->credentials();
 
     my $content = $self->{http}->request(
-        method => 'GET',
+        method => $options{method},
         url_path => $endpoint,
         get_param => $options{get_param},
+        query_form_post => $options{query_form_post},
         %$creds
     );
 
@@ -264,8 +264,10 @@ sub request {
         $creds->{warning_status} = $self->{warning_status};
         $creds->{critical_http_status} = $self->{critical_http_status};
         $content = $self->{http}->request(
+            method => $options{method},
             url_path => $endpoint,
             get_param => $options{get_param},
+            query_form_post => $options{query_form_post},
             %$creds
         );
     }
