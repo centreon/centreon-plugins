@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $plans = $options{custom}->request(endpoint => '/rest/plans/all');
+    my $plans = $options{custom}->request(method => 'GET', endpoint => '/rest/plans/all');
     my $results = [];
     foreach my $plan (@$plans) {
         # skip plans created by keyword single execution
