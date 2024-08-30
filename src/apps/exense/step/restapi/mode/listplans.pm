@@ -47,6 +47,11 @@ sub manage_selection {
     my $payload = {
         skip => 0,
         limit => 4000000,
+        filters => [
+            {
+                collectionFilter => { type => 'True', field => 'visible' }
+            }
+        ],
         'sort' => {
             'field' => 'attributes.name',
             'direction' => 'ASCENDING'
