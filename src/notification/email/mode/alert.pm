@@ -149,6 +149,11 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    # Automatically prepend / if missing in url-path
+    if (defined($self->{option_results}->{url_path}) && $self->{option_results}->{url_path} !~ /^\//) {
+        $self->{option_results}->{url_path} = '/' . $self->{option_results}->{url_path};
+    }
+
     $self->{smtp_ssl} = defined($self->{option_results}->{no_ssl}) ? 0 : 'starttls';
     $self->{smtp_debug} = defined($self->{option_results}->{smtp_debug}) ? 1 : 0;
     $self->{smtp_user} = defined($self->{option_results}->{smtp_user}) && $self->{option_results}->{smtp_user} ne '' 
@@ -941,8 +946,8 @@ URL of the Centreon web interface. Use either HTTP or HTTPS protocol depending o
 
 =item B<--url-path>
 
-Pathname for Centreon (default: centreon) 
---url-path='monitor'
+Pathname for Centreon (default: /centreon) 
+--url-path='/centreon'
 
 =item B<--type>
 
