@@ -270,10 +270,28 @@ sub manage_selection {
         $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
     }
 
+    my $payload = {
+        skip => 0,
+        limit => 4000000,
+        'sort' => {
+            'field' => 'attributes.name',
+            'direction' => 'ASCENDING'
+        }
+    };
+    eval {
+        $payload = encode_json($payload);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+        $self->{output}->option_exit();
+    }
+
+    my $plans = $options{custom}->request(method => 'POST', endpoint => '/rest/table/plans', query_form_post => $payload);
+
     my $ctime = time();
     my $filterTime = ($ctime - $self->{option_results}->{since_timeperiod}) * 1000;
     
-    my $payload = {
+    $payload = {
         skip => 0,
         limit => 4000000,
         filters => [
@@ -294,12 +312,11 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $plans = $options{custom}->request(method => 'GET', endpoint => '/rest/plans/all');
     my $executions = $options{custom}->request(method => 'POST', endpoint => '/rest/table/executions', query_form_post => $payload);
 
     $self->{global} = { detected => 0 };
     $self->{plans} = {};
-    foreach my $plan (@$plans) {
+    foreach my $plan (@{$plans->{data}}) {
         # skip plans created by keyword single execution
         next if ($plan->{visible} =~ /false|0/);
         next if (defined($self->{option_results}->{filter_plan_id}) && $self->{option_results}->{filter_plan_id} ne '' &&

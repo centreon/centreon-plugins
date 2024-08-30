@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -43,9 +44,26 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $plans = $options{custom}->request(method => 'GET', endpoint => '/rest/plans/all');
+    my $payload = {
+        skip => 0,
+        limit => 4000000,
+        'sort' => {
+            'field' => 'attributes.name',
+            'direction' => 'ASCENDING'
+        }
+    };
+    eval {
+        $payload = encode_json($payload);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+        $self->{output}->option_exit();
+    }
+
+    my $plans = $options{custom}->request(method => 'POST', endpoint => '/rest/table/plans', query_form_post => $payload);
+
     my $results = [];
-    foreach my $plan (@$plans) {
+    foreach my $plan (@{$plans->{data}}) {
         # skip plans created by keyword single execution
         next if ($plan->{visible} =~ /false|0/);
 
