@@ -31,8 +31,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'list-plans' => 'apps::exense::step::restapi::mode::listplans',
-        'plans'      => 'apps::exense::step::restapi::mode::plans'
+        'list-plans'   => 'apps::exense::step::restapi::mode::listplans',
+        'list-tenants' => 'apps::exense::step::restapi::mode::listtenants',
+        'plans'        => 'apps::exense::step::restapi::mode::plans'
     };
 
     $self->{custom_modes}->{api} = 'apps::exense::step::restapi::custom::api';
