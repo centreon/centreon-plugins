@@ -1,0 +1,158 @@
+{
+  "uuid": "adb51fea-62b9-4e06-87dc-13d2b21bd3d8",
+  "lastMigration": 32,
+  "name": "Backbox",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "9276ab2a-9101-46fd-ab5b-445ba5198ba7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/data/token/api/dashboard/backupStatus",
+      "responses": [
+        {
+          "uuid": "970b8727-a9c3-48ca-b022-1dc13aeacf11",
+          "body": "[\n  {\n    \"name\": \"All\",\n    \"successDevices\": 0,\n    \"suspectDevices\": 1,\n    \"failureDevices\": 4,\n    \"totalDevices\": 5\n  },\n  {\n    \"name\": \"Backup1\",\n    \"successDevices\": 1,\n    \"suspectDevices\": 2,\n    \"failureDevices\": 3,\n    \"totalDevices\": 6\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "fe7039c5-f27e-41ce-8c17-2cc25d4a7820",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/data/token/api/dashboard/configStatus",
+      "responses": [
+        {
+          "uuid": "bb3d0a3a-c0d1-4788-82ae-f4bc7f1957ea",
+          "body": "{\n  \"identical\": 3,\n  \"changed\": 4,\n  \"na\": 5\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "101f818e-0ef5-4468-8c2a-f0f7ab2f1d49",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/data/token/api/dashboard/intelliCheckStatus",
+      "responses": [
+        {
+          "uuid": "64d99a57-49cf-4ce0-8e89-70c76263bd9e",
+          "body": "[\n  {\n    \"successDevices\":3,\n    \"suspectDevices\":4,\n    \"failureDevices\":5,\n    \"Name\":\"All\",\n    \"ID\":0,\n    \"total_devices\":0,\n    \"id\":0,\n    \"name\":\"All\"\n  },\n  {\n    \"successDevices\":5,\n    \"suspectDevices\":4,\n    \"failureDevices\":3,\n    \"Name\":\"IntelliCheck1\",\n    \"ID\":0,\n    \"total_devices\":0,\n    \"id\":0,\n    \"name\":\"IntelliCheck1\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "9276ab2a-9101-46fd-ab5b-445ba5198ba7"
+    },
+    {
+      "type": "route",
+      "uuid": "fe7039c5-f27e-41ce-8c17-2cc25d4a7820"
+    },
+    {
+      "type": "route",
+      "uuid": "101f818e-0ef5-4468-8c2a-f0f7ab2f1d49"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
