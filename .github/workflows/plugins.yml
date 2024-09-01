@@ -135,7 +135,7 @@ jobs:
           fetch-depth: 1
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
+        uses: shogo82148/actions-setup-perl@e3dd115f105caac95c627185a85a6dd1235e4f92 # v1.31.1
         with:
           perl-version: '5.34'
           install-modules-with: cpm
