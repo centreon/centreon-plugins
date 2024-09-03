@@ -1,0 +1,27 @@
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/almalinux:8
+
+RUN bash -e <<EOF
+
+dnf install -y \
+  maven-3.9.9 \
+  java-1.8.0-openjdk-devel \
+  git \
+  wget \
+  zstd \
+  https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+dnf install -y nfpm
+dnf clean all
+
+EOF
+
+ENV JAVA_HOME=/usr/java/default
+
+WORKDIR /src
