@@ -111,7 +111,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
         'filter-note:s'     => { name => 'filter_note' },
-        'filter-status:s'   => { name => 'filter_status', default => 'running' }
+        'filter-status:s'   => { name => 'filter_status', default => 'Running' }
     });
 
     return $self;
@@ -218,17 +218,20 @@ sub manage_selection {
     foreach my $node (@$decoded) {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter vm.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $node_vm_state->{ $node->{state} } !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} 
+                . "': node state " . $node->{state} . " (" . $node_vm_state->{ $node->{state} }
+                . ") does not match filter /" . $self->{option_results}->{filter_status} 
+                . "/i", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
             defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter note.", debug => 1);
             next;
         }
         
