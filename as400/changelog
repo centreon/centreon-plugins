@@ -1,0 +1,5 @@
+2021-12-31 Quentin Garnier <qgarnier@centreon.com> - 2.0.1
+ * Use log4j 2.17.1
+
+2021-10-13 Quentin Garnier <qgarnier@centreon.com> - 2.0.0
+ * New release

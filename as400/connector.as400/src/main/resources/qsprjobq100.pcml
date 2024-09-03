@@ -1,0 +1,55 @@
+<pcml version="1.0">
+    
+Offset 	Type 	Field
+Dec 	Hex
+0 	0 	BINARY(4) 	Bytes returned
+4 	4 	BINARY(4) 	Bytes availablea
+8 	8 	CHAR(10) 	Job queue name
+18 	12 	CHAR(10) 	Job queue library name
+28 	1C 	CHAR(10) 	Operator controlled
+38 	26 	CHAR(10) 	Authority to check
+48 	30 	BINARY(4) 	Number of jobs
+52 	34 	CHAR(10) 	Job queue status
+62 	3E 	CHAR(10) 	Subsystem name
+72 	48 	CHAR(50) 	Text description
+122 	7A 	CHAR(10) 	Subsystem library name
+132 	84 	BINARY(4) 	Sequence number
+136 	88 	BINARY(4) 	Maximum active
+140 	8C 	BINARY(4) 	Current active
+    
+  <!-- Format JOBQ0100 - Other formats are available -->
+  <struct name="jobq0100">
+    <data name="bytesReturned"			type="int"    	length="4"  usage="output"/>
+    <data name="bytesAvailable"			type="int"    	length="4"  usage="output"/>
+    <data name="jobqName"				type="char"   	length="10" usage="output"/>
+    <data name="jobqLibName"			type="char"   	length="10"  usage="output"/>
+    <data name="operatorControlled"		type="char"   	length="10"  usage="output"/>
+    <data name="authorityCheck"			type="char"   	length="10"  usage="output"/>
+    <data name="numberOfJob"			type="int"    	length="4"  usage="output"/>
+    <data name="jobQueueStatus"			type="char"   	length="10" usage="output"/>
+    <data name="subSystemName"			type="char"   	length="10" usage="output"/>
+    <data name="textDescription"		type="char"   	length="50"  usage="output"/>
+    <data name="subSystemLibName"		type="char"   	length="10"  usage="output"/>
+    <data name="sequenceNumber"			type="int"		length="4"  usage="output"/>
+    <data name="maximumActive"			type="int"    	length="4"  usage="output"/>
+    <data name="currentActive"			type="int"   	length="4"  usage="output"/>
+  </struct>
+
+
+
+1 	Receiver variable 	Output 	Char(*)
+2 	Length of receiver variable 	Input 	Binary(4)
+3 	Format name 	Input 	Char(8)
+4 	Qualified job queue name 	Input 	Char(20)
+5 	Error Code 	I/O 	Char(*)
+
+  <!-- Program QSPRJOBQ and its parameter list for retrieving JOBQ0100  format -->
+  <program name="qsprjobq" path="/QSYS.lib/QSPRJOBQ.pgm">
+    <data name="receiver"         		type="struct"   struct="jobq0100"	usage="output"/>
+    <data name="receiverLength"   		type="int"      length="4"          usage="input" />
+    <data name="format"           		type="char"     length="8"          usage="input"	init="JOBQ0100"/>
+    <data name="qualifiedJobQueueName"	type="char"     length="20"         usage="input"/>
+    <data name="errorCode"        		type="int"      length="4"          usage="input"	init="0"/>    
+  </program>
+
+</pcml>
