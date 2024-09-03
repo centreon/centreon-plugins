@@ -61,8 +61,8 @@ jobs:
         run: |
           find .     \
           -type f \
-          -exec %{__grep} -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
-          -exec %{__sed} -i \
+          -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
+          -exec sed -i \
           -e 's|@CONNECTOR_VERSION@|'"%{version}"'|g' \
           -e 's|@CONNECTOR_HOME@|'"%{_datadir}/centreon-as400"'|g' \
           -e 's|@CONNECTOR_ETC@|'"/etc/centreon-as400/"'|g' \

@@ -5,8 +5,7 @@ FROM ${REGISTRY_URL}/almalinux:8
 RUN bash -e <<EOF
 
 dnf install -y \
-  maven-3.9.9 \
-  java-1.8.0-openjdk-devel \
+  maven-3.5.4 \
   git \
   wget \
   zstd \
@@ -22,6 +21,6 @@ dnf clean all
 
 EOF
 
-ENV JAVA_HOME=/usr/java/default
+ENV JAVA_HOME=$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | tr -s ' ' | cut -d ' ' -f 4)
 
 WORKDIR /src
