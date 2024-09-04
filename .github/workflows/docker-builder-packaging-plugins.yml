@@ -32,6 +32,9 @@ jobs:
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
           - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-java-alma9
+            image: packaging-plugins-java-alma9
+          - runner: ubuntu-22.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
           - runner: ["self-hosted", "collect-arm64"]
