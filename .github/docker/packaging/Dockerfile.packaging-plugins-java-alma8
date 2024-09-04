@@ -8,7 +8,7 @@ dnf install -y \
   maven-3.5.4 \
   git \
   wget \
-  zstd \
+  zstd
 
 echo '[goreleaser]
 name=GoReleaser

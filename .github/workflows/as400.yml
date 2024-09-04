@@ -76,7 +76,7 @@ jobs:
         run: export JAVA_HOME=$( java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | tr -s ' ' | cut -d ' ' -f 4)
 
       - name: Build JAR using maven
-        run: mvn clean install -f connector.as400/pom.xml
+        run: mvn clean install -f as400/connector.as400/pom.xml
 
       - name: Package
         uses: ./.github/actions/package-nfpm
