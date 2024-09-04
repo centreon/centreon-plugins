@@ -41,7 +41,7 @@ contents:
     file_info:
       mode: 0644
 
-  - dst: "/var/log/centreon-as400/"
+  - dst: "/var/log/centreon-as400"
     type: dir
     file_info:
       mode: 0755
