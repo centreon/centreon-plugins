@@ -20,6 +20,4 @@ dnf clean all
 
 EOF
 
-ENV JAVA_HOME=$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | tr -s ' ' | cut -d ' ' -f 4)
-
 WORKDIR /src
