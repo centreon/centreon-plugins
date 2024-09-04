@@ -16,11 +16,42 @@ license: "Apache-2.0"
 contents:
   - src: "../connector.as400/target/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
     dst: "/usr/share/centreon-as400/bin/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+    file_info:
+      mode: 0755
+      owner: "centreon-as400"
+      group: "centreon-as400"
+
+  - src: "../connector.as400.install/init-script/centreon-as400.service"
+    dst: "/lib/systemd/system/centreon-as400.service"
+    file_info:
+      mode: 0644
+
+  - src: "../connector.as400.install/init-script/centreon-as400-sysconfig"
+    dst: "/etc/sysconfig/centreon-as400-sysconfig"
+    file_info:
+      mode: 0644
+
+  - src: "../connector.as400.install/etc/config.properties"
+    dst: "/etc/centreon-as400/config.properties"
+    file_info:
+      mode: 0644
+
+  - src: "../connector.as400.install/etc/log4j2.xml"
+    dst: "/etc/centreon-as400/log4j2.xml"
+    file_info:
+      mode: 0644
+
+  - dst: "/var/log/centreon-as400/"
+    type: dir
+    file_info:
+      mode: 0755
+      owner: centreon-as400
+      group: centreon-as400
 
 scripts:
-  preinstall: ./scripts/centreon-bi-engine-preinstall.sh
-  postinstall: ./scripts/centreon-bi-engine-postinstall.sh
-  preremove: ./scripts/centreon-bi-engine-preremove.sh
+  preinstall: ./scripts/centreon-as400-daemon-preinstall.sh
+  postinstall: ./scripts/centreon-as400-daemon-postinstall.sh
+  preremove: ./scripts/centreon-as400-daemon-preremove.sh
 
 overrides:
   rpm:
