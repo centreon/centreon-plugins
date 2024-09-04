@@ -32,9 +32,9 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-java-alma8
             distrib: el8
-          # - package_extension: rpm
-          #   image: packaging-plugins-alma9
-          #   distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
           # - package_extension: deb
           #   image: packaging-plugins-bullseye
           #   distrib: bullseye
