@@ -14,7 +14,7 @@ homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "../as400/connector.as400/target/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+  - src: "../connector.as400/target/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
     dst: "/usr/share/centreon-as400/bin/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
 
 scripts:
