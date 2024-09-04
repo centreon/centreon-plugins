@@ -8,17 +8,27 @@ section: "default"
 priority: "optional"
 maintainer: "Centreon <contact@centreon.com>"
 description: |
-  Centreon Connector Server for AS400
+  Centreon Connector Server for AS400.
 vendor: "Centreon"
 homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
+  - src: "../centreon-plugins/as400/connector.as400/target/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+    dst: "/usr/share/centreon-as400/bin/centreon-as400-2.0.2-jar-with-dependencies.jar"
 
 scripts:
   preinstall: ./scripts/centreon-bi-engine-preinstall.sh
   postinstall: ./scripts/centreon-bi-engine-postinstall.sh
   preremove: ./scripts/centreon-bi-engine-preremove.sh
+
+overrides:
+  rpm:
+    depends:
+      - java-1.8.0-openjdk
+  deb:
+    depends:
+      - java-1.8.0-openjdk
 
 rpm:
   summary: Centreon AS 400 Plugin daemon

@@ -9,7 +9,6 @@ dnf install -y \
   git \
   wget \
   zstd \
-  https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
 
 echo '[goreleaser]
 name=GoReleaser
