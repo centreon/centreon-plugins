@@ -2,7 +2,7 @@ name: "centreon-plugin-Operatingsystems-AS400-daemon"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "${VERSION}"
+version: "2.0.2"
 release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
@@ -15,7 +15,7 @@ license: "Apache-2.0"
 
 contents:
   - src: "../centreon-plugins/as400/connector.as400/target/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
-    dst: "/usr/share/centreon-as400/bin/centreon-as400-2.0.2-jar-with-dependencies.jar"
+    dst: "/usr/share/centreon-as400/bin/centreon-as400-2.0.2-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
 
 scripts:
   preinstall: ./scripts/centreon-bi-engine-preinstall.sh
