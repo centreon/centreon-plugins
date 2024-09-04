@@ -97,10 +97,29 @@ Check Backbox configs status.
 
 Filter configs by type.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-identical>
 
-Thresholds.
-Can be: 'identical', 'changed', 'na'.
+Set warning threshold for 'identical' (Default: '').
+
+=item B<--critical-identical>
+
+Set critical threshold for 'identical' (Default: '').
+
+=item B<--warning-changed>
+
+Set warning threshold for 'changed' (Default: '').
+
+=item B<--critical-changed>
+
+Set critical threshold for 'changed' (Default: '').
+
+=item B<--warning-na>
+
+Set warning threshold for 'n/a' (Default: '').
+
+=item B<--critical-na>
+
+Set critical threshold for 'n/a' (Default: '').
 
 =back
 

@@ -127,10 +127,25 @@ Check Backbox backups.
 
 Filter backups by type.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--report-id>
 
-Thresholds.
-Can be: 'failure', 'suspect', 'success', 'total'.
+Specify report id.
+
+=item B<--warning-failure>
+
+Set warning threshold for 'failure' (Default: '').
+
+=item B<--critical-failure>
+
+Set critical threshold for 'failure' (Default: '').
+
+=item B<--warning-suspect>
+
+Set warning threshold for 'suspect' (Default: '').
+
+=item B<--critical-suspect>
+
+Set critical threshold for 'suspect' (Default: '').
 
 =back
 
