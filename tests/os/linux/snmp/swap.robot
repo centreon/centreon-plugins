@@ -19,18 +19,21 @@ swap ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/linux/snmp/linux
+    ...    --snmp-community=os/linux/snmp/swap
     ...    --snmp-timeout=1
-    ...    ${extra_options}
+    ...    --no-swap=${no-swap}
+    ...    --warning-usage=${warning-usage}
+    ...    --warning-usage-free=${warning-usage-free}
+    ...    --warning-usage-prct=${warning-usage-prct}
+    ...    --critical-usage=${critical-usage}
+    ...    --critical-usage-free=${critical-usage-free}
+    ...    --critical-usage-prct=${critical-usage-prct}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                   expected_result    --
-            ...      1     --verbose                       CRITICAL: No active swap 
-            ...      2     --no-swap                       CRITICAL: No active swap
-            ...      3     --warning-usage='2'             CRITICAL: No active swap
-            ...      4     --warning-usage-free=''         CRITICAL: No active swap 
-            ...      5     --warning-usage-prct=''         CRITICAL: No active swap
-            ...      6     --critical-usage=''             CRITICAL: No active swap
-            ...      7     --critical-usage-free=''        CRITICAL: No active swap
-            ...      8     --critical-usage-prct=''        CRITICAL: No active swap 
+    Examples:        tc    no-swap      warning-usage      warning-usage-free      warning-usage-prct      critical-usage      critical-usage-free      critical-usage-prct    expected_result    --
+            ...      1     ${EMPTY}     ${EMPTY}           ${EMPTY}                '10'                    ${EMPTY}            ${EMPTY}                 '30'                   OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;0:10;0:30;0;100 
+            ...      2     ''           ${EMPTY}           ${EMPTY}                ${EMPTY}                ${EMPTY}            ${EMPTY}                 ${EMPTY}               OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;;;0;100
+            ...      3     ${EMPTY}     ${EMPTY}           '10'                    ${EMPTY}                ${EMPTY}            '30'                     ${EMPTY}               CRITICAL: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;0:10;0:30;0;1023406080 'used_prct'=0.00%;;;0;100
+            ...      4     ${EMPTY}     '100'              ${EMPTY}                ${EMPTY}                '100'               ${EMPTY}                 ${EMPTY}               OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;0:100;0:100;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;;;0;100
+            ...      5     ${EMPTY}     ${EMPTY}           '100'                   ${EMPTY}                ${EMPTY}            ${EMPTY}                 ${EMPTY}               WARNING: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;0:100;;0;1023406080 'used_prct'=0.00%;;;0;100
