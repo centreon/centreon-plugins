@@ -20,3 +20,5 @@ apt-get install -y nfpm
 apt-get clean all
 
 EOF
+
+WORKDIR /src
