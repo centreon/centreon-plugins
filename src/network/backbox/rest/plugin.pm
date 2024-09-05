@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'backup'        => 'network::backbox::rest::mode::backup',
-        'configstatus'  => 'network::backbox::rest::mode::configstatus',
+        'backup'       => 'network::backbox::rest::mode::backup',
+        'configstatus' => 'network::backbox::rest::mode::configstatus',
         'intellicheck' => 'network::backbox::rest::mode::intellicheck'
     };
 

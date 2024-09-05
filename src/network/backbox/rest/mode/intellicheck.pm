@@ -133,19 +133,19 @@ Specify report id.
 
 =item B<--warning-failure>
 
-Set warning threshold for 'failure' (Default: '').
+Set warning threshold for 'failure'.
 
 =item B<--critical-failure>
 
-Set critical threshold for 'failure' (Default: '').
+Set critical threshold for 'failure'.
 
 =item B<--warning-suspect>
 
-Set warning threshold for 'suspect' (Default: '').
+Set warning threshold for 'suspect'.
 
 =item B<--critical-suspect>
 
-Set critical threshold for 'suspect' (Default: '').
+Set critical threshold for 'suspect'.
 
 =back
 

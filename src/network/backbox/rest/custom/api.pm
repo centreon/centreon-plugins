@@ -27,7 +27,7 @@ use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -52,7 +52,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http}   = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -68,12 +68,12 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}  = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{proto}     = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{port}      = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{url_path}  = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/rest/data/token/api/';
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/rest/data/token/api/';
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
-    $self->{timeout}   = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
@@ -125,9 +125,9 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{port}     = $self->{port};
-    $self->{option_results}->{proto}    = $self->{proto};
-    $self->{option_results}->{timeout}  = $self->{timeout};
+    $self->{option_results}->{port} = $self->{port};
+    $self->{option_results}->{proto} = $self->{proto};
+    $self->{option_results}->{timeout} = $self->{timeout};
 }
 
 sub settings {
@@ -187,7 +187,7 @@ sub get_backup_jobs_status {
     my ($self, %options) = @_;
 
     my $endpoint = 'dashboard/backupStatus';
-    if (defined($options{filter_type}) && $options{filter_type} ne '') {
+    if (!centreon::plugins::misc::is_empty($options{filter_type})) {
         $endpoint .= '/' . $options{filter_type};
     }
     return $self->request(endpoint => $endpoint);
@@ -197,7 +197,7 @@ sub get_config_status {
     my ($self, %options) = @_;
 
     my $endpoint = 'dashboard/configStatus';
-    if (defined($options{filter_type}) && $options{filter_type} ne '') {
+    if (!centreon::plugins::misc::is_empty($options{filter_type})) {
         $endpoint .= '/' . $options{filter_type};
     }
     return $self->request(endpoint => $endpoint);
@@ -207,10 +207,10 @@ sub get_intelli_check_status {
     my ($self, %options) = @_;
 
     my $endpoint = 'dashboard/intelliCheckStatus';
-    if (defined($options{filter_type}) && $options{filter_type} ne '') {
+    if (!centreon::plugins::misc::is_empty($options{filter_type})) {
         $endpoint .= '/' . $options{filter_type};
     }
-    if (defined($options{report_id}) && $options{report_id} ne '') {
+    if (!centreon::plugins::misc::is_empty($options{report_id})) {
         $endpoint .= '/' . $options{report_id};
     }
     return $self->request(endpoint => $endpoint);
