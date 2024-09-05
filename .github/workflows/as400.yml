@@ -35,13 +35,13 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-java-alma9
             distrib: el9
-          # - package_extension: deb
-          #   image: packaging-plugins-bullseye
-          #   distrib: bullseye
-          # - package_extension: deb
-          #   image: packaging-plugins-bookworm
-          #   distrib: bookworm
-          # - package_extension: deb
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+          - package_extension: deb
           #   image: packaging-plugins-jammy
           #   distrib: jammy
 
