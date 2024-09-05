@@ -195,7 +195,7 @@ jobs:
             PACKAGE_DEPENDENCIES=""
           else
             for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
-              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends \"$PACKAGE_DEPENDENCY\""
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
             done
           fi
 
