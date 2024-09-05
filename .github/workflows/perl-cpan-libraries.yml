@@ -217,7 +217,7 @@ jobs:
           export SYBASE="/usr"
 
           gem install fpm
-          fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} -d perl-interpreter --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
+          fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} -d perl-interpreter --verbose --cpan-verbose --no-cpan-test${PACKAGE_DEPENDENCIES}$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
