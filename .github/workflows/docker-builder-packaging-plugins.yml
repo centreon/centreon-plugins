@@ -47,8 +47,8 @@ jobs:
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
           - runner: ubuntu-22.04
-            dockerfile: packaging-plugins-java-bullseye
-            image: packaging-plugins-java-bullseye
+            dockerfile: packaging-plugins-java-bookworm
+            image: packaging-plugins-java-bookworm
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
