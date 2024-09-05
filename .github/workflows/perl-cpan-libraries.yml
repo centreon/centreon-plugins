@@ -26,7 +26,7 @@ jobs:
     needs: [get-environment]
     if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -246,26 +246,30 @@ jobs:
 
   merge-package-rpm-artifacts:
     needs: [package-rpm]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [el8, el9]
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Merging Artifacts
-        uses: ./.github/actions/merge-artifacts
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          target_name: packages-rpm-${{ matrix.distrib }}
-          source_paths: packages-rpm-${{ matrix.distrib }}/*.rpm
-          source_name_pattern: packages-rpm-${{ matrix.distrib }}-
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: packages-rpm-${{ matrix.distrib }}
+          pattern: packages-rpm-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        with:
+          name: packages-rpm-${{ matrix.distrib }}-*
+          failOnError: false
 
   sign-rpm:
     needs: [merge-package-rpm-artifacts]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [el8, el9]
@@ -357,7 +361,7 @@ jobs:
             "ZMQ::LibZMQ4"
           ]
         include:
-          - runner_name: ubuntu-22.04
+          - runner_name: ubuntu-24.04
           - arch: amd64
           - build_distribs: "bullseye,bookworm,jammy"
           - deb_dependencies: ""
@@ -476,25 +480,29 @@ jobs:
 
   merge-package-deb-artifacts:
     needs: [package-deb]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Merging Artifacts
-        uses: ./.github/actions/merge-artifacts
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          target_name: packages-deb-${{ matrix.distrib }}
-          source_paths: packages-deb-${{ matrix.distrib }}/*.deb
-          source_name_pattern: packages-deb-${{ matrix.distrib }}-
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: packages-deb-${{ matrix.distrib }}
+          pattern: packages-deb-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        with:
+          name: packages-deb-${{ matrix.distrib }}-*
+          failOnError: false
 
   download-and-cache-deb:
     needs: [merge-package-deb-artifacts]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
