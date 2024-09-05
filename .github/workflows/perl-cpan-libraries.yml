@@ -183,8 +183,6 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
-          set -x
-
           if [ -z "${{ matrix.version }}" ]; then
             PACKAGE_VERSION=""
           else
