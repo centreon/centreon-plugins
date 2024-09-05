@@ -59,7 +59,7 @@ overrides:
       - java-1.8.0-openjdk
   deb:
     depends:
-      - java-1.8.0-openjdk
+      - default-jre
 
 rpm:
   summary: Centreon AS 400 Plugin daemon
