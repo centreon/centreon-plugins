@@ -1,4 +1,7 @@
 {
     "dependencies": [
+        "perl(DateTime)",
+        "perl(Digest::MD5)",
+        "perl(JSON::XS)"
     ]
 }
