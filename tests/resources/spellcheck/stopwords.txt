@@ -11,6 +11,7 @@
 --cert-pkcs12
 --cert-pwd
 --critical-bytesallocatedpercentage
+--critical-na
 --dfsr
 --display-transform-dst
 --display-transform-src
@@ -51,6 +52,7 @@
 --urlpath
 --use-ucd
 --warning-bytesallocatedpercentage
+--warning-na
 -EncodedCommand
 -InputFormat
 -NoLogo
@@ -61,6 +63,7 @@ ASAM
 Alcatel
 Ansible
 Avigilon
+Backbox
 Centreon
 cpu-utilization-1m
 cpu-utilization-5m
