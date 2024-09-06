@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Backbox-Rest",
+    "pkg_summary": "Centreon Plugin to monitor Backbox using RestAPI",
+    "plugin_name": "centreon_backbox_rest.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/backbox/rest/"
+    ]
+}
