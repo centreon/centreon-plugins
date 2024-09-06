@@ -227,7 +227,6 @@ jobs:
           export SYBASE="/usr"
 
           fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
-          rpm -qp --requires *.rpm
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
