@@ -2,9 +2,9 @@
     "uuid": "c8fba1bd-af32-4acd-83a2-5b26a0152183",
     "lastMigration": 32,
     "name": "Rubrik2",
-    "endpointPrefix": "",
+    "endpointPrefix": "api/v1",
     "latency": 0,
-    "port": 3004,
+    "port": 3000,
     "hostname": "",
     "folders": [],
     "routes": [
@@ -13,7 +13,7 @@
             "type": "http",
             "documentation": "",
             "method": "get",
-            "endpoint": "",
+            "endpoint": "job_monitoring",
             "responses": [
                 {
                     "uuid": "4aac7b2c-2947-4e6b-83a4-094da73ecc5a",
