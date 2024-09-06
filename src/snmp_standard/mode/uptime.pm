@@ -16,7 +16,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 
 package snmp_standard::mode::uptime;
 
@@ -205,7 +205,7 @@ Display system description.
 
 =item B<--force-oid>
 
-Can choose your oid (numeric format only).
+Can choose your OID (numeric format only).
 
 =item B<--check-overload>
 

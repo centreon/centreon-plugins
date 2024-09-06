@@ -54,7 +54,7 @@ sub new {
             'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'HPE PRIMERA API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'HPE Primera API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http}   = centreon::plugins::http->new(%options, default_backend => 'curl');

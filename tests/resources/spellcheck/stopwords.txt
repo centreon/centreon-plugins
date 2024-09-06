@@ -43,6 +43,7 @@
 --noeventlog
 --nomachineaccount
 --ntlmv2
+--oid
 --oid-display
 --oid-extra-display
 --oid-filter
@@ -104,6 +105,7 @@ PKCS1
 Primera
 QoS
 RestAPI
+RFC1628
 RRDCached
 Sansymphony
 SNMP
@@ -139,11 +141,17 @@ in-bcast
 in-mcast
 in-ucast
 interface-dsl-name
+ipv4
+ipv6
 jobqueue
 jobqueues
 keepass
+Kubernetes
 ldap
 license-instances-usage-prct
+multiple
+NTP
+nagios
 okta
 oneaccess-sys-mib
 out-bcast
@@ -168,6 +176,7 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
+UDP
 uptime
 usage-prct
 userpass
@@ -178,4 +187,4 @@ Veeam
 VeloCloud
 VMware
 WSMAN
-Kubernetes
+
