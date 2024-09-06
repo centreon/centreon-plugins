@@ -22,7 +22,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-jobs ${tc}
+intellichecks ${tc}
     [Documentation]    Check the intellichecks status
     [Tags]    network    backbox    rest    intellicheck
     ${command}    Catenate

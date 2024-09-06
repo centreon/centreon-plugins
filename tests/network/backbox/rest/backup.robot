@@ -21,7 +21,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-jobs ${tc}
+backups ${tc}
     [Documentation]    Check the backups status
     [Tags]    network    backbox    rest    backup
     ${command}    Catenate

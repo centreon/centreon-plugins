@@ -22,7 +22,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-jobs ${tc}
+configstatus ${tc}
     [Documentation]    Check the config status
     [Tags]    network    backbox    rest    configstatus
     ${command}    Catenate
