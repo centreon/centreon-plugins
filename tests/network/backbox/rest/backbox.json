@@ -75,7 +75,7 @@
       "responses": [
         {
           "uuid": "64d99a57-49cf-4ce0-8e89-70c76263bd9e",
-          "body": "[\n  {\n    \"successDevices\":3,\n    \"suspectDevices\":4,\n    \"failureDevices\":5,\n    \"Name\":\"All\",\n    \"ID\":0,\n    \"total_devices\":0,\n    \"id\":0,\n    \"name\":\"All\"\n  },\n  {\n    \"successDevices\":5,\n    \"suspectDevices\":4,\n    \"failureDevices\":3,\n    \"Name\":\"IntelliCheck1\",\n    \"ID\":0,\n    \"total_devices\":0,\n    \"id\":0,\n    \"name\":\"IntelliCheck1\"\n  }\n]",
+          "body": "[\n  {\n    \"successDevices\":3,\n    \"suspectDevices\":4,\n    \"failureDevices\":5,\n    \"Name\":\"All\",\n    \"ID\":0,\n    \"total_devices\":12,\n    \"id\":0,\n    \"name\":\"All\"\n  },\n  {\n    \"successDevices\":5,\n    \"suspectDevices\":4,\n    \"failureDevices\":3,\n    \"Name\":\"IntelliCheck1\",\n    \"ID\":0,\n    \"total_devices\":12,\n    \"id\":0,\n    \"name\":\"IntelliCheck1\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "",

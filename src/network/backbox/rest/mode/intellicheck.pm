@@ -49,26 +49,26 @@ sub set_counters {
         }
         },
         { label => 'success', nlabel => 'intellicheck.success.count', set => {
-            key_values      => [ { name => 'success' } ],
+            key_values      => [ { name => 'success' }, { name => 'total' } ],
             output_template => 'success: %d',
             perfdatas       => [
-                { value => 'success', template => '%d', min => 0, label_extra_instance => 1 }
+                { value => 'success', template => '%d', min => 0, max => 'total', label_extra_instance => 1 }
             ]
         }
         },
         { label => 'suspect', nlabel => 'intellicheck.suspect.count', set => {
-            key_values      => [ { name => 'suspect' } ],
+            key_values      => [ { name => 'suspect' }, { name => 'total' } ],
             output_template => 'suspect: %d',
             perfdatas       => [
-                { value => 'suspect', template => '%d', min => 0, label_extra_instance => 1 }
+                { value => 'suspect', template => '%d', min => 0, max => 'total', label_extra_instance => 1 }
             ]
         }
         },
         { label => 'failure', nlabel => 'intellicheck.failure.count', set => {
-            key_values      => [ { name => 'failure' } ],
+            key_values      => [ { name => 'failure' }, { name => 'total' } ],
             output_template => 'failure: %d',
             perfdatas       => [
-                { value => 'failure', template => '%d', min => 0, label_extra_instance => 1 }
+                { value => 'failure', template => '%d', min => 0, max => 'total', label_extra_instance => 1 }
             ]
         }
         }
