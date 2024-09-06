@@ -337,236 +337,236 @@ jobs:
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-  # package-deb:
-  #   needs: [get-environment]
-  #   if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+  package-deb:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
-  #   runs-on: ${{ matrix.runner_name }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
-  #       name:
-  #         [
-  #           "ARGV::Struct",
-  #           "Authen::SCRAM::Client",
-  #           "Config::AWS",
-  #           "Convert::EBCDIC",
-  #           "Crypt::Blowfish_PP",
-  #           "DataStruct::Flat",
-  #           "DateTime::Format::Duration::ISO8601",
-  #           "Device::Modbus",
-  #           "Digest::SHA1",
-  #           "Email::Send::SMTP::Gmail",
-  #           "Hash::Ordered",
-  #           "HTTP::ProxyPAC",
-  #           "JMX::Jmx4Perl",
-  #           "Mojo::IOLoop::Signal",
-  #           "Net::FTPSSL",
-  #           "Net::HTTPTunnel",
-  #           "Net::MQTT::Simple",
-  #           "Net::SMTP_auth",
-  #           "Paws",
-  #           "Statistics::Regression",
-  #           "WWW::Selenium",
-  #           "ZMQ::Constants",
-  #           "ZMQ::LibZMQ4"
-  #         ]
-  #       include:
-  #         - runner_name: ubuntu-24.04
-  #         - arch: amd64
-  #         - build_distribs: "bullseye,bookworm,jammy"
-  #         - deb_dependencies: ""
-  #         - rpm_provides: ""
-  #         - version: ""
-  #         - use_dh_make_perl: "true"
-  #         - spec_file: ""
-  #         - distrib: bullseye
-  #           package_extension: deb
-  #           image: packaging-plugins-bullseye
-  #         - distrib: bookworm
-  #           package_extension: deb
-  #           image: packaging-plugins-bookworm
-  #         - distrib: jammy
-  #           package_extension: deb
-  #           image: packaging-plugins-jammy
-  #         - distrib: bullseye
-  #           package_extension: deb
-  #           image: packaging-plugins-bullseye-arm64
-  #           arch: arm64
-  #           runner_name: ["self-hosted", "collect-arm64"]
-  #         - name: "Paws"
-  #           use_dh_make_perl: "false"
-  #           deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
-  #           no-auto-depends: true
-  #         - name: "Statistics::Regression"
-  #           build_distribs: "bullseye"
-  #           version: "0.53"
-  #         - name: "ZMQ::LibZMQ4"
-  #           use_dh_make_perl: "false"
-  #           version: "0.01"
-  #           deb_dependencies: "libzmq5"
-  #   name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
-  #   container:
-  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-  #     credentials:
-  #       username: ${{ secrets.DOCKER_REGISTRY_ID }}
-  #       password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+    runs-on: ${{ matrix.runner_name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
+        name:
+          [
+            "ARGV::Struct",
+            "Authen::SCRAM::Client",
+            "Config::AWS",
+            "Convert::EBCDIC",
+            "Crypt::Blowfish_PP",
+            "DataStruct::Flat",
+            "DateTime::Format::Duration::ISO8601",
+            "Device::Modbus",
+            "Digest::SHA1",
+            "Email::Send::SMTP::Gmail",
+            "Hash::Ordered",
+            "HTTP::ProxyPAC",
+            "JMX::Jmx4Perl",
+            "Mojo::IOLoop::Signal",
+            "Net::FTPSSL",
+            "Net::HTTPTunnel",
+            "Net::MQTT::Simple",
+            "Net::SMTP_auth",
+            "Paws",
+            "Statistics::Regression",
+            "WWW::Selenium",
+            "ZMQ::Constants",
+            "ZMQ::LibZMQ4"
+          ]
+        include:
+          - runner_name: ubuntu-24.04
+          - arch: amd64
+          - build_distribs: "bullseye,bookworm,jammy"
+          - deb_dependencies: ""
+          - rpm_provides: ""
+          - version: ""
+          - use_dh_make_perl: "true"
+          - spec_file: ""
+          - distrib: bullseye
+            package_extension: deb
+            image: packaging-plugins-bullseye
+          - distrib: bookworm
+            package_extension: deb
+            image: packaging-plugins-bookworm
+          - distrib: jammy
+            package_extension: deb
+            image: packaging-plugins-jammy
+          - distrib: bullseye
+            package_extension: deb
+            image: packaging-plugins-bullseye-arm64
+            arch: arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Paws"
+            use_dh_make_perl: "false"
+            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
+            no-auto-depends: true
+          - name: "Statistics::Regression"
+            build_distribs: "bullseye"
+            version: "0.53"
+          - name: "ZMQ::LibZMQ4"
+            use_dh_make_perl: "false"
+            version: "0.01"
+            deb_dependencies: "libzmq5"
+    name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_ID }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
 
-  #   steps:
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    steps:
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-  #       name: Get package version
-  #       id: package-version
-  #       run: |
-  #         apt-get update
-  #         apt-get install -y cpanminus
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Get package version
+        id: package-version
+        run: |
+          apt-get update
+          apt-get install -y cpanminus
 
-  #         if [ -z "${{ matrix.version }}" ]; then
-  #           CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+          if [ -z "${{ matrix.version }}" ]; then
+            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
 
-  #           if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
-  #             echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
-  #             exit 1
-  #           fi
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
 
-  #           PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
-  #         else
-  #           PACKAGE_VERSION="${{ matrix.version }}"
-  #         fi
+            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
+          else
+            PACKAGE_VERSION="${{ matrix.version }}"
+          fi
 
-  #         echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
-  #       shell: bash
+          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+        shell: bash
 
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
-  #       run: |
-  #         apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
+        run: |
+          apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
 
-  #         if [ -z "${{ matrix.deb_dependencies }}" ]; then
-  #           PACKAGE_DEPENDENCIES=""
-  #         else
-  #           for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
-  #             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
-  #           done
-  #         fi
+          if [ -z "${{ matrix.deb_dependencies }}" ]; then
+            PACKAGE_DEPENDENCIES=""
+          else
+            for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
+            done
+          fi
 
-  #         if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
-  #           PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
-  #         fi
+          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
+          fi
 
-  #         cpanm Module::Build::Tiny
-  #         cpanm Module::Install
+          cpanm Module::Build::Tiny
+          cpanm Module::Install
 
-  #         gem install fpm
-  #         # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
-  #         patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
-  #         fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
-  #       shell: bash
+          gem install fpm
+          # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
+          patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+        shell: bash
 
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
-  #       run: |
-  #         apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
-  #         # module-build-tiny is required for Mojo::IOLoop::Signal build.
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
+        run: |
+          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
+          # module-build-tiny is required for Mojo::IOLoop::Signal build.
 
-  #         DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
-  #       shell: bash
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
+        shell: bash
 
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-  #       name: Replace '::' with - in the feature path
-  #       id: package-name
-  #       run: |
-  #         name="${{ matrix.name }}"
-  #         name_with_dash="${name//::/-}"
-  #         echo "Modified Name: $name_with_dash"
-  #         echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
-  #       shell: bash
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
 
-  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-  #       uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
-  #       with:
-  #         name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
-  #         path: ./*.${{ matrix.package_extension }}
-  #         retention-days: 1
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
+          path: ./*.${{ matrix.package_extension }}
+          retention-days: 1
 
-  # merge-package-deb-artifacts:
-  #   needs: [package-deb]
-  #   runs-on: ubuntu-24.04
-  #   strategy:
-  #     matrix:
-  #       distrib: [bullseye, bookworm, jammy]
+  merge-package-deb-artifacts:
+    needs: [package-deb]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
 
-  #   steps:
-  #     - name: Merge Artifacts
-  #       uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
-  #       with:
-  #         name: packages-deb-${{ matrix.distrib }}
-  #         pattern: packages-deb-${{ matrix.distrib }}-*
-  #         delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
-  #         retention-days: 1
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: packages-deb-${{ matrix.distrib }}
+          pattern: packages-deb-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
 
-  #     - name: Delete merged artifacts
-  #       uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
-  #       with:
-  #         name: packages-deb-${{ matrix.distrib }}-*
-  #         failOnError: false
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        with:
+          name: packages-deb-${{ matrix.distrib }}-*
+          failOnError: false
 
-  # download-and-cache-deb:
-  #   needs: [merge-package-deb-artifacts]
-  #   runs-on: ubuntu-24.04
-  #   strategy:
-  #     matrix:
-  #       distrib: [bullseye, bookworm, jammy]
-  #   steps:
-  #     - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-  #       with:
-  #         name: packages-deb-${{ matrix.distrib }}
-  #         path: ./
+  download-and-cache-deb:
+    needs: [merge-package-deb-artifacts]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: packages-deb-${{ matrix.distrib }}
+          path: ./
 
-  #     - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-  #       with:
-  #         path: ./*.deb
-  #         key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ./*.deb
+          key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
 
-  # deliver-deb:
-  #   needs: [get-environment, download-and-cache-deb]
-  #   if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-  #   runs-on: [self-hosted, common]
+  deliver-deb:
+    needs: [get-environment, download-and-cache-deb]
+    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
 
-  #   strategy:
-  #     matrix:
-  #       distrib: [bullseye, bookworm, jammy]
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  #     - name: Delivery
-  #       uses: ./.github/actions/deb-delivery
-  #       with:
-  #         module_name: perl-cpan-libraries
-  #         distrib: ${{ matrix.distrib }}
-  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-  #         cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-  #         stability: ${{ needs.get-environment.outputs.stability }}
+      - name: Delivery
+        uses: ./.github/actions/deb-delivery
+        with:
+          module_name: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
 
-  # promote:
-  #   needs: [get-environment]
-  #   if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
-  #   runs-on: [self-hosted, common]
-  #   strategy:
-  #     matrix:
-  #       distrib: [el8, el9, bullseye, bookworm]
+  promote:
+    needs: [get-environment]
+    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
+    runs-on: [self-hosted, common]
+    strategy:
+      matrix:
+        distrib: [el8, el9, bullseye, bookworm]
 
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  #     - name: Promote ${{ matrix.distrib }} to stable
-  #       uses: ./.github/actions/promote-to-stable
-  #       with:
-  #         artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-  #         module: perl-cpan-libraries
-  #         distrib: ${{ matrix.distrib }}
-  #         stability: ${{ needs.get-environment.outputs.stability }}
+      - name: Promote ${{ matrix.distrib }} to stable
+        uses: ./.github/actions/promote-to-stable
+        with:
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          module: perl-cpan-libraries
+          distrib: ${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
