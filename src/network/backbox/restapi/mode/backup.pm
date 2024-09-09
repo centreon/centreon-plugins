@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::mode::backup;
+package network::backbox::restapi::mode::backup;
 
 use base qw(centreon::plugins::templates::counter);
 

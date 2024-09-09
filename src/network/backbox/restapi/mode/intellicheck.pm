@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::mode::intellicheck;
+package network::backbox::restapi::mode::intellicheck;
 
 use base qw(centreon::plugins::templates::counter);
 
