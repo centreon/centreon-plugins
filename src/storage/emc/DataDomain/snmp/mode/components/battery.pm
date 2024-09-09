@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::mode::components::battery;
+package storage::emc::DataDomain::snmp::mode::components::battery;
 
 use strict;
 use warnings;
@@ -68,10 +68,11 @@ sub check {
         $self->{components}->{battery}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Nvram battery '%s' status is '%s'",
+                "nvram battery '%s' status is '%s'",
                 $instance, $batt_status
             )
         );
+
         my $exit = $self->get_severity(section => 'battery', value => $batt_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
@@ -89,9 +90,10 @@ sub check {
                     short_msg => sprintf("Nvram battery '%s' charge is %s %%", $instance, $batt_value)
                 );
             }
+
             $self->{output}->perfdata_add(
-                label => 'nvram_battery', unit => '%',
                 nlabel => 'hardware.battery.nvram.charge.percentage',
+                unit => '%',
                 instances => $instance,
                 value => $batt_value,
                 warning => $warn,
