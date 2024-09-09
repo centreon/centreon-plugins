@@ -1,0 +1,30 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/debian:bookworm
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# fix locale
+RUN bash -e <<EOF
+
+apt-get update
+apt-get install -y locales libcurl4-openssl-dev curl wget zstd jq gpg
+rm -rf /var/lib/apt/lists/*
+localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+apt-get clean
+EOF
+
+ENV LANG en_US.utf8
+
+RUN bash -e <<EOF
+# Add Centreon plugins repositories
+echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+apt-get update
+apt-get -y install libtest2-harness-perl libtest2-plugin-nowarnings-perl libauthen-radius-perl libconvert-binary-c-perl libcrypt-openssl-rsa-perl libdata-dump-perl libdatetime-format-dateparse-perl libdatetime-format-strptime-perl libdatetime-perl libdbd-mysql-perl libdbd-odbc-perl libdbd-pg-perl libdbd-sybase-perl libdbi-perl libdigest-crc-perl libdigest-md5-perl libdigest-sha-perl libemail-mime-perl libemail-sender-perl libemail-send-smtp-gmail-perl libfilesys-smbclient-perl libhtml-template-perl libio-socket-inet6-perl libio-socket-ip-perl libjson-maybexs-perl libjson-perl libjson-webtoken-perl libmail-imapclient-perl libmime-base64-perl libmongodb-perl libnet-dhcp-perl libnet-dns-perl libnet-ldap-perl libnet-mqtt-simple-perl libnet-ntp-perl libnet-ssleay-perl libnet-subnet-perl libnet-telnet-perl libnet-tftp-perl libopenwsman-perl libredis-perl librrds-perl libsnmp-perl libsocket-perl libssh-session-perl libtest-www-selenium-perl libtext-csv-perl libtime-hires-perl libtime-parsedate-perl libuuid-perl libxml-libxml-perl libxml-libxml-simple-perl libxml-simple-perl libxml-xpath-perl perl perl-modules
+apt-get clean
+EOF
+
+
