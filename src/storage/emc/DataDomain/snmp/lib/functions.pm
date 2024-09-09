@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::lib::functions;
+package storage::emc::DataDomain::snmp::lib::functions;
 
 sub get_version {
     my (%options) = @_;

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::mode::components::psu;
+package storage::emc::DataDomain::snmp::mode::components::psu;
 
 use strict;
 use warnings;
@@ -72,6 +72,7 @@ sub check {
                 $instance, $psu_status, $instance
             )
         );
+
         my $exit = $self->get_severity(section => 'psu', value => $psu_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::mode::components::fan;
+package storage::emc::DataDomain::snmp::mode::components::fan;
 
 use strict;
 use warnings;
@@ -81,6 +81,7 @@ sub check {
                 $fan_descr, $fan_status, $instance, $level_map{$fan_level}
             )
         );
+
         my $exit = $self->get_severity(section => 'fan', value => $fan_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(

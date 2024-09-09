@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::plugin;
+package storage::emc::DataDomain::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,11 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'hardware'         => 'storage::emc::DataDomain::mode::hardware',
-        'filesystem-usage' => 'storage::emc::DataDomain::mode::filesystem',
-        'replication'      => 'storage::emc::DataDomain::mode::replication'
+        'hardware'         => 'storage::emc::DataDomain::snmp::mode::hardware',
+        'filesystems'      => 'storage::emc::DataDomain::snmp::mode::filesystems',
+        'interfaces'       => 'storage::emc::DataDomain::snmp::mode::interfaces',
+        'list-filesystems' => 'storage::emc::DataDomain::snmp::mode::listfilesystems',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'replications'     => 'storage::emc::DataDomain::snmp::mode::replications'
     };
 
     return $self;
