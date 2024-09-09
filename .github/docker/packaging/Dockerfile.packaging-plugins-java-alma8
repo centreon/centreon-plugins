@@ -5,11 +5,16 @@ FROM ${REGISTRY_URL}/almalinux:8
 RUN bash -e <<EOF
 
 dnf install -y \
-  maven-3.6.3 \
   git \
   wget \
   zstd \
   https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+
+cd /usr/local/src
+wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+tar zxf apache-maven-3.8.8-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.8.8/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.8.8-bin.tar.gz
 
 echo '[goreleaser]
 name=GoReleaser
