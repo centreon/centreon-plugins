@@ -44,7 +44,7 @@ sub new {
         'list-storages'    => 'snmp_standard::mode::liststorages',
         'memory'           => 'os::freebsd::snmp::mode::memory',
         'processcount'     => 'snmp_standard::mode::processcount',
-        'storage'          => 'snmp_standard::mode::storage',
+        'storage'          => 'os::freebsd::snmp::mode::storage',
         'swap'             => 'snmp_standard::mode::swap',
         'time'             => 'snmp_standard::mode::ntp',
         'tcpcon'           => 'snmp_standard::mode::tcpcon',
