@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::mode::configstatus;
+package network::backbox::restapi::mode::configstatus;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::custom::api;
+package network::backbox::restapi::custom::api;
 
 use strict;
 use warnings;

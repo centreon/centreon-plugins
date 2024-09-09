@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}backbox.json
 
 ${cmd}              ${CENTREON_PLUGINS}
-...                 --plugin=network::backbox::rest::plugin
+...                 --plugin=network::backbox::restapi::plugin
 ...                 --custommode=api
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
@@ -24,7 +24,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 intellichecks ${tc}
     [Documentation]    Check the intellichecks status
-    [Tags]    network    backbox    rest    intellicheck
+    [Tags]    network    backbox    restapi    intellicheck
     ${command}    Catenate
     ...    ${cmd}
     ...    ${extraoptions}

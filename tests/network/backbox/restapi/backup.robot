@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}backbox.json
 
 ${cmd}              ${CENTREON_PLUGINS}
-...                 --plugin=network::backbox::rest::plugin
+...                 --plugin=network::backbox::restapi::plugin
 ...                 --custommode=api
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
@@ -23,7 +23,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 backups ${tc}
     [Documentation]    Check the backups status
-    [Tags]    network    backbox    rest    backup
+    [Tags]    network    backbox    restapi    backup
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=backup

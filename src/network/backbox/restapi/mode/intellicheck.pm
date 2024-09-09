@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::mode::backup;
+package network::backbox::restapi::mode::intellicheck;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,21 +26,21 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_backup_output {
+sub prefix_intellicheck_output {
     my ($self, %options) = @_;
 
-    return "Backup '" . $options{instance_value}->{name} . "' - ";
+    return "Intellicheck " . $options{instance_value}->{id} . " '" . $options{instance_value}->{name} . "' - ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'backups', type => 1, cb_prefix_output => 'prefix_backup_output', message_multiple => 'All backups are ok', skipped_code => { -10 => 1 } },
+        { name => 'intellichecks', type => 1, cb_prefix_output => 'prefix_intellicheck_output', message_multiple => 'All intellichecks are ok', skipped_code => { -10 => 1 } },
     ];
 
-    $self->{maps_counters}->{backups} = [
-        { label => 'total', nlabel => 'backups.total.count', set => {
+    $self->{maps_counters}->{intellichecks} = [
+        { label => 'total', nlabel => 'intellicheck.total.count', set => {
             key_values      => [ { name => 'total' } ],
             output_template => 'total: %d',
             perfdatas       => [
@@ -48,7 +48,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'success', nlabel => 'backups.success.count', set => {
+        { label => 'success', nlabel => 'intellicheck.success.count', set => {
             key_values      => [ { name => 'success' }, { name => 'total' } ],
             output_template => 'success: %d',
             perfdatas       => [
@@ -56,7 +56,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'suspect', nlabel => 'backups.suspect.count', set => {
+        { label => 'suspect', nlabel => 'intellicheck.suspect.count', set => {
             key_values      => [ { name => 'suspect' }, { name => 'total' } ],
             output_template => 'suspect: %d',
             perfdatas       => [
@@ -64,7 +64,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'failure', nlabel => 'backups.failure.count', set => {
+        { label => 'failure', nlabel => 'intellicheck.failure.count', set => {
             key_values      => [ { name => 'failure' }, { name => 'total' } ],
             output_template => 'failure: %d',
             perfdatas       => [
@@ -81,23 +81,35 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-type:s' => { name => 'filter_type' }
+        'filter-type:s' => { name => 'filter_type' },
+        'report-id:s'   => { name => 'report_id' }
     });
 
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!centreon::plugins::misc::is_empty($self->{option_results}->{report_id}) && centreon::plugins::misc::is_empty($self->{option_results}->{filter_type})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --filter-type option.");
+        $self->{output}->option_exit();
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $backups = $options{custom}->get_backup_jobs_status();
-    for $backups (@$backups) {
-        $self->{backups}->{$backups->{name}} = {
-            name    => $backups->{name},
-            total   => $backups->{totalDevices},
-            success => $backups->{successDevices},
-            suspect => $backups->{suspectDevices},
-            failure => $backups->{failureDevices}
+    my $intellichecks = $options{custom}->get_intelli_check_status();
+    for $intellichecks (@$intellichecks) {
+        $self->{intellichecks}->{$intellichecks->{name}} = {
+            name    => $intellichecks->{name},
+            id      => $intellichecks->{id},
+            success => $intellichecks->{successDevices},
+            suspect => $intellichecks->{suspectDevices},
+            failure => $intellichecks->{failureDevices},
+            total   => $intellichecks->{total_devices}
         };
     }
 }
@@ -114,6 +126,10 @@ Check Backbox backups.
 =item B<--filter-type>
 
 Filter backups by type.
+
+=item B<--report-id>
+
+Specify report id.
 
 =item B<--warning-failure>
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::backbox::rest::plugin;
+package network::backbox::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'backup'       => 'network::backbox::rest::mode::backup',
-        'configstatus' => 'network::backbox::rest::mode::configstatus',
-        'intellicheck' => 'network::backbox::rest::mode::intellicheck'
+        'backup'       => 'network::backbox::restapi::mode::backup',
+        'configstatus' => 'network::backbox::restapi::mode::configstatus',
+        'intellicheck' => 'network::backbox::restapi::mode::intellicheck'
     };
 
-    $self->{custom_modes}->{api} = 'network::backbox::rest::custom::api';
+    $self->{custom_modes}->{api} = 'network::backbox::restapi::custom::api';
 
     return $self;
 }
