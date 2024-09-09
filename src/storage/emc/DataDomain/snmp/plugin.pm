@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'alerts'            => 'storage::emc::DataDomain::snmp::mode::alerts',
+        'cleaning'          => 'storage::emc::DataDomain::snmp::mode::cleaning',
         'hardware'          => 'storage::emc::DataDomain::snmp::mode::hardware',
         'filesystems'       => 'storage::emc::DataDomain::snmp::mode::filesystems',
         'interfaces'        => 'storage::emc::DataDomain::snmp::mode::interfaces',
