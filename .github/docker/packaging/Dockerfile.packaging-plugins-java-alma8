@@ -8,7 +8,8 @@ dnf install -y \
   maven-3.5.4 \
   git \
   wget \
-  zstd
+  zstd \
+  https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
 
 echo '[goreleaser]
 name=GoReleaser
