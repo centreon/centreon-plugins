@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'alerts'            => 'storage::emc::DataDomain::snmp::mode::alerts',
         'hardware'          => 'storage::emc::DataDomain::snmp::mode::hardware',
         'filesystems'       => 'storage::emc::DataDomain::snmp::mode::filesystems',
         'interfaces'        => 'storage::emc::DataDomain::snmp::mode::interfaces',
