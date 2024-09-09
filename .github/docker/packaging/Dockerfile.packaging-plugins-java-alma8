@@ -5,7 +5,7 @@ FROM ${REGISTRY_URL}/almalinux:8
 RUN bash -e <<EOF
 
 dnf install -y \
-  maven-3.5.4 \
+  maven-3.6.3 \
   git \
   wget \
   zstd \
