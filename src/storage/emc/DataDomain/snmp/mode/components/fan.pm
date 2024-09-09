@@ -77,7 +77,7 @@ sub check {
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Fan '%s' status is '%s' [instance = %s, level = %s]",
+                "fan '%s' status is '%s' [instance: %s, level: %s]",
                 $fan_descr, $fan_status, $instance, $level_map{$fan_level}
             )
         );

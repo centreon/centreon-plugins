@@ -69,7 +69,7 @@ sub check {
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Disk '%s' status is '%s'",
+                "disk '%s' status is '%s'",
                 $instance, $disk_status
             )
         );

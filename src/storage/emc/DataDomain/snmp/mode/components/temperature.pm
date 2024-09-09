@@ -72,7 +72,7 @@ sub check {
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Temperature '%s' status is '%s' [instance = %s]",
+                "temperature '%s' status is '%s' [instance: %s]",
                 $temp_descr, $temp_status, $instance
             )
         );
@@ -86,7 +86,7 @@ sub check {
 
         if (defined($temp_value) && $temp_value =~ /[0-9]/) {
             my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temp_value);
-            $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %s degree centigrade", $temp_descr, $temp_value));
+            $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %s degree centigrade", $temp_descr, $temp_value));
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
                     severity => $exit,

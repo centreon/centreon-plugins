@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'hardware'         => 'storage::emc::DataDomain::snmp::mode::hardware',
-        'filesystems'      => 'storage::emc::DataDomain::snmp::mode::filesystems',
-        'interfaces'       => 'storage::emc::DataDomain::snmp::mode::interfaces',
-        'list-filesystems' => 'storage::emc::DataDomain::snmp::mode::listfilesystems',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'replications'     => 'storage::emc::DataDomain::snmp::mode::replications'
+        'hardware'          => 'storage::emc::DataDomain::snmp::mode::hardware',
+        'filesystems'       => 'storage::emc::DataDomain::snmp::mode::filesystems',
+        'interfaces'        => 'storage::emc::DataDomain::snmp::mode::interfaces',
+        'list-filesystems'  => 'storage::emc::DataDomain::snmp::mode::listfilesystems',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'list-replications' => 'storage::emc::DataDomain::snmp::mode::listreplications',
+        'replications'      => 'storage::emc::DataDomain::snmp::mode::replications'
     };
 
     return $self;

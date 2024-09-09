@@ -64,23 +64,6 @@ sub prefix_global_output {
     return 'Number of filesystems ';
 }
 
-=pod
-sub custom_used_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_free'} + $options{new_datas}->{$self->{instance} . '_used'};
-
-    return -10 if ($self->{result_values}->{total} == 0);
-
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{free_prct} =  $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{used_prct} =  $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    return 0;
-}
-=cut
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -210,7 +193,6 @@ sub manage_selection {
 
     $self->{global} = { detected => 0 };
     $self->{fs} = {};
-
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$oid_fileSystemResourceName\.(\d+)$/);
         my $instance = $1;

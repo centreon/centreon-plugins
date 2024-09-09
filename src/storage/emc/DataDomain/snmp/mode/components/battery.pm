@@ -68,10 +68,11 @@ sub check {
         $self->{components}->{battery}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Nvram battery '%s' status is '%s'",
+                "nvram battery '%s' status is '%s'",
                 $instance, $batt_status
             )
         );
+
         my $exit = $self->get_severity(section => 'battery', value => $batt_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(

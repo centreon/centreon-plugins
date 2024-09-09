@@ -68,7 +68,7 @@ sub check {
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Power Supply '%s' status is '%s' [description = %s]",
+                "power Supply '%s' status is '%s' [description: %s]",
                 $instance, $psu_status, $instance
             )
         );
