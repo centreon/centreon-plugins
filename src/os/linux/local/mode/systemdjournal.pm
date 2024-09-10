@@ -69,11 +69,12 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_message}) ? md5_hex($self->{option_results}->{filter_message}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{since}) ? md5_hex($self->{option_results}->{since}) : md5_hex('all'));
 
-    my $journalctl_version = $options{custom}->execute_command(
-        command => '/usr/bin/journalctl',
-        command_options => '--version | grep systemd | awk \'{print $2}\'',
-        no_quit => 1
+    my ($stdout_version) = $options{custom}->execute_command(
+        command         => '/usr/bin/journalctl',
+        command_options => '--version'
     );
+    $stdout_version =~ /^systemd\s(\d+)\s/;
+    my $journalctl_version = $1;
 
     my $command_options = '--output json --output-fields MESSAGE --no-pager';
     # --output-field option has been added in version 236
