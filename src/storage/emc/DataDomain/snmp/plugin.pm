@@ -37,6 +37,7 @@ sub new {
         'interfaces'        => 'storage::emc::DataDomain::snmp::mode::interfaces',
         'list-filesystems'  => 'storage::emc::DataDomain::snmp::mode::listfilesystems',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'list-mtrees'       => 'storage::emc::DataDomain::snmp::mode::listmtrees',
         'list-replications' => 'storage::emc::DataDomain::snmp::mode::listreplications',
         'mtrees'            => 'storage::emc::DataDomain::snmp::mode::mtrees',
         'process'           => 'storage::emc::DataDomain::snmp::mode::process',
