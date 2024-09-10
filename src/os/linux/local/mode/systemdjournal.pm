@@ -79,7 +79,7 @@ sub manage_selection {
     my $command_options = '--output json --output-fields MESSAGE --no-pager';
     # --output-field option has been added in version 236
     if ($journalctl_version < 236) {
-        my $command_options = '--output json --no-pager';
+        $command_options = '--output json --no-pager';
     };
 
     if (defined($self->{option_results}->{unit}) && $self->{option_results}->{unit} ne '') {
