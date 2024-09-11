@@ -119,7 +119,7 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/rpm-delivery
         with:
-          module_name: nrpe
+          module_name: as400
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
@@ -141,7 +141,7 @@ jobs:
       - name: Delivery
         uses: ./.github/actions/deb-delivery
         with:
-          module_name: nrpe
+          module_name: as400
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
