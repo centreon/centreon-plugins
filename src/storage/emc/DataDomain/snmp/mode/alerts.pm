@@ -63,7 +63,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{truly_alert}) || $self->{option_results}->{truly_alert} eq '') {
-        $self->{option_results}->{truly_alert} = '%{severity} =~ /emergency|alert|warning/i';
+        $self->{option_results}->{truly_alert} = '%{severity} =~ /emergency|alert|warning|critical/i';
     }
 
     $self->{option_results}->{truly_alert} =~ s/%\{(.*?)\}/\$values->{$1}/g;
@@ -81,11 +81,10 @@ sub manage_selection {
 
     my $oid_currentAlertEntry = '.1.3.6.1.4.1.19746.1.4.1.1.1';
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_currentAlertEntry,
-        nothing_quit => 1
+        oid => $oid_currentAlertEntry
     );
 
-    $self->{global} = { current_alers => 0 };
+    $self->{global} = { current_alerts => 0 };
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{timestamp}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -128,7 +127,7 @@ Display alerts in verbose output.
 
 =item B<--truly-alert>
 
-Expression to define a truly alert (default: '%{severity} =~ /emergency|alert|warning/i').
+Expression to define a truly alert (default: '%{severity} =~ /emergency|alert|warning|critical/i').
 
 =item B<--warning-*> B<--critical-*>
 
