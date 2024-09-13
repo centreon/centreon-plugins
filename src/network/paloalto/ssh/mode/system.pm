@@ -217,6 +217,7 @@ sub manage_selection {
         oper_mode      => $result->{system}->{'operational-mode'}
     };
 
+    # Result of `show system statistics session`
     #Device is up          : 40 days 5 hours 53 mins 12 sec
     #Packet rate           : 15872/s
     #Throughput            : 111588 Kbps
@@ -224,13 +225,13 @@ sub manage_selection {
     #Active TCP sessions   : 5217
     #Active UDP sessions   : 7531
     #Active ICMP sessions  : 19
-    $result = $options{custom}->execute_command(command => 'show system statistics session', text_output => 1);
-    if ($result =~ /^Throughput\s*:\s*(\d+)\s+(..)/mi) {
-        $self->{system}->{throughput} = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
-    }
-    if ($result =~ /^Total\s+active\s+sessions\s*:\s*(\d+)/mi) {
-        $self->{system}->{active_sessions} = $1;
-    }
+
+    # This command is now only working in interactive mode (like top) and its output cannot be retrieved
+    # So instead of `show system statistics session` we'll be using `show session info` wich returns XML
+
+    $result = $options{custom}->execute_command(command => 'show session info');
+    $self->{system}->{throughput} = centreon::plugins::misc::convert_bytes(value => $result->{kbps}, unit => kbps);
+    $self->{system}->{active_sessions} = $result->{num-active};
 
     $self->{cache_name} = 'paloalto_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
