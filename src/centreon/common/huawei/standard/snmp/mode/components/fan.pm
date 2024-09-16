@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::components::fan;
+package centreon::common::huawei::standard::snmp::mode::components::fan;
 
 use strict;
 use warnings;

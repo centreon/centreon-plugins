@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::hardware;
+package centreon::common::huawei::standard::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -41,7 +41,7 @@ sub set_system {
         ]
     };
     
-    $self->{components_path} = 'network::huawei::snmp::mode::components';
+    $self->{components_path} = 'centreon::common::huawei::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'temperature'];
 }
 

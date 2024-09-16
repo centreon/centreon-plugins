@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::plugin;
+package network::huawei::wlc::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'              => 'network::huawei::snmp::mode::cpu',
-        'hardware'         => 'network::huawei::snmp::mode::hardware',
-        'interfaces'       => 'network::huawei::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::huawei::snmp::mode::memory',
-        'uptime'           => 'snmp_standard::mode::uptime'
+        'ap-health'       => 'network::huawei::wlc::snmp::mode::aphealth',
+        'ap-radio'        => 'network::huawei::wlc::snmp::mode::apradio',
+        'ap-status'       => 'network::huawei::wlc::snmp::mode::apstatus',
+        'cpu'             => 'centreon::common::huawei::standard::snmp::mode::cpu',
+        'hardware'        => 'centreon::common::huawei::standard::snmp::mode::hardware',
+        'interfaces'      => 'centreon::common::huawei::standard::snmp::mode::interfaces',
+        'list-aps'        => 'network::huawei::wlc::snmp::mode::listaps',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-radios'     => 'network::huawei::wlc::snmp::mode::listradios',
+        'memory'          => 'centreon::common::huawei::standard::snmp::mode::memory',
+        'uptime'          => 'snmp_standard::mode::uptime'
     };
 
     return $self;
@@ -47,6 +52,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Huawei equipments in SNMP.
+Check Huawei WLC in SNMP.
 
 =cut

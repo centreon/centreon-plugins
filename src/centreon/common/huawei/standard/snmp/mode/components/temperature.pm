@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::components::temperature;
+package centreon::common::huawei::standard::snmp::mode::components::temperature;
 
 use strict;
 use warnings;
