@@ -12,6 +12,7 @@
 --critical-backend-congestions
 --critical-backend-outstanding-io
 --critical-bytesallocatedpercentage
+--critical-na
 --dfsr
 --display-transform-dst
 --display-transform-src
@@ -44,6 +45,7 @@
 --noeventlog
 --nomachineaccount
 --ntlmv2
+--oid
 --oid-display
 --oid-extra-display
 --oid-filter
@@ -54,6 +56,7 @@
 --warning-backend-congestions
 --warning-backend-outstanding-io
 --warning-bytesallocatedpercentage
+--warning-na
 -EncodedCommand
 -InputFormat
 -NoLogo
@@ -64,6 +67,7 @@ ASAM
 Alcatel
 Ansible
 Avigilon
+Backbox
 Centreon
 DC4
 Datacore
@@ -93,6 +97,8 @@ OID
 PKCS1
 Primera
 QoS
+RestAPI
+RFC1628
 RRDCached
 RestAPI
 SNMP
@@ -138,10 +144,13 @@ in-bcast
 in-mcast
 in-ucast
 interface-dsl-name
+ipv4
+ipv6
 jobqueue
 jobqueues
 kccevent
 keepass
+Kubernetes
 ldap
 license-instances-usage-prct
 machineaccount
@@ -151,6 +160,9 @@ module-cellradio-rsrp
 module-cellradio-rsrq
 module-cellradio-snr
 modules-cellradio-detected
+multiple
+NTP
+nagios
 okta
 oneaccess-sys-mib
 out-bcast
@@ -174,9 +186,15 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
+UDP
 uptime
 usage-prct
 userpass
 v1
 v2
+VDSL2
+Veeam
+VeloCloud
+VMware
 vSAN
+WSMAN

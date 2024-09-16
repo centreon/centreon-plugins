@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Network Interfaces
+Documentation       Network table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 

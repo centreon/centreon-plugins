@@ -16,26 +16,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-
-package hardware::ups::standard::rfc1628::snmp::plugin;
+package network::backbox::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+    $self->{version} = '1.0';
     $self->{modes} = {
-        'alarms'         => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
-        'battery-status' => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',
-        'input-lines'    => 'hardware::ups::standard::rfc1628::snmp::mode::inputlines',
-        'output-lines'   => 'hardware::ups::standard::rfc1628::snmp::mode::outputlines',
-        'output-source'  => 'hardware::ups::standard::rfc1628::snmp::mode::outputsource'
+        'backup'       => 'network::backbox::restapi::mode::backup',
+        'configstatus' => 'network::backbox::restapi::mode::configstatus',
+        'intellicheck' => 'network::backbox::restapi::mode::intellicheck'
     };
+
+    $self->{custom_modes}->{api} = 'network::backbox::restapi::custom::api';
 
     return $self;
 }
@@ -46,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check ups compatible RFC1628 in SNMP.
+Check Backbox using Rest API.
 
 =cut

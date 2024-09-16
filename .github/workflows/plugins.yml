@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/plugins.yml'
+      - '.github/scripts/plugins-source.container.pl'
       - 'src/**'
       - 'packaging/**'
   push:
