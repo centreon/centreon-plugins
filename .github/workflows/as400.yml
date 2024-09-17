@@ -42,9 +42,6 @@ jobs:
             image: packaging-plugins-java-bookworm
             distrib: bookworm
           - package_extension: deb
-            image: packaging-plugins-jammy
-            distrib: jammy
-          - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
 
