@@ -83,19 +83,19 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'backend-latency-read', nlabel => 'cluster.vsan.backend.latency.read.milliseconds', display_ok => 0, set => {
+        { label => 'backend-latency-read', nlabel => 'cluster.vsan.backend.latency.read.microseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgRead' } ],
-                output_template => 'read latency: %s ms',
+                output_template => 'read latency: %s µs',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0 }
+                    { template => '%s', unit => 'µs', min => 0 }
                 ]
             }
         },
-        { label => 'backend-latency-write', nlabel => 'cluster.vsan.backend.latency.write.milliseconds', display_ok => 0, set => {
+        { label => 'backend-latency-write', nlabel => 'cluster.vsan.backend.latency.write.microseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgWrite' } ],
-                output_template => 'write latency: %s ms',
+                output_template => 'write latency: %s µs',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0 }
+                    { template => '%s', unit => 'µs', min => 0 }
                 ]
             }
         }
@@ -115,7 +115,6 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'cluster-name:s'     => { name => 'cluster_name' },
-        'filter'             => { name => 'filter' },
         'scope-datacenter:s' => { name => 'scope_datacenter' }
     });
 
@@ -133,11 +132,18 @@ sub manage_selection {
 
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{cluster_name})
+                and $cluster_name !~ /$self->{option_results}->{cluster_name}/ );
+
         $self->{cluster}->{$cluster_name} = {
             display => $cluster_name,
             %{$response->{data}->{$cluster_id}->{cluster_domcompmgr}},
         };
-    }    
+    }
+    if ( scalar(keys(%{$self->{cluster}}) ) == 0) {
+        my $explanation = centreon::plugins::misc::is_empty($self->{option_results}->{cluster_name}) ? '' : ' matching /' . $self->{option_results}->{cluster_name} . '/';
+        $self->{output}->output_add(severity => 'UNKNOWN', short_msg => "No clusters found" . $explanation);
+    }
 }
 
 1;
@@ -146,30 +152,83 @@ __END__
 
 =head1 MODE
 
-Check Vsan cluster usage
+Check VMware vSAN cluster usage.
 
 =over 8
 
 =item B<--cluster-name>
 
-cluster to check.
-If not set, we check all clusters.
-
-=item B<--filter>
-
-Cluster name is a regexp.
+Define which clusters should be monitored based on their name.
+This option will be treated as a regular expression.
 
 =item B<--scope-datacenter>
 
-Search in following datacenter(s) (can be a regexp).
+Define which clusters to monitor based on their data center's name.
+This option will be treated as a regular expression.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-backend-write-usage>
 
 Thresholds.
-Can be: 'backend-write-usage', 'backend-read-usage',
-'backend-outstanding-io', 'backend-congestions', 
-'backend-throughput-read', 'backend-throughput-write'
-.
+
+=item B<--critical-backend-write-usage>
+
+Thresholds.
+
+=item B<--warning-backend-read-usage>
+
+Thresholds.
+
+=item B<--critical-backend-read-usage>
+
+Thresholds.
+
+=item B<--warning-backend-outstanding-io>
+
+Thresholds.
+
+=item B<--critical-backend-outstanding-io>
+
+Thresholds.
+
+=item B<--warning-backend-congestions>
+
+Thresholds.
+
+=item B<--critical-backend-congestions>
+
+Thresholds.
+
+=item B<--warning-backend-throughput-read>
+
+Thresholds.
+
+=item B<--critical-backend-throughput-read>
+
+Thresholds.
+
+=item B<--warning-backend-throughput-write>
+
+Thresholds.
+
+=item B<--critical-backend-throughput-write>
+
+Thresholds.
+
+=item B<--warning-backend-latency-read>
+
+Thresholds in microseconds.
+
+=item B<--critical-backend-latency-read>
+
+Thresholds in microseconds.
+
+=item B<--warning-backend-latency-write>
+
+Thresholds in microseconds.
+
+=item B<--critical-backend-latency-write>
+
+Thresholds in microseconds.
 
 =back
 
