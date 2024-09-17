@@ -48,6 +48,9 @@ overrides:
       perl(POSIX),
       perl(Encode),
       perl(XML::LibXML),
+      perl(FindBin),
+      perl(lib),
+      perl(sort),
       @RPM_DEPENDENCIES@
     ]
     conflicts:
