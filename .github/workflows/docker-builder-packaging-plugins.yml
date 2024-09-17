@@ -52,6 +52,9 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-java-jammy
+            image: packaging-plugins-java-jammy
 
     runs-on: ${{ matrix.runner }}
 
