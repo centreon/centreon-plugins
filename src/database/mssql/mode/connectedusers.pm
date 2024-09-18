@@ -28,10 +28,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'database-name:s' => { name => 'database_name' },
-        'uniq-users'      => { name => 'uniq_users' }
+        'database-name:s'   => { name => 'database_name' },
+        'uniq-users'        => { name => 'uniq_users' },
+        'count-admin-users' => { name => 'count_admin_users' }
     });
 
     return $self;
@@ -60,7 +61,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => q{SELECT DB_NAME(dbid) as dbname, loginame FROM master..sysprocesses WHERE spid >= '51'});
+    $options{sql}->query(query => q{SELECT DB_NAME(dbid) as dbname, loginame, spid FROM master..sysprocesses});
     my $results = $options{sql}->fetchall_arrayref();
 
     $self->{connected_user} = { value => 0 };
@@ -71,6 +72,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{database_name}) && $self->{option_results}->{database_name} ne '' && 
             $row->[0] !~ /$self->{option_results}->{database_name}/);
         next if (defined($self->{option_results}->{uniq_users}) && defined($logins{ $row->[1] }));
+        next if (!defined($self->{option_results}->{count_admin_users}) && $row->[2] < 51);
+
         $logins{ $row->[1] } = 1;
         $self->{connected_user}->{value}++;
     }
@@ -93,6 +96,10 @@ Filter connected users by database name (can be a regexp).
 =item B<--uniq-users>
 
 Count users with the same login name once.
+
+=item B<--count-admin-users>
+
+Count admin users (otherwise it's ignored).
 
 =item B<--warning-connected-user>
 
