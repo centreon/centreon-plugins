@@ -90,7 +90,7 @@ Check MSSQL connected users.
 
 Filter connected users by database name (can be a regexp).
 
-=item B<--uniq-name>
+=item B<--uniq-users>
 
 Count users with the same login name once.
 
