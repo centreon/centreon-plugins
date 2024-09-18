@@ -15,21 +15,6 @@ ${CMD}                          ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtr
 
 
 *** Test Cases ***
-AWS CloudTrail check trail status
-    [Documentation]    Check AWS CloudTrail trail status
-    [Tags]    cloud    aws    cloudtrail
-    
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode=checktrailstatus
-    ...    --endpoint=http://${HOSTNAME}:${APIPORT}/cloudtrail/gettrailstatus/${trailstatus}
-    ...    --trail-name=trailname
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-        
-    Examples:         tc    trailstatus     expected_result    --
-    ...               1     true            OK: Trail is logging: 1 | 'trail_is_logging'=1;;;0;
-    ...               2     false           CRITICAL: Trail is logging: 0 | 'trail_is_logging'=0;;;0;
-
 AWS CloudTrail count events
     [Documentation]    Check AWS CloudTrail count events
     [Tags]    cloud    aws    cloudtrail
