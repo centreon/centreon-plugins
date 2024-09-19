@@ -19,12 +19,11 @@ list-services ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/windows/snmp/windows_anon
-    ...    --snmp-timeout=1
+    ...    --snmp-community=os/windows/snmp/windows
     ...    ${extra_options}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                expected_result    --
-            ...      1     --verbose --help             OK: 
-            ...      2     --verbose                    ok
+    Examples:        tc    extra_options                     expected_result    --
+            ...      1     --filter-name=toto                UNKNOWN: SNMP Table Request: Cant get a single value.
+            ...      2     --filter-name=''                  UNKNOWN: SNMP Table Request: Cant get a single value.
