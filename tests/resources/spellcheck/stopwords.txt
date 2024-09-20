@@ -170,6 +170,7 @@ out-mcast
 out-ucast
 overprovisioning
 perfdata
+physicaldrive
 powershell
 powershell.exe
 prct
