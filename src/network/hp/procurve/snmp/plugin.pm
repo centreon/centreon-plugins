@@ -35,7 +35,9 @@ sub new {
         'environment'      => 'network::hp::procurve::snmp::mode::environment',
         'interfaces'       => 'network::hp::procurve::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees' => 'snmp_standard::mode::listspanningtrees',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
+        'spanning-tree     => 'snmp_standard::mode::spanningtree',
         'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
     };
 
