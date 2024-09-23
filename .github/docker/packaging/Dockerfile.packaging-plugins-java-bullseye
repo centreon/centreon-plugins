@@ -1,0 +1,24 @@
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/debian:bullseye
+
+RUN bash -e <<EOF
+
+apt-get update
+apt-get install -y \
+  ca-certificates \
+  git \
+  zstd \
+  maven=3.6.3-5 \
+  openjdk-17-jdk
+
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
+
+apt-get update
+apt-get install -y nfpm
+
+apt-get clean all
+
+EOF
+
+WORKDIR /src
