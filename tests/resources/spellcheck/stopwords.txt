@@ -1,6 +1,8 @@
 2c
 3CX
 --3cx-version
+--add-fc-fe-errors
+--add-qos-limit
 --add-sysdesc
 ADSL
 Alcatel
@@ -68,6 +70,8 @@ ifName
 --ignore-orgs-api-disabled
 IMEI
 in-bcast
+in-crc
+in-fcserror
 in-mcast
 -InputFormat
 interface-dsl-name
@@ -138,6 +142,7 @@ OID
 okta
 oneaccess-sys-mib
 out-bcast
+out-fc-wait
 out-mcast
 out-ucast
 overprovisioning

@@ -436,7 +436,7 @@ Check interface errors.
 
 =item B<--add-fc-fe-errors>
 
-Check interface fiber channel fibre element errors.
+Check interface fiber channel fiber element errors.
 
 =item B<--add-cast>
 
@@ -491,7 +491,7 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
@@ -515,7 +515,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32 bits counters (even in SNMP version 2c and version 3). Should be used when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 
