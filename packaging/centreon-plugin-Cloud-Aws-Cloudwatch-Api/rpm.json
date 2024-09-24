@@ -1,6 +1,7 @@
 {
     "dependencies": [
-        "perl(DateTime)"
+        "perl(DateTime)",
+        "perl(Paws)"
     ],
     "replaces": ["centreon-plugin-Cloud-Aws-Api"]
 }
