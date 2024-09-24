@@ -29,7 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '0.2';
     $self->{modes} = {
         'backup'                    => 'database::mysql::mode::backup',
         'collection'                => 'centreon::common::protocols::sql::mode::collection',

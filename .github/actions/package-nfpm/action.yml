@@ -83,10 +83,20 @@ runs:
           export APACHE_GROUP="apache"
         else
           export DIST=""
-          if [ "${{ inputs.stability }}" == "unstable" ] || [ "${{ inputs.stability }}" == "canary" ]; then
-            export RELEASE="$RELEASE~${{ inputs.distrib }}"
+          if [ "${{ inputs.distrib }}" == "bullseye" ]; then
+            DISTRIB_SUFFIX="+deb11u1"
+          elif [ "${{ inputs.distrib }}" == "bookworm" ]; then
+            DISTRIB_SUFFIX="+deb12u1"
+          elif [ "${{ inputs.distrib }}" == "jammy" ]; then
+            DISTRIB_SUFFIX="-0ubuntu.22.04"
           else
-            export RELEASE="1~${{ inputs.distrib }}"
+            echo "::error::Distrib ${{ inputs.distrib }} not supported for packaging"
+            exit 1
+          fi
+          if [ "${{ inputs.stability }}" == "unstable" ] || [ "${{ inputs.stability }}" == "canary" ]; then
+            export RELEASE="$RELEASE~$DISTRIB_SUFFIX"
+          else
+            export RELEASE="1~$DISTRIB_SUFFIX"
           fi
           export APACHE_USER="www-data"
           export APACHE_GROUP="www-data"
