@@ -67,6 +67,8 @@ ASAM
 Alcatel
 Ansible
 Avigilon
+authserver
+authservers
 Backbox
 Centreon
 DC4
