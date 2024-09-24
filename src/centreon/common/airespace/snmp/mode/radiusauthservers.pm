@@ -54,9 +54,9 @@ sub set_counters {
     $self->{maps_counters}->{servers} = [
         { label => 'authserver-roundtrip-time', nlabel => 'radius.authserver.roundtrip.time.milliseconds', set => {
                 key_values => [ { name => 'round_trip_time' }, { name => 'name' } ],
-                output_template => 'round trip time: %s ms',
+                output_template => 'round trip time: %s µs',
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%s', min => 0, unit => 'µs', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
