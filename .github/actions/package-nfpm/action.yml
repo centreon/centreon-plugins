@@ -54,6 +54,12 @@ runs:
         rm -f ./*.rpm
       shell: bash
 
+    - name: Parse distrib name
+      id: parse-distrib
+      uses: ./.github/actions/parse-distrib
+      with:
+        distrib: ${{ inputs.distrib }}
+
     - name: Import gpg key
       env:
         RPM_GPG_SIGNING_KEY: ${{ inputs.rpm_gpg_key }}
@@ -83,20 +89,10 @@ runs:
           export APACHE_GROUP="apache"
         else
           export DIST=""
-          if [ "${{ inputs.distrib }}" == "bullseye" ]; then
-            DISTRIB_SUFFIX="+deb11u1"
-          elif [ "${{ inputs.distrib }}" == "bookworm" ]; then
-            DISTRIB_SUFFIX="+deb12u1"
-          elif [ "${{ inputs.distrib }}" == "jammy" ]; then
-            DISTRIB_SUFFIX="-0ubuntu.22.04"
-          else
-            echo "::error::Distrib ${{ inputs.distrib }} not supported for packaging"
-            exit 1
-          fi
           if [ "${{ inputs.stability }}" == "unstable" ] || [ "${{ inputs.stability }}" == "canary" ]; then
-            export RELEASE="$RELEASE$DISTRIB_SUFFIX"
+            export RELEASE="$RELEASE${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }}"
           else
-            export RELEASE="1$DISTRIB_SUFFIX"
+            export RELEASE="1${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }}"
           fi
           export APACHE_USER="www-data"
           export APACHE_GROUP="www-data"
@@ -126,17 +122,6 @@ runs:
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
           sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
-          echo 'changelog: "changelog.yaml"' >> $BASENAME
-          cat <<EOT >> changelog.yaml
-        - deb:
-            urgency: low
-            distributions:
-              - ${{ inputs.distrib }}
-          semver: "20240925"
-          date: "2024-09-25T05:00:00Z"
-          distribution: "stable"
-        EOT
-          cat changelog.yaml
           nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
           cd -
           mv $DIRNAME/*.${{ inputs.package_extension }} ./

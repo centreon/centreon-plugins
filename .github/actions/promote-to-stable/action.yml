@@ -22,6 +22,12 @@ runs:
         JF_URL: https://centreon.jfrog.io
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
+    - name: Parse distrib name
+      id: parse-distrib
+      uses: ./.github/actions/parse-distrib
+      with:
+        distrib: ${{ inputs.distrib }}
+
     - name: Promote RPM packages to stable
       if: ${{ startsWith(inputs.distrib, 'el') }}
       run: |
@@ -67,17 +73,8 @@ runs:
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
         echo "[DEBUG] - Distrib: ${{ inputs.module }}"
 
-        if [ "${{ inputs.distrib }}" == "bullseye" ]; then
-          DISTRIB_SUFFIX="+deb11u1"
-        elif [ "${{ inputs.distrib }}" == "bookworm" ]; then
-          DISTRIB_SUFFIX="+deb12u1"
-        else
-          echo "::error::Distrib ${{ inputs.distrib }} not supported for promote"
-          exit 1
-        fi
-
         echo "[DEBUG] - Get path of testing DEB packages to promote to stable."
-        SRC_PATHS=$(jf rt search --include-dirs apt-plugins-testing/pool/${{ inputs.module }}/*$DISTRIB_SUFFIX*.deb | jq -r '.[].path')
+        SRC_PATHS=$(jf rt search --include-dirs apt-plugins-testing/pool/${{ inputs.module }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb | jq -r '.[].path')
 
         if [[ ${SRC_PATHS[@]} ]]; then
           for SRC_PATH in ${SRC_PATHS[@]}; do
