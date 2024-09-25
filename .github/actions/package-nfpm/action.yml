@@ -132,6 +132,8 @@ runs:
             urgency: low
             distributions:
               - ${{ inputs.distrib }}
+          semver: "20240925"
+          date: "2024-09-25T05:00:00Z"
           distribution: "stable"
         EOT
           cat changelog.yaml
