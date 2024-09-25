@@ -129,10 +129,12 @@ runs:
           echo 'changelog: "changelog.yaml"' >> $BASENAME
           cat <<EOT >> changelog.yaml
         - deb:
-          urgency: low
-          distributions:
-            - ${{ inputs.distrib }}
+            urgency: low
+            distributions:
+              - ${{ inputs.distrib }}
+          distribution: "stable"
         EOT
+          cat changelog.yaml
           nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
           cd -
           mv $DIRNAME/*.${{ inputs.package_extension }} ./
