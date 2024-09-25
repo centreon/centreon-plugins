@@ -126,6 +126,13 @@ runs:
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
           sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
+          echo 'changelog: "changelog.yaml"' >> $BASENAME
+          cat <<EOT >> changelog.yaml
+          - deb:
+            urgency: low
+            distributions:
+              - ${{ inputs.distrib }}
+          EOT
           nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
           cd -
           mv $DIRNAME/*.${{ inputs.package_extension }} ./
