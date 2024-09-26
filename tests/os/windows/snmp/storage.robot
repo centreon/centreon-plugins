@@ -19,7 +19,7 @@ storage ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/windows/snmp/windows
+    ...    --snmp-community=os/windows/snmp/windows_anon
     ...    --snmp-timeout=1
     ...    ${extra_options}
  

@@ -19,7 +19,7 @@ list-services ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/windows/snmp/windows
+    ...    --snmp-community=os/windows/snmp/windows_anon
     ...    ${extra_options}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

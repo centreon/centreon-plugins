@@ -19,7 +19,7 @@ time ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/windows/snmp/services-en
+    ...    --snmp-community=os/windows/snmp/windows_anon
     ...    ${extra_options}
  
 
@@ -32,4 +32,5 @@ time ${tc}
             ...      4     --ntp-port=123                  OK: 
             ...      5     --timezone='+0100'              OK:
             ...      6     --ntp-hostname                  OK:
-            ...      7     --verbose --help                ok
+            ...      7     --verbose                       ok
+            ...      8     --debug                         ok
