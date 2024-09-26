@@ -171,9 +171,9 @@ List physical disks using the HPE Alletra REST API.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-id>
 
-Display disks matching the name filter.
+Display disks matching the id filter.
 
 =item B<--filter-protocol>
 
