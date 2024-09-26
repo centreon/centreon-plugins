@@ -1,15 +1,15 @@
 #!/usr/bin/perl
 # Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# Centreon is a full-fledged industry-strength solution that meets 
-# the needs in IT infrastructure and application monitoring for 
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0  
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,6 +32,7 @@ use JSON::XS;
 use centreon::vmware::script;
 use centreon::vmware::common;
 use centreon::vmware::connector;
+use centreon::script::centreonvault;
 
 my ($centreon_vmware, $frontend);
 
@@ -108,68 +109,42 @@ sub new {
     bless $self, $class;
     $self->add_options(
             'config-extra=s' => \$self->{opt_extra},
-            'check-config' => \$self->{opt_check_config}
+            'check-config'   => \$self->{opt_check_config},
+            'vault-config=s' => \$self->{opt_vault_config}
     );
 
-    %{$self->{centreon_vmware_default_config}} =
-        (
-            credstore_use => 0,
-            credstore_file => '/root/.vmware/credstore/vicredentials.xml',
-            timeout_vsphere => 60,
-            timeout => 60,
-            timeout_kill => 30,
-            dynamic_timeout_kill => 86400,
-            refresh_keeper_session => 15,
-            bind => '*',
-            port => 5700,
-            ipc_file => '/tmp/centreon_vmware/routing.ipc',
-            case_insensitive => 0,
-            vsphere_server => {
-                #'default' => {'url' => 'https://XXXXXX/sdk',
-                #              'username' => 'XXXXX',
-                #              'password' => 'XXXXX'},
-                #'testvc' =>  {'url' => 'https://XXXXXX/sdk',
-                #              'username' => 'XXXXX',
-                #              'password' => 'XXXXXX'}
-            },
-            vsan_sdk_path => '/usr/local/share/perl5/VMware'
-        );
+    %{$self->{centreon_vmware_default_config}} = (
+        credstore_use          => 0,
+        credstore_file         => '/root/.vmware/credstore/vicredentials.xml',
+        timeout_vsphere        => 60,
+        timeout                => 60,
+        timeout_kill           => 30,
+        dynamic_timeout_kill   => 86400,
+        refresh_keeper_session => 15,
+        bind                   => '*',
+        port                   => 5700,
+        ipc_file               => '/tmp/centreon_vmware/routing.ipc',
+        case_insensitive       => 0,
+        vsphere_server         => {
+            #'default' => {'url' => 'https://XXXXXX/sdk',
+            #              'username' => 'XXXXX',
+            #              'password' => 'XXXXX'},
+            #'testvc' =>  {'url' => 'https://XXXXXX/sdk',
+            #              'username' => 'XXXXX',
+            #              'password' => 'XXXXXX'}
+        },
+        vsan_sdk_path          => '/usr/local/share/perl5/VMware'
+    );
 
-    $self->{return_child} = {};
-    $self->{stop} = 0;
-    $self->{childs_vpshere_pid} = {};
-    $self->{counter_stats} = {};
-    $self->{whoaim} = undef; # to know which vsphere to connect
-    $self->{modules_registry} = {};
+    $self->{return_child}         = {};
+    $self->{stop}                 = 0;
+    $self->{children_vpshere_pid} = {};
+    $self->{counter_stats}        = {};
+    $self->{whoaim}               = undef; # to know which vsphere to connect
+    $self->{modules_registry}     = {};
+    $self->{vault}                = {};
 
     return $self;
-}
-
-# parse_json_file: reads the content of a JSON file, loads it as an object and returns it
-sub parse_json_file {
-    my ($self, %options) = @_;
-
-    $self->{logger}->writeLogDebug("Reading JSON file " . $self->{opt_extra});
-
-    my $fh;
-    my $json_as_object;
-    my $json_data = '';
-
-    open($fh, '<', $self->{opt_extra}) or $self->{logger}->writeLogFatal("Cannot open " . $self->{opt_extra});
-    for my $line (<$fh>) {
-        chomp $line;
-        $json_data .= $line;
-    }
-    close($fh);
-
-    $self->{logger}->writeLogDebug("Evaluating JSON content of file " . $self->{opt_extra});
-    eval {
-        $json_as_object = decode_json($json_data);
-    };
-    if ($@) {
-        $self->{logger}->writeLogFatal("Could not decode JSON from $self->{opt_extra}");
-    }
-    return($json_as_object);
 }
 
 # read_configuration: reads the configuration file given as parameter
@@ -185,8 +160,10 @@ sub read_configuration {
         require($self->{opt_extra});
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
+        # If the configuration comes from a .pm file, then we're not supposed to use the vault
+        $self->{vault_enabled} = 0;
     } elsif ($self->{opt_extra} =~ /.*\.json$/i) {
-        $centreon_vmware_config_from_json = $self->parse_json_file();
+        $centreon_vmware_config_from_json = centreon::vmware::common::parse_json_file( 'json_file' => $self->{opt_extra} );
         # The structure of the JSON is different from the .pm file. The code was designed to work with the latter, so
         # the structure of $self->{centreon_vmware_config} must be adapted after parsing to avoid a massive refactoring of
         # the whole program. The wanted structure is a key-object dictionary instead of an array of objects.
@@ -195,8 +172,11 @@ sub read_configuration {
         $centreon_vmware_config_from_json->{vsphere_server} = \%vsphere_server_dict;
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %$centreon_vmware_config_from_json};
+    } else {
+        $self->{logger}->writeLogError($self->{opt_extra} . " does not seem to be in a supported format.");
     }
 }
+
 
 # report_config_check: writes a report of what has been loaded from the configuration file
 sub report_config_check {
@@ -205,8 +185,8 @@ sub report_config_check {
     my $nb_server_entries = scalar(keys %{$self->{centreon_vmware_config}->{vsphere_server}});
     my $entry_spelling    = ($nb_server_entries > 1) ? 'entries' : 'entry';
 
-    my $report = "Configuration file " . $self->{opt_extra} . " has been read correctly and has ";
-    $report .=         $nb_server_entries . " " . $entry_spelling . ".";
+    my $report = "Configuration file " . $self->{opt_extra} . " has been read correctly and has "
+        . $nb_server_entries . " " . $entry_spelling . ".";
 
     $self->{logger}->writeLogInfo($report);
     return $report;
@@ -224,18 +204,36 @@ sub init {
     }
 
     if ( ! -f $self->{opt_extra} ) {
-        my $msg = "Can't find config file '$self->{opt_extra}'. If a migration from "
+        $self->{logger}->writeLogFatal(
+            "Can't find config file '$self->{opt_extra}'. If a migration from "
             . "/etc/centreon/centreon_vmware.pm to /etc/centreon/centreon_vmware.json is required, you may "
-            . "centreon_vmware_convert_config_file /etc/centreon/centreon_vmware.pm > /etc/centreon/centreon_vmware.json";
-        $self->{logger}->writeLogFatal($msg);
+            . "centreon_vmware_convert_config_file /etc/centreon/centreon_vmware.pm > /etc/centreon/centreon_vmware.json"
+        );
     }
 
     if ( ! $self->{opt_extra} =~ /\.(pm|json)$/i) {
-        my $msg = "Configuration file " . $self->{opt_extra} . " seems to be neither JSON nor PM file.";
-        $self->{logger}->writeLogFatal($msg);
+        $self->{logger}->writeLogFatal(
+            "Configuration file " . $self->{opt_extra} . " seems to be neither JSON nor PM file."
+        );
     }
 
     $self->read_configuration(filename => $self->{opt_extra});
+
+    if (! defined($self->{opt_vault_config}) or $self->{opt_vault_config} eq '') {
+        $self->{opt_vault_config} = '/var/lib/centreon/vault/vault.json';
+        $self->{logger}->writeLogInfo("No vault config file given. Applying default: " . $self->{opt_vault_config});
+    }
+
+    # At this point $self->{vault_enabled} can be undef or 0. If 0 we don't enter here
+    if (!defined($self->{vault_enabled}) and -f $self->{opt_vault_config} ) {
+        $self->{vault_enabled} = 1;
+        $self->{logger}->writeLogDebug("Vault config file " . $self->{opt_vault_config} . " exists. Creating the vault object.");
+        $self->{vault} = centreon::script::centreonvault->new(
+                'logger'      => $self->{logger},
+                'config_file' => $self->{opt_vault_config}
+        ) or $self->{vault_enabled} = 0;
+
+    }
 
     ##### Load modules
     $self->load_module(@load_modules);
@@ -263,18 +261,31 @@ sub init {
             $self->{logger}->writeLogError("Credstore init failed: $@");
             exit(1);
         }
+    } else {
+        $self->{logger}->writeLogDebug("Not using credstore.");
+        $self->{centreon_vmware_config}->{credstore_use} = 0;
+    }
 
-        ###
-        # Get password
-        ###
-        foreach (keys %{$self->{centreon_vmware_config}->{vsphere_server}}) {
-            my $lpassword = VMware::VICredStore::get_password(server => $_, username => $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{username});
-            if (!defined($lpassword)) {
-                $self->{logger}->writeLogError("Can't get password for couple host='" . $_ . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{username} . "' : $@");
-                exit(1);
+    # Get passwords
+    foreach my $server (keys %{$self->{centreon_vmware_config}->{vsphere_server}}) {
+        my $obtained_password;
+        my $configured_password = $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password};
+
+        # If appropriate, get the password from the vmware credentials store
+        if ($self->{centreon_vmware_config}->{credstore_use} == 1) {
+            $obtained_password = VMware::VICredStore::get_password(server => $server, username => $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username});
+            if (!defined($obtained_password)) {
+               $self->{logger}->writeLogFatal("Can't get password for couple host='" . $server . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username} . "' : $@");
             }
-            $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{password} = $lpassword;
+        } elsif ($self->{vault_enabled} == 1 and $self->{vault}->is_password_a_vault_secret($configured_password)) {
+            # if the vault is enabled and the configured password has the form of a vault secret, get the actual password from the vault
+            $obtained_password = $self->{vault}->get_secret($configured_password);
+        } else {
+            # if there's nothing special about passwords, keep it as configured (plain text)
+            $obtained_password = $configured_password;
         }
+
+        $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password} = $obtained_password;
     }
 
     my $config_check_report = $self->report_config_check();
@@ -320,9 +331,9 @@ sub handle_TERM {
     $self->{logger}->writeLogInfo("$$ Receiving order to stop...");
     $self->{stop} = 1;
 
-    foreach (keys %{$self->{childs_vpshere_pid}}) {
+    foreach (keys %{$self->{children_vpshere_pid}}) {
         kill('TERM', $_);
-        $self->{logger}->writeLogInfo("Send -TERM signal to '" . $self->{childs_vpshere_pid}->{$_} . "' process..");
+        $self->{logger}->writeLogInfo("Send -TERM signal to '" . $self->{children_vpshere_pid}->{$_} . "' process..");
     }
 }
 
@@ -361,24 +372,24 @@ sub verify_child_vsphere {
     foreach (keys %{$self->{return_child}}) {
         delete $self->{return_child}->{$_};
 
-        if (defined($self->{childs_vpshere_pid}->{$_})) {
+        if (defined($self->{children_vpshere_pid}->{$_})) {
             if ($self->{stop} == 0) {
-                my $name = $self->{childs_vpshere_pid}->{$_};
-                $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "'???!! we relaunch it!!!");
+                my $name = $self->{children_vpshere_pid}->{$_};
+                $self->{logger}->writeLogError("Sub-process for '" . $self->{children_vpshere_pid}->{$_} . "'???!! we relaunch it!!!");
 
-                if ($self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}}->{dynamic} == 0) {
+                if ($self->{centreon_vmware_config}->{vsphere_server}->{$self->{children_vpshere_pid}->{$_}}->{dynamic} == 0) {
                     # Can have the same pid (so we delete before)
-                    delete $self->{childs_vpshere_pid}->{$_};
+                    delete $self->{children_vpshere_pid}->{$_};
                     $self->create_vsphere_child(vsphere_name => $name, dynamic => 0);
                 } else {
-                    $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' is dead. But we don't relaunch it (dynamic sub-process)");
-                    delete $self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}};
-                    delete $self->{childs_vpshere_pid}->{$_};
+                    $self->{logger}->writeLogError("Sub-process for '" . $self->{children_vpshere_pid}->{$_} . "' is dead. But we don't relaunch it (dynamic sub-process)");
+                    delete $self->{centreon_vmware_config}->{vsphere_server}->{$self->{children_vpshere_pid}->{$_}};
+                    delete $self->{children_vpshere_pid}->{$_};
                 }
             } else {
-                $self->{logger}->writeLogInfo("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' dead ???!!");
-                $self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}}->{running} = 0;
-                delete $self->{childs_vpshere_pid}->{$_};
+                $self->{logger}->writeLogInfo("Sub-process for '" . $self->{children_vpshere_pid}->{$_} . "' dead ???!!");
+                $self->{centreon_vmware_config}->{vsphere_server}->{$self->{children_vpshere_pid}->{$_}}->{running} = 0;
+                delete $self->{children_vpshere_pid}->{$_};
             }
         }
     }
@@ -404,7 +415,7 @@ sub waiting_ready {
     return 1 if ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 1);
 
     # Need to check if we need to relaunch (maybe it can have a problem)
-    $self->check_childs();
+    $self->check_children();
 
     my $time = time();
     # We wait 10 seconds
@@ -578,7 +589,7 @@ sub router_event {
     }
 }
 
-sub check_childs {
+sub check_children {
     my ($self, %options) = @_;
 
     my $count = $self->verify_child_vsphere();
@@ -617,10 +628,11 @@ sub create_vsphere_child {
         $connector->run();
         exit(0);
     }
-    $self->{childs_vpshere_pid}->{$child_vpshere_pid} = $self->{whoaim};
+    $self->{children_vpshere_pid}->{$child_vpshere_pid} = $self->{whoaim};
+
     $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 1;
     $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{dynamic} = $options{dynamic};
-    $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{pid} = $child_vpshere_pid;
+    $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{pid}     = $child_vpshere_pid;
 }
 
 sub bind_ipc {
@@ -679,7 +691,7 @@ sub run {
     $centreon_vmware->{logger}->writeLogDebug("Global loop starting...");
     # Switch messages between sockets
     while (1) {
-        $centreon_vmware->check_childs();
+        $centreon_vmware->check_children();
         zmq_poll($centreon_vmware->{poll}, 5000);
     }
 }

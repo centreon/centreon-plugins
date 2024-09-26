@@ -46,9 +46,9 @@ sub new {
     $self->{name} = $name;
     $self->{logger} = centreon::vmware::logger->new();
     $self->{options} = {
-        "logfile=s" => \$self->{log_file},
+        "logfile=s"  => \$self->{log_file},
         "severity=s" => \$self->{severity},
-        "help|?" => \$self->{help}
+        "help|?"     => \$self->{help}
     };
     return $self;
 }

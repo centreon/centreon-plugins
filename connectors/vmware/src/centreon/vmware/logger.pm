@@ -113,7 +113,7 @@ sub is_file_mode {
 sub is_debug {
     my $self = shift;
     
-    if ($self->{severity} < 7) {
+    if ($self->{severity} < 5) {
         return 0;
     }
     return 1;
@@ -147,6 +147,7 @@ sub set_default_severity {
 # Getter/Setter Log severity
 sub severity {
     my $self = shift;
+
     if (@_) {
         my $save_severity = $self->{severity};
         if ($_[0] =~ /^[01245]$/) {
@@ -154,14 +155,14 @@ sub severity {
         } elsif ($_[0] eq "none") {
             $self->{severity} = 0;
         } elsif ($_[0] eq "error") {
-            $self->{severity} = 1;
+            $self->{severity} = 2;
         } elsif ($_[0] eq "info") {
             $self->{severity} = 4;
         } elsif ($_[0] eq "debug") {
             $self->{severity} = 5;
         } else {
             $self->writeLogError("Wrong severity value given: " . $_[0] . ". Keeping default value: " . $self->{severity});
-            return -1;
+            return $self->{severity};
         }
         $self->{old_severity} = $save_severity;
     }
@@ -187,10 +188,10 @@ sub writeLog($$$%) {
     my ($self, $severity, $msg, %options) = @_;
 
     # do nothing if the configured severity does not imply logging this message
-    return if (($self->{severity} < $severity) == 0) ;
+    return if ($self->{severity} < $severity);
 
     my $withdate = (defined $options{withdate}) ? $options{withdate} : 1;
-    $msg = ($self->{withpid} == 1) ? "[$$] - $msg " : $msg;
+    $msg = ($self->{withpid} == 1) ? "[$$] $msg " : $msg;
 
     my $newmsg = ($withdate) 
       ? "[" . $self->get_date . "] " : '';

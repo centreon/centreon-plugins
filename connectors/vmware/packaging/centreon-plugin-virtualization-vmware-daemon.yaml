@@ -81,23 +81,24 @@ scripts:
 overrides:
   rpm:
     depends:
-      - perl-VMware-vSphere >= 5.1
-      - perl(ZMQ::LibZMQ4)
-      - perl(ZMQ::Constants)
-      - perl(LWP::Protocol::https)
+      - perl(Crypt::OpenSSL::AES)
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
+      - perl(LWP::Protocol::https)
+      - perl(ZMQ::Constants)
+      - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
+      - perl-VMware-vSphere >= 5.1
   deb:
     depends:
-      - perl-vmware-vsphere
-      - libzmq-libzmq4-perl
-      - libzmq-constants-perl
-      - liblwp-protocol-https-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
+      - liblwp-protocol-https-perl
       - libnet-curl-perl
       - libtext-template-perl
+      - libzmq-constants-perl
+      - libzmq-libzmq4-perl
+      - perl-vmware-vsphere
 
 rpm:
   signature:
