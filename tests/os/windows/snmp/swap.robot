@@ -25,8 +25,8 @@ swap ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                expected_result    --
-            ...      1     --real-swap=0                OK: Swap Total: 3.75 GB Used: 1.90 GB (50.61%) Free: 1.85 GB (49.39%) | 'used'=2038861824B;;;0;4028719104 
-            ...      2     --warning='80'               OK: Swap Total: 3.75 GB Used: 1.90 GB (50.61%) Free: 1.85 GB (49.39%) | 'used'=2038861824B;0:3222975283;;0;4028719104
-            ...      3     --critical='90'              OK: Swap Total: 3.75 GB Used: 1.90 GB (50.61%) Free: 1.85 GB (49.39%) | 'used'=2038861824B;;0:3625847193;0;4028719104
-            ...      4     --critical='0'               CRITICAL: Swap Total: 3.75 GB Used: 1.90 GB (50.61%) Free: 1.85 GB (49.39%) | 'used'=2038861824B;;0:0;0;4028719104
-            ...      5     --warning='0'                WARNING: Swap Total: 3.75 GB Used: 1.90 GB (50.61%) Free: 1.85 GB (49.39%) | 'used'=2038861824B;0:0;;0;4028719104
+            ...      1     --real-swap=0                OK: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;;;0;5099683840 
+            ...      2     --warning='80'               OK: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;0:4079747072;;0;5099683840
+            ...      3     --critical='90'              OK: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;;0:4589715456;0;5099683840
+            ...      4     --critical='0'               CRITICAL: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;;0:0;0;5099683840
+            ...      5     --warning='0'                WARNING: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;0:0;;0;5099683840

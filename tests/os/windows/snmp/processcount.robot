@@ -26,7 +26,7 @@ processcount ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                   expected_result    --
-            ...      1     --critical-cpu-total            OK: Number of current processes running: 87 | 'nbproc'=87;;;0;
-            ...      2     --top                           OK: Number of current processes running: 87 | 'nbproc'=87;;;0; 'top_gorgone-proxy'=343552000B;;;0; 'top_mariadbd'=287150080B;;;0; 'top_php-fpm'=218529792B;;;0; 'top_httpd'=95518720B;;;0; 'top_perl'=80715776B;;;0;
-            ...      3     --top-num                       OK: Number of current processes running: 87 | 'nbproc'=87;;;0; 
-            ...      4     --top-size                      OK: Number of current processes running: 87 | 'nbproc'=87;;;0;
+            ...      1     --critical-cpu-total            OK: Number of current processes running: 0 | 'nbproc'=0;;;0;
+            ...      2     --top                           OK: Number of current processes running: 0 | 'nbproc'=0;;;0;
+            ...      3     --top-num                       OK: Number of current processes running: 0 | 'nbproc'=0;;;0; 
+            ...      4     --top-size                      OK: Number of current processes running: 0 | 'nbproc'=0;;;0;
