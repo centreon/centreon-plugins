@@ -476,11 +476,7 @@ jobs:
           # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
           patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
 
-          if [[ "${{ steps.parse-distrib.outputs.package_distrib_separator }}" == "-" ]]; then
-            fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
-          else
-            fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} ${{ matrix.name }}
-          fi
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
