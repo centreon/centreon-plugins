@@ -1,0 +1,30 @@
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/ubuntu:jammy
+
+RUN bash -e <<EOF
+
+apt-get update
+apt-get install -y \
+  ca-certificates \
+  git \
+  wget \
+  zstd \
+  openjdk-17-jdk
+
+cd /usr/local/src
+wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+tar zxf apache-maven-3.8.8-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.8.8/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.8.8-bin.tar.gz
+
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
+
+apt-get update
+apt-get install -y nfpm
+
+apt-get clean all
+
+EOF
+
+WORKDIR /src

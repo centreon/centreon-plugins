@@ -130,6 +130,8 @@ jobs:
           - name: "Exporter::Shiny"
             build_distribs: el8
             rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
+          - name: "FFI::CheckLib"
+            rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
@@ -363,6 +365,7 @@ jobs:
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
             "Mojo::IOLoop::Signal",
+            "Net::Amazon::Signature::V4",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
@@ -396,6 +399,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Net::Amazon::Signature::V4"
+            build_distribs: ["bullseye", "jammy"]
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
