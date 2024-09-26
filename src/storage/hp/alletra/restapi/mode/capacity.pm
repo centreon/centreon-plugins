@@ -194,8 +194,8 @@ sub manage_selection {
                 free        => $free,
                 used        => $total - $free,
                 unavailable => $unavailable,
-                prct_used   => ($total - $free) * 100 / $total,
-                prct_free   => $free * 100 / $total,
+                prct_used   => $total > 0 ? ($total - $free) * 100 / $total : 0,
+                prct_free   => $total > 0 ? $free * 100 / $total : 0,
                 failed      => $failed
             }
         };
