@@ -81,7 +81,7 @@ runs:
             echo "[DEBUG] - Source path found: $SRC_PATH"
           done
         else
-          echo "::warning::No packages to promote for ${{ inputs.distrib }}."
+          echo "::warning::No source path found."
           exit 0
         fi
 
