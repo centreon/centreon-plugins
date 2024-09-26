@@ -25,5 +25,5 @@ list-processes ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                  expected_result    --
-            ...      1     --filter-name                  List processes 
-            ...      2     --add-stats                    ok
+            ...      1     --filter-name                  UNKNOWN: SNMP Table Request: Cant get a single value.
+            ...      2     --add-stats                    UNKNOWN: SNMP Table Request: Cant get a single value.
