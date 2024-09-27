@@ -91,6 +91,7 @@ overrides:
       - perl-VMware-vSphere >= 5.1
   deb:
     depends:
+      - libcrypt-openssl-aes-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
       - liblwp-protocol-https-perl
