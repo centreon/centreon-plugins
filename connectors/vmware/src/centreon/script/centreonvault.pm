@@ -51,11 +51,11 @@ sub check_options {
 sub check_configuration {
     my ($self, %options) = @_;
 
-    if ( !defined($self->{vault_config}->{url}) or $self->{vault_config}->{url} eq '') {
+    if ( !defined($self->{vault_config}->{url}) || $self->{vault_config}->{url} eq '') {
         $self->{logger}->writeLogInfo("Vault url is missing from configuration.");
         $self->{vault_config}->{url} = '127.0.0.1';
     }
-    if ( !defined($self->{vault_config}->{port}) or $self->{vault_config}->{port} eq '') {
+    if ( !defined($self->{vault_config}->{port}) || $self->{vault_config}->{port} eq '') {
         $self->{logger}->writeLogInfo("Vault port is missing from configuration.");
         $self->{vault_config}->{port} = '443';
     }
@@ -81,12 +81,12 @@ sub init {
     # firstKey = APP_SECRET (environment variable)
     # secondKey = clé 'salt' fournie dans le fichier de configuration vault.json
     # both are base64 encoded
-    if ( !defined($self->{vault_config}->{salt}) or $self->{vault_config}->{salt} eq '') {
+    if ( !defined($self->{vault_config}->{salt}) || $self->{vault_config}->{salt} eq '') {
         $self->{logger}->writeLogError("Vault environment does not seem complete: 'salt' attribute missing from " . $self->{config_file} . ". 'role-id' and 'secret-id' won't be decrypted, so they'll be uses as they're stored in the vault config file.");
         $self->{credentials_are_encrypted} = 0;
     }
 
-    if ( !defined($ENV{'APP_SECRET'}) or $ENV{'APP_SECRET'} eq '' ) {
+    if ( !defined($ENV{'APP_SECRET'}) || $ENV{'APP_SECRET'} eq '' ) {
         $self->{logger}->writeLogError("Vault environment does not seem complete. 'APP_SECRET' environment variable missing. 'role-id' and 'secret-id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
         $self->{credentials_are_encrypted} = 0;
     }
@@ -214,8 +214,8 @@ sub authenticate {
     my $expiration_epoch = -1;
     my $lease_duration = $auth_result_obj->{auth}->{lease_duration};
     if ( defined($lease_duration)
-            and $lease_duration =~ /\d+/
-            and $lease_duration > 0 ) {
+            && $lease_duration =~ /\d+/
+            && $lease_duration > 0 ) {
         $expiration_epoch = time() + $lease_duration;
     }
     $self->{auth} = {
@@ -233,9 +233,9 @@ sub is_token_still_valid {
     my ($self) = @_;
     if (
             !defined($self->{auth})
-            or !defined($self->{auth}->{token})
-            or $self->{auth}->{token} eq ''
-            or $self->{auth}->{expiration_epoch} <= time()
+            || !defined($self->{auth}->{token})
+            || $self->{auth}->{token} eq ''
+            || $self->{auth}->{expiration_epoch} <= time()
     ) {
         $self->{logger}->writeLogInfo("The token expired or invalid.");
         return 0;
@@ -258,7 +258,7 @@ sub get_secret {
 
     # reminder: $VAULT_PATH_REGEX = /^secret::hashicorp_vault::([^:]+)::(.+)$/
     my ($root_path, $secret_name) = $secret_path =~ $VAULT_PATH_REGEX;
-    if (!defined($root_path) or !defined($secret_name)) {
+    if (!defined($root_path) || !defined($secret_name)) {
         $self->{logger}->writeLogDebug("A string given to get_secret does not look like a secret. Using it as a plain text password.");
         return $secret_path;
     }
@@ -292,7 +292,9 @@ sub get_secret {
     $self->{logger}->writeLogDebug("Request id is " . $get_result_obj->{request_id});
 
     # .data.data will contain the stored macros
-    if (!defined($get_result_obj->{data}) or !defined($get_result_obj->{data}->{data}) or !defined($get_result_obj->{data}->{data}->{$secret_name})) {
+    if ( !defined($get_result_obj->{data})
+            || !defined($get_result_obj->{data}->{data})
+            || !defined($get_result_obj->{data}->{data}->{$secret_name}) ) {
         $self->{logger}->writeLogError("Could not get secret '$secret_name' from path '$root_path' from the vault.");
         return 'ERROR';
     }

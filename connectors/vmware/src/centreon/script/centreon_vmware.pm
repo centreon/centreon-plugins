@@ -219,13 +219,13 @@ sub init {
 
     $self->read_configuration(filename => $self->{opt_extra});
 
-    if (! defined($self->{opt_vault_config}) or $self->{opt_vault_config} eq '') {
+    if (! defined($self->{opt_vault_config}) || $self->{opt_vault_config} eq '') {
         $self->{opt_vault_config} = '/var/lib/centreon/vault/vault.json';
         $self->{logger}->writeLogInfo("No vault config file given. Applying default: " . $self->{opt_vault_config});
     }
 
     # At this point $self->{vault_enabled} can be undef or 0. If 0 we don't enter here
-    if (!defined($self->{vault_enabled}) and -f $self->{opt_vault_config} ) {
+    if ((!defined($self->{vault_enabled}) || $self->{vault_enabled}) && -f $self->{opt_vault_config} ) {
         $self->{vault_enabled} = 1;
         $self->{logger}->writeLogDebug("Vault config file " . $self->{opt_vault_config} . " exists. Creating the vault object.");
         $self->{vault} = centreon::script::centreonvault->new(
@@ -277,7 +277,7 @@ sub init {
             if (!defined($obtained_password)) {
                $self->{logger}->writeLogFatal("Can't get password for couple host='" . $server . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username} . "' : $@");
             }
-        } elsif ($self->{vault_enabled} == 1 and $self->{vault}->is_password_a_vault_secret($configured_password)) {
+        } elsif ($self->{vault_enabled} == 1 && $self->{vault}->is_password_a_vault_secret($configured_password)) {
             # if the vault is enabled and the configured password has the form of a vault secret, get the actual password from the vault
             $obtained_password = $self->{vault}->get_secret($configured_password);
         } else {
