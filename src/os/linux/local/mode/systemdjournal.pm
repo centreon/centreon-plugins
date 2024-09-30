@@ -178,7 +178,7 @@ timestamp from last execution. Default: 'cache'.
 
 =item B<--timezone>
 
-Defines the timezone to use for date/time convertion when using a timestamp from the cache.
+Defines the timezone to use for date/time conversion when using a timestamp from the cache.
 Default: 'local'.
 
 =item B<--warning-entries>
