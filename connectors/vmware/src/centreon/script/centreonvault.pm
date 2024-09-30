@@ -237,7 +237,7 @@ sub is_token_still_valid {
             || $self->{auth}->{token} eq ''
             || $self->{auth}->{expiration_epoch} <= time()
     ) {
-        $self->{logger}->writeLogInfo("The token expired or invalid.");
+        $self->{logger}->writeLogInfo("The token has expired or is invalid.");
         return 0;
     }
     $self->{logger}->writeLogDebug("The token is still valid.");
