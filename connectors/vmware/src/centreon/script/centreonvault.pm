@@ -22,6 +22,8 @@ package centreon::script::centreonvault;
 
 use strict;
 use warnings;
+#use Exporter 'import';
+#our @EXPORT_OK = qw(new);
 use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
@@ -37,15 +39,60 @@ sub new {
     # - logger: logger object
     # - config_file: path of a JSON vault config file
 
-    $self->init();
+    $self->{enabled} = 1;
+    if ( !$self->init() ) {
+        $self->{enabled} = 0;
+        $self->{logger}->writeLogError("An error occurred in init() method. Centreonvault cannot be used.");
+    }
     return $self;
+}
+
+
+sub init {
+    my ($self, %options) = @_;
+
+    $self->{logger}->writeLogDebug("Checking vault options...");
+    $self->check_options() or return undef;
+
+    # check if the following information is available
+    $self->{logger}->writeLogDebug("Reading Vault configuration from file " . $self->{config_file} . ".");
+    $self->{vault_config} = centreon::vmware::common::parse_json_file( 'json_file' => $self->{config_file} );
+    if (defined($self->{vault_config}->{error_message})) {
+        $self->{logger}->writeLogError("Error while parsing " . $self->{config_file} . ": "
+            . $self->{vault_config}->{error_message});
+        return undef;
+    }
+
+    $self->check_configuration() or return undef;
+
+    $self->{logger}->writeLogDebug("Vault configuration read. Name: " . $self->{vault_config}->{name}
+        . ". Url: " . $self->{vault_config}->{url} . ".");
+
+    # Create the Curl object, it will be used several times
+    $self->{curl_easy} = Net::Curl::Easy->new();
+    $self->{curl_easy}->setopt( CURLOPT_USERAGENT, "Centreon VMware daemon's centreonvault.pm");
+
+    return 1;
 }
 
 sub check_options {
     my ($self, %options) = @_;
 
-    die "FATAL: No logger given to the constructor." if ( !defined($self->{logger}) );
-    $self->{logger}->writeLogFatal("No config file given to the constructor.") if ( !defined($self->{config_file}));
+    if ( !defined($self->{logger}) ) {
+        print "FATAL: No logger given to the constructor. Centreonvault cannot be used.";
+        return undef;
+    }
+    if ( !defined($self->{config_file})) {
+        $self->{logger}->writeLogError("No config file given to the constructor. Centreonvault cannot be used.");
+        return undef;
+    }
+    if ( ! -f $self->{config_file} ) {
+        $self->{logger}->writeLogError("The given configuration file " . $self->{config_file}
+            . " does not exist. Centreonvault cannot be used.");
+        return undef;
+    }
+
+    return 1;
 }
 
 sub check_configuration {
@@ -59,51 +106,23 @@ sub check_configuration {
         $self->{logger}->writeLogInfo("Vault port is missing from configuration.");
         $self->{vault_config}->{port} = '443';
     }
-}
 
-sub init {
-    my ($self, %options) = @_;
-
-    $self->check_options();
-
-    # Since this class is used, we assume that credentials are encrypted. It may be reconsidered later.
-    $self->{credentials_are_encrypted} = 1;
-
-    # check if the following information is available
-    $self->{logger}->writeLogDebug("Reading Vault configuration from file " . $self->{config_file} . ".");
-    $self->{vault_config} = centreon::vmware::common::parse_json_file( 'json_file' => $self->{config_file} ) or return 0;
-
-    $self->check_configuration();
-
-    $self->{logger}->writeLogDebug("Vault configuration read. Name: " . $self->{vault_config}->{name} . ". Url: " . $self->{vault_config}->{url} . ".");
-
-    # Normally, the role-id and secret-id data are encrypted using AES wit the following information:
+    # Normally, the role_id and secret_id data are encrypted using AES wit the following information:
     # firstKey = APP_SECRET (environment variable)
-# secondKey = 'salt' key given by vault.json configuration file
+    # secondKey = 'salt' (hashing) key given by vault.json configuration file
     # both are base64 encoded
     if ( !defined($self->{vault_config}->{salt}) || $self->{vault_config}->{salt} eq '') {
-        $self->{logger}->writeLogError("Vault environment does not seem complete: 'salt' attribute missing from " . $self->{config_file} . ". 'role-id' and 'secret-id' won't be decrypted, so they'll be uses as they're stored in the vault config file.");
-        $self->{credentials_are_encrypted} = 0;
+        $self->{logger}->writeLogError("Vault environment does not seem complete: 'salt' attribute missing from "
+            . $self->{config_file}
+            . ". 'role_id' and 'secret_id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
+        return undef;
     }
 
     if ( !defined($ENV{'APP_SECRET'}) || $ENV{'APP_SECRET'} eq '' ) {
-        $self->{logger}->writeLogError("Vault environment does not seem complete. 'APP_SECRET' environment variable missing. 'role-id' and 'secret-id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
-        $self->{credentials_are_encrypted} = 0;
+        $self->{logger}->writeLogError("Vault environment does not seem complete. 'APP_SECRET' environment variable missing."
+            . " 'role_id' and 'secret_id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
+        return undef;
     }
-
-    $self->prepare_decryption() if ($self->{credentials_are_encrypted} == 1);
-    # Now we're ready to decrypt the vault credentials, but we'll do that only when necessary to avoid keeping them in memory
-    $self->{curl_easy} = Net::Curl::Easy->new();
-    $self->{curl_easy}->setopt( CURLOPT_USERAGENT, "Centreon VMware daemon's centreonvault.pm");
-
-    $self->authenticate() or return 0;
-
-    return 1;
-}
-
-
-sub prepare_decryption {
-    my ($self) = @_;
 
     $self->{encryption_key} = $ENV{'APP_SECRET'};            # for aes-256-cbc
     $self->{hash_key}       = $self->{vault_config}->{salt}; # for sha3-512
@@ -117,7 +136,7 @@ sub extract_and_decrypt {
     my $input = decode_base64($options{data});
     $self->{logger}->writeLogDebug("data to extract and decrypt: '" . $options{data} . "'");
 
-    #Todo: get the IV length
+    # with AES-256, the IV length must 16 bytes
     my $iv_length = 16;
     # extract the IV, the hashed data, the encrypted data
     my $iv             = substr($input, 0, $iv_length);     # initialization vector
@@ -141,8 +160,8 @@ sub extract_and_decrypt {
         );
     };
     if ($@) {
-        $self->{logger}->writeLogFatal("There was an error while creating the AES object: " . $@);
-        return 0;
+        $self->{logger}->writeLogError("There was an error while creating the AES object: " . $@);
+        return undef;
     }
 
     # decrypt
@@ -150,19 +169,10 @@ sub extract_and_decrypt {
     my $decrypted_data;
     eval {$decrypted_data = $cipher->decrypt($encrypted_data);};
     if ($@) {
-        $self->{logger}->writeLogFatal("There was an error while decrypting one of the AES-encrypted data: " . $@);
+        $self->{logger}->writeLogError("There was an error while decrypting one of the AES-encrypted data: " . $@);
+        return undef;
     }
 
-    #Todo: make sure the decrypted data produces the same hash as in $hashed_data but the right hmac function could not be found yet
-    #my $hashed_decrypted_data;
-    #eval {$hashed_decrypted_data = sha3_512($decrypted_data, $self->{hash_key});};
-    #if ($@) {
-    #    $self->{logger}->writeLogFatal("There was an error while calculating the : " . $@);
-    #}
-
-    #if ($hashed_decrypted_data ne $hashed_data) {
-    #    $self->{logger}->writeLogDebug("There was an error, the hmac checksums do not match ('$hashed_decrypted_data' vs '$hashed_data')");
-    #}
     return $decrypted_data;
 }
 
@@ -177,14 +187,12 @@ sub authenticate {
 
     # Then decrypt using https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES
     # keep the decrypted data in local variables so that they stay in memory for as little time as possible
-    if ($self->{credentials_are_encrypted} == 1) {
-        $self->{logger}->writeLogDebug("Decrypting the credentials needed to authenticate to the vault.");
-        $plain_role_id   = $self->extract_and_decrypt( ('data' => $encrypted_role_id ));
-        $plain_secret_id = $self->extract_and_decrypt( ('data' => $encrypted_secret_id ));
-        $self->{logger}->writeLogDebug("role_id and secret_id have been decrypted.");
-    }
+    $self->{logger}->writeLogDebug("Decrypting the credentials needed to authenticate to the vault.");
+    $plain_role_id   = $self->extract_and_decrypt( ('data' => $encrypted_role_id ));
+    $plain_secret_id = $self->extract_and_decrypt( ('data' => $encrypted_secret_id ));
+    $self->{logger}->writeLogDebug("role_id and secret_id have been decrypted.");
 
-    # Authenticato to get the token
+    # Authenticate to get the token
     my $url = "https://" . $self->{vault_config}->{url} . ":" . $self->{vault_config}->{port} . "/v1/auth/approle/login";
     $self->{logger}->writeLogDebug("Authenticating to the vault server at URL: $url");
     $self->{curl_easy}->setopt( CURLOPT_URL, $url );
@@ -203,12 +211,17 @@ sub authenticate {
     };
     if ($@) {
         $self->{logger}->writeLogError("Error while authenticating to the vault: " . $@);
-        return 0;
+        return undef;
     }
 
     $self->{logger}->writeLogInfo("Authentication to the vault passed." );
 
     my $auth_result_obj = centreon::vmware::common::transform_json_to_object($auth_result_json);
+    if (defined($auth_result_obj->{error_message})) {
+        $self->{logger}->writeLogError("Error while decoding JSON '$auth_result_json'. Message: "
+                . $auth_result_obj->{error_message});
+        return undef;
+    }
 
     # store the token (.auth.client_token) and its expiration date (current date + .lease_duration)
     my $expiration_epoch = -1;
@@ -223,8 +236,8 @@ sub authenticate {
         'expiration_epoch' => $expiration_epoch
     };
 
-    #Todo: translate epoch to human readable date
-    $self->{logger}->writeLogInfo("Authenticating worked. Token valid until " . $self->{auth}->{expiration_epoch});
+    $self->{logger}->writeLogInfo("Authenticating worked. Token valid until "
+        . localtime($self->{auth}->{expiration_epoch}));
 
     return 1;
 }
@@ -238,36 +251,32 @@ sub is_token_still_valid {
             || $self->{auth}->{expiration_epoch} <= time()
     ) {
         $self->{logger}->writeLogInfo("The token has expired or is invalid.");
-        return 0;
+        return undef;
     }
     $self->{logger}->writeLogDebug("The token is still valid.");
     return 1;
 }
 
-sub is_password_a_vault_secret {
-    my ($self, $password) = @_;
-
-    return 1 if ($password =~ $VAULT_PATH_REGEX);
-    return 0;
-}
-
 sub get_secret {
-    my ($self, $path) = @_;
+    my ($self, $secret) = @_;
 
-    my $secret_path = $path;
+    # if vault not enabled, return the secret unchanged
+    return $secret if ( ! $self->{enabled});
 
-    # reminder: $VAULT_PATH_REGEX = /^secret::hashicorp_vault::([^:]+)::(.+)$/
-    my ($root_path, $secret_name) = $secret_path =~ $VAULT_PATH_REGEX;
-    if (!defined($root_path) || !defined($secret_name)) {
-        $self->{logger}->writeLogError("A string given to get_secret does not look like a secret. Using it as a plain text password.");
-        return $secret_path;
+    my ($secret_path, $secret_name) = $secret =~ $VAULT_PATH_REGEX;
+    if (!defined($secret_path) || !defined($secret_name)) {
+        $self->{logger}->writeLogInfo("A string given to get_secret does not look like a secret. Using it as a plain text credential?");
+        return $secret;
     }
-    $self->{logger}->writeLogDebug("Root path: $root_path - Secret name: $secret_name");
+    $self->{logger}->writeLogDebug("Secret path: $secret_path - Secret name: $secret_name");
 
-    $self->authenticate() if ( !$self->is_token_still_valid() );
+    if (!defined($self->{auth}) || !$self->is_token_still_valid() ) {
+        $self->authenticate() or return $secret;
+    }
+
     # prepare the GET statement
     my $get_result_json;
-    my $url = "https://" . $self->{vault_config}->{url} . ":" . $self->{vault_config}->{port} . "/v1/" . $root_path;
+    my $url = "https://" . $self->{vault_config}->{url} . ":" . $self->{vault_config}->{port} . "/v1/" . $secret_path;
     $self->{logger}->writeLogDebug("Requesting URL: $url");
 
     #$self->{curl_easy}->setopt( CURLOPT_VERBOSE, 1 );
@@ -281,7 +290,7 @@ sub get_secret {
     };
     if ($@) {
         $self->{logger}->writeLogError("Error while getting a secret from the vault: " . $@);
-        return $secret_path;
+        return $secret;
     }
 
     $self->{logger}->writeLogDebug("Request passed.");
@@ -289,17 +298,22 @@ sub get_secret {
 
     # the result is a json string, convert it into an object
     my $get_result_obj = centreon::vmware::common::transform_json_to_object($get_result_json);
+    if (defined($get_result_obj->{error_message})) {
+        $self->{logger}->writeLogError("Error while decoding JSON '$get_result_json'. Message: "
+                . $get_result_obj->{error_message});
+        return $secret;
+    }
     $self->{logger}->writeLogDebug("Request id is " . $get_result_obj->{request_id});
 
     # .data.data will contain the stored macros
     if ( !defined($get_result_obj->{data})
             || !defined($get_result_obj->{data}->{data})
             || !defined($get_result_obj->{data}->{data}->{$secret_name}) ) {
-        $self->{logger}->writeLogError("Could not get secret '$secret_name' from path '$root_path' from the vault. Enable debug for more details.");
+        $self->{logger}->writeLogError("Could not get secret '$secret_name' from path '$secret_path' from the vault. Enable debug for more details.");
         $self->{logger}->writeLogDebug("Response: " . $get_result_json);
-        return $secret_path;
+        return $secret;
     }
-    $self->{logger}->writeLogInfo("Secret '$secret_name' from path '$root_path' retrieved from the vault.");
+    $self->{logger}->writeLogInfo("Secret '$secret_name' from path '$secret_path' retrieved from the vault.");
     return $get_result_obj->{data}->{data}->{$secret_name};
 }
 
@@ -313,22 +327,48 @@ Centreon Vault password manager
 
 =head1 SYNOPSIS
 
-Centreon Vault password manager
+Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible api given a config file as constructor.
 
-To be used with an array containing keys/values saved in a secret path by resource
+    use centreon::vmware::logger;
+    use centreon::script::centreonvault;
+    my $vault = centreon::script::centreonvault->new(
+        (
+            'logger'      => centreon::vmware::logger->new(),
+            'config_file' =>  '/var/lib/centreon/vault/vault.json'
+        )
+    );
+    my $password = $vault->get_secret('secret::hashicorp_vault::mypath/to/mysecrets::password');
 
-=head1 VAULT OPTIONS
+=head1 METHODS
 
-=over 8
+=head2 new(\%options)
 
-=item B<--vault-config>
+Constructor of the vault object.
 
-The path to the file defining access to the Centreon vault (/etc/centreon-engine/centreonvault.json by default)
+%options must provide:
 
-=back
+- logger: an object of the centreon::vmware::logger class.
 
-=head1 DESCRIPTION
+- config_file: full path and file name of the Centreon Vault JSON config file.
 
-B<centreonvault>.
+The default config_file path should be '/var/lib/centreon/vault/vault.json'.
+The expected file format for Centreon Vault is:
+
+    {
+      "name": "hashicorp_vault",
+      "url": "vault-server.mydomain.com",
+      "salt": "<base64 encoded(<32 bytes long key used to hash the crypted data)>",
+      "port": 443,
+      "root_path": "vmware_daemon",
+      "role_id": "<base64 encoded(<iv><hmac_hash><encrypted_role_id>)",
+      "secret_id": "<base64 encoded(<iv><hmac_hash><encrypted_secret_id>)"
+    }
+
+=head2 get_secret($secret)
+
+Returns the secret stored in the Centreon Vault at the given path.
+If the format of the secret does not match the regular expression
+C</^secret::hashicorp_vault::([^:]+)::(.+)$/>
+or in case of any failure in the process, the method will return the secret unchanged.
 
 =cut

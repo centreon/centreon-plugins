@@ -157,13 +157,14 @@ sub read_configuration {
     if ($self->{opt_extra} =~ /.*\.pm$/i) {
         our %centreon_vmware_config;
         # loads the .pm configuration (compile time)
-        require($self->{opt_extra});
+        require($self->{opt_extra}) or $self->{logger}->writeLogFatal("There has been an error while requiring file " . $self->{opt_extra});
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
-        # If the configuration comes from a .pm file, then we're not supposed to use the vault
-        $self->{vault_enabled} = 0;
     } elsif ($self->{opt_extra} =~ /.*\.json$/i) {
         $centreon_vmware_config_from_json = centreon::vmware::common::parse_json_file( 'json_file' => $self->{opt_extra} );
+        if (defined($centreon_vmware_config_from_json->{error_message})) {
+            $self->{logger}->writeLogFatal("Error while parsing " . $self->{opt_extra} . ": " . $centreon_vmware_config_from_json->{error_message});
+        }
         # The structure of the JSON is different from the .pm file. The code was designed to work with the latter, so
         # the structure of $self->{centreon_vmware_config} must be adapted after parsing to avoid a massive refactoring of
         # the whole program. The wanted structure is a key-object dictionary instead of an array of objects.
@@ -173,10 +174,9 @@ sub read_configuration {
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %$centreon_vmware_config_from_json};
     } else {
-        $self->{logger}->writeLogError($self->{opt_extra} . " does not seem to be in a supported format.");
+        $self->{logger}->writeLogError($self->{opt_extra} . " does not seem to be in a supported format (supported: .pm or .json).");
     }
 }
-
 
 # report_config_check: writes a report of what has been loaded from the configuration file
 sub report_config_check {
@@ -211,12 +211,6 @@ sub init {
         );
     }
 
-    if ( ! $self->{opt_extra} =~ /\.(pm|json)$/i) {
-        $self->{logger}->writeLogFatal(
-            "Configuration file " . $self->{opt_extra} . " seems to be neither JSON nor PM file."
-        );
-    }
-
     $self->read_configuration(filename => $self->{opt_extra});
 
     if (! defined($self->{opt_vault_config}) || $self->{opt_vault_config} eq '') {
@@ -224,16 +218,11 @@ sub init {
         $self->{logger}->writeLogInfo("No vault config file given. Applying default: " . $self->{opt_vault_config});
     }
 
-    # At this point $self->{vault_enabled} can be undef or 0. If 0 we don't enter here
-    if ((!defined($self->{vault_enabled}) || $self->{vault_enabled}) && -f $self->{opt_vault_config} ) {
-        $self->{vault_enabled} = 1;
-        $self->{logger}->writeLogDebug("Vault config file " . $self->{opt_vault_config} . " exists. Creating the vault object.");
-        $self->{vault} = centreon::script::centreonvault->new(
-                'logger'      => $self->{logger},
-                'config_file' => $self->{opt_vault_config}
-        ) or $self->{vault_enabled} = 0;
-
-    }
+    $self->{logger}->writeLogDebug("Vault config file " . $self->{opt_vault_config} . " exists. Creating the vault object.");
+    $self->{vault} = centreon::script::centreonvault->new(
+            'logger'      => $self->{logger},
+            'config_file' => $self->{opt_vault_config}
+    );
 
     ##### Load modules
     $self->load_module(@load_modules);
@@ -268,24 +257,26 @@ sub init {
 
     # Get passwords
     foreach my $server (keys %{$self->{centreon_vmware_config}->{vsphere_server}}) {
-        my $obtained_password;
-        my $configured_password = $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password};
 
         # If appropriate, get the password from the vmware credentials store
         if ($self->{centreon_vmware_config}->{credstore_use} == 1) {
-            $obtained_password = VMware::VICredStore::get_password(server => $server, username => $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username});
-            if (!defined($obtained_password)) {
+            $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password} = VMware::VICredStore::get_password(
+                server   => $server,
+                username => $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username}
+            );
+            if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password})) {
                $self->{logger}->writeLogFatal("Can't get password for couple host='" . $server . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username} . "' : $@");
             }
-        } elsif ($self->{vault_enabled} == 1 && $self->{vault}->is_password_a_vault_secret($configured_password)) {
-            # if the vault is enabled and the configured password has the form of a vault secret, get the actual password from the vault
-            $obtained_password = $self->{vault}->get_secret($configured_password);
         } else {
-            # if there's nothing special about passwords, keep it as configured (plain text)
-            $obtained_password = $configured_password;
+            use Data::Dumper;
+            $self->{logger}->writeLogDebug("Retrieving secrets from: " . Dumper($self->{vault}));
+            # we let the vault object handle the secrets
+            for my $key ('username', 'password') {
+                $self->{logger}->writeLogDebug("Retrieving secret: $key");
+                $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{$key}
+                    = $self->{vault}->get_secret($self->{centreon_vmware_config}->{vsphere_server}->{$server}->{$key});
+            }
         }
-
-        $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{password} = $obtained_password;
     }
 
     my $config_check_report = $self->report_config_check();
@@ -699,3 +690,4 @@ sub run {
 1;
 
 __END__
+

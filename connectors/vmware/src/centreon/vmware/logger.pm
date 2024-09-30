@@ -222,8 +222,7 @@ sub writeLogError {
 }
 sub writeLogFatal {
     shift->writeLog(1, @_);
-    print("FATAL: " . $_[0] . "\n");
-    exit(1);
+    die("FATAL: " . $_[0] . "\n");
 }
 
 sub DESTROY {
