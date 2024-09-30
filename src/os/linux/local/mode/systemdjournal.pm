@@ -163,7 +163,7 @@ OK: Centreon Engine reloads over the last hour: 0 | 'centreon.engine.reload.coun
 
 =item B<--unit>
 
-Only look for messages of the specified unit, ie the
+Only look for messages from the specified unit, i.e. the
 name of the systemd service who created the message.
 
 =item B<--filter-message>
@@ -173,18 +173,23 @@ Filter on message content (can be a regexp).
 =item B<--since>
 
 Defines the amount of time to look back at messages.
-Can be minutes (ie 5 "minutes ago") or 'cache' to use the
-timestamp from last execution. (default: 'cache')
+Can be minutes (example: 5 "minutes ago") or 'cache' to use the
+timestamp from last execution. Default: 'cache'.
 
 =item B<--timezone>
 
-Defines the timezone to convert date/time to the host
-timezone when using timestamp from cache. (default: 'local')
+Defines the timezone to use for date/time convertion when using a timestamp from the cache.
+Default: 'local'.
 
-=item B<--warning-entries> B<--critical-entries>
+=item B<--warning-entries>
 
-Thresholds on the number of entries found
-in the journal for the specified parameters.
+Thresholds to apply to the number of journal entries
+found with the specified parameters.
+
+=item B<--critical-entries>
+
+Thresholds to apply to the number of journal entries
+found with the specified parameters.
 
 =back
 
