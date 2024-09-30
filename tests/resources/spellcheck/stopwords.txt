@@ -84,6 +84,7 @@ IpAddr
 ISAM
 Iwsva
 JOBQ
+journalctl
 kccevent
 Loggly
 MBean
@@ -170,6 +171,7 @@ psu
 queue-messages-inflighted
 sfp.temperature
 space-usage-prct
+systemd
 teampass
 Teldat
 timeframe
