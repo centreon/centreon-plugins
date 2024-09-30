@@ -259,7 +259,7 @@ sub get_secret {
     # reminder: $VAULT_PATH_REGEX = /^secret::hashicorp_vault::([^:]+)::(.+)$/
     my ($root_path, $secret_name) = $secret_path =~ $VAULT_PATH_REGEX;
     if (!defined($root_path) || !defined($secret_name)) {
-        $self->{logger}->writeLogDebug("A string given to get_secret does not look like a secret. Using it as a plain text password.");
+        $self->{logger}->writeLogError("A string given to get_secret does not look like a secret. Using it as a plain text password.");
         return $secret_path;
     }
     $self->{logger}->writeLogDebug("Root path: $root_path - Secret name: $secret_name");
@@ -281,7 +281,7 @@ sub get_secret {
     };
     if ($@) {
         $self->{logger}->writeLogError("Error while getting a secret from the vault: " . $@);
-        return 0;
+        return $secret_path;
     }
 
     $self->{logger}->writeLogDebug("Request passed.");
@@ -295,8 +295,9 @@ sub get_secret {
     if ( !defined($get_result_obj->{data})
             || !defined($get_result_obj->{data}->{data})
             || !defined($get_result_obj->{data}->{data}->{$secret_name}) ) {
-        $self->{logger}->writeLogError("Could not get secret '$secret_name' from path '$root_path' from the vault.");
-        return 'ERROR';
+        $self->{logger}->writeLogError("Could not get secret '$secret_name' from path '$root_path' from the vault. Enable debug for more details.");
+        $self->{logger}->writeLogDebug("Response: " . $get_result_json);
+        return $secret_path;
     }
     $self->{logger}->writeLogInfo("Secret '$secret_name' from path '$root_path' retrieved from the vault.");
     return $get_result_obj->{data}->{data}->{$secret_name};
