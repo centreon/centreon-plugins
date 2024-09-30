@@ -79,7 +79,7 @@ sub init {
 
     # Normally, the role-id and secret-id data are encrypted using AES wit the following information:
     # firstKey = APP_SECRET (environment variable)
-    # secondKey = clé 'salt' fournie dans le fichier de configuration vault.json
+# secondKey = 'salt' key given by vault.json configuration file
     # both are base64 encoded
     if ( !defined($self->{vault_config}->{salt}) || $self->{vault_config}->{salt} eq '') {
         $self->{logger}->writeLogError("Vault environment does not seem complete: 'salt' attribute missing from " . $self->{config_file} . ". 'role-id' and 'secret-id' won't be decrypted, so they'll be uses as they're stored in the vault config file.");
