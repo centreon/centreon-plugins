@@ -1,0 +1,29 @@
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/almalinux:9
+
+RUN bash -e <<EOF
+
+dnf install -y \
+  git \
+  wget \
+  zstd \
+  https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+
+cd /usr/local/src
+wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+tar zxf apache-maven-3.8.8-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.8.8/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.8.8-bin.tar.gz
+
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+dnf install -y nfpm
+dnf clean all
+
+EOF
+
+WORKDIR /src
