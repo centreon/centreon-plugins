@@ -22,8 +22,6 @@ package centreon::script::centreonvault;
 
 use strict;
 use warnings;
-#use Exporter 'import';
-#our @EXPORT_OK = qw(new);
 use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
@@ -40,6 +38,8 @@ sub new {
     # - config_file: path of a JSON vault config file
 
     $self->{enabled} = 1;
+    $self->{crypted_credentials} = 1;
+
     if ( !$self->init() ) {
         $self->{enabled} = 0;
         $self->{logger}->writeLogError("An error occurred in init() method. Centreonvault cannot be used.");
@@ -51,7 +51,6 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{logger}->writeLogDebug("Checking vault options...");
     $self->check_options() or return undef;
 
     # check if the following information is available
@@ -79,8 +78,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     if ( !defined($self->{logger}) ) {
-        print "FATAL: No logger given to the constructor. Centreonvault cannot be used.";
-        return undef;
+        die "FATAL: No logger given to the constructor. Centreonvault cannot be used.";
     }
     if ( !defined($self->{config_file})) {
         $self->{logger}->writeLogError("No config file given to the constructor. Centreonvault cannot be used.");
@@ -115,17 +113,23 @@ sub check_configuration {
         $self->{logger}->writeLogError("Vault environment does not seem complete: 'salt' attribute missing from "
             . $self->{config_file}
             . ". 'role_id' and 'secret_id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
-        return undef;
+        $self->{crypted_credentials} = 0;
+        $self->{hash_key} = '';
+    } else {
+        $self->{hash_key} = $self->{vault_config}->{salt}; # key for sha3-512 hmac
     }
 
     if ( !defined($ENV{'APP_SECRET'}) || $ENV{'APP_SECRET'} eq '' ) {
         $self->{logger}->writeLogError("Vault environment does not seem complete. 'APP_SECRET' environment variable missing."
             . " 'role_id' and 'secret_id' won't be decrypted, so they'll be used as they're stored in the vault config file.");
-        return undef;
+        $self->{crypted_credentials} = 0;
+        $self->{encryption_key} = '';
+    } else {
+        $self->{encryption_key} = $ENV{'APP_SECRET'}; # key for aes-256-cbc
     }
 
-    $self->{encryption_key} = $ENV{'APP_SECRET'};            # for aes-256-cbc
-    $self->{hash_key}       = $self->{vault_config}->{salt}; # for sha3-512
+
+
 
     return 1;
 }
@@ -179,25 +183,29 @@ sub extract_and_decrypt {
 sub authenticate {
     my ($self) = @_;
 
-    my $encrypted_role_id   = $self->{vault_config}->{role_id};
-    my $encrypted_secret_id = $self->{vault_config}->{secret_id};
-
     # initial value: assuming the role and secret id might not be encrypted
-    my ($plain_role_id, $plain_secret_id) = ($encrypted_role_id, $encrypted_secret_id);
+    my $role_id   = $self->{vault_config}->{role_id};
+    my $secret_id = $self->{vault_config}->{secret_id};
 
-    # Then decrypt using https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES
-    # keep the decrypted data in local variables so that they stay in memory for as little time as possible
-    $self->{logger}->writeLogDebug("Decrypting the credentials needed to authenticate to the vault.");
-    $plain_role_id   = $self->extract_and_decrypt( ('data' => $encrypted_role_id ));
-    $plain_secret_id = $self->extract_and_decrypt( ('data' => $encrypted_secret_id ));
-    $self->{logger}->writeLogDebug("role_id and secret_id have been decrypted.");
+
+    if ($self->{crypted_credentials}) {
+        # Then decrypt using https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES
+        # keep the decrypted data in local variables so that they stay in memory for as little time as possible
+        $self->{logger}->writeLogDebug("Decrypting the credentials needed to authenticate to the vault.");
+        $role_id   = $self->extract_and_decrypt( ('data' => $role_id ));
+        $secret_id = $self->extract_and_decrypt( ('data' => $secret_id ));
+        $self->{logger}->writeLogDebug("role_id and secret_id have been decrypted.");
+    } else {
+        $self->{logger}->writeLogDebug("role_id and secret_id are not crypted");
+    }
+
 
     # Authenticate to get the token
     my $url = "https://" . $self->{vault_config}->{url} . ":" . $self->{vault_config}->{port} . "/v1/auth/approle/login";
     $self->{logger}->writeLogDebug("Authenticating to the vault server at URL: $url");
     $self->{curl_easy}->setopt( CURLOPT_URL, $url );
 
-    my $post_data = "role_id=$plain_role_id&secret_id=$plain_secret_id";
+    my $post_data = "role_id=$role_id&secret_id=$secret_id";
     my $auth_result_json;
     # to get more details (in STDERR)
     #$self->{curl_easy}->setopt(CURLOPT_VERBOSE, 1);

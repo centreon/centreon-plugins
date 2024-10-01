@@ -174,7 +174,7 @@ sub read_configuration {
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %$centreon_vmware_config_from_json};
     } else {
-        $self->{logger}->writeLogError($self->{opt_extra} . " does not seem to be in a supported format (supported: .pm or .json).");
+        $self->{logger}->writeLogFatal($self->{opt_extra} . " does not seem to be in a supported format (supported: .pm or .json).");
     }
 }
 
@@ -268,8 +268,6 @@ sub init {
                $self->{logger}->writeLogFatal("Can't get password for couple host='" . $server . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username} . "' : $@");
             }
         } else {
-            use Data::Dumper;
-            $self->{logger}->writeLogDebug("Retrieving secrets from: " . Dumper($self->{vault}));
             # we let the vault object handle the secrets
             for my $key ('username', 'password') {
                 $self->{logger}->writeLogDebug("Retrieving secret: $key");
