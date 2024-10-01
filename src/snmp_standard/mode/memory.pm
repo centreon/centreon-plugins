@@ -146,13 +146,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'units:s'            => { name => 'units', default => '%' },
-        'free'               => { name => 'free' },
-        'swap'               => { name => 'check_swap' },
-        'patch-redhat'       => { name => 'patch_redhat' },
-        'redhat'             => { name => 'redhat' }, # for legacy (do nothing)
-        'autodetect-redhat'  => { name => 'autodetect_redhat' } # for legacy (do nothing)
+    $options{options}->add_options(arguments => {
+        'units:s'                => { name => 'units', default => '%' },
+        'force-64bits-counters'  => { name => 'force_64bits_counters' },
+        'free'                   => { name => 'free' },
+        'swap'                   => { name => 'check_swap' },
+        'patch-redhat'           => { name => 'patch_redhat' },
+        'redhat'                 => { name => 'redhat' },           # for legacy (do nothing)
+        'autodetect-redhat'      => { name => 'autodetect_redhat' } # for legacy (do nothing)
     });
 
     return $self;
@@ -177,7 +178,8 @@ sub check_options {
     $self->SUPER::check_options(%options);
 }
 
-my $mapping = {
+# legacy counters
+my $mapping_32 = {
     memTotalSwap => { oid => '.1.3.6.1.4.1.2021.4.3' },
     memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.4' },
     memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
@@ -188,29 +190,41 @@ my $mapping = {
     memCached    => { oid => '.1.3.6.1.4.1.2021.4.15' }
 };
 
+my $mapping_64 = {
+    memTotalSwap => { oid => '.1.3.6.1.4.1.2021.4.18' },
+    memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.19' },
+    memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.20' },
+    memAvailReal => { oid => '.1.3.6.1.4.1.2021.4.21' },
+    memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.23' },
+    memShared    => { oid => '.1.3.6.1.4.1.2021.4.24' },
+    memBuffer    => { oid => '.1.3.6.1.4.1.2021.4.25' },
+    memCached    => { oid => '.1.3.6.1.4.1.2021.4.26' }
+};
+
 sub memory_calc {
     my ($self, %options) = @_;
 
     my $available = ($options{result}->{memAvailReal}) ? $options{result}->{memAvailReal} * 1024 : 0;
-    my $total = ($options{result}->{memTotalReal}) ? $options{result}->{memTotalReal} * 1024 : 0;
-    my $buffer = ($options{result}->{memBuffer}) ? $options{result}->{memBuffer} * 1024 : 0;
-    my $cached = ($options{result}->{memCached}) ? $options{result}->{memCached} * 1024 : 0;
+    my $total     = ($options{result}->{memTotalReal}) ? $options{result}->{memTotalReal} * 1024 : 0;
+    my $buffer    = ($options{result}->{memBuffer}) ? $options{result}->{memBuffer} * 1024 : 0;
+    my $cached    = ($options{result}->{memCached}) ? $options{result}->{memCached} * 1024 : 0;
+
     my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
     # rhel patch introduced: net-snmp-5.7.2-43.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1250060)
     # rhel patch reverted:   net-snmp-5.7.2-47.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1779609)
 
     if ($total != 0) {
-        $used = (defined($self->{option_results}->{patch_redhat})) ? $total - $available : $total - $available - $buffer - $cached;
-        $free = (defined($self->{option_results}->{patch_redhat})) ? $available : $total - $used;
+        $used      = (defined($self->{option_results}->{patch_redhat})) ? $total - $available : $total - $available - $buffer - $cached;
+        $free      = (defined($self->{option_results}->{patch_redhat})) ? $available : $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
 
     $self->{ram} = {
-        total => $total,
-        used => $used,
-        free => $free,
+        total     => $total,
+        used      => $used,
+        free      => $free,
         prct_used => $prct_used,
         prct_free => $prct_free,
         memShared => ($options{result}->{memShared}) ? $options{result}->{memShared} * 1024 : 0,
@@ -222,20 +236,21 @@ sub memory_calc {
 sub swap_calc {
     my ($self, %options) = @_;
 
-    my $free = ($options{result}->{memAvailSwap}) ? $options{result}->{memAvailSwap} * 1024 : 0;
+    my $free  = ($options{result}->{memAvailSwap}) ? $options{result}->{memAvailSwap} * 1024 : 0;
     my $total = ($options{result}->{memTotalSwap}) ? $options{result}->{memTotalSwap} * 1024 : 0;
+
     my ($used, $prct_used, $prct_free) = (0, 0, 0, 0);
 
     if ($total != 0) {
-        $used = $total - $free;
+        $used      = $total - $free;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
 
     $self->{swap} = {
-        total => $total,
-        used => $used,
-        free => $free,
+        total     => $total,
+        used      => $used,
+        free      => $free,
         prct_used => $prct_used,
         prct_free => $prct_free
     };
@@ -244,8 +259,17 @@ sub swap_calc {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $mapping = $mapping_32;
+    # If asked to use 64bits counters AND if using v2c or v3 (v1 does not support 64bits counters)
+    if (defined($self->{option_results}->{force_64bits_counters})
+            && defined($self->{option_results}->{snmp_version})
+            && !$options{snmp}->is_snmpv1()) {
+        $mapping = $mapping_64;
+    }
+    my @oids    = sort map($_->{oid} . '.0', values(%$mapping));
+
     my $results = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        oids => \@oids,
         nothing_quit => 1
     );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
@@ -287,11 +311,17 @@ Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
 
 =item B<--patch-redhat>
 
-If using RedHat distribution with net-snmp >= 5.7.2-43 and net-snmp < 5.7.2-47. But you should update net-snmp!!!!
+If using Red Hat distribution with net-snmp >= 5.7.2-43 and net-snmp < 5.7.2-47. But you should update net-snmp!!!!
 
 This version: used = memTotalReal - memAvailReal // free = memAvailReal
 
 Others versions: used = memTotalReal - memAvailReal - memBuffer - memCached // free = total - used
+
+=item B<--force-64bits-counters>
+
+Use this option to monitor a server/device that has more than 2 TB of RAM, the maximum size of a signed 32 bits integer.
+If you omit it you'll get the remainder of the Euclidean division of the actual value by 2 TB.
+NB: it cannot work with version 1 of SNMP protocol. 64 bits counters are supported starting version 2c.
 
 =back
 
