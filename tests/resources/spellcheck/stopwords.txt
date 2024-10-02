@@ -63,6 +63,7 @@
 -InputFormat
 -NoLogo
 2c
+3com
 3CX
 ADSL
 Alcatel
