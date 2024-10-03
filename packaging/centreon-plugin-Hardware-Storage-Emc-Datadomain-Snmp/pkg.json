@@ -6,6 +6,6 @@
         "centreon/plugins/script_custom.pm",
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "storage/emc/DataDomain/"
+        "storage/emc/DataDomain/snmp/"
     ]
 }

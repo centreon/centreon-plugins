@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::mode::components::psu;
+package storage::emc::DataDomain::snmp::mode::components::psu;
 
 use strict;
 use warnings;
@@ -68,10 +68,11 @@ sub check {
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Power Supply '%s' status is '%s' [description = %s]",
+                "power Supply '%s' status is '%s' [description: %s]",
                 $instance, $psu_status, $instance
             )
         );
+
         my $exit = $self->get_severity(section => 'psu', value => $psu_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
