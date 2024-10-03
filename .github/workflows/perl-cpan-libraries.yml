@@ -291,11 +291,11 @@ jobs:
         distrib: [el8, el9]
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
 
     steps:
       - run: apt-get install -y zstd
