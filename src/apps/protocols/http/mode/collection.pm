@@ -1746,6 +1746,39 @@ sub exec_func_scientific2number {
     }
 }
 
+sub exec_func_boolean2integer {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "boolean2integer",
+    #    "src": "%(enabled)",
+    #    "save": "%(enabled)",
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    } 
+    my $data = $self->get_special_variable_value(%$result);
+
+    if (ref($data) eq 'JSON::PP::Boolean') {
+        $data = $data ? 1 : 0;
+    }
+
+    if (defined($options{save}) && $options{save} ne '') {
+        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $data, %$save);
+    }
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -1779,6 +1812,8 @@ sub set_functions {
             $self->exec_func_capture(%$_);
         } elsif (lc($_->{type}) eq 'scientific2number') {
             $self->exec_func_scientific2number(%$_);
+        } elsif (lc($_->{type}) eq 'boolean2integer') {
+            $self->exec_func_boolean2integer(%$_);
         }
     }
 }
