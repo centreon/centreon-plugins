@@ -76,10 +76,10 @@ sub manage_selection {
     $stdout_version =~ /^systemd\s(\d+)\s/;
     my $journalctl_version = $1;
 
-    my $command_options = '--output json --output-fields MESSAGE --no-pager';
+    my $command_options = '--output json --no-pager';
     # --output-field option has been added in version 236
-    if ($journalctl_version < 236) {
-        $command_options = '--output json --no-pager';
+    if ($journalctl_version >= 236) {
+        $command_options .= '  --output-fields MESSAGE';
     };
 
     if (defined($self->{option_results}->{unit}) && $self->{option_results}->{unit} ne '') {
