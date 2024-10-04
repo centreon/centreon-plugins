@@ -10,6 +10,7 @@ on:
     paths:
       - '.github/workflows/plugins.yml'
       - '.github/scripts/plugins-source.container.pl'
+      - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'
   push:
@@ -18,6 +19,8 @@ on:
       - master
     paths:
       - '.github/workflows/plugins.yml'
+      - '.github/scripts/plugins-source.container.pl'
+      - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'
 
@@ -46,6 +49,7 @@ jobs:
           filters: |
             common:
               - added|deleted|modified: src/centreon/**
+              - modified: .github/packaging/centreon-plugin.yaml.template
             packages:
               - added|modified: packaging/**
             plugins:
