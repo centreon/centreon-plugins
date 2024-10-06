@@ -11,58 +11,6 @@ ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 
 *** Test Cases ***
-Cpu-Detailed
-    [Documentation]    cpu-detailed mode
-    [Tags]    hardware    kvm    avocent    cpu    snmp
-    Remove File    /dev/shm/snmpstandard_127.0.0.1_2024_cpu-detailed*
-    ${output}    Run Avocent 8000 Plugin    "cpu-detailed"    --statefile-dir=/dev/shm/
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    OK: CPU Usage: user : Buffer creation, nice : Buffer creation, system : Buffer creation, idle : Buffer creation, wait : Buffer creation, kernel : Buffer creation, interrupt : Buffer creation, softirq : Buffer creation, steal : Buffer creation, guest : Buffer creation, guestnice : Buffer creation
-    ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
-    ${output}    Run Avocent 8000 Plugin    "cpu-detailed"    --statefile-dir=/dev/shm/
-    ${output}    Strip String    ${output}
-    Remove File    /dev/shm/snmpstandard_127.0.0.1_2024_cpu-detailed*
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    OK: CPU Usage: user : counter not moved, nice : counter not moved, system : counter not moved, idle : counter not moved, wait : counter not moved, kernel : counter not moved, interrupt : counter not moved, softirq : counter not moved, steal : counter not moved, guest : counter not moved, guestnice : counter not moved
-    ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
-Hardware
-    [Documentation]    hardware mode
-    [Tags]    hardware    kvm    avocent    hardware-mode    snmp
-    ${output}    Run Avocent 8000 Plugin    "hardware"    ""
-
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    OK: All 2 components are ok [2/2 psus]. | 'hardware.psu.count'=2;;;;
-    ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
-Load
-    [Documentation]    load mode
-    [Tags]    hardware    kvm    avocent    load    snmp
-    ${output}    Run Avocent 8000 Plugin    "load"    ""
-
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    OK: Load average: 0.04, 0.10, 0.15 | 'load1'=0.04;;;0; 'load5'=0.10;;;0; 'load15'=0.15;;;0;
-    ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
-Memory
-    [Documentation]    memory mode
-    [Tags]    hardware    kvm    avocent    memory    snmp
-    ${output}    Run Avocent 8000 Plugin    "memory"    ""
-
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    OK: Ram Total: 1.92 GB Used (-buffers/cache): 626.18 MB (31.79%) Free: 1.31 GB (68.21%), Buffer: 2.04 MB, Cached: 723.54 MB, Shared: 26.09 MB | 'used'=656592896B;;;0;2065698816 'free'=1409105920B;;;0;2065698816 'used_prct'=31.79%;;;0;100 'buffer'=2134016B;;;0; 'cached'=758689792B;;;0; 'shared'=27357184B;;;0;
-    ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
 Serial Ports
     [Documentation]    serial-ports mode
     [Tags]    hardware    kvm    avocent    serial    snmp
