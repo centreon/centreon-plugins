@@ -71,6 +71,12 @@ sub run {
         $host{inventory_name} = $host->{summary_fields}->{inventory}->{name};
         $host{groups} = $host->{summary_fields}->{groups}->{results};
         $host{enabled} = $host->{enabled};
+        if (  $host->{variables} =~ /^---$|^\{\}$/ ) {
+            $host{variables} = "";
+           } else {
+             my $variables_json = decode_json($host->{variables});
+             $host{variables} = $variables_json->{ansible_host} ;
+           }
         push @disco_data, \%host;
     }
 
