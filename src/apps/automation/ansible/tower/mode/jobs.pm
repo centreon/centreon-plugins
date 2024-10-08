@@ -157,7 +157,7 @@ Check jobs.
 
 =item B<--filter-name>
 
-Filter job name (can use regexp).
+Define which jobs should be monitored based on their names. This option will be treated as a regular expression.
 
 =item B<--filter-time>
 
