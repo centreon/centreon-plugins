@@ -161,7 +161,7 @@ Define which jobs should be monitored based on their names. This option will be 
 
 =item B<--filter-time>
 
-Filter jobs finished more recent than X hour(s).
+Define which jobs should be monitored based on the age of their last execution. Jobs that finished longer than X hours ago will be ignored.
 
 =item B<--display-failed-jobs>
 
