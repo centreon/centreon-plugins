@@ -427,7 +427,7 @@ Define the number of entries to retrieve for the pagination (default: 500).
 
 =item B<--check-retention>
 
-Use the retention file to check if a job have been detected once but does not appear in the API response. 
+Use the retention file to check if a job has been detected once but does not appear in the API response. 
 
 =item B<--unknown-execution-status>
 
