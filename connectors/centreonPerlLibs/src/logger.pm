@@ -16,11 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package centreon::vmware::logger;
+package centreon::common::logger;
 
 =head1 NOM
 
-centreon::vmware::logger - Simple logging module
+centreon::common::logger - Simple logging module
 
 =head1 SYNOPSIS
 
@@ -31,7 +31,7 @@ centreon::vmware::logger - Simple logging module
 
  use centreon::polling;
 
- my $logger = new centreon::vmware::logger();
+ my $logger = new centreon::common::logger();
 
  $logger->writeLogInfo("information");
 

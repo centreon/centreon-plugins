@@ -368,11 +368,11 @@ Centreon Vault password manager
 
 Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible api given a config file as constructor.
 
-    use centreon::vmware::logger;
+    use centreon::common::logger;
     use centreon::script::centreonvault;
     my $vault = centreon::script::centreonvault->new(
         (
-            'logger'      => centreon::vmware::logger->new(),
+            'logger'      => centreon::common::logger->new(),
             'config_file' =>  '/var/lib/centreon/vault/vault.json'
         )
     );
@@ -386,7 +386,7 @@ Constructor of the vault object.
 
 %options must provide:
 
-- logger: an object of the centreon::vmware::logger class.
+- logger: an object of the centreon::common::logger class.
 
 - config_file: full path and file name of the Centreon Vault JSON config file.
 

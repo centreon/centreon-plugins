@@ -8,9 +8,9 @@ use FindBin;
 use lib qw($FindBin::RealBin/../../../src);
 
 use centreon::script::centreonvault;
-use centreon::vmware::logger;
+use centreon::common::logger;
 my $vault;
-my $global_logger = centreon::vmware::logger->new();
+my $global_logger = centreon::common::logger->new();
 my @test_data = (
     {'logger' => undef,             'config_file' => undef,                 'test' => '$error_message =~ /FATAL: No logger given to the constructor/'},
     {'logger' => $global_logger,    'config_file' => undef,                 'test' => '$vault->{enabled} == 0'},
