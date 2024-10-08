@@ -20,7 +20,7 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: connectors/centreonPerlLibs/src/version.yaml
+      version_file: connectors/centreonPerlLibs/version.yaml
 
   package:
     needs: [get-environment]
