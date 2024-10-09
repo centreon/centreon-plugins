@@ -19,10 +19,10 @@ provides:
 
 contents:
   - src: "../src/"
-    dst: "/usr/share/perl5/vendor_perl/centreon/common"
+    dst: "/usr/share/perl5/vendor_perl"
     packager: rpm
   - src: "../src/"
-    dst: "/usr/share/perl5/centreon/common"
+    dst: "/usr/share/perl5"
     packager: deb
 
 overrides:

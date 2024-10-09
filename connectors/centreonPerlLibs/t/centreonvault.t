@@ -5,9 +5,9 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings echo => 1;
 
 use FindBin;
-use lib qw($FindBin::RealBin/../../../src);
+use lib qw($FindBin::RealBin/../src);
 
-use centreon::script::centreonvault;
+use centreon::common::centreonvault;
 use centreon::common::logger;
 my $vault;
 my $global_logger = centreon::common::logger->new();
