@@ -18,15 +18,15 @@
 # limitations under the License.
 #
 
-package centreon::script::centreonvault;
+package centreon::common::centreonvault;
 
 use strict;
 use warnings;
-use JSON::XS;
+
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
 use Net::Curl::Easy qw(:constants);
-use centreon::vmware::common;
+use JSON::XS;
 
 my $VAULT_PATH_REGEX = qr/^secret::hashicorp_vault::([^:]+)::(.+)$/;
 
@@ -35,7 +35,7 @@ sub new {
     my $self  = bless \%options, $class;
     # mandatory options:
     # - logger: logger object
-    # - config_file: path of a JSON vault config file
+    # - config_file: either path of a JSON vault config file or the configuration as a perl hash.
 
     $self->{enabled} = 1;
     $self->{crypted_credentials} = 1;
@@ -53,15 +53,19 @@ sub init {
 
     $self->check_options() or return undef;
 
-    # check if the following information is available
-    $self->{logger}->writeLogDebug("Reading Vault configuration from file " . $self->{config_file} . ".");
-    $self->{vault_config} = centreon::vmware::common::parse_json_file( 'json_file' => $self->{config_file} );
-    if (defined($self->{vault_config}->{error_message})) {
-        $self->{logger}->writeLogError("Error while parsing " . $self->{config_file} . ": "
-            . $self->{vault_config}->{error_message});
-        return undef;
+    # for unit test purpose, if the config is given as an hash, we don't try to read the config file.
+    if (ref $self->{config_file} eq ref {}) {
+        $self->{vault_config} = $self->{config_file};
+    } else {
+        # check if the following information is available
+        $self->{logger}->writeLogDebug("Reading Vault configuration from file " . $self->{config_file} . ".");
+        $self->{vault_config} = parse_json_file('json_file' => $self->{config_file});
+        if (defined($self->{vault_config}->{error_message})) {
+            $self->{logger}->writeLogError("Error while parsing " . $self->{config_file} . ": "
+                . $self->{vault_config}->{error_message});
+            return undef;
+        }
     }
-
     $self->check_configuration() or return undef;
 
     $self->{logger}->writeLogDebug("Vault configuration read. Name: " . $self->{vault_config}->{name}
@@ -84,7 +88,7 @@ sub check_options {
         $self->{logger}->writeLogError("No config file given to the constructor. Centreonvault cannot be used.");
         return undef;
     }
-    if ( ! -f $self->{config_file} ) {
+    if ( ! -f $self->{config_file} and ref $self->{config_file} ne ref {}) {
         $self->{logger}->writeLogError("The given configuration file " . $self->{config_file}
             . " does not exist. Centreonvault cannot be used.");
         return undef;
@@ -127,9 +131,6 @@ sub check_configuration {
     } else {
         $self->{encryption_key} = $ENV{'APP_SECRET'}; # key for aes-256-cbc
     }
-
-
-
 
     return 1;
 }
@@ -212,7 +213,7 @@ sub authenticate {
     $self->{curl_easy}->setopt(CURLOPT_POST, 1);
     $self->{curl_easy}->setopt(CURLOPT_POSTFIELDS, $post_data);
     $self->{curl_easy}->setopt(CURLOPT_POSTFIELDSIZE, length($post_data));
-    $self->{curl_easy}->setopt(CURLOPT_WRITEDATA(), \$auth_result_json);
+    $self->{curl_easy}->setopt(CURLOPT_WRITEDATA(), \$self->{auth_result_json});
 
     eval {
         $self->{curl_easy}->perform();
@@ -224,9 +225,9 @@ sub authenticate {
 
     $self->{logger}->writeLogInfo("Authentication to the vault passed." );
 
-    my $auth_result_obj = centreon::vmware::common::transform_json_to_object($auth_result_json);
+    my $auth_result_obj = transform_json_to_object($self->{auth_result_json});
     if (defined($auth_result_obj->{error_message})) {
-        $self->{logger}->writeLogError("Error while decoding JSON '$auth_result_json'. Message: "
+        $self->{logger}->writeLogError("Error while decoding JSON '$self->{auth_result_json}'. Message: "
                 . $auth_result_obj->{error_message});
         return undef;
     }
@@ -243,7 +244,7 @@ sub authenticate {
         'token'            => $auth_result_obj->{auth}->{client_token},
         'expiration_epoch' => $expiration_epoch
     };
-
+    print("authent passed, token : $self->{auth}->{expiration_epoch}\n");
     $self->{logger}->writeLogInfo("Authenticating worked. Token valid until "
         . localtime($self->{auth}->{expiration_epoch}));
 
@@ -305,7 +306,7 @@ sub get_secret {
     # request_id
 
     # the result is a json string, convert it into an object
-    my $get_result_obj = centreon::vmware::common::transform_json_to_object($get_result_json);
+    my $get_result_obj = transform_json_to_object($get_result_json);
     if (defined($get_result_obj->{error_message})) {
         $self->{logger}->writeLogError("Error while decoding JSON '$get_result_json'. Message: "
                 . $get_result_obj->{error_message});
@@ -325,6 +326,36 @@ sub get_secret {
     return $get_result_obj->{data}->{data}->{$secret_name};
 }
 
+sub transform_json_to_object {
+    my ($json_data) = @_;
+
+    my $json_as_object;
+    eval {
+        $json_as_object = decode_json($json_data);
+    };
+    if ($@) {
+        return ({'error_message' => "Could not decode JSON from '$json_data'. Reason: " . $@});
+    };
+    return($json_as_object);
+}
+
+sub parse_json_file {
+    my (%options) = @_;
+
+    my $fh;
+    my $json_data = '';
+
+    my $json_file = $options{json_file};
+
+    open($fh, '<', $json_file) or return ('error_message' => "parse_json_file: Cannot open " . $json_file);
+    for my $line (<$fh>) {
+        chomp $line;
+        $json_data .= $line;
+    }
+    close($fh);
+    return transform_json_to_object($json_data);
+}
+
 1;
 
 __END__
@@ -337,11 +368,11 @@ Centreon Vault password manager
 
 Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible api given a config file as constructor.
 
-    use centreon::vmware::logger;
+    use centreon::common::logger;
     use centreon::script::centreonvault;
     my $vault = centreon::script::centreonvault->new(
         (
-            'logger'      => centreon::vmware::logger->new(),
+            'logger'      => centreon::common::logger->new(),
             'config_file' =>  '/var/lib/centreon/vault/vault.json'
         )
     );
@@ -355,7 +386,7 @@ Constructor of the vault object.
 
 %options must provide:
 
-- logger: an object of the centreon::vmware::logger class.
+- logger: an object of the centreon::common::logger class.
 
 - config_file: full path and file name of the Centreon Vault JSON config file.
 
