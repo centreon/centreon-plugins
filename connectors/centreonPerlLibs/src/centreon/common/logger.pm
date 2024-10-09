@@ -29,8 +29,6 @@ centreon::common::logger - Simple logging module
  use strict;
  use warnings;
 
- use centreon::polling;
-
  my $logger = new centreon::common::logger();
 
  $logger->writeLogInfo("information");
@@ -51,16 +49,20 @@ use Sys::Syslog qw(:standard :macros);
 use IO::Handle;
 
 my %syslog_severities = (
-    1 => LOG_CRIT,
-    2 => LOG_ERR,
-    4 => LOG_INFO,
-    5 => LOG_DEBUG
+    2 => LOG_CRIT,
+    3 => LOG_ERR,
+    4 => LOG_WARNING,
+    5 => LOG_NOTICE,
+    6 => LOG_INFO,
+    7 => LOG_DEBUG
 );
 my %human_severities = (
-    1 => 'fatal',
-    2 => 'error',
-    4 => 'info',
-    5 => 'debug'
+    2 => 'fatal',
+    3 => 'error',
+    4 => 'warning',
+    5 => 'notice',
+    6 => 'info',
+    7 => 'debug'
 );
 
 sub new {
@@ -70,7 +72,7 @@ sub new {
       {
        file => 0,
        filehandler => undef,
-       # 0 = nothing, 1 = critical, 3 = info, 7 = debug
+       # warning by default, see %human_severities for the available possibilty
        severity => 4,
        old_severity => 4,
        # 0 = stdout, 1 = file, 2 = syslog
@@ -113,7 +115,7 @@ sub is_file_mode {
 sub is_debug {
     my $self = shift;
     
-    if ($self->{severity} < 5) {
+    if ($self->{severity} < 6) {
         return 0;
     }
     return 1;
@@ -137,6 +139,19 @@ sub redirect_output {
         open STDERR, '>&', $lfh;
     }
 }
+# Bypass the write cache set up by the kernel/file system and always write the log
+# as soon as it is sent.
+sub flush_output {
+    my ($self, %options) = @_;
+
+    $| = 1 if (defined($options{enabled}));
+}
+
+sub force_default_severity {
+    my ($self, %options) = @_;
+
+    $self->{old_severity} = defined($options{severity}) ? $options{severity} : $self->{severity};
+}
 
 sub set_default_severity {
     my $self = shift;
@@ -150,23 +165,29 @@ sub severity {
 
     if (@_) {
         my $save_severity = $self->{severity};
-        if ($_[0] =~ /^[01245]$/) {
+        if ($_[0] =~ /^[0124567]$/) {
             $self->{severity} = $_[0];
         } elsif ($_[0] eq "none") {
             $self->{severity} = 0;
-        } elsif ($_[0] eq "error") {
+        } elsif ($_[0] eq "fatal") {
             $self->{severity} = 2;
-        } elsif ($_[0] eq "info") {
+        } elsif ($_[0] eq "error") {
+            $self->{severity} = 3;
+        } elsif ($_[0] eq "warning") {
             $self->{severity} = 4;
-        } elsif ($_[0] eq "debug") {
+        } elsif ($_[0] eq "notice") {
             $self->{severity} = 5;
+        } elsif ($_[0] eq "info") {
+            $self->{severity} = 6;
+        } elsif ($_[0] eq "debug") {
+            $self->{severity} = 7;
         } else {
             $self->writeLogError("Wrong severity value given: " . $_[0] . ". Keeping default value: " . $self->{severity});
             return $self->{severity};
         }
         $self->{old_severity} = $save_severity;
     }
-    return $self->{severity};
+    return $human_severities{$self->{severity}};
 }
 
 sub withpid {
@@ -210,16 +231,25 @@ sub writeLog($$$%) {
 }
 
 sub writeLogDebug {
-    shift->writeLog(5, @_);
+    shift->writeLog(7, @_);
 }
 
 sub writeLogInfo {
+    shift->writeLog(6, @_);
+}
+
+sub writeLogNotice {
+    shift->writeLog(5, @_);
+}
+
+sub writeLogWarn {
     shift->writeLog(4, @_);
 }
 
 sub writeLogError {
     shift->writeLog(2, @_);
 }
+
 sub writeLogFatal {
     shift->writeLog(1, @_);
     die("FATAL: " . $_[0] . "\n");
