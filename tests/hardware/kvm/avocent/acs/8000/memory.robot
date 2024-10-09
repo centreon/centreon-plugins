@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
+Documentation       memory mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,6 @@ ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 *** Test Cases ***
 Memory
-    [Documentation]    memory mode
     [Tags]    hardware    kvm    avocent    memory    snmp
     ${output}    Run Avocent 8000 Plugin    "memory"    ""
 

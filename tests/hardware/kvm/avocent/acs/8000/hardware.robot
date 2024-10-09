@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
+Documentation       hardware mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,6 @@ ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 *** Test Cases ***
 Hardware
-    [Documentation]    hardware mode
     [Tags]    hardware    kvm    avocent    hardware-mode    snmp
     ${output}    Run Avocent 8000 Plugin    "hardware"    ""
 

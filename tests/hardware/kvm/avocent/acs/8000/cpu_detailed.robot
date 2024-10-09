@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
+Documentation       cpu-detailed mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,6 @@ ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 *** Test Cases ***
 Cpu-Detailed
-    [Documentation]    cpu-detailed mode
     [Tags]    hardware    kvm    avocent    cpu    snmp
     Remove File    /dev/shm/snmpstandard_127.0.0.1_2024_cpu-detailed*
     ${output}    Run Avocent 8000 Plugin    "cpu-detailed"    --statefile-dir=/dev/shm/

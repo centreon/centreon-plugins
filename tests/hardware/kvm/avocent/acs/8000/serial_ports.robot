@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       hardware::kvm::avocent::acs::8000::snmp::plugin
+Documentation       serial-ports mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,6 @@ ${SNMPCOMMUNITY}    hardware/kvm/avocent/acs/8000/avocent8000
 
 *** Test Cases ***
 Serial Ports
-    [Documentation]    serial-ports mode
     [Tags]    hardware    kvm    avocent    serial    snmp
     Remove File    /dev/shm/avocent_acs_8000_127.0.0.1_2024_serial-ports*
     ${output}    Run Avocent 8000 Plugin    "serial-ports"    --statefile-dir=/dev/shm/
