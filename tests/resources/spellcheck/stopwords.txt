@@ -1,6 +1,7 @@
 2c
 3CX
 --3cx-version
+ACS
 --add-sysdesc
 ADSL
 Alcatel
@@ -15,6 +16,7 @@ api.meraki.com
 --api-version
 ASAM
 Avigilon
+Avocent
 Backbox
 --cacert-file
 cardtemperature
