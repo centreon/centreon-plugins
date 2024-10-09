@@ -1,17 +1,8 @@
 2c
---warning-authservers-total
---critical-authservers-total
---warning-authserver-roundtrip-time
---critical-authserver-roundtrip-time
---warning-authserver-packets-access-requests
---critical-authserver-packets-access-requests
---warning-authserver-packets-access-accepts
---critical-authserver-packets-access-accepts
---warning-authserver-clients-timeout
---critical-authserver-clients-timeout
 3COM
 3CX
 --3cx-version
+ACS
 --add-fc-fe-errors
 --add-qos-limit
 --add-sysdesc
@@ -28,6 +19,7 @@ api.meraki.com
 --api-version
 ASAM
 Avigilon
+Avocent
 aws
 AWSCLI
 --aws-role-arn
@@ -43,6 +35,11 @@ connections-dns
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
+--critical-authserver-clients-timeout
+--critical-authserver-packets-access-accepts
+--critical-authserver-packets-access-requests
+--critical-authserver-roundtrip-time
+--critical-authservers-total
 --critical-backend-congestions
 --critical-backend-outstanding-io
 --critical-bytesallocatedpercentage
@@ -96,7 +93,6 @@ ipv4
 ipv6
 ISAM
 Iwsva
---jobq
 JOBQ
 jobqueue
 jobqueues
@@ -125,7 +121,6 @@ module-cellradio-rsrq
 module-cellradio-snr
 modules-cellradio-detected
 Mosquitto
---mqtt
 MQTT
 --mqtt-allow-insecure
 --mqtt-ca-certificate
@@ -137,7 +132,6 @@ MQTT
 --mqtt-timeout
 --mqtt-username
 multiple
-nagios
 Nagios
 NagVis
 --nagvis-perfdata
@@ -148,10 +142,8 @@ NLCapacity
 --noidle
 -NoLogo
 --nomachineaccount
---ntlmv2
 NTLMv2
 NTP
---oid
 OID
 --oid-display
 --oid-extra-display
@@ -218,6 +210,11 @@ VM
 VMware
 VPN
 vSAN
+--warning-authserver-clients-timeout
+--warning-authserver-packets-access-accepts
+--warning-authserver-packets-access-requests
+--warning-authserver-roundtrip-time
+--warning-authservers-total
 --warning-backend-congestions
 --warning-backend-outstanding-io
 --warning-bytesallocatedpercentage
