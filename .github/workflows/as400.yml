@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'as400/packaging/**'
+      - 'as400/**'
   push:
     branches:
       - develop
       - master
     paths:
-      - 'as400/packaging/**'
+      - 'as400/**'
 
 jobs:
   get-environment:
