@@ -47,6 +47,7 @@ jobs:
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
@@ -130,6 +131,8 @@ jobs:
           - name: "Exporter::Shiny"
             build_distribs: el8
             rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
+          - name: "FFI::CheckLib"
+            rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
@@ -288,11 +291,11 @@ jobs:
         distrib: [el8, el9]
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
 
     steps:
       - run: apt-get install -y zstd
@@ -354,6 +357,7 @@ jobs:
             "Config::AWS",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
@@ -363,6 +367,7 @@ jobs:
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
             "Mojo::IOLoop::Signal",
+            "Net::Amazon::Signature::V4",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
@@ -396,6 +401,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Net::Amazon::Signature::V4"
+            build_distribs: ["bullseye", "jammy"]
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
@@ -417,6 +424,13 @@ jobs:
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Parse distrib name
+        id: parse-distrib
+        uses: ./.github/actions/parse-distrib
+        with:
+          distrib: ${{ matrix.distrib }}
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Get package version
@@ -463,7 +477,8 @@ jobs:
           gem install fpm
           # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
           patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
-          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
@@ -471,7 +486,7 @@ jobs:
           apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
           # module-build-tiny is required for Mojo::IOLoop::Signal build.
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}

@@ -44,10 +44,14 @@ overrides:
       perl(JSON::XS),
       perl-JSON-Path,
       perl-KeePass-Reader,
+      perl(Safe),
       perl(Storable),
       perl(POSIX),
       perl(Encode),
       perl(XML::LibXML),
+      perl(FindBin),
+      perl(lib),
+      perl(sort),
       @RPM_DEPENDENCIES@
     ]
     conflicts:
