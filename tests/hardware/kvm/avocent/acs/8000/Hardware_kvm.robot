@@ -1,6 +1,5 @@
 *** Settings ***
 Documentation       hardware mode
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s

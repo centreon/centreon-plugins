@@ -1,0 +1,35 @@
+FROM docker.centreon.com/centreon/testing-plugins-bookworm
+
+RUN bash -e <<EOF
+
+useradd snmp
+mkdir -p /var/lib/snmp/cert_indexes/
+chown snmp:snmp -R /var/lib/snmp/cert_indexes/
+mkdir -p /tmp/cache/
+
+# Install missing libraries
+apt-get update
+apt-get install -y libpod-parser-perl \
+                    libnet-curl-perl \
+                    liburi-encode-perl \
+                    libwww-perl \
+                    liblwp-protocol-https-perl \
+                    libhttp-cookies-perl \
+                    libio-socket-ssl-perl \
+                    liburi-perl \
+                    libhttp-proxypac-perl \
+                    libcryptx-perl \
+                    libjson-xs-perl \
+                    libjson-path-perl \
+                    libcrypt-argon2-perl \
+                    libkeepass-reader-perl \
+                    libdatetime-perl \
+                    libxml-libxml-perl
+apt-get install -y libdbi-perl libjson-maybexs-perl libsnmp-perl libxml-libxml-simple-perl
+apt-get clean
+
+EOF
+
+CMD snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='/home/code/tests' & sleep 1 && /bin/bash
+
+WORKDIR /home/code/
