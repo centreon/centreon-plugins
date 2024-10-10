@@ -89,7 +89,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: ${{ needs.get-environment.outputs.version }}
-          release: ${{ needs.get-environment.outputs.release }}
+          release: 1
           arch: all
           commit_hash: ${{ github.sha }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-as400-${{ matrix.distrib }}

@@ -16,6 +16,7 @@ license: "Apache-2.0"
 contents:
   - src: "../connector.as400/target/centreon-as400-${VERSION}-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
     dst: "/usr/share/centreon-as400/bin/centreon-as400-${VERSION}-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+    expand: true
     file_info:
       mode: 0755
       owner: "centreon-as400"
