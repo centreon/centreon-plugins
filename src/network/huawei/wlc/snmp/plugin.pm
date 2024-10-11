@@ -40,7 +40,8 @@ sub new {
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-radios'     => 'network::huawei::wlc::snmp::mode::listradios',
         'memory'          => 'centreon::common::huawei::standard::snmp::mode::memory',
-        'uptime'          => 'snmp_standard::mode::uptime'
+        'uptime'          => 'snmp_standard::mode::uptime',
+        'wlan-global'     => 'network::huawei::wlc::snmp::mode::wlanglobal'
     };
 
     return $self;
