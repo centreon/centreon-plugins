@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::plugin;
+package network::huawei::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'              => 'network::huawei::snmp::mode::cpu',
-        'hardware'         => 'network::huawei::snmp::mode::hardware',
-        'interfaces'       => 'network::huawei::snmp::mode::interfaces',
+        'cpu'              => 'centreon::common::huawei::standard::snmp::mode::cpu',
+        'hardware'         => 'centreon::common::huawei::standard::snmp::mode::hardware',
+        'interfaces'       => 'centreon::common::huawei::standard::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::huawei::snmp::mode::memory',
+        'memory'           => 'centreon::common::huawei::standard::snmp::mode::memory',
         'uptime'           => 'snmp_standard::mode::uptime'
     };
 

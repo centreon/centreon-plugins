@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::interfaces;
+package centreon::common::huawei::standard::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 

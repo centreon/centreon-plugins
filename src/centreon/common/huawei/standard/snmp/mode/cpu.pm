@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::cpu;
+package centreon::common::huawei::standard::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::snmp::mode::memory;
+package centreon::common::huawei::standard::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
