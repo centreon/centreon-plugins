@@ -1,0 +1,46 @@
+name: "parse-distrib"
+description: "parse distrib name."
+inputs:
+  distrib:
+    description: "The distribution name"
+    required: true
+outputs:
+  package_distrib_separator:
+    description: "Separator between package version and distrib number"
+    value: ${{ steps.parse-distrib.outputs.package_distrib_separator }}
+  package_distrib_name:
+    description: "Distribution suffix in package name"
+    value: ${{ steps.parse-distrib.outputs.package_distrib_name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Parse distrib
+      id: parse-distrib
+      run: |
+        if [[ "${{ inputs.distrib }}" == "centos7" || "${{ inputs.distrib }}" == "el7" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="."
+          PACKAGE_DISTRIB_NAME="el7"
+        elif [[ "${{ inputs.distrib }}" == "alma8" || "${{ inputs.distrib }}" == "el8" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="."
+          PACKAGE_DISTRIB_NAME="el8"
+        elif [[ "${{ inputs.distrib }}" == "alma9" || "${{ inputs.distrib }}" == "el9" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="."
+          PACKAGE_DISTRIB_NAME="el9"
+        elif [[ "${{ inputs.distrib }}" == "bullseye" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="+"
+          PACKAGE_DISTRIB_NAME="deb11u1"
+        elif [[ "${{ inputs.distrib }}" == "bookworm" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="+"
+          PACKAGE_DISTRIB_NAME="deb12u1"
+        elif [[ "${{ inputs.distrib }}" == "jammy" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="-"
+          PACKAGE_DISTRIB_NAME="0ubuntu.22.04"
+        else
+          echo "::error::Distrib ${{ inputs.distrib }} cannot be parsed"
+          exit 1
+        fi
+
+        echo "package_distrib_separator=$PACKAGE_DISTRIB_SEPARATOR" >> $GITHUB_OUTPUT
+        echo "package_distrib_name=$PACKAGE_DISTRIB_NAME" >> $GITHUB_OUTPUT
+      shell: bash

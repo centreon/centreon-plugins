@@ -26,7 +26,7 @@ jobs:
     needs: [get-environment]
     if: ${{ needs.get-environment.outputs.stability != 'stable' }}
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +47,7 @@ jobs:
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
@@ -130,8 +131,12 @@ jobs:
           - name: "Exporter::Shiny"
             build_distribs: el8
             rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
+          - name: "FFI::CheckLib"
+            rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
+            rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
+            no-auto-depends: true
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Statistics::Regression"
@@ -176,6 +181,23 @@ jobs:
           dnf install -y ruby ruby-devel
         shell: bash
 
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          repository: kduret/fpm
+          ref: fix-rpm-perl-dependency-name-unchanged
+          path: fpm
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
+        run: |
+          dnf install -y bsdtar
+          cd fpm
+          gem install bundler
+          bundle install
+          make install
+        shell: bash
+
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
           if [ -z "${{ matrix.version }}" ]; then
@@ -187,8 +209,8 @@ jobs:
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
-            for PACKAGE_DEPENDENCY in `echo ${{ matrix.rpm_dependencies }}`; do
-              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
+            for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
             done
           fi
 
@@ -209,7 +231,6 @@ jobs:
 
           export SYBASE="/usr"
 
-          gem install fpm
           fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
@@ -233,7 +254,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -241,36 +262,40 @@ jobs:
 
   merge-package-rpm-artifacts:
     needs: [package-rpm]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [el8, el9]
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Merging Artifacts
-        uses: ./.github/actions/merge-artifacts
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          target_name: packages-rpm-${{ matrix.distrib }}
-          source_paths: packages-rpm-${{ matrix.distrib }}/*.rpm
-          source_name_pattern: packages-rpm-${{ matrix.distrib }}-
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: packages-rpm-${{ matrix.distrib }}
+          pattern: packages-rpm-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        with:
+          name: packages-rpm-${{ matrix.distrib }}-*
+          failOnError: false
 
   sign-rpm:
     needs: [merge-package-rpm-artifacts]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [el8, el9]
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
 
     steps:
       - run: apt-get install -y zstd
@@ -278,7 +303,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -332,6 +357,7 @@ jobs:
             "Config::AWS",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
+            "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
@@ -341,6 +367,7 @@ jobs:
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
             "Mojo::IOLoop::Signal",
+            "Net::Amazon::Signature::V4",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
@@ -352,7 +379,7 @@ jobs:
             "ZMQ::LibZMQ4"
           ]
         include:
-          - runner_name: ubuntu-22.04
+          - runner_name: ubuntu-24.04
           - arch: amd64
           - build_distribs: "bullseye,bookworm,jammy"
           - deb_dependencies: ""
@@ -374,6 +401,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Net::Amazon::Signature::V4"
+            build_distribs: ["bullseye", "jammy"]
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
@@ -395,6 +424,13 @@ jobs:
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Parse distrib name
+        id: parse-distrib
+        uses: ./.github/actions/parse-distrib
+        with:
+          distrib: ${{ matrix.distrib }}
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Get package version
@@ -441,7 +477,8 @@ jobs:
           gem install fpm
           # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
           patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
-          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
@@ -449,7 +486,7 @@ jobs:
           apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
           # module-build-tiny is required for Mojo::IOLoop::Signal build.
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}-${{ matrix.distrib }} --cpan ${{ matrix.name }}
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
@@ -463,7 +500,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -471,30 +508,34 @@ jobs:
 
   merge-package-deb-artifacts:
     needs: [package-deb]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Merging Artifacts
-        uses: ./.github/actions/merge-artifacts
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          target_name: packages-deb-${{ matrix.distrib }}
-          source_paths: packages-deb-${{ matrix.distrib }}/*.deb
-          source_name_pattern: packages-deb-${{ matrix.distrib }}-
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: packages-deb-${{ matrix.distrib }}
+          pattern: packages-deb-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        with:
+          name: packages-deb-${{ matrix.distrib }}-*
+          failOnError: false
 
   download-and-cache-deb:
     needs: [merge-package-deb-artifacts]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         distrib: [bullseye, bookworm, jammy]
     steps:
-      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./
