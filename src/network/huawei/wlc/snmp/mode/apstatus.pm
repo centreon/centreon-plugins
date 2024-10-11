@@ -172,6 +172,30 @@ sub set_counters {
                 { label => 'total_version_mismatch', template => '%s', min => 0 }
             ]
         }
+        },
+        { label => 'total-name-conflicted', nlabel => 'accesspoints.nameconflicted.count', set => {
+            key_values      => [ { name => 'nameConflicted' } ],
+            output_template => 'name conflicted: %s',
+            perfdatas       => [
+                { label => 'total_name_conflicted', template => '%s', min => 0 }
+            ]
+        }
+        },
+        { label => 'total-invalid', nlabel => 'accesspoints.invalid.count', set => {
+            key_values      => [ { name => 'invalid' } ],
+            output_template => 'invalid: %s',
+            perfdatas       => [
+                { label => 'total_invalid', template => '%s', min => 0 }
+            ]
+        }
+        },
+        { label => 'total-country-code-mismatch', nlabel => 'accesspoints.countrycodemismatch.count', set => {
+            key_values      => [ { name => 'countryCodeMismatch' } ],
+            output_template => 'country code mismatch: %s',
+            perfdatas       => [
+                { label => 'total_country_code_mismatch', template => '%s', min => 0 }
+            ]
+        }
         }
     ];
 
@@ -258,10 +282,7 @@ sub manage_selection {
         verMismatch         => 0,
         nameConflicted      => 0,
         invalid             => 0,
-        countryCodeMismatch => 0,
-        down                => 0,
-        run                 => 0,
-        noneed              => 0
+        countryCodeMismatch => 0
     };
 
     my $request = [ { oid => $mapping->{name}->{oid} } ];
@@ -392,7 +413,7 @@ You can use the following variables: %{runstate}, %{display}
 Thresholds.
 Can be: 'total', 'total-idle', 'total-autofind', 'total-typeNotMatch', 'total-fault', 'total-config',
 'total-config-failed', 'total-download', 'total-normal', 'total-committing', 'total-commit-failed', 'total-standby',
-'total-version-mismatch'.
+'total-version-mismatch', 'total-name-conflicted', 'total-invalid', 'total-country-code-mismatch'.
 
 =back
 
