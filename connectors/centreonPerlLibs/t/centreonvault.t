@@ -5,7 +5,7 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings echo => 1;
 use Test2::Tools::Compare qw{is like match};
 use Net::Curl::Easy qw(:constants);
-use Data::Dumper;
+use Data::Dumper qw(Dumper);
 
 use FindBin;
 use lib "$FindBin::RealBin/../src";
@@ -16,7 +16,7 @@ use JSON::XS;
 
 my $vault;
 my $global_logger = centreon::common::logger->new();
-#$global_logger->file_mode("/dev/null");
+$global_logger->file_mode("/dev/null");
 # this is an exemple of configuration for vault, the decrypted role_id/secret_id both are "String-to-encrypt"
 my $default_app_secret = 'SGVsbG8gd29ybGQsIGRvZywgY2F0LCBwdXBwaWVzLgo=';
 my $vault_config_hash = {
@@ -27,6 +27,23 @@ my $vault_config_hash = {
     "role_id"   => "4vOkzIaIJ7yxGWmysGVYY9sYHDyDM1nEv1++jSx9eAHpj83J6aIjE5SPvvpF6kBu3JeFga7o6DDS2yC7jVPAwXsWiur+KUOQncPq0JtjiFojr9YkrO8x1w1dmQFq/RqYV/S/kUare8z6r6+RnAxwsA==",
     "secret_id" => "4vOkzIaIJ7yxGWmysGVYY9sYHDyDM1nEv1++jSx9eAHpj83J6aIjE5SPvvpF6kBu3JeFga7o6DDS2yC7jVPAwXsWiur+KUOQncPq0JtjiFojr9YkrO8x1w1dmQFq/RqYV/S/kUare8z6r6+RnAxwsA==",
     "salt"      => "U2FsdA==" }; # for now the salt is not used, it will be used to check the data where correctly decrypted.
+
+my $wrong_vault_config_hash = {
+    "name"      => "default",
+    "url"       => "localhost",
+    "port"      => 443,
+    "root_path" => "path",
+    "role_id"   => "WrongCryptedDataThatAESWontBeAbleToDecrypt==",
+    "secret_id" => "WrongCryptedDataThatAESWontBeAbleToDecrypt==",
+    "salt"      => "U2FsdA==" };
+
+# We will make multiples tests about authentications.
+# this is all the form that should be set everytime.
+my $generic_authentication_fields = {
+    CURLOPT_POST()          => { result => 1, detail => 'the http request should be POST.' },
+    CURLOPT_POSTFIELDS()    => { result => 'role_id=String-to-encrypt&secret_id=String-to-encrypt', detail => 'postfields are correct' },
+    CURLOPT_POSTFIELDSIZE() => { result => 53, detail => 'post field size is set.' },
+    CURLOPT_URL()           => { result => 'https://lo  calhost:443/v1/auth/approle/login', detail => 'target url was set' }, };
 
 sub test_new {
     my @test_data = (
@@ -115,53 +132,37 @@ sub test_authenticate {
             'config_file' => $vault_config_hash
         )
     );
-    print "opt : " . CURLOPT_WRITEDATA . "\n";
+    my $token = "ImAToken";
+    my $nb_second_expiration_token = 13455;
+my $http_options_mandatory = {(CURLOPT_WRITEDATA() => { result => '{"auth":{"lease_duration": "' . $nb_second_expiration_token . '", "client_token": "' . $token . '"}}' }), %$generic_authentication_fields};
+    my $mock_http_authenticate = mock_http($http_options_mandatory);
+    $vault->authenticate();
+    is($vault->{auth}->{token}, $token, "the token was correctly retrieved by authenticate()");
+    is($vault->{auth}->{expiration_epoch}, time() + $nb_second_expiration_token, 'the expiration date is correct');
+}
 
-    my $mock = mock 'Net::Curl::Easy'; # is from Test2::Tools::Mock, included by Test2::V0
-    # @TODO: we can find the link to the variable in the setopt when the opt number is the good one
-    #we can either set the value (the effective mock action) in the setopt or in the perform, but the perform will force use to store that value somewhere temporaly.
-    #
+sub test_get_secret {
+    $vault = centreon::common::centreonvault->new(
+        (
+            'logger'      => $global_logger,
+            'config_file' => $wrong_vault_config_hash
+        )
+    );
+    print("  When vault don't work we should send back the input token\n");
+    is($vault->get_secret("token"), "token", "role_id and secret_id can't be decrypted");
 
-    my $required_option = {
-        CURLOPT_POST()          => { result => 1, detail => 'the http request should be POST.' },
-        CURLOPT_POSTFIELDS()    => { result => 'role_id=String-to-encrypt&secret_id=String-to-encrypt', detail => 'postfields are correct' },
-        CURLOPT_POSTFIELDSIZE() => { result => 53, detail => 'post field size is set.' },
-        CURLOPT_URL()           => {result => 'https://localhost:443/v1/auth/approle/login', detail => 'target url was set'},
-
-    };
-
-    $mock->override('perform' => sub($) {
-        # this is not what is done in reallity, but it's easier for mocking purpose.
-        if (keys %{$required_option}) {
-            fail "Some curl parameter where not correctly set : " .join(keys %{$required_option}, ', ') . "\n";
-        }
-    },
-        'setopt'              => sub($$$) {
-            my $self = shift;
-            print Dumper(@_);
-
-            # the real workhorse of the lib, we must have an hash %required_option present before this.
-            # this sub check in the hash if the option is correctly set, and delete it from the hash if it's correct.
-            # when doing perform, all options should have been set. So if there is still element in the hash, it is an error, as some parameter where not correctly set.
-
-            if ($_[0] == CURLOPT_WRITEDATA) {
-                # ${} allow to derefecence the variable given, as it's given in the form \$var to curl.
-                ${$_[1]} = '{"auth":{"lease_duration":"13455", "client_token":"ImAToken"}}';
-                return;
-            }
-            if ($required_option->{$_[0]}) {
-                print "checking " . $_[1] . "\n";
-                is($_[1], $required_option->{$_[0]}->{result}, $required_option->{$_[0]}->{detail});
-                delete($required_option->{$_[0]});
-            }
-            else {
-                print "$_[0] is not the same as \n";
-                print Dumper($required_option);
-            }
-        }
+    $vault = centreon::common::centreonvault->new(
+        (
+            'logger'      => $global_logger,
+            'config_file' => $vault_config_hash
+        )
     );
 
-    $vault->authenticate();
+    my $http_options_mandatory = {(CURLOPT_WRITEDATA() => { result => '{' }), %$generic_authentication_fields};
+    my $mock_http_authenticate = mock_http($http_options_mandatory);
+
+    my $clear_password = $vault->get_secret("token");
+    is($vault->get_secret("token"), "token", "authentication didn't work because api send back an invalid response");
 
 }
 
@@ -171,10 +172,51 @@ sub main {
     #test_new();
     #test_decrypt();
     #test_transform_json_to_object();
-    test_authenticate();
+    #test_authenticate();
+    test_get_secret();
     $ENV{'APP_SECRET'} = $old_app_secret;
 
     done_testing();
 }
 
+sub mock_http {
+    my $required_option = shift;
+
+    my $mock = mock 'Net::Curl::Easy'; # is from Test2::Tools::Mock, included by Test2::V0
+    $mock->override('perform' => sub($) {
+        # Normally this sub perform the actual http request and set the result to the variable given to setopt().
+        # For test purpose, we set the mocked data in the setopt(), and only use perform() to check every parameter have correctly been set.
+        # once we are sure all parameter where correctly set, we prepare the next request.
+        # this is not what is done in reality, but it's easier for mocking purpose.
+        if (keys %{$required_option}) {
+            fail "Some curl parameter where not correctly set : " . join(', ', keys(%{$required_option})) . "\n";
+        }
+    },
+        'setopt'              => sub($$$) {
+            my $self = shift; # we don't need this one, so we
+
+            # the real workhorse of the lib, we must have an hashref $required_option = {} already declared.
+            # this sub check in the hash if the option is correctly set, and delete it from the hash if it's correct.
+            # when doing perform, all options should have been set. So if there is still element in the hash, it is an error, as some parameter where not correctly set.
+            # writedata is processed differently to send back the data to the caller.
+            if ($_[0] == CURLOPT_WRITEDATA) {
+                # ${} allow to derefecence the variable given, as it's given in the form \$var to curl.
+                ${$_[1]} = $required_option->{$_[0]}->{result};
+                delete($required_option->{$_[0]});
+                return;
+            }
+            if ($required_option->{$_[0]}) {
+                is($_[1], $required_option->{$_[0]}->{result}, $required_option->{$_[0]}->{detail});
+                delete($required_option->{$_[0]});
+            } else {
+                print(Dumper($required_option));
+                fail("$_[0] is not present in the required_option hash.");
+
+            }
+        }
+    );
+    # we need to return the mocked object and to keep it, or the mock will be deleted and reverted.
+    return $mock;
+
+}
 &main;

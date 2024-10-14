@@ -244,7 +244,6 @@ sub authenticate {
         'token'            => $auth_result_obj->{auth}->{client_token},
         'expiration_epoch' => $expiration_epoch
     };
-    print("authent passed, token : $self->{auth}->{expiration_epoch}\n");
     $self->{logger}->writeLogInfo("Authenticating worked. Token valid until "
         . localtime($self->{auth}->{expiration_epoch}));
 
