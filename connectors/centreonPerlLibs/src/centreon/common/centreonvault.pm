@@ -213,7 +213,7 @@ sub authenticate {
     $self->{curl_easy}->setopt(CURLOPT_POST, 1);
     $self->{curl_easy}->setopt(CURLOPT_POSTFIELDS, $post_data);
     $self->{curl_easy}->setopt(CURLOPT_POSTFIELDSIZE, length($post_data));
-    $self->{curl_easy}->setopt(CURLOPT_WRITEDATA(), \$self->{auth_result_json});
+    $self->{curl_easy}->setopt(CURLOPT_WRITEDATA(), \$auth_result_json);
 
     eval {
         $self->{curl_easy}->perform();
@@ -225,9 +225,9 @@ sub authenticate {
 
     $self->{logger}->writeLogInfo("Authentication to the vault passed." );
 
-    my $auth_result_obj = transform_json_to_object($self->{auth_result_json});
+    my $auth_result_obj = transform_json_to_object($auth_result_json);
     if (defined($auth_result_obj->{error_message})) {
-        $self->{logger}->writeLogError("Error while decoding JSON '$self->{auth_result_json}'. Message: "
+        $self->{logger}->writeLogError("Error while decoding JSON '$auth_result_json'. Message: "
                 . $auth_result_obj->{error_message});
         return undef;
     }

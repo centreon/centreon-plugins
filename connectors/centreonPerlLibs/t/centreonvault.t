@@ -117,31 +117,62 @@ sub test_authenticate {
     );
     print "opt : " . CURLOPT_WRITEDATA . "\n";
 
-    my $mock = mock 'Net::Curl::Easy';
-    /* @TODO: we can find the link to the variable in the setopt when the opt number is the good one
-    we can either set the value (the effective mock action) in the setopt or in the perform, but the perform will force use to store that value somewhere temporaly.
-    */
+    my $mock = mock 'Net::Curl::Easy'; # is from Test2::Tools::Mock, included by Test2::V0
+    # @TODO: we can find the link to the variable in the setopt when the opt number is the good one
+    #we can either set the value (the effective mock action) in the setopt or in the perform, but the perform will force use to store that value somewhere temporaly.
+    #
+
+    my $required_option = {
+        CURLOPT_POST()          => { result => 1, detail => 'the http request should be POST.' },
+        CURLOPT_POSTFIELDS()    => { result => 'role_id=String-to-encrypt&secret_id=String-to-encrypt', detail => 'postfields are correct' },
+        CURLOPT_POSTFIELDSIZE() => { result => 53, detail => 'post field size is set.' },
+        CURLOPT_URL()           => {result => 'https://localhost:443/v1/auth/approle/login', detail => 'target url was set'},
+
+    };
+
     $mock->override('perform' => sub($) {
-        my $self = shift;
-        $vault->{auth_result_json} = '{"auth":{"lease_duration":"13455", "client_token":"ImAToken"}}';
+        # this is not what is done in reallity, but it's easier for mocking purpose.
+        if (keys %{$required_option}) {
+            fail "Some curl parameter where not correctly set : " .join(keys %{$required_option}, ', ') . "\n";
+        }
     },
         'setopt'              => sub($$$) {
-        if ($_[1] == 10001) {
-            $_[2] = '{"auth":{"lease_duration":"13455", "client_token":"ImAToken"}}';
-        }
-        print "opt : " . Dumper(@_) .  "\n";
+            my $self = shift;
+            print Dumper(@_);
+
+            # the real workhorse of the lib, we must have an hash %required_option present before this.
+            # this sub check in the hash if the option is correctly set, and delete it from the hash if it's correct.
+            # when doing perform, all options should have been set. So if there is still element in the hash, it is an error, as some parameter where not correctly set.
+
+            if ($_[0] == CURLOPT_WRITEDATA) {
+                # ${} allow to derefecence the variable given, as it's given in the form \$var to curl.
+                ${$_[1]} = '{"auth":{"lease_duration":"13455", "client_token":"ImAToken"}}';
+                return;
+            }
+            if ($required_option->{$_[0]}) {
+                print "checking " . $_[1] . "\n";
+                is($_[1], $required_option->{$_[0]}->{result}, $required_option->{$_[0]}->{detail});
+                delete($required_option->{$_[0]});
+            }
+            else {
+                print "$_[0] is not the same as \n";
+                print Dumper($required_option);
+            }
         }
     );
 
     $vault->authenticate();
-    print $vault->{auth}->{token};
+
 }
 
 sub main {
+    my $old_app_secret = $ENV{'APP_SECRET'};
+    $ENV{'APP_SECRET'} = $default_app_secret;
     #test_new();
     #test_decrypt();
     #test_transform_json_to_object();
     test_authenticate();
+    $ENV{'APP_SECRET'} = $old_app_secret;
 
     done_testing();
 }
