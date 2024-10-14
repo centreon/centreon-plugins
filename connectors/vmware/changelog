@@ -1,3 +1,6 @@
+2024-10-10 Olivier Mercier <omercier@centreon.com> - 3.3.1
+ * Fix: add missing centreonvault.pm file to packaging
+
 2024-10-10 Olivier Mercier <omercier@centreon.com> - 3.3.0
  * Enhancement: add ability to read configuration from JSON file
  * Enhancement: add ability to get the VMware credentials from a Centreon
