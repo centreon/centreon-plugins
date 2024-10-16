@@ -40,3 +40,14 @@ Ctn Run Command And Check Result As Strings
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
+
+Ctn Verify Command Output
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Contain    
+    ...    ${output}    
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True

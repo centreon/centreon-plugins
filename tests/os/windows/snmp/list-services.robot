@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Linux Local Systemd-sc-status
+Documentation       Check Windows operating systems in SNMP.
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -11,7 +11,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 list-services ${tc}
-    [Tags]    os    linux
+    [Tags]    os    Windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --plugin=os::windows::snmp::plugin
@@ -19,11 +19,11 @@ list-services ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/windows/snmp/windows_anon
+    ...    --snmp-community=os/windows/snmp/services-en
     ...    ${extra_options}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                     expected_result    --
-            ...      1     --filter-name=toto                UNKNOWN: SNMP Table Request: Cant get a single value.
-            ...      2     --filter-name=''                  UNKNOWN: SNMP Table Request: Cant get a single value.
+    Examples:        tc    extra_options                                  expected_result    --
+            ...      1     --filter-name='Windows Security Service'       List services: [name = Windows Security Service] [operating = active] [installed = installed]
+            ...      2     --filter-name='AVCTP service'                  List services: [name = AVCTP service] [operating = active] [installed = installed]

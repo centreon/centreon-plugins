@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Linux Local Systemd-sc-status
+Documentation       Check Windows operating systems in SNMP.
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -11,7 +11,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 storage ${tc}
-    [Tags]    os    linux
+    [Tags]    os    Windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --plugin=os::windows::snmp::plugin
