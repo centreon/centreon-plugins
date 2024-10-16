@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Jmeter",
+    "pkg_summary": "Centreon Plugin Jmeter",
+    "plugin_name": "centreon_jmeter.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/jmeter/"
+    ]
+}
