@@ -169,7 +169,7 @@ sub request_api {
     my ($content) = $self->{http}->request(
         url_path        => $options{endpoint},
         get_param       => $get_param,
-        header          => [ 'Authorization: Bearer ' . $token ],
+        header          => [ 'X-HP3PAR-WSAPI-SessionKey: ' . $token ],
         unknown_status  => '',
         warning_status  => '',
         critical_status => ''

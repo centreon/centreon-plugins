@@ -73,6 +73,13 @@ jobs:
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
+      - name: Upload apt/dnf packages as artifacts if asked
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: vmware-connector-daemon-${{ matrix.distrib }}
+          path: centreon-plugin*
+          retention-days: 1
 
   deliver-rpm:
     needs: [get-environment, package]
