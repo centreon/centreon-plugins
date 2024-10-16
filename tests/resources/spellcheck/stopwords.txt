@@ -16,6 +16,8 @@ api.meraki.com
 --api-username
 --api-version
 ASAM
+authserver
+authservers
 Avigilon
 Backbox
 --cacert-file
