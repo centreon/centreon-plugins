@@ -29,16 +29,19 @@ contents:
 
   - src: "../connector.as400.install/init-script/centreon-as400-sysconfig"
     dst: "/etc/sysconfig/centreon-as400"
+    type: config|noreplace
     file_info:
       mode: 0644
 
   - src: "../connector.as400.install/etc/config.properties"
     dst: "/etc/centreon-as400/config.properties"
+    type: config|noreplace
     file_info:
       mode: 0644
 
   - src: "../connector.as400.install/etc/log4j2.xml"
     dst: "/etc/centreon-as400/log4j2.xml"
+    type: config|noreplace
     file_info:
       mode: 0644
 
