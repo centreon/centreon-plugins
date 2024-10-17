@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::mode::components::disk;
+package storage::emc::DataDomain::snmp::mode::components::disk;
 
 use strict;
 use warnings;
@@ -69,10 +69,11 @@ sub check {
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Disk '%s' status is '%s'",
+                "disk '%s' status is '%s'",
                 $instance, $disk_status
             )
         );
+
         my $exit = $self->get_severity(section => 'disk', value => $disk_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
