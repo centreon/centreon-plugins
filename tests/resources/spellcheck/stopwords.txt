@@ -17,12 +17,16 @@ api.meraki.com
 --api-version
 ASAM
 Avigilon
+aws
+AWSCLI
+--aws-role-arn
 Backbox
 --cacert-file
 cardtemperature
 Centreon
 --cert-pkcs12
 --cert-pwd
+CloudWatch
 connections-dhcp
 connections-dns
 cpu-utilization-1m
@@ -155,6 +159,7 @@ powershell.exe
 prct
 Primera
 proto
+--proxyurl
 psu
 QoS
 queue-messages-inflighted
@@ -164,6 +169,7 @@ RRDCached
 Sansymphony
 --scope-datacenter
 sfp.temperature
+--skip-ssl-check
 SNMP
 space-usage-prct
 --sql-errors-exit
