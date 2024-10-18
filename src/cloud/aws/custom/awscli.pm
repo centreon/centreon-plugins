@@ -1078,7 +1078,7 @@ Set AWS session token.
 
 =item B<--aws-role-arn>
 
-Set arn of the role to be assumed.
+Set Amazon Resource Name of the role to be assumed.
 
 =item B<--aws-profile>
 
@@ -1102,7 +1102,7 @@ Set timeframe in seconds.
 
 =item B<--statistic>
 
-Set cloudwatch statistics (can be: 'minimum', 'maximum', 'average', 'sum').
+Set CloudWatch statistics (can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
 
@@ -1139,7 +1139,7 @@ Proxy URL if any
 
 Avoid certificate issuer verification. Useful when AWS resources are hosted by a third party. 
 
-Note that it strips all stderr from the command result. Debug will only display CLI instead of evreything.
+Note that it strips all stderr from the command result. Debug will only display CLI instead of everything.
 
 =back
 
