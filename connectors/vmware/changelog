@@ -1,3 +1,7 @@
+2024-10-18 Olivier Mercier <omercier@centreon.com> - 3.3.2
+ * Fix: regression of case sensitiveness for container names fixed
+ * Enhancement: log messages related to the vault have been downgraded from error to info level or explained as safe to ignore if not using the vault
+
 2024-10-10 Olivier Mercier <omercier@centreon.com> - 3.3.1
  * Fix: add missing centreonvault.pm file to packaging
 
