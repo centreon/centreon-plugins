@@ -54,7 +54,7 @@ BEGIN {
 
 use base qw(centreon::vmware::script);
 
-my $VERSION = '3.3.1';
+my $VERSION = '3.3.2';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
@@ -158,6 +158,13 @@ sub read_configuration {
         our %centreon_vmware_config;
         # loads the .pm configuration (compile time)
         require($self->{opt_extra}) or $self->{logger}->writeLogFatal("There has been an error while requiring file " . $self->{opt_extra});
+        # We want all the keys to be lowercase
+        for my $conf_key (keys %{$centreon_vmware_config{vsphere_server}}) {
+            if ($conf_key ne lc($conf_key)) {
+                $self->{logger}->writeLogDebug("The container $conf_key has capital letters. We convert it to lower case.");
+                $centreon_vmware_config{vsphere_server}->{lc($conf_key)} = delete $centreon_vmware_config{vsphere_server}->{$conf_key};
+            }
+        }
         # Concatenation of the default parameters with the ones from the config file
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
     } elsif ($self->{opt_extra} =~ /.*\.json$/i) {
