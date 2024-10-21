@@ -1,4 +1,4 @@
-2024-10-21 Untoja Thomas <tuntoja@centreon.com> - 2.0.6
+2024-10-21 Pieter Kippes <pkippes@centreon.com> - 2.0.6
  * Fix packaging issues with config files and java version
 
 2024-10-18 Pieter Kippes <pkippes@centreon.com> - 2.0.5
