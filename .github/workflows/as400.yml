@@ -65,7 +65,7 @@ jobs:
           -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
           -exec sed -i \
           -e 's|@CONNECTOR_VERSION@|'"${{ needs.get-environment.outputs.version }}"'|g' \
-          -e 's|@CONNECTOR_HOME@|'"%{_datadir}/centreon-as400"'|g' \
+          -e 's|@CONNECTOR_HOME@|'"/usr/share/centreon-as400"'|g' \
           -e 's|@CONNECTOR_ETC@|'"/etc/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_LOG@|'"/var/log/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_USER@|'"centreon-as400"'|g' \
