@@ -60,10 +60,10 @@ scripts:
 overrides:
   rpm:
     depends:
-      - "(java-1.8.0-openjdk or java-17-openjdk)"
+      - "java-17-openjdk"
   deb:
     depends:
-      - "default-jre | openjdk-17-jre"
+      - openjdk-17-jre"
 
 rpm:
   summary: Centreon AS 400 Plugin daemon
