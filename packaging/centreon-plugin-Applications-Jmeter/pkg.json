@@ -4,6 +4,7 @@
     "plugin_name": "centreon_jmeter.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/plugins/script_custom/cli.pm",
         "apps/jmeter/"
     ]
 }
