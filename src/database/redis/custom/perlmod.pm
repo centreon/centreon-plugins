@@ -92,10 +92,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
         $self->{output}->option_exit();
     }
-    if ($self->{username} ne '') {
-        $self->{output}->add_option_msg(short_msg => 'Unsupported --username option.');
-        $self->{output}->option_exit();
-    }
 
     return 0;
 }
@@ -123,10 +119,13 @@ sub get_info {
     } else {
         $redis = Redis->new(server => $self->{server} . ':' . $self->{port});
     }
-    if ($self->{password} ne '') {
+    if ($self->{username} ne '' && $self->{password} ne '') {
+        $redis->auth($self->{username}, $self->{password});
+    } elsif ($self->{password} ne '') {
+        # Anonymous connexion
         $redis->auth($self->{password});
     }
-    
+
     my $response = $redis->info();
     my $items;
     foreach my $attributes (keys %$response) {
