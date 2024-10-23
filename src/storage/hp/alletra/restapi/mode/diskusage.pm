@@ -213,7 +213,7 @@ sub manage_selection {
         # skip if filtered by serial
         if (defined($self->{option_results}->{filter_serial})
                  and $self->{option_results}->{filter_serial} ne ''
-                 and $disk->{serial} !~ /$self->{option_results}->{filter_serial}/) {
+                 and $disk->{serialNumber} !~ /$self->{option_results}->{filter_serial}/) {
             $self->{output}->output_add(long_msg => "Skipping $disk_intro because the serial does not match the filter.", debug => 1);
             next;
         }
