@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -43,22 +43,31 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'         => { name => 'api_username' },
-            'api-password:s'         => { name => 'api_password' },
-            'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port', default => 443 },
-            'proto:s'                => { name => 'proto', default => 'https' },
-            'timeout:s'              => { name => 'timeout', default => 30 },
-            'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'api-username:s'         =>
+                { name => 'api_username' },
+            'api-password:s'         =>
+                { name => 'api_password' },
+            'hostname:s'             =>
+                { name => 'hostname' },
+            'port:s'                 =>
+                { name => 'port', default => 443 },
+            'proto:s'                =>
+                { name => 'proto', default => 'https' },
+            'timeout:s'              =>
+                { name => 'timeout', default => 30 },
+            'unknown-http-status:s'  =>
+                { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-http-status:s'  =>
+                { name => 'warning_http_status' },
+            'critical-http-status:s' =>
+                { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'HPE Alletra API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http}   = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache}  = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
+    $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -103,10 +112,11 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'hpe_alletra_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile =>
+        'hpe_alletra_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{api_username}));
     my $auth_key = $self->{cache}->get(name => 'auth_key');
 
-    if ($has_cache_file == 0 || !defined($auth_key) || $auth_key eq '' ) {
+    if ($has_cache_file == 0 || !defined($auth_key) || $auth_key eq '') {
         my $json_request = {
             user     => $self->{option_results}->{api_username},
             password => $self->{option_results}->{api_password}
@@ -116,18 +126,19 @@ sub get_token {
             $encoded = encode_json($json_request);
         };
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'An error occurred while encoding the credentials to a JSON string.');
+            $self->{output}->add_option_msg(short_msg =>
+                'An error occurred while encoding the credentials to a JSON string.');
             $self->{output}->option_exit();
         }
 
         my $content = $self->{http}->request(
-            method => 'POST',
-            url_path => '/api/v1/credentials',
+            method          => 'POST',
+            url_path        => '/api/v1/credentials',
             query_form_post => $encoded,
-            unknown_status => $self->{option_results}->{unknown_http_status},
-            warning_status => $self->{option_results}->{warning_http_status},
+            unknown_status  => $self->{option_results}->{unknown_http_status},
+            warning_status  => $self->{option_results}->{warning_http_status},
             critical_status => $self->{option_results}->{critical_http_status},
-            header => ['Content-Type: application/json']
+            header          => [ 'Content-Type: application/json' ]
         );
 
         my $decoded;
@@ -175,8 +186,24 @@ sub request_api {
         critical_status => ''
     );
 
+    # Maybe token is invalid. so we retry
+    if (!defined($self->{token}) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->clean_token();
+        $token = $self->get_token();
+
+        $content = $self->{http}->request(
+            url_path        => $options{endpoint},
+            get_param       => $get_param,
+            header          => [ 'X-HP3PAR-WSAPI-SessionKey: ' . $token ],
+            unknown_status  => $self->{unknown_http_status},
+            warning_status  => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+    }
+
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->add_option_msg(short_msg =>
+            "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
 
@@ -185,7 +212,8 @@ sub request_api {
         $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->add_option_msg(short_msg =>
+            "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
 
