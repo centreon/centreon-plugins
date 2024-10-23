@@ -72,11 +72,11 @@ jobs:
             distrib: el9
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
 
     steps:
       - run: |
@@ -102,7 +102,7 @@ jobs:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.rpm

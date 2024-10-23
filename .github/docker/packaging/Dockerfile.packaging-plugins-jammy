@@ -2,7 +2,7 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/ubuntu:jammy
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # fix locale
 RUN bash -e <<EOF
@@ -15,7 +15,7 @@ apt-get clean
 
 EOF
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN bash -e <<EOF
 
@@ -24,25 +24,40 @@ apt-get update
 echo 'http://deb.debian.org/debian' | apt-get install -y pbuilder
 
 apt-get install -y \
-  dh-make \
   aptitude \
   ca-certificates \
-  libssh-dev \
-  lintian \
-  quilt \
-  git-buildpackage \
+  cpanminus \
+  curl \
   debmake \
   devscripts \
+  dh-make \
+  dh-make-perl \
   fakeroot \
-  curl \
   gcc \
   git \
-  python3 \
-  libjson-perl \
-  libapp-fatpacker-perl \
-  libfile-copy-recursive-perl \
+  git-buildpackage \
   jq \
+  libapp-fatpacker-perl \
+  libcurl4-openssl-dev \
+  libczmq-dev \
+  libczmq-dev\
+  libfile-copy-recursive-perl \
+  libjson-perl \
+  libmodule-build-tiny-perl \
+  libmodule-install-perl \
+  libssh-dev \
+  lintian \
+  python3 \
+  quilt \
+  ruby \
+  uuid-dev \
   zstd
+
+cpanm Module::Build::Tiny
+cpanm Module::Install
+cpanm Crypt::OpenSSL::Guess
+
+gem install fpm
 
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
 apt-get update

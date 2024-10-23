@@ -69,7 +69,18 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_message}) ? md5_hex($self->{option_results}->{filter_message}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{since}) ? md5_hex($self->{option_results}->{since}) : md5_hex('all'));
 
-    my $command_options = '--output json --output-fields MESSAGE --no-pager';
+    my ($stdout_version) = $options{custom}->execute_command(
+        command         => '/usr/bin/journalctl',
+        command_options => '--version'
+    );
+    $stdout_version =~ /^systemd\s(\d+)\s/;
+    my $journalctl_version = $1;
+
+    my $command_options = '--output json --no-pager';
+    # --output-field option has been added in version 236
+    if ($journalctl_version >= 236) {
+        $command_options .= '  --output-fields MESSAGE';
+    };
 
     if (defined($self->{option_results}->{unit}) && $self->{option_results}->{unit} ne '') {
         $command_options .= ' --unit ' . $self->{option_results}->{unit};
@@ -152,7 +163,7 @@ OK: Centreon Engine reloads over the last hour: 0 | 'centreon.engine.reload.coun
 
 =item B<--unit>
 
-Only look for messages of the specified unit, ie the
+Only look for messages from the specified unit, i.e. the
 name of the systemd service who created the message.
 
 =item B<--filter-message>
@@ -162,18 +173,23 @@ Filter on message content (can be a regexp).
 =item B<--since>
 
 Defines the amount of time to look back at messages.
-Can be minutes (ie 5 "minutes ago") or 'cache' to use the
-timestamp from last execution. (default: 'cache')
+Can be minutes (example: 5 "minutes ago") or 'cache' to use the
+timestamp from last execution. Default: 'cache'.
 
 =item B<--timezone>
 
-Defines the timezone to convert date/time to the host
-timezone when using timestamp from cache. (default: 'local')
+Defines the timezone to use for date/time conversion when using a timestamp from the cache.
+Default: 'local'.
 
-=item B<--warning-entries> B<--critical-entries>
+=item B<--warning-entries>
 
-Thresholds on the number of entries found
-in the journal for the specified parameters.
+Thresholds to apply to the number of journal entries
+found with the specified parameters.
+
+=item B<--critical-entries>
+
+Thresholds to apply to the number of journal entries
+found with the specified parameters.
 
 =back
 
