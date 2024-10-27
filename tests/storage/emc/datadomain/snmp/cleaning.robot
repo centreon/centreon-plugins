@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check last time filesystems had been cleaned
+Documentation       Check EMC DataDomain in SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 

@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Test the DataDomain alerts
+Documentation       Check EMC DataDomain in SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
