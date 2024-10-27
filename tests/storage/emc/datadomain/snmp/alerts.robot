@@ -1,0 +1,31 @@
+*** Settings ***
+Documentation       Test the DataDomain alerts
+
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
+Test Timeout        120s
+
+
+*** Variables ***
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::DataDomain::snmp::plugin
+
+
+*** Test Cases ***
+alerts ${tc}
+    [Tags]    os    linux
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --mode=alerts
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
+    ...    --snmp-community=storage/emc/datadomain/snmp/slim-datadomain
+    ...    --snmp-timeout=1
+    ...    ${extra_options}
+ 
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:        tc    extra_options                                                                 expected_result    --
+            ...      1     --truly-alert='\\\%{severity} =~ /emergency|alert|warning|critical/i'         OK: current alerts: 0 | 'alerts.current.count'=0;;;0;
+            ...      2     --warning-alerts-current --critical-alerts-current                            OK: current alerts: 0 | 'alerts.current.count'=0;;;0;
+            ...      3     --display-alerts                                                              OK: current alerts: 0 | 'alerts.current.count'=0;;;0;
