@@ -36,7 +36,7 @@ sub new {
         'interfaces'       => 'network::hp::procurve::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
-        'stack' => 'network::hp::procurve::snmp::mode::stack',
+        'stack'            => 'network::hp::procurve::snmp::mode::stack',
         'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
     };
 
