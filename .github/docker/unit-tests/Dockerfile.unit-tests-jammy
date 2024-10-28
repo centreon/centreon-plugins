@@ -29,6 +29,7 @@ apt-get -y install gcc make libtest2-plugin-nowarnings-perl libauthen-radius-per
 # this image is used by centreon-perl-libs unit test and centreon-gorgone unit tests.
 apt-get -y install libcrypt-openssl-aes-perl libnet-curl-perl libyaml-libyaml-perl libhash-merge-perl libclone-choose-perl libcryptx-perl libjson-xs-perl libjson-pp-perl
 apt-get clean
+NONINTERACTIVE_TESTING=1 PERL_MM_USE_DEFAULT=1 cpan Test2::Harness UUID
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
