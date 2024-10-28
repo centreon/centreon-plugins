@@ -46,6 +46,20 @@ sub custom_usage_output {
     );
 }
 
+sub custom_logical_usage_output {
+    my ($self, %options) = @_;
+    
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_free_space});
+    return sprintf(
+        'logical space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{logical_prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{logical_prct_free_space}
+    );
+}
+
 sub prefix_volume_output {
     my ($self, %options) = @_;
 
@@ -88,6 +102,33 @@ sub set_counters {
         { label => 'usage-prct', nlabel => 'volume.space.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage', nlabel => 'volume.logicalspace.usage.bytes', set => {
+                key_values => [ { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage-free', nlabel => 'volume.logicalspace.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'logical_free_space' }, { name => 'logical_used_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage-prct', nlabel => 'volume.logicalspace.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'logical_prct_used_space' }, { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1 }
@@ -241,6 +282,11 @@ sub manage_selection {
             prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? (($_->{space}->{size} - $_->{space}->{available}) * 100 / $_->{space}->{size}) : undef,
             prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
 
+            logical_used_space => $_->{space}->{logical_space}->{used},
+            logical_free_space => $_->{space}->{logical_space}->{available},
+            logical_prct_used_space =>  $_->{space}->{logical_space}->{used_percent},
+            logical_prct_free_space => $_->{space}->{logical_space}->{available} / ($_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available}),
+
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
             other         => $_->{metric}->{throughput}->{other},
@@ -304,6 +350,7 @@ You can use the following variables: %{state}, %{display}
 
 Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
+'logical-usage' (B), 'logical-usage-free' (B), 'logical-usage-prct' (%),
 'read' (B/s), 'read-iops', 'write' (B/s), 'write-iops',
 'read-latency' (ms), 'write-latency' (ms), 'total-latency' (ms),
 'other-latency' (ms), 'other' (B/s), 'total' (B/s),
