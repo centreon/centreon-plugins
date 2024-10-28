@@ -92,7 +92,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
         include:
           - runner_name: ubuntu-22.04
           - package_extension: rpm
@@ -105,8 +105,15 @@ jobs:
             image: unit-tests-bullseye
             distrib: bullseye
           - package_extension: deb
+            image: unit-tests-bullseye-arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+            distrib: bullseye
+          - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: unit-tests-jammy
+            distrib: jammy
 
     runs-on: ${{ matrix.runner_name }}
     container:
