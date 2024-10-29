@@ -1,4 +1,4 @@
-    #
+#
 # Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
