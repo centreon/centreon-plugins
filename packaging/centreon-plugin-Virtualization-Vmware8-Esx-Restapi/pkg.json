@@ -4,7 +4,7 @@
     "plugin_name": "centreon_vmware8_esx_restapi.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-        "apps/vmware/vsphere8/esx",
-        "apps/vmware/vsphere8/custom"
+        "apps/vmware/vsphere8/esx/",
+        "apps/vmware/vsphere8/custom/"
     ]
 }
