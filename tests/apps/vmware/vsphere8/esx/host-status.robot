@@ -12,9 +12,9 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}vmware8-restapi.mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::plugin
+...                 --mode=host-status
 ...                 --password=C3POR2P2
 ...                 --username=obi-wan
-...                 --mode=host-status
 ...                 --hostname=127.0.0.1
 ...                 --proto=http
 ...                 --port=3000
