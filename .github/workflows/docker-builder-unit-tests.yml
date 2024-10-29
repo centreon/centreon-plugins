@@ -31,7 +31,7 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: bullseye
             image: bullseye
-          - runner: [ "self-hosted", "collect-arm64" ]
+          - runner: ["self-hosted", "collect-arm64"]
             dockerfile: bullseye
             image: bullseye-arm64
           - runner: ubuntu-22.04

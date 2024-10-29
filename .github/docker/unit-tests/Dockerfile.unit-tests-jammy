@@ -2,7 +2,7 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/ubuntu:jammy
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # fix locale
 RUN bash -e <<EOF
@@ -15,7 +15,7 @@ apt-get clean
 
 EOF
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN bash -e <<EOF
 # Add Centreon plugins repositories
