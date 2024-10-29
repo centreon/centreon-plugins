@@ -285,7 +285,7 @@ sub manage_selection {
             logical_used_space => $_->{space}->{logical_space}->{used},
             logical_free_space => $_->{space}->{logical_space}->{available},
             logical_prct_used_space =>  $_->{space}->{logical_space}->{used_percent},
-            logical_prct_free_space => $_->{space}->{logical_space}->{available} / ($_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available}),
+            logical_prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{logical_space}->{available} * 100 / $_->{space}->{size} : undef,
 
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
@@ -295,10 +295,10 @@ sub manage_selection {
             write_iops    => $_->{metric}->{iops}->{write},
             other_iops    => $_->{metric}->{iops}->{other},
             total_iops    => $_->{metric}->{iops}->{total},
-            read_latency  => $_->{metric}->{latency}->{read} / 1000,
-            write_latency => $_->{metric}->{latency}->{write} / 1000,
-            other_latency => $_->{metric}->{latency}->{other} / 1000,
-            total_latency => $_->{metric}->{latency}->{total} / 1000
+            read_latency  => (defined($_->{metric}->{latency}->{read})) ? ($_->{metric}->{latency}->{read} / 1000) : undef,
+            write_latency => (defined($_->{metric}->{latency}->{write})) ? ($_->{metric}->{latency}->{write} / 1000) : undef,
+            other_latency => (defined($_->{metric}->{latency}->{other})) ? ($_->{metric}->{latency}->{other} / 1000) : undef,
+            total_latency => (defined($_->{metric}->{latency}->{total})) ? ($_->{metric}->{latency}->{total} / 1000) : undef,
         };
     }
 
