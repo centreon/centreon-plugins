@@ -31,9 +31,15 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: bullseye
             image: bullseye
+          - runner: ["self-hosted", "collect-arm64"]
+            dockerfile: bullseye
+            image: bullseye-arm64
           - runner: ubuntu-22.04
             dockerfile: bookworm
             image: bookworm
+          - runner: ubuntu-22.04
+            dockerfile: jammy
+            image: jammy
 
     runs-on: ${{ matrix.runner }}
 
