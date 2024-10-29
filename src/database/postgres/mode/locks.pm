@@ -153,12 +153,12 @@ Check locks for one or more databases
 =item B<--warning>
 
 Warning threshold. (example: "total=250,waiting=5,exclusive=20")
-'total', 'waiting', or the name of a lock type used by Postgres.
+'total', 'waiting', or the name of a lock type used by PostgreSQL.
 
 =item B<--critical>
 
 Critical threshold. (example: "total=250,waiting=5,exclusive=20")
-'total', 'waiting', or the name of a lock type used by Postgres.
+'total', 'waiting', or the name of a lock type used by PostgreSQL.
 
 =item B<--exclude>
 

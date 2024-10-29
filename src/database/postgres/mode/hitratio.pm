@@ -165,7 +165,7 @@ __END__
 
 =head1 MODE
 
-Check hitratio (in buffer cache) for databases.
+Check hit ratio (in buffer cache) for databases.
 
 =over 8
 
