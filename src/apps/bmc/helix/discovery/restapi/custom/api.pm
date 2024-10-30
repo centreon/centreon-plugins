@@ -1,0 +1,215 @@
+#
+# Copyright 2024 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package apps::bmc::helix::discovery::restapi::custom::api;
+
+use strict;
+use warnings;
+use centreon::plugins::http;
+use JSON::XS;
+
+sub new {
+    my ($class, %options) = @_;
+    my $self  = {};
+    bless $self, $class;
+
+    if (!defined($options{output})) {
+        print "Class Custom: Need to specify 'output' argument.\n";
+        exit 3;
+    }
+    if (!defined($options{options})) {
+        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
+        $options{output}->option_exit();
+    }
+
+    if (!defined($options{noptions})) {
+        $options{options}->add_options(arguments => {
+            'api-path:s'  => { name => 'api_path' },
+            'api-token:s' => { name => 'api_token' },
+            'hostname:s'  => { name => 'hostname' },
+            'port:s'      => { name => 'port' },
+            'proto:s'     => { name => 'proto' },
+            'timeout:s'   => { name => 'timeout' }
+        });
+    }
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+
+    $self->{output} = $options{output};
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
+
+    return $self;
+}
+
+sub set_options {
+    my ($self, %options) = @_;
+
+    $self->{option_results} = $options{option_results};
+}
+
+sub set_defaults {}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/v1.13';
+    $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{timeout} = (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/) ? $1 : 10;
+
+    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{api_token}) || $self->{api_token} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-token option.");
+        $self->{output}->option_exit();
+    }
+
+    return 0;
+}
+
+sub build_options_for_httplib {
+    my ($self, %options) = @_;
+
+    $self->{option_results}->{hostname} = $self->{hostname};
+    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{port} = $self->{port};
+    $self->{option_results}->{proto} = $self->{proto};
+    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{warning_status} = '';
+    $self->{option_results}->{critical_status} = '';
+    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} > 400';
+}
+
+sub settings {
+    my ($self, %options) = @_;
+
+    $self->build_options_for_httplib();
+    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
+    $self->{http}->add_header(key => 'Accept', value => 'application/json');
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{api_token});
+    $self->{http}->set_options(%{$self->{option_results}});
+}
+
+sub request_api {
+    my ($self, %options) = @_;
+
+    $self->settings();
+    my $url_path = $self->{api_path} . $options{endpoint};
+
+        my $response = $self->{http}->request(
+            method    => $options{method},
+            get_param => $options{get_param},
+            url_path  => $url_path
+        );
+
+        if (!defined($response) || $response eq '') {
+            $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->decode($response);
+        };
+
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+            $self->{output}->option_exit();
+        }
+
+        if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+            $self->{output}->add_option_msg(short_msg => 'API request error (add --debug option to display returned content)');
+            $self->{output}->option_exit();
+        }
+
+        return $decoded;
+}
+
+sub data_search {
+    my ($self, %options) = @_;
+
+    my $results;
+    my $initial_params = [ 'query=' . $options{query}, 'limit=' . $options{limit} ];
+    my $offset_params = undef;
+    
+    while (1) {
+        my $content = $self->request_api(
+            method => 'GET',
+            endpoint => '/data/search',
+            get_param => defined($offset_params) ? $offset_params : $initial_params
+        );
+        push @$results, @$content;
+        if (defined($content->[0]->{next_offset}) && $content->[0]->{next_offset} > 0) {
+            $offset_params = [ @$initial_params, "offset=" . $content->[0]->{next_offset}, "results_id=" . $content->[0]->{results_id} ];
+            next;
+        }
+        return $results;
+    }
+}
+
+1;
+
+__END__
+
+=head1 NAME
+
+BMC Helix Discovery RestAPI
+
+=head1 REST API OPTIONS
+
+BMC Helix Discovery RestAPI
+
+=over 8
+
+=item B<--hostname>
+
+BMX Discovery server API hostname (mandatory).
+
+=item B<--port>
+
+Port used (default: 443)
+
+=item B<--proto>
+
+Specify https if needed (default: 'https')
+
+=item B<--api-path>
+
+BMX Discovery server API path (default: '/api/v1.13')
+
+=item B<--api-token>
+
+Set the API Authentication token (mandatory).
+Example: --api-token='abcd1234'
+
+=item B<--timeout>
+
+Set timeout in seconds (default: 10).
+
+=back
+
+=head1 DESCRIPTION
+
+B<custom>.
+
+=cut
