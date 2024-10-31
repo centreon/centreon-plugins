@@ -176,7 +176,7 @@ sub request_api {
     );
 
     # Maybe token is invalid. so we retry
-    if (!defined($self->{token}) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if (!defined($token) || $self->{http}->get_code() >= 400) {
         $self->clean_token();
         $token = $self->get_token();
 
