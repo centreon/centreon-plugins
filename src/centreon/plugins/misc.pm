@@ -770,8 +770,7 @@ sub json_encode {
         $encoded = encode_json($object);
     };
     if ($@) {
-        use Data::Dumper;
-        print STDERR 'Cannot encode object to JSON' . Dumper($object);
+        print STDERR 'Cannot encode object to JSON. Error message: ' . $@;
         return undef;
     }
 

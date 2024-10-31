@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON::XS;
 use MIME::Base64;
 use Digest::MD5 qw(md5_hex);
 
@@ -80,7 +79,6 @@ sub check_options {
     $self->{timeout}  = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
-    #$self->{http_backend} = (defined($self->{option_results}->{http_backend})) ? $self->{option_results}->{http_backend} : 'curl';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -120,7 +118,7 @@ sub settings {
 
     return 1 if (defined($self->{settings_done}));
     $self->build_options_for_httplib();
-    $self->{http}->add_header(key => 'Accept', value => 'application/json');
+
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 
@@ -144,17 +142,19 @@ sub get_token {
         || $options{force_authentication}
     ) {
         my $auth_string = MIME::Base64::encode_base64($self->{username} . ':' . $self->{password});
+        chomp $auth_string;
 
         $self->settings();
         my $content = $self->{http}->request(
             method => 'POST',
             url_path => '/api/session',
+            query_form_post => '',
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status},
             header => [
-                    'Content-Type: application/json',
-                    'Authorization: Basic ' . $auth_string
+                    'Authorization: Basic ' . $auth_string,
+                    'Content-Type: application/x-www-form-urlencoded'
             ]
         );
 
@@ -181,7 +181,6 @@ sub try_request_api {
             header         => [ 'vmware-api-session-id: ' . $token ],
             unknown_status => '',
             insecure       => (defined($self->{option_results}->{insecure}) ? 1 : 0)
-
     );
 
     if (!defined($content) || $content eq '') {
@@ -191,14 +190,7 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
+    my $decoded = centreon::plugins::misc::json_decode($content);
 
     return $decoded;
 }
@@ -354,6 +346,8 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 =item * C<%options> - A hash of options. The following keys are supported:
 
 =over 8
+
+=item * C<method> - The HTTP method to use (examples: GET, POST).
 
 =item * C<endpoint> - The API endpoint to request.
 
