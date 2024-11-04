@@ -3,7 +3,7 @@
 3CX
 --3cx-version
 7210SAS
-750SR
+7750SR
 --add-fc-fe-errors
 --add-qos-limit
 --add-sysdesc
@@ -171,6 +171,7 @@ queue-messages-inflighted
 RestAPI
 RFC1628
 RRDCached
+sas
 Sansymphony
 --scope-datacenter
 sfp.temperature
