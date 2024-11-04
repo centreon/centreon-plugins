@@ -76,7 +76,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snapmirrors = $options{custom}->request_api(endpoint => '/api/snapmirror/relationships?fields=*');
+    my $snapmirrors = $options{custom}->request_api(endpoint => '/api/snapmirror/relationships?fields=source,destination,healthy,state,transfer');
 
     $self->{snapmirrors} = {};
     foreach (@{$snapmirrors->{records}}) {

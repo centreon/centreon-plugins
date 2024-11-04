@@ -195,7 +195,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $cluster = $options{custom}->request_api(endpoint => '/api/cluster?fields=*');
+    my $cluster = $options{custom}->request_api(endpoint => '/api/cluster?fields=name,statistics,metric');
 
     $self->{clusters} = {
         $cluster->{name} => {
@@ -219,7 +219,7 @@ sub manage_selection {
         }
     };
 
-    my $nodes = $options{custom}->request_api(endpoint => '/api/cluster/nodes?fields=*');
+    my $nodes = $options{custom}->request_api(endpoint => '/api/cluster/nodes?fields=name,service_processor');
     foreach (@{$nodes->{records}}) {
         $self->{clusters}->{ $cluster->{name} }->{nodes}->{ $_->{name} } = {
             display => $_->{name},

@@ -244,6 +244,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        'filter-volume-name:s'  => { name => 'filter_volume_name' },
         'filter-name:s'         => { name => 'filter_name' },
         'filter-vserver-name:s' => { name => 'filter_vserver_name' }
     });
@@ -254,7 +255,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $volumes = $options{custom}->request_api(endpoint => '/api/storage/volumes?fields=*');
+    my $endpoint = '/api/storage/volumes?fields=svm,name,space,metric';
+    
+    if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
+        $endpoint .= '&name=' . $self->{option_results}->{filter_volume_name}
+    }
+    
+    my $volumes = $options{custom}->request_api(endpoint => $endpoint);
 
     $self->{volumes} = {};
     foreach (@{$volumes->{records}}) {
@@ -282,11 +289,6 @@ sub manage_selection {
             prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? (($_->{space}->{size} - $_->{space}->{available}) * 100 / $_->{space}->{size}) : undef,
             prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
 
-            logical_used_space => $_->{space}->{logical_space}->{used},
-            logical_free_space => $_->{space}->{logical_space}->{available},
-            logical_prct_used_space =>  $_->{space}->{logical_space}->{used_percent},
-            logical_prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{logical_space}->{available} * 100 / $_->{space}->{size} : undef,
-
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
             other         => $_->{metric}->{throughput}->{other},
@@ -300,6 +302,15 @@ sub manage_selection {
             other_latency => (defined($_->{metric}->{latency}->{other})) ? ($_->{metric}->{latency}->{other} / 1000) : undef,
             total_latency => (defined($_->{metric}->{latency}->{total})) ? ($_->{metric}->{latency}->{total} / 1000) : undef,
         };
+
+        if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
+            $self->{volumes}->{$name}->{logical_used_space} = $_->{space}->{logical_space}->{used};
+            $self->{volumes}->{$name}->{logical_free_space} = $_->{space}->{logical_space}->{available};
+            $self->{volumes}->{$name}->{logical_prct_used_space} =  $_->{space}->{logical_space}->{used_percent};
+            $self->{volumes}->{$name}->{logical_prct_free_space} = (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{logical_space}->{available} * 100 / $_->{space}->{size} : undef;
+        }
+
+        
     }
 
     if (scalar(keys %{$self->{volumes}}) <= 0) {
@@ -321,11 +332,16 @@ Check volumes.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^usage$'
+Example: --filter-counters='^usage$'.
+
+=item B<--filter-volume-name>
+
+Filter the API request by volumes name (* can be used, volumes name are separated by |). Required if you wan to retrive 
+logical space metrics.
 
 =item B<--filter-name>
 
-Filter volumes by volume name (can be a regexp).
+Filter the API request result by volume name (can be a regexp).
 
 =item B<--filter-vserver-name>
 
@@ -339,12 +355,12 @@ You can use the following variables: %{state}, %{display}
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{state}, %{display}
+You can use the following variables: %{state}, %{display}.
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
-You can use the following variables: %{state}, %{display}
+You can use the following variables: %{state}, %{display}.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -260,7 +260,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $quotas = $options{custom}->request_api(endpoint => '/api/storage/quota/reports?fields=*');
+    my $quotas = $options{custom}->request_api(endpoint => '/api/storage/quota/reports?fields=index,qtree,volume,svm,space');
 
     $self->{duplicated} = {};
 
