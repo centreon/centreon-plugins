@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::mtrees;
+package storage::emc::datadomain::snmp::mode::mtrees;
 
 use base qw(centreon::plugins::templates::counter);
 

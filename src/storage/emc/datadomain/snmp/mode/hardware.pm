@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::hardware;
+package storage::emc::datadomain::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use storage::emc::DataDomain::snmp::lib::functions;
+use storage::emc::datadomain::snmp::lib::functions;
 
 sub set_system {
     my ($self, %options) = @_;
@@ -75,7 +75,7 @@ sub set_system {
         ]
     };
 
-    $self->{components_path} = 'storage::emc::DataDomain::snmp::mode::components';
+    $self->{components_path} = 'storage::emc::datadomain::snmp::mode::components';
     $self->{components_module} = ['fan', 'temperature', 'psu', 'disk', 'battery'];
 }
 
@@ -101,7 +101,7 @@ sub get_version {
 
     my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
     my $result = $options{snmp}->get_leef(oids => [ $oid_sysDescr ]);
-    if (!($self->{os_version} = storage::emc::DataDomain::snmp::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
+    if (!($self->{os_version} = storage::emc::datadomain::snmp::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'

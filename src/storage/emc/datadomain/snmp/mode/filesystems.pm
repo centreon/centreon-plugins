@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::filesystems;
+package storage::emc::datadomain::snmp::mode::filesystems;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use storage::emc::DataDomain::snmp::lib::functions;
+use storage::emc::datadomain::snmp::lib::functions;
 
 sub custom_disk_usage_output {
     my ($self, %options) = @_;
@@ -166,7 +166,7 @@ sub manage_selection {
         oids => [ $oid_sysDescr ],
         nothing_quit => 1
     );
-    if (!($self->{os_version} = storage::emc::DataDomain::snmp::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
+    if (!($self->{os_version} = storage::emc::datadomain::snmp::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'

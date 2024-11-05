@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::plugin;
+package storage::emc::datadomain::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,18 +30,18 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'alerts'            => 'storage::emc::DataDomain::snmp::mode::alerts',
-        'cleaning'          => 'storage::emc::DataDomain::snmp::mode::cleaning',
-        'hardware'          => 'storage::emc::DataDomain::snmp::mode::hardware',
-        'filesystems'       => 'storage::emc::DataDomain::snmp::mode::filesystems',
-        'interfaces'        => 'storage::emc::DataDomain::snmp::mode::interfaces',
-        'list-filesystems'  => 'storage::emc::DataDomain::snmp::mode::listfilesystems',
+        'alerts'            => 'storage::emc::datadomain::snmp::mode::alerts',
+        'cleaning'          => 'storage::emc::datadomain::snmp::mode::cleaning',
+        'hardware'          => 'storage::emc::datadomain::snmp::mode::hardware',
+        'filesystems'       => 'storage::emc::datadomain::snmp::mode::filesystems',
+        'interfaces'        => 'storage::emc::datadomain::snmp::mode::interfaces',
+        'list-filesystems'  => 'storage::emc::datadomain::snmp::mode::listfilesystems',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'list-mtrees'       => 'storage::emc::DataDomain::snmp::mode::listmtrees',
-        'list-replications' => 'storage::emc::DataDomain::snmp::mode::listreplications',
-        'mtrees'            => 'storage::emc::DataDomain::snmp::mode::mtrees',
-        'process'           => 'storage::emc::DataDomain::snmp::mode::process',
-        'replications'      => 'storage::emc::DataDomain::snmp::mode::replications'
+        'list-mtrees'       => 'storage::emc::datadomain::snmp::mode::listmtrees',
+        'list-replications' => 'storage::emc::datadomain::snmp::mode::listreplications',
+        'mtrees'            => 'storage::emc::datadomain::snmp::mode::mtrees',
+        'process'           => 'storage::emc::datadomain::snmp::mode::process',
+        'replications'      => 'storage::emc::datadomain::snmp::mode::replications'
     };
 
     return $self;

@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::DataDomain::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 
 *** Test Cases ***

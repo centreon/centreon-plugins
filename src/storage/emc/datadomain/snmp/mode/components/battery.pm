@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::components::battery;
+package storage::emc::datadomain::snmp::mode::components::battery;
 
 use strict;
 use warnings;

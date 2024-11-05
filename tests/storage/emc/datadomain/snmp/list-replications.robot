@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::DataDomain::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 
 *** Test Cases ***
@@ -15,7 +15,7 @@ list-replications ${tc}
     [Tags]    os    linux
     ${command}    Catenate
     ...    ${CMD}
-    ...    --mode=listreplications
+    ...    --mode=list-replications
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}

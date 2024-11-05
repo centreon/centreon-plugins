@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::interfaces;
+package storage::emc::datadomain::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::process;
+package storage::emc::datadomain::snmp::mode::process;
 
 use base qw(centreon::plugins::templates::counter);
 

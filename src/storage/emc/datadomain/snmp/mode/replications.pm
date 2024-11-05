@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::replications;
+package storage::emc::datadomain::snmp::mode::replications;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use storage::emc::DataDomain::snmp::lib::functions;
+use storage::emc::datadomain::snmp::lib::functions;
 use centreon::plugins::misc;
 use POSIX;
 
@@ -229,7 +229,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    if (!($self->{os_version} = storage::emc::DataDomain::snmp::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
+    if (!($self->{os_version} = storage::emc::datadomain::snmp::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'

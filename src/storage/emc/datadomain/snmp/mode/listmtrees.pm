@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::listmtrees;
+package storage::emc::datadomain::snmp::mode::listmtrees;
 
 use base qw(centreon::plugins::mode);
 

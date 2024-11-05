@@ -38,6 +38,16 @@ Ctn Cleanup Cache
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
 
+Ctn Run Command And Check Result As Regexp
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Match Regexp
+    ...    ${output}
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
+    ...    values=False
+
 Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}

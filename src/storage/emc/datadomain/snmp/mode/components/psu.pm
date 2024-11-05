@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::components::psu;
+package storage::emc::datadomain::snmp::mode::components::psu;
 
 use strict;
 use warnings;

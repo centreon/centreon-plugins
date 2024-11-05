@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::components::temperature;
+package storage::emc::datadomain::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::snmp::mode::alerts;
+package storage::emc::datadomain::snmp::mode::alerts;
 
 use base qw(centreon::plugins::templates::counter);
 
