@@ -3,6 +3,7 @@ Documentation       Check EMC DataDomain in SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 
@@ -12,7 +13,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 *** Test Cases ***
 interfaces ${tc}
-    [Tags]    os    linux
+    [Tags]    snmp  storage
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=interfaces
