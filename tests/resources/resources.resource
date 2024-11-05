@@ -32,12 +32,12 @@ Stop Mockoon
     Terminate All Processes
 
 Ctn Cleanup Cache
-￼   Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
-￼   Remove File    ${/}dev${/}shm${/}*
-￼
+    Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
+    Remove File    ${/}dev${/}shm${/}*
+
 Ctn Generic Suite Setup
-￼   Ctn Cleanup Cache
-￼
+   Ctn Cleanup Cache
+
 Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
