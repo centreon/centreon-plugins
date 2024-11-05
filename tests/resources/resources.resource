@@ -18,6 +18,7 @@ ${PERCENT}              %
 *** Keywords ***
 Start Mockoon
     [Arguments]    ${MOCKOON_JSON}
+    Ctn Generic Suite Setup
     ${process}    Start Process
     ...    mockoon-cli
     ...    start
@@ -29,6 +30,13 @@ Start Mockoon
 
 Stop Mockoon
     Terminate All Processes
+
+Ctn Cleanup Cache
+    Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
+    Remove File    ${/}dev${/}shm${/}*
+
+Ctn Generic Suite Setup
+   Ctn Cleanup Cache
 
 Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
