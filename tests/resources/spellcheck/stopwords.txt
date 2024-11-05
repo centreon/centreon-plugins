@@ -1,4 +1,14 @@
 2c
+--warning-authservers-total
+--critical-authservers-total
+--warning-authserver-roundtrip-time
+--critical-authserver-roundtrip-time
+--warning-authserver-packets-access-requests
+--critical-authserver-packets-access-requests
+--warning-authserver-packets-access-accepts
+--critical-authserver-packets-access-accepts
+--warning-authserver-clients-timeout
+--critical-authserver-clients-timeout
 3COM
 3CX
 --3cx-version
