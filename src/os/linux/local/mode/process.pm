@@ -199,7 +199,7 @@ sub parse_output {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'ps',
-        command_options => '-e -o state -o etime -o pid -o ppid -o comm:50 -o %a -w 2>&1'
+        command_options => '-e -o state -o etime:15 -o pid:10 -o ppid:10 -o comm:50 -o %a -w 2>&1'
     );
 
     $self->{global} = { processes => 0 };
