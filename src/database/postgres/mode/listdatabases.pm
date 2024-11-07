@@ -53,7 +53,7 @@ sub manage_selection {
     );
     $self->{list_db} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->{datname} =~ /$self->{option_results}->{exclude}/) {
             $self->{output}->output_add(long_msg => "Skipping database '" . $row->{datname} . "': no matching filter name");
             next;
         }

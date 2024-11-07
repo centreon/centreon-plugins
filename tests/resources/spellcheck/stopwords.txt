@@ -1,4 +1,15 @@
 2c
+--warning-authservers-total
+--critical-authservers-total
+--warning-authserver-roundtrip-time
+--critical-authserver-roundtrip-time
+--warning-authserver-packets-access-requests
+--critical-authserver-packets-access-requests
+--warning-authserver-packets-access-accepts
+--critical-authserver-packets-access-accepts
+--warning-authserver-clients-timeout
+--critical-authserver-clients-timeout
+3COM
 3CX
 --3cx-version
 --add-fc-fe-errors
@@ -17,12 +28,16 @@ api.meraki.com
 --api-version
 ASAM
 Avigilon
+aws
+AWSCLI
+--aws-role-arn
 Backbox
 --cacert-file
 cardtemperature
 Centreon
 --cert-pkcs12
 --cert-pwd
+CloudWatch
 connections-dhcp
 connections-dns
 cpu-utilization-1m
@@ -93,6 +108,7 @@ ldap
 --legacy-api-beta
 license-instances-usage-prct
 Loggly
+--lookback
 --lookup-perfdatas-nagios
 machineaccount
 --map-speed-dsl
@@ -129,6 +145,7 @@ Netscaler
 net-snmp
 NLCapacity
 --noeventlog
+--noidle
 -NoLogo
 --nomachineaccount
 --ntlmv2
@@ -155,6 +172,7 @@ powershell.exe
 prct
 Primera
 proto
+--proxyurl
 psu
 QoS
 queue-messages-inflighted
@@ -164,6 +182,7 @@ RRDCached
 Sansymphony
 --scope-datacenter
 sfp.temperature
+--skip-ssl-check
 SNMP
 space-usage-prct
 --sql-errors-exit

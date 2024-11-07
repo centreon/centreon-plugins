@@ -37,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: '3.9'
 
@@ -92,7 +92,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bookworm]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
         include:
           - runner_name: ubuntu-22.04
           - package_extension: rpm
@@ -105,15 +105,22 @@ jobs:
             image: unit-tests-bullseye
             distrib: bullseye
           - package_extension: deb
+            image: unit-tests-bullseye-arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+            distrib: bullseye
+          - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: unit-tests-jammy
+            distrib: jammy
 
     runs-on: ${{ matrix.runner_name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -123,10 +130,10 @@ jobs:
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: plugin-installation-${{ matrix.distrib }}
-          path: /tmp/*.jsonl
+          path: ./lastlog.jsonl
           retention-days: 1
 
   fatpacker:
@@ -140,7 +147,7 @@ jobs:
           fetch-depth: 1
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@f551dafcc94572adc179bbddbb409b3ada8f8ff5 # v1.30.0
+        uses: shogo82148/actions-setup-perl@9c1eca9952ccc07f9ca4a2097b63df93d9d138e9 # v1.31.3
         with:
           perl-version: '5.34'
           install-modules-with: cpm
@@ -186,8 +193,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     name: "package ${{ matrix.distrib }}"
 
@@ -323,8 +330,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -337,7 +344,7 @@ jobs:
 
       - name: Upload apt/dnf logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: plugin-installation-${{ matrix.distrib }}
           path: /var/log/robot-plugins-installation-tests.log

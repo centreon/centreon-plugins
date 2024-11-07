@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::DataDomain::plugin;
+package storage::emc::datadomain::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,11 +29,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'hardware'         => 'storage::emc::DataDomain::mode::hardware',
-        'filesystem-usage' => 'storage::emc::DataDomain::mode::filesystem',
-        'replication'      => 'storage::emc::DataDomain::mode::replication'
+        'alerts'            => 'storage::emc::datadomain::snmp::mode::alerts',
+        'cleaning'          => 'storage::emc::datadomain::snmp::mode::cleaning',
+        'hardware'          => 'storage::emc::datadomain::snmp::mode::hardware',
+        'filesystems'       => 'storage::emc::datadomain::snmp::mode::filesystems',
+        'interfaces'        => 'storage::emc::datadomain::snmp::mode::interfaces',
+        'list-filesystems'  => 'storage::emc::datadomain::snmp::mode::listfilesystems',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'list-mtrees'       => 'storage::emc::datadomain::snmp::mode::listmtrees',
+        'list-replications' => 'storage::emc::datadomain::snmp::mode::listreplications',
+        'mtrees'            => 'storage::emc::datadomain::snmp::mode::mtrees',
+        'process'           => 'storage::emc::datadomain::snmp::mode::process',
+        'replications'      => 'storage::emc::datadomain::snmp::mode::replications'
     };
 
     return $self;

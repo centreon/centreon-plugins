@@ -162,8 +162,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
@@ -254,7 +254,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -269,7 +269,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact/merge@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-rpm-${{ matrix.distrib }}
           pattern: packages-rpm-${{ matrix.distrib }}-*
@@ -277,7 +277,7 @@ jobs:
           retention-days: 1
 
       - name: Delete merged artifacts
-        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
           name: packages-rpm-${{ matrix.distrib }}-*
           failOnError: false
@@ -418,8 +418,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
@@ -500,7 +500,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -515,7 +515,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact/merge@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-deb-${{ matrix.distrib }}
           pattern: packages-deb-${{ matrix.distrib }}-*
@@ -523,7 +523,7 @@ jobs:
           retention-days: 1
 
       - name: Delete merged artifacts
-        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1 # v5.0.0
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
           name: packages-deb-${{ matrix.distrib }}-*
           failOnError: false

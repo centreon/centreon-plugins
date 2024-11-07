@@ -3,6 +3,7 @@ Documentation       Check processcount table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 
@@ -27,6 +28,6 @@ processcount ${tc}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --critical-cpu-total            OK: Number of current processes running: 86 | 'nbproc'=86;;;0;
-            ...      2     --top                           OK: Number of current processes running: 86 | 'nbproc'=86;;;0; 'top_gorgone-proxy'=324349952B;;;0; 'top_mariadbd'=298323968B;;;0; 'top_apache2'=251240448B;;;0; 'top_telegraf'=127754240B;;;0; 'top_perl'=126619648B;;;0;
+            ...      2     --top                           OK: Number of current processes running: 86 | 'nbproc'=86;;;0; 'top_gorgone-proxy'=324349952B;;;0; 'top_Anonymized 068'=298323968B;;;0; 'top_Anonymized 148'=127754240B;;;0; 'top_Anonymized 054'=79663104B;;;0; 'top_gorgone-autodis'=72368128B;;;0;
             ...      3     --top-num                       OK: Number of current processes running: 86 | 'nbproc'=86;;;0; 
             ...      4     --top-size                      OK: Number of current processes running: 86 | 'nbproc'=86;;;0;
