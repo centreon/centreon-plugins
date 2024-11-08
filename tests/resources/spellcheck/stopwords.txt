@@ -57,8 +57,10 @@ dfsrevent
 --display-transform-src
 --dyn-mode
 -EncodedCommand
+ESX
 eth
 --exclude-fs
+--failback-file
 fanspeed
 FCCapacity
 --filter-fs
@@ -93,6 +95,7 @@ ipv4
 ipv6
 ISAM
 Iwsva
+--jobq
 JOBQ
 jobqueue
 jobqueues
@@ -111,6 +114,7 @@ machineaccount
 MBean
 memAvailReal
 memBuffer
+--memexpiration
 memTotalReal
 Meraki
 MIB
@@ -121,6 +125,7 @@ module-cellradio-rsrq
 module-cellradio-snr
 modules-cellradio-detected
 Mosquitto
+--mqtt
 MQTT
 --mqtt-allow-insecure
 --mqtt-ca-certificate
@@ -132,6 +137,7 @@ MQTT
 --mqtt-timeout
 --mqtt-username
 multiple
+nagios
 Nagios
 NagVis
 --nagvis-perfdata
@@ -142,8 +148,10 @@ NLCapacity
 --noidle
 -NoLogo
 --nomachineaccount
+--ntlmv2
 NTLMv2
 NTP
+--oid
 OID
 --oid-display
 --oid-extra-display
@@ -168,6 +176,9 @@ proto
 psu
 QoS
 queue-messages-inflighted
+--redis-attribute
+--redis-db
+--redis-server
 RestAPI
 RFC1628
 RRDCached
@@ -180,6 +191,8 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+statefile
+--statefile-concat-cwd
 SureBackup
 systemd
 SysVol
@@ -196,6 +209,7 @@ tower-cli
 TrendMicro
 UCD
 UDP
+uniq
 uptime
 --urlpath
 usage-prct
@@ -210,6 +224,7 @@ VM
 VMware
 VPN
 vSAN
+vSphere
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts
 --warning-authserver-packets-access-requests
