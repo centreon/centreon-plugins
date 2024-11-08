@@ -84,11 +84,11 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{username}) || $self->{username} eq '') {
+    if ($self->{username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{password}) || $self->{password} eq '') {
+    if ($self->{password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
         $self->{output}->option_exit();
     }
