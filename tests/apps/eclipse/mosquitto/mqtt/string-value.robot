@@ -18,50 +18,6 @@ ${CMD}                      ${CENTREON_PLUGINS} --plugin=apps::eclipse::mosquitt
 
 
 *** Test Cases ***
-Mosquitto MQTT uptime
-    [Documentation]    Check Mosquitto MQTT uptime
-    [Tags]    eclipse    mosquitto    mqtt
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode=uptime
-    ...    --help
-
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-
-Mosquitto MQTT clients
-    [Documentation]    Check Mosquitto MQTT uptime
-    [Tags]    eclipse    mosquitto    mqtt
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode=clients
-    ...    --help
-
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-
-Mosquitto MQTT messages
-    [Documentation]    Check Mosquitto MQTT uptime
-    [Tags]    eclipse    mosquitto    mqtt
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode=messages
-    ...    --help
-
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-
-Mosquitto MQTT numeric-value
-    [Documentation]    Check Mosquitto MQTT uptime
-    [Tags]    eclipse    mosquitto    mqtt
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode=numeric-value
-    ...    --help
-
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-
 Mosquitto MQTT string-value
     [Documentation]    Check Mosquitto MQTT uptime
     [Tags]    eclipse    mosquitto    mqtt
