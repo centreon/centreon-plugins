@@ -158,13 +158,13 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
 
-      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      - uses: actions/cache/save@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
 
   package:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [get-environment, get-plugins, fatpacker]
 
     strategy:
@@ -200,24 +200,9 @@ jobs:
 
     steps:
       - name: Checkout sources
-        if: ${{ matrix.distrib == 'el7' }}
-        # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
-
-      - name: Checkout sources
-        if: ${{ matrix.distrib != 'el7' }}
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - if: ${{ matrix.distrib == 'el7' }}
-        # el7 is not compatible with checkout v4 which uses node20
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: ./build/
-          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
-
-      - if: ${{ matrix.distrib != 'el7' }}
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      - uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -304,7 +289,7 @@ jobs:
       matrix:
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
         include:
-          - runner_name: ubuntu-22.04
+          - runner_name: ubuntu-24.04
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
@@ -350,14 +335,89 @@ jobs:
           path: /var/log/robot-plugins-installation-tests.log
           retention-days: 1
 
-  deliver:
-    needs: [get-environment, package, test-plugins]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    uses: ./.github/workflows/plugin-delivery.yml
-    with:
-      version: ${{ needs.get-environment.outputs.version }}
-      release: ${{ needs.get-environment.outputs.release }}
-      stability: ${{ needs.get-environment.outputs.stability }}
-    secrets:
-      artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-      token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
+  deliver-packages:
+    needs: [get-environment, test-plugins]
+    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) && github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distrib: el7
+            package_extension: rpm
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+
+    name: deliver ${{ matrix.distrib }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Delivery
+        uses: ./.github/actions/package-delivery
+        with:
+          module_name: plugins
+          distrib: ${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  deliver-sources:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability == 'stable' && github.event_name == 'push' }}
+    runs-on: [self-hosted, common]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        with:
+          path: ./build/
+          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+
+      - name: Deliver sources
+        uses: ./.github/actions/release-sources
+        with:
+          bucket_directory: centreon-plugins
+          module_directory: build
+          module_name: centreon-plugins
+          version: ${{ needs.get-environment.outputs.version }}
+          release: ${{ needs.get-environment.outputs.release }}
+          token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
+
+  release-tag:
+    needs: [get-environment]
+    if: ${{ needs.get-environment.outputs.stability == 'stable' && github.event_name == 'push' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Push git release tag
+        run: |
+          RELEASE=plugins-$(date '+%Y%m%d')
+
+          EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
+
+          git config --global user.email "release@centreon.com"
+          git config --global user.name "Centreon"
+
+          if [ -z "$EXISTING_TAG" ]; then
+            git tag -a "$RELEASE" -m "release $RELEASE"
+            git push --follow-tags
+          else
+            echo "::warning::Release tag $RELEASE already exists"
+          fi
+        shell: bash
