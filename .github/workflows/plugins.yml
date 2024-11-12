@@ -336,8 +336,13 @@ jobs:
           retention-days: 1
 
   deliver-packages:
-    needs: [get-environment, test-plugins]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) && github.event_name != 'workflow_dispatch' }}
+    needs: [get-environment, get-plugins, test-plugins]
+    if: |
+      needs.get-plugins.outputs.plugins != '' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false

@@ -48,12 +48,6 @@ runs:
   using: composite
 
   steps:
-    - name: Remove previously packaged DEBs and RPMs
-      run: |
-        rm -f ./*.deb
-        rm -f ./*.rpm
-      shell: bash
-
     - name: Parse distrib name
       id: parse-distrib
       uses: ./.github/actions/parse-distrib
