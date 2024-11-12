@@ -272,6 +272,7 @@ sub manage_selection {
         idle                => 0,
         autofind            => 0,
         typeNotMatch        => 0,
+        fault               => 0,
         config              => 0,
         configFailed        => 0,
         download            => 0,
