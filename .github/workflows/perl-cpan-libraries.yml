@@ -42,7 +42,6 @@ jobs:
             "Carp::Assert",
             "Clone",
             "Clone::Choose",
-            "common::sense",
             "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
