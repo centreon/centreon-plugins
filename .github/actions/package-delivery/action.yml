@@ -185,7 +185,7 @@ runs:
                 arch = 'x86_64';
               }
               await exec.exec(
-                `jf rt upload --flat "*.rpm" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/*.rpm"`
+                `jf rt upload --flat "*.rpm" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/"`
               );
             } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
               let arch = 'all';
