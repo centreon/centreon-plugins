@@ -11,7 +11,7 @@ def get_tests_folders(plugin_name):
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
     for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if os.path.isdir("tests/" + file): # check if the path is a directory in the "tests" folder.
+        if os.path.isdir("tests/" + file): # check if the path is a directory in the "tests" folder
             folder_list.append("tests/" + file)
     return folder_list
 
