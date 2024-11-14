@@ -20,6 +20,7 @@ on:
 jobs:
   create-and-push-docker:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: ubuntu-22.04

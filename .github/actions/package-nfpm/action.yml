@@ -48,12 +48,6 @@ runs:
   using: composite
 
   steps:
-    - name: Remove previously packaged DEBs and RPMs
-      run: |
-        rm -f ./*.deb
-        rm -f ./*.rpm
-      shell: bash
-
     - name: Parse distrib name
       id: parse-distrib
       uses: ./.github/actions/parse-distrib
@@ -128,14 +122,7 @@ runs:
         done
       shell: bash
 
-    - if: ${{ inputs.distrib == 'el7' }}
-      uses: actions/cache/save@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
-      with:
-        path: ./*.${{ inputs.package_extension }}
-        key: ${{ inputs.cache_key }}
-
-    - if: ${{ inputs.distrib != 'el7' }}
-      uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+    - uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ inputs.cache_key }}
