@@ -156,11 +156,11 @@ runs:
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
-              `jf rt download "ubuntu-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --flat --props "release_type=${{ inputs.release_type }}"`
+              `jf rt download "ubuntu-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
             await exec.exec(
-              `jf rt download "apt-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --flat --props "release_type=${{ inputs.release_type }}"`
+              `jf rt download "apt-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
             );
           }
 
@@ -195,7 +195,7 @@ runs:
               }
               if ('${{ inputs.arch }}' === '' || '${{ inputs.arch }}' === arch) {
                 await exec.exec(
-                  `jf rt upload "*.deb" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --flat --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps}`
+                  `jf rt upload "*.deb" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
                 );
               }
             }
