@@ -36,12 +36,8 @@ jobs:
             "ARGV::Struct",
             "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
-            "boolean",
             "BSON",
             "BSON::XS",
-            "Carp::Assert",
-            "Clone",
-            "Clone::Choose",
             "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
@@ -53,24 +49,12 @@ jobs:
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
-            "Digest::MD5::File",
-            "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
-            "Exporter::Shiny",
-            "EV",
             "FFI::CheckLib",
             "FFI::Platypus",
             "File::SearchPath",
-            "Hash::Merge",
-            "Hash::Ordered",
-            "HTTP::Daemon",
-            "HTTP::Daemon::SSL",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
-            "JSON::Parse",
-            "JSON::WebToken",
-            "LV",
-            "MIME::Types",
             "Mojo::IOLoop::Signal",
             "MongoDB",
             "MooseX::ClassAttribute",
@@ -78,7 +62,6 @@ jobs:
             "Net::DHCP",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
-            "Net::MQTT::Simple",
             "Net::NTP",
             "Net::SMTPS",
             "Net::SMTP_auth",
@@ -86,23 +69,17 @@ jobs:
             "Net::TFTP",
             "Paws",
             "PBKDF2::Tiny",
-            "Schedule::Cron",
             "Statistics::Descriptive",
             "Statistics::Regression",
-            "Sys::SigAction",
             "Term::Clui",
-            "Term::ShellUI",
             "Unicode::Stringprep",
-            "URI::Encode",
             "URI::Template",
             "URL::Encode",
             "URL::Encode::XS",
             "UUID",
             "UUID::URandom",
             "WWW::Selenium",
-            "XML::Filter::BufferText",
             "XML::LibXML::Simple",
-            "XML::SAX::Writer",
             "ZMQ::Constants",
             "ZMQ::FFI",
             "ZMQ::LibZMQ4"
@@ -127,9 +104,6 @@ jobs:
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
-          - name: "Exporter::Shiny"
-            build_distribs: el8
-            rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
           - name: "FFI::CheckLib"
             rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
@@ -138,6 +112,10 @@ jobs:
             no-auto-depends: true
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
+          - name: "Net::SMTPS"
+            build_distribs: el9
+          - name: "Statistics::Descriptive"
+            build_distribs: el9
           - name: "Statistics::Regression"
             version: "0.53"
           - name: "URL::Encode::XS"
