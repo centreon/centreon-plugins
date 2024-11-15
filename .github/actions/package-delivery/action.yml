@@ -185,7 +185,7 @@ runs:
                 arch = 'x86_64';
               }
               await exec.exec(
-                `jf rt upload "*.rpm" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
+                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
               );
             } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
               let arch = 'all';
@@ -195,7 +195,7 @@ runs:
               }
               if ('${{ inputs.arch }}' === '' || '${{ inputs.arch }}' === arch) {
                 await exec.exec(
-                  `jf rt upload "*.deb" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
+                  `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
                 );
               }
             }
