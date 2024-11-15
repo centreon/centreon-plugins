@@ -34,7 +34,7 @@ jobs:
         name:
           [
             "ARGV::Struct",
-            "Authen::SASL::SASLprep", # perl-Authen-SASL exists on el8 and el9 but does not provide Authen::SASL::SASLprep. Which plugin use it ?
+            "Authen::SASL::SASLprep",
             "Authen::SCRAM::Client",
             "BSON",
             "BSON::XS",
@@ -63,24 +63,24 @@ jobs:
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::NTP",
-            "Net::SMTPS", # exist on el8, does not exist on el9
+            "Net::SMTPS",
             "Net::SMTP_auth",
             "Net::Subnet",
             "Net::TFTP",
             "Paws",
             "PBKDF2::Tiny",
-            "Statistics::Descriptive", # exist on el8, does not exist on el9
+            "Statistics::Descriptive",
             "Statistics::Regression",
             "Term::Clui",
             "Unicode::Stringprep",
             "URI::Template",
             "URL::Encode",
-            "URL::Encode::XS", # exist on el8, does not exist on el9
+            "URL::Encode::XS",
             "UUID",
             "UUID::URandom",
             "WWW::Selenium",
             "XML::LibXML::Simple",
-            "ZMQ::Constants", # exist on el8, does not exist on el9
+            "ZMQ::Constants",
             "ZMQ::FFI",
             "ZMQ::LibZMQ4"
           ]
@@ -115,6 +115,10 @@ jobs:
             no-auto-depends: true
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
+          - name: "Net::SMTPS"
+            build_distribs: el9
+          - name: "Statistics::Descriptive"
+            build_distribs: el9
           - name: "Statistics::Regression"
             version: "0.53"
           - name: "URL::Encode::XS"
