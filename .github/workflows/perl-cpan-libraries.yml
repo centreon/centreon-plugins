@@ -104,9 +104,6 @@ jobs:
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
-          - name: "Exporter::Shiny"
-            build_distribs: el8
-            rpm_provides: "perl(Exporter::Shiny) perl(Exporter::Tiny)"
           - name: "FFI::CheckLib"
             rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
