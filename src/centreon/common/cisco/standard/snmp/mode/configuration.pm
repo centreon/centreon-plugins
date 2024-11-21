@@ -86,7 +86,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    my $uptime = (defined($results->{$oid_sysUpTime}) ? $results->{$oid_sysUpTime} : $results->{$oid_snmpEngineTime}) / 100;
+    my $uptime = defined($results->{$oid_snmpEngineTime}) ? $results->{$oid_snmpEngineTime} : ($results->{$oid_sysUpTime} / 100);
 
     my $ccmHistoryRunningLastChanged = $ctime - $uptime + ($results->{$oid_ccmHistoryRunningLastChanged} / 100);
     my $ccmHistoryRunningLastSaved = $ctime - $uptime + ($results->{$oid_ccmHistoryRunningLastSaved} / 100);
