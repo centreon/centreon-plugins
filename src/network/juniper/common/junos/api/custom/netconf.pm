@@ -109,6 +109,9 @@ sub load_xml {
     my ($self, %options) = @_;
 
     if ($options{data} !~ /($options{start_tag}.*?$options{end_tag})/ms) {
+        if (defined($options{error_continue}) && $options{error_continue} == 1) {
+           return {};
+        }
         $self->{output}->add_option_msg(short_msg => "Cannot find information");
         $self->{output}->option_exit();
     }
@@ -178,7 +181,9 @@ my $commands = {
     'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
     'show mpls lsp' => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
     'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>',
-    'show services rpm probe-results' => '<rpc><get-probe-results></get-probe-results></rpc>'
+    'show services rpm probe-results' => '<rpc><get-probe-results></get-probe-results></rpc>',
+    'show ospf neighbor detail' => '<rpc><get-ospf-neighbor-information><detail/></get-ospf-neighbor-information></rpc>',
+    'show interfaces diagnostics optics' => '<rpc><get-interface-optics-diagnostics-information /></rpc>'
 };
 
 sub get_rpc_commands {
@@ -200,6 +205,8 @@ sub get_rpc_commands {
             $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
         } elsif ($label eq 'interface') {
             $rpc_commands->{'show interfaces detail'} = $commands->{'show interfaces detail'};
+        } elsif ($label eq 'interface_optical') {
+            $rpc_commands->{'show interfaces diagnostics optics'} = $commands->{'show interfaces diagnostics optics'};
         } elsif ($label eq 'memory') {
             $rpc_commands->{'show chassis routing-engine'} = $commands->{'show chassis routing-engine'};
             $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
@@ -213,6 +220,8 @@ sub get_rpc_commands {
             $rpc_commands->{'show rsvp session statistics'} = $commands->{'show rsvp session statistics'};
         } elsif ($label eq 'service_rpm') {
             $rpc_commands->{'show services rpm probe-results'} = $commands->{'show services rpm probe-results'};
+        } elsif ($label eq 'ospf') {
+            $rpc_commands->{'show ospf neighbor detail'} = $commands->{'show ospf neighbor detail'};
         } else {
             $self->{output}->add_option_msg(short_msg => "unsupported command: $command");
             $self->{output}->option_exit();
@@ -364,14 +373,16 @@ sub get_hardware_infos {
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<power-usage-information.*?>', end_tag => '</power-usage-information>', force_array => ['power-usage-item']);
+    $result = $self->load_xml(data => $content, start_tag => '<power-usage-information.*?>', end_tag => '</power-usage-information>', force_array => ['power-usage-item'], error_continue => 1);
 
-    foreach (@{$result->{'power-usage-item'}}) {
-        push @{$results->{psu}}, {
-            name => $_->{name},
-            status => $_->{state},
-            dc_output_load => $_->{'dc-output-detail'}->{'dc-load'}
-        };
+    if (defined($result->{'power-usage-item'})) {
+        foreach (@{$result->{'power-usage-item'}}) {
+            push @{$results->{psu}}, {
+                name => $_->{name},
+                status => $_->{state},
+                dc_output_load => $_->{'dc-output-detail'}->{'dc-load'}
+            };
+        }
     }
 
     $result = $self->load_xml(data => $content, start_tag => '<environment-information.*?>', end_tag => '</environment-information>', force_array => ['environment-item']);

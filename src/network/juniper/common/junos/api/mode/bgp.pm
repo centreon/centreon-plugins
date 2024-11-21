@@ -222,6 +222,7 @@ sub new {
         'filter-snmp-index:s'                  => { name => 'filter_snmp_index' },        
         'filter-local-address:s'               => { name => 'filter_local_address' },
         'filter-peer-address:s'                => { name => 'filter_peer_address' },
+        'filter-rib-name:s'                    => { name => 'filter_rib_name' },
         'custom-perfdata-instances-bgp-peer:s' => { name => 'custom_perfdata_instances_bgp_peer' },
         'custom-perfdata-instances-bgp-rib:s'  => { name => 'custom_perfdata_instances_bgp_rib' }
     });
@@ -293,6 +294,9 @@ sub manage_selection {
         };
 
         foreach (@{$item->{ribs}}) {
+            next if (defined($self->{option_results}->{filter_rib_name}) && $self->{option_results}->{filter_rib_name} ne '' &&
+                $_->{ribName} !~ /$self->{option_results}->{filter_rib_name}/);
+
             $self->{bgp}->{ $item->{snmpIndex} }->{ribs}->{ $_->{ribName} } = {
                 localAddr => $item->{localAddr},
                 localAs => $item->{localAs},
@@ -310,7 +314,8 @@ sub manage_selection {
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
             (defined($self->{option_results}->{filter_snmp_index}) ? $self->{option_results}->{filter_snmp_index} : '') . '_' .
             (defined($self->{option_results}->{filter_local_address}) ? $self->{option_results}->{filter_local_address} : '') . '_' .
-            (defined($self->{option_results}->{filter_peer_address}) ? $self->{option_results}->{filter_peer_address} : '')
+            (defined($self->{option_results}->{filter_peer_address}) ? $self->{option_results}->{filter_peer_address} : '') . '_' .
+            (defined($self->{option_results}->{filter_rib_name}) ? $self->{option_results}->{filter_rib_name} : '')
         );
 }
 
@@ -335,6 +340,10 @@ Filter BGP peer by local address.
 =item B<--filter-peer-address>
 
 Filter BGP peer by peer address.
+
+=item B<--filter-rib-name>
+
+Filter BGP RIB by RIB name.
 
 =item B<--custom-perfdata-instances-bgp-peer>
 
