@@ -38,8 +38,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -78,11 +78,11 @@ jobs:
             distrib: el9
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/rpm-signing:ubuntu
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
 
     steps:
       - run: |
@@ -126,11 +126,17 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Parse distrib name
+        id: parse-distrib
+        uses: ./.github/actions/parse-distrib
+        with:
+          distrib: ${{ matrix.distrib }}
 
       - run: |
           apt update
@@ -139,7 +145,7 @@ jobs:
           mv dependencies/perl-filesys-smbclient/src/ perl-filesys-smbclient
           tar czf perl-filesys-smbclient.tar.gz perl-filesys-smbclient
 
-          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make --dist ${{ matrix.distrib }} --verbose --build --version 4.0-${{ matrix.distrib }} perl-filesys-smbclient/
+          DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make --dist ${{ matrix.distrib }} --verbose --build --version 4.0${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} perl-filesys-smbclient/
         shell: bash
 
       - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
@@ -147,66 +153,40 @@ jobs:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
 
-  deliver-rpm:
-    needs: [get-environment, sign-rpm]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
+  deliver-packages:
+    needs: [get-environment, sign-rpm, package-deb]
+    if: |
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        distrib: [el8, el9]
+        include:
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
 
+    name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Delivery
-        uses: ./.github/actions/rpm-delivery
+        uses: ./.github/actions/package-delivery
         with:
           module_name: perl-filesys-smbclient
           distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
-
-  deliver-deb:
-    needs: [get-environment, package-deb]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
-    strategy:
-      matrix:
-        distrib: [bullseye, bookworm, jammy]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: perl-filesys-smbclient
-          distrib: ${{ matrix.distrib }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-  promote:
-    needs: [get-environment]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [el8, el9, bullseye, bookworm]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Promote ${{ matrix.distrib }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-filesys-smbclient
-          distrib: ${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}

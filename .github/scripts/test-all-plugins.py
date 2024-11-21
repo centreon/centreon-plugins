@@ -102,7 +102,7 @@ def remove_plugin(plugin, archi):
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
     # Remove cache files
-    tmp_files = glob.glob('/tmp/cache/*')
+    tmp_files = glob.glob('/dev/shm/*')
     for file in tmp_files:
         try:
             os.remove(file)
@@ -121,9 +121,6 @@ if __name__ == '__main__':
     launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
-
-    # Create a directory for cache files
-    os.mkdir("/tmp/cache")
 
     error_install = 0
     error_tests = 0

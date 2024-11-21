@@ -3,6 +3,7 @@ Documentation       Check uptime table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 
@@ -29,7 +30,7 @@ uptime ${tc}
             ...      1     --warning-uptime='2'            WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:2;;0; 
             ...      2     --warning-uptime='1'            WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:1;;0;
             ...      3     --critical-uptime='2'           CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:2;0;
-            ...      4     --add-sysdesc                   OK: System uptime is: 38m 39s, Linux central-deb-24-04 6.1.0-23-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.99-1 (2024-07-15) x86_64 | 'uptime'=2319.00s;;;0; 
+            ...      4     --add-sysdesc                   OK: System uptime is: 38m 39s, Anonymized 023 | 'uptime'=2319.00s;;;0;
             ...      5     --critical-uptime='1'           CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:1;0;
             ...      6     --check-overload                OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0; 
             ...      7     --reboot-window                 OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
