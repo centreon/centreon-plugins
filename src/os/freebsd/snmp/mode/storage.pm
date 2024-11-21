@@ -76,7 +76,7 @@ Set the storage (number expected) example: 1, 2,... (empty means 'check all stor
 
 =item B<--name>
 
-Allows to use storage name with option --storage instead of storage oid index.
+Allows to use storage name with option --storage instead of storage OID index.
 
 =item B<--regexp>
 

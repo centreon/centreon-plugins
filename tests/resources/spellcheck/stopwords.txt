@@ -150,6 +150,9 @@ jobqueue
 jobqueues
 keepass
 Kubernetes
+hrFSMountPoint
+hrFSOther
+hrStorageDescr
 ldap
 license-instances-usage-prct
 multiple
@@ -190,4 +193,5 @@ Veeam
 VeloCloud
 VMware
 WSMAN
+ZFS
 
