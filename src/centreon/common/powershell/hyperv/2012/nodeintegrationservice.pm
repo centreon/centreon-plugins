@@ -35,6 +35,9 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
 
+    # if the version of HyperV Powershell module is higher than 2.0.0 and not compatible with
+    # the following script, then use this Import-Module instead:
+    # Import-Module -Name "Hyper-V" -MaximumVersion "2.0.0"
     $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
@@ -68,8 +71,19 @@ Try {
 
             $item_service.service = $service.Name
             $item_service.enabled = $service.Enabled
+
+            # this works for sure on v1.1 of HyperV Powershell module
             $item_service.primary_operational_status = $service.PrimaryOperationalStatus.value__
             $item_service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
+
+            # this works for sure on v2.0.0 of HyperV Powershell module
+            if (($service.PrimaryStatusDescription -ne $null) -and ($service.PrimaryStatusDescription -ne "")) {
+                $item_service.primary_operational_status = $service.PrimaryStatusDescription
+            }
+            if (($service.SecondaryStatusDescription -ne $null) -and ($service.SecondaryStatusDescription -ne "")) {
+                $item_service.secondary_operational_status = $service.SecondaryStatusDescription
+            }
+
             $services.Add($item_service)
         }
 
@@ -96,6 +110,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get hyper-v informations.
+Method to get Hyper-V information.
 
 =cut

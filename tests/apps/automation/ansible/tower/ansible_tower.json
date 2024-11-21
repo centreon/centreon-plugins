@@ -1,0 +1,125 @@
+{
+  "uuid": "54ff47ec-292e-487b-ab22-42c08b05dd91",
+  "lastMigration": 32,
+  "name": "Ansible tower",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "781bf78c-43f7-4da1-9515-1d324b7a59d1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/hosts",
+      "responses": [
+        {
+          "uuid": "a4edd4f6-d560-44d5-8faf-3e6d532e22b4",
+          "body": "{\n  \"count\": 20,\n  \"next\": {{#if (lt (queryParam 'page') 2)}}\"/api/v2/hosts\"{{else}}null{{/if}},\n  \"previous\": {{#if (gte (queryParam 'page') 2)}}\"/api/v2/hosts\"{{else}}null{{/if}},\n  \"results\": [\n    {\n      \"ansible_facts_modified\": null,\n      \"created\": \"2018-02-01T08:00:00.000000Z\",\n      \"description\": \"\",\n      \"enabled\": true,\n      \"has_active_failures\": false,\n      \"has_inventory_sources\": false,\n      \"id\": 14,\n      \"insights_system_id\": null,\n      \"instance_id\": \"\",\n      \"inventory\": 1,\n      \"last_job\": null,\n      \"last_job_host_summary\": null,\n      \"modified\": \"2018-02-01T08:00:00.000000Z\",\n      \"name\": \"host-13\",\n      \"related\": {\n        \"activity_stream\": \"/api/v2/hosts/14/activity_stream/\",\n        \"ad_hoc_command_events\": \"/api/v2/hosts/14/ad_hoc_command_events/\",\n        \"ad_hoc_commands\": \"/api/v2/hosts/14/ad_hoc_commands/\",\n        \"all_groups\": \"/api/v2/hosts/14/all_groups/\",\n        \"ansible_facts\": \"/api/v2/hosts/14/ansible_facts/\",\n        \"groups\": \"/api/v2/hosts/14/groups/\",\n        \"insights\": \"/api/v2/hosts/14/insights/\",\n        \"inventory\": \"/api/v2/inventories/1/\",\n        \"inventory_sources\": \"/api/v2/hosts/14/inventory_sources/\",\n        \"job_events\": \"/api/v2/hosts/14/job_events/\",\n        \"job_host_summaries\": \"/api/v2/hosts/14/job_host_summaries/\",\n        \"smart_inventories\": \"/api/v2/hosts/14/smart_inventories/\",\n        \"variable_data\": \"/api/v2/hosts/14/variable_data/\"\n      },\n      \"summary_fields\": {\n        \"groups\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"inventory\": {\n          \"description\": \"\",\n          \"has_active_failures\": false,\n          \"has_inventory_sources\": false,\n          \"hosts_with_active_failures\": 0,\n          \"id\": 1,\n          \"inventory_sources_with_failures\": 0,\n          \"kind\": \"\",\n          \"name\": \"test-inv\",\n          \"organization_id\": 1,\n          \"total_groups\": 0,\n          \"total_hosts\": 0,\n          \"total_inventory_sources\": 0\n        },\n        \"recent_jobs\": [],\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"edit\": true\n        }\n      },\n      \"type\": \"host\",\n      \"url\": \"/api/v2/hosts/14/\",\n      \"variables\": \"\"\n    },\n    {\n      \"ansible_facts_modified\": null,\n      \"created\": \"2018-02-01T08:00:00.000000Z\",\n      \"description\": \"\",\n      \"enabled\": true,\n      \"has_active_failures\": false,\n      \"has_inventory_sources\": false,\n      \"id\": 15,\n      \"insights_system_id\": null,\n      \"instance_id\": \"\",\n      \"inventory\": 1,\n      \"last_job\": null,\n      \"last_job_host_summary\": null,\n      \"modified\": \"2018-02-01T08:00:00.000000Z\",\n      \"name\": \"host-14\",\n      \"related\": {\n        \"activity_stream\": \"/api/v2/hosts/15/activity_stream/\",\n        \"ad_hoc_command_events\": \"/api/v2/hosts/15/ad_hoc_command_events/\",\n        \"ad_hoc_commands\": \"/api/v2/hosts/15/ad_hoc_commands/\",\n        \"all_groups\": \"/api/v2/hosts/15/all_groups/\",\n        \"ansible_facts\": \"/api/v2/hosts/15/ansible_facts/\",\n        \"groups\": \"/api/v2/hosts/15/groups/\",\n        \"insights\": \"/api/v2/hosts/15/insights/\",\n        \"inventory\": \"/api/v2/inventories/1/\",\n        \"inventory_sources\": \"/api/v2/hosts/15/inventory_sources/\",\n        \"job_events\": \"/api/v2/hosts/15/job_events/\",\n        \"job_host_summaries\": \"/api/v2/hosts/15/job_host_summaries/\",\n        \"smart_inventories\": \"/api/v2/hosts/15/smart_inventories/\",\n        \"variable_data\": \"/api/v2/hosts/15/variable_data/\"\n      },\n      \"summary_fields\": {\n        \"groups\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"inventory\": {\n          \"description\": \"\",\n          \"has_active_failures\": false,\n          \"has_inventory_sources\": false,\n          \"hosts_with_active_failures\": 0,\n          \"id\": 1,\n          \"inventory_sources_with_failures\": 0,\n          \"kind\": \"\",\n          \"name\": \"test-inv\",\n          \"organization_id\": 1,\n          \"total_groups\": 0,\n          \"total_hosts\": 0,\n          \"total_inventory_sources\": 0\n        },\n        \"recent_jobs\": [],\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"edit\": true\n        }\n      },\n      \"type\": \"host\",\n      \"url\": \"/api/v2/hosts/15/\",\n      \"variables\": \"\"\n    },\n    {\n      \"ansible_facts_modified\": null,\n      \"created\": \"2018-02-01T08:00:00.000000Z\",\n      \"description\": \"\",\n      \"enabled\": true,\n      \"has_active_failures\": false,\n      \"has_inventory_sources\": false,\n      \"id\": 16,\n      \"insights_system_id\": null,\n      \"instance_id\": \"\",\n      \"inventory\": 1,\n      \"last_job\": null,\n      \"last_job_host_summary\": null,\n      \"modified\": \"2018-02-01T08:00:00.000000Z\",\n      \"name\": \"host-15\",\n      \"related\": {\n        \"activity_stream\": \"/api/v2/hosts/16/activity_stream/\",\n        \"ad_hoc_command_events\": \"/api/v2/hosts/16/ad_hoc_command_events/\",\n        \"ad_hoc_commands\": \"/api/v2/hosts/16/ad_hoc_commands/\",\n        \"all_groups\": \"/api/v2/hosts/16/all_groups/\",\n        \"ansible_facts\": \"/api/v2/hosts/16/ansible_facts/\",\n        \"groups\": \"/api/v2/hosts/16/groups/\",\n        \"insights\": \"/api/v2/hosts/16/insights/\",\n        \"inventory\": \"/api/v2/inventories/1/\",\n        \"inventory_sources\": \"/api/v2/hosts/16/inventory_sources/\",\n        \"job_events\": \"/api/v2/hosts/16/job_events/\",\n        \"job_host_summaries\": \"/api/v2/hosts/16/job_host_summaries/\",\n        \"smart_inventories\": \"/api/v2/hosts/16/smart_inventories/\",\n        \"variable_data\": \"/api/v2/hosts/16/variable_data/\"\n      },\n      \"summary_fields\": {\n        \"groups\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"inventory\": {\n          \"description\": \"\",\n          \"has_active_failures\": false,\n          \"has_inventory_sources\": false,\n          \"hosts_with_active_failures\": 0,\n          \"id\": 1,\n          \"inventory_sources_with_failures\": 0,\n          \"kind\": \"\",\n          \"name\": \"test-inv\",\n          \"organization_id\": 1,\n          \"total_groups\": 0,\n          \"total_hosts\": 0,\n          \"total_inventory_sources\": 0\n        },\n        \"recent_jobs\": [],\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"edit\": true\n        }\n      },\n      \"type\": \"host\",\n      \"url\": \"/api/v2/hosts/16/\",\n      \"variables\": \"\"\n    },\n    {\n      \"ansible_facts_modified\": null,\n      \"created\": \"2018-02-01T08:00:00.000000Z\",\n      \"description\": \"\",\n      \"enabled\": true,\n      \"has_active_failures\": false,\n      \"has_inventory_sources\": false,\n      \"id\": 17,\n      \"insights_system_id\": null,\n      \"instance_id\": \"\",\n      \"inventory\": 1,\n      \"last_job\": null,\n      \"last_job_host_summary\": null,\n      \"modified\": \"2018-02-01T08:00:00.000000Z\",\n      \"name\": \"host-16\",\n      \"related\": {\n        \"activity_stream\": \"/api/v2/hosts/17/activity_stream/\",\n        \"ad_hoc_command_events\": \"/api/v2/hosts/17/ad_hoc_command_events/\",\n        \"ad_hoc_commands\": \"/api/v2/hosts/17/ad_hoc_commands/\",\n        \"all_groups\": \"/api/v2/hosts/17/all_groups/\",\n        \"ansible_facts\": \"/api/v2/hosts/17/ansible_facts/\",\n        \"groups\": \"/api/v2/hosts/17/groups/\",\n        \"insights\": \"/api/v2/hosts/17/insights/\",\n        \"inventory\": \"/api/v2/inventories/1/\",\n        \"inventory_sources\": \"/api/v2/hosts/17/inventory_sources/\",\n        \"job_events\": \"/api/v2/hosts/17/job_events/\",\n        \"job_host_summaries\": \"/api/v2/hosts/17/job_host_summaries/\",\n        \"smart_inventories\": \"/api/v2/hosts/17/smart_inventories/\",\n        \"variable_data\": \"/api/v2/hosts/17/variable_data/\"\n      },\n      \"summary_fields\": {\n        \"groups\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"inventory\": {\n          \"description\": \"\",\n          \"has_active_failures\": false,\n          \"has_inventory_sources\": false,\n          \"hosts_with_active_failures\": 0,\n          \"id\": 1,\n          \"inventory_sources_with_failures\": 0,\n          \"kind\": \"\",\n          \"name\": \"test-inv\",\n          \"organization_id\": 1,\n          \"total_groups\": 0,\n          \"total_hosts\": 0,\n          \"total_inventory_sources\": 0\n        },\n        \"recent_jobs\": [],\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"edit\": true\n        }\n      },\n      \"type\": \"host\",\n      \"url\": \"/api/v2/hosts/17/\",\n      \"variables\": \"\"\n    },\n    {\n      \"ansible_facts_modified\": null,\n      \"created\": \"2018-02-01T08:00:00.000000Z\",\n      \"description\": \"\",\n      \"enabled\": true,\n      \"has_active_failures\": false,\n      \"has_inventory_sources\": false,\n      \"id\": 18,\n      \"insights_system_id\": null,\n      \"instance_id\": \"\",\n      \"inventory\": 1,\n      \"last_job\": null,\n      \"last_job_host_summary\": null,\n      \"modified\": \"2018-02-01T08:00:00.000000Z\",\n      \"name\": \"host-17\",\n      \"related\": {\n        \"activity_stream\": \"/api/v2/hosts/18/activity_stream/\",\n        \"ad_hoc_command_events\": \"/api/v2/hosts/18/ad_hoc_command_events/\",\n        \"ad_hoc_commands\": \"/api/v2/hosts/18/ad_hoc_commands/\",\n        \"all_groups\": \"/api/v2/hosts/18/all_groups/\",\n        \"ansible_facts\": \"/api/v2/hosts/18/ansible_facts/\",\n        \"groups\": \"/api/v2/hosts/18/groups/\",\n        \"insights\": \"/api/v2/hosts/18/insights/\",\n        \"inventory\": \"/api/v2/inventories/1/\",\n        \"inventory_sources\": \"/api/v2/hosts/18/inventory_sources/\",\n        \"job_events\": \"/api/v2/hosts/18/job_events/\",\n        \"job_host_summaries\": \"/api/v2/hosts/18/job_host_summaries/\",\n        \"smart_inventories\": \"/api/v2/hosts/18/smart_inventories/\",\n        \"variable_data\": \"/api/v2/hosts/18/variable_data/\"\n      },\n      \"summary_fields\": {\n        \"groups\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"inventory\": {\n          \"description\": \"\",\n          \"has_active_failures\": false,\n          \"has_inventory_sources\": false,\n          \"hosts_with_active_failures\": 0,\n          \"id\": 1,\n          \"inventory_sources_with_failures\": 0,\n          \"kind\": \"\",\n          \"name\": \"test-inv\",\n          \"organization_id\": 1,\n          \"total_groups\": 0,\n          \"total_hosts\": 0,\n          \"total_inventory_sources\": 0\n        },\n        \"recent_jobs\": [],\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"edit\": true\n        }\n      },\n      \"type\": \"host\",\n      \"url\": \"/api/v2/hosts/18/\",\n      \"variables\": \"\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "f912f745-85f5-4313-9852-682f55b256bb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/unified_jobs",
+      "responses": [
+        {
+          "uuid": "158d9bce-bc86-4411-8977-afac4a1eaedd",
+          "body": "{{setVar 'datejob1' (dateTimeShift date=(now) format='yyyy-MM-dd\\'T\\'HH:mm:ss.SSSSSS\\'Z' days=-1 hours=1)}}\n{{setVar 'datejob2' (dateTimeShift date=(now) format='yyyy-MM-dd\\'T\\'HH:mm:ss.SSSSSS\\'Z' days=-2 hours=1)}}\n{\n  \"count\": 2,\n  \"next\": {{#if (lt (queryParam 'page') 2)}}\"/api/v2/unified_jobs\"{{else}}null{{/if}},\n  \"previous\": {{#if (gte (queryParam 'page') 2)}}\"/api/v2/unified_jobs\"{{else}}null{{/if}},\n  \"results\": [\n    {\n      \"allow_simultaneous\": false,\n      \"artifacts\": {},\n      \"canceled_on\": null,\n      \"controller_node\": \"\",\n      \"created\": \"{{getVar 'datejob1'}}\",\n      \"description\": \"\",\n      \"diff_mode\": false,\n      \"elapsed\": 0,\n      \"execution_node\": \"\",\n      \"extra_vars\": \"{}\",\n      \"failed\": false,\n      \"finished\": \"{{getVar 'datejob1'}}\",\n      \"force_handlers\": false,\n      \"forks\": 0,\n      \"id\": 1,\n      \"instance_group\": null,\n      \"inventory\": null,\n      \"job_explanation\": \"\",\n      \"job_slice_count\": 1,\n      \"job_slice_number\": 0,\n      \"job_tags\": \"\",\n      \"job_template\": 1,\n      \"job_type\": \"run\",\n      \"launch_type\": \"manual\",\n      \"limit\": \"\",\n      \"modified\": \"{{getVar 'datejob1'}}\",\n      \"name\": \"First job\",\n      \"organization\": null,\n      \"passwords_needed_to_start\": [],\n      \"playbook\": \"\",\n      \"project\": null,\n      \"related\": {\n        \"activity_stream\": \"/api/v2/jobs/1/activity_stream/\",\n        \"cancel\": \"/api/v2/jobs/1/cancel/\",\n        \"create_schedule\": \"/api/v2/jobs/1/create_schedule/\",\n        \"credentials\": \"/api/v2/jobs/1/credentials/\",\n        \"job_events\": \"/api/v2/jobs/1/job_events/\",\n        \"job_host_summaries\": \"/api/v2/jobs/1/job_host_summaries/\",\n        \"job_template\": \"/api/v2/job_templates/1/\",\n        \"labels\": \"/api/v2/jobs/1/labels/\",\n        \"notifications\": \"/api/v2/jobs/1/notifications/\",\n        \"relaunch\": \"/api/v2/jobs/1/relaunch/\",\n        \"stdout\": \"/api/v2/jobs/1/stdout/\",\n        \"unified_job_template\": \"/api/v2/job_templates/1/\"\n      },\n      \"scm_branch\": \"\",\n      \"scm_revision\": \"\",\n      \"skip_tags\": \"\",\n      \"start_at_task\": \"\",\n      \"started\": null,\n      \"status\": \"new\",\n      \"summary_fields\": {\n        \"credentials\": [],\n        \"job_template\": {\n          \"description\": \"\",\n          \"id\": 1,\n          \"name\": \"\"\n        },\n        \"labels\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"unified_job_template\": {\n          \"description\": \"\",\n          \"id\": 1,\n          \"name\": \"\",\n          \"unified_job_type\": \"job\"\n        },\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"start\": false\n        }\n      },\n      \"timeout\": 0,\n      \"type\": \"job\",\n      \"unified_job_template\": 1,\n      \"url\": \"/api/v2/jobs/1/\",\n      \"use_fact_cache\": false,\n      \"verbosity\": 0,\n      \"webhook_credential\": null,\n      \"webhook_guid\": \"\",\n      \"webhook_service\": \"\"\n    },\n    {\n      \"allow_simultaneous\": false,\n      \"artifacts\": {},\n      \"canceled_on\": null,\n      \"controller_node\": \"\",\n      \"created\": \"{{getVar 'datejob2'}}\",\n      \"description\": \"\",\n      \"diff_mode\": false,\n      \"elapsed\": 0,\n      \"execution_node\": \"\",\n      \"extra_vars\": \"{}\",\n      \"failed\": false,\n      \"finished\": \"{{getVar 'datejob2'}}\",\n      \"force_handlers\": false,\n      \"forks\": 0,\n      \"id\": 2,\n      \"instance_group\": null,\n      \"inventory\": null,\n      \"job_explanation\": \"\",\n      \"job_slice_count\": 1,\n      \"job_slice_number\": 0,\n      \"job_tags\": \"\",\n      \"job_template\": 2,\n      \"job_type\": \"run\",\n      \"launch_type\": \"manual\",\n      \"limit\": \"\",\n      \"modified\": \"{{getVar 'datejob2'}}\",\n      \"name\": \"Second job\",\n      \"organization\": null,\n      \"passwords_needed_to_start\": [],\n      \"playbook\": \"\",\n      \"project\": null,\n      \"related\": {\n        \"activity_stream\": \"/api/v2/jobs/2/activity_stream/\",\n        \"cancel\": \"/api/v2/jobs/2/cancel/\",\n        \"create_schedule\": \"/api/v2/jobs/2/create_schedule/\",\n        \"credentials\": \"/api/v2/jobs/2/credentials/\",\n        \"job_events\": \"/api/v2/jobs/2/job_events/\",\n        \"job_host_summaries\": \"/api/v2/jobs/2/job_host_summaries/\",\n        \"job_template\": \"/api/v2/job_templates/2/\",\n        \"labels\": \"/api/v2/jobs/2/labels/\",\n        \"notifications\": \"/api/v2/jobs/2/notifications/\",\n        \"relaunch\": \"/api/v2/jobs/2/relaunch/\",\n        \"stdout\": \"/api/v2/jobs/2/stdout/\",\n        \"unified_job_template\": \"/api/v2/job_templates/2/\"\n      },\n      \"scm_branch\": \"\",\n      \"scm_revision\": \"\",\n      \"skip_tags\": \"\",\n      \"start_at_task\": \"\",\n      \"started\": null,\n      \"status\": \"new\",\n      \"summary_fields\": {\n        \"credentials\": [],\n        \"job_template\": {\n          \"description\": \"\",\n          \"id\": 2,\n          \"name\": \"\"\n        },\n        \"labels\": {\n          \"count\": 0,\n          \"results\": []\n        },\n        \"unified_job_template\": {\n          \"description\": \"\",\n          \"id\": 2,\n          \"name\": \"\",\n          \"unified_job_type\": \"job\"\n        },\n        \"user_capabilities\": {\n          \"delete\": true,\n          \"start\": false\n        }\n      },\n      \"timeout\": 0,\n      \"type\": \"job\",\n      \"unified_job_template\": 2,\n      \"url\": \"/api/v2/jobs/2/\",\n      \"use_fact_cache\": false,\n      \"verbosity\": 0,\n      \"webhook_credential\": null,\n      \"webhook_guid\": \"\",\n      \"webhook_service\": \"\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "781bf78c-43f7-4da1-9515-1d324b7a59d1"
+    },
+    {
+      "type": "route",
+      "uuid": "f912f745-85f5-4313-9852-682f55b256bb"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

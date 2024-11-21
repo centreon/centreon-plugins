@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Nokia-Isam-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Nokia (formerly Alcatel) Isam devices",
+    "plugin_name": "centreon_nokia_isam_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "network/nokia/isam/snmp/"
+    ]
+}

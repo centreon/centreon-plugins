@@ -172,7 +172,20 @@ sub manage_selection {
     $innodb_per_table = 1 if ($value =~ /on/i);
 
     $options{sql}->query(
-        query => q{SELECT table_schema, table_name, engine, data_free, data_length+index_length as data_used, (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine IN ('InnoDB', 'MyISAM')}
+        query => q{
+            SELECT
+                table_schema,
+                table_name,
+                engine,
+                data_free,
+                data_length + index_length as data_used,
+                DATA_FREE / (DATA_LENGTH + INDEX_LENGTH + DATA_FREE) as TAUX_FRAG
+            FROM
+                information_schema.tables
+            WHERE
+                table_type = 'BASE TABLE'
+                AND engine IN ('InnoDB', 'MyISAM')
+        }
     );
     my $result = $options{sql}->fetchall_arrayref();
 
@@ -230,7 +243,7 @@ __END__
 
 =head1 MODE
 
-Check MySQL databases size and tables.
+Check MySQL/MariaDB databases and tables sizes.
 
 =over 8
 
@@ -240,7 +253,7 @@ Filter the databases to monitor with a regular expression.
 
 =item B<--filter-table>
 
-Filter table name (can be a regexp).
+Filter tables by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

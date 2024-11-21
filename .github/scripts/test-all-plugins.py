@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import glob
 import subprocess
 import sys
 import os
@@ -10,8 +11,8 @@ def get_tests_folders(plugin_name):
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
     for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if file.endswith("/") and os.path.exists("tests/robot/" + file): # if this is a directory and there is test for it.
-            folder_list.append("tests/robot/" + file)
+        if file.endswith("/") and os.path.exists("tests/" + file): # if this is a directory and there is test for it.
+            folder_list.append("tests/" + file)
     return folder_list
 
 
@@ -26,7 +27,7 @@ def test_plugin(plugin_name):
     print(f"{plugin_name} folders_list : {folders_list}")
     if len(folders_list) == 0:
         return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
-    robot_results = subprocess.run("robot -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
+    robot_results = subprocess.run("robot --exclude notauto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
                    shell=True, check=False)
     return robot_results.returncode
 
@@ -48,7 +49,7 @@ def launch_snmp_sim():
     try_command(cmd="mkdir -p /var/lib/snmp/cert_indexes/", error="can't create /var/lib/snmp/cert_indexes/ dir")
     try_command(cmd="chown snmp:snmp -R /var/lib/snmp/cert_indexes/", error="can't set cert_indexes folder permissions")
 
-    snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests/robot' &"
+    snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &"
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
 def refresh_packet_manager(archi):
@@ -100,6 +101,13 @@ def remove_plugin(plugin, archi):
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
+    # Remove cache files
+    tmp_files = glob.glob('/dev/shm/*')
+    for file in tmp_files:
+        try:
+            os.remove(file)
+        except Exception as e:
+            print(f"Erreur while removing file {file} : {str(e)}")
     return output_status
 
 
@@ -125,6 +133,11 @@ if __name__ == '__main__':
 
     for plugin in sys.argv:
         print("plugin : ", plugin)
+        folders_list = get_tests_folders(plugin)
+        if len(folders_list) == 0:
+            print(f"we don't test {plugin} as it don't have any robots tests.")
+            continue
+
         nb_plugins += 1
         tmp = install_plugin(plugin, archi)
         if tmp > 0:

@@ -1,0 +1,407 @@
+[
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER01",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER02",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER03",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER04",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 2,
+    "name": "VSERVER05",
+    "services": [
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": false
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER06",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 2,
+    "name": "VSERVER07",
+    "services": [
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": "Error",
+        "secondary_operational_status": "OK",
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": "OK",
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": false
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER07",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  },
+  {
+    "note": "",
+    "integration_services_state": "",
+    "state": 3,
+    "name": "VSERVER08",
+    "services": [
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Guest Service Interface",
+        "enabled": false
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Heartbeat",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Key-Value Pair Exchange",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Shutdown",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "Time Synchronization",
+        "enabled": true
+      },
+      {
+        "primary_operational_status": null,
+        "secondary_operational_status": null,
+        "service": "VSS",
+        "enabled": true
+      }
+    ],
+    "integration_services_version": "0.0"
+  }
+]

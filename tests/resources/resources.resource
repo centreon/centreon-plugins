@@ -1,12 +1,19 @@
 *** Settings ***
 Documentation       Centreon Plugins for Robot Framework
+
 Library             Process
 
+
 *** Variables ***
-${CENTREON_PLUGINS}         perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
-${PERCENT}                  %
+${HOSTNAME}             127.0.0.1
+${APIPORT}              3000
+${SNMPPORT}             2024
+${SNMPVERSION}          2c
+${PERCENT}              %
+
 
 *** Keywords ***
 Start Mockoon
@@ -18,6 +25,46 @@ Start Mockoon
     ...    ${MOCKOON_JSON}
     ...    --port
     ...    3000
-    Sleep    5s
+    Sleep    10s
+
 Stop Mockoon
     Terminate All Processes
+
+Ctn Cleanup Cache
+    Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
+    Remove File    ${/}dev${/}shm${/}*
+
+Ctn Generic Suite Setup
+   Ctn Cleanup Cache
+
+Ctn Run Command And Check Result As Regexp
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Match Regexp
+    ...    ${output}
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
+    ...    values=False
+
+Ctn Run Command And Check Result As Strings
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Be Equal As Strings
+    ...    ${expected_result}
+    ...    ${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
+
+Ctn Verify Command Output
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Contain    
+    ...    ${output}    
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True

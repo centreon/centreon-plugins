@@ -1,0 +1,290 @@
+{
+  "uuid": "f6ad0f9a-97d2-4c65-8362-7344934c821f",
+  "lastMigration": 32,
+  "name": "Velocloud.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "8fe7d016-e0b1-4f19-9e9f-9fd6c0e53cb3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "0a196fe2-5f0c-408c-84ba-249d347b3748",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "ae2261fa-857e-41e6-9cb2-843671684d35",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "portal/rest/login/enterpriseLogin",
+      "responses": [
+        {
+          "uuid": "a312c4c0-73f8-4110-b8f8-9452da3b58ce",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "Set-Cookie",
+              "value": "velocloud.session=s%3AeyJjb250ZW50IjoiNjg1N2YzMGU0OGFjYzcyNzc2YWQyMjZkNWExZDdkM2IzN2U2NzBiNDQ1Y2I2YTA3YTY3MTE2ZjcwYmYzYTg2OGZlNDY0YmYxYTlhOGNkOGEzZGE4YmE0MjZhNjU2ZjQ1NmNlN2ZlMTYzMWNjZThkZDI2YThiMDlmZTRlNGY4NmU2MzZkZjg1M2VmZWNmMGE0MDQzZGE3YzhlNTkxZTMyODcyMDk2NjY1YmQwYjFlNzdhYTVkMmI3MjFhNzY5NTI2MmRiYWVjY2ZiZGQyMGUxNDI3YWYyYWY2YTdmZTBhOWQzMjA3YmVhZTBlZGMzYjU5MDg2YjA4YThjZThmOTk2YzZkYTE2ZGRjZmFlYzVjNDA3Nzg5MTUxMDU5N2Q1Y2Q4NWIzNGUwOTQ3OTEwOWEyZTAwYzFlZDZiNjUwYzRhZDY2NDYwM2ZlM2ViYTkyNzM3NjM4MGMyZjg4Nzg0NTA0NTljMDAyMzE3NjZlNzAzMjQ2OTdlNDkxY2MzYTdhZGJmNmNhODFhYTg0NWRlYzJlNDkyMWEwZjg3YjkwMjY2YmY1MWYzOTFlZjQ5ZWU3MDJjODIwYzA3MTdjZmI0MDNhZGM5ZGY0NDU3YzYzNzE0ZjNkOTQ2MzFjYmEwNmFmMDIzNDc2MjE1NDIwMWY4MGMwOWIxOTBkNWUxYzAzNzdjMWQ2ZWEyMmRkZWUwZTQ0MGQ1YmI0OGRiODVjNGYyNmJkZTYzMTgwYTcxYWY1YWFiOTNhMTM2N2U5M2M5ZjhjODU4MWRiZDE1NDk2NTIzZTUyYWEwNzY3OTQ0YTViNjhjNzNkYTllNmJkNjRjNGJkNDU2OTUxNGFmZjgyODdhOWJmNjBkMDk3YzU3YWZmYzA5MDFlNGYwMmZmMjYzNGY2OWZjNWM2YjMwNWI5ZDE4MTE4ZGY0ZWEyZmY0NjU2MDc4YzY3NzAxODAzYTQ5MGM0MjE5NGZlY2E3OWQ5MzgxNzZkZDNkOWU0OTlmY2RhN2ViNjVhZDFlYjUxMzM3YmY0OGZkMTBhZDQyMzdhYzdlNTQyZDBkNDI2ZDI2Mjc3OGJiY2JhYjE3Mjg2ODljNzQwZDFjMjY0YzMyOWJmNTBmM2U1ODBjOWI2ZDc2N2YxZGUwMjRhNDIwMWExYjhlMmZjY2RmNDJjNDQ2MWYxMzNiODIyZmE3NTdlODE1MjBhNGQ4OTNiYWFiMTYwZjRmNWQwOWMxYThiY2FmNGRmZWRlNTA0YzM4NjBhNWUyZTQwZDJhNjk5ODkxMGFhZjg0YTY1MjE5MmZlMGZkOWFlYzhhNGNhMTlmODI0NjAyZmZlODViZWE1ZDk4N2JlMmQ2Y2Q5NGFhMWE5NmFmOTVjZWM2ODY3YzkyZTVhZDM0Y2NiZDhiNzFkMDdiODMyNWYxZWUwMzk2NWQ5ODBhYjdjYTNlNjJmN2Q0ZDJiN2FmMDg3NDgzOWI1MzU3YzZkNzI5YzExNjhmMGY5ODc3YjJlNzNiMWU5YTJjZjQ1OTYzYjY0Y2JhOWJkMTIwZGUzNjMwOGIxOTY1NDdkOThhNzg5Yzg3YjMxZWMxMjAxM2NhYjgzNWNjNDExYWZiNjEyMmM2NjQ1NzViNDQ4YjU4NjEwNzhlZTI1ZTEwZmY0ZGEwMjBhYTFlYTc5ZjEwNTlkMjUyYzNjNjkzNjhlYmM1MjMiLCJ0YWciOiJkYzI5YTQwNGRlZjIxMzlhNjFiMTE4YWQ3NTNhMTU3ZiIsIml2IjoiYTMzY2FlZTYxMzFmODQ0OTQ2YmYxZjgyZTEyYjQ3MzAiLCJzYWx0IjoiY2M4MTQ4MmYzODY3NTM5NmQzODM1ZjgzIn0.vNJKuHmYJ3EF0XhLuowRqQ3yKnMxRXVmlP1C3eMZ%2FqA; Path=/; HttpOnly; Secure; SameSite=Strict"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "199ff3b7-968b-4c8f-a5d8-80d4e72938c0",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "portal/rest/enterprise/getEnterprise",
+      "responses": [
+        {
+          "uuid": "d15b81d7-e9f5-4c93-8a3f-8381f9280be5",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "uy64",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "2758e04d-f45b-4e38-9998-41cd17db4968",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "portal/rest/enterprise/getEnterpriseEdges",
+      "responses": [
+        {
+          "uuid": "aff44dea-83ae-4357-a737-495410bc1951",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "fjb6",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": ".enterpriseId",
+              "value": "1511",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "8fe7d016-e0b1-4f19-9e9f-9fd6c0e53cb3"
+    },
+    {
+      "type": "route",
+      "uuid": "ae2261fa-857e-41e6-9cb2-843671684d35"
+    },
+    {
+      "type": "route",
+      "uuid": "199ff3b7-968b-4c8f-a5d8-80d4e72938c0"
+    },
+    {
+      "type": "route",
+      "uuid": "2758e04d-f45b-4e38-9998-41cd17db4968"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "8ac5926e-cefd-4ea8-b3ae-db0040640b68",
+      "id": "fjb6",
+      "name": "EnterpriseEdges",
+      "documentation": "",
+      "value": "[\n  {\n    \"id\": 12345,\n    \"created\": \"2023-12-13T08:51:59.000Z\",\n    \"enterpriseId\": 1234,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 98765,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-07-03T20:39:47.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2023-12-18T16:05:34.000Z\",\n    \"softwareVersion\": \"5.2.2.2\",\n    \"buildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"factorySoftwareVersion\": \"5.0.0\",\n    \"factoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.50.0.9-16_CPLD_0x29_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-06-03T20:58:48.000Z\",\n    \"selfMacAddress\": \"00:00:00:00:00:00\",\n    \"deviceId\": \"C3F5DF82-8E87-4741-A331-95FE2C2EC078\",\n    \"logicalId\": \"7a11d6a5-b379-47d6-acad-686fc05d79bc\",\n    \"serialNumber\": \"5KGN9Q3\",\n    \"modelNumber\": \"edge620-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#01\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-06-03T21:43:22.000Z\",\n    \"serviceUpSince\": \"2024-06-03T21:45:33.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:52.633Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-06-03T21:50:52.000Z\",\n    \"haSerialNumber\": \"7WDN9Q3\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:57:53.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"enhanced\",\n    \"standbySystemUpSince\": \"2024-06-03T21:46:56.000Z\",\n    \"standbyServiceUpSince\": \"2024-06-03T21:50:08.508Z\",\n    \"standbySoftwareVersion\": \"5.2.2.2\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"standbyModelNumber\": \"edge620-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  },\n  {\n    \"id\": 23456,\n    \"created\": \"2024-07-08T14:28:09.000Z\",\n    \"enterpriseId\": 2345,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 87654,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-08-07T14:28:09.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2024-07-09T08:38:21.000Z\",\n    \"softwareVersion\": \"5.2.3.2\",\n    \"buildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"factorySoftwareVersion\": \"5.0.0\",\n    \"factoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.43.0.9-16_CPLD_0x34_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-07-09T08:45:03.000Z\",\n    \"selfMacAddress\": \"e8:65:5f:ed:e1:c0\",\n    \"deviceId\": \"D67AEFAA-DE5A-4798-8AF5-648CB3691EFD\",\n    \"logicalId\": \"022a9472-aa7e-46bc-a803-d4be34d2fb7f\",\n    \"serialNumber\": \"H4C4W43\",\n    \"modelNumber\": \"edge610-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#02\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"OFFLINE\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-07-09T08:41:44.000Z\",\n    \"serviceUpSince\": \"2024-07-09T13:53:03.000Z\",\n    \"lastContact\": \"2024-07-09T13:57:54.000Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-07-09T13:51:23.000Z\",\n    \"haSerialNumber\": \"3HG4W43\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-07-09T14:00:01.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"standard\",\n    \"standbySystemUpSince\": \"2024-07-09T08:54:54.000Z\",\n    \"standbyServiceUpSince\": \"2024-07-09T13:53:28.835Z\",\n    \"standbySoftwareVersion\": \"5.2.3.2\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"standbyModelNumber\": \"edge610-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  },\n  {\n    \"id\": 34567,\n    \"created\": \"2023-11-30T14:31:30.000Z\",\n    \"enterpriseId\": 3456,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 76543,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2023-12-30T14:31:30.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2023-12-06T15:42:28.000Z\",\n    \"softwareVersion\": \"5.2.2.2\",\n    \"buildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"factorySoftwareVersion\": \"3.3.0\",\n    \"factoryBuildNumber\": \"R330-MAESTRO-20200528-MFG\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.41.0.9-15_CPLD_0x12_BMC_2.0), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-03-04T06:16:22.000Z\",\n    \"selfMacAddress\": \"8c:47:be:9d:16:10\",\n    \"deviceId\": \"4a99b5a2-a4c6-4bc6-86d2-023691c2ae89\",\n    \"logicalId\": \"7fdb83d8-4eb3-4d3b-8e77-7a9b5318b406\",\n    \"serialNumber\": \"3ZKR363\",\n    \"modelNumber\": \"edge3800\",\n    \"deviceFamily\": \"EDGE3X00\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#03\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-03-04T06:17:34.000Z\",\n    \"serviceUpSince\": \"2024-07-08T05:22:43.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:46.539Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-07-08T05:25:28.000Z\",\n    \"haSerialNumber\": \"479R363\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:56:49.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"standard\",\n    \"standbySystemUpSince\": \"2024-03-04T06:13:44.000Z\",\n    \"standbyServiceUpSince\": \"2024-07-08T05:24:53.347Z\",\n    \"standbySoftwareVersion\": \"5.2.2.2\",\n    \"standbyFactorySoftwareVersion\": \"4.0.0\",\n    \"standbyFactoryBuildNumber\": \"R400-20200929-3810-MFG-GA\",\n    \"standbyBuildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"standbyModelNumber\": \"edge3800\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": true\n  },\n  {\n    \"id\": 45678,\n    \"created\": \"2024-05-07T08:26:01.000Z\",\n    \"enterpriseId\": 4567,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 65432,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-06-06T08:26:02.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2024-05-23T08:29:47.000Z\",\n    \"softwareVersion\": \"5.2.3.2\",\n    \"buildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"factorySoftwareVersion\": \"5.0.0\",\n    \"factoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.43.0.9-16_CPLD_0x34_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-06-04T15:49:15.000Z\",\n    \"selfMacAddress\": \"e8:65:5f:ef:39:c0\",\n    \"deviceId\": \"1242C148-3B6F-450C-BE31-BED03F949A20\",\n    \"logicalId\": \"9bf018c8-fb8e-4f67-8a39-8cd7791d5427\",\n    \"serialNumber\": \"HXF4W43\",\n    \"modelNumber\": \"edge610-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#04\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-06-04T15:42:21.000Z\",\n    \"serviceUpSince\": \"2024-06-13T05:17:37.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:52.247Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-06-27T18:03:50.000Z\",\n    \"haSerialNumber\": \"6XD4W43\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:58:52.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"enhanced\",\n    \"standbySystemUpSince\": \"2024-06-27T18:01:07.000Z\",\n    \"standbyServiceUpSince\": \"2024-06-27T18:04:14.146Z\",\n    \"standbySoftwareVersion\": \"5.2.3.2\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"standbyModelNumber\": \"edge610-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  },\n  {\n    \"id\": 56789,\n    \"created\": \"2023-11-30T14:47:20.000Z\",\n    \"enterpriseId\": 5678,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 54321,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-01-10T11:32:23.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2023-12-11T11:12:33.000Z\",\n    \"softwareVersion\": \"5.2.2.2\",\n    \"buildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"factorySoftwareVersion\": \"4.0.0\",\n    \"factoryBuildNumber\": \"R400-20200929-3810-MFG-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.41.0.9-15_CPLD_0x12_BMC_2.0), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-02-29T06:14:10.000Z\",\n    \"selfMacAddress\": \"8c:47:be:ae:f1:41\",\n    \"deviceId\": \"6656e51c-eff4-4142-a540-8771ef5ef264\",\n    \"logicalId\": \"c9d12500-79a4-4c25-b167-ad472d374e8e\",\n    \"serialNumber\": \"6YXR363\",\n    \"modelNumber\": \"edge3800\",\n    \"deviceFamily\": \"EDGE3X00\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#05\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-02-29T06:15:08.000Z\",\n    \"serviceUpSince\": \"2024-07-08T05:06:42.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:53.567Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-07-08T05:09:11.000Z\",\n    \"haSerialNumber\": \"G99QY03\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:54:55.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"standard\",\n    \"standbySystemUpSince\": \"2024-02-29T06:11:36.000Z\",\n    \"standbyServiceUpSince\": \"2024-07-08T05:08:52.475Z\",\n    \"standbySoftwareVersion\": \"5.2.2.2\",\n    \"standbyFactorySoftwareVersion\": \"3.3.0\",\n    \"standbyFactoryBuildNumber\": \"R330-MAESTRO-20190404-MFG\",\n    \"standbyBuildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"standbyModelNumber\": \"edge3800\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": true\n  },\n  {\n    \"id\": 67890,\n    \"created\": \"2023-12-13T08:48:25.000Z\",\n    \"enterpriseId\": 6789,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 97654,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-03-03T10:39:19.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2024-02-20T18:05:48.000Z\",\n    \"softwareVersion\": \"5.2.2.2\",\n    \"buildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"factorySoftwareVersion\": \"5.0.0\",\n    \"factoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.43.0.9-16_CPLD_0x34_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-03-19T18:27:11.000Z\",\n    \"selfMacAddress\": \"e8:65:5f:ef:4c:80\",\n    \"deviceId\": \"41C300AB-F16B-48AF-B65C-A4680F176ECE\",\n    \"logicalId\": \"f3edcf22-c2ed-4b67-9b7b-e64e3f1ffde5\",\n    \"serialNumber\": \"7NC4W43\",\n    \"modelNumber\": \"edge610-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#06\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-03-19T18:21:57.000Z\",\n    \"serviceUpSince\": \"2024-03-19T18:25:36.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:51.309Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-03-19T18:29:36.000Z\",\n    \"haSerialNumber\": \"82G4W43\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:51:33.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"standard\",\n    \"standbySystemUpSince\": \"2024-03-19T18:23:41.000Z\",\n    \"standbyServiceUpSince\": \"2024-03-19T18:29:13.224Z\",\n    \"standbySoftwareVersion\": \"5.2.2.2\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5222-20240223-GA-29802b54f4\",\n    \"standbyModelNumber\": \"edge610-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  },\n  {\n    \"id\": 13456,\n    \"created\": \"2024-06-21T08:54:53.000Z\",\n    \"enterpriseId\": 7890,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 86543,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-08-07T13:04:44.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2024-07-04T10:52:57.000Z\",\n    \"softwareVersion\": \"5.2.3.2\",\n    \"buildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"factorySoftwareVersion\": \"5.0.0\",\n    \"factoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.43.0.9-16_CPLD_0x34_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-07-16T12:55:15.000Z\",\n    \"selfMacAddress\": \"e8:65:5f:ed:dd:00\",\n    \"deviceId\": \"CB849BB5-13A7-4F05-8EE2-A962BB212F69\",\n    \"logicalId\": \"55acb00b-e5e3-4cbc-baca-57bfa6debb44\",\n    \"serialNumber\": \"B3C4W43\",\n    \"modelNumber\": \"edge610-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#07\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-07-16T12:55:43.000Z\",\n    \"serviceUpSince\": \"2024-08-05T05:21:57.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:38.881Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-08-05T05:26:05.000Z\",\n    \"haSerialNumber\": \"9PF4W43\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-08-05T07:43:50.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"enhanced\",\n    \"standbySystemUpSince\": \"2024-07-16T12:51:11.000Z\",\n    \"standbyServiceUpSince\": \"2024-08-05T05:25:24.596Z\",\n    \"standbySoftwareVersion\": \"5.2.3.2\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5232-20240516-GA-e4ca476843\",\n    \"standbyModelNumber\": \"edge610-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  },\n  {\n    \"id\": 24567,\n    \"created\": \"2023-12-06T13:15:53.000Z\",\n    \"enterpriseId\": 1345,\n    \"enterpriseLogicalId\": \"XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX\",\n    \"siteId\": 75432,\n    \"activationKey\": \"XXXX-XXXX-XXXX-XXXX\",\n    \"activationKeyExpires\": \"2024-01-05T13:15:54.000Z\",\n    \"activationState\": \"ACTIVATED\",\n    \"activationTime\": \"2023-12-12T13:42:33.000Z\",\n    \"softwareVersion\": \"4.5.2\",\n    \"buildNumber\": \"R452-20240125-GA-3646337bed\",\n    \"factorySoftwareVersion\": \"\\\"5.0.0\\\"\",\n    \"factoryBuildNumber\": \"\\\"R5000-20220316-MR-GA\\\"\",\n    \"platformFirmwareVersion\": \"**NA**\",\n    \"platformBuildNumber\": \"**NA**(BIOS_3.43.0.9-16_CPLD_0x34_PIC_v20P), HASupported Upgradable\",\n    \"modemFirmwareVersion\": \"\",\n    \"modemBuildNumber\": \"\",\n    \"softwareUpdated\": \"2024-02-12T22:08:25.000Z\",\n    \"selfMacAddress\": \"e8:65:5f:ed:ce:40\",\n    \"deviceId\": \"30E12253-D7A6-45CE-AFCC-33E10F10399C\",\n    \"logicalId\": \"69137d19-a8e1-47ef-bae8-0604470f3c4a\",\n    \"serialNumber\": \"98C4W43\",\n    \"modelNumber\": \"edge610-n\",\n    \"deviceFamily\": \"EDGE6X0\",\n    \"lteRegion\": null,\n    \"name\": \"MYEDGE#08\",\n    \"dnsName\": null,\n    \"description\": \"\",\n    \"alertsEnabled\": 1,\n    \"operatorAlertsEnabled\": 1,\n    \"edgeState\": \"CONNECTED\",\n    \"edgeStateTime\": \"0000-00-00 00:00:00\",\n    \"isLive\": 0,\n    \"systemUpSince\": \"2024-02-12T22:05:32.000Z\",\n    \"serviceUpSince\": \"2024-02-12T22:13:39.000Z\",\n    \"lastContact\": \"2024-08-05T07:58:51.257Z\",\n    \"serviceState\": \"IN_SERVICE\",\n    \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n    \"haState\": \"READY\",\n    \"haPreviousState\": \"FAILED\",\n    \"haLastContact\": \"2024-03-15T02:06:50.000Z\",\n    \"haSerialNumber\": \"10C4W43\",\n    \"bastionState\": \"UNCONFIGURED\",\n    \"modified\": \"2024-07-31T05:27:15.000Z\",\n    \"customInfo\": \"\",\n    \"haMode\": \"standard\",\n    \"standbySystemUpSince\": \"2024-02-06T22:16:23.000Z\",\n    \"standbyServiceUpSince\": \"2024-02-11T21:01:49.417Z\",\n    \"standbySoftwareVersion\": \"5.2.2.0\",\n    \"standbyFactorySoftwareVersion\": \"5.0.0\",\n    \"standbyFactoryBuildNumber\": \"R5000-20220316-MR-GA\",\n    \"standbyBuildNumber\": \"R5220-20240104-GA-134893-e49bce97b1\",\n    \"standbyModelNumber\": \"edge610-n\",\n    \"standbyDeviceId\": null,\n    \"haWifiCapabilityMismatch\": null,\n    \"isHub\": false\n  }\n]\n"
+    },
+    {
+      "uuid": "e401c35f-1749-462c-ac8b-4b71153257b3",
+      "id": "uy64",
+      "name": "Enterprise",
+      "documentation": "",
+      "value": "{\n  \"id\": 1834,\n  \"created\": \"2023-11-30T13:40:15.000Z\",\n  \"networkId\": 1,\n  \"gatewayPoolId\": 3,\n  \"alertsEnabled\": 1,\n  \"operatorAlertsEnabled\": 1,\n  \"endpointPkiMode\": \"CERTIFICATE_OPTIONAL\",\n  \"name\": \"ACME CORP INTL\",\n  \"domain\": \"acmecorpintl\",\n  \"prefix\": null,\n  \"logicalId\": \"46d6cafe-98b3-4b6a-80c4-8b11404692b0\",\n  \"accountNumber\": \"ACME-CRP-INTL\",\n  \"description\": null,\n  \"contactName\": null,\n  \"contactPhone\": null,\n  \"contactMobile\": null,\n  \"contactEmail\": \"admin@acm.e\",\n  \"streetAddress\": null,\n  \"streetAddress2\": null,\n  \"city\": null,\n  \"state\": null,\n  \"postalCode\": null,\n  \"country\": null,\n  \"lat\": 37.402866,\n  \"lon\": -122.117332,\n  \"timezone\": \"America/Los_Angeles\",\n  \"locale\": \"en-US\",\n  \"bastionState\": \"UNCONFIGURED\",\n  \"modified\": \"2023-11-30T13:42:35.000Z\"\n}"
+    }
+  ],
+  "callbacks": []
+}

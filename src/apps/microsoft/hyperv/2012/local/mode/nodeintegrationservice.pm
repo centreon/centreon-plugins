@@ -111,7 +111,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
         'filter-note:s'     => { name => 'filter_note' },
-        'filter-status:s'   => { name => 'filter_status', default => 'running' }
+        'filter-status:s'   => { name => 'filter_status', default => 'Running' }
     });
 
     return $self;
@@ -132,6 +132,20 @@ sub check_options {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
     $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+}
+
+sub determine_operational_status {
+    my ($operational_status) = @_;
+
+    if ( defined($operational_status) ) {
+        if ( defined($node_vm_integration_service_operational_status->{ $operational_status}) ) {
+            return $node_vm_integration_service_operational_status->{ $operational_status };
+        } else {
+            return $operational_status;
+        }
+    } else {
+        return '-';
+    }
 }
 
 sub manage_selection {
@@ -204,17 +218,20 @@ sub manage_selection {
     foreach my $node (@$decoded) {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter vm.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $node_vm_state->{ $node->{state} } !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} 
+                . "': node state " . $node->{state} . " (" . $node_vm_state->{ $node->{state} }
+                . ") does not match filter /" . $self->{option_results}->{filter_status} 
+                . "/i", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
             defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter note.", debug => 1);
             next;
         }
         
@@ -235,16 +252,13 @@ sub manage_selection {
         my $services = (ref($node->{services}) eq 'ARRAY') ? $node->{services} : [ $node->{services} ];
 
         foreach my $service (@$services) {
+
             $self->{vm}->{$id}->{service}->{$id2} = {
                 vm => $node->{name},
                 service => $service->{service},
                 enabled => $service->{enabled} =~ /True|1/i ? 1 : 0,
-                primary_status => 
-                    defined($service->{primary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} } : '-',
-                secondary_status =>
-                    defined($service->{secondary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} }) ?
-                        $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} } : '-'
+                primary_status => determine_operational_status($service->{primary_operational_status}),
+                secondary_status => determine_operational_status($service->{secondary_operational_status})
             };
             $id2++;
         }

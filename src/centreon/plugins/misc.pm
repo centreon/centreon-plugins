@@ -754,6 +754,546 @@ sub check_security_whitelist {
     return 0;
 }
 
+sub json_decode {
+    my ($content) = @_;
+
+    $content =~ s/\r//mg;
+    my $object;
+    eval {
+        $object = JSON::XS->new->utf8->decode($content);
+    };
+    if ($@) {
+        print STDERR "Cannot decode JSON string: $@" . "\n";
+        return undef;
+    }
+
+    return $object;
+}
+
+sub json_encode {
+    my ($object) = @_;
+
+    $object =~ s/\r//mg;
+    my $encoded;
+    eval {
+        $encoded = encode_json($object);
+    };
+    if ($@) {
+        print STDERR 'Cannot encode object to JSON. Error message: ' . $@;
+        return undef;
+    }
+
+    return $encoded;
+}
+
+
 1;
 
 __END__
+
+=head1 NAME
+
+centreon::plugins::misc - A collection of miscellaneous utility functions for Centreon plugins.
+
+=head1 SYNOPSIS
+
+    use centreon::plugins::misc;
+
+    my $result = centreon::plugins::misc::execute(
+        command => 'ls',
+        command_options => '-l'
+    );
+
+=head1 DESCRIPTION
+
+The `centreon::plugins::misc` module provides a variety of utility functions that can be used in Centreon plugins. These functions include command execution, string manipulation, file handling, and more.
+
+=head1 METHODS
+
+=head2 execute
+
+    my $result = centreon::plugins::misc::execute(%options);
+
+Executes a command and returns the result.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 windows_execute
+
+    my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(%options);
+
+Executes a command on Windows and returns the output and exit code.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 unix_execute
+
+    my $stdout = centreon::plugins::misc::unix_execute(%options);
+
+Executes a command on Unix and returns the output.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 mymodule_load
+
+    my $result = centreon::plugins::misc::mymodule_load(%options);
+
+Loads a Perl module dynamically.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<module> - The module to load.
+
+=item * C<error_msg> - Error message to display if the module cannot be loaded.
+
+=back
+
+=back
+
+=head2 backtick
+
+    my ($status, $output, $exit_code) = centreon::plugins::misc::backtick(%options);
+
+Executes a command using backticks and returns the status, output, and exit code.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<arguments> - Arguments for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 is_empty
+
+    my $is_empty = centreon::plugins::misc::is_empty($value);
+
+Checks if a value is empty.
+
+=over 4
+
+=item * C<$value> - The value to check.
+
+=back
+
+=head2 trim
+
+    my $trimmed_value = centreon::plugins::misc::trim($value);
+
+Trims whitespace from a string.
+
+=over 4
+
+=item * C<$value> - The string to trim.
+
+=back
+
+=head2 powershell_encoded
+
+    my $encoded = centreon::plugins::misc::powershell_encoded($value);
+
+Encodes a string for use in PowerShell.
+
+=over 4
+
+=item * C<$value> - The string to encode.
+
+=back
+
+=head2 powershell_escape
+
+    my $escaped = centreon::plugins::misc::powershell_escape($value);
+
+Escapes special characters in a string for use in PowerShell.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 minimal_version
+
+    my $is_minimal = centreon::plugins::misc::minimal_version($version_src, $version_dst);
+
+Checks if a version is at least a specified version.
+
+=over 4
+
+=item * C<$version_src> - The source version.
+
+=item * C<$version_dst> - The destination version.
+
+=back
+
+=head2 change_seconds
+
+    my $formatted_time = centreon::plugins::misc::change_seconds(%options);
+
+Converts seconds into a human-readable format.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The number of seconds.
+
+=item * C<start> - The starting unit.
+
+=back
+
+=back
+
+=head2 scale_bytesbit
+
+    my $scaled_value = centreon::plugins::misc::scale_bytesbit(%options);
+
+Scales a value between bytes and bits.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to scale.
+
+=item * C<src_unit> - The source unit.
+
+=item * C<dst_unit> - The destination unit.
+
+=back
+
+=back
+
+=head2 convert_bytes
+
+    my $bytes = centreon::plugins::misc::convert_bytes(%options);
+
+Converts a value to bytes.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to convert.
+
+=item * C<unit> - The unit of the value.
+
+=back
+
+=back
+
+=head2 convert_fahrenheit
+
+    my $celsius = centreon::plugins::misc::convert_fahrenheit(%options);
+
+Converts a temperature from Fahrenheit to Celsius.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The temperature in Fahrenheit.
+
+=back
+
+=back
+
+=head2 expand_exponential
+
+    my $expanded = centreon::plugins::misc::expand_exponential(%options);
+
+Expands an exponential value to its full form.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The exponential value.
+
+=back
+
+=back
+
+=head2 alert_triggered
+
+    my $is_triggered = centreon::plugins::misc::alert_triggered(%options);
+
+Checks if an alert is triggered based on thresholds.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to check.
+
+=item * C<warning> - The warning threshold.
+
+=item * C<critical> - The critical threshold.
+
+=back
+
+=back
+
+=head2 parse_threshold
+
+    my ($status, $threshold) = centreon::plugins::misc::parse_threshold(%options);
+
+Parses a threshold string.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<threshold> - The threshold string.
+
+=back
+
+=back
+
+=head2 get_threshold_litteral
+
+    my $threshold_str = centreon::plugins::misc::get_threshold_litteral(%options);
+
+Returns the literal representation of a threshold.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<arobase> - Indicates if the threshold is inclusive.
+
+=item * C<start> - The start of the threshold.
+
+=item * C<end> - The end of the threshold.
+
+=back
+
+=back
+
+=head2 set_timezone
+
+    my $timezone = centreon::plugins::misc::set_timezone(%options);
+
+Sets the timezone.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<name> - The name of the timezone.
+
+=back
+
+=back
+
+=head2 uniq
+
+    my @unique = centreon::plugins::misc::uniq(@values);
+
+Returns a list of unique values.
+
+=over 4
+
+=item * C<@values> - The list of values.
+
+=back
+
+=head2 eval_ssl_options
+
+    my $ssl_context = centreon::plugins::misc::eval_ssl_options(%options);
+
+Evaluates SSL options.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<ssl_opt> - The SSL options.
+
+=back
+
+=back
+
+=head2 slurp_file
+
+    my $content = centreon::plugins::misc::slurp_file(%options);
+
+Reads the content of a file.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<file> - The file to read.
+
+=back
+
+=back
+
+=head2 sanitize_command_param
+
+    my $sanitized = centreon::plugins::misc::sanitize_command_param(%options);
+
+Sanitizes a command parameter.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to sanitize.
+
+=back
+
+=back
+
+=head2 check_security_command
+
+    my $status = centreon::plugins::misc::check_security_command(%options);
+
+Checks the security of a command.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to check.
+
+=item * C<command_options> - Options for the command.
+
+=back
+
+=back
+
+=head2 check_security_whitelist
+
+    my $status = centreon::plugins::misc::check_security_whitelist(%options);
+
+Checks if a command is in the security whitelist.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to check.
+
+=item * C<command_options> - Options for the command.
+
+=back
+
+=back
+
+=head2 json_decode
+
+    my $decoded = centreon::plugins::misc::json_decode($content);
+
+Decodes a JSON string.
+
+=over 4
+
+=item * C<$content> - The JSON string to decode and transform into an object.
+
+=back
+
+=head2 json_encode
+
+    my $encoded = centreon::plugins::misc::json_encode($object);
+
+Encodes an object to a JSON string.
+
+=over 4
+
+=item * C<$object> - The object to encode.
+
+=back
+
+=head1 AUTHOR
+
+Centreon
+
+=head1 LICENSE
+
+Licensed under the Apache License, Version 2.0.
+
+=cut

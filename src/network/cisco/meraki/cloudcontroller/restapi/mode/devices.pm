@@ -312,6 +312,7 @@ sub new {
         'filter-tags:s'                => { name => 'filter_tags' },
         'add-switch-ports'             => { name => 'add_switch_ports' },
         'filter-switch-port:s'         => { name => 'filter_switch_port' },
+        'filter-link-name:s'           => { name => 'filter_link_name' },
         'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
         'skip-clients'                 => { name => 'skip_clients' },
         'skip-performance'             => { name => 'skip_performance' },
@@ -373,6 +374,10 @@ sub add_uplink {
         foreach (@$links) {
             my $interface = lc($_->{interface});
             $interface =~ s/\s+//g;
+
+            next if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+                $interface !~ /$self->{option_results}->{filter_link_name}/);
+
             $self->{devices}->{ $options{serial} }->{device_links}->{$interface} = {
                 display => $interface,
                 link_status => lc($_->{status})
@@ -396,7 +401,10 @@ sub add_uplink_loss_latency {
     foreach (values %$links) {
         my $interface = lc($_->{uplink});
         $interface =~ s/\s+//g;
+
         next if (!defined($self->{devices}->{ $options{serial} }->{device_links}->{$interface}));
+        next if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+            $interface !~ /$self->{option_results}->{filter_link_name}/);
 
         my ($latency, $loss, $count) = (0, 0, 0);
         foreach my $ts (@{$_->{timeSeries}}) {
@@ -581,6 +589,10 @@ Check devices.
 
 Filter devices by name (can be a regexp).
 
+=item B<--filter-link-name>
+
+Filter VPN links by name (can be a regexp).
+
 =item B<--filter-network-id>
 
 Filter devices by network ID (can be a regexp).
@@ -611,7 +623,7 @@ Don't monitor clients traffic on device.
 
 =item B<--skip-performance>
 
-Don't monitor appliance perfscore.
+Don't monitor appliance performance score.
 
 =item B<--skip-connections>
 
