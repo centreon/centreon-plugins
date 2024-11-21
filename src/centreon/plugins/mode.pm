@@ -26,17 +26,17 @@ use centreon::plugins::perfdata;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self              = {};
     bless $self, $class;
 
     $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
-    
+
     %{$self->{option_results}} = ();
-    @{$self->{option_extras}} = @{$options{options}->{extra_arguments}};
-    $self->{output} = $options{output};
+    @{$self->{option_extras}}  = @{$options{options}->{extra_arguments}};
+    $self->{output}            = $options{output};
     $self->{output}->use_new_perfdata(value => 1)
         if (defined($options{force_new_perfdata}) && $options{force_new_perfdata} == 1);
-    $self->{mode} = $options{mode};
+    $self->{mode}    = $options{mode};
     $self->{version} = '1.0';
 
     return $self;
@@ -62,7 +62,7 @@ sub init {
 
 sub version {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_option_msg(short_msg => "Mode Version: " . $self->{version});
 }
 

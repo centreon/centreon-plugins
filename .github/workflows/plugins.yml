@@ -332,7 +332,7 @@ jobs:
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: plugin-installation-${{ matrix.distrib }}
-          path: /var/log/robot-plugins-installation-tests.log
+          path: /var/log/robot-tests
           retention-days: 1
 
   deliver-packages:
