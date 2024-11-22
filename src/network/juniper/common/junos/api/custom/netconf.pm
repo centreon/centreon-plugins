@@ -108,15 +108,31 @@ sub get_identifier {
 sub load_xml {
     my ($self, %options) = @_;
 
-    if ($options{data} !~ /($options{start_tag}.*?$options{end_tag})/ms) {
-        if (defined($options{error_continue}) && $options{error_continue} == 1) {
-           return {};
+    my $content;
+
+    if (!defined($options{middle_tag})) {
+        if ($options{data} =~ /($options{start_tag}.*?$options{end_tag})/ms) {
+            $content = $1;
         }
+    } else {
+        while ($options{data} =~ /($options{start_tag}.*?$options{end_tag})/msg) {
+            my $matched = $1;
+            if ($1 =~ /$options{middle_tag}/ms) {
+                $content = $matched;
+                last;
+            }
+        }
+    }
+
+    if (!defined($content)) {
+        if (defined($options{error_continue}) && $options{error_continue} == 1) {
+            return {};
+        }
+
         $self->{output}->add_option_msg(short_msg => "Cannot find information");
         $self->{output}->option_exit();
     }
 
-    my $content = $1;
     $content =~ s/junos://msg;
 
     my $xml_result;
@@ -425,7 +441,13 @@ sub get_interface_infos {
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<interface-information.*?>', end_tag => '</interface-information>', force_array => ['physical-interface', 'logical-interface']);
+    my $result = $self->load_xml(
+        data => $content,
+        start_tag => '<interface-information',
+        end_tag => '</interface-information>',
+        middle_tag => 'admin-status',
+        force_array => ['physical-interface', 'logical-interface']
+    );
 
     foreach (@{$result->{'physical-interface'}}) {
         my $speed = centreon::plugins::misc::trim($_->{'speed'});
@@ -465,6 +487,60 @@ sub get_interface_infos {
                 speed => $speed
             };
         }
+    }
+
+    return $results;
+}
+
+sub get_interface_optical_infos {
+    my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'interface_optical');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['interface_optical']));
+    }
+
+    my $results = [];
+    my $result = $self->load_xml(
+        data => $content,
+        start_tag => '<interface-information',
+        end_tag => '</interface-information>',
+        middle_tag => 'optics-diagnostics',
+        force_array => ['physical-interface']
+    );
+
+    foreach (@{$result->{'physical-interface'}}) {
+        use Data::Dumper; print Data::Dumper::Dumper($result);
+        exit(1);
+        my $speed = centreon::plugins::misc::trim($_->{'speed'});
+        my ($speed_unit, $speed_value);
+        if ($speed =~ /^\s*([0-9]+)\s*([A-Za-z])/) {
+            ($speed_value, $speed_unit) = ($1, $2);
+        }
+        $speed = centreon::plugins::misc::scale_bytesbit(
+            value => $speed_value,
+            src_quantity => $speed_unit,
+            dst_quantity => '',
+            src_unit => 'b',
+            dst_unit => 'b'
+        );
+
+        my $descr = centreon::plugins::misc::trim($_->{'description'});
+        my $name = centreon::plugins::misc::trim($_->{'name'});
+
+        push @$results, {
+            descr => defined($descr) && $descr ne '' ? $descr : $name,
+            name => $name,
+            opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
+            admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
+            in => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
+            out => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
+            speed => $speed
+        };
     }
 
     return $results;

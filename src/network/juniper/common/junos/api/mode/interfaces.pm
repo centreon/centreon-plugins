@@ -175,6 +175,7 @@ sub new {
         'display-use:s'       => { name => 'display_use' },
         'add-status'          => { name => 'add_status' },
         'add-traffic'         => { name => 'add_traffic' },
+        'add-optical'         => { name => 'add_optical' },
         'filter-interface:s'  => { name => 'filter_interface' },
         'exclude-interface:s' => { name => 'exclude_interface' },
         'units-traffic:s'     => { name => 'units_traffic', default => 'percent_delta' },
@@ -190,7 +191,8 @@ sub check_options {
 
     # If no options, we set add-status
     if (!defined($self->{option_results}->{add_traffic}) &&
-        !defined($self->{option_results}->{add_status})) {
+        !defined($self->{option_results}->{add_status}) &&
+        !defined($self->{option_results}->{add_optical})) {
         $self->{option_results}->{add_status} = 1;
     }
 
@@ -230,8 +232,13 @@ sub check_options {
     }
 }
 
-sub do_selection {
+sub do_selection_interface {
     my ($self, %options) = @_;
+
+    return if (
+        !defined($self->{option_results}->{add_traffic}) &&
+        !defined($self->{option_results}->{add_status})
+    );
 
     my $results = $options{custom}->get_interface_infos();
 
@@ -252,17 +259,29 @@ sub do_selection {
             out => $_->{out}
         };
     }
+}
 
-    if (scalar(keys %{$self->{interfaces}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No interface found.");
-        $self->{output}->option_exit();
-    }
+sub do_selection_interface_optical {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_optical}));
+
+    my $results = $options{custom}->get_interface_optical_infos();
+    
+    exit(1);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->do_selection(custom => $options{custom});
+    $self->do_selection_interface(custom => $options{custom});
+    $self->do_selection_interface_optical(custom => $options{custom});
+    
+    if (scalar(keys %{$self->{interfaces}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No interface found.");
+        $self->{output}->option_exit();
+    }
+
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
@@ -285,6 +304,10 @@ Check interface status.
 =item B<--add-traffic>
 
 Check interface traffic.
+
+=item B<--add-optical>
+
+Check interface optical.
 
 =item B<--warning-status>
 
