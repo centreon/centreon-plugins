@@ -163,7 +163,7 @@ sub set_counters {
             }
         },
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
-                key_values => [ { name => 'inputPowerDbm' }, { name => 'display' }, { name => 'instance' } ],
+                key_values => [ { name => 'inputPowerDbm' }, { name => 'display' } ],
                 output_template => 'input power: %s dBm',
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
@@ -172,11 +172,11 @@ sub set_counters {
                         value => $self->{result_values}->{inputPowerDbm},
                         threshold => [
                             {
-                                label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}, 
+                                label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, 
                                 exit_litteral => 'critical'
                             },
                             {
-                                label => 'warning-'. $self->{thlabel} . '-' . $self->{result_values}->{instance},
+                                label => 'warning-'. $self->{thlabel} . '-' . $self->{instance},
                                 exit_litteral => 'warning'
                             }
                         ]
@@ -190,8 +190,8 @@ sub set_counters {
                         unit => 'dBm',
                         instances => $self->{result_values}->{display},
                         value => $self->{result_values}->{inputPowerDbm},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
                         min => 0
                     );
                 }
@@ -206,7 +206,7 @@ sub set_counters {
             }
         },
         { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
-                key_values => [ { name => 'outputPowerDbm' }, { name => 'display' }, { name => 'instance' } ],
+                key_values => [ { name => 'outputPowerDbm' }, { name => 'display' } ],
                 output_template => 'output power: %s dBm',
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
@@ -215,11 +215,11 @@ sub set_counters {
                         value => $self->{result_values}->{outputPowerDbm},
                         threshold => [
                             {
-                                label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}, 
+                                label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, 
                                 exit_litteral => 'critical'
                             },
                             {
-                                label => 'warning-'. $self->{thlabel} . '-' . $self->{result_values}->{instance},
+                                label => 'warning-'. $self->{thlabel} . '-' . $self->{instance},
                                 exit_litteral => 'warning'
                             }
                         ]
@@ -233,8 +233,8 @@ sub set_counters {
                         unit => 'dBm',
                         instances => $self->{result_values}->{display},
                         value => $self->{result_values}->{outputPowerDbm},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
                         min => 0
                     );
                 }
@@ -359,10 +359,14 @@ sub do_selection_interface_optical {
         
         # only --add-optical option
         if (!defined($self->{interfaces}->{ $_->{name} })) {
+            next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+                $_->{name} !~ /$self->{option_results}->{filter_interface}/);
+            next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
+                $_->{name} =~ /$self->{option_results}->{exclude_interface}/);
+
             $self->{interfaces}->{ $_->{name} } = { display => $_->{name} };
         }
 
-        $self->{interfaces}->{ $_->{name} }->{instance} = $_->{name};
         $self->{interfaces}->{ $_->{name} }->{biasCurrent} = $_->{biasCurrent};
         $self->{interfaces}->{ $_->{name} }->{moduleTemperature} = $_->{moduleTemperature};
 
