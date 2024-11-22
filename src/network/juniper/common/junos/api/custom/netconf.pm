@@ -509,6 +509,34 @@ sub get_memory_infos {
     return $results;
 }
 
+
+sub get_ospf_infos {
+    my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{cache_use})) {
+        return $self->get_cache_file_response_command(command => 'ospf');
+    }
+
+    my $content = $options{content};
+    if (!defined($content)) {
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['ospf']));
+    }
+
+    my $results = [];
+    my $result = $self->load_xml(data => $content, start_tag => '<ospf-neighbor-informatio.*?>', end_tag => '</ospf-neighbor-information>', force_array => ['ospf-neighbor']);
+
+    foreach (@{$result->{'ospf-neighbor'}}) {
+        push @$results, {
+            neighborId => $_->{'neighbor-id'},
+            neighborAddress => $_->{'neighbor-address'},
+            interfaceName => $_->{'interface-name'},
+            state => $_->{'ospf-neighbor-state'}
+        };
+    }
+
+    return $results;
+}
+
 sub get_bgp_infos {
     my ($self, %options) = @_;
 

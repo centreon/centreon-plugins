@@ -47,6 +47,7 @@ sub new {
         'list-rsvp'         => 'network::juniper::common::junos::api::mode::listrsvp',
         'list-services-rpm' => 'network::juniper::common::junos::api::mode::listservicesrpm',
         'memory'            => 'network::juniper::common::junos::api::mode::memory',
+        'ospf'              => 'network::juniper::common::junos::api::mode::ospf',
         'rsvp'              => 'network::juniper::common::junos::api::mode::rsvp',
         'services-rpm'      => 'network::juniper::common::junos::api::mode::servicesrpm'
     };
