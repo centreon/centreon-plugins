@@ -162,6 +162,92 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
+        { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
+                key_values => [ { name => 'inputPowerDbm' }, { name => 'display' }, { name => 'instance' } ],
+                output_template => 'input power: %s dBm',
+                closure_custom_threshold_check => sub {
+                    my ($self, %options) = @_;
+
+                    return $self->{perfdata}->threshold_check(
+                        value => $self->{result_values}->{inputPowerDbm},
+                        threshold => [
+                            {
+                                label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}, 
+                                exit_litteral => 'critical'
+                            },
+                            {
+                                label => 'warning-'. $self->{thlabel} . '-' . $self->{result_values}->{instance},
+                                exit_litteral => 'warning'
+                            }
+                        ]
+                    );
+                },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'dBm',
+                        instances => $self->{result_values}->{display},
+                        value => $self->{result_values}->{inputPowerDbm},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        min => 0
+                    );
+                }
+            }
+        },
+        { label => 'bias-current', filter => 'add_optical', nlabel => 'interface.bias.current.milliampere', set => {
+                key_values => [ { name => 'biasCurrent' }, { name => 'display' } ],
+                output_template => 'bias current: %s mA',
+                perfdatas => [
+                    { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
+                key_values => [ { name => 'outputPowerDbm' }, { name => 'display' }, { name => 'instance' } ],
+                output_template => 'output power: %s dBm',
+                closure_custom_threshold_check => sub {
+                    my ($self, %options) = @_;
+
+                    return $self->{perfdata}->threshold_check(
+                        value => $self->{result_values}->{outputPowerDbm},
+                        threshold => [
+                            {
+                                label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}, 
+                                exit_litteral => 'critical'
+                            },
+                            {
+                                label => 'warning-'. $self->{thlabel} . '-' . $self->{result_values}->{instance},
+                                exit_litteral => 'warning'
+                            }
+                        ]
+                    );
+                },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'dBm',
+                        instances => $self->{result_values}->{display},
+                        value => $self->{result_values}->{outputPowerDbm},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{result_values}->{instance}),
+                        min => 0
+                    );
+                }
+            }
+        },
+        { label => 'module-temperature', filter => 'add_optical', nlabel => 'interface.module.temperature.celsius', set => {
+                key_values => [ { name => 'moduleTemperature' }, { name => 'display' } ],
+                output_template => 'module temperature: %.2f C',
+                perfdatas => [
+                    { template => '%.2f', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -246,10 +332,10 @@ sub do_selection_interface {
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
             $_->{ $self->{option_results}->{filter_use} } !~ /$self->{option_results}->{filter_interface}/);
-         next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
+        next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
             $_->{ $self->{option_results}->{filter_use} } =~ /$self->{option_results}->{exclude_interface}/);
 
-        $self->{interfaces}->{ $_->{ $self->{option_results}->{display_use} } } = {
+        $self->{interfaces}->{ $_->{name} } = {
             display => $_->{ $self->{option_results}->{display_use} },
             speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
             speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
@@ -267,8 +353,63 @@ sub do_selection_interface_optical {
     return if (!defined($self->{option_results}->{add_optical}));
 
     my $results = $options{custom}->get_interface_optical_infos();
-    
-    exit(1);
+    foreach (@$results) {
+        next if ((defined($self->{option_results}->{add_traffic}) || defined($self->{option_results}->{add_status}))
+            && !defined($self->{interfaces}->{ $_->{name} }));
+        
+        # only --add-optical option
+        if (!defined($self->{interfaces}->{ $_->{name} })) {
+            $self->{interfaces}->{ $_->{name} } = { display => $_->{name} };
+        }
+
+        $self->{interfaces}->{ $_->{name} }->{instance} = $_->{name};
+        $self->{interfaces}->{ $_->{name} }->{biasCurrent} = $_->{biasCurrent};
+        $self->{interfaces}->{ $_->{name} }->{moduleTemperature} = $_->{moduleTemperature};
+
+        if (defined($_->{outputPowerDbm})) {
+            $self->{interfaces}->{ $_->{name} }->{outputPowerDbm} = $_->{outputPowerDbm};
+            my ($warn_val, $crit_val) = ('', '');
+
+            if ((!defined($self->{option_results}->{'warning-output-power'}) || $self->{option_results}->{'warning-output-power'} eq '') &&
+                (!defined($self->{option_results}->{'critical-output-power'}) || $self->{option_results}->{'critical-output-power'} eq '') &&
+                (!defined($self->{option_results}->{'warning-instance-interface-output-power-dbm'}) || $self->{option_results}->{'warning-instance-interface-output-power-dbm'} eq '') &&
+                (!defined($self->{option_results}->{'critical-instance-interface-output-power-dbm'}) || $self->{option_results}->{'critical-instance-interface-output-power-dbm'} eq '')) {
+                $crit_val = $_->{outputPowerDbmLowAlarmCrit} . ':'
+                    if (defined($_->{outputPowerDbmLowAlarmCrit}) && $_->{outputPowerDbmLowAlarmCrit} != 0);
+                $crit_val .= $_->{outputPowerDbmHighAlarmCrit}
+                    if (defined($_->{outputPowerDbmHighAlarmCrit}) && $_->{outputPowerDbmHighAlarmCrit} != 0);
+                $self->{perfdata}->threshold_validate(label => 'critical-instance-interface-output-power-dbm-' . $_->{name}, value => $crit_val);
+
+                $warn_val = $_->{outputPowerDbmLowAlarmWarn} . ':'
+                    if (defined($_->{outputPowerDbmLowAlarmWarn}) && $_->{outputPowerDbmLowAlarmWarn} != 0);
+                $warn_val .= $_->{outputPowerDbmHighAlarmWarn}
+                    if (defined($_->{outputPowerDbmHighAlarmWarn}) && $_->{outputPowerDbmHighAlarmWarn} != 0);
+                $self->{perfdata}->threshold_validate(label => 'warning-instance-interface-output-power-dbm-' . $_->{name}, value => $warn_val);
+            }
+        }
+
+        if (defined($_->{inputPowerDbm})) {
+            $self->{interfaces}->{ $_->{name} }->{inputPowerDbm} = $_->{inputPowerDbm};
+            my ($warn_val, $crit_val) = ('', '');
+
+            if ((!defined($self->{option_results}->{'warning-input-power'}) || $self->{option_results}->{'warning-input-power'} eq '') &&
+                (!defined($self->{option_results}->{'critical-input-power'}) || $self->{option_results}->{'critical-input-power'} eq '') &&
+                (!defined($self->{option_results}->{'warning-instance-interface-input-power-dbm'}) || $self->{option_results}->{'warning-instance-interface-input-power-dbm'} eq '') &&
+                (!defined($self->{option_results}->{'critical-instance-interface-input-power-dbm'}) || $self->{option_results}->{'critical-instance-interface-input-power-dbm'} eq '')) {
+                $crit_val = $_->{inputPowerDbmLowAlarmCrit} . ':'
+                    if (defined($_->{inputPowerDbmLowAlarmCrit}) && $_->{inputPowerDbmLowAlarmCrit} != 0);
+                $crit_val .= $_->{inputPowerDbmHighAlarmCrit}
+                    if (defined($_->{inputPowerDbmHighAlarmCrit}) && $_->{inputPowerDbmHighAlarmCrit} != 0);
+                $self->{perfdata}->threshold_validate(label => 'critical-instance-interface-input-power-dbm-' . $_->{name}, value => $crit_val);
+
+                $warn_val = $_->{inputPowerDbmLowAlarmWarn} . ':'
+                    if (defined($_->{inputPowerDbmLowAlarmWarn}) && $_->{inputPowerDbmLowAlarmWarn} != 0);
+                $warn_val .= $_->{inputPowerDbmHighAlarmWarn}
+                    if (defined($_->{inputPowerDbmHighAlarmWarn}) && $_->{inputPowerDbmHighAlarmWarn} != 0);
+                $self->{perfdata}->threshold_validate(label => 'warning-instance-interface-input-power-dbm-' . $_->{name}, value => $warn_val);
+            }
+        }
+    }
 }
 
 sub manage_selection {
@@ -323,6 +464,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
 Thresholds.
 Can be: 'in-traffic', 'out-traffic',
+'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
