@@ -514,33 +514,27 @@ sub get_interface_optical_infos {
     );
 
     foreach (@{$result->{'physical-interface'}}) {
-        use Data::Dumper; print Data::Dumper::Dumper($result);
-        exit(1);
-        my $speed = centreon::plugins::misc::trim($_->{'speed'});
-        my ($speed_unit, $speed_value);
-        if ($speed =~ /^\s*([0-9]+)\s*([A-Za-z])/) {
-            ($speed_value, $speed_unit) = ($1, $2);
+        my $entry = { name => centreon::plugins::misc::trim($_->{'name'}) };
+
+        if (defined($_->{'optics-diagnostics'}->{'laser-output-power-dbm'})) {
+            $entry->{outputPowerDbm} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-output-power-dbm'});
+            $entry->{outputPowerDbmLowAlarmCrit} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-tx-power-low-alarm-threshold-dbm'});
+            $entry->{outputPowerDbmHighAlarmCrit} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-tx-power-high-alarm-threshold-dbm'});
+            $entry->{outputPowerDbmLowAlarmWarn} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-tx-power-low-warn-threshold-dbm'});
+            $entry->{outputPowerDbmHighAlarmWarn} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-tx-power-high-warn-threshold-dbm'});
         }
-        $speed = centreon::plugins::misc::scale_bytesbit(
-            value => $speed_value,
-            src_quantity => $speed_unit,
-            dst_quantity => '',
-            src_unit => 'b',
-            dst_unit => 'b'
-        );
+        if (defined($_->{'optics-diagnostics'}->{'laser-input-power-dbm'})) {
+            $entry->{inputPowerDbm} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-input-power-dbm'});
+            $entry->{inputPowerDbmLowAlarmCrit} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-rx-power-low-alarm-threshold-dbm'});
+            $entry->{inputPowerDbmHighAlarmCrit} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-rx-power-high-alarm-threshold-dbm'});
+            $entry->{inputPowerDbmLowAlarmWarn} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-rx-power-low-warn-threshold-dbm'});
+            $entry->{inputPowerDbmHighAlarmWarn} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-rx-power-high-warn-threshold-dbm'});
+        }
 
-        my $descr = centreon::plugins::misc::trim($_->{'description'});
-        my $name = centreon::plugins::misc::trim($_->{'name'});
+        $entry->{biasCurrent} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'laser-bias-current'});
+        $entry->{moduleTemperature} = centreon::plugins::misc::trim($_->{'optics-diagnostics'}->{'module-temperature'}->{celsius});
 
-        push @$results, {
-            descr => defined($descr) && $descr ne '' ? $descr : $name,
-            name => $name,
-            opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
-            admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
-            in => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
-            out => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
-            speed => $speed
-        };
+        push @$results, $entry;
     }
 
     return $results;
