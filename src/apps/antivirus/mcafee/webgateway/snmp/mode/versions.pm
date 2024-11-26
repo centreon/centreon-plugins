@@ -118,9 +118,9 @@ sub check_options {
     $self->{cache}->check_options(%options);
 }
 
-my $oid_pMFEDATVersion = '.1.3.6.1.4.1.1230.2.7.1.20.4.0';
-my $oid_pAMProactiveVersion = '.1.3.6.1.4.1.1230.2.7.1.20.5.0';
-my $oid_pTSDBVersion = '.1.3.6.1.4.1.1230.2.7.1.20.6.0';
+my $oid_pMFEDATVersion = '.1.3.6.1.4.1.59732.2.7.1.20.4.0';
+my $oid_pAMProactiveVersion = '.1.3.6.1.4.1.59732.2.7.1.20.5.0';
+my $oid_pTSDBVersion = '.1.3.6.1.4.1.59732.2.7.1.20.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

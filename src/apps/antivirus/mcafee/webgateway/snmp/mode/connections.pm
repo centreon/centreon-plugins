@@ -94,11 +94,11 @@ sub new {
     return $self;
 }
 
-my $oid_stConnectionsLegitimate = '.1.3.6.1.4.1.1230.2.7.2.1.3.0';
-my $oid_stBlockedByAntiMalware = '.1.3.6.1.4.1.1230.2.7.2.1.4.0';
-my $oid_stConnectionsBlocked = '.1.3.6.1.4.1.1230.2.7.2.1.5.0';
-my $oid_stBlockedByMediaFilter = '.1.3.6.1.4.1.1230.2.7.2.1.6.0';
-my $oid_stBlockedByURLFilter = '.1.3.6.1.4.1.1230.2.7.2.1.7.0';
+my $oid_stConnectionsLegitimate = '.1.3.6.1.4.1.59732.2.7.2.1.3.0';
+my $oid_stBlockedByAntiMalware = '.1.3.6.1.4.1.59732.2.7.2.1.4.0';
+my $oid_stConnectionsBlocked = '.1.3.6.1.4.1.59732.2.7.2.1.5.0';
+my $oid_stBlockedByMediaFilter = '.1.3.6.1.4.1.59732.2.7.2.1.6.0';
+my $oid_stBlockedByURLFilter = '.1.3.6.1.4.1.59732.2.7.2.1.7.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

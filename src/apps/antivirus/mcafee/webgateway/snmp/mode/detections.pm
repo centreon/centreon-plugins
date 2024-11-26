@@ -77,13 +77,13 @@ sub new {
     return $self;
 }
 
-my $oid_stMalwareDetected = '.1.3.6.1.4.1.1230.2.7.2.1.2.0';
+my $oid_stMalwareDetected = '.1.3.6.1.4.1.59732.2.7.2.1.2.0';
 
 my $mapping = {
-    stCategoryName => { oid => '.1.3.6.1.4.1.1230.2.7.2.1.10.1.1' },
-    stCategoryCount => { oid => '.1.3.6.1.4.1.1230.2.7.2.1.10.1.2' },
+    stCategoryName => { oid => '.1.3.6.1.4.1.59732.2.7.2.1.10.1.1' },
+    stCategoryCount => { oid => '.1.3.6.1.4.1.59732.2.7.2.1.10.1.2' },
 };
-my $oid_stCategoriesEntry = '.1.3.6.1.4.1.1230.2.7.2.1.10.1';
+my $oid_stCategoriesEntry = '.1.3.6.1.4.1.59732.2.7.2.1.10.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
