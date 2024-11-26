@@ -24,9 +24,12 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+base64
 --cacert-file
 cardtemperature
+centreon
 Centreon
+centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
