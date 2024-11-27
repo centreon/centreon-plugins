@@ -101,11 +101,11 @@ sub new {
     return $self;
 }
 
-my $oid_stHttpsRequests = '.1.3.6.1.4.1.59732.2.7.2.3.1.0';
-my $oid_stHttpsBytesFromClient = '.1.3.6.1.4.1.59732.2.7.2.3.3.0';
-my $oid_stHttpsBytesFromServer = '.1.3.6.1.4.1.59732.2.7.2.3.4.0';
-my $oid_stHttpsBytesToClient = '.1.3.6.1.4.1.59732.2.7.2.3.5.0';
-my $oid_stHttpsBytesToServer = '.1.3.6.1.4.1.59732.2.7.2.3.6.0';
+my $oid_stHttpsRequests = '.1.3.6.1.4.1.1230.2.7.2.3.1.0';
+my $oid_stHttpsBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.3.3.0';
+my $oid_stHttpsBytesFromServer = '.1.3.6.1.4.1.1230.2.7.2.3.4.0';
+my $oid_stHttpsBytesToClient = '.1.3.6.1.4.1.1230.2.7.2.3.5.0';
+my $oid_stHttpsBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.3.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

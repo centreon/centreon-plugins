@@ -64,8 +64,8 @@ sub new {
     return $self;
 }
 
-my $oid_stClientCount = '.1.3.6.1.4.1.59732.2.7.2.5.2.0';
-my $oid_stConnectedSockets = '.1.3.6.1.4.1.59732.2.7.2.5.3.0';
+my $oid_stClientCount = '.1.3.6.1.4.1.1230.2.7.2.5.2.0';
+my $oid_stConnectedSockets = '.1.3.6.1.4.1.1230.2.7.2.5.3.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

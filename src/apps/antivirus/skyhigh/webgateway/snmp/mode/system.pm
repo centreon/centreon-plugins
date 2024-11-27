@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::system;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::system;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -62,8 +62,8 @@ sub new {
     return $self;
 }
 
-my $oid_stCPULoad = '.1.3.6.1.4.1.1230.2.7.2.5.1.0';
-my $oid_stResolveHostViaDNS = '.1.3.6.1.4.1.1230.2.7.2.5.6.0';
+my $oid_stCPULoad = '.1.3.6.1.4.1.59732.2.7.2.5.1.0';
+my $oid_stResolveHostViaDNS = '.1.3.6.1.4.1.59732.2.7.2.5.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

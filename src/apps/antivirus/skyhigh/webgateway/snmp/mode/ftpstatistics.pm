@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::ftpstatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -30,55 +30,43 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
         { name => 'traffics', type => 0, cb_prefix_output => 'prefix_traffic_output' }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'requests', nlabel => 'http.requests.persecond', set => {
-                key_values => [ { name => 'stHttpRequests', per_second => 1 } ],
-                output_template => 'HTTP Requests (per sec): %d',
-                perfdatas => [
-                    { label => 'http_requests', template => '%d', min => 0, unit => 'requests/s' }
-                ]
-            }
-        }
-    ];
-
     $self->{maps_counters}->{traffics} = [
-        { label => 'client-to-proxy', nlabel => 'http.traffic.client2proxy.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesFromClient', per_second => 1 } ],
+        { label => 'client-to-proxy', nlabel => 'ftp.traffic.client2proxy.bitspersecond', set => {
+                key_values => [ { name => 'stFtpBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'ftp_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'server-to-proxy', nlabel => 'http.traffic.server2proxy.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesFromServer', per_second => 1 } ],
+        { label => 'server-to-proxy', nlabel => 'ftp.traffic.server2proxy.bitspersecond', set => {
+                key_values => [ { name => 'stFtpBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'ftp_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'proxy-to-client', nlabel => 'http.traffic.proxy2client.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesToClient', per_second => 1 } ],
+        { label => 'proxy-to-client', nlabel => 'ftp.traffic.proxy2client.bitspersecond', set => {
+                key_values => [ { name => 'stFtpBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'ftp_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'proxy-to-server', nlabel => 'http.traffic.proxy2server.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesToServer', per_second => 1 } ],
+        { label => 'proxy-to-server', nlabel => 'ftp.traffic.proxy2server.bitspersecond', set => {
+                key_values => [ { name => 'stFtpBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'ftp_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         }
@@ -88,7 +76,7 @@ sub set_counters {
 sub prefix_traffic_output {
     my ($self, %options) = @_;
 
-    return "HTTP Traffic ";
+    return "FTP Traffic ";
 }
 
 sub new {
@@ -102,36 +90,31 @@ sub new {
     return $self;
 }
 
-my $oid_stHttpRequests = '.1.3.6.1.4.1.1230.2.7.2.2.1.0';
-my $oid_stHttpBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.2.3.0';
-my $oid_stHttpBytesFromServer = '.1.3.6.1.4.1.1230.2.7.2.2.4.0';
-my $oid_stHttpBytesToClient = '.1.3.6.1.4.1.1230.2.7.2.2.5.0';
-my $oid_stHttpBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.2.6.0';
+my $oid_stFtpBytesFromClient = '.1.3.6.1.4.1.59732.2.7.2.4.2.0';
+my $oid_stFtpBytesFromServer = '.1.3.6.1.4.1.59732.2.7.2.4.3.0';
+my $oid_stFtpBytesToClient = '.1.3.6.1.4.1.59732.2.7.2.4.4.0';
+my $oid_stFtpBytesToServer = '.1.3.6.1.4.1.59732.2.7.2.4.5.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'skyhigh_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{snmp}->get_leef(
         oids => [
-            $oid_stHttpRequests, $oid_stHttpBytesFromClient,
-            $oid_stHttpBytesFromServer, $oid_stHttpBytesToClient,
-            $oid_stHttpBytesToServer
+            $oid_stFtpBytesFromClient, $oid_stFtpBytesFromServer,
+            $oid_stFtpBytesToClient, $oid_stFtpBytesToServer
         ], 
         nothing_quit => 1
     );
 
-    $self->{global} = {
-        stHttpRequests => $results->{$oid_stHttpRequests}
-    };
     $self->{traffics} = {
-        stHttpBytesFromClient => $results->{$oid_stHttpBytesFromClient} * 8,
-        stHttpBytesFromServer => $results->{$oid_stHttpBytesFromServer} * 8,
-        stHttpBytesToClient => $results->{$oid_stHttpBytesToClient} * 8,
-        stHttpBytesToServer => $results->{$oid_stHttpBytesToServer} * 8
+        stFtpBytesFromClient => $results->{$oid_stFtpBytesFromClient} * 8,
+        stFtpBytesFromServer => $results->{$oid_stFtpBytesFromServer} * 8,
+        stFtpBytesToClient => $results->{$oid_stFtpBytesToClient} * 8,
+        stFtpBytesToServer => $results->{$oid_stFtpBytesToServer} * 8,
     };
 }
 
@@ -141,7 +124,7 @@ __END__
 
 =head1 MODE
 
-Check HTTP statistics.
+Check FTP statistics.
 
 =over 8
 
@@ -153,13 +136,13 @@ Only display some counters (regexp can be used).
 =item B<--warning-*>
 
 Warning threshold.
-Can be: 'request', 'client-to-proxy', 'server-to-proxy',
+Can be: 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 
 =item B<--critical-*>
 
 Critical threshold.
-Can be: 'request', 'client-to-proxy', 'server-to-proxy',
+Can be: 'client-to-proxy', 'server-to-proxy',
 'proxy-to-client', 'proxy-to-server'.
 
 =back

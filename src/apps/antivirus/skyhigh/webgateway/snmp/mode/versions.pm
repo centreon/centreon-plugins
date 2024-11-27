@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::versions;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::versions;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -118,14 +118,14 @@ sub check_options {
     $self->{cache}->check_options(%options);
 }
 
-my $oid_pMFEDATVersion = '.1.3.6.1.4.1.1230.2.7.1.20.4.0';
-my $oid_pAMProactiveVersion = '.1.3.6.1.4.1.1230.2.7.1.20.5.0';
-my $oid_pTSDBVersion = '.1.3.6.1.4.1.1230.2.7.1.20.6.0';
+my $oid_pMFEDATVersion = '.1.3.6.1.4.1.59732.2.7.1.20.4.0';
+my $oid_pAMProactiveVersion = '.1.3.6.1.4.1.59732.2.7.1.20.5.0';
+my $oid_pTSDBVersion = '.1.3.6.1.4.1.59732.2.7.1.20.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache}->read(statefile => 'skyhigh_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')));
 
     my $results = $options{snmp}->get_leef(

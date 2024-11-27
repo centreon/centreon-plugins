@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::httpsstatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -35,50 +35,49 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'requests', nlabel => 'http.requests.persecond', set => {
-                key_values => [ { name => 'stHttpRequests', per_second => 1 } ],
-                output_template => 'HTTP Requests (per sec): %d',
+        { label => 'requests', nlabel => 'https.requests.persecond', set => {
+                key_values => [ { name => 'stHttpsRequests', per_second => 1 } ],
+                output_template => 'HTTPS Requests (per sec): %d',
                 perfdatas => [
-                    { label => 'http_requests', template => '%d', min => 0, unit => 'requests/s' }
+                    { label => 'https_requests', template => '%d', min => 0, unit => 'requests/s' }
                 ]
             }
         }
     ];
-
     $self->{maps_counters}->{traffics} = [
-        { label => 'client-to-proxy', nlabel => 'http.traffic.client2proxy.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesFromClient', per_second => 1 } ],
+        { label => 'client-to-proxy', nlabel => 'https.traffic.client2proxy.bitspersecond', set => {
+                key_values => [ { name => 'stHttpsBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'https_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'server-to-proxy', nlabel => 'http.traffic.server2proxy.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesFromServer', per_second => 1 } ],
+        { label => 'server-to-proxy', nlabel => 'https.traffic.server2proxy.bitspersecond', set => {
+                key_values => [ { name => 'stHttpsBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'https_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'proxy-to-client', nlabel => 'http.traffic.proxy2client.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesToClient', per_second => 1 } ],
+        { label => 'proxy-to-client', nlabel => 'https.traffic.proxy2client.bitspersecond', set => {
+                key_values => [ { name => 'stHttpsBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'https_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'proxy-to-server', nlabel => 'http.traffic.proxy2server.bitspersecond', set => {
-                key_values => [ { name => 'stHttpBytesToServer', per_second => 1 } ],
+        { label => 'proxy-to-server', nlabel => 'https.traffic.proxy2server.bitspersecond', set => {
+                key_values => [ { name => 'stHttpsBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
+                    { label => 'https_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         }
@@ -88,7 +87,7 @@ sub set_counters {
 sub prefix_traffic_output {
     my ($self, %options) = @_;
 
-    return "HTTP Traffic ";
+    return "HTTPS Traffic ";
 }
 
 sub new {
@@ -102,36 +101,36 @@ sub new {
     return $self;
 }
 
-my $oid_stHttpRequests = '.1.3.6.1.4.1.1230.2.7.2.2.1.0';
-my $oid_stHttpBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.2.3.0';
-my $oid_stHttpBytesFromServer = '.1.3.6.1.4.1.1230.2.7.2.2.4.0';
-my $oid_stHttpBytesToClient = '.1.3.6.1.4.1.1230.2.7.2.2.5.0';
-my $oid_stHttpBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.2.6.0';
+my $oid_stHttpsRequests = '.1.3.6.1.4.1.59732.2.7.2.3.1.0';
+my $oid_stHttpsBytesFromClient = '.1.3.6.1.4.1.59732.2.7.2.3.3.0';
+my $oid_stHttpsBytesFromServer = '.1.3.6.1.4.1.59732.2.7.2.3.4.0';
+my $oid_stHttpsBytesToClient = '.1.3.6.1.4.1.59732.2.7.2.3.5.0';
+my $oid_stHttpsBytesToServer = '.1.3.6.1.4.1.59732.2.7.2.3.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'skyhigh_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{snmp}->get_leef(
         oids => [
-            $oid_stHttpRequests, $oid_stHttpBytesFromClient,
-            $oid_stHttpBytesFromServer, $oid_stHttpBytesToClient,
-            $oid_stHttpBytesToServer
+            $oid_stHttpsRequests, $oid_stHttpsBytesFromClient,
+            $oid_stHttpsBytesFromServer, $oid_stHttpsBytesToClient,
+            $oid_stHttpsBytesToServer
         ], 
         nothing_quit => 1
     );
 
     $self->{global} = {
-        stHttpRequests => $results->{$oid_stHttpRequests}
+        stHttpsRequests => $results->{$oid_stHttpsRequests}
     };
     $self->{traffics} = {
-        stHttpBytesFromClient => $results->{$oid_stHttpBytesFromClient} * 8,
-        stHttpBytesFromServer => $results->{$oid_stHttpBytesFromServer} * 8,
-        stHttpBytesToClient => $results->{$oid_stHttpBytesToClient} * 8,
-        stHttpBytesToServer => $results->{$oid_stHttpBytesToServer} * 8
+        stHttpsBytesFromClient => $results->{$oid_stHttpsBytesFromClient} * 8,
+        stHttpsBytesFromServer => $results->{$oid_stHttpsBytesFromServer} * 8,
+        stHttpsBytesToClient => $results->{$oid_stHttpsBytesToClient} * 8,
+        stHttpsBytesToServer => $results->{$oid_stHttpsBytesToServer} * 8
     };
 }
 
@@ -141,7 +140,7 @@ __END__
 
 =head1 MODE
 
-Check HTTP statistics.
+Check HTTPS statistics.
 
 =over 8
 

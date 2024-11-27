@@ -90,10 +90,10 @@ sub new {
     return $self;
 }
 
-my $oid_stFtpBytesFromClient = '.1.3.6.1.4.1.59732.2.7.2.4.2.0';
-my $oid_stFtpBytesFromServer = '.1.3.6.1.4.1.59732.2.7.2.4.3.0';
-my $oid_stFtpBytesToClient = '.1.3.6.1.4.1.59732.2.7.2.4.4.0';
-my $oid_stFtpBytesToServer = '.1.3.6.1.4.1.59732.2.7.2.4.5.0';
+my $oid_stFtpBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.4.2.0';
+my $oid_stFtpBytesFromServer = '.1.3.6.1.4.1.1230.2.7.2.4.3.0';
+my $oid_stFtpBytesToClient = '.1.3.6.1.4.1.1230.2.7.2.4.4.0';
+my $oid_stFtpBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.4.5.0';
 
 sub manage_selection {
     my ($self, %options) = @_;

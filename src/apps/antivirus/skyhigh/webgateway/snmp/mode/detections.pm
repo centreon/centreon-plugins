@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::detections;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::detections;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -77,18 +77,18 @@ sub new {
     return $self;
 }
 
-my $oid_stMalwareDetected = '.1.3.6.1.4.1.1230.2.7.2.1.2.0';
+my $oid_stMalwareDetected = '.1.3.6.1.4.1.59732.2.7.2.1.2.0';
 
 my $mapping = {
-    stCategoryName => { oid => '.1.3.6.1.4.1.1230.2.7.2.1.10.1.1' },
-    stCategoryCount => { oid => '.1.3.6.1.4.1.1230.2.7.2.1.10.1.2' },
+    stCategoryName => { oid => '.1.3.6.1.4.1.59732.2.7.2.1.10.1.1' },
+    stCategoryCount => { oid => '.1.3.6.1.4.1.59732.2.7.2.1.10.1.2' },
 };
-my $oid_stCategoriesEntry = '.1.3.6.1.4.1.1230.2.7.2.1.10.1';
+my $oid_stCategoriesEntry = '.1.3.6.1.4.1.59732.2.7.2.1.10.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'skyhigh_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 

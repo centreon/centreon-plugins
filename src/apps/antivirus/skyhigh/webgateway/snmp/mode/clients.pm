@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::system;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::clients;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -33,19 +33,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'cpu-utilization', nlabel => 'system.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu_util' } ],
-                output_template => 'cpu usage: %.2f%%',
+        { label => 'clients', nlabel => 'clients.connected.count', set => {
+                key_values => [ { name => 'stClientCount' } ],
+                output_template => 'Connected clients: %d',
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                    { label => 'connected_clients', template => '%d',
+                      min => 0, unit => 'clients' }
                 ]
             }
         },
-        { label => 'dns-resolve-time', nlabel => 'system.dns.resolve.time.milliseconds', set => {
-                key_values => [ { name => 'dns_time' } ],
-                output_template => 'time to resolve dns: %sms',
+        { label => 'sockets', nlabel => 'sockets.connected.count', set => {
+                key_values => [ { name => 'stConnectedSockets' } ],
+                output_template => 'Open network sockets: %d',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0 }
+                    { label => 'open_sockets', template => '%d',
+                      min => 0, unit => 'sockets' }
                 ]
             }
         }
@@ -54,7 +56,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -62,20 +64,20 @@ sub new {
     return $self;
 }
 
-my $oid_stCPULoad = '.1.3.6.1.4.1.1230.2.7.2.5.1.0';
-my $oid_stResolveHostViaDNS = '.1.3.6.1.4.1.1230.2.7.2.5.6.0';
+my $oid_stClientCount = '.1.3.6.1.4.1.59732.2.7.2.5.2.0';
+my $oid_stConnectedSockets = '.1.3.6.1.4.1.59732.2.7.2.5.3.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{snmp}->get_leef(
-        oids => [ $oid_stCPULoad, $oid_stResolveHostViaDNS ], 
+        oids => [ $oid_stClientCount, $oid_stConnectedSockets ], 
         nothing_quit => 1
     );
 
     $self->{global} = {
-        cpu_util => $results->{$oid_stCPULoad},
-        dns_time => $results->{$oid_stResolveHostViaDNS}
+        stClientCount => $results->{$oid_stClientCount},
+        stConnectedSockets => $results->{$oid_stConnectedSockets},
     };
 }
 
@@ -85,19 +87,24 @@ __END__
 
 =head1 MODE
 
-Check system.
+Check connected clients and open network sockets.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-(example: --filter-counters='cpu')
+(example: --filter-counters='clients')
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-*>
 
-Thresholds.
-Can be: 'cpu-utilization', 'dns-resolve-time'.
+Warning threshold.
+Can be: 'clients', 'sockets'.
+
+=item B<--critical-*>
+
+Critical threshold.
+Can be: 'clients', 'sockets'.
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics;
+package apps::antivirus::skyhigh::webgateway::snmp::mode::httpstatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -102,16 +102,16 @@ sub new {
     return $self;
 }
 
-my $oid_stHttpRequests = '.1.3.6.1.4.1.1230.2.7.2.2.1.0';
-my $oid_stHttpBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.2.3.0';
-my $oid_stHttpBytesFromServer = '.1.3.6.1.4.1.1230.2.7.2.2.4.0';
-my $oid_stHttpBytesToClient = '.1.3.6.1.4.1.1230.2.7.2.2.5.0';
-my $oid_stHttpBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.2.6.0';
+my $oid_stHttpRequests = '.1.3.6.1.4.1.59732.2.7.2.2.1.0';
+my $oid_stHttpBytesFromClient = '.1.3.6.1.4.1.59732.2.7.2.2.3.0';
+my $oid_stHttpBytesFromServer = '.1.3.6.1.4.1.59732.2.7.2.2.4.0';
+my $oid_stHttpBytesToClient = '.1.3.6.1.4.1.59732.2.7.2.2.5.0';
+my $oid_stHttpBytesToServer = '.1.3.6.1.4.1.59732.2.7.2.2.6.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'skyhigh_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
