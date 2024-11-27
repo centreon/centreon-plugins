@@ -30,8 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'scenario'  => 'apps::jmeter::mode::scenario',
-        'scenario_new'  => 'apps::jmeter::mode::scenario_new'
+        'scenario'  => 'apps::jmeter::mode::scenario'
     };
 
     $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';

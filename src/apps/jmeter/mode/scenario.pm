@@ -20,7 +20,7 @@
 
 package apps::jmeter::mode::scenario;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -36,9 +36,7 @@ sub new {
         'command-extra-options:s' => { name => 'command_extra_options' },
         'timeout:s'               => { name => 'timeout', default => 50 },
         'directory:s'             => { name => 'directory' },
-        'scenario:s'              => { name => 'scenario' },
-        'warning:s'               => { name => 'warning' },
-        'critical:s'              => { name => 'critical' }
+        'scenario:s'              => { name => 'scenario' }
     });
 
     return $self;
@@ -46,16 +44,8 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{scenario})) {
         $self->{output}->add_option_msg(short_msg => "Please specify a scenario name.");
         $self->{output}->option_exit();
@@ -70,25 +60,111 @@ sub check_options {
     $self->{option_results}->{command_extra_options} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{command_extra_options});
 }
 
-sub run {
+sub prefix_output_global {
     my ($self, %options) = @_;
 
+    return 'Sample: ';
+}
+
+sub custom_steps_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Steps: %s/%s", $self->{result_values}->{steps_ok}, $self->{result_values}->{steps_total});
+    return $msg;
+}
+
+sub custom_steps_threshold {
+    my ($self, %options) = @_;
+
+    return 'ok' if ($self->{result_values}->{steps_ok} == $self->{result_values}->{steps_total});
+    return 'critical';
+}
+
+sub suffix_output {
+    my ($self, %options) = @_;
+
+    my $msg = '';
+    if (defined($options{instance_value}->{first_failed_label})) {
+        $msg .= ' - First failed: ' . $options{instance_value}->{first_failed_label};
+    }
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_suffix_output => 'suffix_output' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label  => 'time',
+            nlabel => 'scenario.time.seconds',
+            set    => {
+                key_values      => [ { name => 'time' } ],
+                output_template => 'Elapsed Time: %.3fs',
+                perfdatas       => [
+                    { template             => '%.3f',
+                      min                  => 0,
+                      unit                 => 's',
+                      label_extra_instance => 1
+                    }
+                ]
+            }
+        },
+        {
+            label  => 'steps',
+            nlabel => 'scenario.steps.count',
+            set    => {
+                key_values                     => [ { name => 'steps_ok' }, { name => 'steps_total' } ],
+                closure_custom_output          => $self->can('custom_steps_output'),
+                perfdatas                      => [
+                    { value    => 'steps_ok',
+                      template => '%d',
+                      min      => 0,
+                      max      => 'steps_total' }
+                ],
+                closure_custom_threshold_check => $self->can('custom_steps_threshold')
+            }
+        },
+        {
+            label  => 'availability',
+            nlabel => 'scenario.availability.percentage',
+            set    => {
+                key_values      => [ { name => 'availability' } ],
+                output_template => 'Availability: %d%%',
+                perfdatas       => [
+                    { value    => 'availability',
+                      template => '%d',
+                      min      => 0,
+                      max      => 100,
+                      unit     => '%'
+                    }
+                ]
+            }
+        }
+    ];
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    # Specify test plan file path
     my $filename = $self->{option_results}->{directory} . '/' . $self->{option_results}->{scenario} . '.jmx';
     my $command_options = '-t ' . $filename;
-
     # Temporary write result on stderr
     $command_options .= ' -l /dev/stderr';
-
     # Write logs to trash
     $command_options .= ' -j /dev/null';
-
+    # Non-GUI mode
     $command_options .= ' -n';
+    # XML output format
     $command_options .= ' -J jmeter.save.saveservice.output_format=xml';
-
+    # Extra options
     if (defined($self->{option_results}->{command_extra_options})) {
         $command_options .= ' ' . $self->{option_results}->{command_extra_options};
     }
-
     # Redirect result on stdout and default stdout to trash
     $command_options .= ' 2>&1 >/dev/null';
 
@@ -104,14 +180,11 @@ sub run {
 
     my $timing0 = 0;
     my $timing1 = 0;
-    my $step = $listHttpSampleNode->get_nodelist;
-    my $stepOk = 0;
+    my $steps = $listHttpSampleNode->get_nodelist;
+    my $stepsOk = 0;
     my $first_failed_label;
-    my $exit1 = 'OK';
 
     foreach my $httpSampleNode ($listHttpSampleNode->get_nodelist) {
-        my $temp_exit = 'OK';
-
         my $elapsed_time = $httpSampleNode->getAttribute('t');
         my $timestamp = $httpSampleNode->getAttribute('ts');
         my $success = $httpSampleNode->getAttribute('s');
@@ -119,93 +192,53 @@ sub run {
         my $response_code = $httpSampleNode->getAttribute('rc');
         my $response_message = $httpSampleNode->getAttribute('rm');
 
-        $self->{output}->output_add(long_msg => "* Sample: " . $label);
-        $self->{output}->output_add(long_msg => "  - Success: " . $success);
-        $self->{output}->output_add(long_msg => "  - Elapsed Time: " . $elapsed_time / 1000 . "s");
-        $self->{output}->output_add(long_msg => "  - Response Code: " . $response_code);
-        $self->{output}->output_add(long_msg => "  - Response Message: " . $response_message);
-
-        if ($success ne 'true') {
-            $temp_exit = 'CRITICAL';
+        if ($self->{output}->is_verbose()) {
+            $self->{output}->output_add(long_msg => "* Sample: " . $label);
+            $self->{output}->output_add(long_msg => "  - Success: " . $success);
+            $self->{output}->output_add(long_msg => "  - Elapsed Time: " . $elapsed_time / 1000 . "s");
+            $self->{output}->output_add(long_msg => "  - Response Code: " . $response_code);
+            $self->{output}->output_add(long_msg => "  - Response Message: " . $response_message);
         }
 
         my $listAssertionResultNode = $xp->findnodes('./assertionResult', $httpSampleNode);
 
         foreach my $assertionResultNode ($listAssertionResultNode->get_nodelist) {
             my $name = $xp->findvalue('./name', $assertionResultNode);
-            my $failure = $xp->findvalue('./failure', $assertionResultNode);
-            my $error = $xp->findvalue('./error', $assertionResultNode);
-
             $self->{output}->output_add(long_msg => "  - Assertion: " . $name);
 
-            if (($failure eq 'true') || ($error eq 'true')) {
-                my $failure_message = $xp->findvalue('./failureMessage', $assertionResultNode);
-                $self->{output}->output_add(long_msg => "    + Failure Message: " . $failure_message);
-
-                $temp_exit = 'CRITICAL';
+            if ($self->{output}->is_verbose()) {
+                my $failure = $xp->findvalue('./failure', $assertionResultNode);
+                my $error = $xp->findvalue('./error', $assertionResultNode);
+                if (($failure eq 'true') || ($error eq 'true')) {
+                    my $failure_message = $xp->findvalue('./failureMessage', $assertionResultNode);
+                    $self->{output}->output_add(long_msg => "    + Failure Message: " . $failure_message);
+                }
             }
         }
 
-        if ($temp_exit eq 'OK') {
-            $stepOk++;
+        if ($success eq 'true') {
+            $stepsOk++;
         } else {
             if (!defined($first_failed_label)) {
                 $first_failed_label = $label . " (" . $response_code . " " . $response_message . ")";
             }
-
-            $exit1 = $self->{output}->get_most_critical(status => [ $exit1, $temp_exit ]);
         }
 
         if ($timestamp > 0) {
             if ($timing0 == 0) {
                 $timing0 = $timestamp;
             }
-
             $timing1 = $timestamp + $elapsed_time;
         }
     }
-
     my $timeelapsed = ($timing1 - $timing0) / 1000;
-    my $availability = sprintf("%d", $stepOk * 100 / $step);
+    my $availability = sprintf("%d", $stepsOk * 100 / $steps);
 
-    my $exit2 = $self->{perfdata}->threshold_check(
-        value     => $timeelapsed,
-        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
-    );
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-    if (!defined($first_failed_label)) {
-        $self->{output}->output_add(
-            severity  => $exit,
-            short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed)
-        );
-    } else {
-        $self->{output}->output_add(
-            severity  => $exit,
-            short_msg => sprintf("%d/%d steps (%.3fs) - %s", $stepOk, $step, $timeelapsed, $first_failed_label)
-        );
-    }
-    $self->{output}->perfdata_add(
-        label    => "time", unit => 's',
-        value    => sprintf('%.3f', $timeelapsed),
-        min      => 0,
-        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
-    );
-    $self->{output}->perfdata_add(
-        label => "steps",
-        value => sprintf('%d', $stepOk),
-        min   => 0,
-        max   => $step
-    );
-    $self->{output}->perfdata_add(
-        label => "availability", unit => '%',
-        value => sprintf('%d', $availability),
-        min   => 0,
-        max   => 100
-    );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global}->{time} = $timeelapsed;
+    $self->{global}->{steps_ok} = $stepsOk;
+    $self->{global}->{steps_total} = $steps;
+    $self->{global}->{first_failed_label} = $first_failed_label;
+    $self->{global}->{availability} = $availability;
 }
 
 1;
@@ -232,11 +265,11 @@ Directory where scenarii are stored.
 
 Scenario used by JMeter (without extension).
 
-=item B<--warning>
+=item B<--warning-time>
 
 Warning threshold in seconds (scenario execution time).
 
-=item B<--critical>
+=item B<--critical-time>
 
 Critical threshold in seconds (scenario execution time).
 
