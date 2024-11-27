@@ -255,7 +255,7 @@ Command used: 'jmeter -t %(directory)/%(scenario).jmx -l /dev/stderr -j /dev/nul
 
 =item B<--command-extra-options>
 
-Command extra options.
+JMeter command extra options.
 
 =item B<--directory>
 

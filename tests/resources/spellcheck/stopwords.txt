@@ -95,6 +95,8 @@ ipv4
 ipv6
 ISAM
 Iwsva
+jmeter
+JMeter
 --jobq
 JOBQ
 jobqueue
@@ -183,6 +185,7 @@ RestAPI
 RFC1628
 RRDCached
 Sansymphony
+scenarii
 --scope-datacenter
 sfp.temperature
 --skip-ssl-check
