@@ -36,9 +36,7 @@ sub new {
         'command-extra-options:s' => { name => 'command_extra_options' },
         'timeout:s'               => { name => 'timeout', default => 50 },
         'directory:s'             => { name => 'directory' },
-        'scenario:s'              => { name => 'scenario' },
-        'warning:s'               => { name => 'warning-time' }, # for compatibility with the old version
-        'critical:s'              => { name => 'critical-time' } # for compatibility with the old version
+        'scenario:s'              => { name => 'scenario' }
     });
 
     return $self;
@@ -72,9 +70,6 @@ sub custom_steps_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("Steps: %s/%s", $self->{result_values}->{steps_ok}, $self->{result_values}->{steps_total});
-    if (defined($self->{result_values}->{first_failed_label})) {
-        $msg .= ' - First failed: ' . $self->{result_values}->{first_failed_label};
-    }
     return $msg;
 }
 
@@ -85,11 +80,21 @@ sub custom_steps_threshold {
     return 'critical';
 }
 
+sub suffix_output {
+    my ($self, %options) = @_;
+
+    my $msg = '';
+    if (defined($options{instance_value}->{first_failed_label})) {
+        $msg .= ' - First failed: ' . $options{instance_value}->{first_failed_label};
+    }
+    return $msg;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 0, cb_suffix_output => 'suffix_output' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -112,7 +117,7 @@ sub set_counters {
             label  => 'steps',
             nlabel => 'scenario.steps.count',
             set    => {
-                key_values                     => [ { name => 'steps_ok' }, { name => 'steps_total' }, {name=>'first_failed_label'} ],
+                key_values                     => [ { name => 'steps_ok' }, { name => 'steps_total' } ],
                 closure_custom_output          => $self->can('custom_steps_output'),
                 perfdatas                      => [
                     { value    => 'steps_ok',
@@ -199,8 +204,9 @@ sub manage_selection {
 
         foreach my $assertionResultNode ($listAssertionResultNode->get_nodelist) {
             my $name = $xp->findvalue('./name', $assertionResultNode);
+            $self->{output}->output_add(long_msg => "  - Assertion: " . $name);
+
             if ($self->{output}->is_verbose()) {
-                $self->{output}->output_add(long_msg => "  - Assertion: " . $name);
                 my $failure = $xp->findvalue('./failure', $assertionResultNode);
                 my $error = $xp->findvalue('./error', $assertionResultNode);
                 if (($failure eq 'true') || ($error eq 'true')) {
