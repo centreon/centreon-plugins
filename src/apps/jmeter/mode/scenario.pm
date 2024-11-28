@@ -178,10 +178,10 @@ sub manage_selection {
 
     my $listHttpSampleNode = $xp->findnodes('/testResults/httpSample|/testResults/sample');
 
-    my $timing0 = 0;
-    my $timing1 = 0;
+    my $start_time = 0;
+    my $end_time = 0;
     my $steps = $listHttpSampleNode->get_nodelist;
-    my $stepsOk = 0;
+    my $steps_ok = 0;
     my $first_failed_label;
 
     foreach my $httpSampleNode ($listHttpSampleNode->get_nodelist) {
@@ -217,7 +217,7 @@ sub manage_selection {
         }
 
         if ($success eq 'true') {
-            $stepsOk++;
+            $steps_ok++;
         } else {
             if (!defined($first_failed_label)) {
                 $first_failed_label = $label . " (" . $response_code . " " . $response_message . ")";
@@ -225,17 +225,20 @@ sub manage_selection {
         }
 
         if ($timestamp > 0) {
-            if ($timing0 == 0) {
-                $timing0 = $timestamp;
+            if ($timestamp < $start_time || $start_time == 0) {
+                $start_time = $timestamp;
             }
-            $timing1 = $timestamp + $elapsed_time;
+            my $current_time = $timestamp + $elapsed_time;
+            if ($current_time > $end_time) {
+                $end_time = $current_time;
+            }
         }
     }
-    my $timeelapsed = ($timing1 - $timing0) / 1000;
-    my $availability = sprintf("%d", $stepsOk * 100 / $steps);
+    my $timeelapsed = ($end_time - $start_time) / 1000;
+    my $availability = sprintf("%d", $steps_ok * 100 / $steps);
 
     $self->{global}->{time} = $timeelapsed;
-    $self->{global}->{steps_ok} = $stepsOk;
+    $self->{global}->{steps_ok} = $steps_ok;
     $self->{global}->{steps_total} = $steps;
     $self->{global}->{first_failed_label} = $first_failed_label;
     $self->{global}->{availability} = $availability;
