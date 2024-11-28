@@ -4,6 +4,7 @@
 --3cx-version
 7210SAS
 7750SR
+ACS
 --add-fc-fe-errors
 --add-qos-limit
 --add-sysdesc
@@ -20,6 +21,7 @@ api.meraki.com
 --api-version
 ASAM
 Avigilon
+Avocent
 aws
 AWSCLI
 --aws-role-arn
@@ -35,6 +37,11 @@ connections-dns
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
+--critical-authserver-clients-timeout
+--critical-authserver-packets-access-accepts
+--critical-authserver-packets-access-requests
+--critical-authserver-roundtrip-time
+--critical-authservers-total
 --critical-backend-congestions
 --critical-backend-outstanding-io
 --critical-bytesallocatedpercentage
@@ -52,8 +59,10 @@ dfsrevent
 --display-transform-src
 --dyn-mode
 -EncodedCommand
+ESX
 eth
 --exclude-fs
+--failback-file
 fanspeed
 FCCapacity
 --filter-fs
@@ -107,6 +116,7 @@ machineaccount
 MBean
 memAvailReal
 memBuffer
+--memexpiration
 memTotalReal
 Meraki
 MIB
@@ -168,6 +178,9 @@ proto
 psu
 QoS
 queue-messages-inflighted
+--redis-attribute
+--redis-db
+--redis-server
 RestAPI
 RFC1628
 RRDCached
@@ -181,6 +194,8 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+statefile
+--statefile-concat-cwd
 SureBackup
 systemd
 SysVol
@@ -199,6 +214,7 @@ tower-cli
 TrendMicro
 UCD
 UDP
+uniq
 uptime
 --urlpath
 usage-prct
@@ -213,6 +229,12 @@ VM
 VMware
 VPN
 vSAN
+vSphere
+--warning-authserver-clients-timeout
+--warning-authserver-packets-access-accepts
+--warning-authserver-packets-access-requests
+--warning-authserver-roundtrip-time
+--warning-authservers-total
 --warning-backend-congestions
 --warning-backend-outstanding-io
 --warning-bytesallocatedpercentage
