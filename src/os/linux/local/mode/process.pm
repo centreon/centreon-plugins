@@ -394,35 +394,116 @@ Monitor disk I/O.
 
 =item B<--filter-command>
 
-Filter process commands (regexp can be used).
+Define which processes should be included based on the name of the executable.
+This option will be treated as a regular expression.
 
 =item B<--exclude-command>
 
-Exclude process commands (regexp can be used).
+Define which processes should be excluded based on the name of the executable.
+This option will be treated as a regular expression.
 
 =item B<--filter-arg>
 
-Filter process arguments (regexp can be used).
+Define which processes should be included based on the arguments of the executable.
+This option will be treated as a regular expression.
 
 =item B<--exclude-arg>
 
-Exclude process arguments (regexp can be used).
+Define which processes should be excluded based on the arguments of the executable.
+This option will be treated as a regular expression.
 
 =item B<--filter-ppid>
 
-Filter process ppid (regexp can be used).
+Define which processes should be excluded based on the process's parent process ID (PPID).
+This option will be treated as a regular expression.
+
 
 =item B<--filter-state>
 
-Filter process states (regexp can be used).
+Define which processes should be excluded based on the process state.
+This option will be treated as a regular expression.
 You can use: 'zombie', 'dead', 'paging', 'stopped',
 'InterrupibleSleep', 'running', 'UninterrupibleSleep'.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-total>
 
 Thresholds.
-Can be: 'total', 'total-memory-usage', 'total-cpu-utilization', 'total-disks-read',
-'total-disks-write', 'time', 'memory-usage', 'cpu-utilization', 'disks-read', 'disks-write'. 
+
+=item B<--critical-total>
+
+Thresholds.
+
+=item B<--warning-total-memory-usage>
+
+Thresholds.
+
+=item B<--critical-total-memory-usage>
+
+Thresholds.
+
+=item B<--warning-total-cpu-utilization>
+
+Thresholds.
+
+=item B<--critical-total-cpu-utilization>
+
+Thresholds.
+
+=item B<--warning-total-disks-read>
+
+Thresholds.
+
+=item B<--critical-total-disks-read>
+
+Thresholds.
+
+=item B<--warning-total-disks-write>
+
+Thresholds.
+
+=item B<--critical-total-disks-write>
+
+Thresholds.
+
+=item B<--warning-time>
+
+Thresholds.
+
+=item B<--critical-time>
+
+Thresholds.
+
+=item B<--warning-memory-usage>
+
+Thresholds.
+
+=item B<--critical-memory-usage>
+
+Thresholds.
+
+=item B<--warning-cpu-utilization>
+
+Thresholds.
+
+=item B<--critical-cpu-utilization>
+
+Thresholds.
+
+=item B<--warning-disks-read>
+
+Thresholds.
+
+=item B<--critical-disks-read>
+
+Thresholds.
+
+=item B<--warning-disks-write>
+
+Thresholds.
+
+=item B<--critical-disks-write>
+
+Thresholds.
 
 =back
 
