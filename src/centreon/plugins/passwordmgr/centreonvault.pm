@@ -413,15 +413,15 @@ To be used with an array containing keys/values saved in a secret path by resour
 
 =item B<--vault-config>
 
-Path to the file defining access to the Centreon vault (default: /etc/centreon-engine/centreonvault.json).
+Path to the file defining access to the Centreon vault (default: C</etc/centreon-engine/centreonvault.json>).
 
 =item B<--vault-cache>
 
-Path to the file where the token to access the Centreon vault will be stored (default: /var/lib/centreon/centplugins/centreonvault_session).
+Path to the file where the token to access the Centreon vault will be stored (default: C</var/lib/centreon/centplugins/centreonvault_session>).
 
 =item B<--vault-env-file>
 
-Path to the file containing the APP_SECRET variable (default: /usr/share/centreon/.env).
+Path to the file containing the APP_SECRET variable (default: C</usr/share/centreon/.env>).
 
 =back
 
