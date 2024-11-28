@@ -2,6 +2,8 @@
 3COM
 3CX
 --3cx-version
+7210SAS
+7750SR
 ACS
 --add-fc-fe-errors
 --add-qos-limit
@@ -182,6 +184,7 @@ queue-messages-inflighted
 RestAPI
 RFC1628
 RRDCached
+SAS
 Sansymphony
 --scope-datacenter
 sfp.temperature
@@ -200,6 +203,8 @@ TCP
 teampass
 Teldat
 timeframe
+TiMOS
+tmnxSasAlarmInputDescription
 topic-messages-inflighted
 total-offline-prct
 total-online-prct
