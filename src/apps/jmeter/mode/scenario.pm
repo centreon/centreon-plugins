@@ -60,12 +60,6 @@ sub check_options {
     $self->{option_results}->{command_extra_options} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{command_extra_options});
 }
 
-sub prefix_output_global {
-    my ($self, %options) = @_;
-
-    return 'Sample: ';
-}
-
 sub custom_steps_output {
     my ($self, %options) = @_;
 
