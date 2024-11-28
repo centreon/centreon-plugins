@@ -60,6 +60,7 @@ dfsrevent
 --display-transform-src
 --dyn-mode
 -EncodedCommand
+env
 ESX
 eth
 --exclude-fs
