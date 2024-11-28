@@ -157,7 +157,7 @@ __END__
 =head1 MODE
 
 Check signature databases versions
-(last update is only guessed by version's changement,
+(last update is only guessed by version's change,
 it does not appear clearly in the MIB).
 
 =over 8
