@@ -143,14 +143,14 @@ Only display some counters (regexp can be used).
 =item B<--warning-*>
 
 Warning threshold.
-Can be: 'legitimate', 'blocked', 'blocked-by-am',
-'blocked-by-mf', 'blocked-by-uf'.
+Can be: 'legitimate', 'blocked', 'blocked-by-am' for blocked by anti malware ,
+'blocked-by-mf' for blocked by media Filter, 'blocked-by-uf' for blocked by URL filter.
 
 =item B<--critical-*>
 
 Critical threshold.
-Can be: 'legitimate', 'blocked', 'blocked-by-am',
-'blocked-by-mf', 'blocked-by-uf'.
+Can be: 'legitimate', 'blocked', 'blocked-by-am' for blocked by anti malware ,
+'blocked-by-mf' for blocked by media Filter, 'blocked-by-uf' for blocked by URL filter.
 
 =back
 
