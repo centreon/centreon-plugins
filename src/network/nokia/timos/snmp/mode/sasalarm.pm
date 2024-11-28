@@ -183,7 +183,8 @@ __END__
 
 =head1 MODE
 
-Check sas alarm input usage.
+Check SAS alarm input usage.
+
 
 =over 8
 
