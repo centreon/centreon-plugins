@@ -52,5 +52,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check SkyHigh Security Web Gateway through SNMP.
+This product is the successor to McAfee Web Gateway for versions higher than 11.
 
 =cut
