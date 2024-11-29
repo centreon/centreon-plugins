@@ -114,6 +114,102 @@ sub custom_traffic_calc {
     return 0;
 }
 
+sub custom_errors_perfdata {
+    my ($self, %options) = @_;
+
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/count$/percentage/;
+
+        $self->{output}->perfdata_add(
+            nlabel => $nlabel,
+            unit => '%',
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => sprintf('%.2f', $self->{result_values}->{prct}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0,
+            max => 100
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => $self->{result_values}->{used},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0,
+            max => $self->{result_values}->{total}
+        );
+    }
+}
+
+sub custom_errors_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = 'ok';
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } else {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_errors_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'packets %s: %.2f%% (%s on %s)',
+        $self->{result_values}->{label},
+        $self->{result_values}->{prct},
+        $self->{result_values}->{used},
+        $self->{result_values}->{total}
+    );
+}
+
+sub custom_errors_calc {
+    my ($self, %options) = @_;
+
+    my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
+    my $errors_diff = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } 
+        -  $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
+    my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+    my $total_diff = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'}
+        - $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+
+    $errors_diff = sprintf('%d', $errors_diff);
+    $total_diff = sprintf('%d', $total_diff);
+    $self->{result_values}->{prct} = 0;
+    $self->{result_values}->{used} = $errors_diff;
+    $self->{result_values}->{total} = $total_diff;
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+        $self->{result_values}->{used} = $errors_diff;
+    } else {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
+    }
+
+    if (defined($options{extra_options}->{label})) {
+        $self->{result_values}->{label} = $options{extra_options}->{label};
+    } else {
+        $self->{result_values}->{label} = $options{extra_options}->{label_ref1} . ' ' . $options{extra_options}->{label_ref2};
+    }
+
+    $self->{result_values}->{label1} = $options{extra_options}->{label_ref1};
+    $self->{result_values}->{label2} = $options{extra_options}->{label_ref2};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
 sub prefix_interface_output {
     my ($self, %options) = @_;
 
@@ -160,6 +256,38 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'traffic out: %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        },
+        { label => 'in-discard', filter => 'add_errors', nlabel => 'interface.packets.in.discard.count', set => {
+                key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets in discard: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
+        { label => 'in-error', filter => 'add_errors', nlabel => 'interface.packets.in.error.count', set => {
+                key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets in error: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
+        { label => 'out-discard', filter => 'add_errors', nlabel => 'interface.packets.out.discard.count', set => {
+                key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets out discard: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
+        { label => 'out-error', filter => 'add_errors', nlabel => 'interface.packets.out.error.count', set => {
+                key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets out error: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
@@ -261,10 +389,12 @@ sub new {
         'display-use:s'       => { name => 'display_use' },
         'add-status'          => { name => 'add_status' },
         'add-traffic'         => { name => 'add_traffic' },
+        'add-errors'          => { name => 'add_errors' },
         'add-optical'         => { name => 'add_optical' },
         'filter-interface:s'  => { name => 'filter_interface' },
         'exclude-interface:s' => { name => 'exclude_interface' },
         'units-traffic:s'     => { name => 'units_traffic', default => 'percent_delta' },
+        'units-errors:s'      => { name => 'units_errors', default => 'percent_delta' },
         'speed:s'             => { name => 'speed' }
     });
 
@@ -278,8 +408,16 @@ sub check_options {
     # If no options, we set add-status
     if (!defined($self->{option_results}->{add_traffic}) &&
         !defined($self->{option_results}->{add_status}) &&
-        !defined($self->{option_results}->{add_optical})) {
+        !defined($self->{option_results}->{add_optical}) &&
+        !defined($self->{option_results}->{add_errors})) {
         $self->{option_results}->{add_status} = 1;
+    }
+
+    $self->{checking} = '';
+    foreach (('add_status', 'add_errors', 'add_traffic', 'add_optical')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{checking} .= $_;
+        }
     }
 
     if (!defined($self->{option_results}->{filter_use}) || $self->{option_results}->{filter_use} eq '') {
@@ -316,6 +454,17 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
+
+    if (defined($self->{option_results}->{add_errors})) {
+        $self->{option_results}->{units_errors} = 'percent_delta'
+            if (!defined($self->{option_results}->{units_errors}) ||
+                $self->{option_results}->{units_errors} eq '' ||
+                $self->{option_results}->{units_errors} eq '%');
+        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+            $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
+            $self->{output}->option_exit();
+        }
+    }
 }
 
 sub do_selection_interface {
@@ -323,7 +472,8 @@ sub do_selection_interface {
 
     return if (
         !defined($self->{option_results}->{add_traffic}) &&
-        !defined($self->{option_results}->{add_status})
+        !defined($self->{option_results}->{add_status}) &&
+        !defined($self->{option_results}->{add_errors})
     );
 
     my $results = $options{custom}->get_interface_infos();
@@ -342,7 +492,13 @@ sub do_selection_interface {
             opstatus => $_->{opstatus},
             admstatus => $_->{admstatus},
             in => $_->{in},
-            out => $_->{out}
+            out => $_->{out},
+            inerror => $_->{inErrors},
+            outerror => $_->{outErrors},
+            indiscard => $_->{inDiscards},
+            outdiscard => $_->{outDiscards},
+            total_in_packets => $_->{inPkts},
+            total_out_packets => $_->{outPkts}
         };
     }
 }
@@ -428,8 +584,11 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_interface}) ? $self->{option_results}->{filter_interface} : 'all') . '_' .
+            $self->{checking}
+        );
 }
 
 1;
@@ -450,6 +609,10 @@ Check interface status.
 
 Check interface traffic.
 
+=item B<--add-errors>
+
+Check interface errors.
+
 =item B<--add-optical>
 
 Check interface optical.
@@ -467,12 +630,16 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-traffic', 'out-traffic',
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
 Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+
+=item B<--units-errors>
+
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--filter-use>
 

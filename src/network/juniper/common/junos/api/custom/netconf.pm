@@ -466,15 +466,25 @@ sub get_interface_infos {
         my $descr = centreon::plugins::misc::trim($_->{'description'});
         my $name = centreon::plugins::misc::trim($_->{'name'});
 
-        push @$results, {
+        my $item =  {
             descr => defined($descr) && $descr ne '' ? $descr : $name,
             name => $name,
             opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
             admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
             in => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
             out => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
+            inPkts => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-packets'}),
+            outPkts => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-packets'}),
             speed => $speed
         };
+        if (defined($_->{'input-error-list'}->{'input-errors'})) {
+            $item->{inErrors} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'input-errors'});
+            $item->{outErrors} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'output-errors'});
+            $item->{inDiscards} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'input-discards'});
+            $item->{outDiscards} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'output-discards'});
+        }
+
+        push @$results, $item;
 
         foreach my $logint (@{$_->{'logical-interface'}}) {
             push @$results, {
