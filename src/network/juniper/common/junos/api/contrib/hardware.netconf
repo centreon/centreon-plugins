@@ -1038,3 +1038,54 @@
 		<memory-buffer-utilization>0</memory-buffer-utilization>
 	</fpc>
 </fpc-information>
+<!-- show chassis fpc pic-status -->
+<fpc-information
+	xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="pic-style">
+	<fpc>
+		<slot>0</slot>
+		<state>Online</state>
+		<description></description>
+		<pic>
+			<pic-slot>2</pic-slot>
+			<pic-state>Online</pic-state>
+			<pic-type>10x 1GE(LAN) -E  SFP</pic-type>
+		</pic>
+		<pic>
+			<pic-slot>3</pic-slot>
+			<pic-state>Online</pic-state>
+			<pic-type>10x 1GE(LAN) -E  SFP</pic-type>
+		</pic>
+	</fpc>
+	<fpc>
+		<slot>1</slot>
+		<state>Online</state>
+		<description></description>
+	</fpc>
+	<fpc>
+		<slot>2</slot>
+		<state>Online</state>
+		<description></description>
+		<pic>
+			<pic-slot>0</pic-slot>
+			<pic-state>Online</pic-state>
+			<pic-type>4x 10GE(LAN) SFP+</pic-type>
+		</pic>
+	</fpc>
+</fpc-information>
+<!-- show chassis afeb -->
+<scb-information
+	xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="verbose">
+	<scb-type>FEB</scb-type>
+	<scb>
+		<slot>0</slot>
+		<state>Online</state>
+		<temperature>56 degrees C / 132 degrees F</temperature>
+		<cpu-total>11</cpu-total>
+		<cpu-interrupt>0</cpu-interrupt>
+		<memory-heap-utilization>12</memory-heap-utilization>
+		<memory-buffer-utilization>13</memory-buffer-utilization>
+		<memory-dram-size>2048</memory-dram-size>
+		<start-time junos:seconds="1729500381">2024-10-21 10:46:21 CEST</start-time>
+		<up-time junos:seconds="3367610">38 days, 23 hours, 26 minutes, 50 seconds</up-time>
+	</scb>
+</scb-information>
