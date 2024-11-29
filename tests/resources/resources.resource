@@ -30,6 +30,23 @@ Start Mockoon
 Stop Mockoon
     Terminate All Processes
 
+Ctn Cleanup Cache
+    Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
+    Remove File    ${/}dev${/}shm${/}*
+
+Ctn Generic Suite Setup
+   Ctn Cleanup Cache
+
+Ctn Run Command And Check Result As Regexp
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Match Regexp
+    ...    ${output}
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
+    ...    values=False
+
 Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
@@ -37,6 +54,17 @@ Ctn Run Command And Check Result As Strings
     Should Be Equal As Strings
     ...    ${expected_result}
     ...    ${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
+
+Ctn Verify Command Output
+    [Arguments]    ${command}    ${expected_result}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    Should Contain    
+    ...    ${output}    
+    ...    ${expected_result}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True

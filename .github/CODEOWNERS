@@ -9,6 +9,7 @@ Makefile            @centreon/owners-cpp
 
 *.pm                @centreon/owners-perl
 *.pl                @centreon/owners-perl
+*.t                @centreon/owners-perl
 
 *.py                @centreon/owners-python
 
@@ -17,6 +18,6 @@ Makefile            @centreon/owners-cpp
 tests/**            @centreon/owners-robot-e2e
 
 .github/**          @centreon/owners-pipelines
-packaging/**        @centreon/owners-pipelines
+packaging/**        @centreon/owners-perl
 selinux/**          @centreon/owners-pipelines
 .github/scripts/pod_spell_check.t  @centreon/owners-perl

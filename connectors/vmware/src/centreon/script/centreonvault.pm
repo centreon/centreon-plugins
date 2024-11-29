@@ -42,7 +42,7 @@ sub new {
 
     if ( !$self->init() ) {
         $self->{enabled} = 0;
-        $self->{logger}->writeLogError("An error occurred in init() method. Centreonvault cannot be used.");
+        $self->{logger}->writeLogInfo("Something happened during init() method that makes Centreonvault not usable. Ignore this if you don't use Centreonvault.");
     }
     return $self;
 }
@@ -86,7 +86,7 @@ sub check_options {
     }
     if ( ! -f $self->{config_file} ) {
         $self->{logger}->writeLogError("The given configuration file " . $self->{config_file}
-            . " does not exist. Centreonvault cannot be used.");
+            . " does not exist. Passwords won't be retrieved from Centreonvault. Ignore this if you don't use Centreonvault.");
         return undef;
     }
 
