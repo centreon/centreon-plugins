@@ -5,6 +5,8 @@
 7210SAS
 7750SR
 ACS
+--add-cpu
+--add-disk-io
 --add-fc-fe-errors
 --add-qos-limit
 --add-sysdesc
@@ -45,7 +47,9 @@ cpu-utilization-5s
 --critical-backend-congestions
 --critical-backend-outstanding-io
 --critical-bytesallocatedpercentage
+--critical-cpu-utilization
 --critical-na
+--critical-total-cpu-utilization
 Datacore
 datasource
 DC4
@@ -67,6 +71,7 @@ fanspeed
 FCCapacity
 --filter-fs
 --filter-imei
+--filter-ppid
 --filter-vdom
 --filter-vm
 --force-64bits-counters
@@ -91,6 +96,7 @@ in-fcserror
 in-mcast
 -InputFormat
 interface-dsl-name
+InterrupibleSleep
 in-ucast
 IpAddr
 ipv4
@@ -173,6 +179,7 @@ physicaldrive
 PKCS1
 powershell
 powershell.exe
+PPID
 prct
 Primera
 proto
@@ -217,6 +224,7 @@ tower-cli
 TrendMicro
 UCD
 UDP
+UninterrupibleSleep
 uniq
 uptime
 --urlpath
@@ -241,6 +249,8 @@ vSphere
 --warning-backend-congestions
 --warning-backend-outstanding-io
 --warning-bytesallocatedpercentage
+--warning-cpu-utilization
 --warning-na
+--warning-total-cpu-utilization
 WSMAN
 XPath
