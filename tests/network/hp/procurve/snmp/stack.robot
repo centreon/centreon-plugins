@@ -4,7 +4,7 @@ Documentation       Check stack members.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-
+Test Setup          Ctn Cleanup Cache
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::hp::procurve::snmp::plugin
@@ -26,7 +26,7 @@ stack ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
-            ...      1     --verbose                                                                                               OK: All stack members are ok checking stack member 'Anonymized 238' role: active [state: standby] port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]checking stack member 'Anonymized 239' role: notReady [state: commander] port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]
+            ...      1     --verbose                                                                                               OK: All stack members are ok checking stack member 'Anonymized 238' member-status : buffer creation port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]checking stack member 'Anonymized 239' member-status : buffer creation port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]
             ...      2     --unknown-member-status=''                                                                              OK: All stack members are ok
             ...      3     --warning-member-status=''                                                                              OK: All stack members are ok
             ...      4     --critical-member-status='\\\%{role} ne \\\%{roleLast}'                                                 OK: All stack members are ok
