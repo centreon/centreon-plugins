@@ -194,7 +194,7 @@ my $commands = {
     'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
     'show chassis fpc pic-status' => '<rpc><get-pic-information></get-pic-information></rpc>',
     'show chassis afeb' => '<rpc><get-afeb-information></get-afeb-information></rpc>',
-    'show interfaces detail' => '<rpc><get-interface-information><detail/></get-interface-information></rpc>',
+    'show interfaces extensive' => '<rpc><get-interface-information><extensive/></get-interface-information></rpc>',
     'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
     'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
     'show mpls lsp' => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
@@ -224,7 +224,7 @@ sub get_rpc_commands {
             $rpc_commands->{'show chassis fpc pic-status'} = $commands->{'show chassis fpc pic-status'};
             $rpc_commands->{'show chassis afeb'} = $commands->{'show chassis afeb'};
         } elsif ($label eq 'interface') {
-            $rpc_commands->{'show interfaces detail'} = $commands->{'show interfaces detail'};
+            $rpc_commands->{'show interfaces extensive'} = $commands->{'show interfaces extensive'};
         } elsif ($label eq 'interface_optical') {
             $rpc_commands->{'show interfaces diagnostics optics'} = $commands->{'show interfaces diagnostics optics'};
         } elsif ($label eq 'memory') {
