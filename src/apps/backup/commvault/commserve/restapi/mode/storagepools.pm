@@ -128,28 +128,17 @@ sub manage_selection {
         }
 
         my ($total, $free) = ($_->{totalCapacity} * 1024 * 1024, $_->{totalFreeSpace} * 1024 * 1024);
-        if ($total == 0) {
-            $self->{sp}->{ $_->{storagePoolEntity}->{storagePoolName} } = {
-                display => $_->{storagePoolEntity}->{storagePoolName},
-                status => defined($map_status_code->{ $_->{statusCode} }) ? $map_status_code->{ $_->{statusCode} } : lc($_->{status}),
-                total_space => 0,
-                used_space => 0 - $free,
-                free_space => $free,
-                prct_used_space => 100 - ($free * 100 / 1),
-                prct_free_space => $free * 100 / 1
-            };
+        my $fixed_total = ($total == 0) ? 1 : $total;
 
-        } else {
-            $self->{sp}->{ $_->{storagePoolEntity}->{storagePoolName} } = {
-                display => $_->{storagePoolEntity}->{storagePoolName},
-                status => defined($map_status_code->{ $_->{statusCode} }) ? $map_status_code->{ $_->{statusCode} } : lc($_->{status}),
-                total_space => $total,
-                used_space => $total - $free,
-                free_space => $free,
-                prct_used_space => 100 - ($free * 100 / $total),
-                prct_free_space => $free * 100 / $total
-            };
-        }
+        $self->{sp}->{ $_->{storagePoolEntity}->{storagePoolName} } = {
+            display         => $_->{storagePoolEntity}->{storagePoolName},
+            status          => defined($map_status_code->{ $_->{statusCode} }) ? $map_status_code->{ $_->{statusCode} } : lc($_->{status}),
+            total_space     => $total,
+            used_space      => $total - $free,
+            free_space      => $free,
+            prct_used_space => 100 - ($free * 100 / $fixed_total),
+            prct_free_space => $free * 100 / $fixed_total
+        };
     }
     
     if (scalar(keys %{$self->{sp}}) <= 0) {
