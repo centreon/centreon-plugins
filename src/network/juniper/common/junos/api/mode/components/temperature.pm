@@ -39,11 +39,11 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "temperature '%s' status is %s [current: %s, instance: %s].",
+                "temperature '%s' status is %s [current: %s%s].",
                 $item->{name},
                 $item->{status},
                 $item->{temperature} ne '' ? $item->{temperature} : '-',
-                $item->{name}
+                defined($self->{option_results}->{display_instances}) ? ', instance: ' . $item->{name} : ''
             )
         );
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::components::fpc;
+package network::juniper::common::junos::api::mode::components::pic;
 
 use strict;
 use warnings;
@@ -28,13 +28,13 @@ sub load {}
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "checking fpc");
-    $self->{components}->{fpc} = { name => 'fpc', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'fpc'));
+    $self->{output}->output_add(long_msg => "checking pic");
+    $self->{components}->{pic} = { name => 'pic', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'pic'));
 
-    foreach my $item (@{$self->{results}->{fpc}}) {
-        next if ($self->check_filter(section => 'fpc', instance => $item->{name}));
-        $self->{components}->{fpc}->{total}++;
+    foreach my $item (@{$self->{results}->{pic}}) {
+        next if ($self->check_filter(section => 'pic', instance => $item->{name}));
+        $self->{components}->{pic}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
@@ -45,7 +45,7 @@ sub check {
             )
         );
 
-        my $exit = $self->get_severity(section => 'fpc', value => $item->{status});
+        my $exit = $self->get_severity(section => 'pic', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,

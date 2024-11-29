@@ -38,11 +38,11 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "power supply '%s' status is %s [dc output load: %s, instance: %s].",
+                "power supply '%s' status is %s [dc output load: %s%s].",
                 $item->{name},
                 $item->{status},
                 defined($item->{dc_output_load}) ? $item->{dc_output_load} . '%' : '-',
-                $item->{name}
+                defined($self->{option_results}->{display_instances}) ? ', instance: ' . $item->{name} : ''
             )
         );
 

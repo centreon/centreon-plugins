@@ -38,11 +38,11 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "fan '%s' status is %s [rpm: %s, instance: %s].",
+                "fan '%s' status is %s [rpm: %s%s].",
                 $item->{name},
                 $item->{status},
                 defined($item->{rpm}) ? $item->{rpm} : '-',
-                $item->{name}
+                defined($self->{option_results}->{display_instances}) ? ', instance: ' . $item->{name} : ''
             )
         );
 

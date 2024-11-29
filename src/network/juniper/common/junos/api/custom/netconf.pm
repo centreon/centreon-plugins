@@ -192,6 +192,8 @@ my $commands = {
     'show chassis environment' => '<rpc><get-environment-information></get-environment-information></rpc>',
     'show chassis power' => '<rpc><get-power-usage-information></get-power-usage-information></rpc>',
     'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
+    'show chassis fpc pic-status' => '<rpc><get-pic-information></get-pic-information></rpc>',
+    'show chassis afeb' => '<rpc><get-afeb-information></get-afeb-information></rpc>',
     'show interfaces detail' => '<rpc><get-interface-information><detail/></get-interface-information></rpc>',
     'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
     'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
@@ -219,6 +221,8 @@ sub get_rpc_commands {
             $rpc_commands->{'show chassis power'} = $commands->{'show chassis power'};
             $rpc_commands->{'show chassis fan'} = $commands->{'show chassis fan'};
             $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
+            $rpc_commands->{'show chassis fpc pic-status'} = $commands->{'show chassis fpc pic-status'};
+            $rpc_commands->{'show chassis afeb'} = $commands->{'show chassis afeb'};
         } elsif ($label eq 'interface') {
             $rpc_commands->{'show interfaces detail'} = $commands->{'show interfaces detail'};
         } elsif ($label eq 'interface_optical') {
@@ -378,7 +382,7 @@ sub get_hardware_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['hardware']));
     }
 
-    my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [] };
+    my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [], 'pic' => [], afeb => [] };
     my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => ['fan-information-rpm-item']);
 
     foreach (@{$result->{'fan-information-rpm-item'}}) {
@@ -416,11 +420,44 @@ sub get_hardware_infos {
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => ['fpc']);
+    $result = $self->load_xml(
+        data => $content,
+        start_tag => '<fpc-information',
+        end_tag => '</fpc-information>',
+        middle_tag => 'fpc.*?cpu-15min-avg',
+        force_array => ['fpc']
+    );
 
     foreach (@{$result->{fpc}}) {
         push @{$results->{fpc}}, {
             name => 'fpc slot ' . $_->{slot},
+            status => $_->{state}
+        };
+    }
+
+    $result = $self->load_xml(
+        data => $content,
+        start_tag => '<fpc-information',
+        end_tag => '</fpc-information>',
+        middle_tag => 'pic-state',
+        force_array => ['fpc', 'pic'],
+        error_continue => 1
+    );
+
+    foreach my $fpc (@{$result->{fpc}}) {
+        foreach (@{$fpc->{pic}}) {
+            push @{$results->{pic}}, {
+                name => 'pic slot ' . $_->{'pic-slot'} . ' fpc slot ' . $fpc->{slot},
+                status => $_->{'pic-state'}
+            };
+        }
+    }
+
+    $result = $self->load_xml(data => $content, start_tag => '<scb-information.*?>', end_tag => '</scb-information>', force_array => ['scb'], error_continue => 1);
+
+    foreach (@{$result->{scb}}) {
+        push @{$results->{afeb}}, {
+            name => 'afeb slot ' . $_->{slot},
             status => $_->{state}
         };
     }
