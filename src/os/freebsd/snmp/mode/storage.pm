@@ -72,7 +72,8 @@ Thresholds are on free space left.
 
 =item B<--storage>
 
-Set the storage (number expected) example: 1, 2,... (empty means 'check all storage').
+Define the storage filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all storage systems will be monitored.
+To filter on storage names, see --name.
 
 =item B<--name>
 
@@ -106,7 +107,7 @@ Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageD
 
 Modify the storage name displayed by using a regular expression.
 
-Example: adding --display-transform-src='dev' --display-transform-dst='run'  will replace all occurrences of 'dev' with 'run'
+Example: adding --display-transform-src='dev' --display-transform-dst='run' will replace all occurrences of 'dev' with 'run'
 
 =item B<--show-cache>
 
