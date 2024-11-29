@@ -115,6 +115,7 @@ jobqueues
 journalctl
 kccevent
 keepass
+Keysight
 Kubernetes
 ldap
 --legacy-api-beta
@@ -167,6 +168,7 @@ NTLMv2
 NTP
 --oid
 OID
+NVOS
 --oid-display
 --oid-extra-display
 --oid-filter
