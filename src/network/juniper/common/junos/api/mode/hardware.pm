@@ -33,6 +33,11 @@ sub set_system {
     $self->{cb_hook2} = 'api_execute';
     
     $self->{thresholds} = {
+        afeb => [
+            ['Online', 'OK'],
+            ['Offline', 'OK'],
+            ['Check', 'CRITICAL']
+        ],
         fan => [
             ['OK', 'OK'],
             ['Check', 'WARNING']
@@ -50,6 +55,10 @@ sub set_system {
             ['Spare', 'OK'],
             ['Fault', 'CRITICAL'] # Fault-off also
         ],
+        pic => [
+            ['Online', 'OK'],
+            ['.*', 'CRITICAL'],
+        ],
         psu => [
             ['Online', 'OK'],
             ['Empty', 'OK'],
@@ -63,7 +72,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'network::juniper::common::junos::api::mode::components';
-    $self->{components_module} = ['fan', 'fpc', 'psu', 'temperature'];
+    $self->{components_module} = ['afeb', 'fan', 'fpc', 'pic', 'psu', 'temperature'];
 }
 
 sub api_execute {
@@ -77,7 +86,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'display-instances' => { name => 'display_instances' }
+    });
 
     return $self;
 }
@@ -95,7 +106,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'fan', 'fpc', 'psu', 'temperature'.
+Can be: 'afeb', 'fan', 'fpc', 'pic', 'psu', 'temperature'.
 
 =item B<--filter>
 
