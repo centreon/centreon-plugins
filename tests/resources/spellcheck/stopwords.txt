@@ -24,6 +24,7 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+bsnmp-ucd
 --cacert-file
 cardtemperature
 Centreon
@@ -60,6 +61,7 @@ dfsrevent
 ESX
 eth
 --exclude-fs
+ext4
 --failback-file
 fanspeed
 FCCapacity
@@ -73,6 +75,7 @@ FCCapacity
 --force-oid
 Fortigate
 Fortinet
+FreeBSD
 frsevent
 --get-param
 HashiCorp
@@ -179,6 +182,8 @@ proto
 psu
 QoS
 queue-messages-inflighted
+readOnly
+readWrite
 --redis-attribute
 --redis-db
 --redis-server
