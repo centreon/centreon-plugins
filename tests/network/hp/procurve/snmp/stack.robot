@@ -21,12 +21,12 @@ stack ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/hp/procurve/snmp/slim_procurve_stack
     ...    --snmp-timeout=1
-    ...    ${extra_options}
+    ...    ${extra_options} | tr -d '\n' | sed -E 's/\\\\s+/ /g'
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
-            ...      1     --verbose                                                                                               OK: All stack members are ok ${Space}checking stack member 'Anonymized 238'${Space}role: active [state: standby]${Space}port '1' operational status: up [admin status: enabled]${Space}port '2' operational status: up [admin status: enabled]${Space}checking stack member 'Anonymized 239'${Space}role: notReady [state: commander]${Space}port '1' operational status: up [admin status: enabled]${Space}port '2' operational status: up [admin status: enabled]
+            ...      1     --verbose                                                                                               OK: All stack members are ok checking stack member 'Anonymized 238' role: active [state: standby] port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]checking stack member 'Anonymized 239' role: notReady [state: commander] port '1' operational status: up [admin status: enabled] port '2' operational status: up [admin status: enabled]
             ...      2     --unknown-member-status=''                                                                              OK: All stack members are ok
             ...      3     --warning-member-status=''                                                                              OK: All stack members are ok
             ...      4     --critical-member-status='\\\%{role} ne \\\%{roleLast}'                                                 OK: All stack members are ok
