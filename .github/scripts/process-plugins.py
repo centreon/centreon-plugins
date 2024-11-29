@@ -40,21 +40,29 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
     packaging_file = open(filepath)
     packaging = json.load(packaging_file)
     packaging_file.close()
-    packaging_path = re.search('.*\/(centreon-plugin-.*)\/pkg.json', filepath).group(1)
-
-    if not packaging_path == packaging["pkg_name"]:
-        packaging_path = packaging["pkg_name"]
+    packaging_path = packaging["pkg_name"]
 
     directory_path = re.search('^(.+)\/pkg.json', filepath).group(1)
 
     if common:
+        # if the common flag is true, then all packages are included
         list_packages.add(packaging_path)
     elif directory_path in packages:
+        # if a package file is changed or created, then the package is included
         list_packages.add(packaging_path)
     else:
+        # is a source code file is changed or created
         for pkg_file in packaging["files"]:
+            # then all the included files or directories are examined to check if the package is impacted by the changes
             pkg_file_dir = pkg_file.strip('/').removeprefix('src/')
-            if pkg_file_dir in list_plugins:
-                list_packages.add(packaging_path)
+            # the package is impacted by the change if one of the changed files
+            # is located inside one of the directories of the package
+            # so this loop:
+            for modified_file in list_plugins:
+                # if the beginning of the changed file path includes one of the package's directories
+                if modified_file.find(pkg_file_dir) == 0:
+                    # then the package is included
+                    list_packages.add(packaging_path)
+                    break
 
 print(*list_packages)
