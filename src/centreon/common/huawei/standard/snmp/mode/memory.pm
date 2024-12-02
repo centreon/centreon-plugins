@@ -30,21 +30,23 @@ sub custom_usage_perfdata {
 
     if ($self->{result_values}->{total} > 0) {
         $self->{output}->perfdata_add(
-            label => 'used', unit => 'B',
+            label     => 'used', unit => 'B',
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => $self->{result_values}->{used},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
-            min => 0, max => $self->{result_values}->{total}
+            value     => $self->{result_values}->{used},
+            warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+            critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+            min       => 0,
+            max       => $self->{result_values}->{total}
         );
     } else {
         $self->{output}->perfdata_add(
-            label => 'used', unit => '%',
+            label     => 'used', unit => '%',
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => $self->{result_values}->{prct_used},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-            min => 0, max => 100
+            value     => $self->{result_values}->{prct_used},
+            warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min       => 0,
+            max       => 100
         );
     }
 }
@@ -52,7 +54,13 @@ sub custom_usage_perfdata {
 sub custom_usage_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value     => $self->{result_values}->{prct_used},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel},  exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -66,10 +74,12 @@ sub custom_usage_output {
         my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     
         $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+            $total_size_value . " " . $total_size_unit,
+            $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+            $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        );
     }
+
     return $msg;
 }
 
@@ -77,9 +87,9 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_total'} - $self->{result_values}->{free};
+    $self->{result_values}->{total}   = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{free}    = $options{new_datas}->{$self->{instance} . '_free'};
+    $self->{result_values}->{used}    = $options{new_datas}->{$self->{instance} . '_total'} - $self->{result_values}->{free};
 
     if ($self->{result_values}->{total} > 0) {
         $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
@@ -87,6 +97,7 @@ sub custom_usage_calc {
     } else {
         $self->{result_values}->{prct_used} = $options{new_datas}->{$self->{instance} . '_used_prct'};
     }
+
     return 0;
 }
 
@@ -99,11 +110,11 @@ sub set_counters {
     
     $self->{maps_counters}->{memory} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'display' }, { name => 'used_prct' }, { name => 'free' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            key_values                     => [ { name => 'display' }, { name => 'used_prct' }, { name => 'free' }, { name => 'total' } ],
+            closure_custom_calc            => $self->can('custom_usage_calc'),
+            closure_custom_output          => $self->can('custom_usage_output'),
+            closure_custom_perfdata        => $self->can('custom_usage_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
     ];
@@ -120,16 +131,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
 
 my $oid_hwEntityMemUsage = '.1.3.6.1.4.1.2011.5.25.31.1.1.1.1.7'; # prct
 my $oid_hwMemoryDevEntry = '.1.3.6.1.4.1.2011.6.3.5.1.1';
-my $oid_hwResOccupancy = '.1.3.6.1.4.1.2011.6.3.17.1.1.3';
+my $oid_hwResOccupancy   = '.1.3.6.1.4.1.2011.6.3.17.1.1.3';
 my $map_type = { 1 => 'memory', 2 => 'messageUnits', 3 => 'cpu' };
 
 my $mapping = {
@@ -149,19 +158,19 @@ sub manage_selection {
 
     my $num = 1;
     if (defined($results->{$oid_hwMemoryDevEntry}) && scalar(keys %{$results->{$oid_hwMemoryDevEntry}}) > 0) {
-        foreach (keys %{$results->{$oid_hwMemoryDevEntry}}) {
+        foreach (sort keys %{$results->{$oid_hwMemoryDevEntry}}) {
             next if (!/^$mapping->{hwMemoryDevFree}->{oid}\.(.*)$/);
             my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results->{$oid_hwMemoryDevEntry}, instance => $1);
             $self->{memory}->{$num} = { display => $num, used_prct => -1, free => $result->{hwMemoryDevFree}, total => $result->{hwMemoryDevSize} };
             $num++;
         }
     } elsif (defined($results->{$oid_hwEntityMemUsage}) && scalar(keys %{$results->{$oid_hwEntityMemUsage}}) > 0) {
-        foreach (keys %{$results->{$oid_hwEntityMemUsage}}) {
+        foreach (sort keys %{$results->{$oid_hwEntityMemUsage}}) {
             $self->{memory}->{$num} = { display => $num, used_prct => $results->{$oid_hwEntityMemUsage}->{$_}, free => 0, total => 0 };
             $num++;
         }
     } else {
-        foreach (keys %{$results->{$oid_hwResOccupancy}}) {
+        foreach (sort keys %{$results->{$oid_hwResOccupancy}}) {
             /\.([0-9]*?)$/;
             next if (!defined($map_type->{$1}) || $map_type->{$1} ne 'memory');
             $self->{memory}->{$num} = { display => $num, used_prct => $results->{$oid_hwResOccupancy}->{$_}, free => 0, total => 0 };
