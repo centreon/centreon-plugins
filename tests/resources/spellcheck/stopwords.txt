@@ -268,5 +268,6 @@ vSphere
 --warning-na
 --warning-total-cpu-utilization
 WLAN
+WLC
 WSMAN
 XPath
