@@ -194,8 +194,8 @@ queue-messages-inflighted
 RestAPI
 RFC1628
 RRDCached
-SAS
 Sansymphony
+SAS
 scenarii
 --scope-datacenter
 sfp.temperature
@@ -254,5 +254,6 @@ vSphere
 --warning-na
 --warning-total-cpu-utilization
 WLAN
+WLC
 WSMAN
 XPath
