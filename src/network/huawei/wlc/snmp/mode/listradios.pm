@@ -201,11 +201,11 @@ List radios.
 
 =over 8
 
-=item B<--filter-name>
+=item C<--filter-name>
 
 Display AP radios matching the filter.
 
-=item B<--filter-group>
+=item C<--filter-group>
 
 Display AP radios matching the filter.
 

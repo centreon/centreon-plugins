@@ -203,15 +203,15 @@ List wireless name.
 
 =over 8
 
-=item B<--filter-name>
+=item C<--filter-name>
 
-Filter access point name (can be a regexp)
+Filter access points by name (can be a regexp).
 
-=item B<--filter-address>
+=item C<--filter-address>
 
-Filter access point ip address (can be a regexp).
+Filter access points by IP address (can be a regexp).
 
-=item B<--filter-group>
+=item C<--filter-group>
 
 Filter access point group (can be a regexp).
 

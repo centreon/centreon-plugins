@@ -319,38 +319,97 @@ Check AP health.
 
 =over 8
 
-=item B<--filter-counters>
+=item C<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^temperature|onlinetime$'
 
-=item B<--filter-name>
+=item C<--filter-name>
 
 Filter access point name (can be a regexp)
 
-=item B<--filter-address>
+=item C<--filter-address>
 
-Filter access point ip address (can be a regexp).
+Filter access point IP address (can be a regexp).
 
-=item B<--filter-group>
+=item C<--filter-group>
 
 Filter access point group (can be a regexp).
 
-=item B<--warning-status>
+=item C<--warning-status>
 
 Define the conditions to match for the status to be WARNING. (default: '%{powersupply} eq "limited"').
 You can use the following variables: %{powersupply}, %{datalinkstate}, %{display}
 
-=item B<--critical-status>
+=item C<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{powersupply} =~ /insufficient|limited/ || %{datalinkstate} !~ /run/').
 You can use the following variables: %{powersupply}, %{datalinkstate}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item C<--warning-temperature>
 
 Thresholds.
-Can be: 'temperature', 'onlinetime', 'bootcount-total', 'memory',
-'cpu', 'up-port-speed', 'up-port-packet-err', 'online-user-num'.
+
+=item C<--critical-temperature>
+
+Thresholds.
+
+=item C<--warning-onlinetime>
+
+Thresholds.
+
+=item C<--critical-onlinetime>
+
+Thresholds.
+
+=item C<--warning-bootcount-total>
+
+Thresholds.
+
+=item C<--critical-bootcount-total>
+
+Thresholds.
+
+=item C<--warning-memory>
+
+Thresholds.
+
+=item C<--critical-memory>
+
+Thresholds.
+
+
+=item C<--warning-cpu>
+
+Thresholds.
+
+=item C<--critical-cpu>
+
+Thresholds.
+
+=item C<--warning-up-port-speed>
+
+Thresholds.
+
+=item C<--critical-up-port-speed>
+
+Thresholds.
+
+=item C<--warning-up-port-packet-err>
+
+Thresholds.
+
+=item C<--critical-up-port-packet-err>
+
+Thresholds.
+
+=item C<--warning-online-user-num>
+
+Thresholds.
+
+=item C<--critical-online-user-num>
+
+Thresholds.
 
 =back
 
