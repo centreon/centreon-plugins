@@ -288,7 +288,9 @@ sub manage_selection {
 
     my $request = [ { oid => $mapping->{name}->{oid} } ];
     push @$request, { oid => $mapping->{group}->{oid} }
-        if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '');
+        if (defined($self->{option_results}->{filter_group})
+            && $self->{option_results}->{filter_group} ne ''
+        );
 
     push @$request, { oid => $mapping->{address}->{oid} }
         if (defined($self->{option_results}->{filter_address}) && $self->{option_results}->{filter_address} ne '');
@@ -299,43 +301,43 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    foreach (keys %$snmp_result) {
+    foreach (sort keys %$snmp_result) {
         next if (!/^$mapping->{name}->{oid}\.(.*)/);
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (!defined($result->{name}) || $result->{name} eq '') {
-            $self->{output}->output_add(long_msg =>
-                "skipping WLC '$instance': cannot get a name. please set it.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg => "skipping WLC '$instance': cannot get a name. please set it.",
+                debug    => 1
+            );
             next;
         }
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{name} . "': no matching name filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg  => "skipping '" . $result->{name} . "': no matching name filter.",
+                debug => 1
+            );
             next;
         }
 
         if (defined($self->{option_results}->{filter_address}) && $self->{option_results}->{filter_address} ne '' &&
             $result->{address} !~ /$self->{option_results}->{filter_address}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{address} . "': no matching address filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $result->{address} . "': no matching address filter.",
+                debug    => 1
+            );
             next;
         }
 
         if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
             $result->{group} !~ /$self->{option_results}->{filter_group}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{group} . "': no matching group filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $result->{group} . "': no matching group filter.",
+                debug    => 1
+            );
             next;
         }
 
@@ -358,7 +360,7 @@ sub manage_selection {
     );
     $snmp_result = $options{snmp}->get_leef();
 
-    foreach (keys %{$self->{ap}}) {
+    foreach (sort keys %{$self->{ap}}) {
         my $result = $options{snmp}->map_instance(
             mapping  => $mapping_stat,
             results  => $snmp_result,
