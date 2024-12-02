@@ -85,6 +85,7 @@ frsevent
 HashiCorp
 hashicorpvault
 HPE
+Huawei
 ifAlias
 ifDesc
 ifName
@@ -252,5 +253,6 @@ vSphere
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+WLAN
 WSMAN
 XPath

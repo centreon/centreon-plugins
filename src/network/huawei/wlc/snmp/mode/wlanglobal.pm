@@ -230,10 +230,69 @@ Check global WLAN access point count and user associated and authenticated.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item C<--warning-total>
 
 Thresholds.
-Can be: 'total', 'normal', 'normal-prct', 'fault', 'fault-prct', 'current-user', 'current-auth-user', 'current-auth-user-prct'
+
+=item C<--critical-total>
+
+Thresholds.
+
+=item C<--warning-normal>
+
+Thresholds.
+
+=item C<--critical-normal>
+
+Thresholds.
+
+=item C<--warning-normal-prct>
+
+Thresholds.
+
+=item C<--critical-normal-prct>
+
+Thresholds.
+
+=item C<--warning-fault>
+
+Thresholds.
+
+=item C<--critical-fault>
+
+Thresholds.
+
+=item C<--warning-fault-prct>
+
+Thresholds.
+
+=item C<--critical-fault-prct>
+
+Thresholds.
+
+=item C<--warning-current-user>
+
+Thresholds.
+
+=item C<--critical-current-user>
+
+Thresholds.
+
+=item C<--warning-current-auth-user>
+
+Thresholds.
+
+=item C<--critical-current-auth-user>
+
+Thresholds.
+
+=item C<--warning-current-auth-user-prct>
+
+Thresholds.
+
+=item C<--critical-current-auth-user-prct>
+
+Thresholds.
 
 =back
 

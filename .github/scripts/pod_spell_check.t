@@ -1,7 +1,5 @@
 use strict;
 use warnings;
-
-use Test::More;
 use Test::Spelling;
 
 if (!@ARGV) {
@@ -18,6 +16,6 @@ printf("Using dictionary: ".$stopword_filename." \n");
 
 add_stopwords(<FILE>);
 close(FILE);
-set_spell_cmd('hunspell -l');
+set_spell_cmd('hunspell -d en_US -l');
 all_pod_files_spelling_ok($ARGV[0]);
 

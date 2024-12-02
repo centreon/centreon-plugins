@@ -380,41 +380,162 @@ Check AP status.
 
 =over 8
 
-=item B<--filter-counters>
+=item C<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^total$|^total-normal$'
+Example: C<--filter-counters='^total$|^total-normal$'>
 
-=item B<--filter-name>
+=item C<--filter-name>
 
 Filter access point name (can be a regexp)
 
-=item B<--filter-address>
+=item C<--filter-address>
 
-Filter access point ip address (can be a regexp).
+Filter access point IP address (can be a regexp).
 
-=item B<--filter-group>
+=item C<--filter-group>
 
 Filter access point group (can be a regexp).
 
-=item B<--warning-status>
+=item C<--warning-status>
 
-Define the conditions to match for the status to be WARNING. (default: '%{runstate} =~ /countryCodeMismatch|typeNotMatch/').
-You can use the following variables: %{runstate}, %{display}
-runstate: idle, autofind, typeNotMatch, fault, config, configFailed, download, normal, committing, commitFailed,
-standby, verMismatch, nameConflicted, invalid, countryCodeMismatch
+Define the conditions to match for the status to be WARNING. (default: C<'%{runstate} =~ /countryCodeMismatch|typeNotMatch/'>).
+You can use the following variables: C<%{runstate}>, C<%{display}>.
+C<%(runstate)> can have one of these values: C<idle>, C<autofind>, C<typeNotMatch>, C<fault>, C<config>, C<configFailed>, C<download>, C<normal>, C<committing>, C<commitFailed>, C<standby>, C<verMismatch>, C<nameConflicted>, C<invalid>, C<countryCodeMismatch>.
 
-=item B<--critical-status>
+=item C<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL. (default: '%{runstate} =~ /fault|configFailed|commitFailed|verMismatch|nameConflicted|invalid/').
-You can use the following variables: %{runstate}, %{display}
+Define the conditions to match for the status to be CRITICAL. (default: C<'%{runstate} =~ /fault|configFailed|commitFailed|verMismatch|nameConflicted|invalid/'>).
+You can use the following variables: C<%{runstate}>, C<%{display}>.
+C<%(runstate)> can have one of these values: C<idle>, C<autofind>, C<typeNotMatch>, C<fault>, C<config>, C<configFailed>, C<download>, C<normal>, C<committing>, C<commitFailed>, C<standby>, C<verMismatch>, C<nameConflicted>, C<invalid>, C<countryCodeMismatch>.
 
-=item B<--warning-*> B<--critical-*>
+=item C<--warning-total>
 
 Thresholds.
-Can be: 'total', 'total-idle', 'total-autofind', 'total-typeNotMatch', 'total-fault', 'total-config',
-'total-config-failed', 'total-download', 'total-normal', 'total-committing', 'total-commit-failed', 'total-standby',
-'total-version-mismatch', 'total-name-conflicted', 'total-invalid', 'total-country-code-mismatch'.
+
+=item C<--critical-total>
+
+Thresholds.
+
+=item C<--warning-total-idle>
+
+Thresholds.
+
+=item C<--critical-total-idle>
+
+Thresholds.
+
+=item C<--warning-total-autofind>
+
+Thresholds.
+
+=item C<--critical-total-autofind>
+
+Thresholds.
+
+=item C<--warning-total-typeNotMatch>
+
+Thresholds.
+
+=item C<--critical-total-typeNotMatch>
+
+Thresholds.
+
+=item C<--warning-total-fault>
+
+Thresholds.
+
+=item C<--critical-total-fault>
+
+Thresholds.
+
+=item C<--warning-total-config>
+
+Thresholds.
+
+=item C<--critical-total-config>
+
+Thresholds.
+
+=item C<--warning-total-config-failed>
+
+Thresholds.
+
+=item C<--critical-total-config-failed>
+
+Thresholds.
+
+=item C<--warning-total-download>
+
+Thresholds.
+
+=item C<--critical-total-download>
+
+Thresholds.
+
+=item C<--warning-total-normal>
+
+Thresholds.
+
+=item C<--critical-total-normal>
+
+Thresholds.
+
+=item C<--warning-total-committing>
+
+Thresholds.
+
+=item C<--critical-total-committing>
+
+Thresholds.
+
+=item C<--warning-total-commit-failed>
+
+Thresholds.
+
+=item C<--critical-total-commit-failed>
+
+Thresholds.
+
+=item C<--warning-total-standby>
+
+Thresholds.
+
+=item C<--critical-total-standby>
+
+Thresholds.
+
+=item C<--warning-total-version-mismatch>
+
+Thresholds.
+
+=item C<--critical-total-version-mismatch>
+
+Thresholds.
+
+=item C<--warning-total-name-conflicted>
+
+Thresholds.
+
+=item C<--critical-total-name-conflicted>
+
+Thresholds.
+
+=item C<--warning-total-invalid>
+
+Thresholds.
+
+=item C<--critical-total-invalid>
+
+Thresholds.
+
+=item C<--warning-total-country-code-mismatch>
+
+Thresholds.
+
+=item C<--critical-total-country-code-mismatch>
+
+Thresholds.
 
 =back
 
