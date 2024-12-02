@@ -49,7 +49,7 @@ sub custom_usage_output {
 sub custom_logical_usage_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_logical_space});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_used_space});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_free_space});
     return sprintf(
@@ -109,25 +109,25 @@ sub set_counters {
             }
         },
         { label => 'logical-usage', nlabel => 'volume.logicalspace.usage.bytes', set => {
-                key_values => [ { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_logical_usage_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total_space',
+                    { template => '%d', min => 0, max => 'total_logical_space',
                       unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'logical-usage-free', nlabel => 'volume.logicalspace.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'logical_free_space' }, { name => 'logical_used_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'logical_free_space' }, { name => 'logical_used_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_logical_usage_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total_space',
+                    { template => '%d', min => 0, max => 'total_logical_space',
                       unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'logical-usage-prct', nlabel => 'volume.logicalspace.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'logical_prct_used_space' }, { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'logical_prct_used_space' }, { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_logical_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100,
@@ -304,10 +304,11 @@ sub manage_selection {
         };
 
         if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
+            $self->{volumes}->{$name}->{total_logical_space} = $_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available};
             $self->{volumes}->{$name}->{logical_used_space} = $_->{space}->{logical_space}->{used};
             $self->{volumes}->{$name}->{logical_free_space} = $_->{space}->{logical_space}->{available};
             $self->{volumes}->{$name}->{logical_prct_used_space} =  $_->{space}->{logical_space}->{used_percent};
-            $self->{volumes}->{$name}->{logical_prct_free_space} = (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{logical_space}->{available} * 100 / $_->{space}->{size} : undef;
+            $self->{volumes}->{$name}->{logical_prct_free_space} = 100 - $_->{space}->{logical_space}->{used_percent};
         }
 
         
