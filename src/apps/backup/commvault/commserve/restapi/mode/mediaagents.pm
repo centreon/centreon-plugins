@@ -175,10 +175,10 @@ Filter media agents by ID (can be a regexp).
 
 Filter media agents by name (can be a regexp).
 
-=item B<--unknown-device-status>
+=item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{name}
+You can use the following variables: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
 
 =item B<--warning-status>
 
