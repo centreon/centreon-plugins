@@ -51,13 +51,13 @@ for filepath in os.popen('find packaging -type f -name pkg.json').read().split('
         # if a package file is changed or created, then the package is included
         list_packages.add(packaging_path)
     else:
-        # is a source code file is changed or created
+        # if we don't build all the plugins and no modification have been made to this package's 
+        # specification, then examine if its source code has been changed
         for pkg_file in packaging["files"]:
-            # then all the included files or directories are examined to check if the package is impacted by the changes
+            # for each source code file or directory included in the current package
             pkg_file_dir = pkg_file.strip('/').removeprefix('src/')
-            # the package is impacted by the change if one of the changed files
+            # the current package is impacted by the changes if one of the changed files
             # is located inside one of the directories of the package
-            # so this loop:
             for modified_file in list_plugins:
                 # if the beginning of the changed file path includes one of the package's directories
                 if modified_file.find(pkg_file_dir) == 0:
