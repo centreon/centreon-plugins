@@ -4,7 +4,7 @@ Documentation       List wireless name.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-
+Test Setup          Ctn Generic Suite Setup
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin

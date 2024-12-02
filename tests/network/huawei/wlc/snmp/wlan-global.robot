@@ -4,7 +4,7 @@ Documentation       Check global WLAN access point count and user associated and
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-
+Test Setup          Ctn Generic Suite Setup
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
 
 *** Test Cases ***
 wlan-global ${tc}
-    [Tags]    network    Stormshield
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=wlan-global
