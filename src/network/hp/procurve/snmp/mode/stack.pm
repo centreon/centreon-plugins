@@ -279,7 +279,8 @@ Check stack members.
 
 =item B<--unknown-member-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
+
 You can use the following variables: %{role}, %{roleLast}, %{state}, %{stateLast}
 
 =item B<--warning-member-status>
@@ -294,7 +295,8 @@ You can use the following variables: %{role}, %{roleLast}, %{state}, %{stateLast
 
 =item B<--unknown-port-status>
 
-Define the conditions to match for the status to be WARNING (Default: '').
+Define the conditions to match for the status to be UNKNOWN (Default: '').
+
 You can use the following variables: %{admin_status}, %{oper_status}, %{display}
 
 =item B<--warning-port-status>
