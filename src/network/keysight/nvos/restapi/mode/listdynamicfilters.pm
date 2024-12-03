@@ -87,7 +87,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'type', 'folder', 'application', 'ctm', 'status']);
+    $self->{output}->add_disco_format(elements => ['name']);
 }
 
 sub disco_show {
