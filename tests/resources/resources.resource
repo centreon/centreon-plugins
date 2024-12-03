@@ -18,6 +18,7 @@ ${PERCENT}              %
 *** Keywords ***
 Start Mockoon
     [Arguments]    ${MOCKOON_JSON}
+    Ctn Generic Suite Setup
     ${process}    Start Process
     ...    mockoon-cli
     ...    start
