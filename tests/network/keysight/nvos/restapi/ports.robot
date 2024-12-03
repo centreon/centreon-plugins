@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the backup status
+Documentation       Check the ports status
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -23,8 +23,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 ports ${tc}
-    [Documentation]    Check the backups status
-    [Tags]    network    backbox    restapi    backup
+    [Tags]    network    restapi    notauto
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=ports

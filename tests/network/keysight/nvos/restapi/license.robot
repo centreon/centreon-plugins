@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the backup status
+Documentation       Check the licenses status
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -22,18 +22,18 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-ports ${tc}
-    [Documentation]    Check the backups status
-    [Tags]    network    backbox    restapi    backup
+license ${tc}
+    [Tags]    network    restapi
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=license
     ...    ${extraoptions}
+
     Log    ${cmd}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:         tc    extraoptions                                                                                    expected_result    --
-            ...       1     --verbose                                                                                       OK: status : skipped (no value(s))
-            ...       2     --unknown-status=\\\%{status}                                                                   OK: status : skipped (no value(s))
-            ...       3     --warning-status='\\\%{status} =~ /MINOR/i'                                                     OK: status : skipped (no value(s))                                           
-            ...       4     --critical-status='\\\%{status} =~ /MAJOR|CRITICAL/i'                                           OK: status : skipped (no value(s))
+    Examples:         tc    extraoptions                                            expected_result    --
+            ...       1     --verbose                                               OK: status : skipped (no value(s))
+            ...       2     --unknown-status=\\\%{status}                           OK: status : skipped (no value(s))
+            ...       3     --warning-status='\\\%{status} =~ /MINOR/i'             OK: status : skipped (no value(s))                                           
+            ...       4     --critical-status='\\\%{status} =~ /MAJOR|CRITICAL/i'   OK: status : skipped (no value(s))
