@@ -61,11 +61,11 @@ runs:
 
           let repositoryStabilityPath = '';
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
-            repositoryStabilityPath = `rpm-connectors/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${stabilitySubdirectory}`;
+            repositoryStabilityPath = `rpm-plugins/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${stabilitySubdirectory}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
-            repositoryStabilityPath = `ubuntu-connectors-${{ inputs.stability }}`;
+            repositoryStabilityPath = `ubuntu-plugins-${{ inputs.stability }}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
-            repositoryStabilityPath = `apt-connectors-${{ inputs.stability }}`;
+            repositoryStabilityPath = `apt-plugins-${{ inputs.stability }}`;
           } else {
             throw new Error(`Repository cannot be find for distribution: ${{ inputs.distrib }}`);
           }
@@ -152,15 +152,15 @@ runs:
 
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
             await exec.exec(
-              `jf rt download "rpm-connectors/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
+              `jf rt download "rpm-plugins/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
-              `jf rt download "ubuntu-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
             await exec.exec(
-              `jf rt download "apt-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
             );
           }
 
