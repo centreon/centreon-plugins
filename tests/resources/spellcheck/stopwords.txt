@@ -28,6 +28,7 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+blocked-by-uf
 --cacert-file
 cardtemperature
 Centreon
@@ -36,6 +37,7 @@ Centreon
 CloudWatch
 connections-dhcp
 connections-dns
+cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
@@ -61,6 +63,7 @@ df
 dfsrevent
 --display-transform-dst
 --display-transform-src
+dns-resolve-time
 --dyn-mode
 -EncodedCommand
 ESX
@@ -122,6 +125,7 @@ Loggly
 machineaccount
 --map-speed-dsl
 MBean
+McAfee
 memAvailReal
 memBuffer
 --memexpiration
@@ -199,6 +203,7 @@ scenarii
 --scope-datacenter
 sfp.temperature
 --skip-ssl-check
+SkyHigh
 SNMP
 space-usage-prct
 --sql-errors-exit
@@ -222,6 +227,7 @@ total-oper-down
 total-oper-up
 tower-cli
 TrendMicro
+tsdb-version
 UCD
 UDP
 UninterrupibleSleep
