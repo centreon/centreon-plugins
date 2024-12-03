@@ -188,6 +188,7 @@ powershell.exe
 PPID
 prct
 Primera
+Procurve
 proto
 --proxyurl
 psu
