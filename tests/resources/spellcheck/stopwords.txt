@@ -115,6 +115,7 @@ jobqueues
 journalctl
 kccevent
 keepass
+Keysight
 Kubernetes
 ldap
 --legacy-api-beta
@@ -165,6 +166,7 @@ NLCapacity
 --ntlmv2
 NTLMv2
 NTP
+NVOS
 --oid
 OID
 --oid-display
@@ -197,8 +199,8 @@ queue-messages-inflighted
 RestAPI
 RFC1628
 RRDCached
-SAS
 Sansymphony
+SAS
 scenarii
 --scope-datacenter
 sfp.temperature
