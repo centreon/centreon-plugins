@@ -39,6 +39,18 @@ contents:
     dst: "/usr/share/perl5/centreon/script/centreon_vmware.pm"
     packager: deb
 
+  - src: "../src/centreon/script/centreonvault.pm"
+    dst: "/usr/share/perl5/vendor_perl/centreon/script/centreonvault.pm"
+    packager: rpm
+  - src: "../src/centreon/script/centreonvault.pm"
+    dst: "/usr/share/perl5/centreon/script/centreonvault.pm"
+    packager: deb
+
+  - src: "../src/centreon/script/centreon_vmware_convert_config_file"
+    dst: "/usr/bin/centreon_vmware_convert_config_file"
+    file_info:
+      mode: 0755
+
   - src: "../src/centreon_vmware.pl"
     dst: "/usr/bin/centreon_vmware.pl"
     file_info:
@@ -57,18 +69,16 @@ contents:
 
   - src: "redhat/centreon_vmware-sysconfig"
     dst: "/etc/sysconfig/centreon_vmware"
+    type: config|noreplace
     packager: rpm
   - src: "debian/centreon_vmware-default"
     dst: "/etc/default/centreon_vmware"
+    type: config|noreplace
     packager: deb
 
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm"
+  - src: "config/centreon_vmware-conf.json"
+    dst: "/etc/centreon/centreon_vmware.json"
     type: config|noreplace
-    packager: rpm
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm.new"
-    packager: deb
 
 scripts:
   postinstall: ./scripts/postinstall.sh
@@ -76,23 +86,26 @@ scripts:
 overrides:
   rpm:
     depends:
-      - perl-VMware-vSphere >= 5.1
-      - perl(ZMQ::LibZMQ4)
-      - perl(ZMQ::Constants)
-      - perl(LWP::Protocol::https)
+      - perl(Crypt::OpenSSL::AES)
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
+      - perl(LWP::Protocol::https)
+      - perl(Text::Template)
+      - perl(ZMQ::Constants)
+      - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
+      - perl-VMware-vSphere >= 5.1
   deb:
     depends:
-      - perl-vmware-vsphere
-      - libzmq-libzmq4-perl
-      - libzmq-constants-perl
-      - liblwp-protocol-https-perl
+      - libcrypt-openssl-aes-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
+      - liblwp-protocol-https-perl
       - libnet-curl-perl
       - libtext-template-perl
+      - libzmq-constants-perl
+      - libzmq-libzmq4-perl
+      - perl-vmware-vsphere
 
 rpm:
   signature:

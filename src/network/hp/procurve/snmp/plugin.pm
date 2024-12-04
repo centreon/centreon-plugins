@@ -38,6 +38,7 @@ sub new {
         'list-spanning-trees' => 'snmp_standard::mode::listspanningtrees',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
         'spanning-tree'    => 'snmp_standard::mode::spanningtree',
+        'stack'            => 'network::hp::procurve::snmp::mode::stack',
         'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
     };
 
