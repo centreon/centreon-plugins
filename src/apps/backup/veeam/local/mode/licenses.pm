@@ -18,12 +18,17 @@
 # limitations under the License.
 #
 
+# Import necessary libraries
 package apps::backup::veeam::local::mode::licenses;
 
+# Use base class
 use base qw(centreon::plugins::templates::counter);
 
+# Use strict and warnings
 use strict;
 use warnings;
+
+# Import required modules and types
 use centreon::common::powershell::veeam::licenses;
 use apps::backup::veeam::local::mode::resources::types qw($license_type $license_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -31,9 +36,11 @@ use centreon::plugins::misc;
 use JSON::XS;
 use POSIX;
 
+# Define time unit conversions
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
+# Performance data function for 'expires' metric
 sub custom_expires_perfdata {
     my ($self, %options) = @_;
 
@@ -48,6 +55,7 @@ sub custom_expires_perfdata {
     );
 }
 
+# Threshold check function for 'expires' metric
 sub custom_expires_threshold {
     my ($self, %options) = @_;
 
@@ -61,12 +69,14 @@ sub custom_expires_threshold {
     );
 }
 
+# Custom output function for 'status' metric
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'status: ' . $self->{result_values}->{status};
 }
 
+# Custom output function for 'license-instances' metrics
 sub custom_license_instances_output {
     my ($self, %options) = @_;
 
@@ -80,6 +90,7 @@ sub custom_license_instances_output {
     );
 }
 
+# Prefix output function for 'licenses' metric
 sub prefix_license_output {
     my ($self, %options) = @_;
 
@@ -90,6 +101,7 @@ sub prefix_license_output {
     );
 }
 
+# Set counters
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -152,6 +164,7 @@ sub set_counters {
     ];
 }
 
+# Constructor
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -168,12 +181,15 @@ sub new {
         'filter-to:s'       => { name => 'filter_to' },
         'filter-type:s'     => { name => 'filter_type' },
         'filter-status:s'   => { name => 'filter_status' },
-        'unit:s'            => { name => 'unit', default => 's' }
+        'unit:s'            => { name => 'unit', default => 's' },
+        'warning-expire-support:s'  => { name => 'warning_expire_support' },
+        'critical-expire-support:s' => { name => 'critical_expire_support' }
     });
 
     return $self;
 }
 
+# Check options
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -195,6 +211,7 @@ sub check_options {
     }
 }
 
+# Retrieve license information
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -279,6 +296,11 @@ sub manage_selection {
             $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used} = $license->{used_instances} * 100 / $license->{licensed_instances};
             $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_free} = 100 - $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used};
         }
+        
+        # Custom modification: Retrieving support expiration time
+        if (defined($license->{support_expiration_time})) {
+            $self->{licenses}->{ $license->{licensed_to} }->{support_expiration_time} = $license->{support_expiration_time};
+        }
 
         $self->{global}->{total}++;
     }
@@ -335,24 +357,18 @@ Filter licenses by type (can be a regexp).
 
 Filter licenses by status (can be a regexp).
 
-=item B<--warning-status>
-
-Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{to}, %{status}, %{type}.
-
-=item B<--critical-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /expired|invalid/i').
-You can use the following variables: %{to}, %{status}, %{type}.
-
 =item B<--unit>
 
 Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-*>, B<--critical-*>
 
 Thresholds.
 Can be: 'total', 'expires', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
+
+=item B<--warning-expire-support>, B<--critical-expire-support>
+
+Thresholds for support expiration time.
 
 =back
 
