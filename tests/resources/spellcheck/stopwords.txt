@@ -28,10 +28,13 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+base64
 blocked-by-uf
 --cacert-file
 cardtemperature
+centreon
 Centreon
+centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
@@ -66,6 +69,7 @@ dfsrevent
 dns-resolve-time
 --dyn-mode
 -EncodedCommand
+env
 ESX
 eth
 --exclude-fs

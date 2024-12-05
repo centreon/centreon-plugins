@@ -335,7 +335,7 @@ Centreon Vault password manager
 
 =head1 SYNOPSIS
 
-Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible api given a config file as constructor.
+Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible API.
 
     use centreon::vmware::logger;
     use centreon::script::centreonvault;
@@ -364,8 +364,8 @@ The expected file format for Centreon Vault is:
 
     {
       "name": "hashicorp_vault",
-      "url": "vault-server.mydomain.com",
-      "salt": "<base64 encoded(<32 bytes long key used to hash the crypted data)>",
+      "url": "vault-server.my-domain.com",
+      "salt": "<base64 encoded(<32 bytes long key used to hash the encrypted data)>",
       "port": 443,
       "root_path": "vmware_daemon",
       "role_id": "<base64 encoded(<iv><hmac_hash><encrypted_role_id>)",
