@@ -37,11 +37,11 @@ sub new {
     bless $self, $class;
 
     if (!defined($options{output})) {
-        print "Class PasswordMgr: Needs to be passed an 'output' argument of class output.\n";
+        print "Class PasswordMgr needs an 'output' argument that must be of type centreon::plugins::output.\n";
         exit 3;
     }
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class PasswordMgr: Needs to be passed an 'options' argument of class options.");
+        print "Class PasswordMgr needs an 'output' argument that must be of type centreon::plugins::options.\n";
         $options{output}->option_exit();
     }
 
