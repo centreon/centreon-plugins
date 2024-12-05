@@ -16,7 +16,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --snmp-community=hardware/devices/video/appeartv/snmp/appeartv
 
 *** Test Cases ***
-Avigilon camera Memory ${tc}/3
+AppearTV Alarms ${tc}
     [Documentation]    Hardware Video AppeartTV Alarms
     [Tags]    hardware    appeartv    alarms
     ${command}    Catenate
