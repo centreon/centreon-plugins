@@ -22,6 +22,9 @@ inputs:
   artifactory_token:
     description: "token for artifactory"
     required: true
+  github_token:
+    description: "token for github"
+    required: true
 
 runs:
   using: "composite"
@@ -29,11 +32,11 @@ runs:
     - name: Check workflow statuses and display token usage
       run: |
         echo "github token rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .rate
+        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit
         echo ""
         echo ""
         echo "anonymous rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .rate
+        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit
         echo ""
         echo ""
       shell: bash
@@ -41,7 +44,7 @@ runs:
     - name: Download packages from testing
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
-        github-token: ${{ github.token }}
+        github-token: ${{ inputs.github_token }}
         script: |
           const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
@@ -53,11 +56,11 @@ runs:
     - name: Check workflow statuses and display token usage
       run: |
         echo "github token rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .rate
+        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit
         echo ""
         echo ""
         echo "anonymous rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .rate
+        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit
         echo ""
         echo ""
       shell: bash
