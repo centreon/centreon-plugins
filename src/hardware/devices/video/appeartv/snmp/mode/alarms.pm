@@ -173,21 +173,21 @@ Check alarms.
 
 =over 8
 
-=item B<--filter-msg>
+=item C<--filter-msg>
 
 Filter by message (can be a regexp).
 
-=item B<--warning-status>
+=item C<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{severity} =~ /minor|warning/i')
 You can use the following variables: %{severity}, %{text}, %{source}, %{since}
 
-=item B<--critical-status>
+=item C<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{severity} =~ /critical|major/i').
 You can use the following variables: %{severity}, %{text}, %{source}, %{since}
 
-=item B<--memory>
+=item C<--memory>
 
 Only check new alarms.
 
