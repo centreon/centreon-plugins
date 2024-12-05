@@ -61,7 +61,7 @@ runs:
 
           let repositoryStabilityPath = '';
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
-            repositoryStabilityPath = `rpm-plugins/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${stabilitySubdirectory}`;
+            repositoryStabilityPath = `rpm-plugins/${{ inputs.distrib }}/${stabilitySubdirectory}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             repositoryStabilityPath = `ubuntu-plugins-${{ inputs.stability }}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
@@ -152,7 +152,7 @@ runs:
 
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
             await exec.exec(
-              `jf rt download "rpm-plugins/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
+              `jf rt download "rpm-plugins/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
