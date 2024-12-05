@@ -58,12 +58,12 @@ runs:
           });
 
           pulls.data.forEach(pull => {
+            console.log(pull.title)
             console.log(pull?.base?.ref)
           });
           const pull = pulls.data.find(p => p.merge_commit_sha === commitSha);
           if (!pull) {
-            core.error('pull request not found');
-            return;
+            throw new Error('Pull request not found.');
           }
 
           /*
