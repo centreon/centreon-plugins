@@ -109,8 +109,6 @@ runs:
     - name: Download packages from testing
       if: ${{ inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy' }}
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         script: |
           const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
