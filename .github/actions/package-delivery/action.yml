@@ -29,11 +29,11 @@ runs:
     - name: Check workflow statuses and display token usage
       run: |
         echo "github token rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .core
+        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .rate
         echo ""
         echo ""
         echo "anonymous rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .core
+        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .rate
         echo ""
         echo ""
       shell: bash
@@ -53,11 +53,11 @@ runs:
     - name: Check workflow statuses and display token usage
       run: |
         echo "github token rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .core
+        curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ github.token }}" https://api.github.com/rate_limit | jq .rate
         echo ""
         echo ""
         echo "anonymous rate usage:"
-        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .core
+        curl -s -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit | jq .rate
         echo ""
         echo ""
       shell: bash
