@@ -48,9 +48,29 @@ runs:
           const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
 
+          const pulls = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sort: 'updated',
+            direction: 'desc',
+            state: 'closed',
+            per_page: 100
+          });
+
+          pulls.data.forEach(pull => {
+            console.log(pull?.base?.ref)
+          });
+          const pull = pulls.data.find(p => p.merge_commit_sha === commitSha);
+          if (!pull) {
+            core.error('pull request not found');
+            return;
+          }
+
+          /*
           const { data: { items } } = await github.rest.search.issuesAndPullRequests({
             q: `${commitSha} type:pr is:merged`
           });
+          */
 
     - name: Check workflow statuses and display token usage
       run: |
