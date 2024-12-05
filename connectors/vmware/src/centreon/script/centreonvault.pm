@@ -364,7 +364,7 @@ The expected file format for Centreon Vault is:
 
     {
       "name": "hashicorp_vault",
-      "url": "vault-server.my_domain.com",
+      "url": "vault-server.my-domain.com",
       "salt": "<base64 encoded(<32 bytes long key used to hash the encrypted data)>",
       "port": 443,
       "root_path": "vmware_daemon",
