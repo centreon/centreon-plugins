@@ -43,10 +43,7 @@ runs:
 
     - name: Download packages from testing
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
       with:
-        github-token: ${{ inputs.github_token }}
         script: |
           const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
