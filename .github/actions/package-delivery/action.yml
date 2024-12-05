@@ -38,7 +38,7 @@ runs:
             throw new Error(`Stability ${{ inputs.stability }} should not deliver packages`);
           }
 
-          if ('${{ inputs.stability }}' === 'testing' && ! ['testing', 'hotfix'].includes('${{ inputs.release_type }}')) {
+          if ('${{ inputs.stability }}' === 'testing' && ! ['release', 'hotfix'].includes('${{ inputs.release_type }}')) {
             throw new Error('release_type input must be defined when stability is testing');
           }
 
