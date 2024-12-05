@@ -41,7 +41,7 @@ sub new {
         exit 3;
     }
     if (!defined($options{options})) {
-        print "Class PasswordMgr needs an 'output' argument that must be of type centreon::plugins::options.\n";
+        print "Class PasswordMgr needs an 'options' argument that must be of type centreon::plugins::options.\n";
         $options{output}->option_exit();
     }
 
