@@ -114,24 +114,22 @@ runs:
           const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
 
-          const { data: { items } } = await github.rest.search.issuesAndPullRequests({
-            q: `${commitSha} type:pr is:merged`
+          const pulls = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sort: 'updated',
+            direction: 'desc',
+            state: 'closed',
+            per_page: 100
           });
 
-          if (items.length === 0) {
+          const pr = pulls.data.find(p => p.merge_commit_sha === commitSha);
+          if (!pr) {
             core.warning(warningNoPromote);
             return;
           }
 
-          const prNumber = items[0].number;
-
-          const pr = await github.rest.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber
-          });
-
-          const prBaseRef = pr.data?.base?.ref || 'unknown';
+          const prBaseRef = pr?.base?.ref || 'unknown';
           let releaseType = '';
           switch (true) {
             case /^release.+/.test(prBaseRef):
