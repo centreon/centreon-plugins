@@ -21,6 +21,7 @@ api.meraki.com
 --api-token
 --api-username
 --api-version
+AppearTV
 ASAM
 Avigilon
 Avocent
