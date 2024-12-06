@@ -210,6 +210,16 @@ sub manage_selection {
                 if (defined($self->{global}->{ lc($_->{reachability}) }));
         }
     }
+
+    # we remove entries if there is a --filter-vpn-[type|name] and no --filter-device-serial
+    if ((!defined($self->{option_results}->{filter_device_serial}) || $self->{option_results}->{filter_device_serial} eq '') &&
+        ((defined($self->{option_results}->{filter_vpn_type}) && $self->{option_results}->{filter_vpn_type} ne '') ||
+         (defined($self->{option_results}->{filter_vpn_name}) && $self->{option_results}->{filter_vpn_name} ne ''))
+        ) {
+        foreach my $id (keys %{$self->{devices}}) {
+            delete $self->{devices}->{$id} if (scalar(keys %{$self->{devices}->{$id}->{vpns}}) <= 0);
+        }
+    }
 }
 
 1;
