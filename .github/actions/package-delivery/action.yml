@@ -122,8 +122,10 @@ runs:
             state: 'closed',
             per_page: 100
           });
+          console.log(pulls)
 
           const pr = pulls.data.find(p => p.merge_commit_sha === commitSha);
+          console.log(pr)
           if (!pr) {
             core.warning(warningNoPromote);
             return;
