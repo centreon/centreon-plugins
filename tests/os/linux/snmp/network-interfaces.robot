@@ -14,7 +14,6 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=os/linux/snmp/network-interfaces
-...         --statefile-dir=/dev/shm/
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 

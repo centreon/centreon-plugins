@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Slack",
+    "pkg_summary": "Centreon Plugin to send notifications by Slack",
+    "plugin_name": "centreon_notification_slack.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "notification/slack"
+    ]
+}

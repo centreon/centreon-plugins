@@ -19,7 +19,8 @@
 Description=Centreon VMWare
 
 [Service]
-ExecStart=/usr/bin/perl /usr/bin/centreon_vmware.pl --logfile=/var/log/centreon/centreon_vmware.log --severity=error
+EnvironmentFile=-/etc/default/centreon_vmware
+ExecStart=/usr/bin/perl /usr/bin/centreon_vmware.pl $OPTIONS
 Type=simple
 User=centreon
 
