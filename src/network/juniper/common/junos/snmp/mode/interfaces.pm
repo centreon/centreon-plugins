@@ -204,7 +204,7 @@ sub custom_add_result {
     }    
     $self->{int}->{$options{instance}}->{bias_current} = undef;
     if (defined($result->{bias_current}) && $result->{bias_current} != 0) {
-        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 100;
+        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 1000;
     }    
     $self->{int}->{$options{instance}}->{output_power} = undef;
     if (defined($result->{output_power}) && $result->{output_power} != 0) {
