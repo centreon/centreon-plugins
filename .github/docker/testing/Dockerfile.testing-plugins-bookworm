@@ -18,6 +18,10 @@ EOF
 ENV LANG en_US.utf8
 
 RUN bash -e <<EOF
+
+# Avoid apt to clean packages cache directory
+rm -f /etc/apt/apt.conf.d/docker-clean
+
 apt-get update
 # Install Robotframework
 apt-get install -y python3-dev python3-pip
