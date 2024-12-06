@@ -514,11 +514,15 @@ sub get_interface_infos {
             outPkts => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-packets'}),
             speed => $speed
         };
-        if (defined($_->{'input-error-list'}->{'input-errors'})) {
-            $item->{inErrors} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'input-errors'});
-            $item->{outErrors} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'output-errors'});
-            $item->{inDiscards} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'input-discards'});
-            $item->{outDiscards} = centreon::plugins::misc::trim($_->{'input-error-list'}->{'output-discards'});
+        if (defined($_->{'input-error-list'})) {
+            foreach my $label (keys %{$_->{'input-error-list'}}) {
+                $item->{'counter-in-' . $label} = centreon::plugins::misc::trim($_->{'input-error-list'}->{$label});
+            }
+        }
+        if (defined($_->{'output-error-list'})) {
+            foreach my $label (keys %{$_->{'output-error-list'}}) {
+                $item->{'counter-out-' . $label} = centreon::plugins::misc::trim($_->{'output-error-list'}->{$label});
+            }
         }
 
         push @$results, $item;

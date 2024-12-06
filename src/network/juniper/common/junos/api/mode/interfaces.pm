@@ -210,6 +210,72 @@ sub custom_errors_calc {
     return 0;
 }
 
+sub custom_all_errors_calc {
+    my ($self, %options) = @_;
+
+    my ($checked, $all_errors_diff, $all_errors) = (0, 0, 0);
+    foreach (keys %{$options{new_datas}}) {
+        if (/^$self->{instance}_counter-$options{extra_options}->{label_ref1}-/) {
+            $checked = ($checked | 1);
+            my $new_error = $options{new_datas}->{$_};
+            my $all_errors += $options{new_datas}->{$_};
+            next if (!defined($options{old_datas}->{$_}));
+            my $old_error = $options{old_datas}->{$_};
+
+            $checked = ($checked | 2);
+            my $diff_error = $new_error - $old_error;
+            if ($diff_error < 0) {
+                $all_errors_diff += $new_error;
+            } else {
+                $all_errors_diff += $diff_error;
+            }
+        }
+    }
+
+    if ($checked == 0) {
+        return -10;
+    }
+    if ($checked == 1) {
+        $self->{error_msg} = 'buffer creation';
+        return -1;
+    }
+
+    my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+    my $total_diff = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'}
+        - $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+
+    $all_errors_diff = sprintf('%d', $all_errors_diff);
+    $total_diff = sprintf('%d', $total_diff);
+    $self->{result_values}->{prct} = 0;
+    $self->{result_values}->{used} = $all_errors_diff;
+    $self->{result_values}->{total} = $total_diff;
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
+        $self->{result_values}->{prct} = $all_errors_diff * 100 / $total_diff if ($total_diff > 0);
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
+        $self->{result_values}->{prct} = $all_errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $all_errors;
+        $self->{result_values}->{total} = $total;
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{prct} = $all_errors_diff * 100 / $total_diff if ($total_diff > 0);
+        $self->{result_values}->{used} = $all_errors_diff;
+    } else {
+        $self->{result_values}->{prct} = $all_errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $all_errors;
+        $self->{result_values}->{total} = $total;
+    }
+
+    if (defined($options{extra_options}->{label})) {
+        $self->{result_values}->{label} = $options{extra_options}->{label};
+    } else {
+        $self->{result_values}->{label} = $options{extra_options}->{label_ref1} . ' ' . $options{extra_options}->{label_ref2};
+    }
+
+    $self->{result_values}->{label1} = $options{extra_options}->{label_ref1};
+    $self->{result_values}->{label2} = $options{extra_options}->{label_ref2};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
 sub prefix_interface_output {
     my ($self, %options) = @_;
 
@@ -274,6 +340,15 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
+        { label => 'in-all-error', filter => 'add_errors', nlabel => 'interface.packets.in.error.all.count', set => {
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_all_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'all error' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets in all errors: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
         { label => 'out-discard', filter => 'add_errors', nlabel => 'interface.packets.out.discard.count', set => {
                 key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
@@ -286,6 +361,15 @@ sub set_counters {
                 key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets out error: %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
+        { label => 'out-all-error', filter => 'add_errors', nlabel => 'interface.packets.out.error.all.count', set => {
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_all_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'all error' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets out all errors: %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
@@ -493,13 +577,17 @@ sub do_selection_interface {
             admstatus => $_->{admstatus},
             in => $_->{in},
             out => $_->{out},
-            inerror => $_->{inErrors},
-            outerror => $_->{outErrors},
-            indiscard => $_->{inDiscards},
-            outdiscard => $_->{outDiscards},
+            inerror => $_->{'counter-in-input-errors'},
+            outerror => $_->{'counter-out-output-errors'},
+            indiscard => $_->{'counter-in-input-discards'},
+            outdiscard => $_->{'counter-out-output-discards'},
             total_in_packets => $_->{inPkts},
             total_out_packets => $_->{outPkts}
         };
+        foreach my $label (keys %$_) {
+            next if ($label !~ /^counter-/);
+            $self->{interfaces}->{ $_->{name} }->{$label} = $_->{$label};
+        }
     }
 }
 
@@ -630,7 +718,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'in-all-error', 'out-error', 'out-discard', 'out-all-error',
 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
