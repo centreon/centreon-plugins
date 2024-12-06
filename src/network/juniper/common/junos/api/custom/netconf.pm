@@ -424,7 +424,7 @@ sub get_hardware_infos {
         data => $content,
         start_tag => '<fpc-information',
         end_tag => '</fpc-information>',
-        middle_tag => 'fpc.*?cpu-15min-avg',
+        middle_tag => 'fpc.*?(cpu-15min-avg|memory-dram-size)',
         force_array => ['fpc']
     );
 
