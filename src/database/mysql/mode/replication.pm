@@ -222,7 +222,7 @@ sub check_slave {
         $self->{servers}->{ $options{name} }->{thread_io} = {
             display => $options{name},
             running => $running,
-            error_message => defined($result->{Last_Error}) ? $result->{Last_Error} : ''
+            error_message => defined($result->{Last_IO_Error}) ? $result->{Last_IO_Error} : ''
         };
     }
     if (defined($result->{Slave_SQL_Running})) {

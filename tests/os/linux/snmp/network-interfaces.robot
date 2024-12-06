@@ -3,6 +3,7 @@ Documentation       Network table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 
@@ -13,7 +14,6 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=os/linux/snmp/network-interfaces
-...         --statefile-dir=/dev/shm/
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 

@@ -3,6 +3,7 @@ Documentation       Check cpu table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 

@@ -19,7 +19,7 @@
 
 use strict;
 use warnings FATAL => 'all';
-use JSON::XS;
+use JSON;
 use Data::Dumper;
 
 die "Usage: centreon_vmware_convert_config_file /etc/centreon/centreon_vmware.pm > /etc/centreon/centreon_vmware.json" if (scalar(@ARGV) < 1);
@@ -34,7 +34,6 @@ my $new_config_structure = {
     vsphere_server => []
 };
 
-
 for my $config_entry_key (keys %centreon_vmware_config){
     if ($config_entry_key eq 'vsphere_server') {
         for my $server_config_entry_key (keys %{$centreon_vmware_config{vsphere_server}}) {
@@ -45,11 +44,11 @@ for my $config_entry_key (keys %centreon_vmware_config){
     } else {
         $new_config_structure->{$config_entry_key} = $centreon_vmware_config{$config_entry_key};
     }
-
-
 }
 
-my $new_json_config = encode_json($new_config_structure) or die "Unable to convert this object to JSON:\n" . Dumper($new_config_structure);
+my $new_json_config = JSON->new->utf8(1)->pretty(1)->encode($new_config_structure) or die "Unable to convert this object to JSON:\n" . Dumper($new_config_structure);
+
 print($new_json_config);
 
 exit(0);
+

@@ -12,7 +12,6 @@ ${MOCKOON_JSON}     ${CURDIR}${/}meraki.mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=network::cisco::meraki::cloudcontroller::restapi::plugin
 ...                 --api-token=EEECGFCGFCGF
-...                 --statefile-dir=/dev/shm/
 
 
 *** Test Cases ***

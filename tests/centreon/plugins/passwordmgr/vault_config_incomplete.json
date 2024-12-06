@@ -1,0 +1,10 @@
+{
+  "name": "hashicorp_vault",
+  "url": "127.0.0.1",
+  "salt": "cetteclenestpasutiliseeinthetest",
+  "port": 3001,
+  "root_path": "",
+  "role_id": "",
+  "secret_id": ""
+}
+

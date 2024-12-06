@@ -30,7 +30,7 @@ use POSIX qw(floor);
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -70,12 +70,14 @@ sub custom_stringvalue_threshold {
     my ($self, %options) = @_;
 
     my $severity = 'ok';
+    my $value = $self->{result_values}->{stringvalue};
+    my $option_results = $self->{instance_mode}->{option_results};
     foreach my $check_severity (('critical', 'warning', 'unknown')) {
-        next if (centreon::plugins::misc::is_empty($self->{option_results}->{$check_severity . '_regexp'}));
-        my $regexp = $self->{option_results}->{$check_severity . '_regexp'};
-        if (defined($self->{option_results}->{use_iregexp}) && $options{value} =~ /$regexp/i) {
+        next if (centreon::plugins::misc::is_empty($option_results->{$check_severity . '_regexp'}));
+        my $regexp = $option_results->{$check_severity . '_regexp'};
+        if (defined($option_results->{use_iregexp}) && $value =~ /$regexp/i) {
             $severity = $check_severity;
-        } elsif (!defined($self->{option_results}->{use_iregexp}) && $options{value} =~ /$regexp/) {
+        } elsif (!defined($option_results->{use_iregexp}) && $value =~ /$regexp/) {
             $severity = $check_severity;
         }
     }
@@ -93,7 +95,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'generic',
           set   => {
-              key_values                     => [{ name => 'stringvalue' }],
+              key_values                     => [ { name => 'stringvalue' } ],
               closure_custom_output          => $self->can('custom_stringvalue_output'),
               closure_custom_threshold_check => \&custom_stringvalue_threshold
           }

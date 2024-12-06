@@ -30,6 +30,7 @@ provides:
 overrides:
   rpm:
     depends: [
+      perl(Crypt::OpenSSL::AES),
       perl(Digest::MD5),
       perl(Pod::Find),
       perl-Net-Curl,
@@ -62,6 +63,7 @@ overrides:
       [@RPM_PROVIDES@]
   deb:
     depends: [
+      libcrypt-openssl-aes-perl,
       libpod-parser-perl,
       libnet-curl-perl,
       liburi-encode-perl,

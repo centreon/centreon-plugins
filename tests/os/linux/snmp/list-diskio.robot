@@ -3,6 +3,7 @@ Documentation       Check the list-diskio mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
 Test Timeout        120s
 
 

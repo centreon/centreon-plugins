@@ -69,18 +69,16 @@ contents:
 
   - src: "redhat/centreon_vmware-sysconfig"
     dst: "/etc/sysconfig/centreon_vmware"
+    type: config|noreplace
     packager: rpm
   - src: "debian/centreon_vmware-default"
     dst: "/etc/default/centreon_vmware"
+    type: config|noreplace
     packager: deb
 
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm"
+  - src: "config/centreon_vmware-conf.json"
+    dst: "/etc/centreon/centreon_vmware.json"
     type: config|noreplace
-    packager: rpm
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm.new"
-    packager: deb
 
 scripts:
   postinstall: ./scripts/postinstall.sh
@@ -92,6 +90,7 @@ overrides:
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
       - perl(LWP::Protocol::https)
+      - perl(Text::Template)
       - perl(ZMQ::Constants)
       - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl

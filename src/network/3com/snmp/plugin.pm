@@ -16,7 +16,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 
 package network::3com::snmp::plugin;
 
@@ -47,6 +47,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check 3com equipment (old legacy. Maybe you should use 'network::h3c' plugin) in SNMP.
+Monitors 3COM devices using the SNMP protocol.
+These devices are not are not available for sale any more. You should probably use the 'network::h3c' plugin instead.
 
 =cut
