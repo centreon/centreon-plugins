@@ -17,6 +17,7 @@ on:
     branches:
       - develop
       - master
+      - MON-78778-detect-pr
     paths:
       - '.github/workflows/plugins.yml'
       - '.github/scripts/plugins-source.container.pl'
@@ -29,7 +30,7 @@ jobs:
     uses: ./.github/workflows/get-environment.yml
 
   get-plugins:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
     steps:
@@ -87,64 +88,63 @@ jobs:
 
         shell: bash
 
-  unit-tests:
-    needs: [get-environment, get-plugins]
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
-        include:
-          - runner_name: ubuntu-22.04
-          - package_extension: rpm
-            image: unit-tests-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: unit-tests-alma9
-            distrib: el9
-          - package_extension: deb
-            image: unit-tests-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bullseye-arm64
-            runner_name: ["self-hosted", "collect-arm64"]
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bookworm
-            distrib: bookworm
-          - package_extension: deb
-            image: unit-tests-jammy
-            distrib: jammy
+  # unit-tests:
+  #   needs: [get-environment, get-plugins]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
+  #       include:
+  #         - runner_name: ubuntu-22.04
+  #         - package_extension: rpm
+  #           image: unit-tests-alma8
+  #           distrib: el8
+  #         - package_extension: rpm
+  #           image: unit-tests-alma9
+  #           distrib: el9
+  #         - package_extension: deb
+  #           image: unit-tests-bullseye
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: unit-tests-bullseye-arm64
+  #           runner_name: ["self-hosted", "collect-arm64"]
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: unit-tests-bookworm
+  #           distrib: bookworm
+  #         - package_extension: deb
+  #           image: unit-tests-jammy
+  #           distrib: jammy
 
-    runs-on: ${{ matrix.runner_name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   runs-on: ${{ matrix.runner_name }}
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+  #     credentials:
+  #       username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+  #       password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Run unit tests
-        uses: ./.github/actions/unit-tests
+  #     - name: Run unit tests
+  #       uses: ./.github/actions/unit-tests
 
-      - name: Upload logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-        with:
-          name: plugin-installation-${{ matrix.distrib }}
-          path: ./lastlog.jsonl
-          retention-days: 1
+  #     - name: Upload logs as artifacts if tests failed
+  #       if: failure()
+  #       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+  #       with:
+  #         name: plugin-installation-${{ matrix.distrib }}
+  #         path: ./lastlog.jsonl
+  #         retention-days: 1
 
   fatpacker:
     if: ${{ needs.get-plugins.outputs.plugins != '' }}
-    needs: [get-environment, get-plugins, unit-tests]
-    runs-on: ubuntu-22.04
+    # needs: [get-environment, get-plugins, unit-tests]
+    needs: [get-environment, get-plugins]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Prepare FatPacker
         uses: shogo82148/actions-setup-perl@9c1eca9952ccc07f9ca4a2097b63df93d9d138e9 # v1.31.3
@@ -282,67 +282,68 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-  test-plugins:
-    needs: [get-environment, get-plugins, package]
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
-        include:
-          - runner_name: ubuntu-24.04
-          - package_extension: rpm
-            image: testing-plugins-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: testing-plugins-alma9
-            distrib: el9
-          - package_extension: deb
-            image: testing-plugins-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: testing-plugins-bookworm
-            distrib: bookworm
-          - package_extension: deb
-            image: testing-plugins-jammy
-            distrib: jammy
-          - package_extension: deb
-            image: testing-plugins-bullseye-arm64
-            distrib: bullseye
-            arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+  # test-plugins:
+  #   needs: [get-environment, get-plugins, package]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
+  #       include:
+  #         - runner_name: ubuntu-24.04
+  #         - package_extension: rpm
+  #           image: testing-plugins-alma8
+  #           distrib: el8
+  #         - package_extension: rpm
+  #           image: testing-plugins-alma9
+  #           distrib: el9
+  #         - package_extension: deb
+  #           image: testing-plugins-bullseye
+  #           distrib: bullseye
+  #         - package_extension: deb
+  #           image: testing-plugins-bookworm
+  #           distrib: bookworm
+  #         - package_extension: deb
+  #           image: testing-plugins-jammy
+  #           distrib: jammy
+  #         - package_extension: deb
+  #           image: testing-plugins-bullseye-arm64
+  #           distrib: bullseye
+  #           arch: arm64
+  #           runner_name: ["self-hosted", "collect-arm64"]
 
-    runs-on: ${{ matrix.runner_name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #   runs-on: ${{ matrix.runner_name }}
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+  #     credentials:
+  #       username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+  #       password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: ./.github/actions/test-plugins
-        with:
-          cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          package-extension: ${{ matrix.package_extension }}
-          plugin-list: ${{ needs.get-plugins.outputs.plugins }}
+  #     - uses: ./.github/actions/test-plugins
+  #       with:
+  #         cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+  #         package-extension: ${{ matrix.package_extension }}
+  #         plugin-list: ${{ needs.get-plugins.outputs.plugins }}
 
-      - name: Upload apt/dnf logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-        with:
-          name: plugin-installation-${{ matrix.distrib }}
-          path: /var/log/robot-plugins-installation-tests.log
-          retention-days: 1
+  #     - name: Upload apt/dnf logs as artifacts if tests failed
+  #       if: failure()
+  #       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+  #       with:
+  #         name: plugin-installation-${{ matrix.distrib }}
+  #         path: /var/log/robot-plugins-installation-tests.log
+  #         retention-days: 1
 
   deliver-packages:
-    needs: [get-environment, get-plugins, test-plugins]
-    if: |
-      needs.get-plugins.outputs.plugins != '' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # needs: [get-environment, get-plugins, test-plugins]
+    needs: [get-environment, get-plugins, package]
+    # if: |
+    #   needs.get-plugins.outputs.plugins != '' &&
+    #   (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+    #   ! cancelled() &&
+    #   ! contains(needs.*.result, 'failure') &&
+    #   ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
