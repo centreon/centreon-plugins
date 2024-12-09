@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::standard::snmp::plugin
 
 *** Test Cases ***
 interfaces ${tc}
-    [Tags]    network    Stormshield
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=interfaces

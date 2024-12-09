@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::standard::snmp::plugin
 
 *** Test Cases ***
 memory ${tc}
-    [Tags]    network    snmp   memory
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory

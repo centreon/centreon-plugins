@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
 
 *** Test Cases ***
 ap-status ${tc}
-    [Tags]    network    Stormshield
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=ap-status

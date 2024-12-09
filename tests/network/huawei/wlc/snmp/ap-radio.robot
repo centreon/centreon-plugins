@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check Huawei equipments in SNMP.
+Documentation       Check Huawei WLC equipments in SNMP.
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
 
 *** Test Cases ***
 ap-radio ${tc}
-    [Tags]    network    Stormshield
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=ap-radio

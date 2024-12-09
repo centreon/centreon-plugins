@@ -56,9 +56,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
@@ -80,17 +78,17 @@ sub manage_selection {
     $self->{cpu} = {};
     my $num = 1;
     if (defined($results->{$oid_hwAvgDuty5min}) && scalar(keys %{$results->{$oid_hwAvgDuty5min}}) > 0) {
-        foreach (keys %{$results->{$oid_hwAvgDuty5min}}) {
+        foreach (sort keys %{$results->{$oid_hwAvgDuty5min}}) {
             $self->{cpu}->{$num} = { num => $num, cpu => $results->{$oid_hwAvgDuty5min}->{$_} };
             $num++;
         }
     } elsif (defined($results->{$oid_hwEntityCpuUsage}) && scalar(keys %{$results->{$oid_hwEntityCpuUsage}}) > 0) {
-        foreach (keys %{$results->{$oid_hwEntityCpuUsage}}) {
+        foreach (sort keys %{$results->{$oid_hwEntityCpuUsage}}) {
             $self->{cpu}->{$num} = { num => $num, cpu => $results->{$oid_hwEntityCpuUsage}->{$_} };
             $num++;
         }
     } else {
-        foreach (keys %{$results->{$oid_hwResOccupancy}}) {
+        foreach (sort keys %{$results->{$oid_hwResOccupancy}}) {
             /\.([0-9]*?)$/;
             next if (!defined($map_type->{$1}) || $map_type->{$1} ne 'cpu');
             $self->{cpu}->{$num} = { num => $num, cpu => $results->{$oid_hwResOccupancy}->{$_} };
