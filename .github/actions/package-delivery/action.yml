@@ -131,19 +131,20 @@ runs:
             return;
           }
 
-          const prBaseRef = pr?.head?.ref || 'unknown';
+          const prHeadRef = pr?.head?.ref || 'unknown';
           let releaseType = '';
           switch (true) {
-            case /^release.+/.test(prBaseRef):
+            case /^release.+/.test(prHeadRef):
               releaseType = 'release';
               break;
-            case /^hotfix.+/.test(prBaseRef):
+            case /^hotfix.+/.test(prHeadRef):
               releaseType = 'hotfix';
               break;
             default:
-              core.error(`No packages are promoted because push of branch ${prBaseRef} is not related to a hotfix/release pull request.`);
+              core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
               return;
           }
+          console.log(`Release type: ${releaseType}`);
 
           let fromStabilitySubdirectory = 'testing';
           if (releaseType === 'hotfix' ) {
