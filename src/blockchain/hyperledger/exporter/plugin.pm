@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
 
+
     %{$self->{modes}} = (
         'channels' => 'blockchain::hyperledger::exporter::mode::channels',
     );
