@@ -74,8 +74,8 @@ def install_plugin(plugin, archi):
                     "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
-            outfile.write("dnf install -y ./" + plugin + "*.rpm\n")
-            output_status = (subprocess.run("dnf install -y ./" + plugin + "*.rpm", shell=True, check=False,
+            outfile.write("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm\n")
+            output_status = (subprocess.run("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm", shell=True, check=False,
                                         stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
@@ -95,8 +95,8 @@ def remove_plugin(plugin, archi):
             # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
 
         elif archi == "rpm":
-            outfile.write("dnf remove -y " + plugin + "\n")
-            output_status = (subprocess.run("dnf remove -y " + plugin, shell=True, check=False,
+            outfile.write("dnf remove --setopt=keepcache=True -y " + plugin + "\n")
+            output_status = (subprocess.run("dnf remove --setopt=keepcache=True -y " + plugin, shell=True, check=False,
                                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
