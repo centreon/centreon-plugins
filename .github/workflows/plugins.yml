@@ -17,7 +17,6 @@ on:
     branches:
       - develop
       - master
-      - MON-78778-detect-pr
     paths:
       - '.github/workflows/plugins.yml'
       - '.github/scripts/plugins-source.container.pl'
@@ -100,7 +99,7 @@ jobs:
       matrix:
         image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
         include:
-          - runner_name: ubuntu-22.04
+          - runner_name: ubuntu-24.04
           - package_extension: rpm
             image: unit-tests-alma8
             distrib: el8
@@ -177,6 +176,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [get-environment, get-plugins, fatpacker]
     if: |
+      needs.get-plugins.outputs.plugins != '' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -300,6 +300,7 @@ jobs:
   test-plugins:
     needs: [get-environment, get-plugins, package]
     if: |
+      needs.get-plugins.outputs.plugins != '' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -357,12 +358,12 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
-    # if: |
-    #   needs.get-plugins.outputs.plugins != '' &&
-    #   (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-    #   ! cancelled() &&
-    #   ! contains(needs.*.result, 'failure') &&
-    #   ! contains(needs.*.result, 'cancelled')
+    if: |
+      needs.get-plugins.outputs.plugins != '' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -397,8 +398,10 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-sources:
-    needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability == 'stable' && github.event_name == 'push' }}
+    needs: [get-environment, fatpacker]
+    if: |
+      needs.get-environment.outputs.stability == 'stable' &&
+      github.event_name == 'push'
     runs-on: [self-hosted, common]
 
     steps:
