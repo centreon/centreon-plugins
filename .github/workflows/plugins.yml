@@ -147,7 +147,6 @@ jobs:
     needs: [get-environment, get-plugins, unit-tests]
     if: |
       needs.get-plugins.outputs.plugins != '' &&
-      needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
