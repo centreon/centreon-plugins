@@ -187,7 +187,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    foreach (keys %$snmp_result) {
+    foreach (sort keys %$snmp_result) {
         next if (!/^$mapping->{name}->{oid}\.(.*)/);
         my $instance = $1;
 
@@ -239,7 +239,7 @@ sub manage_selection {
     );
     $snmp_result = $options{snmp}->get_leef();
 
-    foreach (keys %{$self->{ap}}) {
+    foreach (sort keys %{$self->{ap}}) {
         my $result = $options{snmp}->map_instance(
             mapping  => $mapping_stat,
             results  => $snmp_result,
