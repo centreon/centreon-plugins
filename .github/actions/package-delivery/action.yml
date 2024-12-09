@@ -111,7 +111,6 @@ runs:
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
-          const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
 
           const pulls = await github.rest.pulls.list({
@@ -123,9 +122,12 @@ runs:
             per_page: 100
           });
 
-          const pr = pulls.data.find(p => p.merge_commit_sha === commitSha);
+          const pr = pulls.data.find(p => {
+            console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+            return p.merge_commit_sha === commitSha;
+          });
           if (!pr) {
-            core.warning(warningNoPromote);
+            core.error(`No pull request found for merge commit ${commitSha}`);
             return;
           }
 
@@ -139,7 +141,7 @@ runs:
               releaseType = 'hotfix';
               break;
             default:
-              core.warning(warningNoPromote);
+              core.error(`No packages are promoted because push of branch ${prBaseRef} is not related to a hotfix/release pull request.`);
               return;
           }
 
@@ -162,39 +164,39 @@ runs:
             );
           }
 
-    - name: Publish packages to ${{ inputs.stability }}
-      if: |
-        contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
-        (inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-      with:
-        script: |
-          const path = require('path');
-          const globber = await glob.create('*.${{ steps.parse-distrib.outputs.package_extension }}');
+    # - name: Publish packages to ${{ inputs.stability }}
+    #   if: |
+    #     contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
+    #     (inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
+    #   uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+    #   with:
+    #     script: |
+    #       const path = require('path');
+    #       const globber = await glob.create('*.${{ steps.parse-distrib.outputs.package_extension }}');
 
-          const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
+    #       const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
 
-          for await (const file of globber.globGenerator()) {
-            const fileName = path.basename(file);
+    #       for await (const file of globber.globGenerator()) {
+    #         const fileName = path.basename(file);
 
-            if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'rpm') {
-              let arch = 'noarch';
-              if (/x86_64/.test(fileName)) {
-                arch = 'x86_64';
-              }
-              await exec.exec(
-                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
-              );
-            } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
-              let arch = 'all';
-              const matches = fileName.match(/_([^_]+)\.deb/);
-              if (matches !== null && matches.length > 1) {
-                arch = matches[1];
-              }
-              if ('${{ inputs.arch }}' === '' || '${{ inputs.arch }}' === arch) {
-                await exec.exec(
-                  `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
-                );
-              }
-            }
-          }
+    #         if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'rpm') {
+    #           let arch = 'noarch';
+    #           if (/x86_64/.test(fileName)) {
+    #             arch = 'x86_64';
+    #           }
+    #           await exec.exec(
+    #             `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
+    #           );
+    #         } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
+    #           let arch = 'all';
+    #           const matches = fileName.match(/_([^_]+)\.deb/);
+    #           if (matches !== null && matches.length > 1) {
+    #             arch = matches[1];
+    #           }
+    #           if ('${{ inputs.arch }}' === '' || '${{ inputs.arch }}' === arch) {
+    #             await exec.exec(
+    #               `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
+    #             );
+    #           }
+    #         }
+    #       }
