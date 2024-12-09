@@ -52,6 +52,7 @@ cpu-utilization-5s
 --critical-cpu-utilization
 --critical-na
 --critical-total-cpu-utilization
+Cyberoam
 Datacore
 datasource
 DC4
@@ -163,6 +164,7 @@ NLCapacity
 --noidle
 -NoLogo
 --nomachineaccount
+notapplicable
 --ntlmv2
 NTLMv2
 NTP
@@ -179,6 +181,7 @@ out-fc-wait
 out-mcast
 out-ucast
 overprovisioning
+partiallyActive
 --patch-redhat
 perfdata
 physicaldrive
@@ -204,6 +207,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
+SFOS
 sfp.temperature
 --skip-ssl-check
 SkyHigh
@@ -212,6 +216,7 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+standAlone
 statefile
 --statefile-concat-cwd
 SureBackup
@@ -248,6 +253,7 @@ VeloCloud
 VM
 VMware
 VPN
+vpn
 vSAN
 vSphere
 --warning-authserver-clients-timeout
