@@ -17,6 +17,7 @@ on:
     branches:
       - develop
       - master
+      - MON-78778-detect-pr
     paths:
       - '.github/workflows/plugins.yml'
       - '.github/scripts/plugins-source.container.pl'
