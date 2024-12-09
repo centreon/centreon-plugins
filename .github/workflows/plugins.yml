@@ -34,7 +34,7 @@ jobs:
     outputs:
       plugins: ${{ steps.get_plugins.outputs.plugins }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -127,9 +127,10 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Run unit tests
         uses: ./.github/actions/unit-tests
@@ -214,7 +215,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
@@ -338,7 +339,7 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: ./.github/actions/test-plugins
         with:
@@ -356,12 +357,12 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
-    if: |
-      needs.get-plugins.outputs.plugins != '' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # if: |
+    #   needs.get-plugins.outputs.plugins != '' &&
+    #   (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+    #   ! cancelled() &&
+    #   ! contains(needs.*.result, 'failure') &&
+    #   ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -383,7 +384,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
@@ -402,7 +403,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
@@ -427,7 +428,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Push git release tag
         run: |
