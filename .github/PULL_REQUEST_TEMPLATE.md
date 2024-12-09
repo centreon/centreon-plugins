@@ -78,6 +78,6 @@ Mention the automated tests included in this FOR (what they test like mode/optio
   - [ ] Data used for automated tests are anonymized.
 - [ ] I have reviewed all the help messages in all the .pm files I have modified.
   - [ ] All sentences begin with a capital letter.
-  - [ ] All sentences are terminated by a period.
+  - [ ] All sentences end with a period.
   - [ ] I am able to understand all the help messages, if not, exchange with the PO or TW to rewrite them.
 - [ ] After having created the PR, I will make sure that all the tests provided in this PR have run and passed.
