@@ -90,6 +90,7 @@ jobs:
   unit-tests:
     needs: [get-environment, get-plugins]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -145,6 +146,7 @@ jobs:
   fatpacker:
     needs: [get-environment, get-plugins, unit-tests]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.plugins != '' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -175,6 +177,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [get-environment, get-plugins, fatpacker]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.plugins != '' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
@@ -299,6 +302,7 @@ jobs:
   test-plugins:
     needs: [get-environment, get-plugins, package]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.plugins != '' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
@@ -358,6 +362,7 @@ jobs:
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.plugins != '' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
@@ -448,3 +453,12 @@ jobs:
             echo "::warning::Release tag $RELEASE already exists"
           fi
         shell: bash
+
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml
