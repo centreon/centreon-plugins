@@ -29,6 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'channels' => 'blockchain::hyperledger::exporter::mode::channels',

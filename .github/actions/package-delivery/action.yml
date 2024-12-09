@@ -122,10 +122,12 @@ runs:
             per_page: 100
           });
 
+          core.startGroup(`Checking pull request linked to commit ${commitSha}`);
           const pr = pulls.data.find(p => {
             console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
             return p.merge_commit_sha === commitSha;
           });
+          core.endGroup();
           if (!pr) {
             core.error(`No pull request found for merge commit ${commitSha}`);
             return;
@@ -157,11 +159,11 @@ runs:
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
-              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
             await exec.exec(
-              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           }
 
