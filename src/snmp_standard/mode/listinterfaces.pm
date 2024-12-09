@@ -161,7 +161,7 @@ sub run {
             $interface_speed = $self->{option_results}->{speed};
         }
 
-        if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0) {
+        if (defined($self->{option_results}->{skip_speed0}) && ($interface_speed eq '' || $interface_speed == 0)) {
             $self->{output}->output_add(long_msg => "skipping interface '" . $display_value . "': interface speed is 0 and option --skip-speed0 is set");
             next;
         }
