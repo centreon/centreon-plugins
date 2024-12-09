@@ -37,6 +37,7 @@ sub new {
         'filter-network-id:s'        => { name => 'filter_network_id' },
         'filter-organization-name:s' => { name => 'filter_organization_name' },
         'filter-organization-id:s'   => { name => 'filter_organization_id' },
+        'filter-model:s'             => { name => 'filter_model' },
         'filter-tags:s'              => { name => 'filter_tags' }
     });
 
@@ -70,6 +71,8 @@ sub discovery_devices {
 
     my @results;
     foreach (values %$devices) {
+        next if (defined($self->{option_results}->{filter_model}) && $self->{option_results}->{filter_model} ne '' &&
+            $_->{model} !~ /$self->{option_results}->{filter_model}/);
         next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
             $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
         next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
@@ -205,6 +208,10 @@ Prettify JSON output.
 =item B<--resource-type>
 
 Choose the type of resources to discover (can be: 'device', 'network').
+
+=item B<--filter-model>
+
+Filter by model (can be a regexp).
 
 =item B<--filter-network-id>
 
