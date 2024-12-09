@@ -52,7 +52,7 @@ my $map_runstate = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Collecting all the relevant informations user may needs when using discovery function for AP in Huawei WLC controllers.
+    # Collecting all the relevant information user may needs when using discovery function for AP in Huawei WLC controllers.
     # They had been select with https://support.huawei.com/enterprise/en/doc/EDOC1100306136/680fca71/huawei-wlan-ap-mib as support.
     my $mapping = {
         name           => { oid => '.1.3.6.1.4.1.2011.6.139.16.1.2.1.3' },# hwWlanRadioInfoApName
@@ -84,28 +84,19 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $oid_path);
 
         if (!defined($result->{name}) || $result->{name} eq '') {
-            $self->{output}->output_add(long_msg =>
-                "skipping WLC '$oid_path': cannot get a name. please set it.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping WLC '$oid_path': cannot get a name. please set it.", debug => 1);
             next;
         }
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{name} . "': no matching name filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching name filter.", debug => 1);
             next;
         }
 
         if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
             $result->{ap_group} !~ /$self->{option_results}->{filter_group}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{ap_group} . "': no matching group filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{ap_group} . "': no matching group filter.", debug => 1);
             next;
         }
 
@@ -149,15 +140,15 @@ sub run {
     my $results = $self->manage_selection(snmp => $options{snmp});
     foreach my $oid_path (sort keys %$results) {
         $self->{output}->output_add(
-            long_msg => sprintf(
-                '[oid_path: %s] [name: %s] [frequence_type: %s] [run_state: %s] [description: %s] [ap_group: %s]',
-                $oid_path,
-                $results->{$oid_path}->{name},
-                $results->{$oid_path}->{frequence_type},
-                $results->{$oid_path}->{run_state},
-                $results->{$oid_path}->{description},
-                $results->{$oid_path}->{ap_group}
-            )
+                long_msg => sprintf(
+                        '[oid_path: %s] [name: %s] [frequence_type: %s] [run_state: %s] [description: %s] [ap_group: %s]',
+                        $oid_path,
+                        $results->{$oid_path}->{name},
+                        $results->{$oid_path}->{frequence_type},
+                        $results->{$oid_path}->{run_state},
+                        $results->{$oid_path}->{description},
+                        $results->{$oid_path}->{ap_group}
+                )
         );
     }
 
@@ -201,11 +192,11 @@ List radios.
 
 =over 8
 
-=item C<--filter-name>
+=item B<--filter-name>
 
 Display AP radios matching the filter.
 
-=item C<--filter-group>
+=item B<--filter-group>
 
 Display AP radios matching the filter.
 
