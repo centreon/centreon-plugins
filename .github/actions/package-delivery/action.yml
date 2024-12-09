@@ -131,7 +131,7 @@ runs:
             return;
           }
 
-          const prBaseRef = pr?.base?.ref || 'unknown';
+          const prBaseRef = pr?.head?.ref || 'unknown';
           let releaseType = '';
           switch (true) {
             case /^release.+/.test(prBaseRef):
