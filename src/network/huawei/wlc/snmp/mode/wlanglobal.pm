@@ -230,67 +230,67 @@ Check global WLAN access point count and user associated and authenticated.
 
 =over 8
 
-=item C<--warning-total>
+=item B<--warning-total>
 
 Thresholds.
 
-=item C<--critical-total>
+=item B<--critical-total>
 
 Thresholds.
 
-=item C<--warning-normal>
+=item B<--warning-normal>
 
 Thresholds.
 
-=item C<--critical-normal>
+=item B<--critical-normal>
 
 Thresholds.
 
-=item C<--warning-normal-prct>
+=item B<--warning-normal-prct>
 
 Thresholds.
 
-=item C<--critical-normal-prct>
+=item B<--critical-normal-prct>
 
 Thresholds.
 
-=item C<--warning-fault>
+=item B<--warning-fault>
 
 Thresholds.
 
-=item C<--critical-fault>
+=item B<--critical-fault>
 
 Thresholds.
 
-=item C<--warning-fault-prct>
+=item B<--warning-fault-prct>
 
 Thresholds.
 
-=item C<--critical-fault-prct>
+=item B<--critical-fault-prct>
 
 Thresholds.
 
-=item C<--warning-current-user>
+=item B<--warning-current-user>
 
 Thresholds.
 
-=item C<--critical-current-user>
+=item B<--critical-current-user>
 
 Thresholds.
 
-=item C<--warning-current-auth-user>
+=item B<--warning-current-auth-user>
 
 Thresholds.
 
-=item C<--critical-current-auth-user>
+=item B<--critical-current-auth-user>
 
 Thresholds.
 
-=item C<--warning-current-auth-user-prct>
+=item B<--warning-current-auth-user-prct>
 
 Thresholds.
 
-=item C<--critical-current-auth-user-prct>
+=item B<--critical-current-auth-user-prct>
 
 Thresholds.
 

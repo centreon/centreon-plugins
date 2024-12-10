@@ -171,309 +171,309 @@ Check interfaces.
 
 =over 8
 
-=item C<--add-global>
+=item B<--add-global>
 
 Check global port statistics (by default if no --add-* option is set).
 
-=item C<--add-status>
+=item B<--add-status>
 
 Check interface status.
 
-=item C<--add-duplex-status>
+=item B<--add-duplex-status>
 
 Check duplex status (with --warning-status and --critical-status).
 
-=item C<--add-traffic>
+=item B<--add-traffic>
 
 Check interface traffic.
 
-=item C<--add-errors>
+=item B<--add-errors>
 
 Check interface errors.
 
-=item C<--add-cast>
+=item B<--add-cast>
 
 Check interface cast.
 
-=item C<--add-speed>
+=item B<--add-speed>
 
 Check interface speed.
 
-=item C<--add-volume>
+=item B<--add-volume>
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
 
-=item C<--add-optical>
+=item B<--add-optical>
 
 Check interfaces' optical metrics.
 
-=item C<--check-metrics>
+=item B<--check-metrics>
 
 If the expression is true, metrics are checked (default: '%{opstatus} eq "up"').
 
-=item C<--warning-status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item C<--critical-status>
+=item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item C<--warning-errors>
+=item B<--warning-errors>
 
 Set warning threshold for all error counters.
 
-=item C<--critical-errors>
+=item B<--critical-errors>
 
 Set critical threshold for all error counters.
 
-=item C<--warning-total-port>
+=item B<--warning-total-port>
 
 Thresholds.
 
-=item C<--critical-total-port>
+=item B<--critical-total-port>
 
 Thresholds.
 
-=item C<--warning-total-admin-up>
+=item B<--warning-total-admin-up>
 
 Thresholds.
 
-=item C<--critical-total-admin-up>
+=item B<--critical-total-admin-up>
 
 Thresholds.
 
-=item C<--warning-total-admin-down>
+=item B<--warning-total-admin-down>
 
 Thresholds.
 
-=item C<--critical-total-admin-down>
+=item B<--critical-total-admin-down>
 
 Thresholds.
 
-=item C<--warning-total-oper-up>
+=item B<--warning-total-oper-up>
 
 Thresholds.
 
-=item C<--critical-total-oper-up>
+=item B<--critical-total-oper-up>
 
 Thresholds.
 
-=item C<--warning-total-oper-down>
+=item B<--warning-total-oper-down>
 
 Thresholds.
 
-=item C<--critical-total-oper-down>
+=item B<--critical-total-oper-down>
 
 Thresholds.
 
-=item C<--warning-in-traffic>
+=item B<--warning-in-traffic>
 
 Thresholds.
 
-=item C<--critical-in-traffic>
+=item B<--critical-in-traffic>
 
 Thresholds.
 
-=item C<--warning-out-traffic>
+=item B<--warning-out-traffic>
 
 Thresholds.
 
-=item C<--critical-out-traffic>
+=item B<--critical-out-traffic>
 
 Thresholds.
 
-=item C<--warning-in-error>
+=item B<--warning-in-error>
 
 Thresholds.
 
-=item C<--critical-in-error>
+=item B<--critical-in-error>
 
 Thresholds.
 
-=item C<--warning-in-discard>
+=item B<--warning-in-discard>
 
 Thresholds.
 
-=item C<--critical-in-discard>
+=item B<--critical-in-discard>
 
 Thresholds.
 
-=item C<--warning-out-error>
+=item B<--warning-out-error>
 
 Thresholds.
 
-=item C<--critical-out-error>
+=item B<--critical-out-error>
 
 Thresholds.
 
-=item C<--warning-out-discard>
+=item B<--warning-out-discard>
 
 Thresholds.
 
-=item C<--critical-out-discard>
+=item B<--critical-out-discard>
 
 Thresholds.
 
-=item C<--warning-in-ucast>
+=item B<--warning-in-ucast>
 
 Thresholds.
 
-=item C<--critical-in-ucast>
+=item B<--critical-in-ucast>
 
 Thresholds.
 
-=item C<--warning-in-bcast>
+=item B<--warning-in-bcast>
 
 Thresholds.
 
-=item C<--critical-in-bcast>
+=item B<--critical-in-bcast>
 
 Thresholds.
 
-=item C<--warning-in-mcast>
+=item B<--warning-in-mcast>
 
 Thresholds.
 
-=item C<--critical-in-mcast>
+=item B<--critical-in-mcast>
 
 Thresholds.
 
-=item C<--warning-out-ucast>
+=item B<--warning-out-ucast>
 
 Thresholds.
 
-=item C<--critical-out-ucast>
+=item B<--critical-out-ucast>
 
 Thresholds.
 
-=item C<--warning-out-bcast>
+=item B<--warning-out-bcast>
 
 Thresholds.
 
-=item C<--critical-out-bcast>
+=item B<--critical-out-bcast>
 
 Thresholds.
 
-=item C<--warning-out-mcast>
+=item B<--warning-out-mcast>
 
 Thresholds.
 
-=item C<--critical-out-mcast>
+=item B<--critical-out-mcast>
 
 Thresholds.
 
-=item C<--warning-speed>
+=item B<--warning-speed>
 
 Thresholds in b/s.
 
-=item C<--critical-speed>
+=item B<--critical-speed>
 
 Thresholds in b/s.
 
-=item C<--warning-input-power>
+=item B<--warning-input-power>
 
 Thresholds in C<dBm>.
 
-=item C<--critical-input-power>
+=item B<--critical-input-power>
 
 Thresholds in C<dBm>.
 
-=item C<--warning-bias-current>
+=item B<--warning-bias-current>
 
 Thresholds in C<mA>.
 
-=item C<--critical-bias-current>
+=item B<--critical-bias-current>
 
 Thresholds in C<mA>.
 
-=item C<--warning-output-power>
+=item B<--warning-output-power>
 
 Thresholds in C<dBm>.
 
-=item C<--critical-output-power>
+=item B<--critical-output-power>
 
 Thresholds in C<dBm>.
 
-=item C<--warning-module-temperature>
+=item B<--warning-module-temperature>
 
 Thresholds in °C.
 
-=item C<--critical-module-temperature>
+=item B<--critical-module-temperature>
 
 Thresholds in °C.
 
 
-=item C<--units-traffic>
+=item B<--units-traffic>
 
 Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
-=item C<--units-errors>
+=item B<--units-errors>
 
 Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
-=item C<--units-cast>
+=item B<--units-cast>
 
 Units of thresholds for communication types (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
 
-=item C<--nagvis-perfdata>
+=item B<--nagvis-perfdata>
 
 Display traffic perfdata to be compatible with NagVis widget.
 
-=item C<--interface>
+=item B<--interface>
 
 Define the interface filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all interfaces will be monitored.
 To filter on interface names, see --name.
 
-=item C<--name>
+=item B<--name>
 
 With this option, the interfaces will be filtered by name (given in option --interface) instead of OID index. The name matching mode supports regular expressions.
 
-=item C<--regex-id>
+=item B<--regex-id>
 
 With this option, interface IDs will be filtered using the --interface parameter as a regular expression instead of a list of IDs.
 
-=item C<--speed>
+=item B<--speed>
 
 Set interface speed for incoming/outgoing traffic (in Mb).
 
-=item C<--speed-in>
+=item B<--speed-in>
 
 Set interface speed for incoming traffic (in Mb).
 
-=item C<--speed-out>
+=item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
 
-=item C<--force-counters32>
+=item B<--force-counters32>
 
 Force to use 32-bits counters (even with SNMP versions 2c and 3). To use when 64 bits counters are buggy.
 
-=item C<--reload-cache-time>
+=item B<--reload-cache-time>
 
 Time in minutes before reloading cache file (default: 180).
 
-=item C<--oid-filter>
+=item B<--oid-filter>
 
 Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
-=item C<--oid-display>
+=item B<--oid-display>
 
 Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
-=item C<--oid-extra-display>
+=item B<--oid-extra-display>
 
 Add an OID to display.
 
-=item C<--display-transform-src> C<--display-transform-dst>
+=item B<--display-transform-src> C<--display-transform-dst>
 
 Modify the interface name displayed by using a regular expression.
 
 Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
 
-=item C<--show-cache>
+=item B<--show-cache>
 
 Display cache interface data.
 

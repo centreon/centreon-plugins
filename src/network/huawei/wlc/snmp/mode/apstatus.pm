@@ -382,160 +382,160 @@ Check AP status.
 
 =over 8
 
-=item C<--filter-counters>
+=item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: C<--filter-counters='^total$|^total-normal$'>
 
-=item C<--filter-name>
+=item B<--filter-name>
 
 Filter access point name (can be a regexp)
 
-=item C<--filter-address>
+=item B<--filter-address>
 
 Filter access point IP address (can be a regexp).
 
-=item C<--filter-group>
+=item B<--filter-group>
 
 Filter access point group (can be a regexp).
 
-=item C<--warning-status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING. (default: C<'%{runstate} =~ /countryCodeMismatch|typeNotMatch/'>).
 You can use the following variables: C<%{runstate}>, C<%{display}>.
 C<%(runstate)> can have one of these values: C<idle>, C<autofind>, C<typeNotMatch>, C<fault>, C<config>, C<configFailed>, C<download>, C<normal>, C<committing>, C<commitFailed>, C<standby>, C<verMismatch>, C<nameConflicted>, C<invalid>, C<countryCodeMismatch>.
 
-=item C<--critical-status>
+=item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL. (default: C<'%{runstate} =~ /fault|configFailed|commitFailed|verMismatch|nameConflicted|invalid/'>).
 You can use the following variables: C<%{runstate}>, C<%{display}>.
 C<%(runstate)> can have one of these values: C<idle>, C<autofind>, C<typeNotMatch>, C<fault>, C<config>, C<configFailed>, C<download>, C<normal>, C<committing>, C<commitFailed>, C<standby>, C<verMismatch>, C<nameConflicted>, C<invalid>, C<countryCodeMismatch>.
 
-=item C<--warning-total>
+=item B<--warning-total>
 
 Thresholds.
 
-=item C<--critical-total>
+=item B<--critical-total>
 
 Thresholds.
 
-=item C<--warning-total-idle>
+=item B<--warning-total-idle>
 
 Thresholds.
 
-=item C<--critical-total-idle>
+=item B<--critical-total-idle>
 
 Thresholds.
 
-=item C<--warning-total-autofind>
+=item B<--warning-total-autofind>
 
 Thresholds.
 
-=item C<--critical-total-autofind>
+=item B<--critical-total-autofind>
 
 Thresholds.
 
-=item C<--warning-total-typeNotMatch>
+=item B<--warning-total-typeNotMatch>
 
 Thresholds.
 
-=item C<--critical-total-typeNotMatch>
+=item B<--critical-total-typeNotMatch>
 
 Thresholds.
 
-=item C<--warning-total-fault>
+=item B<--warning-total-fault>
 
 Thresholds.
 
-=item C<--critical-total-fault>
+=item B<--critical-total-fault>
 
 Thresholds.
 
-=item C<--warning-total-config>
+=item B<--warning-total-config>
 
 Thresholds.
 
-=item C<--critical-total-config>
+=item B<--critical-total-config>
 
 Thresholds.
 
-=item C<--warning-total-config-failed>
+=item B<--warning-total-config-failed>
 
 Thresholds.
 
-=item C<--critical-total-config-failed>
+=item B<--critical-total-config-failed>
 
 Thresholds.
 
-=item C<--warning-total-download>
+=item B<--warning-total-download>
 
 Thresholds.
 
-=item C<--critical-total-download>
+=item B<--critical-total-download>
 
 Thresholds.
 
-=item C<--warning-total-normal>
+=item B<--warning-total-normal>
 
 Thresholds.
 
-=item C<--critical-total-normal>
+=item B<--critical-total-normal>
 
 Thresholds.
 
-=item C<--warning-total-committing>
+=item B<--warning-total-committing>
 
 Thresholds.
 
-=item C<--critical-total-committing>
+=item B<--critical-total-committing>
 
 Thresholds.
 
-=item C<--warning-total-commit-failed>
+=item B<--warning-total-commit-failed>
 
 Thresholds.
 
-=item C<--critical-total-commit-failed>
+=item B<--critical-total-commit-failed>
 
 Thresholds.
 
-=item C<--warning-total-standby>
+=item B<--warning-total-standby>
 
 Thresholds.
 
-=item C<--critical-total-standby>
+=item B<--critical-total-standby>
 
 Thresholds.
 
-=item C<--warning-total-version-mismatch>
+=item B<--warning-total-version-mismatch>
 
 Thresholds.
 
-=item C<--critical-total-version-mismatch>
+=item B<--critical-total-version-mismatch>
 
 Thresholds.
 
-=item C<--warning-total-name-conflicted>
+=item B<--warning-total-name-conflicted>
 
 Thresholds.
 
-=item C<--critical-total-name-conflicted>
+=item B<--critical-total-name-conflicted>
 
 Thresholds.
 
-=item C<--warning-total-invalid>
+=item B<--warning-total-invalid>
 
 Thresholds.
 
-=item C<--critical-total-invalid>
+=item B<--critical-total-invalid>
 
 Thresholds.
 
-=item C<--warning-total-country-code-mismatch>
+=item B<--warning-total-country-code-mismatch>
 
 Thresholds.
 
-=item C<--critical-total-country-code-mismatch>
+=item B<--critical-total-country-code-mismatch>
 
 Thresholds.
 

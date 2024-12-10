@@ -266,78 +266,78 @@ Check AP radio status.
 
 =over 8
 
-=item C<--filter-counters>
+=item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^temperature|onlinetime$'
 
-=item C<--filter-name>
+=item B<--filter-name>
 
 Filter access point radio name (can be a regexp)
 
-=item C<--filter-address>
+=item B<--filter-address>
 
 Filter access point radio IP address (can be a regexp).
 
-=item C<--filter-group>
+=item B<--filter-group>
 
 Filter access point group (can be a regexp).
 
-=item C<--warning-status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{runstate}, %{display}
 
-=item C<--critical-status>
+=item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{runstate} ne "up"').
 You can use the following variables: %{runstate}, %{display}
 
-=item C<--warning-package-error-rate>
+=item B<--warning-package-error-rate>
 
 Thresholds.
 
-=item C<--critical-package-error-rate>
+=item B<--critical-package-error-rate>
 
 Thresholds.
 
-=item C<--warning-noise>
+=item B<--warning-noise>
 
 Thresholds.
 
-=item C<--critical-noise>
+=item B<--critical-noise>
 
 Thresholds.
 
-=item C<--warning-channel-utilization-rate>
+=item B<--warning-channel-utilization-rate>
 
 Thresholds.
 
-=item C<--critical-channel-utilization-rate>
+=item B<--critical-channel-utilization-rate>
 
 Thresholds.
 
-=item C<--warning-channel-interference-rate>
+=item B<--warning-channel-interference-rate>
 
 Thresholds.
 
-=item C<--critical-channel-interference-rate>
+=item B<--critical-channel-interference-rate>
 
 Thresholds.
 
-=item C<--warning-receive-rate>
+=item B<--warning-receive-rate>
 
 Thresholds.
 
-=item C<--critical-receive-rate>
+=item B<--critical-receive-rate>
 
 Thresholds.
 
-=item C<--warning-send-rate>
+=item B<--warning-send-rate>
 
 Thresholds.
 
-=item C<--critical-send-rate>
+=item B<--critical-send-rate>
 
 Thresholds.
 

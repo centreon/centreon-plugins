@@ -319,95 +319,95 @@ Check AP health.
 
 =over 8
 
-=item C<--filter-counters>
+=item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^temperature|onlinetime$'
 
-=item C<--filter-name>
+=item B<--filter-name>
 
 Filter access point name (can be a regexp)
 
-=item C<--filter-address>
+=item B<--filter-address>
 
 Filter access point IP address (can be a regexp).
 
-=item C<--filter-group>
+=item B<--filter-group>
 
 Filter access point group (can be a regexp).
 
-=item C<--warning-status>
+=item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING. (default: '%{powersupply} eq "limited"').
 You can use the following variables: %{powersupply}, %{datalinkstate}, %{display}
 
-=item C<--critical-status>
+=item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{powersupply} =~ /insufficient|limited/ || %{datalinkstate} !~ /run/').
 You can use the following variables: %{powersupply}, %{datalinkstate}, %{display}
 
-=item C<--warning-temperature>
+=item B<--warning-temperature>
 
 Thresholds.
 
-=item C<--critical-temperature>
+=item B<--critical-temperature>
 
 Thresholds.
 
-=item C<--warning-onlinetime>
+=item B<--warning-onlinetime>
 
 Thresholds.
 
-=item C<--critical-onlinetime>
+=item B<--critical-onlinetime>
 
 Thresholds.
 
-=item C<--warning-bootcount-total>
+=item B<--warning-bootcount-total>
 
 Thresholds.
 
-=item C<--critical-bootcount-total>
+=item B<--critical-bootcount-total>
 
 Thresholds.
 
-=item C<--warning-memory>
+=item B<--warning-memory>
 
 Thresholds.
 
-=item C<--critical-memory>
+=item B<--critical-memory>
 
 Thresholds.
 
 
-=item C<--warning-cpu>
+=item B<--warning-cpu>
 
 Thresholds.
 
-=item C<--critical-cpu>
+=item B<--critical-cpu>
 
 Thresholds.
 
-=item C<--warning-up-port-speed>
+=item B<--warning-up-port-speed>
 
 Thresholds.
 
-=item C<--critical-up-port-speed>
+=item B<--critical-up-port-speed>
 
 Thresholds.
 
-=item C<--warning-up-port-packet-err>
+=item B<--warning-up-port-packet-err>
 
 Thresholds.
 
-=item C<--critical-up-port-packet-err>
+=item B<--critical-up-port-packet-err>
 
 Thresholds.
 
-=item C<--warning-online-user-num>
+=item B<--warning-online-user-num>
 
 Thresholds.
 
-=item C<--critical-online-user-num>
+=item B<--critical-online-user-num>
 
 Thresholds.
 
