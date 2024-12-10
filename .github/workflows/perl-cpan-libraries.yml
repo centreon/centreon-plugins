@@ -326,6 +326,8 @@ jobs:
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
+            "Device::Modbus::RTU::Client",
+            "Device::Modbus::TCP::Client",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
@@ -366,6 +368,10 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Device::Modbus::RTU::Client"
+            build_distribs: "bookworm"
+          - name: "Device::Modbus::TCP::Client"
+            build_distribs: "bookworm"
           - name: "Net::Amazon::Signature::V4"
             build_distribs: ["bullseye", "jammy"]
           - name: "Net::MQTT::Simple"
