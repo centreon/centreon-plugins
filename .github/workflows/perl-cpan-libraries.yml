@@ -6,17 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
-#  pull_request:
-#    paths:
-#      - ".github/workflows/perl-cpan-libraries.yml"
-#  push:
-#    branches:
-#      - develop
-#      - dev-[2-9][0-9].[0-9][0-9].x
-#      - master
-#      - "[2-9][0-9].[0-9][0-9].x"
-#    paths:
-#      - ".github/workflows/perl-cpan-libraries.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -575,6 +575,7 @@ jobs:
             # Add Centreon plugins repositories
             echo -e '[centreon-plugins-stable]\nname=centreon plugins stable x86_64\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n[centreon-plugins-stable-noarch]\nname=centreon plugins stable noarch\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/noarch\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n' >> /etc/yum.repos.d/centreon-plugins.repo
           else
+            export DEBIAN_FRONTEND=noninteractive
             apt-get update
             apt-get install -y zstd perl wget gpg apt-utils
             # Add Centreon plugins repositories
@@ -603,13 +604,13 @@ jobs:
             for dependency in $dependencies; do
               # If the dependency has been built in the same workflow, install it
               if [ -f $dependency*.rpm ]; then
-                dnf install -y $dependency*.rpm 2>> $error_log || { echo "Error during installation of $package" >> $error_log; true; }
+                error_output=$(dnf install -y $dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $dependency" >> $error_log; true; }
               fi
             done
             # Install package
-            dnf install -y $package 2>> $error_log || { echo "Error during installation of $package" >> $error_log; true; }
+            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $package" >> $error_log; true; }
             # Uninstall package with all his dependencies
-            dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>> $error_log || true
+            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of $package" >> $error_log; true; }
           done
           # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
           if [ -s $error_log ]; then
@@ -627,14 +628,14 @@ jobs:
             for dependency in $dependencies; do
                 # If the dependency has been built in the same workflow, install it
                 if [ -f $dependency*.deb ]; then
-                  apt-get install -y $dependency*.deb 2>> $error_log || { echo "Error during installation of $package" >> $error_log; true; }
+                  error_output=$(apt-get install -y $dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $dependency" >> $error_log; true; }
                 fi
             done
             # Install package
-            apt-get install -y $package 2>> $error_log || { echo "Error during installation of $package" >> $error_log; true; }
+            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $package" >> $error_log; true; }
             # Uninstall package with all his dependencies
             # Package name is the name of the file less the version and the .deb extension, and without the "./" at the beginning
-            apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>> $error_log || true
+            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of $package" >> $error_log; true; }
           done
           # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
           if [ -s $error_log ]; then
