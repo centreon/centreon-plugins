@@ -318,7 +318,6 @@ jobs:
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
-            "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
