@@ -467,7 +467,7 @@ Define the OID that will be used to name the interfaces (default: ifName) (value
 
 Add an OID to display.
 
-=item B<--display-transform-src> C<--display-transform-dst>
+=item B<--display-transform-src> B<--display-transform-dst>
 
 Modify the interface name displayed by using a regular expression.
 
