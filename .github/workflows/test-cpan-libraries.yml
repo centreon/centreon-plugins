@@ -233,7 +233,6 @@ jobs:
         name:
           [
             "ARGV::Struct",
-            "Digest::SHA1",
             "Net::MQTT::Simple",
             "ZMQ::LibZMQ4"
           ]
