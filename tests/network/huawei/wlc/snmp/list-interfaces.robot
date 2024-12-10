@@ -7,7 +7,7 @@ Test Timeout        120s
 Test Setup          Ctn Generic Suite Setup
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::standard::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
 
 
 *** Test Cases ***
