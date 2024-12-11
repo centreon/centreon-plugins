@@ -19,15 +19,15 @@ storage ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/linux/snmp/linux
+    ...    --snmp-community=os/freebsd/snmp/freebsd
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                       expected_result    --
-            ...      1     --filter-duplicate=''               OK: All storages are ok | 'count'=5;;;0; 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 
-            ...      2     --filter-storage-type=''            OK: All storages are ok | 'count'=11;;;0; 'used_Physical memory'=1296941056B;;;0;2062598144 'used_Available memory'=0B;;;0;1143980032 'used_Virtual memory'=1296941056B;;;0;2062598144 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 'used_Memory buffers'=37601280B;;;0;2062598144 'used_Cached memory'=523030528B;;;0;523030528 'used_Shared memory'=30310400B;;;0;30310400
-            ...      3     --display-transform-dst='run'       OK: All storages are ok | 'count'=5;;;0; 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176
-            ...      4     --filter-duplicate                  OK: All storages are ok | 'count'=5;;;0; 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 
-            ...      5     --filter-storage-type               OK: All storages are ok | 'count'=11;;;0; 'used_Physical memory'=1296941056B;;;0;2062598144 'used_Available memory'=0B;;;0;1143980032 'used_Virtual memory'=1296941056B;;;0;2062598144 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 'used_Memory buffers'=37601280B;;;0;2062598144 'used_Cached memory'=523030528B;;;0;523030528 'used_Shared memory'=30310400B;;;0;30310400
+            ...      1     ${EMPTY}                            OK: All storages are ok | 'count'=3;;;0; 'used_/'=4534042624B;;;0;10352734208 'used_/dev'=0B;;;0;1024 'used_/boot/efi'=662528B;;;0;33550336
+            ...      2     --verbose                           OK: All storages are ok | 'count'=3;;;0; 'used_/'=4534042624B;;;0;10352734208 'used_/dev'=0B;;;0;1024 'used_/boot/efi'=662528B;;;0;33550336 Storage '/' Usage Total: 9.64 GB Used: 4.22 GB (43.80%) Free: 5.42 GB (56.20%) Storage '/dev' Usage Total: 1.00 KB Used: 0.00 B (0.00%) Free: 1.00 KB (100.00%) Storage '/boot/efi' Usage Total: 32.00 MB Used: 647.00 KB (1.97%) Free: 31.36 MB (98.03%)
+            ...      3     --warning-usage=30                  WARNING: Storage '/' Usage Total: 9.64 GB Used: 4.22 GB (43.80%) Free: 5.42 GB (56.20%) | 'count'=3;;;0; 'used_/'=4534042624B;0:3105820262;;0;10352734208 'used_/dev'=0B;0:307;;0;1024 'used_/boot/efi'=662528B;0:10065100;;0;33550336
+            ...      4     --critical-usage=30                 CRITICAL: Storage '/' Usage Total: 9.64 GB Used: 4.22 GB (43.80%) Free: 5.42 GB (56.20%) | 'count'=3;;;0; 'used_/'=4534042624B;;0:3105820262;0;10352734208 'used_/dev'=0B;;0:307;0;1024 'used_/boot/efi'=662528B;;0:10065100;0;33550336
+            ...      5     --name --storage='/'                OK: Storage '/' Usage Total: 9.64 GB Used: 4.22 GB (43.80%) Free: 5.42 GB (56.20%) | 'count'=1;;;0; 'used'=4534042624B;;;0;10352734208
