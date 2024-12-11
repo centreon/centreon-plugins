@@ -313,8 +313,7 @@ sub request_api_paginate {
         );
 
         if (!defined($content) || $content eq '') {
-            $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-            $self->{output}->option_exit();
+            return ; # If the content is empty, it means that the request failed. caller can try to get a new token and retry.
         }
 
         my $decoded;
