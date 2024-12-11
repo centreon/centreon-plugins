@@ -22,10 +22,7 @@ list-spanning-trees ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    # first run to build cache
-    Run    ${command}
-    # second run to control the output
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     --filter-port='Anonymized 053'                                                                          List ports with spanning tree protocol: [port = Anonymized 053] [state = forwarding] [op_status = up] [admin_status = up] [index = 28]

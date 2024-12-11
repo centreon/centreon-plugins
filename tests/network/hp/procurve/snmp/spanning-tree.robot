@@ -22,9 +22,6 @@ spanning-tree ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    # first run to build cache
-    Run    ${command}
-    # second run to control the output
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
