@@ -525,7 +525,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using NTLMv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLM version 2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
