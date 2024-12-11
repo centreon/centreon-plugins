@@ -490,6 +490,10 @@ jobs:
         run: |
           error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
           for package in ./*.deb; do
+            # If the package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
+            if [[ $package == *amd64.deb && ${{ matrix.arch }} != "amd64" ]] || [[ $package == *arm64.deb && ${{ matrix.arch }} != "arm64" ]]; then
+              continue
+            fi
             # List dependencies
             dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //')
             for dependency in $dependencies; do
@@ -501,7 +505,6 @@ jobs:
             # Install package
             error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $package" >> $error_log; true; }
             # Uninstall package with all his dependencies
-            # Package name is the name of the file less the version and the .deb extension, and without the "./" at the beginning
             error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of $package" >> $error_log; true; }
           done
           # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
