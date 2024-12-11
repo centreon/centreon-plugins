@@ -6,17 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
-#  pull_request:
-#    paths:
-#      - ".github/workflows/test-cpan-libraries.yml"
-#  push:
-#    branches:
-#      - develop
-#      - dev-[2-9][0-9].[0-9][0-9].x
-#      - master
-#      - "[2-9][0-9].[0-9][0-9].x"
-#    paths:
-#      - ".github/workflows/test-cpan-libraries.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/test-cpan-libraries.yml"
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - ".github/workflows/test-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -33,10 +33,7 @@ jobs:
         distrib: [el8, el9]
         name:
           [
-            "ARGV::Struct",
-            "BSON",
-            "FFI::Platypus",
-            "ZMQ::FFI"
+            "ARGV::Struct"
           ]
         include:
           - build_distribs: "el8,el9"
@@ -44,21 +41,12 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - spec_file: ""
-          - no-auto-depends: false
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
           - distrib: el9
             package_extension: rpm
             image: packaging-plugins-alma9
-          - name: "BSON"
-            rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
-          - name: "FFI::Platypus"
-            rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
-            rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
-            no-auto-depends: true
-          - name: "ZMQ::FFI"
-            rpm_dependencies: "zeromq"
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -232,8 +220,10 @@ jobs:
         image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
         name:
           [
-            "ARGV::Struct",
-            "Net::MQTT::Simple",
+            "Crypt::OpenSSL::AES",
+            "JMX::Jmx4Perl",
+            "Net::Amazon::Signature::V4",
+            "Paws",
             "ZMQ::LibZMQ4"
           ]
         include:
@@ -245,7 +235,6 @@ jobs:
           - version: ""
           - use_dh_make_perl: "true"
           - spec_file: ""
-          - no-auto-depends: false
           - distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye
@@ -260,8 +249,12 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
-          - name: "Net::MQTT::Simple"
-            version: "1.29"
+          - name: "Net::Amazon::Signature::V4"
+            build_distribs: ["bullseye", "jammy"]
+          - name: "Paws"
+            use_dh_make_perl: "false"
+            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
+            no-auto-depends: true
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"

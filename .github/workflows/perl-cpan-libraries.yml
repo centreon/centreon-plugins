@@ -6,17 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
-  push:
-    branches:
-      - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
-      - master
-      - "[2-9][0-9].[0-9][0-9].x"
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
+#  pull_request:
+#    paths:
+#      - ".github/workflows/perl-cpan-libraries.yml"
+#  push:
+#    branches:
+#      - develop
+#      - dev-[2-9][0-9].[0-9][0-9].x
+#      - master
+#      - "[2-9][0-9].[0-9][0-9].x"
+#    paths:
+#      - ".github/workflows/perl-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -112,6 +112,10 @@ jobs:
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
             no-auto-depends: true
+          - name: "Mojo::IOLoop::Signal"
+            rpm_dependencies: "perl-Mojolicious"
+            rpm_provides: "perl(Mojo::IOLoop::Signal)"
+            no-auto-depends: true
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -131,10 +135,6 @@ jobs:
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
-          - name: "Mojo::IOLoop::Signal"
-            rpm_dependencies: "perl-Mojolicious"
-            rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: true
 
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
