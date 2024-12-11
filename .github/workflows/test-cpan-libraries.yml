@@ -41,6 +41,7 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - spec_file: ""
+          - no-auto-depends: false
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -252,10 +253,6 @@ jobs:
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: true
-          - name: "ZMQ::LibZMQ4"
-            use_dh_make_perl: "false"
-            version: "0.01"
-            deb_dependencies: "libzmq5"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
