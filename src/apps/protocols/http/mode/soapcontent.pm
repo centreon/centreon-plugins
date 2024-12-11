@@ -320,8 +320,8 @@ __END__
 
 Check SOAP content. Send the soap request with option '--data'. Example:
 centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction'
---header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com' --urlpath='/get/payment'
---lookup='//numeric/text()'
+--header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com'
+--urlpath='/get/payment' --lookup='//numeric/text()'
 
 SOAP OPTIONS:
 
@@ -329,15 +329,15 @@ SOAP OPTIONS:
 
 =item B<--service-soap>
 
-Service Soap Action (required)
+Service Soap Action (required).
 
 =item B<--data>
 
-Set file with SOAP request (required)
+Set file with SOAP request (required).
 
 =item B<--lookup>
 
-What to lookup in XML response (XPath string) (can be multiple)
+What to lookup in XML response (XPath string) (can be multiple).
 
 =back
 
@@ -347,7 +347,7 @@ FORMAT OPTIONS:
 
 =item B<--format-ok>
 
-Customize the format of the output when the status is OK (default: '%{count} element(s) found')
+Customize the format of the output when the status is OK (default: '%{count} element(s) found').
 You can use the following variables:
 '%{values}' = display all values (also text string)
 '%{values_ok}' = values from attributes and text node only (separated by option values-separator)
@@ -355,17 +355,17 @@ You can use the following variables:
 
 =item B<--format-warning>
 
-Customize the format of the output when the status is WARNING (default: '%{count} element(s) found')
+Customize the format of the output when the status is WARNING (default: '%{count} element(s) found').
 You can use the variables described in --format-ok
 
 =item B<--format-critical>
 
-Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found')
+Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found').
 You can use the variables described in --format-ok
 
 =item B<--values-separator>
 
-Separator used for values in format option (default: ', ')
+Separator used for values in format option (default: ', ').
 
 =back
 
@@ -375,11 +375,11 @@ THRESHOLD OPTIONS:
 
 =item B<--warning-numeric>
 
-Warning threshold (default: on total matching elements)
+Warning threshold (default: on total matching elements).
 
 =item B<--critical-numeric>
 
-Critical threshold (default: on total matching elements)
+Critical threshold (default: on total matching elements).
 
 =item B<--threshold-value>
 
@@ -396,11 +396,11 @@ Returns a CRITICAL status if the value matches the string.
 
 =item B<--warning-time>
 
-Warning threshold in seconds of web service response time
+Warning threshold in seconds of web service response time.
 
 =item B<--critical-time>
 
-Critical threshold in seconds of web service response time
+Critical threshold in seconds of web service response time.
 
 =back
 
@@ -444,7 +444,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using NTLM version 2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLMv2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
@@ -472,7 +472,7 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--header>
 
-Set HTTP headers(multiple option). Example: --header='Content-Type: XXXX'.
+Set HTTP headers(multiple option). Example: --header='Content-Type: '.
 
 =item B<--unknown-status>
 
