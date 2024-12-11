@@ -220,11 +220,8 @@ jobs:
         image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
         name:
           [
-            "Crypt::OpenSSL::AES",
-            "JMX::Jmx4Perl",
             "Net::Amazon::Signature::V4",
-            "Paws",
-            "ZMQ::LibZMQ4"
+            "Paws"
           ]
         include:
           - runner_name: ubuntu-24.04
@@ -471,13 +468,13 @@ jobs:
             for dependency in $dependencies; do
               # If the dependency has been built in the same workflow, install it
               if [ -f $dependency*.rpm ]; then
-                error_output=$(dnf install -y $dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $dependency" >> $error_log; true; }
+                error_output=$(dnf install -y $dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               fi
             done
             # Install package
-            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $package" >> $error_log; true; }
+            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             # Uninstall package with all his dependencies
-            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of $package" >> $error_log; true; }
+            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           done
           # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
           if [ -s $error_log ]; then
@@ -499,13 +496,13 @@ jobs:
             for dependency in $dependencies; do
                 # If the dependency has been built in the same workflow, install it
                 if [ -f $dependency*.deb ]; then
-                  error_output=$(apt-get install -y $dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $dependency" >> $error_log; true; }
+                  error_output=$(apt-get install -y $dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
                 fi
             done
             # Install package
-            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of $package" >> $error_log; true; }
+            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             # Uninstall package with all his dependencies
-            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of $package" >> $error_log; true; }
+            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           done
           # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
           if [ -s $error_log ]; then
