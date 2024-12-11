@@ -31,6 +31,7 @@ AWSCLI
 Backbox
 base64
 blocked-by-uf
+bsnmp-ucd
 --cacert-file
 cardtemperature
 centreon
@@ -74,6 +75,7 @@ env
 ESX
 eth
 --exclude-fs
+ext4
 --failback-file
 fanspeed
 FCCapacity
@@ -88,6 +90,7 @@ FCCapacity
 --force-oid
 Fortigate
 Fortinet
+FreeBSD
 frsevent
 --get-param
 HashiCorp
@@ -122,6 +125,9 @@ kccevent
 keepass
 Keysight
 Kubernetes
+hrFSMountPoint
+hrFSOther
+hrStorageDescr
 ldap
 --legacy-api-beta
 license-instances-usage-prct
@@ -199,6 +205,8 @@ proto
 psu
 QoS
 queue-messages-inflighted
+readOnly
+readWrite
 --redis-attribute
 --redis-db
 --redis-server
@@ -268,3 +276,4 @@ vSphere
 --warning-total-cpu-utilization
 WSMAN
 XPath
+ZFS
