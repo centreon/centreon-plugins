@@ -98,7 +98,7 @@ sub manage_selection {
             && $vpn->{name} !~ /$self->{option_results}->{filter_name}/);
         
         $self->{vpns}->{$vpn->{id}} = {
-            display => $vpn->{name},
+            name => $vpn->{name},
             provisioning_state => ($vpn->{provisioningState}) ? $vpn->{provisioningState} : $vpn->{properties}->{provisioningState},
             gateway_type => ($vpn->{gatewayType}) ? $vpn->{gatewayType} : $vpn->{properties}->{gatewayType},
             vpn_type => ($vpn->{vpnType}) ? $vpn->{vpnType} : $vpn->{properties}->{vpnType},
@@ -131,7 +131,7 @@ Set resource group (required).
 
 =item B<--filter-name>
 
-Filter vpn name (can be a regexp).
+Filter VPN Gateways by name (can be a regexp).
 
 =item B<--warning-status>
 
