@@ -396,11 +396,11 @@ Returns a CRITICAL status if the value matches the string.
 
 =item B<--warning-time>
 
-Warning threshold in seconds of webservice response time
+Warning threshold in seconds of web service response time
 
 =item B<--critical-time>
 
-Critical threshold in seconds of webservice response time
+Critical threshold in seconds of web service response time
 
 =back
 
@@ -444,7 +444,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLM version 2 authentication (use with --credentials and --port options).
 
 =item B<--timeout>
 
@@ -472,7 +472,7 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--header>
 
-Set HTTP headers(multiple option). Example: --header='Content-Type: xxxxx'.
+Set HTTP headers(multiple option). Example: --header='Content-Type: XXXX'.
 
 =item B<--unknown-status>
 
