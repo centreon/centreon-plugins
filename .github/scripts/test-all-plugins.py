@@ -11,7 +11,7 @@ def get_tests_folders(plugin_name):
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
     for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if file.endswith("/") and os.path.exists("tests/" + file): # if this is a directory and there is test for it.
+        if os.path.isdir("tests/" + file): # check if the path is a directory in the "tests" folder
             folder_list.append("tests/" + file)
     return folder_list
 
@@ -74,8 +74,8 @@ def install_plugin(plugin, archi):
                     "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
-            outfile.write("dnf install -y ./" + plugin + "*.rpm\n")
-            output_status = (subprocess.run("dnf install -y ./" + plugin + "*.rpm", shell=True, check=False,
+            outfile.write("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm\n")
+            output_status = (subprocess.run("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm", shell=True, check=False,
                                         stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
@@ -95,8 +95,8 @@ def remove_plugin(plugin, archi):
             # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
 
         elif archi == "rpm":
-            outfile.write("dnf remove -y " + plugin + "\n")
-            output_status = (subprocess.run("dnf remove -y " + plugin, shell=True, check=False,
+            outfile.write("dnf remove --setopt=keepcache=True -y " + plugin + "\n")
+            output_status = (subprocess.run("dnf remove --setopt=keepcache=True -y " + plugin, shell=True, check=False,
                                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
