@@ -427,27 +427,29 @@ jobs:
 
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
-      - name: Install zstd, perl and Centreon repositories
+      - if: ${{ matrix.package_extension == 'rpm' }}
+        name: Install zstd, perl and Centreon repositories
         run: |
-          if [ "${{ matrix.package_extension }}" == "rpm" ]; then
-            dnf install -y zstd perl epel-release 'dnf-command(config-manager)'
-            dnf config-manager --set-enabled powertools || true # alma 8
-            dnf config-manager --set-enabled crb || true # alma 9
-            # Add Centreon plugins repositories
-            echo -e '[centreon-plugins-stable]\nname=centreon plugins stable x86_64\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n[centreon-plugins-stable-noarch]\nname=centreon plugins stable noarch\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/noarch\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n' >> /etc/yum.repos.d/centreon-plugins.repo
+          dnf install -y zstd perl epel-release 'dnf-command(config-manager)'
+          dnf config-manager --set-enabled powertools || true # alma 8
+          dnf config-manager --set-enabled crb || true # alma 9
+          # Add Centreon plugins repositories
+          echo -e '[centreon-plugins-stable]\nname=centreon plugins stable x86_64\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n[centreon-plugins-stable-noarch]\nname=centreon plugins stable noarch\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/noarch\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n' >> /etc/yum.repos.d/centreon-plugins.repo
+        shell: bash
+      - if: ${{ matrix.package_extension == 'deb' }}
+        name: Install zstd, perl and Centreon repositories
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y zstd perl wget gpg apt-utils
+          # Add Centreon plugins repositories
+          if [ "${{ matrix.distrib }}" == "jammy" ]; then
+            echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
           else
-            export DEBIAN_FRONTEND=noninteractive
-            apt-get update
-            apt-get install -y zstd perl wget gpg apt-utils
-            # Add Centreon plugins repositories
-            if [ "${{ matrix.distrib }}" == "jammy" ]; then
-              echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-            else
-              echo "deb https://packages.centreon.com/apt-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-            fi
-            wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-            apt-get update
+            echo "deb https://packages.centreon.com/apt-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
           fi
+          wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+          apt-get update
         shell: bash
       - name: Restore packages from cache
         uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
@@ -455,53 +457,40 @@ jobs:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           fail-on-cache-miss: true
-      - if: ${{ matrix.package_extension == 'rpm' }}
-        name: Install packages
+      - name: Install packages
         run: |
           error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.rpm; do
-            # List dependencies
-            dependencies=$(rpm -qpR $package)
-            for dependency in $dependencies; do
-              # If the dependency has been built in the same workflow, install it
-              if [ -f $dependency*.rpm ]; then
-                error_output=$(dnf install -y $dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-              fi
-            done
-            # Install package
-            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
-            # Uninstall package with all his dependencies
-            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
-          done
-          # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
-          if [ -s $error_log ]; then
-              cat $error_log
-              exit 1
-          fi
-        shell: bash
-      - if: ${{ matrix.package_extension == 'deb' }}
-        name: Install packages
-        run: |
-          error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.deb; do
-            # If the package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
-            if [[ $package == *amd64.deb && ${{ matrix.arch }} != "amd64" ]] || [[ $package == *arm64.deb && ${{ matrix.arch }} != "arm64" ]]; then
+          for package in ./*.${{ matrix.package_extension }}; do
+            # If a debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
+            if [[ ${{ matrix.package_extension }} == 'deb' && ($package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64") ]]; then
               continue
             fi
             # List dependencies
-            dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //')
+            if [ "${{ matrix.package_extension }}" == "rpm" ]; then
+              dependencies=$(rpm -qpR $package)
+            else
+              dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //')
+            fi
             for dependency in $dependencies; do
-                # If the dependency has been built in the same workflow, install it
-                if [ -f $dependency*.deb ]; then
-                  error_output=$(apt-get install -y $dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              # If the dependency has been built in the same workflow, install it
+              if [ -f $dependency*.${{ matrix.package_extension }} ]; then
+                if [ "${{ matrix.package_extension }}" == "rpm" ]; then
+                  error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+                else
+                  error_output=$(apt-get install -y ./$dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
                 fi
+              fi
             done
-            # Install package
-            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
-            # Uninstall package with all his dependencies
-            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            # Install package, then uninstall it with all his dependencies
+            if [ "${{ matrix.package_extension }}" == "rpm" ]; then
+              error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+              error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            else
+              error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+              error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            fi
           done
-          # Si le fichier error_log existe et n'est pas vide, le workflow est en erreur
+          # If the file error_log exists and is not empty, the workflow is in error
           if [ -s $error_log ]; then
               cat $error_log
               exit 1
