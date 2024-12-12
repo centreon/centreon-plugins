@@ -123,7 +123,7 @@ sub manage_selection {
     }
 
     # If there is a lastExecSeconds set (if above in the looop) and this is not a cleaning running (elsif above)
-    if ($self->{global}->{lastExecSeconds} != -1 && ($self->{global}->{lastExecSeconds} == 0 && $self->{global}->{lastExecHuman} eq "never")) {
+    if ($self->{global}->{lastExecSeconds} > 0 || ($self->{global}->{lastExecSeconds} = 0 && $self->{global}->{lastExecHuman} eq "never")) {
         $self->{global}->{lastExecHuman} =  centreon::plugins::misc::change_seconds(
             value => $self->{global}->{lastExecSeconds}
         );
