@@ -7,7 +7,9 @@
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/listspanningtrees.pm",
+        "snmp_standard/mode/spanningtree.pm",
+	    "snmp_standard/mode/resources/",
         "network/hp/procurve/"
     ]
 }
