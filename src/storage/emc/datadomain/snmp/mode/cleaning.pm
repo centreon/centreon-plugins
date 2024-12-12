@@ -116,10 +116,14 @@ sub manage_selection {
             if ($self->{global}->{lastExecSeconds} == -1 || $self->{global}->{lastExecSeconds} > $lastExecSeconds) {
                 $self->{global}->{lastExecSeconds} = $lastExecSeconds;
             }
+        }elsif($snmp_result->{$oid} =~ /Cleaning: phase (\d+) of (\d+) \(copy\)/){
+            $self->{global}->{lastExecHuman} = "running (phase $1 of $2 (copy))";
+            $self->{global}->{lastExecSeconds} = 0;
         }
     }
 
-    if ($self->{global}->{lastExecSeconds} != -1) {
+    # If there is a lastExecSeconds set (if above in the looop) and this is not a cleaning running (elsif above)
+    if ($self->{global}->{lastExecSeconds} != -1 && ($self->{global}->{lastExecSeconds} == 0 && $self->{global}->{lastExecHuman} eq "never")) {
         $self->{global}->{lastExecHuman} =  centreon::plugins::misc::change_seconds(
             value => $self->{global}->{lastExecSeconds}
         );
