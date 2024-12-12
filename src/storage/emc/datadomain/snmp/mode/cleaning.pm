@@ -116,8 +116,8 @@ sub manage_selection {
             if ($self->{global}->{lastExecSeconds} == -1 || $self->{global}->{lastExecSeconds} > $lastExecSeconds) {
                 $self->{global}->{lastExecSeconds} = $lastExecSeconds;
             }
-        }elsif($snmp_result->{$oid} =~ /Cleaning: phase (\d+) of (\d+) \(copy\)/){
-            $self->{global}->{lastExecHuman} = "running (phase $1 of $2 (copy))";
+        }elsif($snmp_result->{$oid} =~ /Cleaning: phase (\d+) of (\d+) \(([^)]+)\)/) {
+            $self->{global}->{lastExecHuman} = "running (phase $1 of $2 : $3)";
             $self->{global}->{lastExecSeconds} = 0;
         }
     }
