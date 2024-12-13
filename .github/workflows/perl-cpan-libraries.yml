@@ -600,11 +600,11 @@ jobs:
         run: |
           error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
           for package in ./*.${{ matrix.package_extension }}; do
-            echo "Installing package: $package"
             # If a debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
             if [[ ${{ matrix.package_extension }} == 'deb' && ($package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64") ]]; then
               continue
             fi
+            echo "Installing package: $package"
             # List dependencies
             if [ "${{ matrix.package_extension }}" == "rpm" ]; then
               dependencies=$(rpm -qpR $package)
@@ -612,9 +612,14 @@ jobs:
               dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //')
             fi
             for dependency in $dependencies; do
+              if [ "${{ matrix.package_extension }}" == "rpm" ] && [[ $dependency != perl* ]]; then
+                  continue
+              elif [ "${{ matrix.package_extension }}" == "deb" ] && [[ $dependency != lib*-perl ]]; then
+                  continue
+              fi
               echo "Check dependency: $dependency"
               # If the dependency has been built in the same workflow, install it
-              if [ -f $dependency*.${{ matrix.package_extension }} ]; then
+              if [ -f ./$dependency*.${{ matrix.package_extension }} ]; then
                 echo "Installing dependency: $dependency"
                 if [ "${{ matrix.package_extension }}" == "rpm" ]; then
                   error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
