@@ -617,15 +617,17 @@ jobs:
                 if [[ $dependency != perl* ]]; then
                   continue
                 else
-                    # Update the dependency name to match the package name
-                    dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)/-/g' | sed 's/::/-/g')
+                  echo "Check dependency: $dependency"
+                  # Update the dependency name to match the package name
+                  dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
                 fi
-              elif [ "${{ matrix.package_extension }}" == "deb" ] && [[ $dependency != lib*-perl ]]; then
+              elif [[ "${{ matrix.package_extension }}" == "deb" && $dependency != lib*-perl ]]; then
                   continue
+              else
+                echo "Check dependency: $dependency"
               fi
-              echo "Check dependency: $dependency"
               # If the dependency has been built in the same workflow, install it
-              if [ -f ./$dependency*.${{ matrix.package_extension }} ]; then
+              if [[ -f ./$dependency*.${{ matrix.package_extension }} ]]; then
                 echo "Installing dependency: $dependency"
                 if [ "${{ matrix.package_extension }}" == "rpm" ]; then
                   error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
@@ -644,7 +646,7 @@ jobs:
             fi
           done
           # If the file error_log exists and is not empty, the workflow is in error
-          if [ -s $error_log ]; then
+          if [[ -s $error_log ]]; then
               cat $error_log
               exit 1
           fi
