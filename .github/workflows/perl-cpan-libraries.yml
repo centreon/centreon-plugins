@@ -612,8 +612,14 @@ jobs:
               dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //')
             fi
             for dependency in $dependencies; do
-              if [ "${{ matrix.package_extension }}" == "rpm" ] && [[ $dependency != perl* ]]; then
+              # Skip non-perl dependencies
+              if [ "${{ matrix.package_extension }}" == "rpm" ]; then
+                if [[ $dependency != perl* ]]; then
                   continue
+                else
+                    # Update the dependency name to match the package name
+                    dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)/-/g' | sed 's/::/-/g')
+                fi
               elif [ "${{ matrix.package_extension }}" == "deb" ] && [[ $dependency != lib*-perl ]]; then
                   continue
               fi
