@@ -236,8 +236,7 @@ sub manage_selection {
         if (!defined($result->{name}) || $result->{name} eq '') {
             $self->{output}->output_add(long_msg =>
                 "skipping WLC '$instance': cannot get a name. please set it.",
-                debug                            =>
-                    1);
+                debug => 1);
             next;
         }
 
@@ -245,8 +244,7 @@ sub manage_selection {
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg =>
                 "skipping '" . $result->{name} . "': no matching name filter.",
-                debug                            =>
-                    1);
+                debug => 1);
             next;
         }
 
@@ -254,8 +252,7 @@ sub manage_selection {
             $result->{address} !~ /$self->{option_results}->{filter_address}/) {
             $self->{output}->output_add(long_msg =>
                 "skipping '" . $result->{address} . "': no matching address filter.",
-                debug                            =>
-                    1);
+                debug => 1);
             next;
         }
 
@@ -263,8 +260,7 @@ sub manage_selection {
             $result->{group} !~ /$self->{option_results}->{filter_group}/) {
             $self->{output}->output_add(long_msg =>
                 "skipping '" . $result->{group} . "': no matching group filter.",
-                debug                            =>
-                    1);
+                debug => 1);
             next;
         }
 
