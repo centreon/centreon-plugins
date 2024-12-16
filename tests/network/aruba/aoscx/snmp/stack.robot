@@ -11,7 +11,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::aruba::aoscx::snmp::plugin
 
 *** Test Cases ***
 stack ${tc}
-    [Tags]    network    hp
+    [Tags]    network    aruba
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=stack
