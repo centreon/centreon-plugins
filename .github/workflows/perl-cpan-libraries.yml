@@ -576,8 +576,6 @@ jobs:
           GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
           curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
           rpm --import RPM-GPG-KEY-CES
-          # Add Centreon plugins repositories
-          # echo -e '[centreon-plugins-stable]\nname=centreon plugins stable x86_64\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n[centreon-plugins-stable-noarch]\nname=centreon plugins stable noarch\nbaseurl=https://packages.centreon.com/rpm-plugins/${{ matrix.distrib }}/stable/noarch\nenabled=1\ngpgcheck=1\ngpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n' >> /etc/yum.repos.d/centreon-plugins.repo
         shell: bash
       - if: ${{ matrix.package_extension == 'deb' }}
         name: Install zstd, perl and Centreon repositories
@@ -585,12 +583,6 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
           apt-get install -y zstd perl wget gpg apt-utils
-          # Add Centreon plugins repositories
-          # if [ "${{ matrix.distrib }}" == "jammy" ]; then
-          #   echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-          # else
-          #   echo "deb https://packages.centreon.com/apt-plugins-stable/ ${{ matrix.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-          # fi
           wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
           apt-get update
         shell: bash
@@ -604,7 +596,7 @@ jobs:
         name: Install packages
         run: |
           error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.${{ matrix.package_extension }}; do
+          for package in ./*.rpm; do
             echo "Installing package: $package"
             # List dependencies, and remove version and comparison operators
             dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
@@ -618,7 +610,7 @@ jobs:
                 dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
               fi
               # If the dependency has been built in the same workflow, install it
-              if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.${{ matrix.package_extension }}") ]]; then
+              if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
                 echo "Installing dependency: $dependency"
                 error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               fi
@@ -641,24 +633,24 @@ jobs:
         name: Install packages
         run: |
           error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.${{ matrix.package_extension }}; do
+          for package in ./*.deb; do
             # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
-            if [[ ${{ matrix.package_extension }} == 'deb' && ($package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64") ]]; then
+            if [[ $package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64" ]]; then
               continue
             fi
             echo "Installing package: $package"
             # List dependencies
-            dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g')
+            dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
             for dependency in $dependencies; do
               # Skip non-perl dependencies
               if [[ $dependency != lib*-perl ]]; then
                   continue
               fi
               # If the dependency has been built in the same workflow, install it
-              if [[ -n $(find . -maxdepth 1 -regex "\.\/lib.*-perl[-_][0-9].*all\.${{ matrix.package_extension }}" -o -regex "\.\/lib.*-perl[-_][0-9].*${{ matrix.arch }}\.${{ matrix.package_extension }}") ]]; then
-                echo "Installing dependency: $dependency"
-                error_output=$(apt-get install -y ./$dependency*.deb 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-              fi
+              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
+                echo "Installing dependency: $dependency_package"
+                error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              done
             done
             # Install package, then uninstall it with all his dependencies
             echo "Package installation..."
