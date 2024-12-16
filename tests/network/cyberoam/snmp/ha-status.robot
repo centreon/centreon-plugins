@@ -26,7 +26,7 @@ ha-status ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                       expected_result    --
-            ...      1     --verbose                                                                                                           OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
+            ...      1     ${EMPTY}                                                                                                          OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
             ...      2     --warning-status='\\\%{hastate} ne "down"'                                                                          WARNING: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
             ...      3     --critical-status='\\\%{hastatus} ne "down"'                                                                        CRITICAL: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
             ...      4     --no-ha-status='UNKNOWN'                                                                                            OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
