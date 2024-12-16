@@ -38,7 +38,7 @@ runs:
             throw new Error(`Stability ${{ inputs.stability }} should not deliver packages`);
           }
 
-          if ('${{ inputs.stability }}' === 'testing' && ! ['testing', 'hotfix'].includes('${{ inputs.release_type }}')) {
+          if ('${{ inputs.stability }}' === 'testing' && ! ['release', 'hotfix'].includes('${{ inputs.release_type }}')) {
             throw new Error('release_type input must be defined when stability is testing');
           }
 
@@ -107,43 +107,46 @@ runs:
           }
 
     - name: Download packages from testing
-      if: ${{ inputs.stability == 'testing' }}
+      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy' }}
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
-          const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
 
-          const { data: { items } } = await github.rest.search.issuesAndPullRequests({
-            q: `${commitSha} type:pr is:merged`
+          const pulls = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sort: 'updated',
+            direction: 'desc',
+            state: 'closed',
+            per_page: 100
           });
 
-          if (items.length === 0) {
-            core.warning(warningNoPromote);
+          core.startGroup(`Checking pull request linked to commit ${commitSha}`);
+          const pr = pulls.data.find(p => {
+            console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+            return p.merge_commit_sha === commitSha;
+          });
+          core.endGroup();
+          if (!pr) {
+            core.error(`No pull request found for merge commit ${commitSha}`);
             return;
           }
 
-          const prNumber = items[0].number;
-
-          const pr = await github.rest.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber
-          });
-
-          const prBaseRef = pr.data?.base?.ref || 'unknown';
+          const prHeadRef = pr?.head?.ref || 'unknown';
           let releaseType = '';
           switch (true) {
-            case /^release.+/.test(prBaseRef):
+            case /^release.+/.test(prHeadRef):
               releaseType = 'release';
               break;
-            case /^hotfix.+/.test(prBaseRef):
+            case /^hotfix.+/.test(prHeadRef):
               releaseType = 'hotfix';
               break;
             default:
-              core.warning(warningNoPromote);
+              core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
               return;
           }
+          console.log(`Release type: ${releaseType}`);
 
           let fromStabilitySubdirectory = 'testing';
           if (releaseType === 'hotfix' ) {
@@ -156,18 +159,18 @@ runs:
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
-              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
             await exec.exec(
-              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           }
 
     - name: Publish packages to ${{ inputs.stability }}
       if: |
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
-        (needs.get-version.outputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
+        (inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
