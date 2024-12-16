@@ -10,7 +10,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=database::informix::snmp::plugin
 
 *** Test Cases ***
 list-instances ${tc}
-    [Tags]    network    hp
+    [Tags]    database    informix
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-instances

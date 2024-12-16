@@ -10,7 +10,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=database::informix::snmp::plugin
 
 *** Test Cases ***
 logfile-usage ${tc}
-    [Tags]    network    hp
+    [Tags]    database    informix
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=logfile-usage
