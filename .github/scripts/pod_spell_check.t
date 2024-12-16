@@ -42,7 +42,7 @@ sub get_module_options {
 
     for my $pod_line (@cmd_result) {
         chomp $pod_line;
-        my @parsed_options = $pod_line =~ /((--[\w-]+)){1,}\s?/mg or next;
+        my @parsed_options = $pod_line =~ /(--[\w-]+){1,}\s?/mg or next;
         push @new_words, @parsed_options;
     }
 
