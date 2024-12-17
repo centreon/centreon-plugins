@@ -1546,7 +1546,7 @@ into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 =item B<--change-perfdata> B<--extend-perfdata>
 
 Change or extend perfdata.
-Syntax: --extend-perfdata=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Syntax: --extend-perfdata=searchlabel,newlabel,target[,[<new-unit-of-mesure>],[min],[max]]
 
 Common examples:
 
@@ -1567,11 +1567,11 @@ Change traffic values in percent: --change-perfdata='traffic_in,,percent()'
 =item B<--extend-perfdata-group>
 
 Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
-Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+Syntax: --extend-perfdata-group=regex,<names-of-new-metrics>,calculation[,[<new-unit-of-mesure>],[min],[max]]
 regex: regular expression
-namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+<names-of-new-metrics>: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
 calculation: how the values of the new metrics should be calculated
-newuom (optional): unit of measure for the new metrics
+<new-unit-of-mesure> (optional): unit of measure for the new metrics
 min (optional): lowest value the metrics can reach
 max (optional): highest value the metrics can reach
 
@@ -1640,7 +1640,7 @@ format).
 
 =item B<--output-file>
 
-Write output in file (can be combined with json, xml and openmetrics options).
+Write output in file (can be combined with JSON, XML and OpenMetrics options).
 Example: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
