@@ -23,14 +23,17 @@ centreon
 Centreon
 centreonvault
 CloudWatch
+CPUs
 Datacore
 datasource
 DC4
 dcdiag
 deduplication
 deltaps
+'dev'
 df
 dfsrevent
+--diskpath
 dns-resolve-time
 -EncodedCommand
 env
@@ -46,6 +49,7 @@ hashicorpvault
 HPE
 Huawei
 ifAlias
+includeAllDisks
 ifDesc
 ifName
 IMEI
@@ -56,6 +60,7 @@ in-mcast
 -InputFormat
 InterrupibleSleep
 in-ucast
+iops
 IpAddr
 ipv4
 ipv6
@@ -75,6 +80,7 @@ ldap
 Loggly
 machineaccount
 MBean
+Mbps
 McAfee
 memAvailReal
 memBuffer
@@ -98,6 +104,7 @@ OID
 OIDs
 okta
 oneaccess-sys-mib
+OpenMetrics
 out-bcast
 out-fc-wait
 out-mcast
@@ -124,6 +131,7 @@ scenarii
 sfp.temperature
 SkyHigh
 SNMP
+snmpd.conf
 SSDCapacity
 SSH
 statefile
@@ -136,6 +144,8 @@ Teldat
 timeframe
 TiMOS
 tmnxSasAlarmInputDescription
+total-oper-up
+total-oper-down
 TrendMicro
 tsdb-version
 UCD
