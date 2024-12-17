@@ -328,6 +328,7 @@ jobs:
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
+            "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
@@ -371,6 +372,8 @@ jobs:
             build_distribs: "bookworm"
           - name: "Device::Modbus::TCP::Client"
             build_distribs: "bookworm"
+          - name: "Digest::SHA1"
+            build_distribs: "jammy"
           - name: "Net::Amazon::Signature::V4"
             build_distribs: ["bullseye", "jammy"]
           - name: "Net::MQTT::Simple"
