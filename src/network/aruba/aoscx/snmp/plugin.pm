@@ -35,6 +35,7 @@ sub new {
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::aruba::aoscx::snmp::mode::memory',
+        'stack'           => 'network::aruba::aoscx::snmp::mode::stack',
         'vsf'             => 'network::aruba::aoscx::snmp::mode::vsf',
         'vsx'             => 'network::aruba::aoscx::snmp::mode::vsx'
     };

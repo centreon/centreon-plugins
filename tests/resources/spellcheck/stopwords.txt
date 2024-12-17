@@ -56,6 +56,7 @@ cpu-utilization-5s
 --critical-cpu-utilization
 --critical-na
 --critical-total-cpu-utilization
+CX
 Datacore
 datasource
 DC4
