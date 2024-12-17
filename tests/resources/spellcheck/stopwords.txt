@@ -30,7 +30,7 @@ DC4
 dcdiag
 deduplication
 deltaps
-'dev'
+dev
 df
 dfsrevent
 --diskpath
