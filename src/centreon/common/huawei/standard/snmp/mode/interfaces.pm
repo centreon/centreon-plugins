@@ -424,7 +424,7 @@ Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
-Define the interface filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all interfaces will be monitored.
+Check only the interfaces with the specified IDs (OID indexes, e.g.: 1,2,...). If empty, all interfaces will be monitored.
 To filter on interface names, see --name.
 
 =item B<--name>
@@ -449,7 +449,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--force-counters32>
 
-Force to use 32-bits counters (even with SNMP versions 2c and 3). To use when 64 bits counters are buggy.
+Force to use 32-bit counters (even with SNMP versions 2c and 3). To use when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 

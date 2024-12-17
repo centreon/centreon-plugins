@@ -1641,7 +1641,7 @@ format).
 =item B<--output-file>
 
 Write output in file (can be combined with json, xml and openmetrics options).
-E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
+Example: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 
