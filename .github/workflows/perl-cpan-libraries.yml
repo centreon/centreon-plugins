@@ -59,6 +59,32 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
+          # BASE CENTOS 7 REPOSITORIES
+          for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-*);do
+            if [[ "$file" == "/etc/yum.repos.d/CentOS-CR.repo" ]];then
+              echo "Enabling vault.centos.org in $file"
+              sed -i 's/baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+            else
+              echo "Disabling mirrorlist.centos.org in $file"
+              sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+              echo "Enabling vault.centos.org in $file"
+              sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+            fi
+          done
+          # SOFTWARE COLLECTION CENTOS 7 REPOSITORIES
+          for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-SCLo*);do
+            echo "Disabling mirrorlist.centos.org in $file"
+            sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+            if [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl.repo" ]];then
+              echo "Enabling vault.centos.org in scl."
+              sed -i 's/\#\ baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+            elif [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl-rh.repo" ]];then
+              echo "Enabling vault.centos.org in scl-rh"
+              sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+            else
+              echo "Not a SCL repo file"
+            fi
+          done
           yum install -y yum-utils epel-release git
           yum config-manager --set-enabled crb || true # alma 9
           yum config-manager --set-enabled powertools || true # alma 8
