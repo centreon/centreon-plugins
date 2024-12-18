@@ -132,7 +132,8 @@ jobs:
           # yum install -y rbenv
           # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
         shell: bash
-      - run: rbenv install 3.1
+      - run: ~/.rbenv/bin/rbenv install 3.1
+        shell: bash
       # - uses: ruby/setup-ruby@v1
       #   with:
       #     ruby-version: '3.1' # Not needed with a `.ruby-version` or `.tool-versions`
