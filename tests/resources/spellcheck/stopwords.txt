@@ -26,6 +26,7 @@ CloudWatch
 CPUs
 Datacore
 datasource
+dbspace
 DC4
 dcdiag
 deduplication
