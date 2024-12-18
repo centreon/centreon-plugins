@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@v3
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
