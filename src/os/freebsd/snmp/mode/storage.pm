@@ -124,8 +124,8 @@ Filter duplicate storages (in used size and total size).
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS|hrFSOther)$').
-'hrFSOther' is needed when the default file system is ZFS.
+Filter storage types with a regexp (default: C<'^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS|hrFSOther)$'>).
+C<hrFSOther> is needed when the default file system is ZFS.
 
 =back
 

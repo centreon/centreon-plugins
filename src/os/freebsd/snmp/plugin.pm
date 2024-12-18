@@ -60,7 +60,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Freebsd operating systems in SNMP.
+Check FreeBSD operating systems in SNMP.
 Some modes (C<cpu>, C<load>, C<swap>, C<memory>) need C<bsnmp-ucd>.
 
 =cut
