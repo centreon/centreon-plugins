@@ -124,12 +124,12 @@ jobs:
           # yum install -y rbenv
           # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
         shell: bash
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1' # Not needed with a `.ruby-version` or `.tool-versions`
-          bundler-cache: true
+      # - uses: ruby/setup-ruby@v1
+      #   with:
+      #     ruby-version: '3.1' # Not needed with a `.ruby-version` or `.tool-versions`
+      #     bundler-cache: true
 
-      - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
+      # - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
       # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
       #   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       #   with:
@@ -137,15 +137,15 @@ jobs:
       #     ref: fix-rpm-perl-dependency-name-unchanged
       #     path: fpm
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
-        run: |
-          yum install -y bsdtar
-          cd fpm
-          gem install bundler
-          bundle install
-          make install
-        shell: bash
+      # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      #   name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
+      #   run: |
+      #     yum install -y bsdtar
+      #     cd fpm
+      #     gem install bundler
+      #     bundle install
+      #     make install
+      #   shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
