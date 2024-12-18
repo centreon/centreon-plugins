@@ -90,9 +90,10 @@ jobs:
           yum config-manager --set-enabled powertools || true # alma 8
           yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
 
-          dnf module reset -y ruby
-          dnf module enable -y ruby:3.1
-          dnf install -y ruby ruby-devel
+          yum install -y ruby
+          # dnf module reset -y ruby
+          # dnf module enable -y ruby:3.1
+          # dnf install -y ruby ruby-devel
         shell: bash
 
       - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
