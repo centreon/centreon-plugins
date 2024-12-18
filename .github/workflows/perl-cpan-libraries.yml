@@ -90,8 +90,8 @@ jobs:
           yum config-manager --set-enabled powertools || true # alma 8
           yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
 
-          yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
-          curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
+          # yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
+          # curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
           # echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
           # echo 'eval "$(rbenv init -)"' >> ~/.bashrc
           # source ~/.bashrc
@@ -134,9 +134,16 @@ jobs:
           # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
         shell: bash
       - run: |
-          ~/.rbenv/bin/rbenv install 3.1.6 || true
-          cat /tmp/ruby-build*
-          gem install fpm
+          yum install -y ruby
+          gem install dotenv -v 2.8.1 -N
+          gem install clamp -v 1.0.1 -N
+          gem install mustache -v 0.99.8 -N
+          gem install cabin insist stud arr-pm backports rexml -N
+          gem install pleaserun --ignore-dependencies -N
+          gem install fpm --ignore-dependencies -N
+          # ~/.rbenv/bin/rbenv install 3.1.6 || true
+          # cat /tmp/ruby-build*
+          # gem install fpm
         shell: bash
       # - uses: ruby/setup-ruby@v1
       #   with:
