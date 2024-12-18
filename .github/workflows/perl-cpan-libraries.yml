@@ -585,7 +585,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
-          apt-get install -y zstd perl wget gpg apt-utils
+          apt-get install -y zstd perl wget gpg apt-utils procps
           wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
           apt-get update
         shell: bash
@@ -642,6 +642,8 @@ jobs:
               continue
             fi
             echo "Installing package: $package"
+            echo $(df -h)
+            echo $(free -h)
             # List dependencies
             dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
             for dependency in $dependencies; do
@@ -655,13 +657,23 @@ jobs:
                 error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
             done
+            echo $(df -h)
+            echo $(free -h)
             # Install package, then uninstall it with all his dependencies
             echo "Package installation..."
             error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
+            echo $(df -h)
+            echo $(free -h)
             echo "Package uninstallation..."
             error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
             echo "Package uninstallation done."
+            echo $(df -h)
+            echo $(free -h)
+            apt-get clean
+            apt-get update
+            echo $(df -h)
+            echo $(free -h)
           done
           # If the file error_log exists and is not empty, the workflow is in error
           if [[ -s $error_log ]]; then
