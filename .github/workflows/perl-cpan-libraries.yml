@@ -134,7 +134,7 @@ jobs:
           # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
         shell: bash
       - run: |
-          ~/.rbenv/bin/rbenv install 3.1.6
+          ~/.rbenv/bin/rbenv install 3.1.6 || true
           cat /tmp/ruby-build*
           gem install fpm
         shell: bash
