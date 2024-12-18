@@ -130,10 +130,6 @@ jobs:
             done
           fi
 
-          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
-            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
-          fi
-
           if [ -z "${{ matrix.rpm_provides }}" ]; then
             PACKAGE_PROVIDES=""
           else
