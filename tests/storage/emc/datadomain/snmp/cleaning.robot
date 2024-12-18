@@ -20,15 +20,18 @@ cleaning ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=storage/emc/datadomain/snmp/slim-datadomain
-    ...    --snmp-timeout=1
+    ...    --snmp-community=${SNMPCOMMUNITY}
+    ...    --snmp-timeout=5
     ...    ${extra_options}
- 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+  
+    # first run to build cache
+    Run    ${command}
+    # second run to control the output
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    
 
-    Examples:        tc    extra_options                                                                   expected_result    --
-            ...      1     --verbose                                                                       OK: cleaning last execution: never | 'filesystems.cleaning.execution.last.days'=-1d;;;0;
-            ...      2     --unit='h'                                                                      OK: cleaning last execution: never | 'filesystems.cleaning.execution.last.hours'=-1h;;;0;
-            ...      3     --unit='s'                                                                      OK: cleaning last execution: never | 'filesystems.cleaning.execution.last.seconds'=-1s;;;0;
-            ...      4     --unit='w'                                                                      OK: cleaning last execution: never | 'filesystems.cleaning.execution.last.weeks'=-1w;;;0;
-            ...      5     --warning-last-cleaning-execution='' --critical-last-cleaning-execution=''      OK: cleaning last execution: never | 'filesystems.cleaning.execution.last.days'=-1d;;;0;
+    Examples:        tc    extra_options                                                                      SNMPCOMMUNITY                                                                       expected_result    --
+            ...      1     ${EMPTY}                                                                           storage/emc/datadomain/snmp/slim-datadomain                                         OK: cleaning last execution: \\\\d+M \\\\d+w \\\\d+h \\\\d+m \\\\d+s \\\\| 'filesystems.cleaning.execution.last.days'=\\\\d+d;;;0;$
+            ...      2     --unit='w'                                                                         storage/emc/datadomain/snmp/slim-datadomain                                         OK: cleaning last execution: 3M 3w 17h 9m 7s | 'filesystems.cleaning.execution.last.weeks'=16w;;;0;
+            ...      3     --warning-last-cleaning-execution='115' --critical-last-cleaning-execution='0'     storage/emc/datadomain/snmp/slim-datadomain                                         CRITICAL: cleaning last execution: 3M 3w 16h 52m 15s | 'filesystems.cleaning.execution.last.days'=113d;0:115;0:0;0;
+            ...      4     ${EMPTY}                                                                           storage/emc/datadomain/snmp/slim-datadomain-cleaning-running                        OK: cleaning last execution: running (phase 5 of 6 : copy) | 'filesystems.cleaning.execution.last.days'=0d;;;0;
