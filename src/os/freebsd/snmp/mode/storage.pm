@@ -56,11 +56,11 @@ Warning threshold.
 =item B<--critical-access>
 
 Critical threshold.
-Check if storage is readOnly: --critical-access=readOnly
+Check if storage is C<readOnly>: C<--critical-access=readOnly>
 
 =item B<--add-access>
 
-Check storage access (readOnly, readWrite).
+Check storage access (C<readOnly>, C<readWrite>).
 
 =item B<--units>
 
@@ -73,23 +73,23 @@ Thresholds are on free space left.
 =item B<--storage>
 
 Define the storage filter on IDs (OID indexes, e.g.: 1,2,...). If empty, all storage systems will be monitored.
-To filter on storage names, see --name.
+To filter on storage names, see C<--name>.
 
 =item B<--name>
 
-Allows to use storage name with option --storage instead of storage OID index.
+Allows to use storage name with option C<--storage> instead of storage OID index.
 
 =item B<--regexp>
 
-Allows to use regexp to filter storage (with option --name).
+Allows to use regexp to filter storage (with option C<--name>).
 
 =item B<--regexp-insensitive>
 
-Allows to use regexp non case-sensitive (with --regexp).
+Allows to use regexp non case-sensitive (with C<--regexp>).
 
 =item B<--path-best-match>
 
-Allows to select best path mount point (with --name).
+Allows to select best path mount point (with C<--name>).
 
 =item B<--reload-cache-time>
 
@@ -97,17 +97,17 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
+Choose OID used to filter storage (default: C<hrStorageDescr>) (values: C<hrStorageDescr>, C<hrFSMountPoint>).
 
 =item B<--oid-display>
 
-Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
+Choose OID used to display storage (default: C<hrStorageDescr>) (values: C<hrStorageDescr>, C<hrFSMountPoint>).
 
 =item B<--display-transform-src> B<--display-transform-dst>
 
 Modify the storage name displayed by using a regular expression.
 
-Example: adding --display-transform-src='dev' --display-transform-dst='run' will replace all occurrences of 'dev' with 'run'
+Example: adding C<--display-transform-src='dev' --display-transform-dst='run'> will replace all occurrences of C<dev> with C<run>.
 
 =item B<--show-cache>
 

@@ -31,7 +31,6 @@ AWSCLI
 Backbox
 base64
 blocked-by-uf
-bsnmp-ucd
 --cacert-file
 cardtemperature
 centreon
@@ -125,9 +124,6 @@ kccevent
 keepass
 Keysight
 Kubernetes
-hrFSMountPoint
-hrFSOther
-hrStorageDescr
 ldap
 --legacy-api-beta
 license-instances-usage-prct
@@ -205,8 +201,6 @@ proto
 psu
 QoS
 queue-messages-inflighted
-readOnly
-readWrite
 --redis-attribute
 --redis-db
 --redis-server

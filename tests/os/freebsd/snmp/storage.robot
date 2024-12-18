@@ -20,6 +20,7 @@ storage ${tc}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/freebsd/snmp/freebsd
+    ...    --snmp-version=2c
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
