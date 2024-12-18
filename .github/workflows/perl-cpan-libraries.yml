@@ -55,8 +55,7 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@v3.1.0
+      - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
@@ -70,12 +69,13 @@ jobs:
           dnf install -y ruby ruby-devel
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          repository: kduret/fpm
-          ref: fix-rpm-perl-dependency-name-unchanged
-          path: fpm
+      - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
+      # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      #   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      #   with:
+      #     repository: kduret/fpm
+      #     ref: fix-rpm-perl-dependency-name-unchanged
+      #     path: fpm
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
