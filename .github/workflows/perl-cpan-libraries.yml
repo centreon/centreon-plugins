@@ -67,7 +67,7 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm install 16
-      - uses: actions/upload-artifact@v3.0.0
+      - uses: actions/cache@v3
         with:
           name: test
           path: ./src
