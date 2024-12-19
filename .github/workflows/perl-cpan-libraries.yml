@@ -92,6 +92,7 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - spec_file: ""
+          - no-auto-depends: false
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -112,6 +113,10 @@ jobs:
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
             no-auto-depends: true
+          - name: "Mojo::IOLoop::Signal"
+            rpm_dependencies: "perl-Mojolicious"
+            rpm_provides: "perl(Mojo::IOLoop::Signal)"
+            no-auto-depends: true
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -131,11 +136,6 @@ jobs:
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
-          - name: "Mojo::IOLoop::Signal"
-            rpm_dependencies: "perl-Mojolicious"
-            rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: true
-
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -372,6 +372,8 @@ jobs:
             build_distribs: "bookworm"
           - name: "Device::Modbus::TCP::Client"
             build_distribs: "bookworm"
+          - name: "Digest::SHA1"
+            build_distribs: "jammy"
           - name: "Net::Amazon::Signature::V4"
             build_distribs: ["bullseye", "jammy"]
           - name: "Net::MQTT::Simple"
@@ -426,6 +428,21 @@ jobs:
           fi
 
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Check if package already exists
+        run: |
+          package_name=$(echo "lib${{ matrix.name }}-perl" | sed 's/::/-/g' | tr '[:upper:]' '[:lower:]')
+          package_info=$(apt-cache policy $package_name)
+          if [[ -n $package_info ]]; then
+            echo "Package already exists in the repository."
+            candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
+            if [[ "$candidate_version" == "${{ steps.package-version.outputs.package_version }}"* ]]; then
+              echo "Package already exists in the repository with the same version."
+              exit 0
+            fi
+          fi
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
@@ -524,8 +541,172 @@ jobs:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
 
-  deliver-packages:
+  test-packages:
     needs: [get-environment, sign-rpm, download-and-cache-deb]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: almalinux:8
+            distrib: el8
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: rpm
+            image: almalinux:9
+            distrib: el9
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:bullseye
+            distrib: bullseye
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:bookworm
+            distrib: bookworm
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: ubuntu:jammy
+            distrib: jammy
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: arm64v8/debian:bullseye
+            distrib: bullseye
+            arch: arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+
+    runs-on: ${{ matrix.runner_name }}
+    container:
+      image: ${{ matrix.image }}
+
+    name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
+    steps:
+      - if: ${{ matrix.package_extension == 'rpm' }}
+        name: Install zstd, perl and Centreon repositories
+        run: |
+          dnf install -y zstd perl epel-release 'dnf-command(config-manager)'
+          dnf config-manager --set-enabled powertools || true # alma 8
+          dnf config-manager --set-enabled crb || true # alma 9
+          # Import Centreon GPG key
+          GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
+          curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
+          rpm --import RPM-GPG-KEY-CES
+        shell: bash
+      - if: ${{ matrix.package_extension == 'deb' }}
+        name: Install zstd, perl and Centreon repositories
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y zstd perl wget gpg apt-utils procps
+          wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+          apt-get update
+        shell: bash
+      - name: Restore packages from cache
+        uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        with:
+          path: ./*.${{ matrix.package_extension }}
+          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          fail-on-cache-miss: true
+      - if: ${{ matrix.package_extension == 'rpm' }}
+        name: Install packages
+        run: |
+          error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
+          for package in ./*.rpm; do
+            echo "Installing package: $package"
+            # List dependencies, and remove version and comparison operators
+            dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
+            for dependency in $dependencies; do
+              # Skip non-perl dependencies
+              if [[ $dependency != perl* ]]; then
+                continue
+              else
+                echo "Check dependency: $dependency"
+                # Update the dependency name to match the package name
+                dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
+              fi
+              # If the dependency has been built in the same workflow, install it
+              if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
+                echo "Installing dependency: $dependency"
+                error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              fi
+            done
+            # Install package, then uninstall it with all his dependencies
+            echo "Package installation..."
+            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            echo "Package installation done."
+            echo "Package uninstallation..."
+            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            echo "Package uninstallation done."
+          done
+          # If the file error_log exists and is not empty, the workflow is in error
+          if [[ -s $error_log ]]; then
+              cat $error_log
+              exit 1
+          fi
+        shell: bash
+      - if: ${{ matrix.package_extension == 'deb' }}
+        name: Install packages
+        run: |
+          error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
+          for package in ./*.deb; do
+            # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
+            if [[ $package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64" ]]; then
+              continue
+            fi
+            echo "Installing package: $package"
+            echo $(df -h)
+            echo $(free -h)
+            # List dependencies
+            dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
+            for dependency in $dependencies; do
+              # Skip non-perl dependencies
+              if [[ $dependency != lib*-perl ]]; then
+                  continue
+              fi
+              # If the dependency has been built in the same workflow, install it
+              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
+                echo "Installing dependency: $dependency_package"
+                echo $(dpkg-deb --info $package)
+                error_output=$(apt-get -o Debug::pkgProblemResolver=true -o Debug::dpkg=true -o Debug::pkgDepCache::Marker=true install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              done
+            done
+            echo $(df -h)
+            echo $(free -h)
+            # Install package, then uninstall it with all his dependencies
+            echo "Package installation..."
+            echo $(dpkg-deb --info $package)
+            error_output=$(apt-get -o Debug::pkgProblemResolver=true -o Debug::dpkg=true -o Debug::pkgDepCache::Marker=true install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            echo "Package installation done."
+            echo $(df -h)
+            echo $(free -h)
+            echo "Package uninstallation..."
+            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            echo "Package uninstallation done."
+            echo $(df -h)
+            echo $(free -h)
+            apt-get clean
+            apt-get update
+            echo $(df -h)
+            echo $(free -h)
+          done
+          # If the file error_log exists and is not empty, the workflow is in error
+          if [[ -s $error_log ]]; then
+              cat $error_log
+              exit 1
+          fi
+        shell: bash
+      - name: Upload error log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
+          path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
+
+  deliver-packages:
+    needs: [get-environment, sign-rpm, download-and-cache-deb, test-packages]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
