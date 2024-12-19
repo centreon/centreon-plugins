@@ -57,6 +57,11 @@ jobs:
 
     steps:
       - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test
+          path: ./src
+          retention-days: 1
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
