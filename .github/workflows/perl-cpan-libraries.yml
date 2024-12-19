@@ -175,6 +175,7 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
+          set -x
           if [ -z "${{ matrix.version }}" ]; then
             PACKAGE_VERSION=""
           else
@@ -200,8 +201,7 @@ jobs:
           cpanm Module::Build::Tiny
           cpanm Module::Install
           cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
-
-          export SYBASE="/usr"
+          yum install -y perl-local-lib
 
           fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
