@@ -69,9 +69,8 @@ jobs:
           nvm install 16
       - uses: actions/cache@v3
         with:
-          name: test
+          key: kdu-${{ github.sha }}-${{ github.run_id }}
           path: ./src
-          retention-days: 1
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
