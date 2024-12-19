@@ -22,248 +22,248 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
 
-  package-rpm:
-    needs: [get-environment]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable'
+  # package-rpm:
+  #   needs: [get-environment]
+  #   if: |
+  #     needs.get-environment.outputs.skip_workflow == 'false' &&
+  #     needs.get-environment.outputs.stability != 'stable'
 
-    runs-on: [self-hosted, common]
-    strategy:
-      fail-fast: false
-      matrix:
-        distrib: [el7]
-        name:
-          [
-            "Crypt::OpenSSL::AES",
-          ]
-        include:
-          - build_distribs: "el7"
-          - rpm_dependencies: ""
-          - rpm_provides: ""
-          # - version: "0.21"
-          - version: "0.05"
-          - spec_file: ""
-          - distrib: el7
-            package_extension: rpm
-            image: packaging-plugins-centos7
+  #   runs-on: [self-hosted, common]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       distrib: [el7]
+  #       name:
+  #         [
+  #           "Crypt::OpenSSL::AES",
+  #         ]
+  #       include:
+  #         - build_distribs: "el7"
+  #         - rpm_dependencies: ""
+  #         - rpm_provides: ""
+  #         # - version: "0.21"
+  #         - version: "0.05"
+  #         - spec_file: ""
+  #         - distrib: el7
+  #           package_extension: rpm
+  #           image: packaging-plugins-centos7
 
-    name: package ${{ matrix.distrib }} ${{ matrix.name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: 'false'
-      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+  #   name: package ${{ matrix.distrib }} ${{ matrix.name }}
+  #   container:
+  #     image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+  #     credentials:
+  #       username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+  #       password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+  #   env:
+  #     FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: 'false'
+  #     ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
+  #     ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
-    steps:
-      - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
-      - run: |
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
-          # source ~/.bashrc
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install 16
-      - uses: actions/cache@v3
-        with:
-          key: kdu-${{ github.sha }}-${{ github.run_id }}
-          path: ./src
+  #   steps:
+  #     - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
+  #     - run: |
+  #         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+  #         # source ~/.bashrc
+  #         export NVM_DIR="$HOME/.nvm"
+  #         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  #         nvm install 16
+  #     - uses: actions/cache@v3
+  #       with:
+  #         key: kdu-${{ github.sha }}-${{ github.run_id }}
+  #         path: ./src
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        run: |
-          # BASE CENTOS 7 REPOSITORIES
-          for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-*);do
-            if [[ "$file" == "/etc/yum.repos.d/CentOS-CR.repo" ]];then
-              echo "Enabling vault.centos.org in $file"
-              sed -i 's/baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-            else
-              echo "Disabling mirrorlist.centos.org in $file"
-              sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
-              echo "Enabling vault.centos.org in $file"
-              sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-            fi
-          done
-          # SOFTWARE COLLECTION CENTOS 7 REPOSITORIES
-          for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-SCLo*);do
-            echo "Disabling mirrorlist.centos.org in $file"
-            sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
-            if [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl.repo" ]];then
-              echo "Enabling vault.centos.org in scl."
-              sed -i 's/\#\ baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-            elif [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl-rh.repo" ]];then
-              echo "Enabling vault.centos.org in scl-rh"
-              sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-            else
-              echo "Not a SCL repo file"
-            fi
-          done
-          yum install -y yum-utils epel-release git
-          yum config-manager --set-enabled crb || true # alma 9
-          yum config-manager --set-enabled powertools || true # alma 8
-          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
+  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+  #       run: |
+  #         # BASE CENTOS 7 REPOSITORIES
+  #         for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-*);do
+  #           if [[ "$file" == "/etc/yum.repos.d/CentOS-CR.repo" ]];then
+  #             echo "Enabling vault.centos.org in $file"
+  #             sed -i 's/baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #           else
+  #             echo "Disabling mirrorlist.centos.org in $file"
+  #             sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+  #             echo "Enabling vault.centos.org in $file"
+  #             sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #           fi
+  #         done
+  #         # SOFTWARE COLLECTION CENTOS 7 REPOSITORIES
+  #         for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-SCLo*);do
+  #           echo "Disabling mirrorlist.centos.org in $file"
+  #           sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+  #           if [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl.repo" ]];then
+  #             echo "Enabling vault.centos.org in scl."
+  #             sed -i 's/\#\ baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #           elif [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl-rh.repo" ]];then
+  #             echo "Enabling vault.centos.org in scl-rh"
+  #             sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #           else
+  #             echo "Not a SCL repo file"
+  #           fi
+  #         done
+  #         yum install -y yum-utils epel-release git
+  #         yum config-manager --set-enabled crb || true # alma 9
+  #         yum config-manager --set-enabled powertools || true # alma 8
+  #         yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
 
-          # yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
-          # curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
-          # echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-          # echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-          # source ~/.bashrc
+  #         # yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
+  #         # curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
+  #         # echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+  #         # echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+  #         # source ~/.bashrc
 
-          # yum install -y ruby
-          # gem install fpm
+  #         # yum install -y ruby
+  #         # gem install fpm
 
-          # yum module reset -y ruby
-          # yum module enable -y ruby:3.1
-          # yum install -y ruby ruby-devel
-          # yum install -y centos-release-scl-rh
-          # # BASE CENTOS 7 REPOSITORIES
-          # for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-*);do
-          #   if [[ "$file" == "/etc/yum.repos.d/CentOS-CR.repo" ]];then
-          #     echo "Enabling vault.centos.org in $file"
-          #     sed -i 's/baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-          #   else
-          #     echo "Disabling mirrorlist.centos.org in $file"
-          #     sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
-          #     echo "Enabling vault.centos.org in $file"
-          #     sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-          #   fi
-          # done
-          # # SOFTWARE COLLECTION CENTOS 7 REPOSITORIES
-          # for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-SCLo*);do
-          #   echo "Disabling mirrorlist.centos.org in $file"
-          #   sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
-          #   if [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl.repo" ]];then
-          #     echo "Enabling vault.centos.org in scl."
-          #     sed -i 's/\#\ baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-          #   elif [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl-rh.repo" ]];then
-          #     echo "Enabling vault.centos.org in scl-rh"
-          #     sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
-          #   else
-          #     echo "Not a SCL repo file"
-          #   fi
-          # done
-          # yum install -y devtoolset-7-gcc-c++
-          # yum install -y rbenv
-          # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
-        shell: bash
-      - run: |
-          yum install -y ruby
-          gem install dotenv -v 2.8.1 -N
-          gem install rexml -v 3.2.4 -N
-          gem install backports -v 3.21.0
-          gem install fpm -v 1.15.0
+  #         # yum module reset -y ruby
+  #         # yum module enable -y ruby:3.1
+  #         # yum install -y ruby ruby-devel
+  #         # yum install -y centos-release-scl-rh
+  #         # # BASE CENTOS 7 REPOSITORIES
+  #         # for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-*);do
+  #         #   if [[ "$file" == "/etc/yum.repos.d/CentOS-CR.repo" ]];then
+  #         #     echo "Enabling vault.centos.org in $file"
+  #         #     sed -i 's/baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #         #   else
+  #         #     echo "Disabling mirrorlist.centos.org in $file"
+  #         #     sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+  #         #     echo "Enabling vault.centos.org in $file"
+  #         #     sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #         #   fi
+  #         # done
+  #         # # SOFTWARE COLLECTION CENTOS 7 REPOSITORIES
+  #         # for file in $(grep -l mirrorlist /etc/yum.repos.d/CentOS-SCLo*);do
+  #         #   echo "Disabling mirrorlist.centos.org in $file"
+  #         #   sed -i 's/mirrorlist\=/\#mirrorlist\=/g' $file
+  #         #   if [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl.repo" ]];then
+  #         #     echo "Enabling vault.centos.org in scl."
+  #         #     sed -i 's/\#\ baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #         #   elif [[ "$file" == "/etc/yum.repos.d/CentOS-SCLo-scl-rh.repo" ]];then
+  #         #     echo "Enabling vault.centos.org in scl-rh"
+  #         #     sed -i 's/\#baseurl\=http\:\/\/mirror\.centos\.org/baseurl\=http\:\/\/vault\.centos\.org/g' $file
+  #         #   else
+  #         #     echo "Not a SCL repo file"
+  #         #   fi
+  #         # done
+  #         # yum install -y devtoolset-7-gcc-c++
+  #         # yum install -y rbenv
+  #         # CC=/opt/rh/devtoolset-7/root/usr/bin/gcc rbenv install 3.1.4 -v
+  #       shell: bash
+  #     - run: |
+  #         yum install -y ruby
+  #         gem install dotenv -v 2.8.1 -N
+  #         gem install rexml -v 3.2.4 -N
+  #         gem install backports -v 3.21.0
+  #         gem install fpm -v 1.15.0
 
 
-          # gem install dotenv -v 2.8.1 -N
-          # gem install rexml -v 3.2.4 -N
-          # gem install backports -v 3.21.0 -N
-          # gem install fpm -N
-          # ~/.rbenv/bin/rbenv install 3.1.6 || true
-          # cat /tmp/ruby-build*
-          # gem install fpm
-        shell: bash
-      # - uses: ruby/setup-ruby@v1
-      #   with:
-      #     ruby-version: '3.1' # Not needed with a `.ruby-version` or `.tool-versions`
-      #     bundler-cache: true
+  #         # gem install dotenv -v 2.8.1 -N
+  #         # gem install rexml -v 3.2.4 -N
+  #         # gem install backports -v 3.21.0 -N
+  #         # gem install fpm -N
+  #         # ~/.rbenv/bin/rbenv install 3.1.6 || true
+  #         # cat /tmp/ruby-build*
+  #         # gem install fpm
+  #       shell: bash
+  #     # - uses: ruby/setup-ruby@v1
+  #     #   with:
+  #     #     ruby-version: '3.1' # Not needed with a `.ruby-version` or `.tool-versions`
+  #     #     bundler-cache: true
 
-      # - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
-      # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-      #   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      #   with:
-      #     repository: kduret/fpm
-      #     ref: fix-rpm-perl-dependency-name-unchanged
-      #     path: fpm
+  #     # - run: git clone https://github.com/kduret/fpm.git --branch fix-rpm-perl-dependency-name-unchanged --single-branch fpm
+  #     # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+  #     #   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #     #   with:
+  #     #     repository: kduret/fpm
+  #     #     ref: fix-rpm-perl-dependency-name-unchanged
+  #     #     path: fpm
 
-      # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-      #   name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
-      #   run: |
-      #     yum install -y bsdtar
-      #     cd fpm
-      #     gem install bundler
-      #     bundle install
-      #     make install
-      #   shell: bash
+  #     # - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+  #     #   name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
+  #     #   run: |
+  #     #     yum install -y bsdtar
+  #     #     cd fpm
+  #     #     gem install bundler
+  #     #     bundle install
+  #     #     make install
+  #     #   shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
-        run: |
-          set -x
-          if [ -z "${{ matrix.version }}" ]; then
-            PACKAGE_VERSION=""
-          else
-            PACKAGE_VERSION=" -v ${{ matrix.version }}"
-          fi
+  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
+  #       run: |
+  #         set -x
+  #         if [ -z "${{ matrix.version }}" ]; then
+  #           PACKAGE_VERSION=""
+  #         else
+  #           PACKAGE_VERSION=" -v ${{ matrix.version }}"
+  #         fi
 
-          if [ -z "${{ matrix.rpm_dependencies }}" ]; then
-            PACKAGE_DEPENDENCIES=""
-          else
-            for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
-              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
-            done
-          fi
+  #         if [ -z "${{ matrix.rpm_dependencies }}" ]; then
+  #           PACKAGE_DEPENDENCIES=""
+  #         else
+  #           for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
+  #             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
+  #           done
+  #         fi
 
-          if [ -z "${{ matrix.rpm_provides }}" ]; then
-            PACKAGE_PROVIDES=""
-          else
-            for PACKAGE_PROVIDE in `echo "${{ matrix.rpm_provides }}"`; do
-              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
-            done
-          fi
+  #         if [ -z "${{ matrix.rpm_provides }}" ]; then
+  #           PACKAGE_PROVIDES=""
+  #         else
+  #           for PACKAGE_PROVIDE in `echo "${{ matrix.rpm_provides }}"`; do
+  #             PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
+  #           done
+  #         fi
 
-          cpanm Module::Build::Tiny
-          cpanm Module::Install
-          cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
-          yum install -y perl-local-lib openssl-devel
+  #         cpanm Module::Build::Tiny
+  #         cpanm Module::Install
+  #         cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
+  #         yum install -y perl-local-lib openssl-devel
 
-          PERL_CPANM_OPT="--notest --skip-installed --skip-satisfied" fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
-        shell: bash
+  #         PERL_CPANM_OPT="--notest --skip-installed --skip-satisfied" fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
+  #       shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Replace '::' with - in the feature path
-        id: package-name
-        run: |
-          name="${{ matrix.name }}"
-          name_with_dash="${name//::/-}"
-          echo "Modified Name: $name_with_dash"
-          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
-        shell: bash
+  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+  #       name: Replace '::' with - in the feature path
+  #       id: package-name
+  #       run: |
+  #         name="${{ matrix.name }}"
+  #         name_with_dash="${name//::/-}"
+  #         echo "Modified Name: $name_with_dash"
+  #         echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+  #       shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@v3 # v4.4.0
-        with:
-          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
-          path: ./*.${{ matrix.package_extension }}
-          retention-days: 1
+  #     - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+  #       uses: actions/upload-artifact@v3 # v4.4.0
+  #       with:
+  #         name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
+  #         path: ./*.${{ matrix.package_extension }}
+  #         retention-days: 1
 
-  merge-package-rpm-artifacts:
-    needs: [get-environment, package-rpm]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        distrib: [el7]
+  # merge-package-rpm-artifacts:
+  #   needs: [get-environment, package-rpm]
+  #   if: |
+  #     needs.get-environment.outputs.skip_workflow == 'false' &&
+  #     needs.get-environment.outputs.stability != 'stable'
+  #   runs-on: ubuntu-24.04
+  #   strategy:
+  #     matrix:
+  #       distrib: [el7]
 
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-        with:
-          name: packages-rpm-${{ matrix.distrib }}
-          pattern: packages-rpm-${{ matrix.distrib }}-*
-          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
-          retention-days: 1
+  #   steps:
+  #     - name: Merge Artifacts
+  #       uses: actions/upload-artifact/merge@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+  #       with:
+  #         name: packages-rpm-${{ matrix.distrib }}
+  #         pattern: packages-rpm-${{ matrix.distrib }}-*
+  #         delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+  #         retention-days: 1
 
-      - name: Delete merged artifacts
-        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
-        with:
-          name: packages-rpm-${{ matrix.distrib }}-*
-          failOnError: false
+  #     - name: Delete merged artifacts
+  #       uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+  #       with:
+  #         name: packages-rpm-${{ matrix.distrib }}-*
+  #         failOnError: false
 
   sign-rpm:
-    needs: [get-environment, merge-package-rpm-artifacts]
+    needs: [get-environment]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
@@ -286,10 +286,10 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: packages-rpm-${{ matrix.distrib }}
-          path: ./
+      # - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      #   with:
+      #     name: packages-rpm-${{ matrix.distrib }}
+      #     path: ./
 
       - run: echo "HOME=/root" >> $GITHUB_ENV
         shell: bash
