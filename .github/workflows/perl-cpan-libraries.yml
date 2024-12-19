@@ -430,6 +430,21 @@ jobs:
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
         shell: bash
 
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Check if package already exists
+        run: |
+          package_name=$(echo "lib${{ matrix.name }}-perl" | sed 's/::/-/g' | tr '[:upper:]' '[:lower:]')
+          package_info=$(apt-cache policy $package_name)
+          if [[ -n $package_info ]]; then
+            echo "Package already exists in the repository."
+            candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
+            if [[ "$candidate_version" == "${{ steps.package-version.outputs.package_version }}"* ]]; then
+              echo "Package already exists in the repository with the same version."
+              exit 0
+            fi
+          fi
+        shell: bash
+
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
         run: |
           apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
@@ -654,14 +669,16 @@ jobs:
               # If the dependency has been built in the same workflow, install it
               for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
                 echo "Installing dependency: $dependency_package"
-                error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+                echo $(dpkg-deb --info $package)
+                error_output=$(apt-get -o Debug::pkgProblemResolver=true -o Debug::dpkg=true -o Debug::pkgDepCache::Marker=true install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
             done
             echo $(df -h)
             echo $(free -h)
             # Install package, then uninstall it with all his dependencies
             echo "Package installation..."
-            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            echo $(dpkg-deb --info $package)
+            error_output=$(apt-get -o Debug::pkgProblemResolver=true -o Debug::dpkg=true -o Debug::pkgDepCache::Marker=true install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
             echo $(df -h)
             echo $(free -h)
