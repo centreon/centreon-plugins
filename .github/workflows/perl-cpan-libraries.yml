@@ -257,7 +257,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [el8, el9]
+        distrib: [el7]
     name: sign rpm ${{ matrix.distrib }}
     container:
       image: docker.centreon.com/centreon-private/rpm-signing:latest
