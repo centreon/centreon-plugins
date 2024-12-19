@@ -55,6 +55,7 @@ jobs:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
     env:
+      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
     steps:
