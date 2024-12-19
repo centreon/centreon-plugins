@@ -217,7 +217,7 @@ jobs:
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        uses: actions/upload-artifact@v3 # v4.4.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [el8, el9]
+        distrib: [el7]
 
     steps:
       - name: Merge Artifacts
