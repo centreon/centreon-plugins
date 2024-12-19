@@ -54,6 +54,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
     steps:
       - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
