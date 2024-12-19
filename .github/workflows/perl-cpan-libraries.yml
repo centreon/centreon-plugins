@@ -141,7 +141,7 @@ jobs:
           gem install backports -v 3.21.0
           gem install fpm -v 1.15.0
 
-          # cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
+          cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
 
 
           # gem install dotenv -v 2.8.1 -N
