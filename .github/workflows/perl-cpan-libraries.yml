@@ -201,7 +201,7 @@ jobs:
           cpanm Module::Build::Tiny
           cpanm Module::Install
           cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
-          yum install -y perl-local-lib
+          yum install -y perl-local-lib openssl-devel
 
           PERL_CPANM_OPT="--notest --skip-installed --skip-satisfied" fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
