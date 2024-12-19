@@ -135,12 +135,12 @@ jobs:
         shell: bash
       - run: |
           yum install -y ruby
-          gem install dotenv -v 2.8.1 -N
-          gem install clamp -v 1.0.1 -N
-          gem install mustache -v 0.99.8 -N
-          gem install cabin insist stud arr-pm backports rexml -N
-          gem install pleaserun --ignore-dependencies -N
-          gem install fpm --ignore-dependencies -N
+          gem install backports -v 3.21.0
+          gem install fpm -v 1.15.0
+          # gem install dotenv -v 2.8.1 -N
+          # gem install rexml -v 3.2.4 -N
+          # gem install backports -v 3.21.0 -N
+          # gem install fpm -N
           # ~/.rbenv/bin/rbenv install 3.1.6 || true
           # cat /tmp/ruby-build*
           # gem install fpm
