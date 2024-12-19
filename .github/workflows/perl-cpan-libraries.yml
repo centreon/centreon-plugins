@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - run: git clone https://github.com/centreon/centreon-plugins.git --branch generate-perl-crypt-openssl-aes --single-branch
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3.1.3
         with:
           name: test
           path: ./src
