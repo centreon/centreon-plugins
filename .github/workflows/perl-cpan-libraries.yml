@@ -41,7 +41,8 @@ jobs:
           - build_distribs: "el7"
           - rpm_dependencies: ""
           - rpm_provides: ""
-          - version: "0.21"
+          # - version: "0.21"
+          - version: "0.05"
           - spec_file: ""
           - distrib: el7
             package_extension: rpm
@@ -135,8 +136,14 @@ jobs:
         shell: bash
       - run: |
           yum install -y ruby
+          gem install dotenv -v 2.8.1 -N
+          gem install rexml -v 3.2.4 -N
           gem install backports -v 3.21.0
           gem install fpm -v 1.15.0
+
+          # cpanm MSCHWERN/ExtUtils-MakeMaker-6.64.tar.gz --notest
+
+
           # gem install dotenv -v 2.8.1 -N
           # gem install rexml -v 3.2.4 -N
           # gem install backports -v 3.21.0 -N
