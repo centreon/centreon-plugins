@@ -1,4 +1,4 @@
-name: perl-cpan-libraries
+name: test-cpan-libraries
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -8,15 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
-  push:
-    branches:
-      - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
-      - master
-      - "[2-9][0-9].[0-9][0-9].x"
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
+      - ".github/workflows/test-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -91,7 +83,6 @@ jobs:
           - rpm_dependencies: ""
           - rpm_provides: ""
           - version: ""
-          - spec_file: ""
           - no-auto-depends: false
           - distrib: el8
             package_extension: rpm
@@ -177,7 +168,7 @@ jobs:
           make install
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
           if [ -z "${{ matrix.version }}" ]; then
             PACKAGE_VERSION=""
@@ -211,15 +202,6 @@ jobs:
           export SYBASE="/usr"
 
           fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
-        shell: bash
-
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
-        run: |
-          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-
-          rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
-
-          cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
@@ -352,8 +334,6 @@ jobs:
           - deb_dependencies: ""
           - rpm_provides: ""
           - version: ""
-          - use_dh_make_perl: "true"
-          - spec_file: ""
           - distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye
@@ -379,14 +359,12 @@ jobs:
           - name: "Net::MQTT::Simple"
             version: "1.29"
           - name: "Paws"
-            use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: true
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
           - name: "ZMQ::LibZMQ4"
-            use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
@@ -445,7 +423,7 @@ jobs:
           fi
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
           apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
 
@@ -469,14 +447,6 @@ jobs:
           patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
 
           fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
-        shell: bash
-
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
-        run: |
-          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
-          # module-build-tiny is required for Mojo::IOLoop::Signal build.
-
-          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
@@ -664,7 +634,7 @@ jobs:
               dependency_info=$(apt-cache policy $dependency)
               if [[ -n $dependency_info ]]; then
                 echo "Dependency $dependency exists in debian repository."
-                apt-get install -y $dependency
+                continue
               else
                 # If the dependency has been built in the same workflow, install it
                 for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
@@ -675,10 +645,10 @@ jobs:
             done
             # Install package, then uninstall it with all his dependencies
             echo "Package installation..."
-            error_output=$(dpkg -i $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
             echo "Package uninstallation..."
-            error_output=$(apt autoremove --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
             echo "Package uninstallation done."
           done
           # If the file error_log exists and is not empty, the workflow is in error
