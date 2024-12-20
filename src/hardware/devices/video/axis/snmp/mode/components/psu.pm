@@ -24,12 +24,12 @@ use strict;
 use warnings;
 
 my %map_psu_status = (
-    1 => 'ok',
-    2 => 'failure',
+    0 => 'ok',
+    1 => 'failure',
 );
 
 my $mapping = {
-    axisPsState => { oid => '.1.3.6.1.4.1.368.4.1.2.1.3', map => \%map_psu_status },
+    axisPsState => { oid => '.1.3.6.1.4.1.368.4.1.1.1.3', map => \%map_psu_status },
 };
 
 sub load {
