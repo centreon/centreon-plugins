@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my %map_fan_status = (
-    1=> 'ok',
+    1 => 'ok',
     2 => 'failure',
 );
 
