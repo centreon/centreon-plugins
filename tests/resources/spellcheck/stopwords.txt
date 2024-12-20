@@ -169,3 +169,8 @@ WLAN
 WLC
 WSMAN
 XPath
+SMS
+dir
+smseagle
+unicode
+SIM
