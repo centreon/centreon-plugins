@@ -452,9 +452,6 @@ sub get_severity_numeric {
 
 sub get_severity {
     my ($self, %options) = @_;
-    use Data::Dumper;
-
-
     my $status = 'UNKNOWN'; # default 
 
     $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
