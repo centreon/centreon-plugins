@@ -39,7 +39,7 @@ sub new {
         'memory'                => 'network::hp::procurve::snmp::mode::memory',
         'spanning-tree'         => 'snmp_standard::mode::spanningtree',
         'stack'                 => 'network::hp::procurve::snmp::mode::stack',
-        'uptime'       => 'snmp_standard::mode::uptime',        
+        'uptime'                => 'snmp_standard::mode::uptime',        
         'virtual-chassis'       => 'network::hp::procurve::snmp::mode::virtualchassis'
     };
 
