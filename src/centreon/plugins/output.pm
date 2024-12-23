@@ -1538,7 +1538,7 @@ remove all metrics whose value equals 0 and that don't have a maximum value.
 =item B<--explode-perfdata-max>
 
 Create a new metric for each metric that comes with a maximum limit. The new
-metric will be named identically with a '_max' suffix).
+metric will be named identically with a '_max' suffix.
 Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
 into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 
