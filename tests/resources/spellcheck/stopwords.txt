@@ -54,7 +54,6 @@ cpu-utilization-5s
 --critical-total-cpu-utilization
 Datacore
 datasource
-dbspace
 DC4
 dcdiag
 deduplication
