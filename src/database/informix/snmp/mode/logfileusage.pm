@@ -140,7 +140,8 @@ Check log files usage.
 
 =item B<--filter-name>
 
-Filter dbspace name (can be a regexp).
+Define which C<dbspace> should be monitored based on their names.
+This option will be treated as a regular expression.
 
 =item B<--warning-usage>
 
