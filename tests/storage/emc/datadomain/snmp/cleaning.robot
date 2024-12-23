@@ -20,7 +20,7 @@ cleaning ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=${SNMPCOMMUNITY}
+    ...    --snmp-community=${snmp_community}
     ...    --snmp-timeout=5
     ...    ${extra_options}
   
@@ -30,7 +30,7 @@ cleaning ${tc}
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
     
 
-    Examples:        tc    extra_options                                                                      SNMPCOMMUNITY                                                                       expected_result    --
+    Examples:        tc    extra_options                                                                      snmp_community                                                                       expected_result    --
             ...      1     ${EMPTY}                                                                           storage/emc/datadomain/snmp/slim-datadomain                                         OK: cleaning last execution: \\\\d+M \\\\d+w \\\\d+h \\\\d+m \\\\d+s \\\\| 'filesystems.cleaning.execution.last.days'=\\\\d+d;;;0;$
             ...      2     --unit='w'                                                                         storage/emc/datadomain/snmp/slim-datadomain                                         OK: cleaning last execution: 3M 3w 17h 9m 7s | 'filesystems.cleaning.execution.last.weeks'=16w;;;0;
             ...      3     --warning-last-cleaning-execution='115' --critical-last-cleaning-execution='0'     storage/emc/datadomain/snmp/slim-datadomain                                         CRITICAL: cleaning last execution: 3M 3w 16h 52m 15s | 'filesystems.cleaning.execution.last.days'=113d;0:115;0:0;0;
