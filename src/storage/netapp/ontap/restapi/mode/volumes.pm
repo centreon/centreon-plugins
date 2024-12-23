@@ -333,7 +333,7 @@ Check volumes.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^usage$'.
+Example: C<--filter-counters='^usage$'>.
 
 =item B<--filter-volume-name>
 
@@ -351,27 +351,27 @@ Filter volumes by vserver name (can be a regexp).
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{state}, %{display}
+You can use the following variables: C<%{state}>, C<%{display}>
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{state}, %{display}.
+You can use the following variables: C<%{state}>, C<%{display}>.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
-You can use the following variables: %{state}, %{display}.
+Define the conditions to match for the status to be CRITICAL (default: C<%{state} !~ /online/i>).
+You can use the following variables: C<%{state}>, C<%{display}>.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
-'logical-usage' (B), 'logical-usage-free' (B), 'logical-usage-prct' (%),
-'read' (B/s), 'read-iops', 'write' (B/s), 'write-iops',
-'read-latency' (ms), 'write-latency' (ms), 'total-latency' (ms),
-'other-latency' (ms), 'other' (B/s), 'total' (B/s),
-'other-iops', 'total-iops'.
+Can be: C<usage>' (B), C<usage-free> (B), C<usage-prct> (%),
+C<logical-usage> (B), C<logical-usage-free> (B), C<logical-usage-prct> (%),
+C<read> (B/s), C<read-iops>, C<write> (B/s), C<write-iops>,
+C<read-latency> (ms), C<write-latency> (ms), C<total-latency> (ms),
+C<other-latency> (ms), C<other> (B/s), C<total> (B/s),
+C<other-iops>, C<total-iops>.
 
 =back
 
