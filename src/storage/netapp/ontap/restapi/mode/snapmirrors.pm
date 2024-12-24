@@ -89,7 +89,7 @@ sub manage_selection {
 
         $self->{snapmirrors}->{$name} = {
             display => $name,
-            healthy => $_->{healthy} =~ /true|1/i ? 'true' : 'false',
+            healthy => (defined($_->{healthy}) && $_->{healthy} =~ /true|1/i) ? 'true' : 'false',
             state => $_->{state},
             transfer_state => defined($_->{transfer}->{state}) ? $_->{transfer}->{state} : 'n/a'
         };
