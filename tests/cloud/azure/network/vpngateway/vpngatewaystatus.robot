@@ -13,7 +13,7 @@ ${MOCKOON_JSON}         ${CURDIR}${/}vpngatewaystatus.json
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
 ${LOGIN_ENDPOINT}       ${BASE_URL}/login
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::network::vpngateway::plugin --custommode=api --mode=vpn-gateway-status --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --resource-group=resource-group --login-endpoint=${LOGIN_ENDPOINT} --management-endpoint=${BASE_URL}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::network::vpngateway::plugin --custommode=api --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --resource-group=resource-group --login-endpoint=${LOGIN_ENDPOINT}
 
 
 *** Test Cases ***
@@ -21,6 +21,8 @@ VPN Gateway status ${tc}
     [Tags]    cloud    azure    api    mockoon
     ${command}    Catenate
     ...    ${CMD}
+    ...    --mode=vpn-gateway-status
+    ...    --management-endpoint=${BASE_URL}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

@@ -120,8 +120,7 @@ __END__
 Check VPN gateways status.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=vpn-gateways-status
---resource-group='MYRESOURCEGROUP' --verbose
+C<perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=vpn-gateways-status --resource-group='MYRESOURCEGROUP' --verbose>
 
 =over 8
 
@@ -136,12 +135,12 @@ Filter VPN Gateways by name (can be a regexp).
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
+You can use the following variables: C<%{provisioning_state}>, C<%{gateway_type}>, C<%{vpn_type}>, C<%{display}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{provisioning_state} ne "Succeeded"').
-You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: C<%{provisioning_state} ne "Succeeded">).
+You can use the following variables: C<%{provisioning_state}>, C<%{gateway_type}>, C<%{vpn_type}>, C<%{display>}
 
 =back
 
