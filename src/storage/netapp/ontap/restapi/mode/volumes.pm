@@ -303,7 +303,7 @@ sub manage_selection {
             total_latency => (defined($_->{metric}->{latency}->{total})) ? ($_->{metric}->{latency}->{total} / 1000) : undef,
         };
 
-        if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
+        if (defined($_->{space}->{logical_space})) {
             $self->{volumes}->{$name}->{total_logical_space} = $_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available};
             $self->{volumes}->{$name}->{logical_used_space} = $_->{space}->{logical_space}->{used};
             $self->{volumes}->{$name}->{logical_free_space} = $_->{space}->{logical_space}->{available};
@@ -351,27 +351,27 @@ Filter volumes by vserver name (can be a regexp).
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: C<%{state}>, C<%{display}>
+You can use the following variables: %{state}, %{display}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: C<%{state}>, C<%{display}>.
+You can use the following variables: %{state}, %{display}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<%{state} !~ /online/i>).
-You can use the following variables: C<%{state}>, C<%{display}>.
+Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
+You can use the following variables: %{state}, %{display}.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: C<usage>' (B), C<usage-free> (B), C<usage-prct> (%),
-C<logical-usage> (B), C<logical-usage-free> (B), C<logical-usage-prct> (%),
-C<read> (B/s), C<read-iops>, C<write> (B/s), C<write-iops>,
-C<read-latency> (ms), C<write-latency> (ms), C<total-latency> (ms),
-C<other-latency> (ms), C<other> (B/s), C<total> (B/s),
-C<other-iops>, C<total-iops>.
+Can be: usage' (B), usage-free (B), usage-prct (%),
+logical-usage (B), logical-usage-free (B), logical-usage-prct (%),
+read (B/s), read-iops, write (B/s), write-iops,
+read-latency (ms), write-latency (ms), total-latency (ms),
+other-latency (ms), other (B/s), total (B/s),
+other-iops, total-iops.
 
 =back
 
