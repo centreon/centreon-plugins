@@ -1,0 +1,32 @@
+name: set-pull-request-external-label
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  pull_request_target:
+
+jobs:
+  set-pull-request-external-label:
+    if: |
+      github.event.pull_request.head.repo.fork &&
+      ! contains(github.event.pull_request.labels.*.name, 'external')
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Set PR external label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const label = 'external';
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: [label]
+              });
+            } catch (e) {
+              core.warning(`failed to add label ${label}: ${e}`);
+            }
