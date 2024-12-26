@@ -337,7 +337,7 @@ Example: C<--filter-counters='^usage$'>.
 
 =item B<--filter-volume-name>
 
-Filter the API request by volumes name (* can be used, volumes name are separated by |). Required if you wan to retrive 
+Filter the API request by volumes name (* can be used, volumes name are separated by |). Required if you wan to retrieve 
 logical space metrics.
 
 =item B<--filter-name>
@@ -346,7 +346,7 @@ Filter the API request result by volume name (can be a regexp).
 
 =item B<--filter-vserver-name>
 
-Filter volumes by vserver name (can be a regexp).
+Filter volumes by Vserver name (can be a regexp).
 
 =item B<--unknown-status>
 
