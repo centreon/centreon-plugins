@@ -6,17 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
-  push:
-    branches:
-      - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
-      - master
-      - "[2-9][0-9].[0-9][0-9].x"
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
+#  pull_request:
+#    paths:
+#      - ".github/workflows/perl-cpan-libraries.yml"
+#  push:
+#    branches:
+#      - develop
+#      - dev-[2-9][0-9].[0-9][0-9].x
+#      - master
+#      - "[2-9][0-9].[0-9][0-9].x"
+#    paths:
+#      - ".github/workflows/perl-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -411,9 +411,6 @@ jobs:
         name: Get package version
         id: package-version
         run: |
-          apt-get update
-          apt-get install -y cpanminus
-
           if [ -z "${{ matrix.version }}" ]; then
             CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
 
@@ -447,8 +444,6 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
         run: |
-          apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
-
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
@@ -461,21 +456,11 @@ jobs:
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
-          cpanm Module::Build::Tiny
-          cpanm Module::Install
-
-          gem install fpm
-          # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
-          patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
-
           fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
         run: |
-          apt-get install -y libcurl4-openssl-dev dh-make-perl libssh-dev uuid-dev libczmq-dev libmodule-install-perl libmodule-build-tiny-perl
-          # module-build-tiny is required for Mojo::IOLoop::Signal build.
-
           DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
         shell: bash
 

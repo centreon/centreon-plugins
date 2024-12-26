@@ -38,7 +38,6 @@ apt-get install -y \
   libapp-fatpacker-perl \
   libcurl4-openssl-dev \
   libczmq-dev \
-  libczmq-dev\
   libfile-copy-recursive-perl \
   libjson-perl \
   libmodule-build-tiny-perl \
@@ -58,6 +57,8 @@ cpanm Crypt::OpenSSL::Guess
 
 gem install fpm
 
+# Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
+patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
 
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
 apt-get update

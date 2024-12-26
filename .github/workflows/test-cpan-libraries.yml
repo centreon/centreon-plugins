@@ -389,9 +389,6 @@ jobs:
         name: Get package version
         id: package-version
         run: |
-          apt-get update
-          apt-get install -y cpanminus
-
           if [ -z "${{ matrix.version }}" ]; then
             CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
 
@@ -425,8 +422,6 @@ jobs:
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         run: |
-          apt-get install -y ruby libcurl4-openssl-dev libssh-dev uuid-dev libczmq-dev
-
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
@@ -439,10 +434,6 @@ jobs:
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
-          cpanm Module::Build::Tiny
-          cpanm Module::Install
-
-          gem install fpm
           # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released.
           patch -i .github/patch/fpm-deb.rb.diff $(find / -type f -name "deb.rb")
 
