@@ -5,53 +5,238 @@ on:
         required: false
         type: string
     outputs:
-      stability:
-        description: "branch stability (stable, testing, unstable, canary)"
-        value: ${{ jobs.get-version.outputs.stability }}
       version:
         description: "version"
-        value: ${{ jobs.get-version.outputs.version }}
+        value: ${{ jobs.get-environment.outputs.version }}
       release:
-        description: "release number"
-        value: ${{ jobs.get-version.outputs.release }}
+        description: "release"
+        value: ${{ jobs.get-environment.outputs.release }}
+      stability:
+        description: "branch stability (stable, testing, unstable, canary)"
+        value: ${{ jobs.get-environment.outputs.stability }}
+      target_stability:
+        description: "Final target branch stability (stable, testing, unstable, canary or not defined if not a pull request)"
+        value: ${{ jobs.get-environment.outputs.target_stability }}
+      release_type:
+        description: "type of release (hotfix, release or not defined if not a release)"
+        value: ${{ jobs.get-environment.outputs.release_type }}
+      is_targeting_feature_branch:
+        description: "if it is a PR, check if targeting a feature branch"
+        value: ${{ jobs.get-environment.outputs.is_targeting_feature_branch }}
+      skip_workflow:
+        description: "if the current workflow should be skipped"
+        value: ${{ jobs.get-environment.outputs.skip_workflow }}
 
 jobs:
-  get-version:
-    runs-on: ubuntu-22.04
+  get-environment:
+    runs-on: ubuntu-24.04
     outputs:
-      stability: ${{ steps.get_environment.outputs.stability }}
-      version: ${{ steps.get_environment.outputs.version }}
-      release: ${{ steps.get_environment.outputs.release }}
+      version: ${{ steps.get_version.outputs.version }}
+      release: ${{ steps.get_release.outputs.release }}
+      stability: ${{ steps.get_stability.outputs.stability }}
+      target_stability: ${{ steps.get_stability.outputs.target_stability }}
+      release_type: ${{ steps.get_release_type.outputs.release_type }}
+      is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
+      skip_workflow: ${{ steps.skip_workflow.outputs.result }}
 
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Check if PR has skip label
+        id: has_skip_label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            let hasSkipLabel = false;
+            if (${{ contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }} === true) {
+              try {
+                const labels = await github.rest.issues.listLabelsOnIssue({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number
+                });
+                labels.data.forEach(({ name }) => {
+                  if (name === '${{ format('skip-workflow-{0}', github.workflow) }}') {
+                    hasSkipLabel = true;
+                  }
+                });
+              } catch (e) {
+                core.warning(`failed to list labels: ${e}`);
+              }
+            }
+            return hasSkipLabel;
 
-      - id: get_environment
+      - name: Checkout sources (current branch)
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          fetch-depth: ${{ steps.has_skip_label.outputs.result == 'true' && 100 || 1 }}
+
+      - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
+        name: Get workflow triggered paths
+        id: get_workflow_triggered_paths
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+
+            let paths = [];
+
+            const workflowFilePath = '${{ github.workflow_ref }}'.replace('${{ github.repository }}/', '').split('@').shift();
+
+            if (fs.existsSync(workflowFilePath)) {
+              const workflowFileContent = fs.readFileSync(workflowFilePath, 'utf8');
+              const workflowFileContentLines = workflowFileContent.split('\n');
+
+              let hasReadOn = false;
+              let hasReadPullRequest = false;
+              let hasReadPaths = false;
+              for (const line of workflowFileContentLines) {
+                if (line.match(/^on:\s*$/)) {
+                  hasReadOn = true;
+                  continue;
+                }
+                if (line.match(/^\s{2}pull_request(_target)?:\s*$/)) {
+                  hasReadPullRequest = true;
+                  continue;
+                }
+                if (line.match(/^\s{4}paths:\s*$/)) {
+                  hasReadPaths = true;
+                  continue;
+                }
+
+                if (hasReadOn && hasReadPullRequest && hasReadPaths) {
+                  const matches = line.match(/^\s{6}-\s['"](.+)['"]\s*$/);
+                  if (matches) {
+                    paths.push(matches[1].trim());
+                  } else {
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (paths.length === 0) {
+              paths = ['**'];
+            }
+
+            console.log(paths);
+
+            return paths;
+
+      - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
+        name: Get push changes
+        id: get_push_changes
+        uses: tj-actions/changed-files@bab30c2299617f6615ec02a68b9a40d10bd21366 # v45.0.5
+        with:
+          since_last_remote_commit: true
+          json: true
+          escape_json: false
+          files: ${{ join(fromJSON(steps.get_workflow_triggered_paths.outputs.result), ';') }}
+          files_separator: ';'
+
+      - name: Check if current workflow should be skipped
+        id: skip_workflow
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            if (${{ steps.has_skip_label.outputs.result }} === false) {
+              return false;
+            }
+
+            const label = '${{ format('skip-workflow-{0}', github.workflow) }}';
+            if ('${{ steps.get_push_changes.outputs.any_changed }}' === 'true') {
+              try {
+                await github.rest.issues.removeLabel({
+                  name: label,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number
+                });
+                core.notice(`label ${label} removed because changes were detected on last push.`);
+              } catch (e) {
+                core.warning(`failed to remove label ${label}: ${e}`);
+              }
+
+              return false;
+            }
+
+            return true;
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Get nested pull request path
+        id: pr_path
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const prPath = ['${{ github.head_ref }}', '${{ github.base_ref }}'];
+
+            const result = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+              state: 'open'
+            });
+
+            let found = true;
+            while (found) {
+              found = false;
+              result.data.forEach(({ head: { ref: headRef }, base: { ref: baseRef} }) => {
+                if (headRef === prPath[prPath.length - 1] && ! prPath.includes(baseRef)) {
+                  found = true;
+                  prPath.push(baseRef);
+                }
+              });
+            }
+
+            return prPath;
+
+      - name: Get stability
+        id: get_stability
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const getStability = (branchName) => {
+              switch (true) {
+                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)|(^prepare-release-cloud.*)/.test(branchName):
+                  return 'unstable';
+                case /(^release.+)|(^hotfix.+)/.test(branchName):
+                  return 'testing';
+                case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
+                  return 'stable';
+                default:
+                  return 'canary';
+              }
+            };
+
+            core.setOutput('stability', getStability('${{ github.head_ref || github.ref_name }}'));
+
+            let isTargetingFeatureBranch = false;
+            if ("${{ github.event_name }}" === "pull_request") {
+              let targetStability = 'canary';
+              const prPath = ${{ steps.pr_path.outputs.result || '[]' }};
+              prPath.shift(); // remove current branch
+
+              if (prPath.length && getStability(prPath[0]) === 'canary') {
+                isTargetingFeatureBranch = true;
+              }
+
+              prPath.every((branchName) => {
+                console.log(`checking stability of ${branchName}`)
+                targetStability = getStability(branchName);
+
+                if (targetStability !== 'canary') {
+                  return false;
+                }
+
+                return true;
+              });
+
+              core.setOutput('target_stability', targetStability);
+            }
+
+            core.setOutput('is_targeting_feature_branch', isTargetingFeatureBranch);
+
+      - name: Get version
+        id: get_version
         run: |
-          if [[ -z "$GITHUB_HEAD_REF" ]]; then
-            BRANCHNAME="$GITHUB_REF_NAME"
-          else
-            BRANCHNAME="$GITHUB_HEAD_REF"
-          fi
-
-          case "$BRANCHNAME" in
-            develop)
-              STABILITY="unstable"
-              ;;
-            release* | hotfix*)
-              STABILITY="testing"
-              ;;
-            master)
-              STABILITY="stable"
-              ;;
-            *)
-              STABILITY="canary"
-              ;;
-          esac
-
-          echo "stability=$STABILITY" >> $GITHUB_OUTPUT
-
           if [[ "${{ inputs.version_file }}" == "" ]]; then
             VERSION=$(date '+%Y%m%d')
           elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
@@ -60,7 +245,63 @@ jobs:
             VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
           fi
           echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
-
-          RELEASE=$(date '+%H%M%S')
-          echo "release=$(echo $RELEASE)" >> $GITHUB_OUTPUT
         shell: bash
+
+      - name: "Get release: 1 for testing / stable, <date>.<commit_sha> for others"
+        id: get_release
+        run: |
+          RELEASE=$(date '+%H%M%S')
+
+          echo "release=$RELEASE" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: "Get release type: hotfix, release or not defined if not a release"
+        id: get_release_type
+        run: |
+          RELEASE_TYPE=$(echo "${{ github.head_ref || github.ref_name }}" | cut -d '-' -f 1)
+          if [[ "$RELEASE_TYPE" == "hotfix" || "$RELEASE_TYPE" == "release" ]]; then
+            echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Display info in job summary
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const outputTable = [
+              [{data: 'Name', header: true}, {data: 'Value', header: true}],
+              ['version', '${{ steps.get_version.outputs.version }}'],
+              ['release', '${{ steps.get_release.outputs.release }}'],
+              ['stability', '${{ steps.get_stability.outputs.stability }}'],
+              ['release_type', '${{ steps.get_release_type.outputs.release_type || '<em>not defined because this is not a release</em>' }}'],
+              ['is_targeting_feature_branch', '${{ steps.get_stability.outputs.is_targeting_feature_branch }}'],
+              ['target_stability', '${{ steps.get_stability.outputs.target_stability || '<em>not defined because current run is not triggered by pull request event</em>' }}'],
+              ['skip_workflow', '${{ steps.skip_workflow.outputs.result }}']
+            ];
+            core.summary
+              .addHeading(`${context.workflow} environment outputs`)
+              .addTable(outputTable);
+
+            if ("${{ github.event_name }}" === "pull_request") {
+              const prPath = ${{ steps.pr_path.outputs.result || '[]' }};
+              const mainBranchName = prPath.pop();
+              let codeBlock = `
+                %%{ init: { 'gitGraph': { 'mainBranchName': '${mainBranchName}', 'showCommitLabel': false } } }%%
+                gitGraph
+                  commit`;
+              prPath.reverse().forEach((branchName) => {
+                codeBlock = `${codeBlock}
+                  branch ${branchName}
+                  checkout ${branchName}
+                  commit`;
+              });
+
+              core.summary
+                .addHeading('Git workflow')
+                .addCodeBlock(
+                  codeBlock,
+                  "mermaid"
+                );
+            }
+
+            core.summary.write();

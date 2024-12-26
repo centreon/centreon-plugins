@@ -21,7 +21,7 @@ name=GoReleaser
 baseurl=https://repo.goreleaser.com/yum/
 enabled=1
 gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
-dnf install -y nfpm
+dnf install -y nfpm-2.41.0
 dnf clean all
 
 EOF

@@ -1,0 +1,239 @@
+{
+  "uuid": "5beab5e3-1b32-4ec1-a6d9-18c546c2d894",
+  "lastMigration": 33,
+  "name": "Centreonvault",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "9623237f-f204-4972-ac46-8cfaadfa975a",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/auth/approle/login",
+      "responses": [
+        {
+          "uuid": "3bb67f80-c60a-41a9-b071-f5a559f19613",
+          "body": "{\n  \"request_id\": \"r2p2c3po-b013-723a-24c7-ad80aa1fbddb\",\n  \"lease_id\": \"\",\n  \"renewable\": false,\n  \"lease_duration\": 0,\n  \"data\": null,\n  \"wrap_info\": null,\n  \"warnings\": null,\n  \"auth\": {\n    \"client_token\": \"hvs.thistokenisafakeonebutwillworkwiththetests\",\n    \"accessor\": \"7PjTD&rpX53oqLRNa4C5t\",\n    \"policies\": [\n      \"default\",\n      \"centreon-plugins\"\n    ],\n    \"token_policies\": [\n      \"default\",\n      \"omercier\"\n    ],\n    \"metadata\": {\n      \"role_name\": \"centreon-plugins\"\n    },\n    \"lease_duration\": 2764800,\n    \"renewable\": true,\n    \"entity_id\": \"bbdov2-0dd9-97e8-66d6-3db885ccffd8\",\n    \"token_type\": \"service\",\n    \"orphan\": true,\n    \"mfa_requirement\": null,\n    \"num_uses\": 0\n  },\n  \"mount_type\": \"\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "role_id",
+              "value": "thisroleidisinplaintext",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "secret_id",
+              "value": "thissecretidisinplaintext",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "bba1ccb5-9415-4630-a82e-ff192b1f5680",
+          "body": "{\"errors\":[\"invalid role or secret ID\"]}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5378cdb8-7126-4b58-aa23-ef79f5b06ba4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/myvault/data/snmp",
+      "responses": [
+        {
+          "uuid": "ca08be91-0f07-42e1-8119-c2510c1b31f4",
+          "body": "{\"request_id\":\"bbdo2cbd-e3f0-d84c-b668-65416f0b9d97\",\"lease_id\":\"\",\"renewable\":false,\"lease_duration\":0,\"data\":{\"data\":{\"Linux\":\"os/linux/snmp/linux\"},\"metadata\":{\"created_time\":\"2024-11-21T12:34:26.606125626Z\",\"custom_metadata\":null,\"deletion_time\":\"\",\"destroyed\":false,\"version\":1}},\"wrap_info\":null,\"warnings\":null,\"auth\":null,\"mount_type\":\"kv\"}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-Vault-Token",
+              "value": "hvs.thistokenisafakeonebutwillworkwiththetests",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "9bab45de-a545-4863-a8f6-7613a1d2ad64",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "9623237f-f204-4972-ac46-8cfaadfa975a"
+    },
+    {
+      "type": "route",
+      "uuid": "5378cdb8-7126-4b58-aa23-ef79f5b06ba4"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

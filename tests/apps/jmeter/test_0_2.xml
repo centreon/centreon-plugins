@@ -1,0 +1,18 @@
+<testResults version="1.2">
+    <httpSample t="123" lt="100" ts="1616161616161" s="false" lb="Sample Label" rc="404" rm="Not Found" tn="Thread Group 1-1" dt="text" by="1024">
+        <assertionResult>
+            <name>Response Assertion</name>
+            <failure>true</failure>
+            <error>true</error>
+            <failureMessage>Test failed</failureMessage>
+        </assertionResult>
+    </httpSample>
+    <httpSample t="456" lt="300" ts="1616161616162" s="false" lb="Sample Label 2" rc="404" rm="Not Found" tn="Thread Group 1-2" dt="text2" by="512">
+        <assertionResult>
+            <name>Response 2 Assertion</name>
+            <failure>true</failure>
+            <error>false</error>
+            <failureMessage>Test 2 failed</failureMessage>
+        </assertionResult>
+    </httpSample>
+</testResults>
