@@ -135,12 +135,12 @@ Filter VPN Gateways by name (can be a regexp).
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: C<%{provisioning_state}>, C<%{gateway_type}>, C<%{vpn_type}>, C<%{display}>
+You can use the following variables: %{provisioning_state}, %{gateway_type}>, %{vpn_type}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<%{provisioning_state} ne "Succeeded">).
-You can use the following variables: C<%{provisioning_state}>, C<%{gateway_type}>, C<%{vpn_type}>, C<%{display>}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{provisioning_state} ne "Succeeded"'>).
+You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =back
 

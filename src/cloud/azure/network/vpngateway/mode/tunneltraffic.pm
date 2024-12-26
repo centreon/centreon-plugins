@@ -179,7 +179,7 @@ Filter metrics (can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngres
 =item B<--warning-$label$ --critical-$label$>
 
 Thresholds
-($label$ can be C<traffic-in>, C<traffic-out>,  C<packets-in>, C<packets-out>, C<dropped-packets-in>, C<dropped-packets-out>)
+($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
 
 =item B<--per-sec>
 
