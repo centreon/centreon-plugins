@@ -318,7 +318,7 @@ Filter by index (identified entry in the /etc/quotas) (can be a regexp).
 
 =item B<--filter-vserver>
 
-Filter by vserver name (can be a regexp).
+Filter by Vserver name (can be a regexp).
 
 =item B<--filter-volume>
 
@@ -326,7 +326,7 @@ Filter by volume name (can be a regexp).
 
 =item B<--filter-qtree>
 
-Filter by qtree name (can be a regexp).
+Filter by Qtree name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

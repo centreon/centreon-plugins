@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Netapp Ontap Restapi Quotas plugin
+Documentation       Netapp Ontap Restapi Hardware plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -18,12 +18,12 @@ ${cmd}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --api-username=username
 ...                 --api-password=password
-...                 --mode=quotas
+...                 --mode=hardware
 
 
 *** Test Cases ***
-Quotas ${tc}
-    [Tags]    storage    netapp    ontapp    api    quotas    mockoon   
+Hardware ${tc}
+    [Tags]    storage    netapp    ontapp    api    hardware    mockoon   
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

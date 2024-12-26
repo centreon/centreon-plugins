@@ -96,7 +96,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'bay', 'disk', 'fru', 'shelf'.
+Can be: C<bay>, C<disk>, C<fru>, C<shelf>.
 
 =item B<--filter>
 
@@ -110,7 +110,7 @@ Define the expected status if no components are found (default: critical).
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='fru,OK,error'
+Example: C<--threshold-overload='fru,OK,error'>
 
 =back
 

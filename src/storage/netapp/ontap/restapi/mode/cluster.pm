@@ -245,7 +245,7 @@ Check cluster.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='node-status'
+Example: C<--filter-counters='node-status'>
 
 =item B<--unknown-node-status>
 
@@ -265,9 +265,9 @@ You can use the following variables: %{state}, %{link_status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-utilization' (%), 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops',
-'read-latency' (ms), 'write-lantency' (ms), 'other-latency' (ms), 'total-latency' (ms),
-'other' (B/s), 'total' (B/s), 'other-iops', 'total-iops'.
+Can be: C<cpu-utilization> (%), C<read> (B/s), C<write> (B/s), C<read-iops>, C<write-iops>,
+C<read-latency> (ms), C<write-latency> (ms), C<other-latency> (ms), C<total-latency> (ms),
+C<other> (B/s), C<total> (B/s), C<other-iops>, C<total-iops>.
 
 =back
 

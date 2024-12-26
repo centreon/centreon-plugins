@@ -107,13 +107,13 @@ __END__
 
 =head1 MODE
 
-Check snapmirrors.
+Check SnapMirrors.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter snapmirror name (can be a regexp).
+Filter SnapMirror name (can be a regexp).
 
 =item B<--unknown-status>
 
