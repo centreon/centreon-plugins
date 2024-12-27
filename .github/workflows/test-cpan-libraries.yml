@@ -364,6 +364,8 @@ jobs:
           - name: "Statistics::Regression"
             build_distribs: "bullseye"
             version: "0.53"
+          - name: "WWW::Selenium"
+            deb_dependencies: "libcarp-always-perl libdata-dumper-compact-perl libexporter-tiny-perl libhttp-headers-fast-perl libhttp-request-ascgi-perl libio-socket-ssl-perl liblwp-useragent-determined-perl libtest-simple-perl libtest-more-utf8-perl liburi-escape-xs-perl libclass-base-perl"
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             deb_dependencies: "libzmq5"
@@ -389,38 +391,41 @@ jobs:
         name: Get package version
         id: package-version
         run: |
+          cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
-
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
             if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
-
             PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
           else
             PACKAGE_VERSION="${{ matrix.version }}"
           fi
-
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
+          PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
+          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Check if package already exists
+        id: check-package-existance
         run: |
-          package_name=$(echo "lib${{ matrix.name }}-perl" | sed 's/::/-/g' | tr '[:upper:]' '[:lower:]')
-          package_info=$(apt-cache policy $package_name)
+          package_info=$(apt-cache policy ${{ steps.package-version.outputs.package_name }})
+          do_not_build="false"
           if [[ -n $package_info ]]; then
             echo "Package already exists in the repository."
             candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
             if [[ "$candidate_version" == "${{ steps.package-version.outputs.package_version }}"* ]]; then
               echo "Package already exists in the repository with the same version."
-              exit 0
+              do_not_build="true"
             fi
           fi
+          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         run: |
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -440,7 +445,7 @@ jobs:
           fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         name: Replace '::' with - in the feature path
         id: package-name
         run: |
@@ -450,7 +455,7 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}

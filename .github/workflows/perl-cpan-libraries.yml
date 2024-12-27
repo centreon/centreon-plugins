@@ -568,6 +568,7 @@ jobs:
       image: ${{ matrix.image }}
 
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
+
     steps:
       - if: ${{ matrix.package_extension == 'rpm' }}
         name: Install zstd, perl and Centreon repositories
@@ -580,6 +581,7 @@ jobs:
           curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
           rpm --import RPM-GPG-KEY-CES
         shell: bash
+
       - if: ${{ matrix.package_extension == 'deb' }}
         name: Install zstd, perl and Centreon repositories
         run: |
@@ -589,12 +591,14 @@ jobs:
           wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
           apt-get update
         shell: bash
+
       - name: Restore packages from cache
         uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           fail-on-cache-miss: true
+
       - if: ${{ matrix.package_extension == 'rpm' }}
         name: Install packages
         run: |
@@ -632,6 +636,7 @@ jobs:
               exit 1
           fi
         shell: bash
+
       - if: ${{ matrix.package_extension == 'deb' }}
         name: Install packages
         run: |
@@ -672,6 +677,7 @@ jobs:
               exit 1
           fi
         shell: bash
+
       - name: Upload error log
         if: failure()
         uses: actions/upload-artifact@v4
