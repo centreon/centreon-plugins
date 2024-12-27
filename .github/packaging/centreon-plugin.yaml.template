@@ -30,6 +30,7 @@ provides:
 overrides:
   rpm:
     depends: [
+      perl(Crypt::OpenSSL::AES),
       perl(Digest::MD5),
       perl(Pod::Find),
       perl-Net-Curl,
@@ -44,10 +45,14 @@ overrides:
       perl(JSON::XS),
       perl-JSON-Path,
       perl-KeePass-Reader,
+      perl(Safe),
       perl(Storable),
       perl(POSIX),
       perl(Encode),
       perl(XML::LibXML),
+      perl(FindBin),
+      perl(lib),
+      perl(sort),
       @RPM_DEPENDENCIES@
     ]
     conflicts:
@@ -58,6 +63,7 @@ overrides:
       [@RPM_PROVIDES@]
   deb:
     depends: [
+      libcrypt-openssl-aes-perl,
       libpod-parser-perl,
       libnet-curl-perl,
       liburi-encode-perl,

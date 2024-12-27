@@ -64,7 +64,6 @@ sub new {
     });
 
     $self->{option_results} = {};
-
     $self->{option_msg} = [];
 
     $self->{nodisplay} = 0;
@@ -1539,7 +1538,7 @@ remove all metrics whose value equals 0 and that don't have a maximum value.
 =item B<--explode-perfdata-max>
 
 Create a new metric for each metric that comes with a maximum limit. The new
-metric will be named identically with a '_max' suffix).
+metric will be named identically with a '_max' suffix.
 Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
 into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 
@@ -1547,7 +1546,7 @@ into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
 =item B<--change-perfdata> B<--extend-perfdata>
 
 Change or extend perfdata.
-Syntax: --extend-perfdata=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Syntax: --extend-perfdata=searchlabel,newlabel,target[,[<new-unit-of-mesure>],[min],[max]]
 
 Common examples:
 
@@ -1568,11 +1567,11 @@ Change traffic values in percent: --change-perfdata='traffic_in,,percent()'
 =item B<--extend-perfdata-group>
 
 Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
-Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+Syntax: --extend-perfdata-group=regex,<names-of-new-metrics>,calculation[,[<new-unit-of-mesure>],[min],[max]]
 regex: regular expression
-namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+<names-of-new-metrics>: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
 calculation: how the values of the new metrics should be calculated
-newuom (optional): unit of measure for the new metrics
+<new-unit-of-mesure> (optional): unit of measure for the new metrics
 min (optional): lowest value the metrics can reach
 max (optional): highest value the metrics can reach
 
@@ -1641,8 +1640,8 @@ format).
 
 =item B<--output-file>
 
-Write output in file (can be combined with json, xml and openmetrics options).
-E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
+Write output in file (can be combined with JSON, XML and OpenMetrics options).
+Example: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 

@@ -1,0 +1,26 @@
+name: set-pull-request-skip-label
+
+on:
+  workflow_call:
+
+jobs:
+  set-pull-request-skip-label:
+    if: ${{ success() && contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Set PR skip label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const label = '${{ format('skip-workflow-{0}', github.workflow) }}';
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: [label]
+              });
+            } catch (e) {
+              core.warning(`failed to add label ${label}: ${e}`);
+            }
