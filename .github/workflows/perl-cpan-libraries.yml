@@ -6,17 +6,17 @@ concurrency:
 
 on:
   workflow_dispatch:
-#  pull_request:
-#    paths:
-#      - ".github/workflows/perl-cpan-libraries.yml"
-#  push:
-#    branches:
-#      - develop
-#      - dev-[2-9][0-9].[0-9][0-9].x
-#      - master
-#      - "[2-9][0-9].[0-9][0-9].x"
-#    paths:
-#      - ".github/workflows/perl-cpan-libraries.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
+  push:
+    branches:
+      - develop
+      - dev-[2-9][0-9].[0-9][0-9].x
+      - master
+      - "[2-9][0-9].[0-9][0-9].x"
+    paths:
+      - ".github/workflows/perl-cpan-libraries.yml"
 
 jobs:
   get-environment:
@@ -408,41 +408,44 @@ jobs:
           distrib: ${{ matrix.distrib }}
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Get package version
-        id: package-version
+        name: Get package infos
+        id: package-infos
         run: |
+          cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(cpanm --info ${{ matrix.name }} | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
-
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
             if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
-
             PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
           else
             PACKAGE_VERSION="${{ matrix.version }}"
           fi
-
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
+          PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
+          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
         shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Check if package already exists
+        id: check-package-existance
         run: |
-          package_name=$(echo "lib${{ matrix.name }}-perl" | sed 's/::/-/g' | tr '[:upper:]' '[:lower:]')
-          package_info=$(apt-cache policy $package_name)
+          package_info=$(apt-cache policy ${{ steps.package-infos.outputs.package_name }})
+          do_not_build="false"
           if [[ -n $package_info ]]; then
             echo "Package already exists in the repository."
             candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
-            if [[ "$candidate_version" == "${{ steps.package-version.outputs.package_version }}"* ]]; then
+            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
               echo "Package already exists in the repository with the same version."
-              exit 0
+              do_not_build="true"
             fi
           fi
+          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
         run: |
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -456,15 +459,15 @@ jobs:
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
-          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-version.outputs.package_version }} ${{ matrix.name }}
+          fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
         run: |
-          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-version.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
+          DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }}
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         name: Replace '::' with - in the feature path
         id: package-name
         run: |
@@ -474,7 +477,7 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
@@ -568,7 +571,6 @@ jobs:
       image: ${{ matrix.image }}
 
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
-
     steps:
       - if: ${{ matrix.package_extension == 'rpm' }}
         name: Install zstd, perl and Centreon repositories
@@ -668,7 +670,7 @@ jobs:
             error_output=$(dpkg -i $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
             echo "Package uninstallation..."
-            error_output=$(apt autoremove --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            error_output=$(apt autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
             echo "Package uninstallation done."
           done
           # If the file error_log exists and is not empty, the workflow is in error
