@@ -318,7 +318,6 @@ jobs:
         name:
           [
             "ARGV::Struct",
-            "Authen::SCRAM::Client",
             "Config::AWS",
             "Convert::EBCDIC",
             "Crypt::Blowfish_PP",
@@ -338,10 +337,8 @@ jobs:
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
-            "Net::SMTP_auth",
             "Paws",
             "Statistics::Regression",
-            "WWW::Selenium",
             "ZMQ::Constants",
             "ZMQ::LibZMQ4"
           ]
