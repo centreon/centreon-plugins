@@ -435,11 +435,13 @@ jobs:
           package_info=$(apt-cache policy ${{ steps.package-infos.outputs.package_name }})
           do_not_build="false"
           if [[ -n $package_info ]]; then
-            echo "Package already exists in the repository."
             candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
             if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
-              echo "Package already exists in the repository with the same version."
+              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
+            else
+              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} exists in the official ${{ matrix.distrib }} repository with a different version."
+              do_not_build="false"
             fi
           fi
           echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
@@ -454,11 +456,9 @@ jobs:
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
           fi
-
           if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
-
           fpm -a native -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }}
         shell: bash
 
