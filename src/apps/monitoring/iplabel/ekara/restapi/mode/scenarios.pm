@@ -174,23 +174,28 @@ sub manage_selection {
         post_body => $status_filter
     );
 
+    if (ref($results) eq "HASH" and defined($results->{message})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
+        $self->{output}->option_exit();
+    }
+
     my $time = time();
     my $start_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time - $self->{timeframe}));
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
-    foreach (@$results) {
+    foreach my $scenario (@$results) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
+            $scenario->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $_->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
+            $scenario->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
 
         my $scenario_detail = $options{custom}->request_api(
-            endpoint => '/results-api/results/' . $_->{scenarioId},
+            endpoint => '/results-api/results/' . $scenario->{scenarioId},
             method => 'POST',
             get_param => [
                 'from=' . $start_date,
@@ -200,35 +205,38 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $scenario_detail->{infos}->{plugin_id} !~ /$self->{option_results}->{filter_type}/i) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{scenarios}->{ $_->{scenarioName} } = {
-            display => $_->{scenarioName},
+        $self->{scenarios}->{ $scenario->{scenarioName} } = {
+            display => $scenario->{scenarioName},
             global => {
-                display => $_->{scenarioName},
-                id => $_->{scenarioId},
-                num_status => $_->{currentStatus},
-                status => $status_mapping->{$_->{currentStatus}},
+                display => $scenario->{scenarioName},
+                id => $scenario->{scenarioId},
+                num_status => $scenario->{currentStatus},
+                status => $status_mapping->{$scenario->{currentStatus}} // 'Unknown',
             }
         };
-
-        foreach my $kpi (@{$scenario_detail->{kpis}}) {
-            $self->{scenarios}->{ $_->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
+        if (!defined $scenario_detail->{results} or scalar(@{$scenario_detail->{results}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "Scenario '" . $scenario->{scenarioName} . "' Don't have any performance data, please try to add a bigger timeframe");
+            next;
         }
-        $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{0} = 'Default';
+        foreach my $kpi (@{$scenario_detail->{kpis}}) {
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
+        }
+        $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{0} = 'Default';
         if ($scenario_detail->{infos}->{info}->{hasStep}) {
             foreach my $steps (@{$scenario_detail->{steps}}) {
-                $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{$steps->{index}} = $steps->{name};
+                $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
             }
         }
 
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
         }
     }
 
