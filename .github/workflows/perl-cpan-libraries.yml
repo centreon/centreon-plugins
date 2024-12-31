@@ -149,35 +149,25 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Check if package already exists
+        id: check-package-existance
         run: |
-          yum install -y yum-utils epel-release git
-          yum config-manager --set-enabled crb || true # alma 9
-          yum config-manager --set-enabled powertools || true # alma 8
-          yum install -y cpanminus rpm-build libcurl-devel libssh-devel expat-devel gcc libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
-
-          dnf module reset -y ruby
-          dnf module enable -y ruby:3.1
-          dnf install -y ruby ruby-devel
+          package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 || true)
+          do_not_build="false"
+          if [[ ! $package_info =~ "No Matches found" ]]; then
+            package_version=$(echo $package_info | grep -oP 'perl\(${{ matrix.name }}\) = \K[0-9]+\.[0-9]+')
+            if [[ -z "${{ matrix.version }}" || "$package_version" == "${{ matrix.version }}" ]]; then
+              echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
+              do_not_build="true"
+            else
+              echo "::warning::Package ${{ matrix.name }} exists in the official ${{ matrix.distrib }} repository with a different version."
+              do_not_build="false"
+            fi
+          fi
+          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          repository: kduret/fpm
-          ref: fix-rpm-perl-dependency-name-unchanged
-          path: fpm
-
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Build and install fpm # waiting https://github.com/jordansissel/fpm/pull/2066
-        run: |
-          dnf install -y bsdtar
-          cd fpm
-          gem install bundler
-          bundle install
-          make install
-        shell: bash
-
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
           if [ -z "${{ matrix.version }}" ]; then
             PACKAGE_VERSION=""
@@ -205,15 +195,12 @@ jobs:
             done
           fi
 
-          cpanm Module::Build::Tiny
-          cpanm Module::Install
-
           export SYBASE="/usr"
 
           fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }}
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
         run: |
           mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
@@ -222,7 +209,7 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         name: Replace '::' with - in the feature path
         id: package-name
         run: |
@@ -232,7 +219,7 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existance.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
@@ -350,7 +337,6 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - use_dh_make_perl: "true"
-          - spec_file: ""
           - distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye
