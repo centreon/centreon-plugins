@@ -152,9 +152,9 @@ jobs:
         name: Check if package already exists
         id: check-package-existance
         run: |
-          package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 || true)
+          package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 | tr '[:upper:]' '[:lower:]' || true)
           do_not_build="false"
-          if [[ ! $package_info =~ "No Matches found" ]]; then
+          if [[ ! $package_info =~ "no matches found" ]]; then
             package_version=$(echo $package_info | grep -oP 'perl\(${{ matrix.name }}\) = \K[0-9]+\.[0-9]+')
             if [[ -z "${{ matrix.version }}" || "$package_version" == "${{ matrix.version }}" ]]; then
               echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
