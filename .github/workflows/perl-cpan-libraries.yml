@@ -416,7 +416,7 @@ jobs:
         id: check-package-existence
         run: |
           package_info=$(apt-cache policy ${{ steps.package-infos.outputs.package_name }})
-          if [[ -n $package_info && ${{ steps.package-infos.outputs.package_name }} ~= _ ]]; then
+          if [[ -n $package_info && "${{ steps.package-infos.outputs.package_name }}" =~ "_" ]]; then
             package_info=$(apt-cache policy $(echo ${{ steps.package-infos.outputs.package_name }} | sed 's/_//g'))
           fi
           do_not_build="false"
