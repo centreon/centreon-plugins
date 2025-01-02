@@ -50,6 +50,9 @@ sub new {
             'proto:s'          => { name => 'proto' },
             'timeout:s'        => { name => 'timeout' },
             'url-path:s'       => { name => 'url_path' },
+            'filter-id:s'      => { name => 'filter_id' },
+            'filter-name:s'    => { name => 'filter_name' },
+            'filter-status:s@' => { name => 'filter_status' },
             'authent-endpoint' => { name => 'authent_endpoint' }
         });
     }
@@ -170,6 +173,41 @@ sub get_access_token {
     return $access_token;
 }
 
+sub request_scenarios_status{
+    my ($self, %options) = @_;
+
+    my $status_filter = {};
+
+    if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status}[0] ne '') {
+        $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
+    }
+
+    my $results = $self->request_api(
+        endpoint => '/results-api/scenarios/status',
+        method => 'POST',
+        post_body => $status_filter,
+    );
+    if (ref($results) eq "HASH" and defined($results->{message})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
+        $self->{output}->option_exit();
+    }
+    my @scenarios;
+    for my $scenario (@$results) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $scenario->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $scenario->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
+            next;
+        }
+        push(@scenarios, $scenario);
+    }
+    return \@scenarios;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
@@ -236,6 +274,29 @@ Set username.
 =item B<--api-password>
 
 Set password.
+
+=item B<--filter-id>
+
+Filter by monitor ID (can be a regexp).
+
+=item B<--filter-name>
+
+Filter by monitor name (can be a regexp).
+
+=item B<--filter-status>
+
+Filter by numeric status (can be multiple).
+0 => 'Unknown',
+1 => 'Success',
+2 => 'Failure',
+3 => 'Aborted',
+4 => 'No execution',
+5 => 'No execution',
+6 => 'Stopped',
+7 => 'Excluded',
+8 => 'Degraded'
+
+Example: --filter-status='1,2'
 
 =item B<--timeout>
 

@@ -131,9 +131,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'      => { name => 'filter_id' },
-        'filter-name:s'    => { name => 'filter_name' },
-        'filter-status:s@' => { name => 'filter_status' },
+
         'filter-type:s'    => { name => 'filter_type' },
         'timeframe:s'      => { name => 'timeframe'}
     });
@@ -162,38 +160,12 @@ my $status_mapping = {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $status_filter = {};
-    if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status}[0] ne '') {
-        $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
-    }
-
-    my $results = $options{custom}->request_api(
-        endpoint => '/results-api/scenarios/status',
-        method => 'POST',
-        post_body => $status_filter
-    );
-
-    if (ref($results) eq "HASH" and defined($results->{message})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
-        $self->{output}->option_exit();
-    }
+    my $results = $options{custom}->request_scenarios_status();
 
     my $time = time();
     my $start_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time - $self->{timeframe}));
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
     foreach my $scenario (@$results) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $scenario->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $scenario->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-
         my $scenario_detail = $options{custom}->request_api(
             endpoint => '/results-api/results/' . $scenario->{scenarioId},
             method => 'POST',
@@ -261,28 +233,7 @@ Check IP Label Ekara scenarios.
 Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
 
-=item B<--filter-id>
 
-Filter by monitor ID (can be a regexp).
-
-=item B<--filter-name>
-
-Filter by monitor name (can be a regexp).
-
-=item B<--filter-status>
-
-Filter by numeric status (can be multiple).
-0 => 'Unknown',
-1 => 'Success',
-2 => 'Failure',
-3 => 'Aborted',
-4 => 'No execution',
-5 => 'No execution',
-6 => 'Stopped',
-7 => 'Excluded',
-8 => 'Degraded'
-
-Example: --filter-status='1,2'
 
 =item B<--filter-type>
 

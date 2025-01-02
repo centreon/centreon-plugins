@@ -145,8 +145,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'   => { name => 'filter_id' },
-        'filter-name:s' => { name => 'filter_name' },
         'ignore-closed' => { name => 'ignore_closed' },
         'timeframe:s'   => { name => 'timeframe'}
     });
@@ -176,23 +174,10 @@ my $status_mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(
-        endpoint => '/results-api/scenarios/status',
-        method => 'POST',
-    );
+    my $results = $options{custom}->request_scenarios_status();
 
     my $scenarios_list = {};
     foreach (@$results) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $_->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
         push @{$scenarios_list->{scenarioIds}}, $_->{scenarioId};
     }
 
@@ -265,14 +250,6 @@ Check IP Label Ekara incidents.
 
 Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
-
-=item B<--filter-id>
-
-Filter by monitor ID (can be a regexp).
-
-=item B<--filter-name>
-
-Filter by monitor name (can be a regexp).
 
 =item B<--ignore-closed>
 
