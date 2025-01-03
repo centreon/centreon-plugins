@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -153,7 +154,13 @@ sub request_api {
         password => $self->{as400_password},
         command => $options{command}
     };
-    $post->{args} = $options{args} if (defined($options{args}));
+    if (defined($options{args})) {
+        $post->{args} = $options{args};
+        if (defined($post->{args}->{uuid})) {
+            $post->{args}->{uuid} = md5_hex($post->{args}->{uuid});
+        }
+    }
+    
     my $encoded;
     eval {
         $encoded = encode_json($post);
