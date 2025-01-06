@@ -247,7 +247,7 @@ __END__
 
 =head1 MODE
 
-Check IP Label Ekara incidents.
+Check Ekara incidents.
 
 =over 8
 

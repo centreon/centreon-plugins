@@ -214,7 +214,7 @@ __END__
 
 =head1 MODE
 
-Check IP Label Ekara scenarios.
+Check ip-label Ekara scenarios.
 
 =over 8
 

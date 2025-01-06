@@ -265,11 +265,11 @@ __END__
 
 =head1 NAME
 
-Ip-Label Ekara Rest API
+ip-label Ekara Rest API
 
 =head1 REST API OPTIONS
 
-Ip-Label Ekara Rest API
+ip-label Ekara Rest API
 
 =over 8
 
