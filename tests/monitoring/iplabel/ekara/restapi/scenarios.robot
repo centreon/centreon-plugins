@@ -37,4 +37,6 @@ scenario ${tc}
         ...      4     --filter-name='not a scenario name'                                                        UNKNOWN: No scenario found
         ...      5     --filter-id='09fe2561.*' --warning-time-total-allsteps='30' --output-ignore-perfdata       WARNING: Scenario 'AKILA - (Web) ': time total all steps: 5822ms
         ...      6     --filter-status='2' --output-ignore-perfdata                                               CRITICAL: Scenario 'Centreon Demo Navigation': status: Failure (2)
-        ...      7     --api-password='Wrongpassword' --api-username='wrongUsername'                              UNKNOWN: Authentication endpoint returns error code 'Wrong email or password' (add --debug option for detailed message)
+        ...      7     --filter-status='2' --filter-siteid='site' --filter-workspaceid='workspace' --output-ignore-perfdata    CRITICAL: Scenario 'Centreon Demo Navigation': status: Failure (2)
+        ...      8     --filter-type='not a scenario type'                                                        UNKNOWN: No scenario found
+        ...      9     --api-password='Wrongpassword' --api-username='wrongUsername'                              UNKNOWN: Authentication endpoint returns error code 'Wrong email or password' (add --debug option for detailed message)

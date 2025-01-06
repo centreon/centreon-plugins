@@ -34,16 +34,6 @@ sub custom_status_output {
     return sprintf('status: %s (%s)', $self->{result_values}->{status}, $self->{result_values}->{num_status});
 }
 
-sub custom_date_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'last execution: %s (%s ago)',
-        $self->{result_values}->{lastexec},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{freshness})
-    );
-}
-
 sub prefix_scenario_output {
     my ($self, %options) = @_;
 

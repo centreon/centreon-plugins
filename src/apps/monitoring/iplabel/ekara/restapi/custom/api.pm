@@ -43,17 +43,19 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'   => { name => 'api_username' },
-            'api-password:s'   => { name => 'api_password' },
-            'hostname:s'       => { name => 'hostname' },
-            'port:s'           => { name => 'port' },
-            'proto:s'          => { name => 'proto' },
-            'timeout:s'        => { name => 'timeout' },
-            'url-path:s'       => { name => 'url_path' },
-            'filter-id:s'      => { name => 'filter_id' },
-            'filter-name:s'    => { name => 'filter_name' },
-            'filter-status:s@' => { name => 'filter_status' },
-            'authent-endpoint' => { name => 'authent_endpoint' }
+            'api-username:s'       => { name => 'api_username' },
+            'api-password:s'       => { name => 'api_password' },
+            'hostname:s'           => { name => 'hostname' },
+            'port:s'               => { name => 'port' },
+            'proto:s'              => { name => 'proto' },
+            'timeout:s'            => { name => 'timeout' },
+            'url-path:s'           => { name => 'url_path' },
+            'filter-id:s'          => { name => 'filter_id' },
+            'filter-name:s'        => { name => 'filter_name' },
+            'filter-workspaceid:s' => { name => 'filter_workspaceid' },
+            'filter-siteid:s'      => { name => 'filter_siteid' },
+            'filter-status:s@'     => { name => 'filter_status' },
+            'authent-endpoint'     => { name => 'authent_endpoint' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -177,20 +179,36 @@ sub request_scenarios_status{
     my ($self, %options) = @_;
 
     my $status_filter = {};
+    my @get_param;
 
     if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status}[0] ne '') {
         $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
     }
-
+    if (defined($self->{option_results}->{filter_workspaceid}) && $self->{option_results}->{filter_workspaceid} ne '') {
+        push(@get_param, "workspaceId=$self->{option_results}->{filter_workspaceid}");
+    }
+    if (defined($self->{option_results}->{filter_siteid}) && $self->{option_results}->{filter_siteid} ne '') {
+        push(@get_param, "siteId=$self->{option_results}->{filter_siteid}");
+    }
     my $results = $self->request_api(
         endpoint => '/results-api/scenarios/status',
         method => 'POST',
         post_body => $status_filter,
+        get_param => \@get_param,
     );
-    if (ref($results) eq "HASH" and defined($results->{message})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
+    if (ref($results) eq "HASH" ) {
+        if (defined($results->{message})) {
+            $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
+            $self->{output}->option_exit();
+        }
+        if (defined($results->{error})) {
+            $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{error});
+            $self->{output}->option_exit();
+        }
+        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios due to an unknown error, please use the --debug option to find more information");
         $self->{output}->option_exit();
     }
+
     my @scenarios;
     for my $scenario (@$results) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -233,7 +251,7 @@ sub request_api {
         $json = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode ekara JSON response: $@");
         $self->{output}->option_exit();
     };
 
@@ -297,6 +315,14 @@ Filter by numeric status (can be multiple).
 8 => 'Degraded'
 
 Example: --filter-status='1,2'
+
+=item B<--filter-workspaceid>
+
+Filter scenario to check by workspace id.
+
+=item B<--filter-siteid>
+
+Filter scenario to check by site id.
 
 =item B<--timeout>
 

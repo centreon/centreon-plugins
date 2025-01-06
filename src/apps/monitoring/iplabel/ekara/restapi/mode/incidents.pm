@@ -36,6 +36,7 @@ sub custom_status_output {
 
 sub custom_duration_output {
     my ($self, %options) = @_;
+
     if ($self->{result_values}->{status} =~ 'Open') {
         return sprintf(
             'start time: %s, duration: %s',
@@ -196,6 +197,10 @@ sub manage_selection {
             post_body => $scenarios_list
         );
 
+    }
+    else{
+        $self->{output}->add_option_msg(short_msg => "No scenarios found, can't search for incidents. Please check filters.");
+        $self->{output}->option_exit();
     }
 
     $self->{global}->{total} = 0;
