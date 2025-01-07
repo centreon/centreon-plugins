@@ -133,11 +133,17 @@ sub check_options {
             $expr =~ s/%\{(.*?)\}/\$values->{$1}/g;
             $expr =~ s/%\((.*?)\)/\$values->{$1}/g;
 
+            if ( defined($exit_code) && $exit_code ne '' && defined( $self->{errors}->{uc($exit_code)} ) ) {
+                $exit_code = uc($exit_code);
+            } else {
+                $exit_code = undef;
+            }
+
             $self->{change_output_adv} = [] if (!defined($self->{change_output_adv}));
             push @{$self->{change_output_adv}}, {
                 expr => $expr,
                 short_output => $short_output,
-                exit_code => defined($exit_code) && $exit_code ne '' && $self->{errors}->{uc($exit_code)} ? uc($exit_code) : undef
+                exit_code => $exit_code
             };
         }
     }
