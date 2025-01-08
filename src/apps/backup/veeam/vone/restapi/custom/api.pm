@@ -78,7 +78,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 1239;
     $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{api_path} = (defined($self->{option_results}->{api_path})) && $self->{option_results}->{api_path} ne '' ? $self->{option_results}->{api_path} : '/api/v2.2';
@@ -428,7 +428,7 @@ Set hostname.
 
 =item B<--port>
 
-Port used (default: 443)
+Port used (default: 1239)
 
 =item B<--proto>
 
