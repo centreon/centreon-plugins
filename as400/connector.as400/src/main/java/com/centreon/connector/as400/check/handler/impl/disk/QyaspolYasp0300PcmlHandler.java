@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.SecureAS400;
 import com.ibm.as400.access.AS400Message;
 import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.ConnectionEvent;
@@ -61,11 +62,13 @@ public class QyaspolYasp0300PcmlHandler {
     String host = null;
     String login = null;
     String password = null;
+    Integer ssl = 0;
 
-    public QyaspolYasp0300PcmlHandler(final String host, final String login, final String password) {
+    public QyaspolYasp0300PcmlHandler(final String host, final String login, final String password, final Integer ssl) {
         this.host = host;
         this.login = login;
         this.password = password;
+        this.ssl = ssl;
     }
 
     public void addYasp0300Data(final Yasp0300Data data) {

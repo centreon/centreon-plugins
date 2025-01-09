@@ -45,6 +45,7 @@ public abstract class AbstractHandler {
     protected String host = null;
     protected String login = null;
     protected String password = null;
+    protected Integer ssl = 0;
 
     public AbstractHandler(final String host, final String login, final String password, final Integer ssl) {
         this.host = host;
@@ -80,10 +81,27 @@ public abstract class AbstractHandler {
         properties.setSoTimeout(Conf.as400ReadTimeout);
 
         if (this.ssl == 1) {
-            final SecureAS400 system = new SecureAS400(this.host, this.login, this.password);
-        } else {
-            final AS400 system = new AS400(this.host, this.login, this.password);
+            SecureAS400 system = new SecureAS400(this.host, this.login, this.password);
+            system.setSocketProperties(properties);
+            system.addConnectionListener(new ConnectionListener() {
+                @Override
+                public void connected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Connect event service : " + event.getService());
+                }
+
+                @Override
+                public void disconnected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Disconnect event service : " + event.getService());
+                }
+            });
+
+            system.validateSignon();
+
+            return (AS400)system;
         }
+
+        AS400 system = new AS400(this.host, this.login, this.password);
+
         system.setSocketProperties(properties);
         system.addConnectionListener(new ConnectionListener() {
             @Override
