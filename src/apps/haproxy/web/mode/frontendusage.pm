@@ -235,7 +235,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'add-listeners'   => { name => 'add_listeners' },
+        'add-listeners' => { name => 'add_listeners' },
         'filter-name:s' => { name => 'filter_name' }
     });
 
@@ -282,7 +282,7 @@ sub manage_selection {
     $self->{cache_name} = 'haproxy_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
-#use Data::Dumper; print Dumper($self->{frontends}); exit 0;
+
 }
 
 1;
@@ -291,19 +291,18 @@ __END__
 
 =head1 MODE
 
-Check frontend usage.
+Check HAProxy frontend usage.
 
 =over 8
 
 =item B<--add-listeners>
 
-Also display and monitor listeners related to a given Frontend.
+Also display and monitor listeners related to a given frontend.
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^total-connections$'.
-Available counters: 'status', 'current-sessions', 'total-sessions', 'traffic-in', 'traffic-out'
 
 =item B<--filter-name>
 
