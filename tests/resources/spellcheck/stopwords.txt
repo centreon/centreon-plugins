@@ -46,10 +46,12 @@ dns-resolve-time
 env
 ESX
 eth
+ext4
 fanspeed
 FCCapacity
 Fortigate
 Fortinet
+FreeBSD
 frsevent
 HashiCorp
 hashicorpvault
@@ -177,3 +179,4 @@ WLAN
 WLC
 WSMAN
 XPath
+ZFS
