@@ -51,6 +51,7 @@ FCCapacity
 Fortigate
 Fortinet
 frsevent
+fru
 HashiCorp
 hashicorpvault
 HPE
