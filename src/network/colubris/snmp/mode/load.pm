@@ -49,7 +49,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '1min', set => {
+        { label => '15min', set => {
                 key_values => [ { name => 'load15' } ],
                 output_template => '%s',
                 perfdatas => [
@@ -104,24 +104,38 @@ __END__
 
 =head1 MODE
 
-Check load-average.
+Check average system load.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='15min'
+Example: C<--filter-counters='15min'>
 
-=item B<--warning-*>
+=item B<--warning-1min>
 
-Warning threshold.
-Can be: '1min', '5min', '15min'.
+Thresholds.
 
-=item B<--critical-*>
+=item B<--critical-1min>
 
-Critical threshold.
-Can be: '1min', '5min', '15min'.
+Thresholds.
+
+=item B<--warning-5min>
+
+Thresholds.
+
+=item B<--critical-5min>
+
+Thresholds.
+
+=item B<--warning-15min>
+
+Thresholds.
+
+=item B<--critical-15min>
+
+Thresholds.
 
 =back
 
