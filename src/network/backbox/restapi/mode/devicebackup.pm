@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -45,9 +45,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{backup} = [
-        { label     => 'status',
-          threshold => 0,
-          set       => {
+        { label            => 'status',
+          type             => 2,
+          warning_default  => '%{status} =~ /SUSPECT/i',
+          critical_default => '%{status} =~ /FAILURE/i',
+          set              => {
               key_values                     => [ { name => 'device_id' },
                                                   { name => 'device_name' },
                                                   { name => 'status' },
@@ -55,7 +57,7 @@ sub set_counters {
               ],
               closure_custom_output          => $self->can('custom_status_output'),
               closure_custom_perfdata        => sub { return 0; },
-              closure_custom_threshold_check => \&catalog_status_threshold
+              closure_custom_threshold_check => \&catalog_status_threshold_ng
           }
         }
     ];
@@ -67,10 +69,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'device-id:s'       => { name => 'device_id' },
-        'device-name:s'     => { name => 'device_name' },
-        "warning-status:s"  => { name => 'warning_status', default => '%{status} =~ /SUSPECT/i' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /FAILURE/i' },
+        'device-id:s'   => { name => 'device_id' },
+        'device-name:s' => { name => 'device_name' }
     });
 
     return $self;
@@ -80,7 +80,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => [ 'warning_status', 'critical_status' ]);
     if (centreon::plugins::misc::is_empty($self->{option_results}->{device_id}) && centreon::plugins::misc::is_empty($self->{option_results}->{device_name})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --device-id or --device-name option.");
         $self->{output}->option_exit();
@@ -91,9 +90,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $device_id = $self->{option_results}->{device_id};
-    my $device_name = "";
+    my $device_name = $self->{option_results}->{device_name} || '';
     if (centreon::plugins::misc::is_empty($device_id)) {
-        $device_name = $self->{option_results}->{device_name};
         $device_id = $options{custom}->get_device_id_from_name(device_name => $device_name);
     }
 
@@ -103,8 +101,8 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{backup} = { device_id            => $device_id,
-                        device_name          => $device_name,
+    $self->{backup} = { device_id     => $device_id,
+                        device_name   => $device_name,
                         status        => $backup->{historyStatus},
                         status_reason => $backup->{statusReason}
     };
@@ -128,7 +126,7 @@ ID or name is mandatory.
 =item B<--device-name>
 
 Name of the device (if you prefer to use the name instead of the ID).
-ID or name is mandatory.
+ID or name is mandatory. If you specify both, the ID will be used.
 
 =item B<--warning-status>
 
