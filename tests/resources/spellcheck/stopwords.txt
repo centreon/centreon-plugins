@@ -39,6 +39,12 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+connections-dhcp
+connections-dns
+cpu-utilization
+cpu-utilization-1m
+cpu-utilization-5m
+cpu-utilization-5s
 CPUs
 connections-dhcp
 connections-dns
@@ -47,17 +53,7 @@ cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
---critical-authserver-clients-timeout
---critical-authserver-packets-access-accepts
---critical-authserver-packets-access-requests
---critical-authserver-roundtrip-time
---critical-authservers-total
---critical-backend-congestions
---critical-backend-outstanding-io
---critical-bytesallocatedpercentage
---critical-cpu-utilization
---critical-na
---critical-total-cpu-utilization
+CX
 Datacore
 datasource
 DC4
@@ -77,8 +73,7 @@ dns-resolve-time
 env
 ESX
 eth
---exclude-fs
---failback-file
+ext4
 fanspeed
 FCCapacity
 --filter-fs
@@ -92,6 +87,7 @@ FCCapacity
 --force-oid
 Fortigate
 Fortinet
+FreeBSD
 frsevent
 --get-param
 HashiCorp
@@ -283,3 +279,4 @@ WLAN
 WLC
 WSMAN
 XPath
+ZFS
