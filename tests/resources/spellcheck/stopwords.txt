@@ -23,7 +23,14 @@ centreon
 Centreon
 centreonvault
 CloudWatch
+connections-dhcp
+connections-dns
+cpu-utilization
+cpu-utilization-1m
+cpu-utilization-5m
+cpu-utilization-5s
 CPUs
+CX
 Datacore
 datasource
 DC4
