@@ -55,7 +55,7 @@ sub check {
         $self->{components}->{health}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("health '%s' status is %s [instance: %s].",
-                                    $result->{healthStatus}, $result->{healthString}, $instance));
+                                    $result->{healthString}, $result->{healthStatus}, $instance));
         
         my $exit = $self->get_severity(label => 'default', section => 'default', value => $result->{healthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

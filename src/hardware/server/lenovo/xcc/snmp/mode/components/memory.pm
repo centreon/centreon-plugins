@@ -36,7 +36,7 @@ sub check {
         $self->{components}->{memory}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("'%s' status is %s [instance: %s].",
-                                    $result->{memoryStatus}, $result->{memoryString}, $instance));
+                                    $result->{memoryString}, $result->{memoryStatus}, $instance));
 
         my $exit = $self->get_severity(label => 'default', section => 'default', value => $result->{memoryStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
