@@ -131,12 +131,12 @@ ID or name is mandatory. If you specify both, the ID will be used.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /SUSPECT/i').
-You can use the following variables: %{status}, %{status_reason}.
+You can use the following variables: %{status}, %{status_reason}, %{device_name}, %{device_id}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /FAILURE/i').
-You can use the following variables: %{status}, %{status_reason}.
+You can use the following variables: %{status}, %{status_reason}, %{device_name}, %{device_id}.
 
 =back
 
