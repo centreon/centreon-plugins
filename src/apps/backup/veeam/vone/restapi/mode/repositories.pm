@@ -53,7 +53,7 @@ sub custom_status_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel => 'repository.state.count',
         instances => $self->{result_values}->{name},
         value => $map_repository_state_numeric->{ $self->{result_values}->{state} },
         min => 0
@@ -145,7 +145,6 @@ sub set_counters {
             unknown_default => '%{state} =~ /unknown/i',
             warning_default => '%{state} =~ /warning|outOfDate/i',
             critical_default => '%{state} =~ /inaccessible|disconnected/i',
-            nlabel => 'repository.state.count',
             set => {
                 key_values => [
                     { name => 'state' }, { name => 'name' }, { name => 'type' }

@@ -40,7 +40,7 @@ sub custom_status_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel => 'job.status.count',
         instances => [$self->{result_values}->{type}, $self->{result_values}->{name}],
         value => $map_job_status_numeric->{ $self->{result_values}->{status} },
         min => 0
@@ -119,7 +119,6 @@ sub set_counters {
             unknown_default => '%{status} =~ /unknown/i',
             warning_default => '%{status} =~ /warning/i',
             critical_default => '%{status} =~ /failed/i',
-            nlabel => 'job.status.count',
             set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'type' }
