@@ -41,19 +41,19 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'            => { name => 'hostname' },
-            'port:s'                => { name => 'port', },
-            'proto:s'               => { name => 'proto' },
-            'urlpath:s'             => { name => 'url_path' },
-            'credentials'           => { name => 'credentials' },
-            'basic'                 => { name => 'basic' },
-            'ntlmv2'                => { name => 'ntlmv2' },
-            'username:s'            => { name => 'username' },
-            'password:s'            => { name => 'password' },
-            'timeout:s'             => { name => 'timeout' },
+            'basic'                  => { name => 'basic' },
+            'credentials'            => { name => 'credentials' },
+            'hostname:s'             => { name => 'hostname' },
+            'ntlmv2'                 => { name => 'ntlmv2' },
+            'password:s'             => { name => 'password' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto' },
+            'timeout:s'              => { name => 'timeout' },
+            'urlpath:s'              => { name => 'url_path' },
+            'username:s'             => { name => 'username' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'warning-http-status:s'  => { name => 'warning_http_status' }
         });
     }
 
@@ -154,11 +154,11 @@ __END__
 
 =head1 NAME
 
-HAProxy HTTP custom Mode
+HAProxy HTTP custom mode for web json stats
 
 =head1 API OPTIONS
 
-HAProxy HTTP
+HAProxy web stats
 
 =over 8
 

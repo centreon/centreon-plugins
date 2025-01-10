@@ -88,9 +88,9 @@ sub disco_show {
     my $backends = $self->manage_selection(%options);
     foreach (sort keys %$backends) {
         $self->{output}->add_disco_entry(
-            name => $backends->{$_}->{pxname},
+            name   => $backends->{$_}->{pxname},
             status => $backends->{$_}->{status},
-            type => $backends->{$_}->{type},
+            type   => $backends->{$_}->{type},
         );
     }
 }

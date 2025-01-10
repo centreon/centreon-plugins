@@ -297,19 +297,18 @@ __END__
 
 =head1 MODE
 
-Check backend usage.
+Check HAProxy backend usage.
 
 =over 8
 
 =item B<--add-servers>
 
-Also display and monitor Servers related to a given Backend.
+Also display and monitor Servers related to a given backend.
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^total-connections$'.
-Available counters: 'status', 'current-sessions', 'total-sessions', 'traffic-in', 'traffic-out'
 
 =item B<--filter-name>
 
