@@ -36,7 +36,7 @@ sub check {
         $self->{components}->{cpu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("'%s' status is %s [instance: %s].",
-                                    $result->{cpuStatus}, $result->{cpuString}, $instance));
+                                    $result->{cpuString}, $result->{cpuStatus}, $instance));
 
         my $exit = $self->get_severity(label => 'default', section => 'default', value => $result->{cpuStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
