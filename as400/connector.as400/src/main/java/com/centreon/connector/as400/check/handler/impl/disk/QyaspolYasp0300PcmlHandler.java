@@ -241,7 +241,27 @@ public class QyaspolYasp0300PcmlHandler {
         properties.setLoginTimeout(Conf.as400LoginTimeout);
         properties.setSoTimeout(Conf.as400ReadTimeout);
 
-        final AS400 system = new AS400(this.host, this.login, this.password);
+        if (this.ssl == 1) {
+            SecureAS400 system = new SecureAS400(this.host, this.login, this.password);
+            system.setSocketProperties(properties);
+            system.addConnectionListener(new ConnectionListener() {
+                @Override
+                public void connected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Connect event service : " + event.getService());
+                }
+
+                @Override
+                public void disconnected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Disconnect event service : " + event.getService());
+                }
+            });
+
+            system.validateSignon();
+
+            return (AS400)system;
+        }
+
+        AS400 system = new AS400(this.host, this.login, this.password);
         system.setSocketProperties(properties);
         system.addConnectionListener(new ConnectionListener() {
             @Override
