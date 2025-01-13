@@ -13,8 +13,10 @@ ACS
 ADSL
 Alcatel
 allCapacity
+allsteps
 Ansible
 --api-filter-orgs
+api.ip-label.net
 api.meraki.com
 --api-password
 --api-path
@@ -31,6 +33,7 @@ AWSCLI
 Backbox
 base64
 blocked-by-uf
+BPL
 --cacert-file
 cardtemperature
 centreon
@@ -41,14 +44,8 @@ centreonvault
 CloudWatch
 connections-dhcp
 connections-dns
-cpu-utilization
-cpu-utilization-1m
-cpu-utilization-5m
-cpu-utilization-5s
-CPUs
-connections-dhcp
-connections-dns
 cpu
+CPUs
 cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
@@ -64,11 +61,12 @@ dev
 df
 --dfsr
 dfsrevent
+--diskpath
 --display-transform-dst
 --display-transform-src
---diskpath
 dns-resolve-time
 --dyn-mode
+Ekara
 -EncodedCommand
 env
 ESX
@@ -93,6 +91,7 @@ frsevent
 HashiCorp
 hashicorpvault
 HPE
+HTTPR
 Huawei
 ifAlias
 ifDesc
@@ -110,6 +109,7 @@ InterrupibleSleep
 in-ucast
 iops
 IpAddr
+ip-label
 ipv4
 ipv6
 ISAM
@@ -178,10 +178,10 @@ NTP
 NVOS
 --oid
 OID
-OIDs
 --oid-display
 --oid-extra-display
 --oid-filter
+OIDs
 okta
 oneaccess-sys-mib
 OpenMetrics
@@ -221,9 +221,9 @@ SkyHigh
 SnapMirror
 SnapMirrors
 SNMP
+snmpd.conf
 space-usage-prct
 --sql-errors-exit
-snmpd.conf
 SSDCapacity
 SSH
 statefile
