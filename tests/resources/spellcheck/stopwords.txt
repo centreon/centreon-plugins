@@ -129,8 +129,8 @@ ldap
 --legacy-api-beta
 license-instances-usage-prct
 Loggly
---lookback
---lookup-perfdatas-nagios
+LUN
+LUNs
 machineaccount
 --map-speed-dsl
 MBean
@@ -204,11 +204,9 @@ proto
 --proxyurl
 psu
 QoS
+Qtree
 queue-messages-inflighted
 raidvolume
---redis-attribute
---redis-db
---redis-server
 RestAPI
 RFC1628
 RRDCached
@@ -220,6 +218,8 @@ SFDC
 sfp.temperature
 --skip-ssl-check
 SkyHigh
+SnapMirror
+SnapMirrors
 SNMP
 space-usage-prct
 --sql-errors-exit
@@ -259,6 +259,7 @@ v2
 VDSL2
 Veeam
 VeloCloud
+Vserver
 VM
 VMware
 VPN
