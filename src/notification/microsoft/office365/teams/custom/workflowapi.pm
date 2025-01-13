@@ -42,10 +42,11 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'teams-workflow:s' => { name => 'teams_workflow' },
-            'port:s'           => { name => 'port' },
-            'proto:s'          => { name => 'proto' },
-            'timeout:s'        => { name => 'timeout' }
+            'teams-workflow:s'      => { name => 'teams_workflow' },
+            'teams-workflow-params:s@' => { name => 'teams_workflow_params'},
+            'port:s'                => { name => 'port' },
+            'proto:s'               => { name => 'proto' },
+            'timeout:s'             => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -70,6 +71,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{teams_workflow} = (defined($self->{option_results}->{teams_workflow})) ? $self->{option_results}->{teams_workflow} : '';
+    $self->{teams_workflow_params} = (defined($self->{option_results}->{teams_workflow_params})) ? $self->{option_results}->{teams_workflow_params} : '';
     $self->{proto}          = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port}           = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{timeout}        = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
@@ -79,7 +81,14 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    if ($self->{teams_workflow_params} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify the --teams-workflow-params option.');
+        $self->{output}->option_exit();
+    }
+
     $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
+    use Data::Dumper;print(Dumper($self->{teams_workflow_params}));
+    print($self->{teams_workflow_params} . "\n");
 
     return 0;
 }
@@ -104,10 +113,15 @@ sub teams_post_notification {
     my ($self, %options) = @_;
 
     my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
+    my $full_url = $self->{teams_workflow} . '?';
+    foreach (@{$self->{teams_workflow_params}}) {
+         $full_url .= $_ . '&';
+    }
 
+    $full_url =~ s/&$//; 
     my $content = $self->{http}->request(
         method          => 'POST',
-        full_url        => $self->{teams_workflow},
+        full_url        => $full_url,
         query_form_post => $encoded_data
     );
 
@@ -132,7 +146,11 @@ O365 Teams Workflows API
 
 =item B<--teams-workflow>
 
-Define the Workflow full URI (required).
+Define the Workflow URL (required).
+
+=item B<--teams-workflow-params>
+
+Define the Workflow URL parameters (required).
 
 =item B<--port>
 
