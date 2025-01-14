@@ -24,7 +24,9 @@ jobs:
 
   package-rpm:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     runs-on: ubuntu-24.04
     strategy:
@@ -238,7 +240,10 @@ jobs:
           retention-days: 1
 
   merge-package-rpm-artifacts:
-    needs: [package-rpm]
+    needs: [get-environment, package-rpm]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -260,7 +265,10 @@ jobs:
           failOnError: false
 
   sign-rpm:
-    needs: [merge-package-rpm-artifacts]
+    needs: [get-environment, merge-package-rpm-artifacts]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     runs-on: ubuntu-24.04
     strategy:
@@ -298,7 +306,9 @@ jobs:
 
   package-deb:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     runs-on: ${{ matrix.runner_name }}
     strategy:
@@ -316,6 +326,8 @@ jobs:
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "Device::Modbus",
+            "Device::Modbus::RTU::Client",
+            "Device::Modbus::TCP::Client",
             "Digest::SHA1",
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
@@ -356,6 +368,10 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: "Device::Modbus::RTU::Client"
+            build_distribs: "bookworm"
+          - name: "Device::Modbus::TCP::Client"
+            build_distribs: "bookworm"
           - name: "Net::Amazon::Signature::V4"
             build_distribs: ["bullseye", "jammy"]
           - name: "Net::MQTT::Simple"
@@ -464,7 +480,10 @@ jobs:
           retention-days: 1
 
   merge-package-deb-artifacts:
-    needs: [package-deb]
+    needs: [get-environment, package-deb]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -486,7 +505,10 @@ jobs:
           failOnError: false
 
   download-and-cache-deb:
-    needs: [merge-package-deb-artifacts]
+    needs: [get-environment, merge-package-deb-artifacts]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -505,6 +527,7 @@ jobs:
   deliver-packages:
     needs: [get-environment, sign-rpm, download-and-cache-deb]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -539,3 +562,12 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

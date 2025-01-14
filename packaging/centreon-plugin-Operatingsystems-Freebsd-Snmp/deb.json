@@ -1,6 +1,7 @@
 {
     "dependencies": [
         "libsnmp-perl",
-        "libdatetime-perl"
+        "libdatetime-perl",
+        "libnet-ntp-perl"
     ]
 }
