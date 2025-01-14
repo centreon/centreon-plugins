@@ -250,7 +250,12 @@ jobs:
       - name: "Get release: 1 for testing / stable, <date>.<commit_sha> for others"
         id: get_release
         run: |
-          RELEASE=$(date '+%H%M%S')
+          RELEASE=$(echo ${{ github.ref_name }} | cut -d "-" -f2)-1
+
+          if [[ $(#RELEASE) != 10 || ${RELEASE::2} != 20 || ! ${RELEASE:4: -4} =~ ^0[1-9]$|1[0-2]$ ]]; then
+            echo "invalid release name"
+            exit 1
+          fi
 
           echo "release=$RELEASE" >> $GITHUB_OUTPUT
         shell: bash
