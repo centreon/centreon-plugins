@@ -107,8 +107,6 @@ jobs:
     #   contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) &&
     #   (startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-'))
     uses: ./.github/workflows/get-environment.yml
-    with:
-      version_file: centreon/www/install/insertBaseConf.sql
 
   check-cherry-pick:
     needs: [get-environment, check-status]
