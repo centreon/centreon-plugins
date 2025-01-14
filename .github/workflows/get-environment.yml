@@ -267,7 +267,6 @@ jobs:
             }
 
             core.setOutput('release', release);
-        shell: bash
 
       - name: "Get release type: hotfix, release or not defined if not a release"
         id: get_release_type
