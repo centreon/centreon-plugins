@@ -177,6 +177,11 @@ runs:
           const path = require('path');
           const globber = await glob.create('*.${{ steps.parse-distrib.outputs.package_extension }}');
 
+          let stableRpmSubdirectory = '';
+          if ('${{ inputs.stability }}' === 'stable') {
+            stableRpmSubdirectory = 'RPMS/';
+          }
+
           const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
 
           for await (const file of globber.globGenerator()) {
@@ -188,7 +193,7 @@ runs:
                 arch = 'x86_64';
               }
               await exec.exec(
-                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
+                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${stableRpmSubdirectory}${{ inputs.module_name }}/" --flat`
               );
             } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
               let arch = 'all';
