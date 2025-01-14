@@ -26,6 +26,9 @@ on:
       skip_workflow:
         description: "if the current workflow should be skipped"
         value: ${{ jobs.get-environment.outputs.skip_workflow }}
+      labels:
+        description: "list of labels on the PR"
+        value: ${{ jobs.get-environment.outputs.labels }}
 
 jobs:
   get-environment:
@@ -38,6 +41,7 @@ jobs:
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
       skip_workflow: ${{ steps.skip_workflow.outputs.result }}
+      labels: ${{ steps.has_skip_label.outputs.labels }}
 
     steps:
       - name: Check if PR has skip label
@@ -46,14 +50,17 @@ jobs:
         with:
           script: |
             let hasSkipLabel = false;
+            let labels = [];
+
             if (${{ contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }} === true) {
               try {
-                const labels = await github.rest.issues.listLabelsOnIssue({
+                const fetchedLabels = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number
                 });
-                labels.data.forEach(({ name }) => {
+                fetchedLabels.data.forEach(({ name }) => {
+                  labels.push(name);
                   if (name === '${{ format('skip-workflow-{0}', github.workflow) }}') {
                     hasSkipLabel = true;
                   }
@@ -62,6 +69,9 @@ jobs:
                 core.warning(`failed to list labels: ${e}`);
               }
             }
+
+            core.setOutput('labels', labels);
+
             return hasSkipLabel;
 
       - name: Checkout sources (current branch)
@@ -289,7 +299,8 @@ jobs:
               ['release_type', '${{ steps.get_release_type.outputs.release_type || '<em>not defined because this is not a release</em>' }}'],
               ['is_targeting_feature_branch', '${{ steps.get_stability.outputs.is_targeting_feature_branch }}'],
               ['target_stability', '${{ steps.get_stability.outputs.target_stability || '<em>not defined because current run is not triggered by pull request event</em>' }}'],
-              ['skip_workflow', '${{ steps.skip_workflow.outputs.result }}']
+              ['skip_workflow', '${{ steps.skip_workflow.outputs.result }}'],
+              ['labels', '${{ steps.has_skip_label.outputs.labels }}'],
             ];
             core.summary
               .addHeading(`${context.workflow} environment outputs`)
