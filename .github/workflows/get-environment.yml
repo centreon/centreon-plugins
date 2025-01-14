@@ -54,7 +54,7 @@ jobs:
 
             if (${{ contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }} === true) {
               try {
-                const labels = await github.rest.issues.listLabelsOnIssue({
+                const fetchedLabels = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number
