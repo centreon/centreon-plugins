@@ -24,16 +24,17 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = "Current HA State: '" . $self->{result_values}->{hastate} . "' ";
-    $msg .= "Peer HA State: '" . $self->{result_values}->{peer_hastate} . "' ";
-    $msg .= "HA Port: '" . $self->{result_values}->{ha_port} . "' ";
-    $msg .= "HA IP: '" . $self->{result_values}->{ha_ip} . "' ";
-    $msg .= "Peer IP: '" . $self->{result_values}->{ha_peer_ip} . "' ";
+    my $msg = "HA is '" . $self->{result_values}->{hastatus} . "' - ";
+    $msg .= "Current HA State: '" . $self->{result_values}->{hastate} . "' - ";
+    $msg .= "Peer HA State: '" . $self->{result_values}->{peer_hastate} . "' - ";
+    $msg .= "HA Port: '" . $self->{result_values}->{ha_port} . "' - ";
+    $msg .= "HA IP: '" . $self->{result_values}->{ha_ip} . "' - ";
+    $msg .= "Peer IP: '" . $self->{result_values}->{ha_peer_ip} . "'";
     return $msg;
 }
 
@@ -41,28 +42,27 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ha', type => 0 },
+            { name => 'ha', type => 0 },
     ];
 
     $self->{maps_counters}->{ha} = [
-        { label => 'status', threshold => 0, set => {
-            key_values                     =>
-                [
+        {
+            label     => 'status',
+            type      => 2,
+            set       => {
+                key_values => [
                     { name => 'hastate' },
+                    { name => 'hastatus' },
                     { name => 'peer_hastate' },
                     { name => 'ha_port' },
                     { name => 'ha_ip' },
                     { name => 'ha_peer_ip' }
                 ],
-            closure_custom_calc            =>
-                \&catalog_status_calc,
-            closure_custom_output          =>
-                $self->can('custom_status_output'),
-            closure_custom_perfdata        =>
-                sub {return 0;},
-            closure_custom_threshold_check =>
-                \&catalog_status_threshold
-        }
+                default_critical               => '%{hastatus} =~ /^enabled$/ && %{hastate} =~ /^faulty$/',
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
         }
     ];
 }
@@ -73,12 +73,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  =>
-            { name => 'warning_status', default => '' },
-        'critical-status:s' =>
-            { name => 'critical_status', default => '%{hastatus} =~ /^enabled$/ && %{hastate} =~ /^faulty$/' },
-        'no-ha-status:s'    =>
-            { name => 'no_ha_status', default => 'UNKNOWN' }
+        'no-ha-status:s' => { name => 'no_ha_status', default => 'UNKNOWN' }
     });
 
     return $self;
@@ -90,8 +85,34 @@ sub check_options {
 
     $self->change_macros(macros => [ 'warning_status', 'critical_status' ]);
 }
+# snmptranslate -Td .1.3.6.1.4.1.2604.5.1.4.1.0
+# SFOS-FIREWALL-MIB::sfosHAStatus.0
+# sfosHAStatus OBJECT-TYPE
+#   -- FROM	SFOS-FIREWALL-MIB
+#   -- TEXTUAL CONVENTION HaStatusType
+#   SYNTAX	INTEGER {disabled(0), enabled(1)}
+#   MAX-ACCESS	read-only
+#   STATUS	current
+#   DESCRIPTION	" "
+# ::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) sophosMIB(2604) sfosXGMIB(5) sfosXGMIBObjects(1) sfosXGHAStats(4) sfosHAStatus(1) 0 }
 
 my %map_status = (
+    0 => 'disabled',
+    1 => 'enabled'
+);
+
+# snmptranslate -Td .1.3.6.1.4.1.2604.5.1.4.4.0
+# SFOS-FIREWALL-MIB::sfosDeviceCurrentHAState.0
+# sfosDeviceCurrentHAState OBJECT-TYPE
+#   -- FROM	SFOS-FIREWALL-MIB
+#   -- TEXTUAL CONVENTION HaState
+#   SYNTAX	INTEGER {notapplicable(0), auxiliary(1), standAlone(2), primary(3), faulty(4), ready(5)}
+#   MAX-ACCESS	read-only
+#   STATUS	current
+#   DESCRIPTION	"HA State of current Device"
+# ::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) sophosMIB(2604) sfosXGMIB(5) sfosXGMIBObjects(1) sfosXGHAStats(4) sfosDeviceCurrentHAState(4) 0 }
+
+my %map_state = (
     0 => 'notapplicable',
     1 => 'auxiliary',
     2 => 'standAlone',
@@ -133,8 +154,8 @@ sub manage_selection {
     }
     $self->{ha} = {
         hastatus     => $map_status{$result->{$oid_ha_status}},
-        hastate      => $map_status{$result->{$oid_ha_state}},
-        peer_hastate => $map_status{$result->{$oid_peer_ha_state}},
+        hastate      => $map_state{$result->{$oid_ha_state}},
+        peer_hastate => $map_state{$result->{$oid_peer_ha_state}},
         ha_port      => $result->{$oid_ha_port},
         ha_ip        => $result->{$oid_ha_ip},
         ha_peer_ip   => $result->{$oid_ha_peer_ip}
