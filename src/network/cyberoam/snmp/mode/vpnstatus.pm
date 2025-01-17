@@ -62,8 +62,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name                 => 'vpn',
+        {
+            name             => 'global',
+            type             => 0,
+            cb_prefix_output => 'prefix_global_output'
+        },
+        {
+            name               => 'vpn',
             type               => 3,
             cb_prefix_output   => 'prefix_vpn_output',
             cb_long_output     => 'vpn_long_output',
@@ -76,56 +81,68 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'vpn.total.count', set => {
-            key_values      => [ { name => 'total' } ],
-            output_template => 'total: %s',
-            perfdatas       => [
-                { label => 'total', template => '%s', min => 0 }
-            ]
-        }
+        {
+            label  => 'total',
+            type   => 1,
+            nlabel => 'vpn.total.count',
+            set    => {
+                key_values      => [ { name => 'total' } ],
+                output_template => 'total: %s',
+                perfdatas       => [
+                    { label => 'total', template => '%s', min => 0 }
+                ]
+            }
         },
-        { label => 'total-inactive', nlabel => 'vpn.inactive.count', set => {
-            key_values      => [ { name => 'inactive' } ],
-            output_template => 'inactive: %s',
-            perfdatas       => [
-                { label => 'total_inactive', template => '%s', min => 0 }
-            ]
-        }
+        {
+            label  => 'total-inactive',
+            type   => 1,
+            nlabel => 'vpn.inactive.count',
+            set    => {
+                key_values      => [ { name => 'inactive' } ],
+                output_template => 'inactive: %s',
+                perfdatas       => [
+                    { label => 'total_inactive', template => '%s', min => 0 }
+                ]
+            }
         },
-        { label => 'total-active', nlabel => 'vpn.active.count', set => {
-            key_values      => [ { name => 'active' } ],
-            output_template => 'active: %s',
-            perfdatas       => [
-                { label => 'total_active', template => '%s', min => 0 }
-            ]
-        }
+        {
+            label  => 'total-active',
+            type   => 1,
+            nlabel => 'vpn.active.count',
+            set    => {
+                key_values      => [ { name => 'active' } ],
+                output_template => 'active: %s',
+                perfdatas       => [
+                    { label => 'total_active', template => '%s', min => 0 }
+                ]
+            }
         },
-        { label => 'total-partially-active', nlabel => 'vpn.partiallyactive.count', set => {
-            key_values      => [ { name => 'partiallyActive' } ],
-            output_template => 'partially active: %s',
-            perfdatas       => [
-                { label => 'total_partially_active', template => '%s', min => 0 }
-            ]
-        }
+        {
+            label  => 'total-partially-active',
+            type   => 1,
+            nlabel => 'vpn.partiallyactive.count',
+            set    => {
+                key_values      => [ { name => 'partiallyActive' } ],
+                output_template => 'partially active: %s',
+                perfdatas       => [
+                    { label => 'total_partially_active', template => '%s', min => 0 }
+                ]
+            }
         }
     ];
 
     $self->{maps_counters}->{vpn_global} = [
-        { label              => 'status',
+        {
+            label            => 'status',
             type             => 2,
             critical_default => '%{connection_status} =~ /inactive/',
             warning_default  => '%{connection_status} =~ /partiallyActive/',
-            set              =>
-                {
-                    key_values                     =>
-                        [ { name => 'connection_status' }, { name => 'display' }, { name => 'description' } ],
-                    closure_custom_output          =>
-                        $self->can('custom_status_output'),
-                    closure_custom_perfdata        =>
-                        sub {return 0;},
-                    closure_custom_threshold_check =>
-                        \&catalog_status_threshold_ng
-                }
+            set              => {
+                key_values                     => [ { name => 'connection_status' }, { name => 'display' }, { name => 'description' } ],
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
         }
     ];
 }
@@ -145,17 +162,44 @@ sub new {
     return $self;
 }
 
+# SFOS-FIREWALL-MIB::sfosIPSecVpnConnStatus
+# sfosIPSecVpnConnStatus OBJECT-TYPE
+#   -- FROM	SFOS-FIREWALL-MIB
+#   -- TEXTUAL CONVENTION IPSecVPNConnectionStatus
+#   SYNTAX	INTEGER {inactive(0), active(1), partially-active(2)}
+#   MAX-ACCESS	read-only
+#   STATUS	current
+#   DESCRIPTION	"Connection status of IPsec tunnel"
+# ::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) sophosMIB(2604) sfosXGMIB(5) sfosXGMIBObjects(1) sfosXGTunnelInfo(6) sfosVPNInfo(1) sfosIPSecVPNConnInfo(1) sfosIPSecVpnTunnelTable(1) sfosIPSecVpnTunnelEntry(1) 9 }
 my $map_connection_status = {
     0 => 'inactive',
     1 => 'active',
     2 => 'partiallyActive'
 };
 
+# SFOS-FIREWALL-MIB::sfosIPSecVpnActivated
+# sfosIPSecVpnActivated OBJECT-TYPE
+#   -- FROM	SFOS-FIREWALL-MIB
+#   -- TEXTUAL CONVENTION IPSecVPNActivationStatus
+#   SYNTAX	INTEGER {inactive(0), active(1)}
+#   MAX-ACCESS	read-only
+#   STATUS	current
+#   DESCRIPTION	"Activation status of IPsec tunnel"
+# ::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) sophosMIB(2604) sfosXGMIB(5) sfosXGMIBObjects(1) sfosXGTunnelInfo(6) sfosVPNInfo(1) sfosIPSecVPNConnInfo(1) sfosIPSecVpnTunnelTable(1) sfosIPSecVpnTunnelEntry(1) 10 }
 my $map_vpn_activated = {
     0 => 'inactive',
     1 => 'active'
 };
 
+# SFOS-FIREWALL-MIB::sfosIPSecVpnConnType
+# sfosIPSecVpnConnType OBJECT-TYPE
+#   -- FROM	SFOS-FIREWALL-MIB
+#   -- TEXTUAL CONVENTION IPSecVPNConnectionType
+#   SYNTAX	INTEGER {host-to-host(1), site-to-site(2), tunnel-interface(3)}
+#   MAX-ACCESS	read-only
+#   STATUS	current
+#   DESCRIPTION	"Connection Type of IPsec Tunnel"
+# ::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) sophosMIB(2604) sfosXGMIB(5) sfosXGMIBObjects(1) sfosXGTunnelInfo(6) sfosVPNInfo(1) sfosIPSecVPNConnInfo(1) sfosIPSecVpnTunnelTable(1) sfosIPSecVpnTunnelEntry(1) 6 }
 my $map_connection_type = {
     1 => 'host-to-host',
     2 => 'site-to-site',
@@ -163,14 +207,10 @@ my $map_connection_type = {
 };
 
 my $mapping = {
-    name            =>
-        { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.2' },# sfosIPSecVpnConnName
-    connection_mode =>
-        { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.5' },# sfosIPSecVpnConnMode
-    connection_type =>
-        { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.6', map => $map_connection_type },# sfosIPSecVpnConnType
-    activated       =>
-        { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.10', map => $map_vpn_activated }# sfosIPSecVpnActivated
+    name            => { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.2' },# sfosIPSecVpnConnName
+    connection_mode => { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.5' },# sfosIPSecVpnConnMode
+    connection_type => { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.6', map => $map_connection_type },# sfosIPSecVpnConnType
+    activated       => { oid => '.1.3.6.1.4.1.2604.5.1.6.1.1.1.1.10', map => $map_vpn_activated }# sfosIPSecVpnActivated
 };
 
 my $mapping_stat = {
@@ -212,37 +252,25 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{name} . "': no matching name filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': not matching name filter.");
             next;
         }
 
         if (defined($self->{option_results}->{filter_connection_type}) && $self->{option_results}->{filter_connection_type} ne '' &&
             $result->{connection_type} !~ /$self->{option_results}->{filter_connection_type}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{connection_type} . "': no matching connection-type filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{connection_type} . "': not matching connection-type filter.");
             next;
         }
 
         if (defined($self->{option_results}->{filter_connection_mode}) && $self->{option_results}->{filter_connection_mode} ne '' &&
             $result->{connection_mode} !~ /$self->{option_results}->{filter_connection_mode}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{connection_mode} . "': no matching connection-mode filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{connection_mode} . "': not matching connection-mode filter.");
             next;
         }
 
         if (defined($self->{option_results}->{filter_vpn_activated}) && $self->{option_results}->{filter_vpn_activated} ne '' &&
             $result->{activated} !~ /$self->{option_results}->{filter_vpn_activated}/) {
-            $self->{output}->output_add(long_msg =>
-                "skipping '" . $result->{activated} . "': no matching vpn-activated filter.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{activated} . "': not matching vpn-activated filter " . $self->{option_results}->{filter_vpn_activated} . ".");
             next;
         }
 
@@ -321,10 +349,37 @@ Trigger warning on %{connection_status} values.
 Trigger critical on %{connection_status} values.
 (default: '%{connection_status} =~ /inactive/').
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-total>
 
 Thresholds.
-Can be: 'total', 'total-inactive', 'total-partiallyActive', 'total-active'.
+
+=item B<--critical-total>
+
+Thresholds.
+
+=item B<--warning-total-inactive>
+
+Thresholds.
+
+=item B<--critical-total-inactive>
+
+Thresholds.
+
+=item B<--warning-total-partiallyActive>
+
+Thresholds.
+
+=item B<--critical-total-partiallyActive>
+
+Thresholds.
+
+=item B<--warning-total-active>
+
+Thresholds.
+
+=item B<--critical-total-active>
+
+Thresholds.
 
 =back
 
