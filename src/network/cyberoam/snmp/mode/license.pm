@@ -37,20 +37,13 @@ sub custom_expires_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel    =>
-            $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        unit      =>
-            $self->{instance_mode}->{option_results}->{unit},
-        instances =>
-            $self->{result_values}->{name},
-        value     =>
-            floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
-        warning   =>
-            $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical  =>
-            $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min       =>
-            0
+        nlabel    => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        unit      => $self->{instance_mode}->{option_results}->{unit},
+        instances => $self->{result_values}->{name},
+        value     => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
     );
 }
 
@@ -88,38 +81,38 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name               =>
-            'licenses',
-            type             =>
-                1,
-            cb_prefix_output =>
-                'prefix_license_output',
-            message_multiple =>
-                'All licenses are ok',
-            skipped_code     =>
-                { -10 => 1 } }
+        {
+            name             => 'licenses',
+            type             => 1,
+            cb_prefix_output => 'prefix_license_output',
+            message_multiple => 'All licenses are ok',
+            skipped_code     => { -10 => 1 }
+        }
     ];
 
     $self->{maps_counters}->{licenses} = [
-        { label => 'status', type => 2, critical_default => '%{status} =~ /expired/i', set => {
-            key_values                     => [ { name => 'name' }, { name => 'status' }, { name => 'expires_human' } ],
-            closure_custom_output          => $self->can('custom_status_output'),
-            closure_custom_perfdata        => sub {return 0;},
-            closure_custom_threshold_check => \&catalog_status_threshold_ng
-        }
+        {
+            label            => 'status',
+            type             => 2,
+            critical_default => '%{status} =~ /expired/i',
+            set              => {
+                key_values                     => [ { name => 'name' }, { name => 'status' }, { name => 'expires_human' } ],
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
         },
-        { label => 'expires', nlabel => 'license.expires', set => {
-            key_values                     =>
-                [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' } ],
-            output_template                =>
-                'expires in %s',
-            output_use                     =>
-                'expires_human',
-            closure_custom_perfdata        =>
-                $self->can('custom_expires_perfdata'),
-            closure_custom_threshold_check =>
-                $self->can('custom_expires_threshold')
-        }
+        {
+            label  => 'expires',
+            type => 1,
+            nlabel => 'license.expires',
+            set    => {
+                key_values                     => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' } ],
+                output_template                => 'expires in %s',
+                output_use                     => 'expires_human',
+                closure_custom_perfdata        => $self->can('custom_expires_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_expires_threshold')
+            }
         }
     ];
 }
@@ -284,10 +277,17 @@ You can use the following variables: %{name}, %{status}.
 
 Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-expires>
 
-Thresholds.
-Can be: 'expires'.
+Threshold.
+Example: C<--unit=w --warning-expires=2:> will result in a WARNING state when one of the licenses expires in less than
+two weeks.
+
+=item B<--critical-expires>
+
+Threshold.
+Example: C<--unit=w --critical-expires=2:> will result in a CRITICAL state when one of the licenses expires in less than
+two weeks.
 
 =back
 

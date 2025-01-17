@@ -15,7 +15,7 @@ ha-status ${tc}
     [Tags]    network    cyberoam
     ${command}    Catenate
     ...    ${CMD}
-    ...    --mode=ha-status
+    ...    --mode=license
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
@@ -23,13 +23,12 @@ ha-status ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                          expected_result    --
-            ...      1     ${EMPTY}                                                               OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      2     --warning-status='\\\%{hastate} eq "primary"'                          WARNING: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      3     --critical-status='\\\%{hastate} eq "primary"'                         CRITICAL: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      4     --warning-status='\\\%{hastatus} ne "primary"'                         WARNING: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      5     --critical-status='\\\%{hastatus} eq "enabled"'                        OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      6     --warning-status='\\\%{peer_hastate} ne "auxiliary"'                   OK: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
-            ...      7     --critical-status='\\\%{peer_hastate} ne "primary"'                    CRITICAL: Current HA State: 'primary' Peer HA State: 'auxiliary' HA Port: 'Anonymized 007' HA IP: '192.168.42.167' Peer IP: '192.168.42.23'
+            ...      1     ${EMPTY}                                                               OK: All licenses are ok \\\\| 'base_fw#license.expires.seconds'=\\\\d+s;;;0; 'net_protection#license.expires.seconds'=\\\\d+s;;;0; 'web_protection#license.expires.seconds'=\\\\d+s;;;0;
+            ...      2     --unit=w                                                               OK: All licenses are ok \\\\| 'base_fw#license.expires.weeks'=\\\\d+w;;;0; 'net_protection#license.expires.weeks'=\\\\d+w;;;0; 'web_protection#license.expires.weeks'=\\\\d+w;;;0;
+            ...      3     --unit=w --warning-expires=0                                           WARNING: License 'base_fw' expires in.* \\\\| 'base_fw#license.expires.weeks'=\\\\d+w;0:0;;0; 'net_protection#license.expires.weeks'=\\\\d+w;0:0;;0; 'web_protection#license.expires.weeks'=\\\\d+w;0:0;;0;
+            ...      4     --unit=w --critical-expires=0                                          CRITICAL: License 'base_fw' expires in.* \\\\| 'base_fw#license.expires.weeks'=\\\\d+w;;0:0;0; 'net_protection#license.expires.weeks'=\\\\d+w;;0:0;0; 'web_protection#license.expires.weeks'=\\\\d+w;;0:0;0;
+            ...      5     --unit=w --warning-expires=1000000:                                    WARNING: License 'base_fw' expires in.* \\\\| 'base_fw#license.expires.weeks'=\\\\d+w;1000000:;;0; 'net_protection#license.expires.weeks'=\\\\d+w;1000000:;;0; 'web_protection#license.expires.weeks'=\\\\d+w;1000000:;;0;
+            ...      6     --unit=w --critical-expires=1000000:                                   CRITICAL: License 'base_fw' expires in.* \\\\| 'base_fw#license.expires.weeks'=\\\\d+w;;1000000:;0; 'net_protection#license.expires.weeks'=\\\\d+w;;1000000:;0; 'web_protection#license.expires.weeks'=\\\\d+w;;1000000:;0;
