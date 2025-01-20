@@ -34,16 +34,6 @@ sub custom_status_output {
     return sprintf('status: %s (%s)', $self->{result_values}->{status}, $self->{result_values}->{num_status});
 }
 
-sub custom_date_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'last execution: %s (%s ago)',
-        $self->{result_values}->{lastexec},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{freshness})
-    );
-}
-
 sub prefix_scenario_output {
     my ($self, %options) = @_;
 
@@ -131,9 +121,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'      => { name => 'filter_id' },
-        'filter-name:s'    => { name => 'filter_name' },
-        'filter-status:s@' => { name => 'filter_status' },
+
         'filter-type:s'    => { name => 'filter_type' },
         'timeframe:s'      => { name => 'timeframe'}
     });
@@ -162,35 +150,14 @@ my $status_mapping = {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $status_filter = {};
-    if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status}[0] ne '') {
-        $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
-    }
-
-    my $results = $options{custom}->request_api(
-        endpoint => '/results-api/scenarios/status',
-        method => 'POST',
-        post_body => $status_filter
-    );
+    my $results = $options{custom}->request_scenarios_status();
 
     my $time = time();
     my $start_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time - $self->{timeframe}));
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
-    foreach (@$results) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $_->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-
+    foreach my $scenario (@$results) {
         my $scenario_detail = $options{custom}->request_api(
-            endpoint => '/results-api/results/' . $_->{scenarioId},
+            endpoint => '/results-api/results/' . $scenario->{scenarioId},
             method => 'POST',
             get_param => [
                 'from=' . $start_date,
@@ -200,35 +167,38 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $scenario_detail->{infos}->{plugin_id} !~ /$self->{option_results}->{filter_type}/i) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{scenarios}->{ $_->{scenarioName} } = {
-            display => $_->{scenarioName},
+        $self->{scenarios}->{ $scenario->{scenarioName} } = {
+            display => $scenario->{scenarioName},
             global => {
-                display => $_->{scenarioName},
-                id => $_->{scenarioId},
-                num_status => $_->{currentStatus},
-                status => $status_mapping->{$_->{currentStatus}},
+                display => $scenario->{scenarioName},
+                id => $scenario->{scenarioId},
+                num_status => $scenario->{currentStatus},
+                status => $status_mapping->{$scenario->{currentStatus}} // 'Unknown',
             }
         };
-
-        foreach my $kpi (@{$scenario_detail->{kpis}}) {
-            $self->{scenarios}->{ $_->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
+        if (!defined $scenario_detail->{results} or scalar(@{$scenario_detail->{results}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "Scenario '" . $scenario->{scenarioName} . "' Don't have any performance data, please try to add a bigger timeframe");
+            next;
         }
-        $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{0} = 'Default';
+        foreach my $kpi (@{$scenario_detail->{kpis}}) {
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
+        }
+        $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{0} = 'Default';
         if ($scenario_detail->{infos}->{info}->{hasStep}) {
             foreach my $steps (@{$scenario_detail->{steps}}) {
-                $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{$steps->{index}} = $steps->{name};
+                $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
             }
         }
 
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
         }
     }
 
@@ -244,7 +214,7 @@ __END__
 
 =head1 MODE
 
-Check IP Label Ekara scenarios.
+Check ip-label Ekara scenarios.
 
 =over 8
 
@@ -253,28 +223,7 @@ Check IP Label Ekara scenarios.
 Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
 
-=item B<--filter-id>
 
-Filter by monitor ID (can be a regexp).
-
-=item B<--filter-name>
-
-Filter by monitor name (can be a regexp).
-
-=item B<--filter-status>
-
-Filter by numeric status (can be multiple).
-0 => 'Unknown',
-1 => 'Success',
-2 => 'Failure',
-3 => 'Aborted',
-4 => 'No execution',
-5 => 'No execution',
-6 => 'Stopped',
-7 => 'Excluded',
-8 => 'Degraded'
-
-Example: --filter-status='1,2'
 
 =item B<--filter-type>
 
