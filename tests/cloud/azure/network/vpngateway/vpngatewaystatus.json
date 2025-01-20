@@ -1,0 +1,125 @@
+{
+  "uuid": "e745f255-dee8-48eb-a952-88bb0f9e5a0c",
+  "lastMigration": 32,
+  "name": "Azure vpn gateway",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3004,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "f8dc6ac1-febc-46a8-be79-9e5e14cedd3a",
+      "type": "http",
+      "documentation": "List By Resource Group Reference (reduced reponse info)",
+      "method": "get",
+      "endpoint": "subscriptions/:subscriptionId/resourcegroups/:resourceGroup/providers/Microsoft.Network/virtualNetworkGateways",
+      "responses": [
+        {
+          "uuid": "4b0edd9d-2052-45a3-9969-cf0cf461154c",
+          "body": "{\r\n  \"value\": [\r\n    {\r\n      \"name\": \"gateway1\",\r\n      \"id\": \"/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/vpnGateways/gateway1\",\r\n      \"type\": \"Microsoft.Network/vpnGateways\",\r\n      \"properties\": {\r\n        \"provisioningState\": \"Succeeded\"\r\n      },\r\n      \"gatewayType\": \"ExpressRoute\",\r\n      \"vpnType\": \"RouteBased\"\r\n    },\r\n    {\r\n      \"name\": \"gateway2\",\r\n      \"id\": \"/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/vpnGateways/gateway2\",\r\n      \"type\": \"Microsoft.Network/vpnGateways\",\r\n      \"properties\": {\r\n        \"provisioningState\": \"Succeeded\"\r\n      },\r\n      \"gatewayType\": \"ExpressRoute\",\r\n      \"vpnType\": \"RouteBased\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "325811e6-6a5d-4906-90a1-3df24183d529",
+      "type": "http",
+      "documentation": "Azure login",
+      "method": "post",
+      "endpoint": "login/:tenant/oauth2/token",
+      "responses": [
+        {
+          "uuid": "e381c634-cbff-431e-851e-e4631f0f9e2c",
+          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'string.numeric' 10 }}\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "f8dc6ac1-febc-46a8-be79-9e5e14cedd3a"
+    },
+    {
+      "type": "route",
+      "uuid": "325811e6-6a5d-4906-90a1-3df24183d529"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
