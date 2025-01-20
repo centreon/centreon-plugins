@@ -44,7 +44,7 @@ sub new {
         'list-storages'    => 'snmp_standard::mode::liststorages',
         'memory'           => 'os::freebsd::snmp::mode::memory',
         'processcount'     => 'snmp_standard::mode::processcount',
-        'storage'          => 'snmp_standard::mode::storage',
+        'storage'          => 'os::freebsd::snmp::mode::storage',
         'swap'             => 'snmp_standard::mode::swap',
         'time'             => 'snmp_standard::mode::ntp',
         'tcpcon'           => 'snmp_standard::mode::tcpcon',
@@ -60,7 +60,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Freebsd operating systems in SNMP.
-Some modes ('cpu', 'load, 'swap', 'memory') needs 'bsnmp-ucd'.
+Check FreeBSD operating systems in SNMP.
+Some modes (C<cpu>, C<load>, C<swap>, C<memory>) need C<bsnmp-ucd>.
 
 =cut
