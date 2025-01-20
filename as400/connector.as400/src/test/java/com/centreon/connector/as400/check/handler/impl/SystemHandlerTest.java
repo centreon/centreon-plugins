@@ -35,7 +35,7 @@ public class SystemHandlerTest {
     try {
       SystemStatus as400 = mock(SystemStatus.class);
       when(as400.getSystemPools()).thenReturn(new Vector<Object>().elements());
-      SystemHandler sh = new SystemHandler(null, null, null, as400);
+      SystemHandler sh = new SystemHandler(null, null, null, as400, null);
       sh.dumpSystem();
     } finally {
       System.setOut(originalOut);

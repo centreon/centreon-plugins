@@ -52,7 +52,8 @@ sub new {
             'critical-http-status:s'   => { name => 'critical_http_status' },
             'as400-hostname:s'         => { name => 'as400_hostname' },
             'as400-username:s'         => { name => 'as400_username' },
-            'as400-password:s'         => { name => 'as400_password' }
+            'as400-password:s'         => { name => 'as400_password' },
+            'as400-ssl'                => { name => 'as400_ssl' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -86,6 +87,7 @@ sub check_options {
     $self->{as400_hostname} = (defined($self->{option_results}->{as400_hostname})) ? $self->{option_results}->{as400_hostname} : '';
     $self->{as400_username} = (defined($self->{option_results}->{as400_username})) ? $self->{option_results}->{as400_username} : '';
     $self->{as400_password} = (defined($self->{option_results}->{as400_password})) ? $self->{option_results}->{as400_password} : '';
+    $self->{as400_ssl} = (defined($self->{option_results}->{as400_ssl})) ? 1 : 0;
 
     if ($self->{connector_hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --connector-hostname option.");
@@ -151,6 +153,7 @@ sub request_api {
         host => $self->{as400_hostname},
         login => $self->{as400_username},
         password => $self->{as400_password},
+        ssl => $self->{as400_ssl},
         command => $options{command}
     };
     $post->{args} = $options{args} if (defined($options{args}));
@@ -239,6 +242,10 @@ AS/400 username (required)
 =item B<--as400-password>
 
 AS/400 password (required)
+
+=item B<--as400-ssl>
+
+Use SSL connection (port: 9475)
 
 =back
 

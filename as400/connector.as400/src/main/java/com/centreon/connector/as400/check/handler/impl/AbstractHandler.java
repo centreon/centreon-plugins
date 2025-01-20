@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.SecureAS400;
 import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.ConnectionEvent;
 import com.ibm.as400.access.ConnectionListener;
@@ -44,11 +45,13 @@ public abstract class AbstractHandler {
     protected String host = null;
     protected String login = null;
     protected String password = null;
+    protected Integer ssl = 0;
 
-    public AbstractHandler(final String host, final String login, final String password) {
+    public AbstractHandler(final String host, final String login, final String password, final Integer ssl) {
         this.host = host;
         this.login = login;
         this.password = password;
+        this.ssl = ssl;
     }
 
     static {
@@ -77,7 +80,28 @@ public abstract class AbstractHandler {
         properties.setLoginTimeout(Conf.as400LoginTimeout);
         properties.setSoTimeout(Conf.as400ReadTimeout);
 
-        final AS400 system = new AS400(this.host, this.login, this.password);
+        if (this.ssl == 1) {
+            SecureAS400 system = new SecureAS400(this.host, this.login, this.password);
+            system.setSocketProperties(properties);
+            system.addConnectionListener(new ConnectionListener() {
+                @Override
+                public void connected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Connect event service : " + event.getService());
+                }
+
+                @Override
+                public void disconnected(final ConnectionEvent event) {
+                    ConnectorLogger.getInstance().getLogger().debug("Disconnect event service : " + event.getService());
+                }
+            });
+
+            system.validateSignon();
+
+            return (AS400)system;
+        }
+
+        AS400 system = new AS400(this.host, this.login, this.password);
+
         system.setSocketProperties(properties);
         system.addConnectionListener(new ConnectionListener() {
             @Override
