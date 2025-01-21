@@ -134,11 +134,11 @@ __END__
 
 =head1 NAME
 
-O365 Teams Workflows API
+Microsoft Office 365 Teams Workflows API
 
 =head1 SYNOPSIS
 
-O365 Teams Workflows API
+Microsoft Office 365 Teams Workflows API
 
 =head1 REST API OPTIONS
 
