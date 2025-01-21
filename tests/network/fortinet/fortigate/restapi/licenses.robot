@@ -16,6 +16,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto='http'
 ...                 --access-token=mokoon-token
 ...                 --port=${APIPORT}
+...                 --curl-opt="CURLOPT_SSL_VERIFYPEER => 0"
 
 *** Test Cases ***
 licenses ${tc}
