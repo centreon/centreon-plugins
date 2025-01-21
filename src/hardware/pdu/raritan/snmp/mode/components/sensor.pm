@@ -43,6 +43,7 @@ sub load {
 sub check {
     my ($self, %options) = @_;
 
+    my $components_onoff_info;
     foreach my $component (sort keys %raritan_type) {
         my $long_msg = 0;
         next if ($component !~ /$options{component}/);
@@ -88,6 +89,15 @@ sub check {
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
+            
+            if ($component eq 'onOff') {
+                $components_onoff_info->{$instance} = $result->{State};
+            }
+
+            if ($component eq 'powerFactor' && defined($components_onoff_info->{$instance}) && $components_onoff_info->{$instance} eq 'off') {
+                $result->{State} = 'normal';
+            }
+
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s, pdu: %s]", 
