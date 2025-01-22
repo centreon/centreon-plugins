@@ -8,7 +8,7 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 ** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}Output-api.json
+${MOCKOON_JSON}     ${CURDIR}${/}mokoon.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=network::fortinet::fortigate::restapi::plugin
