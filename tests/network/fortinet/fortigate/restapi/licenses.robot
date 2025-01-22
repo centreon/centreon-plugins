@@ -8,7 +8,7 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 ** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}output-api.json
+${MOCKOON_JSON}     ${CURDIR}${/}Output-api.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=network::fortinet::fortigate::restapi::plugin
@@ -20,7 +20,6 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 licenses ${tc}
-    [Documentation]    Check
     [Tags]    network    fortinet    fortigate    restapi
     ${command}    Catenate
     ...    ${CMD}
