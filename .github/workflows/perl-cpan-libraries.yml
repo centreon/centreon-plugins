@@ -199,6 +199,11 @@ jobs:
 
           temp_file=$(mktemp)
           created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: fpm command failed"
+            exit 1
+          fi
           # Check rpm
           rpm2cpio $created_package | cpio -t
         shell: bash
@@ -457,6 +462,11 @@ jobs:
 
           temp_file=$(mktemp)
           created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: fpm command failed"
+            exit 1
+          fi
           # Check deb
           dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
         shell: bash
@@ -465,6 +475,11 @@ jobs:
         run: |
           temp_file=$(mktemp)
           created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: fpm command failed"
+            exit 1
+          fi
           # Check deb
           dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
         shell: bash
