@@ -341,21 +341,25 @@ jobs:
         include:
           - runner_name: ubuntu-24.04
           - arch: amd64
-          - build_distribs: "bullseye,bookworm,jammy"
+          - build_names: "bullseye-amd64,bookworm,jammy"
           - deb_dependencies: ""
           - rpm_provides: ""
           - version: ""
           - use_dh_make_perl: "true"
-          - distrib: bullseye
+          - build_name: bullseye-amd64
+            distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye
-          - distrib: bookworm
+          - build_name: bookworm
+            distrib: bookworm
             package_extension: deb
             image: packaging-plugins-bookworm
-          - distrib: jammy
+          - build_name: jammy
+            distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
-          - distrib: bullseye
+          - build_name: bullseye-arm64
+            distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
@@ -364,14 +368,15 @@ jobs:
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: true
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
-            build_distribs: "bookworm"
+            build_names: "bookworm"
           - name: "Device::Modbus::TCP::Client"
-            build_distribs: "bookworm"
+            build_names: "bookworm"
           - name: "Digest::SHA1"
-            build_distribs: "jammy"
+            build_names: "jammy"
           - name: "Net::Amazon::Signature::V4"
-            build_distribs: ["bullseye", "jammy"]
+            build_names: ["bullseye", "jammy"]
           - name: "Net::MQTT::Simple"
             version: "1.29"
           - name: "Paws"
@@ -379,12 +384,13 @@ jobs:
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: true
           - name: "Statistics::Regression"
-            build_distribs: "bullseye"
+            build_names: "bullseye"
             version: "0.53"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -393,17 +399,17 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Parse distrib name
         id: parse-distrib
         uses: ./.github/actions/parse-distrib
         with:
           distrib: ${{ matrix.distrib }}
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Get package infos
         id: package-infos
         run: |
@@ -425,7 +431,7 @@ jobs:
           echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Check if package already exists
         id: check-package-existence
         run: |
@@ -447,7 +453,7 @@ jobs:
           echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'false' }}
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'false' }}
         run: |
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -471,7 +477,7 @@ jobs:
           dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.use_dh_make_perl == 'true' }}
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
         run: |
           temp_file=$(mktemp)
           created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
@@ -484,7 +490,7 @@ jobs:
           dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
         name: Replace '::' with - in the feature path
         id: package-name
         run: |
@@ -494,7 +500,7 @@ jobs:
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
