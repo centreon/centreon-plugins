@@ -43,13 +43,16 @@ sub load {
 sub check {
     my ($self, %options) = @_;
 
-    my $components_onoff_info;
+    my $power_factor_dependencies;
     foreach my $component (sort keys %raritan_type) {
         my $long_msg = 0;
-        next if ($component !~ /$options{component}/);
+        if ($options{component} eq 'powerFactor') {
+            next if ($component !~ /activePower|onOff|powerFactor/);
+        } elsif ($component !~ /$options{component}/) {
+            next;
+        }
         $self->{components}->{$component} = { name => $component, total => 0, skip => 0 };
         next if ($self->check_filter(section => $component));
-
         my $instance_type = $raritan_type{$component};
         my $value_type = $map_type{$instance_type};
         foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
@@ -78,24 +81,31 @@ sub check {
 
             next if ($self->check_filter(section => $component, instance => $instance));
 
-            if ($long_msg == 0) {
-                $self->{output}->output_add(long_msg => "Checking " . $component);
-                $long_msg = 1;
+            if ($component =~ /$options{component}/) {
+                $self->{components}->{$component}->{total}++;
             }
-
-            $self->{components}->{$component}->{total}++;
 
             my $value = (defined($result->{Value}) && $result->{Value} ne '') ? $result->{Value} : '-';
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
             
-            if ($component eq 'onOff') {
-                $components_onoff_info->{$instance} = $result->{State};
+            if ($component eq 'activePower' && $value == 0) {
+                $power_factor_dependencies->{$instance} = 1
             }
 
-            if ($component eq 'powerFactor' && defined($components_onoff_info->{$instance}) && $components_onoff_info->{$instance} eq 'off') {
-                $result->{State} = 'normal';
+            if ($component eq 'onOff' && $result->{State} eq 'off') {
+                $power_factor_dependencies->{$instance} = 1;
+            }
+
+            if ($component eq 'powerFactor' && defined($power_factor_dependencies->{$instance})) {
+                $result->{State} = 'absent';
+            }
+
+            next if ($component !~ /$options{component}/);
+            if ($long_msg == 0) {
+                $self->{output}->output_add(long_msg => "Checking " . $component);
+                $long_msg = 1;
             }
 
             $self->{output}->output_add(
