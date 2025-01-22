@@ -12,11 +12,11 @@ ${MOCKOON_JSON}     ${CURDIR}${/}output-api.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=network::fortinet::fortigate::restapi::plugin
-...                 --hostname=${HOSTNAME}
+...                 --hostname=host.docker.internal
 ...                 --proto='http'
 ...                 --access-token=mokoon-token
 ...                 --port=${APIPORT}
-...                 --curl-opt="CURLOPT_SSL_VERIFYPEER => 0"
+...                 --debug
 
 *** Test Cases ***
 licenses ${tc}
