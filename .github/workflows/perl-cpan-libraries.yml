@@ -376,7 +376,7 @@ jobs:
           - name: "Digest::SHA1"
             build_names: "jammy"
           - name: "Net::Amazon::Signature::V4"
-            build_names: ["bullseye", "jammy"]
+            build_names: ["bullseye-amd64", "jammy"]
           - name: "Net::MQTT::Simple"
             version: "1.29"
           - name: "Paws"
@@ -384,7 +384,7 @@ jobs:
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: true
           - name: "Statistics::Regression"
-            build_names: "bullseye"
+            build_names: "bullseye-amd64"
             version: "0.53"
           - name: "ZMQ::LibZMQ4"
             use_dh_make_perl: "false"
@@ -679,7 +679,6 @@ jobs:
               dependency_info=$(apt-cache policy $dependency)
               if [[ -n $dependency_info ]]; then
                 echo "Dependency $dependency exists in debian repository."
-                apt-get install -y $dependency
               else
                 # If the dependency has been built in the same workflow, install it
                 for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
@@ -690,10 +689,10 @@ jobs:
             done
             # Install package, then uninstall it with all his dependencies
             echo "Package installation..."
-            error_output=$(dpkg -i $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
             echo "Package uninstallation..."
-            error_output=$(apt autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
             echo "Package uninstallation done."
           done
           # If the file error_log exists and is not empty, the workflow is in error
