@@ -654,7 +654,7 @@ jobs:
             error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
             echo "Package installation done."
             echo "Package uninstallation..."
-            error_output=$(dnf autoremove -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+            error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
             echo "Package uninstallation done."
           done
           # If the file error_log exists and is not empty, the workflow is in error
