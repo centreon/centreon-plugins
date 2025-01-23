@@ -14,14 +14,15 @@
         "snmp_standard/mode/loadaverage.pm",
         "snmp_standard/mode/listdiskspath.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
-	"snmp_standard/mode/listprocesses.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/listprocesses.pm",
         "snmp_standard/mode/liststorages.pm",
         "snmp_standard/mode/processcount.pm",
         "snmp_standard/mode/storage.pm",
         "snmp_standard/mode/swap.pm",
         "snmp_standard/mode/tcpcon.pm",
         "snmp_standard/mode/uptime.pm",
+        "snmp_standard/mode/ntp.pm",
         "os/freebsd/snmp/"
     ]
 }

@@ -25,7 +25,7 @@ use warnings;
 
 my %map_fan_status = (
     1 => 'ok',
-    2 => 'failed',
+    2 => 'failure',
 );
 
 my $mapping = {

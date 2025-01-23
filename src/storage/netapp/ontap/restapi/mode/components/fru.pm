@@ -43,7 +43,7 @@ sub check {
         next if ($self->check_filter(section => 'shelf', instance => $shelf_instance));
 
         foreach my $fru (@{$shelf->{frus}}) {
-            my $name = $fru->{type} . ':' . $fru->{id};
+            my $name = $fru->{type} . ':' . (defined($fru->{id}) ? $fru->{id} : '');
 
             if ($fru->{installed} !~ /true|1/i) {
                 $self->{output}->output_add(

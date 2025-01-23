@@ -149,10 +149,11 @@ sub request {
     $self->settings();
 
     my $content = $self->{http}->request(
-        method          => 'GET',
+        method          => $options{method},
         url_path        => $endpoint,
         get_param       => $options{get_param},
         header          => [
+            'Accept: application/json',
             'AUTH: ' . $self->{api_token}
         ],
         warning_status  => '',
@@ -163,9 +164,11 @@ sub request {
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $content = $self->{http}->request(
+            method          => $options{method},
             url_path        => $endpoint,
             get_param       => $options{get_param},
             header          => [
+                'Accept: application/json',
                 'AUTH: ' . $self->{api_token}
             ],
             unknown_status  => $self->{unknown_http_status},
@@ -179,7 +182,6 @@ sub request {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
     }
-
     return $decoded;
 }
 
@@ -190,7 +192,8 @@ sub get_backup_jobs_status {
     if (!centreon::plugins::misc::is_empty($options{filter_type})) {
         $endpoint .= '/' . $options{filter_type};
     }
-    return $self->request(endpoint => $endpoint);
+    return $self->request(method   => 'GET',
+                          endpoint => $endpoint);
 }
 
 sub get_config_status {
@@ -200,7 +203,8 @@ sub get_config_status {
     if (!centreon::plugins::misc::is_empty($options{filter_type})) {
         $endpoint .= '/' . $options{filter_type};
     }
-    return $self->request(endpoint => $endpoint);
+    return $self->request(method   => 'GET',
+                          endpoint => $endpoint);
 }
 
 sub get_intelli_check_status {
@@ -213,7 +217,49 @@ sub get_intelli_check_status {
     if (!centreon::plugins::misc::is_empty($options{report_id})) {
         $endpoint .= '/' . $options{report_id};
     }
-    return $self->request(endpoint => $endpoint);
+    return $self->request(method   => 'GET',
+                          endpoint => $endpoint);
+}
+
+sub get_devices {
+    my ($self, %options) = @_;
+
+    my $json_decode = 1;
+    if (defined($options{json_decode})) {
+        $json_decode = $options{json_decode};
+    }
+    return $self->request(method   => 'GET',
+                          endpoint => 'devices');
+}
+
+sub get_device_id_from_name {
+    my ($self, %options) = @_;
+
+    my $devices = $self->get_devices();
+    for my $device (@$devices) {
+        if ($device->{deviceName} eq $options{device_name}) {
+            return $device->{deviceId};
+        }
+    }
+}
+
+sub get_devices_backups_status {
+    my ($self, %options) = @_;
+
+    return $self->request(method   => 'POST',
+                          endpoint => 'devices/dynamic');
+}
+
+sub get_device_backup_status {
+    my ($self, %options) = @_;
+
+    my $backups = $self->get_devices_backups_status();
+
+    for my $backup (@$backups) {
+        if ($backup->{deviceId} == $options{device_id}) {
+            return $backup;
+        }
+    }
 }
 
 1;

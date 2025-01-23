@@ -46,6 +46,20 @@ sub custom_usage_output {
     );
 }
 
+sub custom_logical_usage_output {
+    my ($self, %options) = @_;
+    
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_logical_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{logical_free_space});
+    return sprintf(
+        'logical space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{logical_prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{logical_prct_free_space}
+    );
+}
+
 sub prefix_volume_output {
     my ($self, %options) = @_;
 
@@ -88,6 +102,33 @@ sub set_counters {
         { label => 'usage-prct', nlabel => 'volume.space.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage', nlabel => 'volume.logicalspace.usage.bytes', set => {
+                key_values => [ { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_logical_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage-free', nlabel => 'volume.logicalspace.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'logical_free_space' }, { name => 'logical_used_space' }, { name => 'logical_prct_used_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_logical_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'logical-usage-prct', nlabel => 'volume.logicalspace.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'logical_prct_used_space' }, { name => 'logical_used_space' }, { name => 'logical_free_space' }, { name => 'logical_prct_free_space' }, { name => 'total_logical_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_logical_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1 }
@@ -203,6 +244,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        'filter-volume-name:s'  => { name => 'filter_volume_name' },
         'filter-name:s'         => { name => 'filter_name' },
         'filter-vserver-name:s' => { name => 'filter_vserver_name' }
     });
@@ -213,7 +255,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $volumes = $options{custom}->request_api(endpoint => '/api/storage/volumes?fields=*');
+    my $endpoint = '/api/storage/volumes?fields=svm,name,space,metric';
+    
+    if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
+        $endpoint .= '&name=' . $self->{option_results}->{filter_volume_name}
+    }
+    
+    my $volumes = $options{custom}->request_api(endpoint => $endpoint);
 
     $self->{volumes} = {};
     foreach (@{$volumes->{records}}) {
@@ -249,11 +297,21 @@ sub manage_selection {
             write_iops    => $_->{metric}->{iops}->{write},
             other_iops    => $_->{metric}->{iops}->{other},
             total_iops    => $_->{metric}->{iops}->{total},
-            read_latency  => $_->{metric}->{latency}->{read} / 1000,
-            write_latency => $_->{metric}->{latency}->{write} / 1000,
-            other_latency => $_->{metric}->{latency}->{other} / 1000,
-            total_latency => $_->{metric}->{latency}->{total} / 1000
+            read_latency  => (defined($_->{metric}->{latency}->{read})) ? ($_->{metric}->{latency}->{read} / 1000) : undef,
+            write_latency => (defined($_->{metric}->{latency}->{write})) ? ($_->{metric}->{latency}->{write} / 1000) : undef,
+            other_latency => (defined($_->{metric}->{latency}->{other})) ? ($_->{metric}->{latency}->{other} / 1000) : undef,
+            total_latency => (defined($_->{metric}->{latency}->{total})) ? ($_->{metric}->{latency}->{total} / 1000) : undef,
         };
+
+        if (defined($_->{space}->{logical_space})) {
+            $self->{volumes}->{$name}->{total_logical_space} = $_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available};
+            $self->{volumes}->{$name}->{logical_used_space} = $_->{space}->{logical_space}->{used};
+            $self->{volumes}->{$name}->{logical_free_space} = $_->{space}->{logical_space}->{available};
+            $self->{volumes}->{$name}->{logical_prct_used_space} =  $_->{space}->{logical_space}->{used_percent};
+            $self->{volumes}->{$name}->{logical_prct_free_space} = 100 - $_->{space}->{logical_space}->{used_percent};
+        }
+
+        
     }
 
     if (scalar(keys %{$self->{volumes}}) <= 0) {
@@ -275,15 +333,20 @@ Check volumes.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^usage$'
+Example: C<--filter-counters='^usage$'>.
+
+=item B<--filter-volume-name>
+
+Filter the API request by volumes name (* can be used, volumes name are separated by |). Required if you wan to retrieve 
+logical space metrics.
 
 =item B<--filter-name>
 
-Filter volumes by volume name (can be a regexp).
+Filter the API request result by volume name (can be a regexp).
 
 =item B<--filter-vserver-name>
 
-Filter volumes by vserver name (can be a regexp).
+Filter volumes by Vserver name (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -293,21 +356,22 @@ You can use the following variables: %{state}, %{display}
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{state}, %{display}
+You can use the following variables: %{state}, %{display}.
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /online/i').
-You can use the following variables: %{state}, %{display}
+You can use the following variables: %{state}, %{display}.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
-'read' (B/s), 'read-iops', 'write' (B/s), 'write-iops',
-'read-latency' (ms), 'write-latency' (ms), 'total-latency' (ms),
-'other-latency' (ms), 'other' (B/s), 'total' (B/s),
-'other-iops', 'total-iops'.
+Can be: usage' (B), usage-free (B), usage-prct (%),
+logical-usage (B), logical-usage-free (B), logical-usage-prct (%),
+read (B/s), read-iops, write (B/s), write-iops,
+read-latency (ms), write-latency (ms), total-latency (ms),
+other-latency (ms), other (B/s), total (B/s),
+other-iops, total-iops.
 
 =back
 
