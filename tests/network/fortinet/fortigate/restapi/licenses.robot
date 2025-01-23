@@ -8,7 +8,7 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 ** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}Mokoon-api.json
+${MOCKOON_JSON}     ${CURDIR}${/}License-api.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=network::fortinet::fortigate::restapi::plugin
@@ -16,7 +16,6 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto='http'
 ...                 --access-token=mokoon-token
 ...                 --port=${APIPORT}
-...                 --debug
 
 *** Test Cases ***
 licenses ${tc}
