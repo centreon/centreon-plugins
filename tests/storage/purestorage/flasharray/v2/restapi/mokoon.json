@@ -1,0 +1,96 @@
+{
+  "uuid": "cf22c628-8819-46d3-b1b7-fc46f3aee39b",
+  "lastMigration": 32,
+  "name": "Mokoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "98036266-a85e-484f-9af8-26690151180c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/2.4/login",
+      "responses": [
+        {
+          "uuid": "ad6920b9-8a22-4ffc-b066-936819921ba0",
+          "body": "{ \"created\":1733184307111, \"description\":\"(hardware:ct0.fc3): increased invalid TX word count Expected: ,  Actual: 2\", \"state\":\"closing\", \"component_type\":\"hardware\", \"name\":\"81088063\", \"id\":\"85198c1eda7145a788a682eea667e06b\", \"code\":45, \"severity\":\"warning\", \"category\":\"array\", \"flagged\":true, \"updated\":1733184311263, \"closed\":1733184318917, \"notified\":null, \"component_name\":\"ct0.fc3\", \"expected\":\"\", \"actual\":\"2\", \"knowledge_base_url\":\"https://support.purestorage.com/?cid=Alert_0045\", \"issue\":\"increased invalid TX word count\", \"summary\":\"(hardware:ct0.fc3): increased invalid TX word count\" }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "98036266-a85e-484f-9af8-26690151180c"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    },
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
