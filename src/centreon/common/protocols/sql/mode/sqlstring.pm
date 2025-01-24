@@ -92,7 +92,7 @@ sub check_options {
 
     $self->{query} = $self->{option_results}->{sql_statement};
     if (!defined($self->{query}) || $self->{query} eq '') {
-        if (!defined($self->{option_results}->{format}) || $self->{option_results}->{format} eq '') {
+        if (!defined($self->{option_results}->{sql_file}) || $self->{option_results}->{sql_file} eq '') {
             $self->{output}->add_option_msg(short_msg => "Need to specify --sql-statement or --sql-file option.");
             $self->{output}->option_exit();
         }
