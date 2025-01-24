@@ -39,6 +39,8 @@ sub new {
         'database-usage'   => 'database::db2::mode::databaseusage',
         'hadr'             => 'database::db2::mode::hadr',
         'list-tablespaces' => 'database::db2::mode::listtablespaces',
+        'sql'              => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'       => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespaces'      => 'database::db2::mode::tablespaces'
     };
 
