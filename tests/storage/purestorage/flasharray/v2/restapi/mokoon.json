@@ -17,11 +17,50 @@
       "responses": [
         {
           "uuid": "ad6920b9-8a22-4ffc-b066-936819921ba0",
-          "body": "{ \"created\":1733184307111, \"description\":\"(hardware:ct0.fc3): increased invalid TX word count Expected: ,  Actual: 2\", \"state\":\"closing\", \"component_type\":\"hardware\", \"name\":\"81088063\", \"id\":\"85198c1eda7145a788a682eea667e06b\", \"code\":45, \"severity\":\"warning\", \"category\":\"array\", \"flagged\":true, \"updated\":1733184311263, \"closed\":1733184318917, \"notified\":null, \"component_name\":\"ct0.fc3\", \"expected\":\"\", \"actual\":\"2\", \"knowledge_base_url\":\"https://support.purestorage.com/?cid=Alert_0045\", \"issue\":\"increased invalid TX word count\", \"summary\":\"(hardware:ct0.fc3): increased invalid TX word count\" }",
+          "body": "{ \"created\":1733184307111, \"description\":\"(hardware:ct0.fc3): increased invalid TX word count Expected: , Actual: 2\", \"state\":\"closing\", \"component_type\":\"hardware\", \"name\":\"81088063\", \"id\":\"85198c1eda7145a788a682eea667e06b\", \"code\":45, \"severity\":\"warning\", \"category\":\"array\", \"flagged\":true, \"updated\":1733184311263, \"closed\":1733184318917, \"notified\":null, \"component_name\":\"ct0.fc3\", \"expected\":\"\", \"actual\":\"2\", \"knowledge_base_url\":\"https://support.purestorage.com/?cid=Alert_0045\", \"issue\":\"increased invalid TX word count\", \"summary\":\"(hardware:ct0.fc3): increased invalid TX word count\" }",
           "latency": 0,
           "statusCode": 200,
           "label": "",
-          "headers": [],
+          "headers": [
+            {
+              "key": "x-auth-token",
+              "value": "token"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "5c108f96-531d-43e3-b7cc-38cf5aa5dca9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/2.4/alerts",
+      "responses": [
+        {
+          "uuid": "31a6a6d7-7c12-4269-9783-14c6e42be22e",
+          "body": "{\n  \"created\": 1733184307111,\n  \"description\": \"(hardware:ct0.fc3): increased invalid TX word count Expected: , Actual: 2\",\n  \"state\": \"closing\",\n  \"component_type\": \"hardware\",\n  \"name\": \"81088063\",\n  \"id\": \"85198c1eda7145a788a682eea667e06b\",\n  \"code\": 45,\n  \"severity\": \"warning\",\n  \"category\": \"array\",\n  \"flagged\": true,\n  \"updated\": 1733184311263,\n  \"closed\": 1733184318917,\n  \"notified\": null,\n  \"component_name\": \"ct0.fc3\",\n  \"expected\": \"\",\n  \"actual\": \"2\",\n  \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0045\",\n  \"issue\": \"increased invalid TX word count\",\n  \"summary\": \"(hardware:ct0.fc3): increased invalid TX word count\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "x-auth-token",
+              "value": "token"
+            }
+          ],
           "bodyType": "INLINE",
           "filePath": "",
           "databucketID": "",
@@ -42,6 +81,10 @@
     {
       "type": "route",
       "uuid": "98036266-a85e-484f-9af8-26690151180c"
+    },
+    {
+      "type": "route",
+      "uuid": "5c108f96-531d-43e3-b7cc-38cf5aa5dca9"
     }
   ],
   "proxyMode": false,
@@ -73,10 +116,6 @@
     {
       "key": "Access-Control-Allow-Headers",
       "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
-    },
-    {
-      "key": "",
-      "value": ""
     }
   ],
   "proxyReqHeaders": [
