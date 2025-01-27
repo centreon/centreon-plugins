@@ -74,6 +74,7 @@ eth
 ext4
 fanspeed
 FCCapacity
+fex
 --filter-fs
 --filter-imei
 --filter-ppid
@@ -132,6 +133,7 @@ Kubernetes
 ldap
 --legacy-api-beta
 license-instances-usage-prct
+localdisk
 Loggly
 LUN
 LUNs
