@@ -91,14 +91,19 @@ sub check {
             }
             
             if ($component eq 'activePower' && $value == 0) {
-                $power_factor_dependencies->{$instance} = 1
+                $power_factor_dependencies->{$instance}->{activePower} = 1;
             }
 
-            if ($component eq 'onOff' && $result->{State} eq 'off') {
-                $power_factor_dependencies->{$instance} = 1;
+            if ($component eq 'onOff') {
+                if ($result->{State} eq 'off') {
+                    $power_factor_dependencies->{$instance}->{absent} = 1;
+                
+                } elsif (defined($power_factor_dependencies->{$instance}->{activePower})) {
+                    $power_factor_dependencies->{$instance}->{absent} = 1;
+                }
             }
 
-            if ($component eq 'powerFactor' && defined($power_factor_dependencies->{$instance})) {
+            if ($component eq 'powerFactor' && defined($power_factor_dependencies->{$instance}->{absent})) {
                 $result->{State} = 'absent';
             }
 
@@ -178,7 +183,7 @@ sub check {
             my $nunit = (defined($result->{Unit}->{nunit}) ? $result->{Unit}->{nunit} : lc($result->{Unit}->{unit}));
 
             $self->{output}->perfdata_add(
-                nlabel => 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit,
+                nlabel => $nunit ne '' ? 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit : 'hardware.sensor.' . $options{type} . '.' . lc($component),
                 unit => $result->{Unit}->{unit},
                 instances => [$pduName, $instance],
                 value => $value,
