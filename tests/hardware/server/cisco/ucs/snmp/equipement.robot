@@ -13,7 +13,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::server::cisco::ucs::snmp::plu
 
 *** Test Cases ***
 equipment ${tc}
-    [Tags]    os    linux
+    [Tags]    hardware    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=equipment
