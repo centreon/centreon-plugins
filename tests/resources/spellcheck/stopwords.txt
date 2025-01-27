@@ -51,6 +51,7 @@ cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
 CX
+Cyberoam
 Datacore
 datasource
 DC4
@@ -61,12 +62,10 @@ dev
 df
 --dfsr
 dfsrevent
---diskpath
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
 --dyn-mode
-Ekara
 -EncodedCommand
 env
 ESX
@@ -99,7 +98,6 @@ ifName
 --ignore-orgs-api-disabled
 IMEI
 in-bcast
-includeAllDisks
 in-crc
 in-fcserror
 in-mcast
@@ -172,6 +170,7 @@ NLCapacity
 --noidle
 -NoLogo
 --nomachineaccount
+notapplicable
 --ntlmv2
 NTLMv2
 NTP
@@ -190,6 +189,7 @@ out-fc-wait
 out-mcast
 out-ucast
 overprovisioning
+partiallyActive
 --patch-redhat
 perfdata
 physicaldrive
@@ -214,7 +214,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
-SFDC
+SFOS
 sfp.temperature
 --skip-ssl-check
 SkyHigh
@@ -226,6 +226,7 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+standAlone
 statefile
 --statefile-concat-cwd
 SureBackup
