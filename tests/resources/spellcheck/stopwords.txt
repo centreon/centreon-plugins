@@ -73,6 +73,7 @@ eth
 ext4
 fanspeed
 FCCapacity
+fex
 --filter-fs
 --filter-imei
 --filter-ppid
@@ -105,6 +106,8 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
+io
+iocard
 iops
 IpAddr
 ip-label
@@ -126,6 +129,7 @@ Kubernetes
 ldap
 --legacy-api-beta
 license-instances-usage-prct
+localdisk
 Loggly
 LUN
 LUNs
