@@ -259,6 +259,9 @@ jobs:
               } else {
                 throw new Error('invalid version');
               }
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'unstable') {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}${String(currentDate.getDate()).padStart(2, '0')}`;
             } else {
               const currentDate = new Date();
               version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}00`;
