@@ -314,9 +314,9 @@ sub manage_selection {
             name => $self->{sdwan}->{$_}->{name},
             vdom => $result->{vdom},
             ifName => $result->{ifName},
-            in => $result->{traffic_in} * 1000 * 1000,
-            out => $result->{traffic_out} * 1000 * 1000,
-            bi => $result->{traffic_bi} * 1000 * 1000,
+            in => $result->{traffic_in} * 1000,
+            out => $result->{traffic_out} * 1000,
+            bi => $result->{traffic_bi} * 1000,
         };
 
         $self->{sdwan}->{$_}->{jitter} = {
