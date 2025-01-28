@@ -19,11 +19,9 @@ sdwan ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=network/fortinet/fortigate/snmp/sdwan
-    ...    --snmp-timeout=10
-    ...    --snmp-retries=3
+    ...    --snmp-community=network/fortinet/fortigate/snmp/slim-sdawn
+    ...    --snmp-timeout=1
     ...    ${extra_options}
-    ...    --debug
  
     Ctn Verify Command Output    ${command}    ${expected_result}
 
