@@ -25,6 +25,17 @@ use warnings;
 
 sub load {}
 
+sub disco_show {
+    my ($self) = @_;
+
+    foreach my $item (@{$self->{results}->{afeb}}) {
+        $self->{output}->add_disco_entry(
+            component => 'afeb',
+            instance => $item->{name}
+        );
+    }
+}
+
 sub check {
     my ($self) = @_;
     

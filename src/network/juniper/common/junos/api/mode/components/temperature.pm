@@ -25,6 +25,18 @@ use warnings;
 
 sub load {}
 
+sub disco_show {
+    my ($self) = @_;
+
+    foreach my $item (@{$self->{results}->{env}}) {
+        next if ($item->{class} ne 'Temp');
+        $self->{output}->add_disco_entry(
+            component => 'temperature',
+            instance => $item->{name}
+        );
+    }
+}
+
 sub check {
     my ($self) = @_;
     
