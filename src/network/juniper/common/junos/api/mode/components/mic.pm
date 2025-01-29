@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::api::mode::components::pic;
+package network::juniper::common::junos::api::mode::components::mic;
 
 use strict;
 use warnings;
@@ -28,53 +28,60 @@ sub load {}
 sub disco_show {
     my ($self) = @_;
 
-    foreach my $item (sort { $a->{instance} cmp $b->{instance} } values %{$self->{results}->{pic}}) {
-        my %attrs = (fpc_slot => $item->{fpc_slot}, pic_slot => $item->{pic_slot});
-        $attrs{mic_slot} = $item->{mic_slot} if (defined($item->{mic_slot}));
-
+    foreach my $item (sort { $a->{instance} cmp $b->{instance} } values %{$self->{results}->{mic}}) {
+        next if (scalar(@{$item->{pics}}) <= 0);
+        
         $self->{output}->add_disco_entry(
-            component => 'pic',
+            component => 'mic',
             instance => $item->{instance},
             description => $item->{description},
-            %attrs
+            fpc_slot => $item->{fpc_slot},
+            mic_slot => $item->{mic_slot}
         );
     }
 }
 
 sub check {
     my ($self) = @_;
+    
+    $self->{output}->output_add(long_msg => "checking mic");
+    $self->{components}->{mic} = { name => 'mic', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'mic'));
 
-    $self->{output}->output_add(long_msg => "checking pic");
-    $self->{components}->{pic} = { name => 'pic', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'pic'));
-
-    foreach my $item (sort { $a->{instance} cmp $b->{instance} } values %{$self->{results}->{pic}}) {
-        next if ($self->check_filter(section => 'pic', instance => $item->{instance}));
-        $self->{components}->{pic}->{total}++;
+    foreach my $item (sort { $a->{instance} cmp $b->{instance} } values %{$self->{results}->{mic}}) {
+        next if (scalar(@{$item->{pics}}) <= 0);
+        next if ($self->check_filter(section => 'mic', instance => $item->{instance}));
+        $self->{components}->{mic}->{total}++;
 
         my @attrs = ('fpc slot: ' . $item->{fpc_slot});
-        push @attrs, 'mic slot: ' . $item->{mic_slot} if (defined($item->{mic_slot}));
-        push @attrs, 'pic slot: ' . $item->{pic_slot};
+        push @attrs, 'mic slot: ' . $item->{mic_slot};
+
+        my $status = 'Online';
+        foreach my $pic_instance (@{$item->{pics}}) {
+            my $exit = $self->get_severity(section => 'pic', value => $self->{results}->{pic}->{$pic_instance}->{status});
+            $status = 'Error' if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1));
+        }
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "pic '%s @ %s' status is %s [%s]%s.",
+                "mic '%s @ %s' status is %s [%s]%s.",
                 $item->{description},
                 $item->{instance},
-                $item->{status},
+                $status,
                 join(', ', @attrs),
                 defined($self->{option_results}->{display_instances}) ? ' [instance: ' . $item->{instance} . ']' : ''
             )
         );
 
-        my $exit = $self->get_severity(section => 'pic', value => $item->{status});
+        my $exit = $self->get_severity(section => 'mic', value => $status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity =>  $exit,
                 short_msg => sprintf(
-                    "pic '%s @ %s' status is %s [%s]",
+                    "mic '%s @ %s' status is %s [%s]",
                     $item->{description},
                     $item->{instance},
-                    $item->{status},
+                    $status,
                     join(', ', @attrs)
                 )
             );

@@ -57,7 +57,11 @@ sub set_system {
         ],
         pic => [
             ['Online', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
+        ],
+        mic => [
+            ['Online', 'OK'],
+            ['Error', 'CRITICAL']
         ],
         psu => [
             ['Online', 'OK'],
@@ -72,7 +76,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'network::juniper::common::junos::api::mode::components';
-    $self->{components_module} = ['afeb', 'fan', 'fpc', 'pic', 'psu', 'temperature'];
+    $self->{components_module} = ['afeb', 'fan', 'fpc', 'mic', 'pic', 'psu', 'temperature'];
 }
 
 sub api_execute {
@@ -106,7 +110,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'afeb', 'fan', 'fpc', 'pic', 'psu', 'temperature'.
+Can be: 'afeb', 'fan', 'fpc', 'mic', 'pic', 'psu', 'temperature'.
 
 =item B<--filter>
 

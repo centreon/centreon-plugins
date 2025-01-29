@@ -194,6 +194,7 @@ my $commands = {
     'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
     'show chassis fpc pic-status' => '<rpc><get-pic-information></get-pic-information></rpc>',
     'show chassis afeb' => '<rpc><get-afeb-information></get-afeb-information></rpc>',
+    'show chassis hardware' => '<rpc><get-chassis-inventory></get-chassis-inventory></rpc>',
     'show interfaces extensive' => '<rpc><get-interface-information><extensive/></get-interface-information></rpc>',
     'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
     'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
@@ -223,6 +224,7 @@ sub get_rpc_commands {
             $rpc_commands->{'show chassis fpc'} = $commands->{'show chassis fpc'};
             $rpc_commands->{'show chassis fpc pic-status'} = $commands->{'show chassis fpc pic-status'};
             $rpc_commands->{'show chassis afeb'} = $commands->{'show chassis afeb'};
+            $rpc_commands->{'show chassis hardware'} = $commands->{'show chassis hardware'};
         } elsif ($label eq 'interface') {
             $rpc_commands->{'show interfaces extensive'} = $commands->{'show interfaces extensive'};
         } elsif ($label eq 'interface_optical') {
@@ -382,7 +384,7 @@ sub get_hardware_infos {
         $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['hardware']));
     }
 
-    my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [], 'pic' => [], afeb => [] };
+    my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [], 'pic' => {}, mic => {}, 'afeb' => [] };
     my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => ['fan-information-rpm-item']);
 
     foreach (@{$result->{'fan-information-rpm-item'}}) {
@@ -435,6 +437,15 @@ sub get_hardware_infos {
         };
     }
 
+    $result = $self->load_xml(data => $content, start_tag => '<scb-information.*?>', end_tag => '</scb-information>', force_array => ['scb'], error_continue => 1);
+
+    foreach (@{$result->{scb}}) {
+        push @{$results->{afeb}}, {
+            name => 'afeb slot ' . $_->{slot},
+            status => $_->{state}
+        };
+    }
+
     $result = $self->load_xml(
         data => $content,
         start_tag => '<fpc-information',
@@ -446,20 +457,47 @@ sub get_hardware_infos {
 
     foreach my $fpc (@{$result->{fpc}}) {
         foreach (@{$fpc->{pic}}) {
-            push @{$results->{pic}}, {
-                name => 'pic slot ' . $_->{'pic-slot'} . ' fpc slot ' . $fpc->{slot},
+            $results->{pic}->{'fpc' . $fpc->{slot} . '-pic' . $_->{'pic-slot'}} = {
+                fpc_slot => $fpc->{slot},
+                pic_slot => $_->{'pic-slot'},
+                description => $_->{'pic-type'},
+                instance => $fpc->{slot} . '/' . $_->{'pic-slot'},
                 status => $_->{'pic-state'}
             };
         }
     }
+ 
+    $result = $self->load_xml(
+        data => $content,
+        start_tag => '<chassis-inventory.*?>',
+        end_tag => '</chassis-inventory>',
+        force_array => ['chassis-sub-module', 'chassis-sub-sub-module']
+    );
 
-    $result = $self->load_xml(data => $content, start_tag => '<scb-information.*?>', end_tag => '</scb-information>', force_array => ['scb'], error_continue => 1);
+    foreach my $module (@{$result->{chassis}->{'chassis-module'}}) {
+        next if ($module->{name} !~ /FPC\s+(\d+)/ || !defined($module->{'chassis-sub-module'}));
+        my $fpc_slot = $1;
 
-    foreach (@{$result->{scb}}) {
-        push @{$results->{afeb}}, {
-            name => 'afeb slot ' . $_->{slot},
-            status => $_->{state}
-        };
+        foreach my $submodule (@{$module->{'chassis-sub-module'}}) {
+            next if ($submodule->{name} !~ /MIC\s+(\d+)/ || !defined($submodule->{'chassis-sub-sub-module'}));
+            my $mic_slot = $1;
+
+            $results->{mic}->{'fpc' . $fpc_slot . '-mic' . $mic_slot} = {
+                pics => [],
+                fpc_slot => $fpc_slot,
+                mic_slot => $mic_slot,
+                instance => $fpc_slot . '/' . $mic_slot,
+                description => $submodule->{description}
+            };
+            foreach my $subsubmodule (@{$submodule->{'chassis-sub-sub-module'}}) {
+                next if ($subsubmodule->{name} !~ /PIC\s+(\d+)/);
+                my $pic_slot = $1;
+
+                push @{$results->{mic}->{'fpc' . $fpc_slot . '-mic' . $mic_slot}->{pics}}, 'fpc' . $fpc_slot . '-pic' . $pic_slot;
+                $results->{pic}->{'fpc' . $fpc_slot . '-pic' . $pic_slot}->{mic_slot} = $mic_slot;
+                $results->{pic}->{'fpc' . $fpc_slot . '-pic' . $pic_slot}->{instance} = $fpc_slot . '/' . $mic_slot . '/' . $pic_slot;
+            }
+        }
     }
 
     return $results;
