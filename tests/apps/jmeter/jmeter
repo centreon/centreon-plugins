@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Process all options
+while getopts ":t:" opt; do
+  case $opt in
+    t)
+      filedir=$(dirname "$OPTARG")
+      filename=$(basename "$OPTARG")
+      if [[ "$filename" =~ ^test_2_2\.jmx$ ]]; then
+        # Output the content of test_2_2.xml
+        cat $filedir/test_2_2.xml >&2
+      elif [[ "$filename" =~ ^test_1_2\.jmx$ ]]; then
+        # Output the content of test_1_2.xml
+        cat $filedir/test_1_2.xml >&2
+      elif [[ "$filename" =~ ^test_0_2\.jmx$ ]]; then
+        # Output the content of test_0_2.xml
+        cat $filedir/test_0_2.xml >&2
+      else
+        echo "Invalid parameter value: $filename" >&2
+        exit 1
+      fi
+      ;;
+    *)
+      # Ignore other options
+      ;;
+  esac
+done
+
+# Shift off the options and optional --.
+shift "$((OPTIND-1))"

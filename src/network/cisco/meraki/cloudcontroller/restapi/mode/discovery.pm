@@ -37,6 +37,7 @@ sub new {
         'filter-network-id:s'        => { name => 'filter_network_id' },
         'filter-organization-name:s' => { name => 'filter_organization_name' },
         'filter-organization-id:s'   => { name => 'filter_organization_id' },
+        'filter-model:s'             => { name => 'filter_model' },
         'filter-tags:s'              => { name => 'filter_tags' }
     });
 
@@ -70,14 +71,16 @@ sub discovery_devices {
 
     my @results;
     foreach (values %$devices) {
-        next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
-            $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
-        next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
-            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/));
-        next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $_->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
-        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
-            $options{organizations}->{ $_->{orgId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_model})
+            && $_->{model} !~ /$self->{option_results}->{filter_model}/);
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_network_id})
+            && $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_tags})
+            && (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/));
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_organization_id})
+            && $_->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_organization_name})
+            && $options{organizations}->{ $_->{orgId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
 
         my $node = {
             name => $_->{name},
@@ -200,27 +203,36 @@ Resources discovery.
 
 =item B<--prettify>
 
-Prettify JSON output.
+Prettify the JSON output.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (can be: 'device', 'network').
+Define the type of resources to discover (C<device> or C<network>).
+
+=item B<--filter-model>
+
+Define which resources should be discovered based on the resource's model.
+This option will be treated as a regular expression.
 
 =item B<--filter-network-id>
 
-Filter by network ID (can be a regexp).
+Define which resources should be discovered based on the resource's network ID.
+This option will be treated as a regular expression.
 
 =item B<--filter-organization-id>
 
-Filter by organization ID (can be a regexp).
+Define which resources should be discovered based on the resource's organization ID.
+This option will be treated as a regular expression.
 
 =item B<--filter-organization-name>
 
-Filter by organization name (can be a regexp).
+Define which resources should be discovered based on the resource's organization name.
+This option will be treated as a regular expression.
 
 =item B<--filter-tags>
 
-Filter by tags (can be a regexp).
+Define which resources should be discovered based on the resource's tags.
+This option will be treated as a regular expression.
 
 =back
 

@@ -38,7 +38,7 @@ runs:
             throw new Error(`Stability ${{ inputs.stability }} should not deliver packages`);
           }
 
-          if ('${{ inputs.stability }}' === 'testing' && ! ['testing', 'hotfix'].includes('${{ inputs.release_type }}')) {
+          if ('${{ inputs.stability }}' === 'testing' && ! ['release', 'hotfix'].includes('${{ inputs.release_type }}')) {
             throw new Error('release_type input must be defined when stability is testing');
           }
 
@@ -61,11 +61,11 @@ runs:
 
           let repositoryStabilityPath = '';
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
-            repositoryStabilityPath = `rpm-connectors/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${stabilitySubdirectory}`;
+            repositoryStabilityPath = `rpm-plugins/${{ inputs.distrib }}/${stabilitySubdirectory}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
-            repositoryStabilityPath = `ubuntu-connectors-${{ inputs.stability }}`;
+            repositoryStabilityPath = `ubuntu-plugins-${{ inputs.stability }}`;
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
-            repositoryStabilityPath = `apt-connectors-${{ inputs.stability }}`;
+            repositoryStabilityPath = `apt-plugins-${{ inputs.stability }}`;
           } else {
             throw new Error(`Repository cannot be find for distribution: ${{ inputs.distrib }}`);
           }
@@ -77,7 +77,7 @@ runs:
 
     - if: ${{ inputs.stability != 'stable' }}
       name: Restore packages from cache
-      uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
       with:
         path: ./*.${{ steps.parse-distrib.outputs.package_extension }}
         key: ${{ inputs.cache_key }}
@@ -107,43 +107,46 @@ runs:
           }
 
     - name: Download packages from testing
-      if: ${{ inputs.stability == 'testing' }}
+      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy' }}
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
-          const warningNoPromote = 'No packages are promoted because push is not related to a hotfix/release pull request.';
           const commitSha = context.sha;
 
-          const { data: { items } } = await github.rest.search.issuesAndPullRequests({
-            q: `${commitSha} type:pr is:merged`
+          const pulls = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sort: 'updated',
+            direction: 'desc',
+            state: 'closed',
+            per_page: 100
           });
 
-          if (items.length === 0) {
-            core.warning(warningNoPromote);
+          core.startGroup(`Checking pull request linked to commit ${commitSha}`);
+          const pr = pulls.data.find(p => {
+            console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+            return p.merge_commit_sha === commitSha;
+          });
+          core.endGroup();
+          if (!pr) {
+            core.error(`No pull request found for merge commit ${commitSha}`);
             return;
           }
 
-          const prNumber = items[0].number;
-
-          const pr = await github.rest.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber
-          });
-
-          const prBaseRef = pr.data?.base?.ref || 'unknown';
+          const prHeadRef = pr?.head?.ref || 'unknown';
           let releaseType = '';
           switch (true) {
-            case /^release.+/.test(prBaseRef):
+            case /^release.+/.test(prHeadRef):
               releaseType = 'release';
               break;
-            case /^hotfix.+/.test(prBaseRef):
+            case /^hotfix.+/.test(prHeadRef):
               releaseType = 'hotfix';
               break;
             default:
-              core.warning(warningNoPromote);
+              core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
               return;
           }
+          console.log(`Release type: ${releaseType}`);
 
           let fromStabilitySubdirectory = 'testing';
           if (releaseType === 'hotfix' ) {
@@ -152,27 +155,32 @@ runs:
 
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
             await exec.exec(
-              `jf rt download "rpm-connectors/2e83f5ff110c44a9cab8f8c7ebbe3c4f/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
+              `jf rt download "rpm-plugins/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
             await exec.exec(
-              `jf rt download "ubuntu-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
             await exec.exec(
-              `jf rt download "apt-connectors-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${{ inputs.release_type }}" --flat`
+              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
             );
           }
 
     - name: Publish packages to ${{ inputs.stability }}
       if: |
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
-        (needs.get-version.outputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
+        (inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
           const path = require('path');
           const globber = await glob.create('*.${{ steps.parse-distrib.outputs.package_extension }}');
+
+          let stableRpmSubdirectory = '';
+          if ('${{ inputs.stability }}' === 'stable') {
+            stableRpmSubdirectory = 'RPMS/';
+          }
 
           const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
 
@@ -185,7 +193,7 @@ runs:
                 arch = 'x86_64';
               }
               await exec.exec(
-                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${{ inputs.module_name }}/" --flat`
+                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${stableRpmSubdirectory}${{ inputs.module_name }}/" --flat`
               );
             } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
               let arch = 'all';

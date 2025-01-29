@@ -1,0 +1,15 @@
+{
+    "pkg_name": "centreon-plugin-Network-Huawei-Wlc-Snmp",
+    "pkg_summary": "Centreon Plugin for Huawei WLC using SNMP protocol",
+    "plugin_name": "centreon_huawei_wlc_snmp.pl",
+    "files": [
+        "centreon/common/huawei/standard/snmp/",
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	    "snmp_standard/mode/resources/",
+        "snmp_standard/mode/uptime.pm",
+        "network/huawei/wlc/snmp/"
+    ]
+}
