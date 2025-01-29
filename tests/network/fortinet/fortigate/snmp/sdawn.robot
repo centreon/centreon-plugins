@@ -8,8 +8,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
-
+${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
 
 *** Test Cases ***
 sdwan ${tc}
@@ -20,9 +19,11 @@ sdwan ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=network/fortinet/fortigate/snmp/slim-sdawn
-    ...    --snmp-timeout=1
+    ...    --snmp-community=network/fortinet/fortigate/snmp/sdwan
+    ...    --snmp-timeout=10
+    ...    --snmp-retries=3
     ...    ${extra_options}
+    ...    --debug
  
     Ctn Verify Command Output    ${command}    ${expected_result}
 
