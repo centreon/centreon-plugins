@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the system status
+Documentation       Check the Podman system status
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -20,9 +20,10 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-backups ${tc}
-    [Documentation]    Check the backups status
+System status ${tc}
+    [Documentation]    Check the system status
     [Tags]    apps    podman    restapi
+
     ${command}    Catenate
     ...    ${cmd}
     ...    ${extraoptions}
