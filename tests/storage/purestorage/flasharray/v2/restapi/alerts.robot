@@ -8,7 +8,7 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 ** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}Mokoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mokoon.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::purestorage::flasharray::v2::restapi::plugin
@@ -20,8 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 alerts ${tc}
-    [Documentation]    Check
-    [Tags]    network    fortinet    fortigate    restapi
+    [Tags]    storage    purestorage    flasharray    restapi
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=alerts
