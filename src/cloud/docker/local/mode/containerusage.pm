@@ -206,7 +206,7 @@ sub manage_selection {
 
     shift(@lines);
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s{3,}(\S+)\s{3,}(\S+)\s{3,}(\S+)\s\/\s(\S+)\s{3,}\S+\s{3,}(\S+)\s\/\s(\S+)\s{3,}(\S+)\s\/\s(\S+).*$/);
+        next if ($line !~ /^(\S+)\s{2,}(\S+)\s{2,}(\S+)\s{2,}(\S+)\s\/\s(\S+)\s{2,}\S+\s{2,}(\S+)\s\/\s(\S+)\s{2,}(\S+)\s\/\s(\S+).*$/);
 
         my ($id, $name, $cpu, $mem_usage, $mem_limit, $net_in, $net_out, $block_in, $block_out) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
