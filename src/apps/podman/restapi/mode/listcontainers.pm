@@ -60,7 +60,7 @@ sub run {
     }
 
     $self->{output}->output_add(severity  => 'OK',
-                                short_msg => 'List containers:');
+                                short_msg => 'Containers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

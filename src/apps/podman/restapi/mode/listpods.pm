@@ -59,7 +59,7 @@ sub run {
     }
 
     $self->{output}->output_add(severity  => 'OK',
-                                short_msg => 'List pods:');
+                                short_msg => 'Pods:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -67,7 +67,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [ 'id', 'name', 'pod', 'state' ]);
+    $self->{output}->add_disco_format(elements => [ 'id', 'name', 'status' ]);
 }
 
 sub disco_show {
