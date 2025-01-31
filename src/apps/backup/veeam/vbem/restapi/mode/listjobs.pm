@@ -62,7 +62,7 @@ sub manage_selection {
         }
     }
 
-    foreach my $job (@{$jobs_replica->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
+    foreach my $job (@{$jobs_replica->{Entities}->{ReplicaJobSessions}->{ReplicaJobSessions}}) {
         next if (defined($results->{ $job->{JobUid} }));
 
         $results->{ $job->{JobUid} } = {
