@@ -9,8 +9,7 @@ Test Timeout        120s
 
 ** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}Mokoon.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
+
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::purestorage::flasharray::v2::restapi::plugin
 ...                 --hostname=${HOSTNAME}
