@@ -41,12 +41,12 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'url-path:s'        => { name => 'url_path' },
-            'unix-socket:s'     => { name => 'unix_socket' },
-            'timeout:s'         => { name => 'timeout' }
+            'hostname:s'    => { name => 'hostname' },
+            'port:s'        => { name => 'port' },
+            'proto:s'       => { name => 'proto' },
+            'url-path:s'    => { name => 'url_path' },
+            'unix-socket:s' => { name => 'unix_socket' },
+            'timeout:s'     => { name => 'timeout' }
         });
         # curl --cacert /path/to/ca.crt --cert /path/to/podman.crt --key /path/to/podman.key https://localhost:8080/v5.0.0/libpod/info
     }
@@ -153,10 +153,49 @@ sub system_info {
 
     my $results = $self->request(
         endpoint => 'info',
-        method => 'GET'
+        method   => 'GET'
     );
 
     return $results;
+}
+
+sub list_containers {
+    my ($self, %options) = @_;
+
+    my $results = $self->request(
+        endpoint => 'containers/json',
+        method   => 'GET'
+    );
+
+    my $containers = {};
+    foreach my $container (@{$results}) {
+        $containers->{$container->{Id}} = {
+            Name    => $container->{Names}->[0],
+            PodName => $container->{PodName},
+            State   => $container->{State}
+        };
+    }
+
+    return $containers;
+}
+
+sub list_pods {
+    my ($self, %options) = @_;
+
+    my $results = $self->request(
+        endpoint => 'pods/json',
+        method   => 'GET'
+    );
+
+    my $pods = {};
+    foreach my $pod (@{$results}) {
+        $pods->{$pod->{Id}} = {
+            Name   => $pod->{Name},
+            Status => $pod->{Status}
+        };
+    }
+
+    return $pods;
 }
 
 1;
