@@ -9,15 +9,15 @@ Test Timeout        120s
 
 ** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}Mokoon.json
-
+${HOSTNAME}             127.0.0.1
+${APIPORT}              3000
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::purestorage::flasharray::v2::restapi::plugin
-...                 --hostname=host.docker.internal
+...                 --hostname=${HOSTNAME}
 ...                 --proto='http'
 ...                 --api-version='2.4'
 ...                 --api-token='token'
-...                 --port=3000
-...                 --debug
+...                 --port=${APIPORT}
 
 *** Test Cases ***
 alerts ${tc}
@@ -27,12 +27,11 @@ alerts ${tc}
     ...    ${CMD}
     ...    --mode=alerts
     ...    ${extra_options}
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:         tc      extra_options                                                              expected_result    --
-            ...       1       --verbose --help                                                           lolipop
-            ...       2       --verbose                                                                  CRITICAL: License
-            ...       3       --filter-category                                                     WARNING: License
-            ...       4       --warning-status                                                        WARNING: License
-            ...       5       --critical-status                                                       CRITICAL: License
-            ...       6       --memory                                                                CRITICAL: License
+    Examples:         tc      extra_options                                                                                                                                                          expected_result    --
+            ...       1       --filter-category='array'                                                                                                                                              CRITICAL: 2 problem(s) detected | 'alerts.detected.count'=2;;;0;
+            ...       2       --warning-status='\\\%{state} = "warning"'                                                                                                                             CRITICAL: 2 problem(s) detected | 'alerts.detected.count'=2;;;0;
+            ...       3       --critical-status='\\\%{component_name} eq "ch0"'                                                                                                                      CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0;
+            ...       4       --memory=1                                                                                                                                                             CRITICAL: 2 problem(s) detected | 'alerts.detected.count'=2;;;0;
+            ...       5       --warning-status='\\\%{state} ne "closing" and \\\%{severity} =~ /warning/i and \\\%{flagged} and \\\%{code} eq "45"' --filter-category='array'                        CRITICAL: 2 problem(s) detected | 'alerts.detected.count'=2;;;0;
