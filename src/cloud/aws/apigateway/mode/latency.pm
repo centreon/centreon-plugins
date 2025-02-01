@@ -96,7 +96,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'api-name:s@'     => { name => 'api_name' },
+        'api-gateway-type:s' => { name => 'api_gateway_type', default => 'REST' },
+        'dimension-value:s@'   => { name => 'dimension_value' },
         'filter-metric:s' => { name => 'filter_metric' },
     });
     
@@ -107,7 +108,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    foreach my $instance (@{$self->{option_results}->{api_name}}) {
+    if ($self->{option_results}->{api_gateway_type} !~ /^(REST|HTTP|WebSocket)$/) {
+        $self->{output}->add_option_msg(short_msg => "Unsupported --api-gateway-type option.");
+        $self->{output}->option_exit();
+    }
+
+    foreach my $instance (@{$self->{option_results}->{dimension_value}}) {
         if ($instance ne '') {
             push @{$self->{aws_instance}}, $instance;
         }
@@ -138,10 +144,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %metric_results;
+    my $dimension_instance = $self->{option_results}->{api_gateway_type} eq 'REST' ? 'ApiName' : 'ApiId';
+
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/ApiGateway',
-            dimensions => [ { Name => 'ApiName', Value => $instance } ],
+            dimensions => [ { Name => $dimension_instance, Value => $instance } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
@@ -179,17 +187,23 @@ Default statistic: 'sum'
 
 =over 8
 
-=item B<--api-name>
+=item B<--api-gateway-type>
 
-Set the API name (required) (can be defined multiple times).
+The type of the api gateway. Default 'REST'
+(Can be: 'REST', 'HTTP', 'WebSocket'). Used to set the correct dimension instance (ApiName or ApiId)
+
+=item B<--dimension-value>
+
+Can be the APIName or the ApiId value (Required) depending by the --api-gateway-type (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (can be: 'Latency', 'IntegrationLatency') 
+Filter metrics (Can be: 'Latency', 'IntegrationLatency') 
 
 =item B<--warning-*> B<--critical-*>
 
-Warning threshold (* can be client-latency, backend-latency).
+Thresholds warning
+star substitution possibilities: client-latency, backend-latency
 
 =back
 
