@@ -61,10 +61,28 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'backends', type => 3, cb_prefix_output => 'prefix_backend_output', cb_long_output => 'backend_long_output', message_multiple => 'All Backends are ok', indent_long_output => '    ', skipped_code => { -10 => 1 },
+        { 
+            name => 'backends', 
+            type => 3, 
+            cb_prefix_output => 'prefix_backend_output', 
+            cb_long_output => 'backend_long_output', 
+            message_multiple => 'All Backends are ok', 
+            indent_long_output => '    ', 
+            skipped_code => { -10 => 1 },            
             group => [
-                { name => 'backend', type => 0, cb_prefix_output => 'prefix_global_backend_output' },
-                { name => 'servers', type => 1, display_long => 1, cb_prefix_output => 'prefix_server_output', message_multiple => 'Servers are ok', skipped_code => { -10 => 1 } }
+                { 
+                    name => 'backend', 
+                    type => 0, 
+                    cb_prefix_output => 'prefix_global_backend_output' 
+                },
+                { 
+                    name => 'servers', 
+                    type => 1, 
+                    display_long => 1, 
+                    cb_prefix_output => 'prefix_server_output', 
+                    message_multiple => 'Servers are ok', 
+                    skipped_code => { -10 => 1 } 
+                }
             ]
         }
     ];
