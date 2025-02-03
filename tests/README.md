@@ -2,7 +2,7 @@
 
 ## Robot tests
 
-In this project robot is used to order the integration tests.
+In this project robot Framework is used to order the integration tests.
 
 ### install snmpsim
 
@@ -30,6 +30,21 @@ robot tests/
 
 you can filter the tests run by specifying -e to exclude and -i to include a specific tag before the file path.
 
+## Get new data
+
+### Http
+
+Any `curl -v` command should give enough info to create new tests/plugins on new http services.
+
+If the plugin already exists, you can use the plugin to gater the data with the `--debug --verbose` options.
+
+### Snmp
+
+To get snmp data, you can use the snmpwalk command on the host you want to monitor. 
+```bash
+snmpwalk -ObentU -v2c -c 'public' localhost .1
+```
+
 
 ## Anonymize tests
 
@@ -39,7 +54,6 @@ the option  `--no-anonymization` allow to not anonymize the data and only remove
 ```bash
 perl ./tests/scripts/slim_walk.pl --snmpwalk-path=tests/hardware/client.snmpwalk > smaller-file.snmpwalk
 ```
-
 
 ## unit tests
 

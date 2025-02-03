@@ -98,6 +98,7 @@ ifAlias
 ifDesc
 ifName
 --ignore-orgs-api-disabled
+IKS
 IMEI
 in-bcast
 in-crc
