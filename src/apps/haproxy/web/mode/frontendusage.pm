@@ -301,35 +301,175 @@ Also display and monitor listeners related to a given frontend.
 
 =item B<--filter-counters>
 
-Only display some counters (regexp can be used).
+Define which counters should appear in the performance data (metrics).
+This option will be treated as a regular expression.
+
 Example: --filter-counters='^total-connections$'.
 
 =item B<--filter-name>
 
-Filter Frontend name (can be a regexp).
+Define which frontends should be monitored based on their names.
+This option will be treated as a regular expression.
 
-=item B<--warning-*-status>
+=item B<--warning-frontend-status>
 
-Define the conditions to match for the status to be WARNING
-where '*' can be: 'frontend', 'listener'.
-You can use the following variables: %{status}.
-Example: --warning-frontend-status='%{status} !~ /UP/i'
+Define the conditions to match for the status to be B<WARNING>.
 
-=item B<--critical-*-status>
+You can use the following variables: C<%{status}>.
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /OPEN/i')
-where '*' can be: 'frontend', 'listener'.
-You can use the following variables: %{status}.
-Example: --critical-frontend-status='%{status} !~ /UP/i'
+Example: C<--warning-frontend-status='%{status} !~ /UP/i'>
 
-=item B<--warning-*> B<--critical-*>
+=item B<--critical-frontend-status>
+
+Define the conditions to match for the status to be B<CRITICAL>. Default: C<%{status} !~ /OPEN/i>.
+
+You can use the following variables: C<%{status}>.
+
+Example: C<--critical-frontend-status='%{status} !~ /UP/i'>
+
+=item B<--warning-listener-status>
+
+Define the conditions to match for the status to be B<WARNING>
+
+You can use the following variables: C<%{status}>.
+
+Example: C<--warning-listener-status='%{status} !~ /UP/i'>
+
+=item B<--critical-listener-status>
+
+Define the conditions to match for the status to be B<CRITICAL>. Default: C<%{status} !~ /OPEN/i>.
+
+You can use the following variables: C<%{status}>.
+
+Example: C<--critical-listener-status='%{status} !~ /UP/i'>
+
+=item B<--warning-frontend-current-session-rate>
 
 Thresholds.
-Can be: 'frontend-current-session-rate', 'frontend-max-session-rate', 'frontend-current-sessions',
-'frontend-total-sessions', 'frontend-max-sessions', 'frontend-traffic-in' (b/s), 'frontend-traffic-out' (b/s),
-'frontend-denied-requests', 'frontend-denied-responses', 'frontend-errors-requests', 'listener-current-sessions',
-'listener-denied-requests', 'listener-denied-responses', 'listener-errors-requests',
-'listener-traffic-in' (b/s), 'listener-traffic-out' (b/s)
+
+=item B<--critical-frontend-current-session-rate>
+
+Thresholds.
+
+=item B<--warning-frontend-max-session-rate>
+
+Thresholds.
+
+=item B<--critical-frontend-max-session-rate>
+
+Thresholds.
+
+=item B<--warning-frontend-current-sessions>
+
+Thresholds.
+
+=item B<--critical-frontend-current-sessions>
+
+Thresholds.
+
+=item B<--warning-frontend-total-sessions>
+
+Thresholds.
+
+=item B<--critical-frontend-total-sessions>
+
+Thresholds.
+
+=item B<--warning-frontend-max-sessions>
+
+Thresholds.
+
+=item B<--critical-frontend-max-sessions>
+
+Thresholds.
+
+=item B<--warning-frontend-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--critical-frontend-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--warning-frontend-traffic-out>
+
+Thresholds in b/s.
+
+=item B<--critical-frontend-traffic-out>
+
+Thresholds in b/s.
+
+=item B<--warning-frontend-denied-requests>
+
+Thresholds.
+
+=item B<--critical-frontend-denied-requests>
+
+Thresholds.
+
+=item B<--warning-frontend-denied-responses>
+
+Thresholds.
+
+=item B<--critical-frontend-denied-responses>
+
+Thresholds.
+
+=item B<--warning-frontend-errors-requests>
+
+Thresholds.
+
+=item B<--critical-frontend-errors-requests>
+
+Thresholds.
+
+=item B<--warning-listener-current-sessions>
+
+Thresholds.
+
+=item B<--critical-listener-current-sessions>
+
+Thresholds.
+
+=item B<--warning-listener-denied-requests>
+
+Thresholds.
+
+=item B<--critical-listener-denied-requests>
+
+Thresholds.
+
+=item B<--warning-listener-denied-responses>
+
+Thresholds.
+
+=item B<--critical-listener-denied-responses>
+
+Thresholds.
+
+=item B<--warning-listener-errors-requests>
+
+Thresholds.
+
+=item B<--critical-listener-errors-requests>
+
+Thresholds.
+
+=item B<--warning-listener-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--critical-listener-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--warning-listener-traffic-out>
+
+Thresholds in b/s.
+
+=item B<--critical-listener-traffic-out>
+
+Thresholds in b/s.
 
 =back
 

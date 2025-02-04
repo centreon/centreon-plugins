@@ -164,11 +164,11 @@ HAProxy web stats
 
 =item B<--hostname>
 
-IP Addr/FQDN of the web server host
+IP address or FQDN of the HAProxy server.
 
 =item B<--port>
 
-Port used by web server
+Port used by the web server
 
 =item B<--proto>
 
@@ -200,7 +200,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using ntlmv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLMv2 authentication (use with C<--credentials> and C<--port> options).
 
 =item B<--timeout>
 

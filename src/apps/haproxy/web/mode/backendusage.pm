@@ -325,36 +325,180 @@ Also display and monitor Servers related to a given backend.
 
 =item B<--filter-counters>
 
-Only display some counters (regexp can be used).
-Example: --filter-counters='^total-connections$'.
+Define which counters should appear in the performance data (metrics).
+This option will be treated as a regular expression.
+
+Example: C<--filter-counters='^total-connections$'>.
 
 =item B<--filter-name>
 
-Filter Backend name (can be a regexp).
+Define which backends should be monitored based on their names.
+This option will be treated as a regular expression.
 
-=item B<--warning-*-status>
+=item B<--warning-backend-status>
 
-Define the conditions to match for the status to be WARNING
-where '*' can be: 'backend', 'server'.
+Define the conditions to match for the backend status to be WARNING.
 You can use the following variables: %{status}.
-Example: --warning-backend-status='%{status} !~ /UP/i'
 
-=item B<--critical-*-status>
+Example: C<--warning-backend-status='%{status} !~ /UP/i'>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /UP/i')
-where '*' can be: 'backend', 'server'.
-You can use the following variables: %{status}.
-Example: --critical-backend-status='%{status} !~ /UP/i'
+=item B<--critical-backend-status>
 
-=item B<--warning-*> B<--critical-*>
+Define the conditions to match for the backend status to be CRITICAL.
+Default: C<'%{status} !~ /UP/i'>.
+You can use the following variables: C<%{status}>.
+
+Example: C<--critical-backend-status='%{status} !~ /UP/i'>
+
+=item B<--warning-server-status>
+
+Define the conditions to match for the server status to be WARNING.
+You can use the following variables: C<%{status}>.
+
+Example: C<--warning-backend-status='%{status} !~ /UP/i'>
+
+=item B<--critical-server-status>
+
+Define the conditions to match for the status to be CRITICAL. Default: C<'%{status} !~ /UP/i'>.
+You can use the following variables: C<%{status}>.
+
+Example: C<--critical-backend-status='%{status} !~ /UP/i'>
+
+=item B<--warning-backend-current-queue>
 
 Thresholds.
-Can be: 'backend-current-queue', 'backend-current-session-rate',
-'backend-max-session-rate', 'backend-current-sessions', 'backend-total-sessions',
-'backend-traffic-in' (b/s), 'backend-traffic-out' (b/s), 'backend-denied-requests', 'backend-denied-responses',
-'backend-connections-errors', 'backend-responses-errors', 'server-current-sessions',
-'server-current-session-rate', 'server-max-session-rate', 'server-denied-responses',
-'server-connections-errors', 'server-responses-errors'
+
+=item B<--critical-backend-current-queue>
+
+Thresholds.
+
+=item B<--warning-backend-current-session-rate>
+
+Thresholds.
+
+=item B<--critical-backend-current-session-rate>
+
+Thresholds.
+
+=item B<--warning-backend-max-session-rate>
+
+Thresholds.
+
+=item B<--critical-backend-max-session-rate>
+
+Thresholds.
+
+=item B<--warning-backend-current-sessions>
+
+Thresholds.
+
+=item B<--critical-backend-current-sessions>
+
+Thresholds.
+
+=item B<--warning-backend-total-sessions>
+
+Thresholds.
+
+=item B<--critical-backend-total-sessions>
+
+Thresholds.
+
+=item B<--warning-backend-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--critical-backend-traffic-in>
+
+Thresholds in b/s.
+
+=item B<--warning-backend-traffic-out>
+
+Thresholds in b/s.
+
+=item B<--critical-backend-traffic-out>
+
+Thresholds in b/s.
+
+=item B<--warning-backend-denied-requests>
+
+Thresholds.
+
+=item B<--critical-backend-denied-requests>
+
+Thresholds.
+
+=item B<--warning-backend-denied-responses>
+
+Thresholds.
+
+=item B<--critical-backend-denied-responses>
+
+Thresholds.
+
+=item B<--warning-backend-connections-errors>
+
+Thresholds.
+
+=item B<--critical-backend-connections-errors>
+
+Thresholds.
+
+=item B<--warning-backend-responses-errors>
+
+Thresholds.
+
+=item B<--critical-backend-responses-errors>
+
+Thresholds.
+
+=item B<--warning-server-current-sessions>
+
+Thresholds.
+
+=item B<--critical-server-current-sessions>
+
+Thresholds.
+
+=item B<--warning-server-current-session-rate>
+
+Thresholds.
+
+=item B<--critical-server-current-session-rate>
+
+Thresholds.
+
+=item B<--warning-server-max-session-rate>
+
+Thresholds.
+
+=item B<--critical-server-max-session-rate>
+
+Thresholds.
+
+=item B<--warning-server-denied-responses>
+
+Thresholds.
+
+=item B<--critical-server-denied-responses>
+
+Thresholds.
+
+=item B<--warning-server-connections-errors>
+
+Thresholds.
+
+=item B<--critical-server-connections-errors>
+
+Thresholds.
+
+=item B<--warning-server-responses-errors>
+
+Thresholds.
+
+=item B<--critical-server-responses-errors>
+
+Thresholds.
 
 =back
 
