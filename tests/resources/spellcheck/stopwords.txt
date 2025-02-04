@@ -189,6 +189,7 @@ out-fc-wait
 out-mcast
 out-ucast
 overprovisioning
+packetloss
 partiallyActive
 --patch-redhat
 perfdata
@@ -257,6 +258,7 @@ userpass
 --use-ucd
 v1
 v2
+vdom
 VDSL2
 Veeam
 VeloCloud
