@@ -365,11 +365,11 @@ Thresholds.
 
 Thresholds.
 
-=item B<--warning-total-partiallyActive>
+=item B<--warning-total-partially-active>
 
 Thresholds.
 
-=item B<--critical-total-partiallyActive>
+=item B<--critical-total-partially-active>
 
 Thresholds.
 
