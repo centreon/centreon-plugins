@@ -87,9 +87,7 @@ sub check_options {
     }
 
     $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
-    use Data::Dumper;print(Dumper($self->{teams_workflow_params}));
-    print($self->{teams_workflow_params} . "\n");
-
+    
     return 0;
 }
 
