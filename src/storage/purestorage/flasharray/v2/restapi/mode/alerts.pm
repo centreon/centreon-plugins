@@ -98,8 +98,6 @@ sub manage_selection {
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
-        #use Data::Dumper;
-        #print Dumper($options{custom});
         $self->{statefile_cache}->read(statefile => 'purestorage_' . $self->{mode} . '_' . $options{custom}->get_connection_info());
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
