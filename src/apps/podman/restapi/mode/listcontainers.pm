@@ -41,21 +41,15 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    $self->{containers} = $options{custom}->list_containers();
-}
-
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $container_id (sort keys %{$self->{containers}}) {
+    my $containers = $options{custom}->list_containers();
+    foreach my $container_id (sort keys %{$containers}) {
         $self->{output}->output_add(long_msg => '[id = ' . $container_id . "]" .
-                                                " [name = '" . $self->{containers}->{$container_id}->{Name} . "']" .
-                                                " [pod = '" . $self->{containers}->{$container_id}->{PodName} . "']" .
-                                                " [state = '" . $self->{containers}->{$container_id}->{State} . "']"
+                                                " [name = '" . $containers->{$container_id}->{Name} . "']" .
+                                                " [pod = '" . $containers->{$container_id}->{PodName} . "']" .
+                                                " [state = '" . $containers->{$container_id}->{State} . "']"
         );
     }
 
@@ -74,11 +68,11 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $container_id (sort keys %{$self->{containers}}) {
-        $self->{output}->add_disco_entry(name  => $self->{containers}->{$container_id}->{Name},
-                                         node  => $self->{containers}->{$container_id}->{NodeName},
-                                         state => $self->{containers}->{$container_id}->{State},
+    my $containers = $options{custom}->list_containers();
+    foreach my $container_id (sort keys %{$containers}) {
+        $self->{output}->add_disco_entry(name  => $containers->{$container_id}->{Name},
+                                         node  => $containers->{$container_id}->{NodeName},
+                                         state => $containers->{$container_id}->{State},
                                          id    => $container_id,
         );
     }

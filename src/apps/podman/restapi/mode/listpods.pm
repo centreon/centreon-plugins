@@ -41,20 +41,14 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    $self->{pods} = $options{custom}->list_pods();
-}
-
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $pod_id (sort keys %{$self->{pods}}) {
+    my $pods = $options{custom}->list_pods();
+    foreach my $pod_id (sort keys %{$pods}) {
         $self->{output}->output_add(long_msg => '[id = ' . $pod_id . "]" .
-                                                " [name = '" . $self->{pods}->{$pod_id}->{Name} . "']" .
-                                                " [status = '" . $self->{pods}->{$pod_id}->{Status} . "']"
+                                                " [name = '" . $pods->{$pod_id}->{Name} . "']" .
+                                                " [status = '" . $pods->{$pod_id}->{Status} . "']"
         );
     }
 
@@ -73,11 +67,11 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $pod_id (sort keys %{$self->{pods}}) {
-        $self->{output}->add_disco_entry(name  => $self->{pods}->{$pod_id}->{Name},
-                                         node  => $self->{pods}->{$pod_id}->{NodeName},
-                                         state => $self->{pods}->{$pod_id}->{State},
+    my $pods = $options{custom}->list_pods();
+    foreach my $pod_id (sort keys %{$pods}) {
+        $self->{output}->add_disco_entry(name  => $pods->{$pod_id}->{Name},
+                                         node  => $pods->{$pod_id}->{NodeName},
+                                         state => $pods->{$pod_id}->{State},
                                          id    => $pod_id,
         );
     }
