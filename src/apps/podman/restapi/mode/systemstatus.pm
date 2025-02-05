@@ -40,7 +40,7 @@ sub set_counters {
               key_values      => [
                   { name => 'cpu_usage' }
               ],
-              output_template => '%.2f %%',
+              output_template => 'CPU: %.2f%%',
               perfdatas       => [
                   { label    => 'cpu',
                     template => '%.2f',
@@ -53,11 +53,12 @@ sub set_counters {
         { label  => 'memory-usage',
           nlabel => 'podman.system.memory.usage.bytes',
           set    => {
-              key_values      => [
+              key_values          => [
                   { name => 'memory_usage' }
               ],
-              output_template => '%s',
-              perfdatas       => [
+              output_template     => 'Memory: %s%s',
+              output_change_bytes => 1,
+              perfdatas           => [
                   { label    => 'memory',
                     template => '%s',
                     min      => 0,
@@ -68,11 +69,12 @@ sub set_counters {
         { label  => 'swap-usage',
           nlabel => 'podman.system.swap.usage.bytes',
           set    => {
-              key_values      => [
+              key_values          => [
                   { name => 'swap_usage' }
               ],
-              output_template => '%s',
-              perfdatas       => [
+              output_template     => 'Swap: %s%s',
+              output_change_bytes => 1,
+              perfdatas           => [
                   { label    => 'swap',
                     template => '%s',
                     min      => 0,
@@ -87,7 +89,7 @@ sub set_counters {
                   { name => 'running_containers' },
                   { name => 'total_containers' }
               ],
-              output_template => 'running containers: %s',
+              output_template => 'Running containers: %s',
               perfdatas       => [
                   { label    => 'running_containers',
                     template => '%s',
@@ -104,7 +106,7 @@ sub set_counters {
                   { name => 'stopped_containers' },
                   { name => 'total_containers' }
               ],
-              output_template => 'stopped containers: %s',
+              output_template => 'Stopped containers: %s',
               perfdatas       => [
                   { label    => 'stopped_containers',
                     template => '%s',
@@ -120,7 +122,7 @@ sub set_counters {
               key_values      => [
                   { name => 'uptime' }
               ],
-              output_template => 'uptime: %s s',
+              output_template => 'Uptime: %s s',
               perfdatas       => [
                   { label    => 'uptime',
                     template => '%s',
