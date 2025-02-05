@@ -84,9 +84,11 @@ FCCapacity
 --force-oid
 Fortigate
 Fortinet
+FQDN
 FreeBSD
 frsevent
 --get-param
+HAProxy
 HashiCorp
 hashicorpvault
 HPE
@@ -96,6 +98,7 @@ ifAlias
 ifDesc
 ifName
 --ignore-orgs-api-disabled
+IKS
 IMEI
 in-bcast
 in-crc
@@ -260,11 +263,11 @@ v2
 VDSL2
 Veeam
 VeloCloud
-Vserver
 VM
 VMware
 VPN
 vSAN
+Vserver
 vSphere
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts

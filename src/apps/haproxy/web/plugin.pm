@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,26 +18,25 @@
 # limitations under the License.
 #
 
-package network::moxa::switch::snmp::plugin;
+package apps::haproxy::web::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'cpu'              => 'network::moxa::switch::snmp::mode::cpu',
-        'interfaces'       => 'network::moxa::switch::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::moxa::switch::snmp::mode::memory',
-        'uptime'           => 'snmp_standard::mode::uptime',
-    );
+    $self->{version} = '1.0';
+    $self->{modes} = {
+        'backend-usage'  => 'apps::haproxy::web::mode::backendusage',
+        'frontend-usage' => 'apps::haproxy::web::mode::frontendusage',
+        'list-objects'   => 'apps::haproxy::web::mode::listobjects'
+    };
 
+    $self->{custom_modes}->{api} = 'apps::haproxy::web::custom::api';
     return $self;
 }
 
@@ -47,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Moxa Industrial Switches (IKS and EDS) through SNMP
+Check HAProxy stats using HTTP stats page.
 
 =cut
