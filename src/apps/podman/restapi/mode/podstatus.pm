@@ -52,7 +52,7 @@ sub set_counters {
         { label  => 'memory-usage',
           nlabel => 'podman.pod.memory.usage.bytes', set => {
               key_values          => [ { name => 'memory' } ],
-              output_template     => 'Memory: %sB',
+              output_template     => 'Memory: %s%s',
               output_change_bytes => 1,
               perfdatas           => [
                   { label    => 'memory',
@@ -102,9 +102,11 @@ sub set_counters {
               ]
           }
         },
-        { label  => 'state',
-          type   => 2,
-          set    => {
+        { label            => 'state',
+          type             => 2,
+          warning_default  => '%{state} =~ /Exited/',
+          critical_default => '%{state} =~ /Degraded/',
+          set              => {
               key_values                     => [ { name => 'state' } ],
               output_template                => 'State: %s',
               closure_custom_perfdata        => sub { return 0; },
