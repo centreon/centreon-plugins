@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,6 +23,7 @@ package apps::podman::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::misc;
 use JSON::XS;
 
 sub new {
@@ -41,14 +42,14 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'    => { name => 'hostname' },
-            'port:s'        => { name => 'port' },
-            'proto:s'       => { name => 'proto' },
-            'url-path:s'    => { name => 'url_path' },
-            'unix-socket:s' => { name => 'unix_socket' },
-            'timeout:s'     => { name => 'timeout' }
+            'hostname:s' => { name => 'hostname' },
+            'port:s'     => { name => 'port' },
+            'proto:s'    => { name => 'proto' },
+            'url-path:s' => { name => 'url_path' },
+            'timeout:s'  => { name => 'timeout' }
         });
         # curl --cacert /path/to/ca.crt --cert /path/to/podman.crt --key /path/to/podman.key https://localhost:8080/v5.0.0/libpod/info
+        # curl --unix-socket $XDG_RUNTIME_DIR/podman/podman.sock 'http://d/v5.0.0/libpod/pods/stats?namesOrIDs=blog' | jq
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
@@ -198,17 +199,66 @@ sub list_pods {
     return $pods;
 }
 
+sub get_pod_infos {
+    my ($self, %options) = @_;
+
+    my $inspect = $self->request(
+        endpoint => 'pods/' . $options{pod_name} . '/json',
+        method   => 'GET'
+    );
+
+    my $stats = $self->request(
+        endpoint => 'pods/stats?namesOrIDs=' . $options{pod_name},
+        method   => 'GET'
+    );
+
+    my $pod = {
+        cpu                => 0,
+        memory             => 0,
+        running_containers => 0,
+        stopped_containers => 0,
+        paused_containers  => 0,
+        state              => @{$inspect}[0]->{State}
+    };
+
+    foreach my $container (@{$inspect->[0]->{Containers}}) {
+        $pod->{running_containers}++ if ($container->{State} eq 'running');
+        $pod->{stopped_containers}++ if ($container->{State} eq 'exited');
+        $pod->{paused_containers}++ if ($container->{State} eq 'paused');
+    }
+
+    foreach my $container (@{$stats}) {
+        my $cpu = $container->{CPU};
+        if ($cpu =~ /^(\d+\.\d+)%/) {
+            $pod->{cpu} += $1;
+        }
+        my $memory = $container->{MemUsage};
+        if ($memory =~ /^(\d+\.?\d*)([a-zA-Z]+)/) {
+            $memory = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
+        }
+        $pod->{memory} += $memory;
+    }
+
+    return $pod;
+}
+
 1;
 
 __END__
 
 =head1 NAME
 
-Podman REST API
+Podman REST API.
 
 =head1 SYNOPSIS
 
-Podman Rest API custom mode
+Podman Rest API custom mode.
+To connect to the API with a socket, you must add the following command:
+--curl-opt="CURLOPT_UNIX_SOCKET_PATH => 'PATH_TO_THE_SOCKET'"
+If you use a certificate, you must add the following commands:
+--curl-opt="CURLOPT_CAINFO => 'PATH_TO_THE_CA_CERTIFICATE'"
+--curl-opt="CURLOPT_SSLCERT => 'PATH_TO_THE_CERTIFICATE'"
+--curl-opt="CURLOPT_SSLKEY => 'PATH_TO_THE_KEY'"
 
 =head1 REST API OPTIONS
 
@@ -216,75 +266,23 @@ Podman Rest API custom mode
 
 =item B<--hostname>
 
-IP Addr/FQDN of the docker node (can be multiple).
+Podman Rest API hostname.
 
 =item B<--port>
 
-Port used (default: 8080)
+Port used (Default: 443)
 
 =item B<--proto>
 
-Specify https if needed (default: 'http')
+Specify https if needed (Default: 'https')
 
-=item B<--credentials>
+=item B<--url-path>
 
-Specify this option if you access server-status page with authentication
-
-=item B<--username>
-
-Specify the username for authentication (mandatory if --credentials is specified)
-
-=item B<--password>
-
-Specify the password for authentication (mandatory if --credentials is specified)
-
-=item B<--basic>
-
-Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
-
-Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(use with --credentials)
+Set path to get Podman Rest API information (Default: '/v5.0.0/libpod/')
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (default: 10)
-
-=item B<--cert-file>
-
-Specify certificate to send to the web server
-
-=item B<--key-file>
-
-Specify key to send to the web server
-
-=item B<--cacert-file>
-
-Specify root certificate to send to the web server
-
-=item B<--cert-pwd>
-
-Specify certificate's password
-
-=item B<--cert-pkcs12>
-
-Specify type of certificate (PKCS12)
-
-=item B<--api-display>
-
-Print json api.
-
-=item B<--api-write-display>
-
-Print json api in a file (to be used with --api-display).
-
-=item B<--api-read-file>
-
-Read API from file.
-
-=item B<--reload-cache-time>
-
-Time in seconds before reloading list containers cache (default: 300)
+Set timeout in seconds (Default: 30)
 
 =back
 
