@@ -184,19 +184,19 @@ Check container usage.
 
 Container name.
 
-=item B--warning-cpu-usage>
+=item B<--warning-cpu-usage>
 
 Threshold warning for CPU usage.
 
-=item B--critical-cpu-usage>
+=item B<--critical-cpu-usage>
 
 Threshold critical for CPU usage.
 
-=item B--warning-memory-usage>
+=item B<--warning-memory-usage>
 
 Threshold warning for memory usage.
 
-=item B--critical-memory-usage>
+=item B<--critical-memory-usage>
 
 Threshold critical for memory usage.
 
@@ -234,13 +234,13 @@ Threshold critical for network out.
 
 =item B<--warning-container-state>
 
-Define the conditions to match for the state to be WARNING (default: '%{state} =~ /Paused/').
-You can use the following variables: %{state}
+Define the conditions to match for the state to be WARNING (default: C<'%{state} =~ /Paused/'>).
+You can use the following variables: C<%{state}>
 
 =item B<--critical-container-state>
 
-Define the conditions to match for the state to be CRITICAL (default: '%{state} =~ /Exited/').
-You can use the following variables: %{state}
+Define the conditions to match for the state to be CRITICAL (default: C<'%{state} =~ /Exited/'>).
+You can use the following variables: C<%{state}>
 
 =back
 

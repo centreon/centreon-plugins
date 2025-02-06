@@ -211,13 +211,13 @@ Threshold critical for paused containers.
 
 =item B<--warning-state>
 
-Define the conditions to match for the state to be WARNING (default: '%{state} =~ /Exited/').
-You can use the following variables: %{state}
+Define the conditions to match for the state to be WARNING (default: C<'%{state} =~ /Exited/'>).
+You can use the following variables: C<%{state}>
 
 =item B<--critical-state>
 
-Define the conditions to match for the state to be CRITICAL (default: '%{state} =~ /Degraded/').
-You can use the following variables: %{state}
+Define the conditions to match for the state to be CRITICAL (default: C<'%{state} =~ /Degraded/'>).
+You can use the following variables: C<%{state}>
 
 =back
 
