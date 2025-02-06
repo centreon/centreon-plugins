@@ -242,6 +242,35 @@ sub get_pod_infos {
     return $pod;
 }
 
+sub get_container_infos {
+    my ($self, %options) = @_;
+
+    my $stats = $self->request(
+        endpoint => 'containers/stats?stream=false&amp;containers=' . $options{container_name},
+        method   => 'GET'
+    );
+
+    my $containers = $self->list_containers();
+    my $state;
+    foreach my $container_id (sort keys %{$containers}) {
+        if ($containers->{$container_id}->{Name} eq $options{container_name}) {
+            $state = $containers->{$container_id}->{State};
+        }
+    }
+
+    my $container = {
+        cpu_usage    => $stats->{Stats}->[0]->{CPU},
+        memory_usage => $stats->{Stats}->[0]->{MemUsage},
+        io_read      => $stats->{Stats}->[0]->{BlockInput},
+        io_write     => $stats->{Stats}->[0]->{BlockOutput},
+        network_in   => $stats->{Stats}->[0]->{NetInput},
+        network_out  => $stats->{Stats}->[0]->{NetOutput},
+        state        => $state
+    };
+
+    return $container;
+}
+
 1;
 
 __END__
@@ -254,11 +283,11 @@ Podman REST API.
 
 Podman Rest API custom mode.
 To connect to the API with a socket, you must add the following command:
---curl-opt="CURLOPT_UNIX_SOCKET_PATH => 'PATH_TO_THE_SOCKET'"
+C<--curl-opt="CURLOPT_UNIX_SOCKET_PATH => 'PATH_TO_THE_SOCKET'">
 If you use a certificate, you must add the following commands:
---curl-opt="CURLOPT_CAINFO => 'PATH_TO_THE_CA_CERTIFICATE'"
---curl-opt="CURLOPT_SSLCERT => 'PATH_TO_THE_CERTIFICATE'"
---curl-opt="CURLOPT_SSLKEY => 'PATH_TO_THE_KEY'"
+C<--curl-opt="CURLOPT_CAINFO = 'PATH_TO_THE_CA_CERTIFICATE'">
+C<--curl-opt="CURLOPT_SSLCERT => 'PATH_TO_THE_CERTIFICATE'">
+C<--curl-opt="CURLOPT_SSLKEY => 'PATH_TO_THE_KEY'">
 
 =head1 REST API OPTIONS
 

@@ -199,6 +199,7 @@ partiallyActive
 perfdata
 physicaldrive
 PKCS1
+Podman
 powershell
 powershell.exe
 PPID

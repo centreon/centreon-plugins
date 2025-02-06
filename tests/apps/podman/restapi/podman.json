@@ -129,11 +129,40 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v5.0.0/libpod/pods/:podname/json",
+      "endpoint": "v5.0.0/libpod/pods/:podName/json",
       "responses": [
         {
           "uuid": "3b686944-9296-46ea-bfee-9ccdd90683f9",
-          "body": "[\n     {\n          \"Id\": \"5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a\",\n          \"Name\": \"{{urlParam 'podname'}}\",\n          \"Created\": \"2025-02-04T09:21:22.076484809+01:00\",\n          \"CreateCommand\": [\n               \"podman\",\n               \"pod\",\n               \"create\",\n               \"--name\",\n               \"blog\",\n               \"--infra\",\n               \"--publish\",\n               \"8080:80\",\n               \"--network\",\n               \"bridge\"\n          ],\n          \"ExitPolicy\": \"continue\",\n          \"State\": {{#if (eq (urlParam 'podname') 'blog')}}\"Running\"{{else}}\"Degraded\"{{/if}},\n          \"Hostname\": \"\",\n          \"CreateCgroup\": true,\n          \"CgroupParent\": \"user.slice\",\n          \"CgroupPath\": \"user.slice/user-501.slice/user@501.service/user.slice/user-libpod_pod_5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a.slice\",\n          \"CreateInfra\": true,\n          \"InfraContainerID\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n          \"InfraConfig\": {\n               \"PortBindings\": {\n                    \"80/tcp\": [\n                         {\n                              \"HostIp\": \"0.0.0.0\",\n                              \"HostPort\": \"8080\"\n                         }\n                    ]\n               },\n               \"HostNetwork\": false,\n               \"StaticIP\": \"\",\n               \"StaticMAC\": \"\",\n               \"NoManageResolvConf\": false,\n               \"DNSServer\": null,\n               \"DNSSearch\": null,\n               \"DNSOption\": null,\n               \"NoManageHosts\": false,\n               \"HostAdd\": null,\n               \"Networks\": [\n                    \"podman\"\n               ],\n               \"NetworkOptions\": null,\n               \"pid_ns\": \"private\",\n               \"userns\": \"host\",\n               \"uts_ns\": \"private\"\n          },\n          \"SharedNamespaces\": [\n               \"uts\",\n               \"ipc\",\n               \"net\"\n          ],\n          \"NumContainers\": 3,\n          \"Containers\": [\n               {\n                    \"Id\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n                    \"Name\": \"5de0484a9d3b-infra\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"b9434955e2b87c64e1d3b1ffb85768a9639486593765120c286cfebb2b04c830\",\n                    \"Name\": \"mysql\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n                    \"Name\": \"wordpress\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a054\",\n                    \"Name\": \"run\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n                    \"Name\": \"wordpress\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a063\",\n                    \"Name\": \"exit1\",\n                    \"State\": \"exited\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a064\",\n                    \"Name\": \"exit2\",\n                    \"State\": \"exited\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a073\",\n                    \"Name\": \"paused\",\n                    \"State\": \"paused\"\n               }\n          ],\n          \"LockNumber\": 0\n     }\n]",
+          "body": "[\n     {\n          \"Id\": \"5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a\",\n          \"Name\": \"{{urlParam 'podName'}}\",\n          \"Created\": \"2025-02-04T09:21:22.076484809+01:00\",\n          \"CreateCommand\": [\n               \"podman\",\n               \"pod\",\n               \"create\",\n               \"--name\",\n               \"blog\",\n               \"--infra\",\n               \"--publish\",\n               \"8080:80\",\n               \"--network\",\n               \"bridge\"\n          ],\n          \"ExitPolicy\": \"continue\",\n          \"State\": {{#if (eq (urlParam 'podName') 'blog')}}\"Running\"{{else}}\"Degraded\"{{/if}},\n          \"Hostname\": \"\",\n          \"CreateCgroup\": true,\n          \"CgroupParent\": \"user.slice\",\n          \"CgroupPath\": \"user.slice/user-501.slice/user@501.service/user.slice/user-libpod_pod_5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a.slice\",\n          \"CreateInfra\": true,\n          \"InfraContainerID\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n          \"InfraConfig\": {\n               \"PortBindings\": {\n                    \"80/tcp\": [\n                         {\n                              \"HostIp\": \"0.0.0.0\",\n                              \"HostPort\": \"8080\"\n                         }\n                    ]\n               },\n               \"HostNetwork\": false,\n               \"StaticIP\": \"\",\n               \"StaticMAC\": \"\",\n               \"NoManageResolvConf\": false,\n               \"DNSServer\": null,\n               \"DNSSearch\": null,\n               \"DNSOption\": null,\n               \"NoManageHosts\": false,\n               \"HostAdd\": null,\n               \"Networks\": [\n                    \"podman\"\n               ],\n               \"NetworkOptions\": null,\n               \"pid_ns\": \"private\",\n               \"userns\": \"host\",\n               \"uts_ns\": \"private\"\n          },\n          \"SharedNamespaces\": [\n               \"uts\",\n               \"ipc\",\n               \"net\"\n          ],\n          \"NumContainers\": 3,\n          \"Containers\": [\n               {\n                    \"Id\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n                    \"Name\": \"5de0484a9d3b-infra\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"b9434955e2b87c64e1d3b1ffb85768a9639486593765120c286cfebb2b04c830\",\n                    \"Name\": \"mysql\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n                    \"Name\": \"wordpress\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a054\",\n                    \"Name\": \"run\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n                    \"Name\": \"wordpress\",\n                    \"State\": \"running\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a063\",\n                    \"Name\": \"exit1\",\n                    \"State\": \"exited\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a064\",\n                    \"Name\": \"exit2\",\n                    \"State\": \"exited\"\n               },\n               {\n                    \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a073\",\n                    \"Name\": \"paused\",\n                    \"State\": \"paused\"\n               }\n          ],\n          \"LockNumber\": 0\n     }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "2f0c354c-a680-43a3-a970-e3621adba882",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/containers/stats",
+      "responses": [
+        {
+          "uuid": "54839cdf-a8d4-4c21-b034-a9938ff776c7",
+          "body": "{\n  \"Error\": null,\n  \"Stats\": [\n    {\n      \"AvgCPU\": 0.10607938362643086,\n      \"ContainerID\": \"76337a902ae6dbb440fb859574308d722046a9ced85d8bd012f203d28113b9b4\",\n      \"Name\": \"wordpress\",\n      \"PerCPU\": null,\n      \"CPU\": 0.10607938362643086,\n      \"CPUNano\": 859483000,\n      \"CPUSystemNano\": 734368,\n      \"SystemNano\": 1738829137318320000,\n      \"MemUsage\": 11374592,\n      \"MemLimit\": 2062614528,\n      \"MemPerc\": 0.5514647475614018,\n      \"NetInput\": 1006,\n      \"NetOutput\": 2146,\n      \"BlockInput\": 456812354,\n      \"BlockOutput\": 987156423,\n      \"PIDs\": 6,\n      \"UpTime\": 859483000,\n      \"Duration\": 859483000\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -174,6 +203,10 @@
     {
       "type": "route",
       "uuid": "842a425b-7697-4c8d-8caf-1cd394c7fecc"
+    },
+    {
+      "type": "route",
+      "uuid": "2f0c354c-a680-43a3-a970-e3621adba882"
     }
   ],
   "proxyMode": false,

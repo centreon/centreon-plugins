@@ -187,51 +187,51 @@ Check Podman system status.
 
 =over 8
 
-=item B < --warning-cpu-usage>
+=item B<--warning-cpu-usage>
 
 Threshold warning in percent for CPU usage.
 
-=item B < --critical-cpu-usage>
+=item B<--critical-cpu-usage>
 
 Threshold critical in percent for CPU usage.
 
-=item B < --warning-memory-usage>
+=item B<--warning-memory-usage>
 
 Threshold warning in bytes for memory usage.
 
-=item B < --critical-memory-usage>
+=item B<--critical-memory-usage>
 
 Threshold critical in bytes for memory usage.
 
-=item B < --warning-swap-usage>
+=item B<--warning-swap-usage>
 
 Threshold warning in bytes for swap usage.
 
-=item B < --critical-swap-usage>
+=item B<--critical-swap-usage>
 
 Threshold critical in bytes for swap usage.
 
-=item B < --warning-containers-running>
+=item B<--warning-containers-running>
 
 Threshold warning for the number of running containers.
 
-=item B < --critical-containers-running>
+=item B<--critical-containers-running>
 
 Threshold critical for the number of running containers.
 
-=item B < --warning-containers-stopped>
+=item B<--warning-containers-stopped>
 
 Threshold warning for the number of stopped containers.
 
-=item B < --critical-containers-stopped>
+=item B<--critical-containers-stopped>
 
 Threshold critical for the number of stopped containers.
 
-=item B < --warning-uptime>
+=item B<--warning-uptime>
 
 Threshold warning for uptime in seconds.
 
-=item B < --critical-uptime>
+=item B<--critical-uptime>
 
 Threshold critical for uptime in seconds.
 

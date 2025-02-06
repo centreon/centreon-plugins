@@ -211,11 +211,13 @@ Threshold critical for paused containers.
 
 =item B<--warning-state>
 
-Threshold warning for pod state.
+Define the conditions to match for the state to be WARNING (default: '%{state} =~ /Exited/').
+You can use the following variables: %{state}
 
 =item B<--critical-state>
 
-Threshold critical for pod state.
+Define the conditions to match for the state to be CRITICAL (default: '%{state} =~ /Degraded/').
+You can use the following variables: %{state}
 
 =back
 
