@@ -66,6 +66,7 @@ dfsrevent
 --display-transform-src
 dns-resolve-time
 --dyn-mode
+Ekara
 -EncodedCommand
 env
 ESX

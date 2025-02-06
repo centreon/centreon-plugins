@@ -61,8 +61,9 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'scenario-status',
             type => 2,
-            warning_default => '%{status} !~ "Success"',
+            warning_default => '%{status} =~ /(Aborted|Stopped|Excluded|Degraded)/',
             critical_default => '%{status} =~ "Failure"',
+            unknown_default => '%{status} =~ /(Unknown|No execution)/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'num_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -133,7 +134,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{timeframe} = defined($self->{option_results}->{timeframe})  && $self->{option_results}->{timeframe} ne '' ? $self->{option_results}->{timeframe} : '900';
+    $self->{timeframe} = defined($self->{option_results}->{timeframe})  && $self->{option_results}->{timeframe} ne '' ? $self->{option_results}->{timeframe} : '7500';
 }
 
 my $status_mapping = {
@@ -220,10 +221,10 @@ Check ip-label Ekara scenarios.
 
 =item B<--timeframe>
 
-Set timeframe period in seconds. (default: 900)
-Example: --timeframe='3600' will check the last hour
-
-
+Set timeframe period in seconds. (default: 7500)
+Example: C<--timeframe='3600'> will check the last hour.
+Note: If the API/Poller is overloaded, it is preferable to refine
+this value according to the highest check frequency in the scenario.
 
 =item B<--filter-type>
 
