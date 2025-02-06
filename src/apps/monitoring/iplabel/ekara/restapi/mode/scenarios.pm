@@ -232,13 +232,13 @@ Filter by scenario type.
 Can be: 'WEB', 'HTTPR', 'BROWSER PAGE LOAD'
 
 =item B<--unknown-scenario-status>
-Unknown threshold for scenario status (default: '%{status} !~ /(Unknown|No execution)/').
-Syntax: --unknown-scenario-status='%{status} =~ "xxx"'
+Unknown threshold for scenario status (default: C<%{status} !~ /(Unknown|No execution)/>).
+Syntax: C<--unknown-scenario-status='%{status} =~ "xxx"'>
 
 =item B<--warning-scenario-status>
 
-Warning threshold for scenario status (default: '%{status} !~ /(Aborted|Stopped|Excluded|Degraded)/').
-Syntax: --warning-scenario-status='%{status} =~ "xxx"'
+Warning threshold for scenario status (default: C<%{status} !~ /(Aborted|Stopped|Excluded|Degraded)/>).
+Syntax: C<--warning-scenario-status='%{status} =~ "xxx"'>
 
 =item B<--critical-scenario-status>
 
