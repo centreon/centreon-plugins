@@ -222,7 +222,7 @@ Check ip-label Ekara scenarios.
 =item B<--timeframe>
 
 Set timeframe period in seconds. (default: 7500)
-Example: --timeframe='3600' will check the last hour
+Example: C<--timeframe='3600'> will check the last hour.
 Note: If the API/Poller is overloaded, it is preferable to refine
 this value according to the highest check frequency in the scenario.
 
