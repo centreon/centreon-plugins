@@ -70,7 +70,6 @@ sub disco_show {
     my $pods = $options{custom}->list_pods();
     foreach my $pod_id (sort keys %{$pods}) {
         $self->{output}->add_disco_entry(name  => $pods->{$pod_id}->{Name},
-                                         node  => $pods->{$pod_id}->{NodeName},
                                          state => $pods->{$pod_id}->{State},
                                          id    => $pod_id,
         );

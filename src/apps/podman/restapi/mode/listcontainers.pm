@@ -71,7 +71,7 @@ sub disco_show {
     my $containers = $options{custom}->list_containers();
     foreach my $container_id (sort keys %{$containers}) {
         $self->{output}->add_disco_entry(name  => $containers->{$container_id}->{Name},
-                                         node  => $containers->{$container_id}->{NodeName},
+                                         pod   => $containers->{$container_id}->{PodName},
                                          state => $containers->{$container_id}->{State},
                                          id    => $container_id,
         );
