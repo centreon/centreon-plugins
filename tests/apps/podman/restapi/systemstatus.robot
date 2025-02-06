@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the Podman system status
+Documentation       Test the Podman system-status mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -44,4 +44,3 @@ System status ${tc}
             ...       11    --critical-containers-stopped=@2:6    CRITICAL: Stopped containers: 2 | 'podman.system.cpu.usage.percent'=1.19%;;;0;100 'podman.system.memory.usage.bytes'=1980252160B;;;0; 'podman.system.swap.usage.bytes'=72836626B;;;0; 'podman.system.containers.running.count'=3;;;0;6 'podman.system.containers.stopped.count'=2;;@2:6;0;6 'podman.system.uptime.seconds'=52440s;;;0;
             ...       12    --warning-uptime=@:60000              WARNING: Uptime: 52440 s | 'podman.system.cpu.usage.percent'=1.19%;;;0;100 'podman.system.memory.usage.bytes'=1980252160B;;;0; 'podman.system.swap.usage.bytes'=72836626B;;;0; 'podman.system.containers.running.count'=3;;;0;6 'podman.system.containers.stopped.count'=2;;;0;6 'podman.system.uptime.seconds'=52440s;@0:60000;;0;
             ...       13    --critical-uptime=@:120000            CRITICAL: Uptime: 52440 s | 'podman.system.cpu.usage.percent'=1.19%;;;0;100 'podman.system.memory.usage.bytes'=1980252160B;;;0; 'podman.system.swap.usage.bytes'=72836626B;;;0; 'podman.system.containers.running.count'=3;;;0;6 'podman.system.containers.stopped.count'=2;;;0;6 'podman.system.uptime.seconds'=52440s;;@0:120000;0;
-

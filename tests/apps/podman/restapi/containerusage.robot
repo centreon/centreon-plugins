@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the Podman pod status
+Documentation       Test the Podman container-usage mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -20,8 +20,8 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-System status ${tc}
-    [Documentation]    Check the pod status
+Container usage ${tc}
+    [Documentation]    Check the container usage
     [Tags]    apps    podman    restapi
 
     ${command}    Catenate
@@ -42,8 +42,8 @@ System status ${tc}
             ...       8     --warning-write-io=500000000        WARNING: Write : 941.43MB | 'podman.container.cpu.usage.percent'=0.11%;;;0;100 'podman.container.memory.usage.bytes'=11374592B;;;0; 'podman.container.io.read'=456812354B;;;0; 'podman.container.io.write'=987156423B;0:500000000;;0; 'podman.container.network.in'=1006B;;;0; 'podman.container.network.out'=2146B;;;0;
             ...       9     --critical-write-io=750000000       CRITICAL: Write : 941.43MB | 'podman.container.cpu.usage.percent'=0.11%;;;0;100 'podman.container.memory.usage.bytes'=11374592B;;;0; 'podman.container.io.read'=456812354B;;;0; 'podman.container.io.write'=987156423B;;0:750000000;0; 'podman.container.network.in'=1006B;;;0; 'podman.container.network.out'=2146B;;;0;
 
-System status ${tc}
-    [Documentation]    Check the pod status
+Container usage ${tc}
+    [Documentation]    Check the container usage
     [Tags]    apps    podman    restapi
 
     ${command}    Catenate

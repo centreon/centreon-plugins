@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the Podman pod status
+Documentation       Test the Podman pod-status mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
@@ -20,7 +20,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-System status ${tc}
+Pod status ${tc}
     [Documentation]    Check the pod status
     [Tags]    apps    podman    restapi
 
@@ -44,7 +44,7 @@ System status ${tc}
             ...       10    --warning-paused-containers=0        WARNING: Paused containers: 1 | 'podman.pod.cpu.usage.percent'=1.46%;;;0;100 'podman.pod.memory.usage.bytes'=481727346.688B;;;0; 'podman.pod.containers.running.count'=5;;;0; 'podman.pod.containers.stopped.count'=2;;;0; 'podman.pod.containers.paused.count'=1;0:0;;0;
             ...       11    --critical-paused-containers=0       CRITICAL: Paused containers: 1 | 'podman.pod.cpu.usage.percent'=1.46%;;;0;100 'podman.pod.memory.usage.bytes'=481727346.688B;;;0; 'podman.pod.containers.running.count'=5;;;0; 'podman.pod.containers.stopped.count'=2;;;0; 'podman.pod.containers.paused.count'=1;;0:0;0;
 
-System status ${tc}
+Pod status ${tc}
     [Documentation]    Check the pod status
     [Tags]    apps    podman    restapi
 
