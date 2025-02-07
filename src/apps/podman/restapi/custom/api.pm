@@ -218,10 +218,10 @@ sub get_pod_infos {
         running_containers => 0,
         stopped_containers => 0,
         paused_containers  => 0,
-        state              => @{$inspect}[0]->{State}
+        state              => $inspect->{State}
     };
 
-    foreach my $container (@{$inspect->[0]->{Containers}}) {
+    foreach my $container (@{$inspect->{Containers}}) {
         $pod->{running_containers}++ if ($container->{State} eq 'running');
         $pod->{stopped_containers}++ if ($container->{State} eq 'exited');
         $pod->{paused_containers}++ if ($container->{State} eq 'paused');
