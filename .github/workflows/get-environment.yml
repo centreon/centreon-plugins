@@ -255,6 +255,43 @@ jobs:
                 version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.head_ref || github.ref_name }}";
+
+            } else if ${{ steps.get_stability.outputs.stability }}' === 'stable' {
+              const { owner, repo } = context.repo;
+
+              // Fetch the most recent tag for plugins
+              const { data: tags } = await github.rest.repos.listTags({
+                owner,
+                repo,
+                per_page: 1
+              });
+
+              let latestTag = null;
+              let latestDate = 0;
+
+              // Filter tags matching format plugins-YYYYMMDD
+              for (const tag of tags) {
+                const match = tag.name.match(/^plugins-(\d{8})$/);
+
+                // log non matching just for debug
+                if (!match) {
+                  console.log(`Skipping non-matching tag: ${tag.name}`);
+                  continue;
+                }
+
+                const tagDate = parseInt(match[1], 10);
+
+                // get latest tag
+                if (tagDate > latestDate) {
+                  latestTag = tag.name;
+                  latestDate = tagDate;
+                }
+              }
+
+              console.log("Most recent tag found: $latestTag")
+
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
+              const branchName = "${{ github.ref_name }}";
               const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
               if (matches) {
                 version = matches[1];
