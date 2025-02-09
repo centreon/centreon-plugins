@@ -42,8 +42,8 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
  */
 public class MessageQueueHandler extends AbstractHandler implements IMessageQueueHandler {
 
-    public MessageQueueHandler(final String host, final String login, final String password) {
-        super(host, login, password);
+    public MessageQueueHandler(final String host, final String login, final String password, final Integer ssl) {
+        super(host, login, password, ssl);
     }
 
     @Override

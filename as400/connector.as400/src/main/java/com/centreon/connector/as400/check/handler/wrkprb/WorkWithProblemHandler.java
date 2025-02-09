@@ -69,8 +69,8 @@ public class WorkWithProblemHandler extends AbstractHandler {
     private final boolean SSL = false;
     private final String logPrefix;
 
-    public WorkWithProblemHandler(final String host, final String login, final String password) {
-        super(host, login, password);
+    public WorkWithProblemHandler(final String host, final String login, final String password, final Integer ssl) {
+        super(host, login, password, ssl);
         this.logPrefix = "[" + WorkWithProblemHandler.INSTANCE_ID++ + "]";
     }
 
