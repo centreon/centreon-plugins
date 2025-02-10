@@ -367,7 +367,7 @@ jobs:
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
-            no-auto-depends: false
+            no-auto-depends: true
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
             build_names: "bookworm"
@@ -462,7 +462,7 @@ jobs:
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
           fi
-          if [ "${{ matrix.no-auto-depends }}" == "true"]; then
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
