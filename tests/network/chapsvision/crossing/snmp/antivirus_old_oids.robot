@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check Chapsvision antivirus
+Documentation       Check Chapsvision antivirus old OIDs
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
@@ -10,7 +10,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::chapsvision::crossing::snmp::p
 
 
 *** Test Cases ***
-Antivirus ${tc}
+Antivirus old OIDs ${tc}
     [Tags]    network    chapvision    crossing
     ${command}    Catenate
     ...    ${CMD}
