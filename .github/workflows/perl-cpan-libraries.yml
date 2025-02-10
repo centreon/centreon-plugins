@@ -366,7 +366,7 @@ jobs:
             runner_name: ["self-hosted", "collect-arm64"]
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
-            deb_dependencies: "libexporter-perl libexporter-tiny-perl libxs-install-perl"
+            deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
@@ -381,7 +381,7 @@ jobs:
             version: "1.29"
           - name: "Paws"
             use_dh_make_perl: "false"
-            deb_dependencies: "libthrowable-error-perl libgetopt-long-perl libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
+            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
             no-auto-depends: "true"
           - name: "Statistics::Regression"
             build_names: "bullseye-amd64"
