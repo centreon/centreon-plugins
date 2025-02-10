@@ -51,6 +51,7 @@ cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
 CX
+Cyberoam
 Datacore
 datasource
 DC4
@@ -61,7 +62,6 @@ dev
 df
 --dfsr
 dfsrevent
---diskpath
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
@@ -85,9 +85,11 @@ FCCapacity
 --force-oid
 Fortigate
 Fortinet
+FQDN
 FreeBSD
 frsevent
 --get-param
+HAProxy
 HashiCorp
 hashicorpvault
 HPE
@@ -97,9 +99,9 @@ ifAlias
 ifDesc
 ifName
 --ignore-orgs-api-disabled
+IKS
 IMEI
 in-bcast
-includeAllDisks
 in-crc
 in-fcserror
 in-mcast
@@ -172,6 +174,7 @@ NLCapacity
 --noidle
 -NoLogo
 --nomachineaccount
+notapplicable
 --ntlmv2
 NTLMv2
 NTP
@@ -190,10 +193,13 @@ out-fc-wait
 out-mcast
 out-ucast
 overprovisioning
+packetloss
+partiallyActive
 --patch-redhat
 perfdata
 physicaldrive
 PKCS1
+Podman
 powershell
 powershell.exe
 PPID
@@ -214,7 +220,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
-SFDC
+SFOS
 sfp.temperature
 --skip-ssl-check
 SkyHigh
@@ -226,6 +232,7 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+standAlone
 statefile
 --statefile-concat-cwd
 SureBackup
@@ -256,14 +263,15 @@ userpass
 --use-ucd
 v1
 v2
+vdom
 VDSL2
 Veeam
 VeloCloud
-Vserver
 VM
 VMware
 VPN
 vSAN
+Vserver
 vSphere
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts

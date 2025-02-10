@@ -439,7 +439,7 @@ jobs:
 
       - name: Push git release tag
         run: |
-          RELEASE=plugins-$(date '+%Y%m%d')
+          RELEASE=plugins-${{ needs.get-environment.outputs.version }}
 
           EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
 

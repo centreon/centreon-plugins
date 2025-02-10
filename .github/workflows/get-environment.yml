@@ -252,13 +252,16 @@ jobs:
             let version = '';
 
             if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
-              const branchName = "${{ github.ref_name }}";
+              const branchName = "${{ github.head_ref || github.ref_name }}";
               const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
               if (matches) {
                 version = matches[1];
               } else {
                 throw new Error('invalid version');
               }
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'unstable') {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}${String(currentDate.getDate()).padStart(2, '0')}`;
             } else {
               const currentDate = new Date();
               version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}00`;
