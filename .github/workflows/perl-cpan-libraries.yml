@@ -183,7 +183,7 @@ jobs:
             done
           fi
 
-          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
@@ -462,7 +462,7 @@ jobs:
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
           fi
-          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+          if [ "${{ matrix.no-auto-depends }}" == "true"]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
