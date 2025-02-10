@@ -39,12 +39,15 @@ jobs:
           - version: ""
           - spec_file: ""
           - no-auto-depends: false
+          - preinstall_cpanlibs: ""
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
           - distrib: el9
             package_extension: rpm
             image: packaging-plugins-alma9
+          - name: Crypt::Argon2
+            preinstall_cpanlibs: "Dist::Build"
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -109,6 +112,10 @@ jobs:
               PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
             done
           fi
+          
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
 
           export SYBASE="/usr"
 
@@ -240,6 +247,7 @@ jobs:
           - version: ""
           - use_dh_make_perl: "true"
           - no-auto-depends: false
+          - preinstall_cpanlibs: ""
           - build_name: bullseye-amd64
             distrib: bullseye
             package_extension: deb
@@ -260,6 +268,7 @@ jobs:
             runner_name: ["self-hosted", "collect-arm64"]
           - name: Crypt::Argon2
             build_names: "bullseye-amd64,jammy"
+            preinstall_cpanlibs: "Dist::Build"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -324,6 +333,10 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'false' }}
         run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
@@ -348,6 +361,10 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
         run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
           temp_file=$(mktemp)
           created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
