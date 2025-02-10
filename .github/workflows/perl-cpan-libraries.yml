@@ -367,7 +367,7 @@ jobs:
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-perl libexporter-tiny-perl libxs-install-perl"
-            no-auto-depends: true
+            no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
             build_names: "bookworm"
@@ -382,7 +382,7 @@ jobs:
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libthrowable-error-perl libgetopt-long-perl libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Statistics::Regression"
             build_names: "bullseye-amd64"
             version: "0.53"
