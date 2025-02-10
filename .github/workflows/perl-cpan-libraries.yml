@@ -132,7 +132,7 @@ jobs:
           - name: "ZMQ::Constants"
             build_distribs: "el9"
           - name: "ZMQ::FFI"
-            rpm_dependencies: "zeromq"
+            rpm_dependencies: "zeromq perl(FFI::Platypus)"
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
