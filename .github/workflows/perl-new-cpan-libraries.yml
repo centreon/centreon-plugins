@@ -78,8 +78,14 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
+          cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            PACKAGE_VERSION=""
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
+            PACKAGE_VERSION=" -v ${CPAN_PACKAGE_VERSION}"
           else
             PACKAGE_VERSION=" -v ${{ matrix.version }}"
           fi
@@ -222,7 +228,6 @@ jobs:
         name:
           [
             "Crypt::Argon2",
-            "JSON::Path",
             "Libssh::Session",
             "Net::Curl"
           ]
@@ -234,6 +239,7 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - use_dh_make_perl: "true"
+          - no-auto-depends: false
           - build_name: bullseye-amd64
             distrib: bullseye
             package_extension: deb
@@ -252,6 +258,8 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: ["self-hosted", "collect-arm64"]
+          - name: Crypt::Argon2
+            build_names: "bullseye-amd64,jammy"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
