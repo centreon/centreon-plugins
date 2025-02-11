@@ -92,7 +92,7 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - spec_file: ""
-          - no-auto-depends: false
+          - no-auto-depends: "false"
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -112,11 +112,11 @@ jobs:
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -183,7 +183,7 @@ jobs:
             done
           fi
 
-          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
@@ -367,7 +367,7 @@ jobs:
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
-            no-auto-depends: true
+            no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
             build_names: "bookworm"
@@ -382,7 +382,7 @@ jobs:
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Statistics::Regression"
             build_names: "bullseye-amd64"
             version: "0.53"
@@ -462,7 +462,7 @@ jobs:
               PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
             done
           fi
-          if [ ! -z "${{ matrix.no-auto-depends }}" ]; then
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
@@ -620,7 +620,7 @@ jobs:
         shell: bash
 
       - name: Restore packages from cache
-        uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
