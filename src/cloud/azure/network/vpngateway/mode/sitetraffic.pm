@@ -129,15 +129,11 @@ Example:
 
 Using resource name:
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
---resource=MyResource --resource-group=MYRGROUP --aggregation='average' --aggregation='total' --critical-bandwidth-average='10' 
---verbose
+C<perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic --resource=MyResource --resource-group=MYRGROUP --aggregation='average' --aggregation='total' --critical-bandwidth-average='10' --verbose>
 
 Using resource ID:
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx'
---aggregation='average' --aggregation='total' --critical-bandwidth-average='10' --verbose
+C<perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx' --aggregation='average' --aggregation='total' --critical-bandwidth-average='10' --verbose>
 
 Default aggregation: 'average' (*Bandwidth), 'total' (P2SConnectionCount)
 
@@ -153,18 +149,13 @@ Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
+Filter metrics (can be: C<AverageBandwidth>, C<P2SBandwidth>, C<P2SConnectionCount>)
 (can be a regexp).
 
-=item B<--warning-$label$>
+=item B<--warning-$label$ --critical-$label$>
 
-Warning thresholds 
-($label$ can be: 'bandwidth-average', 'p2s-bandwidth', p2s-connections)
-
-=item B<--critical-$label$>
-
-Critical thresholds
-($label$ can be: 'bandwidth-average', 'p2s-bandwidth', p2s-connections)
+Thresholds 
+($label$ can be: C<bandwidth-average>, C<p2s-bandwidth>, C<p2s-connections>)
 
 =back
 

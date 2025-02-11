@@ -1,3 +1,4 @@
+
 #
 # Copyright 2024 Centreon (http://www.centreon.com/)
 #
@@ -175,14 +176,9 @@ Filter metrics (can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngres
 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
 (can be a regexp).
 
-=item B<--warning-$label$>
+=item B<--warning-$label$ --critical-$label$>
 
-Warning thresholds.
-($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
-
-=item B<--critical-$label$>
-
-Critical thresholds
+Thresholds
 ($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
 
 =item B<--per-sec>
