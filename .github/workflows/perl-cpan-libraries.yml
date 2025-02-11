@@ -112,11 +112,11 @@ jobs:
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: true
+            no-auto-depends: "true"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -132,7 +132,7 @@ jobs:
           - name: "ZMQ::Constants"
             build_distribs: "el9"
           - name: "ZMQ::FFI"
-            rpm_dependencies: "zeromq perl(FFI::Platypus)"
+            rpm_dependencies: "zeromq"
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
