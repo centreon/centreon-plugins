@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use JSON::XS;
 use MIME::Base64;
 use Digest::MD5 qw(md5_hex);
 
@@ -44,12 +45,14 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(
             arguments => {
-                'hostname:s' => { name => 'hostname' },
-                'port:s'     => { name => 'port' },
-                'proto:s'    => { name => 'proto' },
-                'username:s' => { name => 'username' },
-                'password:s' => { name => 'password' },
-                'timeout:s'  => { name => 'timeout' }
+                'hostname:s'        => { name => 'hostname' },
+                'port:s'            => { name => 'port',                default => '443' },
+                'proto:s'           => { name => 'proto',               default => 'https' },
+                'username:s'        => { name => 'username' },
+                'password:s'        => { name => 'password' },
+                'vstats-interval:s' => { name => 'vstats_interval',     default => 60 },
+                'vstats-duration:s' => { name => 'vstats_duration',     default => 2764800 }, # 2764800 seconds in 32 days
+                'timeout:s'         => { name => 'timeout',             default => 10 }
             }
         );
     }
@@ -74,11 +77,13 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port}     = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto}    = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout}  = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{port}     = $self->{option_results}->{port};
+    $self->{proto}    = $self->{option_results}->{proto};
+    $self->{timeout}  = $self->{option_results}->{timeout};
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+    $self->{vstats_interval} = $self->{option_results}->{vstats_interval};
+    $self->{vstats_duration} = $self->{option_results}->{vstats_duration};
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -96,6 +101,15 @@ sub check_options {
     $self->{cache}->check_options(option_results => $self->{option_results});
 
     return 0;
+}
+
+sub check_options_esx {
+    my ($self, %options) = @_;
+
+    if ($self->{esx_id} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --esx-id option.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub build_options_for_httplib {
@@ -175,22 +189,29 @@ sub try_request_api {
     my ($self, %options) = @_;
 
     my $token = $self->get_token(%options);
+    my $method = centreon::plugins::misc::is_empty($options{method}) ? 'GET' : $options{method};
+    my $headers = [ 'vmware-api-session-id: ' . $token ];
+    if ($method =~ /^(PATCH|POST)$/) {
+        push @$headers, 'content-type: application/json';
+    }
     my ($content) = $self->{http}->request(
-            url_path       => '/api' . $options{endpoint},
-            get_param      => $options{get_param},
-            header         => [ 'vmware-api-session-id: ' . $token ],
-            unknown_status => '',
-            insecure       => (defined($self->{option_results}->{insecure}) ? 1 : 0)
+        method          => $method,
+        url_path        => '/api' . $options{endpoint},
+        get_param       => $options{get_param},
+        header          => $headers,
+        query_form_post => $options{query_form_post},
+        insecure        => (defined($self->{option_results}->{insecure}) ? 1 : 0)
     );
 
-    if (!defined($content) || $content eq '') {
+    if (!defined($content)) {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
 
-    my $decoded = centreon::plugins::misc::json_decode($content);
+
+    my $decoded = ($content eq '') ? {} : centreon::plugins::misc::json_decode($content);
 
     return $decoded;
 }
@@ -199,6 +220,7 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
+
     my $api_response = $self->try_request_api(%options);
 
     # if the token is invalid, we try to authenticate again
@@ -207,6 +229,8 @@ sub request_api {
             && $api_response->{error_type} eq 'UNAUTHENTICATED') {
         $api_response = $self->try_request_api('force_authentication' => 1, %options);
     }
+    #FIXME: can it be catched by --http-status options
+    #FIXME: put error contents in comments
     # if we could not authenticate, we exit
     if (ref($api_response) eq 'HASH' && defined($api_response->{error_type})) {
         my $full_message = '';
@@ -217,6 +241,218 @@ sub request_api {
         $self->{output}->option_exit();
     }
     return $api_response;
+}
+
+sub get_vc_time {
+    my ($self, %options) = @_;
+
+    return $self->{vc_time} if (defined($self->{vc_time}));
+
+    # Check if the time_diff info is available in the cache
+    # If it is, return the vc_time based on the local time minus the time_diff
+    # Query /api/appliance/system/time/timezone and /api/appliance/system/time
+    # Compute the time_diff between the local timezone and the vc's and the $self->{vc_time}
+    # Store the time diff in the cache
+    # Return $self->{vc_time}
+
+    return(time());
+}
+
+sub get_all_acq_specs {
+    my ($self, %options) = @_;
+
+#    if ( !centreon::plugins::misc::is_empty($options{rsrc_id}) )
+    # Get all acq specs and store them in cache
+    # FIXME: cache management
+    # FIXME: any pagination issue ?
+    $self->{all_acq_specs} = $self->request_api(endpoint => '/stats/acq-specs')->{acq_specs} if ( !defined($self->{all_acq_specs}));
+
+    return $self->{all_acq_specs};
+}
+
+sub patch_acq_spec {
+    my ($self, %options) = @_;
+
+#    if ( !centreon::plugins::misc::is_empty($options{rsrc_id}) )
+    $self->{output}->add_option_msg(short_msg => "ERR: need an id to delete an acq_spec!", debug => 1) if (centreon::plugins::misc::is_empty($options{id}));
+    # Get all acq specs and store them in cache
+    $self->request_api(method => 'PATCH', endpoint => '/stats/acq-specs/' . $options{id});
+
+    # The all_ack_specs listing is now obsolete, so we delete it to force retrieving it next time
+    $self->{all_acq_specs} = {};
+
+    return 1;
+}
+
+sub compose_type_from_rsrc_id {
+    my ($rsrc_id) = @_;
+
+    if ($rsrc_id =~ /^([a-z]+)-(\d+)$/) {
+        return uc($1);
+    } else {
+        return undef;
+        # FIXME: opt exit
+    }
+}
+
+sub compose_acq_specs_json_payload {
+    my ($self, %options) = @_;
+
+    my $payload = {
+            counters   => {
+                    cid_mid => {
+                            cid => $options{cid}
+                    }
+            },
+            resources  => [
+                    {
+                            predicate => 'EQUAL',
+                            scheme    => 'moid',
+                            type      => compose_type_from_rsrc_id($options{rsrc_id}),
+                            id_value  => $options{rsrc_id}
+                    }
+            ],
+            expiration => time() + $self->{vstats_duration},
+            interval   => $self->{vstats_interval}
+    };
+
+    return(centreon::plugins::misc::json_encode($payload));
+}
+
+sub create_acq_spec {
+    my ($self, %options) = @_;
+
+    if (centreon::plugins::misc::is_empty($options{cid})) {
+        $self->{output}->add_option_msg(short_msg => "ERR: need a cid to create an acq_spec");
+        $self->{output}->option_exit();
+    }
+    if (centreon::plugins::misc::is_empty($options{rsrc_id})) {
+        $self->{output}->add_option_msg(short_msg => "ERR: need a rsrc_id to create an acq_spec");
+        $self->{output}->option_exit();
+    }
+
+    $self->request_api(
+        method          => 'POST',
+        endpoint        => '/stats/acq-specs/',
+        query_form_post => $self->compose_acq_specs_json_payload(%options)
+    ) or return undef;
+    $self->{output}->add_option_msg(long_msg => "The counter $options{cid} was not recorded for resource $options{rsrc_id} before. It will now (creating acq_spec).");
+
+    return 1;
+}
+
+sub extend_acq_spec {
+    my ($self, %options) = @_;
+
+    if (centreon::plugins::misc::is_empty($options{cid})) {
+        $self->{output}->add_option_msg(short_msg => "ERR: need a cid to extend an acq_spec");
+        $self->{output}->option_exit();
+    }
+    if (centreon::plugins::misc::is_empty($options{rsrc_id})) {
+        $self->{output}->add_option_msg(short_msg => "ERR: need a rsrc_id to extend an acq_spec");
+        $self->{output}->option_exit();
+    }
+
+    if (centreon::plugins::misc::is_empty($options{acq_spec_id})) {
+        $self->{output}->add_option_msg(long_msg => "ERR: need a acq_spec_id to extend an acq_spec_id") ;
+        $self->{output}->option_exit();
+    }
+    $self->{output}->add_option_msg(long_msg => "The acq_spec entry has to be extended to get more stats for $options{rsrc_id} / $options{cid}");
+
+    my $json_payload = $self->compose_acq_specs_json_payload(%options);
+    my $response = $self->request_api(
+        method          => 'PATCH',
+        endpoint        => '/stats/acq-specs/' . $options{acq_spec_id},
+        query_form_post => $json_payload
+    );
+
+    # The response must be empty if the patch succeeds
+    return undef if (defined($response) && ref($response) eq 'HASH' && scalar(keys %$response) > 0);
+    # FIXME: reset stored acq_specs in cache and in object
+    return 1;
+}
+
+sub get_acq_spec {
+    my ($self, %options) = @_;
+
+    # If it is not available in cache call get_all_acq_specs()
+    my $acq_specs = $self->get_all_acq_specs();
+    # FIXME: opt exit if centreon::plugins::misc::is_empty($options{cid})
+    for my $spec (@$acq_specs) {
+        # Ignore acq_specs not related to the counter_id
+        next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
+        # Check if this acq_spec is related to the given resource
+        my @matching_rsrcs = grep {
+            $_->{id_value} eq $options{rsrc_id}
+            && $_->{predicate} eq 'EQUAL'
+            && $_->{scheme} eq 'moid'
+        } @{$spec->{resources}};
+        return $spec if (@matching_rsrcs > 0);
+    }
+
+    return undef;
+}
+
+sub check_acq_spec {
+    my ($self, %options) = @_;
+
+    my $acq_spec = $self->get_acq_spec(%options);
+
+    if ( !defined($acq_spec) ) {
+        # acq_spec not found => we need to create it
+        $self->create_acq_spec(%options) or return(undef);
+        # acq_spec is created => check is ok
+        return 1;
+    } elsif ($acq_spec->{status} eq 'EXPIRED' || $acq_spec->{expiration} <= time() + 3600) {
+        # acq_spec exists but expired => we need to extend it
+        $self->extend_acq_spec(%options, acq_spec_id => $acq_spec->{id}) or return(undef);
+        # acq_spec is extended => check is ok
+        return 1;
+    }
+    # acq_spec exists and is not expired => check is ok
+    return 1;
+}
+
+
+sub get_stats {
+    my ($self, %options) = @_;
+
+    if ( centreon::plugins::misc::is_empty($options{rsrc_id}) ) {
+        $self->{output}->add_option_msg(short_msg => "get_stats method called without rsrc_id, won't query");
+        $self->{output}->option_exit();
+    }
+
+    if ( centreon::plugins::misc::is_empty($options{cid}) ) {
+        $self->{output}->add_option_msg(short_msg => "get_stats method called without cid, will get all available stats for resource");
+        $self->{output}->option_exit();
+    }
+
+    if ( !$self->check_acq_spec(%options) ) {
+        $self->{output}->add_option_msg(short_msg => "get_stats method failed to check_acq_spec()");
+        $self->{output}->option_exit();
+    }
+
+    # compose the endpoint
+    my $endpoint = '/stats/data/dp?'
+        . 'rsrcs=type.' . compose_type_from_rsrc_id($options{rsrc_id}) . '.moid=' . $options{rsrc_id}
+        . '&cid=' . $options{cid}
+        . '&start=' . (time() - 120); # get the last two minutes to be sure to get at least one value
+
+    my $result = $self->request_api(
+            method => 'GET',
+            endpoint   => $endpoint
+    );
+
+    # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
+    # FIXME: host-id must be checked at one moment
+    # return only the last value (if there are several)
+    if ( scalar(@{ $result->{data_points} }) == 0 ) {
+        $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
+        return undef;
+    }
+
+    return $result->{data_points}->[ @{ $result->{data_points} } - 1 ]->{val};
+    # FIXME: handle arrays in get_stats and check_acq_specs
 }
 
 1;
@@ -238,6 +474,9 @@ apps::vmware::vsphere8::custom::api - Custom module for VMware vSphere 8 API.
     $api->set_options(option_results => $option_results);
     $api->check_options();
     my $response = $api->request_api(endpoint => '/vcenter/host');
+    my $host_cpu_capacity = $api->get_stats(
+                                cid     => 'cpu.capacity.provisioned.HOST',
+                                rsrc_id => 'host-18');
 
 =head1 DESCRIPTION
 
@@ -249,7 +488,7 @@ This module provides methods to interact with the VMware vSphere 8 REST API. It 
 
     my $api = apps::vmware::vsphere8::custom::api->new(%options);
 
-Creates a new `apps::vmware::vsphere8::custom::api` object.
+Creates a new C<apps::vmware::vsphere8::custom::api> object.
 
 =over 4
 
@@ -357,6 +596,128 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 
 =back
 
+=head2 get_acq_spec
+
+    my $spec = $self->get_acq_spec(%options);
+
+Retrieves the acquisition specification (acq_spec) for the given counter ID (cid) and resource ID (rsrc_id).
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<cid> - The counter ID for which to retrieve the acq_spec. This option is required.
+
+=item * C<rsrc_id> - The resource ID for which to retrieve the acq_spec. This option is required.
+
+=back
+
+=back
+
+Returns the matching acq_spec if found, otherwise returns undef.
+
+=cut
+
+=head2 create_acq_spec
+
+    $api->create_acq_spec(%options);
+
+Creates a new acquisition specification (acq_spec) for the given options.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<cid> - The counter ID for which to create the acq_spec. This option is required.
+
+=item * C<rsrc_id> - The resource ID for which to create the acq_spec. This option is required.
+
+=back
+
+=back
+
+Returns 1 if the acq_spec is successfully created, otherwise returns undef.
+
+=cut
+
+=head2 extend_acq_spec
+
+    $api->extend_acq_spec(%options);
+
+Extends the acquisition specification (acq_spec) for the given options.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<cid> - The counter ID for which to extend the acq_spec. This option is required.
+
+=item * C<rsrc_id> - The resource ID for which to extend the acq_spec. This option is required.
+
+=item * C<acq_spec_id> - The acquisition specification ID to extend. This option is required.
+
+=back
+
+=back
+
+Returns 1 if the acq_spec is successfully extended, otherwise returns undef.
+
+=cut
+
+=head2 check_acq_spec
+
+    $api->check_acq_spec(%options);
+
+Checks the acquisition specification (acq\_spec) for the given options. If the acq\_spec does not exist, it creates a new one. If the acq\_spec exists but is expired or about to expire, it extends the acq\_spec.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<cid> - The counter ID for which to check the acq\_spec. This option is required.
+
+=item * C<rsrc_id> - The resource ID for which to check the acq\_spec. This option is required.
+
+=back
+
+=back
+
+Returns 1 if the acq\_spec is valid or has been successfully created/extended, undef otherwise.
+
+=cut
+
+=head2 get_stats
+
+    my $value = $api->get_stats(%options);
+
+Retrieves the latest statistics for a given resource and counter.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<rsrc_id> - The resource ID for which to retrieve statistics. This option is required.
+
+=item * C<cid> - The counter ID for which to retrieve statistics. This option is required.
+
+=back
+
+=back
+
+Returns the latest value for the specified resource and counter.
+
+=cut
+
 =head1 REST API OPTIONS
 
 Command-line options for VMware vSphere 8 API:
@@ -382,6 +743,16 @@ Define the username for authentication.
 =item B<--password>
 
 Define the password for authentication.
+
+=item B<--vstats-interval>
+
+Define the interval (in seconds) at which the vstats must be recorded (default: 300).
+Used to create entries at the C</api/stats/acq-specs> endpoint.
+
+=item B<--vstats-duration>
+
+Define the time (in seconds) after which the vstats will stop being recorded (default: 2764800, meaning 32 days).
+Used to create entries at the C</api/stats/acq-specs> endpoint.
 
 =item B<--timeout>
 
