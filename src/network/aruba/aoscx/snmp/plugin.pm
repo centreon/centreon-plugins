@@ -34,7 +34,9 @@ sub new {
         'hardware'        => 'network::aruba::aoscx::snmp::mode::hardware',
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
         'memory'          => 'network::aruba::aoscx::snmp::mode::memory',
+        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
         'stack'           => 'network::aruba::aoscx::snmp::mode::stack',
         'vsf'             => 'network::aruba::aoscx::snmp::mode::vsf',
         'vsx'             => 'network::aruba::aoscx::snmp::mode::vsx'
