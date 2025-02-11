@@ -92,7 +92,7 @@ jobs:
           - rpm_provides: ""
           - version: ""
           - spec_file: ""
-          - no-auto-depends: false
+          - no-auto-depends: "false"
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
