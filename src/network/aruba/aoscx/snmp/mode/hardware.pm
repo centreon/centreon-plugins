@@ -75,7 +75,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'psu', 'temperature', 'fan', 'fantry'.
+Can be: 'psu', 'temperature', 'fan', 'fantray'.
 
 =item B<--filter>
 
