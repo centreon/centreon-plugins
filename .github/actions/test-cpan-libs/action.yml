@@ -47,7 +47,7 @@ runs:
         fail-on-cache-miss: true
 
     - if: ${{ inputs.package_extension == 'rpm' }}
-      name: Install packages
+      name: Check packages installation / uninstallation
       run: |
         error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
         for package in ./*.rpm; do
@@ -73,6 +73,15 @@ runs:
           echo "Package installation..."
           error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
           echo "Package installation done."
+          script_name=$(echo $package | tr '[:upper:]' '[:lower:]' | sed 's/\.\/perl-//' | sed 's/-[0-9\.-]*.el[0-9]..*.rpm//')
+          if [[ -f tests/cpan-libraries/$script_name.pl ]]; then
+              echo "Testing package..."
+              error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
+              echo "Testing done."
+          else
+              echo "No test script found for the package $package"
+          fi
+          error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during testing of the package $package" >> $error_log; true; }
           echo "Package uninstallation..."
           error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           echo "Package uninstallation done."
@@ -85,7 +94,7 @@ runs:
       shell: bash
 
     - if: ${{ inputs.package_extension == 'deb' }}
-      name: Install packages
+      name: Check packages installation / uninstallation
       run: |
         error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
         for package in ./*.deb; do
@@ -113,6 +122,14 @@ runs:
           echo "Package installation..."
           error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
           echo "Package installation done."
+          script_name=$(echo $package | sed 's/.\/lib//' | sed 's/-perl_[0-9\.-]*-deb.*\.deb//')
+          if [[ -f tests/cpan-libraries/$script_name.pl ]]; then
+              echo "Testing package..."
+              error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
+              echo "Testing done."
+          else
+              echo "No test script found for the package $package"
+          fi
           echo "Package uninstallation..."
           error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           echo "Package uninstallation done."
