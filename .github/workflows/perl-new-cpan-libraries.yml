@@ -30,6 +30,7 @@ jobs:
             "Crypt::Argon2",
             "JSON::Path",
             "Libssh::Session",
+            "LV",
             "Net::Curl"
           ]
         include:
