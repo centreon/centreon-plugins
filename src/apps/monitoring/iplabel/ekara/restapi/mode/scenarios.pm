@@ -61,9 +61,9 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'scenario-status',
             type => 2,
-            warning_default => '%{status} =~ /(Aborted|Stopped|Excluded|Degraded)/',
+            warning_default  => '%{status} =~ "Degraded"',
             critical_default => '%{status} =~ "Failure"',
-            unknown_default => '%{status} =~ /(Unknown|No execution)/',
+            unknown_default  => '%{status} =~ /(Unknown|No execution|Aborted|Stopped|Excluded)/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'num_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
