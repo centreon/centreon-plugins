@@ -1,0 +1,341 @@
+extern crate log;
+extern crate rasn;
+extern crate rasn_smi;
+extern crate rasn_snmp;
+extern crate regex;
+
+use log::{info, trace, warn};
+use rasn::types::ObjectIdentifier;
+use rasn_snmp::v2::GetNextRequest;
+use rasn_snmp::v2::GetRequest;
+use rasn_snmp::v2::Pdu;
+use rasn_snmp::v2::Pdus;
+use rasn_snmp::v2::VarBind;
+use rasn_snmp::v2::VarBindValue;
+use rasn_snmp::v2c::Message;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::net::UdpSocket;
+use std::os::raw::{c_char, c_void};
+
+#[derive(Debug, PartialEq)]
+pub struct SnmpResult {
+    pub variables: Vec<SnmpVariable>,
+}
+
+type CSnmpVariable = c_void;
+
+#[derive(Debug, PartialEq)]
+pub struct SnmpVariable {
+    pub name: String,
+    pub value: String,
+}
+
+impl SnmpVariable {
+    fn new(name: String, value: String) -> SnmpVariable {
+        SnmpVariable { name, value }
+    }
+}
+
+type CSnmpResult = c_void;
+
+impl SnmpResult {
+    fn new() -> SnmpResult {
+        SnmpResult {
+            variables: Vec::new(),
+        }
+    }
+
+    fn add_variable(&mut self, name: String, value: String) {
+        self.variables.push(SnmpVariable::new(name, value));
+    }
+
+    fn concat(&mut self, other: SnmpResult) {
+        self.variables.extend(other.variables);
+    }
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpresult_DESTROY(p: *mut CSnmpResult) {
+    unsafe { Box::from_raw(p as *mut SnmpResult) };
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpresult_get_variable(p: *mut CSnmpResult, index: usize) -> *mut CSnmpVariable {
+    trace!("snmpresult_get_variable {}", index);
+    let p = p as *mut SnmpResult;
+    let p = unsafe { &mut *p };
+    if index >= p.variables.len() {
+        return Box::into_raw(Box::new(SnmpVariable::new("".to_string(), "".to_string())))
+            as *mut CSnmpVariable;
+    }
+    let v = &p.variables[index];
+    Box::into_raw(Box::new(SnmpVariable {
+        name: v.name.clone(),
+        value: v.value.clone(),
+    })) as *mut CSnmpVariable
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpresult_variables_count(p: *mut CSnmpResult) -> usize {
+    let p = p as *mut SnmpResult;
+    let p = unsafe { &mut *p };
+    p.variables.len()
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpvariable_DESTROY(p: *mut CSnmpVariable) {
+    unsafe { Box::from_raw(p as *mut SnmpVariable) };
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpvariable_get_name(p: *mut CSnmpVariable) -> *mut c_char {
+    let p = p as *mut SnmpVariable;
+    let p = unsafe { &mut *p };
+    let c = CString::new(p.name.clone()).unwrap();
+    c.into_raw()
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern "C" fn snmpvariable_get_value(p: *mut CSnmpVariable) -> *mut c_char {
+    let p = p as *mut SnmpVariable;
+    let p = unsafe { &mut *p };
+    let c = CString::new(p.value.clone()).unwrap();
+    c.into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn snmp_get(target: *const c_char, oid: *const c_char) -> *mut CSnmpResult {
+    if target.is_null() {
+        return Box::into_raw(Box::new(SnmpResult::new())) as *mut CSnmpResult;
+    }
+    let target = unsafe { CStr::from_ptr(target) };
+    let target = match target.to_str() {
+        Ok(s) => s,
+        Err(_) => "",
+    };
+
+    if oid.is_null() {
+        return Box::into_raw(Box::new(SnmpResult::new())) as *mut CSnmpResult;
+    }
+    let oid = unsafe { CStr::from_ptr(oid) };
+    let oid = match oid.to_str() {
+        Ok(s) => s,
+        Err(_) => "",
+    };
+
+    Box::into_raw(Box::new(r_snmp_get(target, oid, "public"))) as *mut CSnmpResult
+}
+
+pub fn r_snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
+    let oid_tab = oid
+        .split('.')
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
+
+    let request_id = 1;
+
+    let variable_bindings = vec![VarBind {
+        name: ObjectIdentifier::new_unchecked(oid_tab.into()),
+        value: VarBindValue::Unspecified,
+    }];
+
+    let pdu = Pdu {
+        request_id,
+        error_status: 0,
+        error_index: 0,
+        variable_bindings,
+    };
+
+    let get_request = GetRequest(pdu);
+
+    let message: rasn_snmp::v2c::Message<GetRequest> = Message {
+        version: 1.into(),
+        community: community.to_string().into(),
+        data: get_request.into(),
+    };
+
+    // Send the message through an UDP socket
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let encoded = rasn::der::encode(&message).unwrap();
+    let res = socket.send(&encoded).unwrap();
+    assert!(res == encoded.len());
+
+    let mut buf = [0; 1024];
+    let resp = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+    trace!("Received {} bytes", resp.0);
+    assert!(resp.0 > 0);
+    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+    build_response(decoded)
+}
+
+#[no_mangle]
+pub extern "C" fn snmp_walk(target: *const c_char, oid: *const c_char) -> *mut CSnmpResult {
+    if target.is_null() {
+        return Box::into_raw(Box::new(SnmpResult::new())) as *mut CSnmpResult;
+    }
+    let target = unsafe { CStr::from_ptr(target) };
+    let target = match target.to_str() {
+        Ok(s) => s,
+        Err(_) => "",
+    };
+
+    if oid.is_null() {
+        return Box::into_raw(Box::new(SnmpResult::new())) as *mut CSnmpResult;
+    }
+    let oid = unsafe { CStr::from_ptr(oid) };
+    let oid = match oid.to_str() {
+        Ok(s) => s,
+        Err(_) => "",
+    };
+    Box::into_raw(Box::new(r_snmp_walk(target, oid))) as *mut CSnmpResult
+}
+
+pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
+    let community = "public";
+    let oid_tab = oid
+        .split('.')
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
+
+    let mut retval = SnmpResult::new();
+    let mut request_id: i32 = 1;
+
+    let create_next_request = |id: i32, oid: &[u32]| -> Message<GetNextRequest> {
+        let variable_bindings = vec![VarBind {
+            name: ObjectIdentifier::new_unchecked(oid.to_vec().into()),
+            value: VarBindValue::Unspecified,
+        }];
+
+        let pdu = Pdu {
+            request_id: id,
+            error_status: 0,
+            error_index: 0,
+            variable_bindings,
+        };
+        let get_request: GetNextRequest = GetNextRequest(pdu);
+
+        Message {
+            version: 1.into(),
+            community: community.into(),
+            data: get_request.into(),
+        }
+    };
+
+    let mut message = create_next_request(request_id, &oid_tab);
+
+    loop {
+        // Send the message through an UDP socket
+        let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+        socket.connect(target).expect("connect function failed");
+        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+        let res: usize = socket.send(&encoded).unwrap();
+        assert!(res == encoded.len());
+
+        let mut buf: [u8; 1024] = [0; 1024];
+        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+        trace!("Received {} bytes", resp.0);
+        assert!(resp.0 > 0);
+        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+        if let Pdus::Response(resp) = &decoded.data {
+            let resp_oid = &resp.0.variable_bindings[0].name;
+            let n = resp_oid.len() - 1;
+            if resp_oid[0..n] != oid_tab[0..n] {
+                break;
+            }
+            message = create_next_request(request_id, &resp_oid);
+        }
+        retval.concat(build_response(decoded));
+        request_id += 1;
+    }
+    retval
+}
+
+fn build_response(decoded: Message<Pdus>) -> SnmpResult {
+    let mut retval = SnmpResult::new();
+
+    if let Pdus::Response(resp) = &decoded.data {
+        let vars = &resp.0.variable_bindings;
+        for var in vars {
+            let name = var.name.to_string();
+            match &var.value {
+                VarBindValue::Unspecified => {
+                    warn!("Unspecified");
+                }
+                VarBindValue::NoSuchObject => {
+                    warn!("NoSuchObject");
+                }
+                VarBindValue::NoSuchInstance => {
+                    warn!("NoSuchInstance");
+                }
+                VarBindValue::EndOfMibView => {
+                    warn!("EndOfMibView");
+                }
+                VarBindValue::Value(value) => {
+                    warn!("Value {:?}", &value);
+                    match value {
+                        rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                            info!("Simple {:?}", value);
+                            match value {
+                                rasn_smi::v2::SimpleSyntax::Integer(value) => {
+                                    retval.add_variable(name, value.to_string());
+                                }
+                                rasn_smi::v2::SimpleSyntax::String(value) => {
+                                    // We transform the value into a rust String
+                                    retval.add_variable(
+                                        name,
+                                        String::from_utf8(value.to_vec()).unwrap(),
+                                    );
+                                }
+                                _ => {
+                                    retval.add_variable(name, String::from("Other"));
+                                }
+                            };
+                        }
+                        rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
+                            info!("Application {:?}", value);
+                        }
+                    };
+                }
+            };
+        }
+    }
+    retval
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_snmp_get() {
+        let result = r_snmp_get("127.0.0.1:161", "1.3.6.1.2.1.1.1.0", "public");
+        let expected = SnmpResult {
+            variables: vec![SnmpVariable::new(
+                "1.3.6.1.2.1.1.1.0".to_string(),
+                "Linux CNTR-PORT-A104 6.1.0-28-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.119-1 (2024-11-22) x86_64".to_string())],
+        };
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_snmp_walk() {
+        let result = r_snmp_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+
+        let re = Regex::new(r"[0-9]+").unwrap();
+        assert!(result.variables.len() > 0);
+        for v in result.variables.iter() {
+            let name = &v.name;
+            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+            assert!(re.is_match(&v.value));
+        }
+    }
+}
