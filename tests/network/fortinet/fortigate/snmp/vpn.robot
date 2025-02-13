@@ -12,7 +12,7 @@ ${CMD}                                          ${CENTREON_PLUGINS} --plugin=net
 
 *** Test Cases ***
 vpn ${tc}
-    [Tags]    network    vpn
+    [Tags]    network    snmp    vpn
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=vpn
