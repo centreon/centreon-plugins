@@ -19,7 +19,7 @@ vpn ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=network/fortinet/fortigate/snmp/slim_fortigate-vpn
+    ...    --snmp-community=network/fortinet/fortigate/snmp/fortigate-vpn
     ...    --snmp-timeout=10
     ...    --snmp-retries=3
     ...    ${extra_options}
