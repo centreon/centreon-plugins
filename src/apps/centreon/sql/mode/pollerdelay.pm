@@ -57,7 +57,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        "filter-name:s"  => { name => 'filter_name' },
+        "exclude-name:s" => { name => 'exclude_name' }
     });
 
     return $self;
@@ -77,6 +78,11 @@ sub manage_selection {
          if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $$row[1] !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping poller '" . $$row[1] . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $$row[1] =~ /$self->{option_results}->{exclude_name}/) {
+            $self->{output}->output_add(long_msg => "skipping poller '" . $$row[1] . "': matching exclude filter.", debug => 1);
             next;
         }
         
@@ -108,6 +114,10 @@ The mode should be used with mysql plugin and dyn-mode option.
 =item B<--filter-name>
 
 Filter by poller name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude poller name (can be a regexp).
 
 =item B<--warning-delay>
 
