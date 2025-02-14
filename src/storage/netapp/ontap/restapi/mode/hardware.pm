@@ -68,7 +68,7 @@ sub new {
 sub get_disks {
     my ($self, %options) = @_;
 
-    return $self->{custom}->request_api(endpoint => '/api/storage/disks?fields=name,state,serial_number,bay');
+    return $self->{custom}->request_api(endpoint => '/api/storage/disks?fields=*');
 }
 
 sub get_shelves {
@@ -76,7 +76,7 @@ sub get_shelves {
 
     return if (defined($self->{shelves}));
 
-    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=name,state,serial_number,bay,frus');
+    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=*');
 }
 
 sub save_custom {
