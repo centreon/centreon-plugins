@@ -52,9 +52,9 @@ fn json_to_command(file_name: &str) -> Result<Command> {
 fn main() {
     let cli = Cli::parse();
     let url = format!("{}:{}", cli.hostname, cli.port);
-//    let result = r_snmp_get(&url, "1.3.6.1.2.1.1.1.0", &cli.community);
-//    println!("Hello, {:?}!", &result);
     let cmd = json_to_command(&cli.json_conf);
     let cmd = cmd.unwrap();
     let result = cmd.execute(&url);
+    println!("{}", result.output);
+    std::process::exit(result.status);
 }
