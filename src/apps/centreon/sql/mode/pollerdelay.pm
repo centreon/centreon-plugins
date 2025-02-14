@@ -107,7 +107,7 @@ __END__
 =head1 MODE
 
 Check the delay of the last update from a poller to the Central server.
-The mode should be used with mysql plugin and dyn-mode option.
+The mode should be used with mysql plugin and --dyn-mode option.
 
 =over 8
 
