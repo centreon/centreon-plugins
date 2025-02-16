@@ -36,10 +36,18 @@ enum Entry {
 }
 
 #[derive(Deserialize, Debug)]
+struct Data {
+    uom: String,
+    min: Option<f32>,
+    max: Option<f32>,
+}
+
+#[derive(Deserialize, Debug)]
 struct Leaf {
     name: String,
     output: String,
     entries: Vec<Entry>,
+    data: Option<Data>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -89,7 +97,7 @@ impl Command {
                 };
                 let metrics = self.build_metrics(&labels, &values, &ag);
                 let status = self.build_status();
-                let output = self.build_output(count, status, &metrics);
+                let output = self.build_output(count, status, &metrics, &ag);
                 return CmdResult { status, output };
             }
             None => {
@@ -110,6 +118,7 @@ impl Command {
         count: usize,
         status: i32,
         metrics: &Vec<(String, f32)>,
+        ag: &Option<(&str, usize, f32)>,
     ) -> String {
         let mut retval = self
             .leaf
@@ -124,10 +133,39 @@ impl Command {
                     _ => "UNKNOWN",
                 },
             );
+        match ag {
+            Some(a) => {
+                retval = retval.replace(format!("{{{}}}", a.0).as_str(), a.2.to_string().as_str());
+            }
+            None => (),
+        };
         retval += " |";
-        metrics.iter().for_each(|(k, v)| {
-            retval += format!(" {}={}", k, v).as_str();
-        });
+        match &self.leaf.data {
+            Some(d) => {
+                metrics.iter().for_each(|(k, v)| {
+                    retval += format!(
+                        " {}={}{};;;{};{}",
+                        k,
+                        v,
+                        d.uom,
+                        match d.min {
+                            Some(m) => m.to_string(),
+                            None => "".to_string(),
+                        },
+                        match d.max {
+                            Some(m) => m.to_string(),
+                            None => "".to_string(),
+                        },
+                    )
+                    .as_str();
+                });
+            }
+            None => {
+                metrics.iter().for_each(|(k, v)| {
+                    retval += format!(" {}={}", k, v).as_str();
+                });
+            }
+        };
         retval
     }
 
