@@ -6,13 +6,13 @@ extern crate regex;
 
 use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
-use rasn_snmp::v2::GetNextRequest;
-use rasn_snmp::v2::GetRequest;
-use rasn_snmp::v2::Pdu;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
+use rasn_snmp::v2::{BulkPdu, Pdu};
+use rasn_snmp::v2::{GetBulkRequest, GetNextRequest, GetRequest};
 use rasn_snmp::v2c::Message;
+use regex::Regex;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::net::UdpSocket;
@@ -174,7 +174,7 @@ pub fn r_snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
     trace!("Received {} bytes", resp.0);
     assert!(resp.0 > 0);
     let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-    build_response(decoded)
+    build_response(decoded, false)
 }
 
 #[no_mangle]
@@ -254,19 +254,95 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
             }
             message = create_next_request(request_id, &resp_oid);
         }
-        retval.concat(build_response(decoded));
+        retval.concat(build_response(decoded, true));
         request_id += 1;
     }
     retval
 }
 
-fn build_response(decoded: Message<Pdus>) -> SnmpResult {
+///
+/// Bulk walk
+/// This function is similar to the walk function but it uses the GetBulkRequest PDU
+/// to retrieve multiple values at once.
+///
+/// # Arguments
+/// * `target` - The target IP address and port
+/// * `oid` - The OID to walk
+/// # Returns
+/// An SnmpResult structure containing the variables
+///
+/// # Example
+/// ```
+/// use snmp_rust::r_snmp_bulk_walk;
+/// let result = r_snmp_bulk_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+/// ```
+pub fn r_snmp_bulk_walk(target: &str, oid: &str) -> SnmpResult {
+    let community = "public";
+    let oid_tab = oid
+        .split('.')
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
+
+    let mut retval = SnmpResult::new();
+    let mut request_id: i32 = 1;
+
+    let variable_bindings = vec![VarBind {
+        name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
+        value: VarBindValue::Unspecified,
+    }];
+
+    let pdu = BulkPdu {
+        request_id,
+        non_repeaters: 0,
+        max_repetitions: 10,
+        variable_bindings,
+    };
+    let get_request: GetBulkRequest = GetBulkRequest(pdu);
+
+    let message: Message<GetBulkRequest> = Message {
+        version: 1.into(),
+        community: community.into(),
+        data: get_request.into(),
+    };
+
+    // Send the message through an UDP socket
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+    let res: usize = socket.send(&encoded).unwrap();
+    assert!(res == encoded.len());
+
+    let mut buf: [u8; 1024] = [0; 1024];
+    let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+    trace!("Received {} bytes", resp.0);
+    assert!(resp.0 > 0);
+    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+    if let Pdus::Response(resp) = &decoded.data {
+        let resp_oid = &resp.0.variable_bindings[0].name;
+        let n = resp_oid.len() - 1;
+    }
+    retval.concat(build_response(decoded, true));
+    retval
+}
+
+fn build_response(decoded: Message<Pdus>, walk: bool) -> SnmpResult {
     let mut retval = SnmpResult::new();
 
     if let Pdus::Response(resp) = &decoded.data {
         let vars = &resp.0.variable_bindings;
+        let mut header = "".to_string();
         for var in vars {
             let name = var.name.to_string();
+            if walk {
+                if header == "" {
+                    // We remove from name the last number after the last "." to get the header.
+                    let n = name.rfind('.').unwrap();
+                    header = name[0..n].to_string();
+                } else if !name.starts_with(&header) {
+                    break;
+                }
+            }
             match &var.value {
                 VarBindValue::Unspecified => {
                     warn!("Unspecified");
@@ -321,7 +397,7 @@ mod tests {
         let expected = SnmpResult {
             variables: vec![SnmpVariable::new(
                 "1.3.6.1.2.1.1.1.0".to_string(),
-                "Linux CNTR-PORT-A104 6.1.0-28-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.119-1 (2024-11-22) x86_64".to_string())],
+                "Linux CNTR-PORT-A104 6.1.0-31-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.128-1 (2025-02-07) x86_64".to_string())],
         };
         assert_eq!(result, expected);
     }
@@ -333,6 +409,19 @@ mod tests {
         let re = Regex::new(r"[0-9]+").unwrap();
         assert!(result.variables.len() > 0);
         for v in result.variables.iter() {
+            let name = &v.name;
+            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+            assert!(re.is_match(&v.value));
+        }
+    }
+
+    #[test]
+    fn test_snmp_bulk_walk() {
+        let result = r_snmp_bulk_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+        let re = Regex::new(r"[0-9]+").unwrap();
+        assert!(result.variables.len() > 0);
+        for v in result.variables.iter() {
+            println!("{:?}", v);
             let name = &v.name;
             assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
             assert!(re.is_match(&v.value));
