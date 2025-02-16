@@ -1,7 +1,7 @@
 extern crate serde;
 extern crate serde_json;
 
-use lib::{r_snmp_walk, SnmpResult};
+use lib::{r_snmp_bulk_walk, SnmpResult};
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashMap};
 
@@ -54,16 +54,16 @@ pub struct CmdResult {
 
 impl Command {
     pub fn execute(&self, target: &str) -> CmdResult {
-        let mut agregation = ("", Operation::None);
+        let mut agregation = ("", 0, Operation::None);
         let mut res: Option<(&str, SnmpResult)> = None;
-        for entry in &self.leaf.entries {
+        for (idx, entry) in self.leaf.entries.iter().enumerate() {
             match entry {
                 Entry::Agregation(op) => {
-                    agregation = (&op.name, op.op);
+                    agregation = (&op.name, idx, op.op);
                 }
                 Entry::Query(query) => match query.query {
                     QueryType::Walk => {
-                        res = Some((&query.name, r_snmp_walk(target, &query.oid)));
+                        res = Some((&query.name, r_snmp_bulk_walk(target, &query.oid)));
                     }
                 },
             }
@@ -80,16 +80,16 @@ impl Command {
                     idx += 1;
                 });
                 let count = values.len();
-                let ag = match agregation.1 {
+                let ag = match agregation.2 {
                     Operation::Average => {
                         let sum: f32 = values.iter().sum();
-                        Some((agregation.0, sum / values.len() as f32))
+                        Some((agregation.0, agregation.1, sum / values.len() as f32))
                     }
                     _ => None,
                 };
                 let metrics = self.build_metrics(&labels, &values, &ag);
                 let status = self.build_status();
-                let output = self.build_output(&ag, count, status, &metrics);
+                let output = self.build_output(count, status, &metrics);
                 return CmdResult { status, output };
             }
             None => {
@@ -107,10 +107,9 @@ impl Command {
 
     fn build_output(
         &self,
-        ag: &Option<(&str, f32)>,
         count: usize,
         status: i32,
-        metrics: &BTreeMap<String, f32>,
+        metrics: &Vec<(String, f32)>,
     ) -> String {
         let mut retval = self
             .leaf
@@ -125,12 +124,6 @@ impl Command {
                     _ => "UNKNOWN",
                 },
             );
-        match ag {
-            Some(a) => {
-                retval = retval.replace(format!("{{{}}}", a.0).as_str(), a.1.to_string().as_str());
-            }
-            None => {}
-        };
         retval += " |";
         metrics.iter().for_each(|(k, v)| {
             retval += format!(" {}={}", k, v).as_str();
@@ -142,15 +135,25 @@ impl Command {
         &self,
         labels: &Vec<String>,
         values: &Vec<f32>,
-        ag: &Option<(&str, f32)>,
-    ) -> BTreeMap<String, f32> {
-        let mut metrics: BTreeMap<String, f32> = BTreeMap::new();
+        ag: &Option<(&str, usize, f32)>,
+    ) -> Vec<(String, f32)> {
+        let mut metrics: Vec<(String, f32)> = Vec::new();
+        match ag {
+            Some(a) => {
+                if a.1 == 0 {
+                    metrics.push((a.0.to_string(), a.2));
+                }
+            }
+            None => (),
+        }
         values.iter().enumerate().for_each(|(i, v)| {
-            metrics.insert(labels[i].clone(), *v);
+            metrics.push((labels[i].clone(), *v));
         });
         match ag {
             Some(a) => {
-                metrics.insert(a.0.to_string(), a.1);
+                if a.1 > 0 {
+                    metrics.push((a.0.to_string(), a.2));
+                }
             }
             None => (),
         }
