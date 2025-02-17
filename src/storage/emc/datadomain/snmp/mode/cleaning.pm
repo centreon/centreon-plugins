@@ -82,7 +82,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unit:s' => { name => 'unit', default => 'd' }
+        'unit:s'     => { name => 'unit', default => 'd' },
+        'timezone:s' => { name => 'timezone'}
     });
 
     return $self;
@@ -94,6 +95,10 @@ sub check_options {
 
     if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
         $self->{option_results}->{unit} = 'd';
+    }
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '' && $self->{option_results}->{timezone} !~ /^[A-Za-z]+\/[A-Za-z_-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong timezone format '" . $self->{option_results}->{timezone} . "'. (Example format: 'America/Los_Angeles')");
+        $self->{output}->option_exit();
     }
 }
 
@@ -112,6 +117,10 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         if ($snmp_result->{$oid} =~ /\s+(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/) {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+            # if the equipment check is on another timezone than the system where the plugin is executed.
+            if (defined($self->{option_results}->{timezone})){
+                $dt = $dt->set_time_zone($self->{option_results}->{timezone});
+            }
             my $lastExecSeconds = $ctime - $dt->epoch();
             if ($self->{global}->{lastExecSeconds} == -1 || $self->{global}->{lastExecSeconds} > $lastExecSeconds) {
                 $self->{global}->{lastExecSeconds} = $lastExecSeconds;
@@ -143,6 +152,11 @@ Check last time filesystems had been cleaned.
 =item B<--unit>
 
 Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks (default: 'd').
+
+=item B<--timezone>
+
+Set equipment timezone if different from Europe/London.
+Format example : Europe/Paris and America/Los_Angeles
 
 =item B<--warning-*> B<--critical-*>
 
