@@ -211,7 +211,7 @@ sub try_request_api {
     }
 
 
-    my $decoded = ($content eq '') ? {} : centreon::plugins::misc::json_decode($content);
+    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content) : {};
 
     return $decoded;
 }
