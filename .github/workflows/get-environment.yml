@@ -134,7 +134,7 @@ jobs:
       - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
         name: Get push changes
         id: get_push_changes
-        uses: tj-actions/changed-files@bab30c2299617f6615ec02a68b9a40d10bd21366 # v45.0.5
+        uses: tj-actions/changed-files@d6e91a2266cdb9d62096cebf1e8546899c6aa18f # v45.0.6
         with:
           since_last_remote_commit: true
           json: true
@@ -246,24 +246,43 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: |
-          if [[ "${{ inputs.version_file }}" == "" ]]; then
-            VERSION=$(date '+%Y%m%d')
-          elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
-            VERSION=$(grep 'version: ' ${{ inputs.version_file }} | cut -d' ' -f2 | tr -d '"')
-          else
-            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
-          fi
-          echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
-        shell: bash
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            let version = '';
 
-      - name: "Get release: 1 for testing / stable, <date>.<commit_sha> for others"
+            if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
+              const branchName = "${{ github.head_ref || github.ref_name }}";
+              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
+              if (matches) {
+                version = matches[1];
+              } else {
+                throw new Error('invalid version');
+              }
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'unstable') {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}${String(currentDate.getDate()).padStart(2, '0')}`;
+            } else {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}00`;
+            }
+
+            core.setOutput('version', version);
+
+      - name: "Get release: 1 for testing / stable, <date> for others"
         id: get_release
-        run: |
-          RELEASE=$(date '+%H%M%S')
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            let release = '';
 
-          echo "release=$RELEASE" >> $GITHUB_OUTPUT
-        shell: bash
+            if (${{ contains(fromJSON('["testing", "unstable"]') , steps.get_stability.outputs.stability) }} === true) {
+              release = "1"
+            } else {
+              release = Date.now()
+            }
+
+            core.setOutput('release', release);
 
       - name: "Get release type: hotfix, release or not defined if not a release"
         id: get_release_type

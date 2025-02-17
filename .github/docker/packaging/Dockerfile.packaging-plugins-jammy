@@ -66,3 +66,7 @@ apt-get install -y nfpm=2.41.0
 apt-get clean
 
 EOF
+
+COPY .github/patch/fpm-deb.rb.diff /tmp/fpm-deb.rb.diff
+# Patch to apply fpm fix for debian package generation while waiting for the official fix to be released (https://github.com/jordansissel/fpm/pull/1947).
+RUN patch -i /tmp/fpm-deb.rb.diff $(find / -type f -name "deb.rb") && /bin/rm -rf /tmp/fpm-deb.rb.diff
