@@ -194,6 +194,9 @@ sub try_request_api {
     if ($method =~ /^(PATCH|POST)$/) {
         push @$headers, 'content-type: application/json';
     }
+
+    my $unknown_status = (defined($options{unknown_status})) ? $options{unknown_status} : undef;
+
     my ($content) = $self->{http}->request(
         method          => $method,
         url_path        => '/api' . $options{endpoint},
@@ -221,7 +224,7 @@ sub request_api {
 
     $self->settings();
 
-    my $api_response = $self->try_request_api(%options);
+    my $api_response = $self->try_request_api(%options, unknown_status => '');
 
     # if the token is invalid, we try to authenticate again
     if (ref($api_response) eq 'HASH'
@@ -229,8 +232,7 @@ sub request_api {
             && $api_response->{error_type} eq 'UNAUTHENTICATED') {
         $api_response = $self->try_request_api('force_authentication' => 1, %options);
     }
-    #FIXME: can it be catched by --http-status options
-    #FIXME: put error contents in comments
+
     # if we could not authenticate, we exit
     if (ref($api_response) eq 'HASH' && defined($api_response->{error_type})) {
         my $full_message = '';
@@ -243,25 +245,9 @@ sub request_api {
     return $api_response;
 }
 
-sub get_vc_time {
-    my ($self, %options) = @_;
-
-    return $self->{vc_time} if (defined($self->{vc_time}));
-
-    # Check if the time_diff info is available in the cache
-    # If it is, return the vc_time based on the local time minus the time_diff
-    # Query /api/appliance/system/time/timezone and /api/appliance/system/time
-    # Compute the time_diff between the local timezone and the vc's and the $self->{vc_time}
-    # Store the time diff in the cache
-    # Return $self->{vc_time}
-
-    return(time());
-}
-
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
-#    if ( !centreon::plugins::misc::is_empty($options{rsrc_id}) )
     # Get all acq specs and store them in cache
     # FIXME: cache management
     # FIXME: any pagination issue ?
@@ -270,28 +256,14 @@ sub get_all_acq_specs {
     return $self->{all_acq_specs};
 }
 
-sub patch_acq_spec {
-    my ($self, %options) = @_;
-
-#    if ( !centreon::plugins::misc::is_empty($options{rsrc_id}) )
-    $self->{output}->add_option_msg(short_msg => "ERR: need an id to delete an acq_spec!", debug => 1) if (centreon::plugins::misc::is_empty($options{id}));
-    # Get all acq specs and store them in cache
-    $self->request_api(method => 'PATCH', endpoint => '/stats/acq-specs/' . $options{id});
-
-    # The all_ack_specs listing is now obsolete, so we delete it to force retrieving it next time
-    $self->{all_acq_specs} = {};
-
-    return 1;
-}
-
 sub compose_type_from_rsrc_id {
-    my ($rsrc_id) = @_;
+    my ($self, $rsrc_id) = @_;
 
     if ($rsrc_id =~ /^([a-z]+)-(\d+)$/) {
         return uc($1);
     } else {
-        return undef;
-        # FIXME: opt exit
+        $self->{output}->add_option_msg(short_msg => "compose_type_from_rsrc_id: cannot extract type from '$rsrc_id'");
+        $self->{output}->option_exit();
     }
 }
 
@@ -308,7 +280,7 @@ sub compose_acq_specs_json_payload {
                     {
                             predicate => 'EQUAL',
                             scheme    => 'moid',
-                            type      => compose_type_from_rsrc_id($options{rsrc_id}),
+                            type      => $self->compose_type_from_rsrc_id($options{rsrc_id}),
                             id_value  => $options{rsrc_id}
                     }
             ],
@@ -368,7 +340,10 @@ sub extend_acq_spec {
 
     # The response must be empty if the patch succeeds
     return undef if (defined($response) && ref($response) eq 'HASH' && scalar(keys %$response) > 0);
-    # FIXME: reset stored acq_specs in cache and in object
+
+    # reset stored acq_specs since it's no longer accurate
+    $self->{all_acq_specs} = [];
+
     return 1;
 }
 
@@ -434,7 +409,7 @@ sub get_stats {
 
     # compose the endpoint
     my $endpoint = '/stats/data/dp?'
-        . 'rsrcs=type.' . compose_type_from_rsrc_id($options{rsrc_id}) . '.moid=' . $options{rsrc_id}
+        . 'rsrcs=type.' . $self->compose_type_from_rsrc_id($options{rsrc_id}) . '.moid=' . $options{rsrc_id}
         . '&cid=' . $options{cid}
         . '&start=' . (time() - 120); # get the last two minutes to be sure to get at least one value
 
@@ -451,6 +426,7 @@ sub get_stats {
         return undef;
     }
 
+    # Return the `val` field of the last object of the array
     return $result->{data_points}->[ @{ $result->{data_points} } - 1 ]->{val};
     # FIXME: handle arrays in get_stats and check_acq_specs
 }
