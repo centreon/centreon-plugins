@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'running_ahead' }, { name => 'output_message' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', min => 0, unit => 's' }
                 ]
             }
         }
@@ -88,9 +88,10 @@ sub manage_selection {
 
     my $uptime = defined($results->{$oid_snmpEngineTime}) ? $results->{$oid_snmpEngineTime} : ($results->{$oid_sysUpTime} / 100);
 
-    my $ccmHistoryRunningLastChanged = $ctime - $uptime + ($results->{$oid_ccmHistoryRunningLastChanged} / 100);
-    my $ccmHistoryRunningLastSaved = $ctime - $uptime + ($results->{$oid_ccmHistoryRunningLastSaved} / 100);
-    my $ccmHistoryStartupLastChanged = $ctime - $uptime + ($results->{$oid_ccmHistoryStartupLastChanged} / 100);
+    my $start_time = $ctime - $uptime;
+    my $ccmHistoryRunningLastChanged = $start_time + ($results->{$oid_ccmHistoryRunningLastChanged} / 100);
+    my $ccmHistoryRunningLastSaved   = $start_time + ($results->{$oid_ccmHistoryRunningLastSaved} / 100);
+    my $ccmHistoryStartupLastChanged = $start_time + ($results->{$oid_ccmHistoryStartupLastChanged} / 100);
 
     $self->{output}->output_add(long_msg => sprintf(
         "ccmHistoryRunningLastChanged: %s (%s)",
@@ -108,8 +109,8 @@ sub manage_selection {
         scalar(localtime($ccmHistoryStartupLastChanged)))
     );
 
-    my $runningUnchangedDuration = time() - $ccmHistoryRunningLastChanged;
-    my $startupUnchangedDuration = time() - $ccmHistoryStartupLastChanged;
+    my $runningUnchangedDuration = $ctime - $ccmHistoryRunningLastChanged;
+    my $startupUnchangedDuration = $ctime - $ccmHistoryStartupLastChanged;
 
     my $runningAhead = 0;
     my $output = 'saved config is up to date';
@@ -141,10 +142,13 @@ Check Cisco changed and saved configurations (CISCO-CONFIG-MAN-MIB).
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-config-running-ahead> 
 
 Thresholds.
-Can be: 'config-running-ahead'.
+
+=item B<--critical-config-running-ahead>
+
+Thresholds.
 
 =back
 
