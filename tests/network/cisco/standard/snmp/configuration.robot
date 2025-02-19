@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cisco::standard::snmp::plugin
 
 *** Test Cases ***
 configuration ${tc}
-    [Tags]    network    citrix    snmp
+    [Tags]    network    cisco    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=configuration
