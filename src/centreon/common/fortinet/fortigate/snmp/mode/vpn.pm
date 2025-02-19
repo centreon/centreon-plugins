@@ -70,11 +70,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'ipsec_tunnels_count', nlabel => 'vpn.ipsec.tunnels.state.count', set => {
+        { label => 'ipsec-tunnels-count', nlabel => 'vpn.ipsec.tunnels.state.count', set => {
                 key_values => [ { name => 'ipsec_tunnels_count' } ],
                 output_template => 'IPSec tunnels state up: %s',
                 perfdatas => [
-                    { label => 'ipsec_tunnels_count', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 }
+                    { label => 'ipsec-tunnels-count', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 }
                 ]
             }
         }
@@ -136,7 +136,7 @@ sub new {
         'filter-vpn:s'      => { name => 'filter_vpn' },
         'filter-vdomain:s'  => { name => 'filter_vdomain' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' }
+        'critical-status:s' => { name => 'critical_status', default => '%{state} eq "down"' }
     });
 
     return $self;
@@ -273,11 +273,11 @@ Filter name with regexp. Can be ('vdomain', 'vpn')
 
 =item B<--warning-*>
 
-Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec_tunnels_count')
+Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count')
 
 =item B<--critical-*>
 
-Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec_tunnels_down_count', 'ipsec_tunnels_up_count'))
+Critical on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count'))
 
 =item B<--warning-status>
 
