@@ -1,5 +1,4 @@
 *** Settings ***
-Documentation       Network citrix netscaler health
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +11,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cisco::standard::snmp::plugin
 
 *** Test Cases ***
 memory ${tc}
-    [Tags]    network    citrix    snmp
+    [Tags]    network    memory    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory

@@ -1,5 +1,4 @@
 *** Settings ***
-Documentation       Check Cisco changed and saved configurations (CISCO-CONFIG-MAN-MIB).
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +11,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cisco::standard::snmp::plugin
 
 *** Test Cases ***
 configuration ${tc}
-    [Tags]    network    cisco    snmp
+    [Tags]    network    configuration    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=configuration
