@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Haproxy-Web",
+    "pkg_summary": "Centreon Plugin to monitor HAProxy through JSON web stats page",
+    "plugin_name": "centreon_haproxy_web.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/haproxy/web/"
+    ]
+}

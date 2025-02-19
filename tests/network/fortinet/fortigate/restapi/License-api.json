@@ -1,0 +1,92 @@
+{
+  "uuid": "edae28cc-0d15-4208-9e84-a3bec3f4032f",
+  "lastMigration": 32,
+  "name": "Output api (copy)",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "fd224d5e-66c5-49dc-a1aa-c8f0cc3db291",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/monitor/license/status/select/",
+      "responses": [
+        {
+          "uuid": "700dc720-1251-4d1d-9f18-03e4fa8ffee4",
+          "body": "{\n  \"http_method\": \"GET\",\n  \"results\": {\n    \"fortiguard\": {\n      \"type\": \"cloud_service_status\",\n      \"supported\": true,\n      \"connected\": true,\n      \"has_updated\": true,\n      \"update_server_usa\": false,\n      \"next_scheduled_update\": 1731938460,\n      \"scheduled_updates_enabled\": true,\n      \"server_address\": \"xx.xx.xx.xx:443\",\n      \"fortigate_wan_ip\": \"xx.xx.xx.xx\"\n    },\n    \"forticare\": {\n      \"type\": \"cloud_service_status\",\n      \"status\": \"registered\",\n      \"registration_supported\": true,\n      \"account\": \"support.xxxxx@xxxxx.fr\",\n      \"support\": {\n        \"hardware\": {\n          \"status\": \"licensed\",\n          \"support_level\": \"Advanced HW\",\n          \"expires\": 1737244800\n        },\n        \"enhanced\": {\n          \"status\": \"licensed\",\n          \"support_level\": \"Premium\",\n          \"expires\": 1737244800\n        }\n      },\n      \"company\": \"xxxxxxxxx\",\n      \"industry\": \"\"\n    },\n    \"forticloud\": {\n      \"type\": \"cloud_service_status\",\n      \"status\": \"cloud_logged_out\"\n    },\n    \"security_rating\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"no_license\",\n      \"version\": \"0.00000\",\n      \"entitlement\": \"FGSA\",\n      \"last_update\": 978303600\n    },\n    \"antivirus\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"1.00000\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"AVDB\",\n      \"last_update\": 1523293620,\n      \"last_update_attempt\": 1672054760,\n      \"last_update_result_status\": \"update_result_not_authorized\",\n      \"last_update_method_status\": \"update_method_manual\",\n      \"db_status\": \"db_type_extended\",\n      \"engine\": {\n        \"version\": \"6.00298\",\n        \"last_update\": 1709239320,\n        \"last_update_attempt\": 1567573458,\n        \"last_update_result_status\": \"update_result_not_authorized\",\n        \"last_update_method_status\": \"update_method_manual\"\n      }\n    },\n    \"mobile_malware\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"0.00000\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"AVDB\",\n      \"last_update\": 978303600,\n      \"last_update_attempt\": 1672054760,\n      \"last_update_result_status\": \"update_result_not_authorized\",\n      \"last_update_method_status\": \"update_method_manual\"\n    },\n    \"ai_malware_detection\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"0.00000\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"AVDB\",\n      \"last_update\": 978303600\n    },\n    \"ips\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"6.00741\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"NIDS\",\n      \"last_update\": 1448933400,\n      \"last_update_attempt\": 1567573458,\n      \"last_update_result_status\": \"update_result_not_authorized\",\n      \"last_update_method_status\": \"update_method_manual\",\n      \"db_status\": \"db_type_normal\",\n      \"engine\": {\n        \"version\": \"7.00181\",\n        \"last_update\": 1709587380,\n        \"last_update_attempt\": 1567573458,\n        \"last_update_result_status\": \"update_result_not_authorized\",\n        \"last_update_method_status\": \"update_method_manual\"\n      }\n    },\n    \"industrial_db\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"no_license\",\n      \"version\": \"6.00741\",\n      \"entitlement\": \"ISSS\",\n      \"last_update\": 1448933400\n    },\n    \"appctrl\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"licensed\",\n      \"version\": \"25.00592\",\n      \"expires\": 1737244800,\n      \"entitlement\": \"FMWR\",\n      \"last_update\": 1620125365,\n      \"last_update_attempt\": 1620125372,\n      \"last_update_result_status\": \"update_result_no_updates\",\n      \"last_update_method_status\": \"update_method_sched\"\n    },\n    \"internet_service_db\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"licensed\",\n      \"version\": \"7.03943\",\n      \"last_update\": 1731726154,\n      \"last_update_attempt\": 1731934873,\n      \"last_update_result_status\": \"update_result_no_updates\",\n      \"last_update_method_status\": \"update_method_sched\"\n    },\n    \"device_os_id\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"licensed\",\n      \"version\": \"1.00177\",\n      \"expires\": 1737244800,\n      \"entitlement\": \"FMWR\",\n      \"last_update\": 1726887673,\n      \"last_update_attempt\": 1731934873,\n      \"last_update_result_status\": \"update_result_no_updates\",\n      \"last_update_method_status\": \"update_method_sched\"\n    },\n    \"botnet_ip\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"licensed\",\n      \"version\": \"7.03943\",\n      \"last_update\": 1731726154,\n      \"last_update_attempt\": 1731934873,\n      \"last_update_result_status\": \"update_result_no_updates\",\n      \"last_update_method_status\": \"update_method_sched\"\n    },\n    \"botnet_domain\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"0.00000\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"AVDB\",\n      \"last_update\": 978303600,\n      \"last_update_attempt\": 1672054760,\n      \"last_update_result_status\": \"update_result_not_authorized\",\n      \"last_update_method_status\": \"update_method_manual\"\n    },\n    \"malicious_urls\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"1.00001\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"NIDS\",\n      \"last_update\": 1672054760,\n      \"last_update_attempt\": 1672054760,\n      \"last_update_result_status\": \"update_result_success\",\n      \"last_update_method_status\": \"update_method_sched\"\n    },\n    \"blacklisted_certificates\": {\n      \"type\": \"downloaded_fds_object\",\n      \"status\": \"expired\",\n      \"version\": \"0.00000\",\n      \"expires\": 1516147200,\n      \"entitlement\": \"FURL\",\n      \"last_update\": 978303600\n    },\n    \"web_filtering\": {\n      \"type\": \"live_fortiguard_service\",\n      \"status\": \"expired\",\n      \"expires\": 1516147200,\n      \"entitlement\": \"FURL\",\n      \"category_list_version\": 9,\n      \"running\": false\n    },\n    \"outbreak_prevention\": {\n      \"type\": \"live_fortiguard_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"ZHVO\"\n    },\n    \"antispam\": {\n      \"type\": \"live_fortiguard_service\",\n      \"status\": \"expired\",\n      \"expires\": 1516147200,\n      \"entitlement\": \"SPAM\"\n    },\n    \"sdwan_network_monitor\": {\n      \"type\": \"live_fortiguard_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"SWNM\"\n    },\n    \"iot_detection\": {\n      \"type\": \"live_fortiguard_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"IOTH\"\n    },\n    \"forticloud_logging\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"free_license\",\n      \"used_bytes\": 0,\n      \"max_bytes\": 0,\n      \"log_retention_days\": 7\n    },\n    \"forticloud_sandbox\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"free_license\",\n      \"expires\": 1515888000,\n      \"entitlement\": \"AVDB\",\n      \"files_uploaded_daily\": 0,\n      \"max_files_daily\": 100\n    },\n    \"fortianalyzer_cloud\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"FAZC\"\n    },\n    \"fortianalyzer_cloud_premium\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"AFAC\"\n    },\n    \"fortimanager_cloud\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"FMGC\"\n    },\n    \"fortiipam_cloud\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"IPMC\"\n    },\n    \"fortisandbox_cloud\": {\n      \"type\": \"live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"FSAC\"\n    },\n    \"fortiems_cloud\": {\n      \"type\": \"account_level_live_cloud_service\",\n      \"status\": \"expires_soon\",\n      \"expires\": 1732838400,\n      \"entitlement\": \"FCEM\"\n    },\n    \"fortimanager_cloud_alci\": {\n      \"type\": \"account_level_live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"FMGC\"\n    },\n    \"fortisandbox_cloud_alci\": {\n      \"type\": \"account_level_live_cloud_service\",\n      \"status\": \"no_license\",\n      \"entitlement\": \"FSAP\"\n    },\n    \"vdom\": {\n      \"type\": \"platform\",\n      \"can_upgrade\": false,\n      \"used\": 2,\n      \"max\": 10\n    },\n    \"sms\": {\n      \"type\": \"other\",\n      \"status\": \"unavailable\",\n      \"used\": 0,\n      \"max\": 100\n    }\n  },\n  \"vdom\": \"root\",\n  \"path\": \"license\",\n  \"name\": \"status\",\n  \"action\": \"select\",\n  \"status\": \"success\",\n  \"serial\": \"FG100E4Q17017027\",\n  \"version\": \"v7.0.15\",\n  \"build\": 632\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "fd224d5e-66c5-49dc-a1aa-c8f0cc3db291"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
