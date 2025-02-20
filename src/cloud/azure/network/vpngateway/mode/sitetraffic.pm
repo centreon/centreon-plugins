@@ -152,7 +152,6 @@ Set resource group (required if resource's name is used).
 Filter metrics (can be: C<AverageBandwidth>, C<P2SBandwidth>, C<P2SConnectionCount>)
 (can be a regexp).
 
-=item B<--warning-$label$ --critical-$label$>
 
 Thresholds 
 ($label$ can be: C<bandwidth-average>, C<p2s-bandwidth>, C<p2s-connections>)
