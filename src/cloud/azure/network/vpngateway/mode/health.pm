@@ -56,12 +56,12 @@ Set resource group (required if resource's name is used).
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: %{status}, %{summary}.
+You can use the following variables: C<%{status}>, C<%{summary}>.
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /^Unavailable$/'>).
-You can use the following variables: %{status}, <%{summary}.
+You can use the following variables: C<%{status}>, C<%{summary}>.
 
 =item B<--unknown-status>
 
