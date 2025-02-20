@@ -208,32 +208,32 @@ my $mapping = {
 sub add_antivirus {
     my ($self, %options) = @_;
 
-    my $crossing_version = defined($options{snmp_result}->{ $mapping->{new}->{ $options{label} }->{name} }) ? 'new' : 'old';
-    my $name = $options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{name} };
+    my $antivirus_mapping = defined($options{snmp_result}->{ $mapping->{new}->{ $options{label} }->{name} }) ? $mapping->{new}->{ $options{label} } : $mapping->{old}->{ $options{label} };
+    my $name = $options{snmp_result}->{ $antivirus_mapping->{name} };
     $self->{antivirus}->{$name} = {
         name => $name,
-        version => $options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{version} }
+        version => $options{snmp_result}->{ $antivirus_mapping->{version} }
     };
 
-    if ($options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{expiration} } =~ /permanent/i) {
+    if ($options{snmp_result}->{ $antivirus_mapping->{expiration} } =~ /permanent/i) {
         $self->{antivirus}->{$name}->{expires_seconds} = 'permanent';
         $self->{antivirus}->{$name}->{expires_human} = '-';
     } else {
-        my $dt = $self->{ $options{label} . '_strp' }->parse_datetime($options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{expiration} });
+        my $dt = $self->{ $options{label} . '_strp' }->parse_datetime($options{snmp_result}->{ $antivirus_mapping->{expiration} });
         if (defined($dt)) {
              $self->{antivirus}->{$name}->{expires_seconds} = $dt->epoch() - time();
              $self->{antivirus}->{$name}->{expires_seconds} = 0 if ($self->{antivirus}->{$name}->{expires_seconds} < 0);
              $self->{antivirus}->{$name}->{expires_human} = centreon::plugins::misc::change_seconds(value => $self->{antivirus}->{$name}->{expires_seconds});
         } else {
-            $self->{output}->output_add(long_msg => "cannot parse date: " . $options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{expiration} } . ' (please use option --' . $options{label} . '-date-format)');
+            $self->{output}->output_add(long_msg => "cannot parse date: " . $options{snmp_result}->{ $antivirus_mapping->{expiration} } . ' (please use option --' . $options{label} . '-date-format)');
         }
     }
 
-    my $dt = $self->{ $options{label} . '_strp' }->parse_datetime($options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{date} });
+    my $dt = $self->{ $options{label} . '_strp' }->parse_datetime($options{snmp_result}->{ $antivirus_mapping->{date} });
     if (defined($dt)) {
          $self->{antivirus}->{$name}->{db_lastupdate_time} = time() - $dt->epoch();
     } else {
-        $self->{output}->output_add(long_msg => "cannot parse date: " . $options{snmp_result}->{ $mapping->{$crossing_version}->{ $options{label} }->{date} } . ' (please use option --' . $options{label} . '-date-format)');
+        $self->{output}->output_add(long_msg => "cannot parse date: " . $options{snmp_result}->{ $antivirus_mapping->{date} } . ' (please use option --' . $options{label} . '-date-format)');
     }
 }
 
