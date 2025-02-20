@@ -176,10 +176,55 @@ Filter metrics (can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngres
 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
 (can be a regexp).
 
-=item B<--warning-$label$ --critical-$label$>
+=item B<--warning-traffic-in>
 
-Thresholds
-($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
+Thresholds.
+
+=item B<--critical-traffic-in>
+
+Thresholds.
+
+=item B<--warning-traffic-out>
+
+Thresholds.
+
+=item B<--critical-traffic-out>
+
+Thresholds.
+
+=item B<--warning-packets-in>
+
+Thresholds.
+
+=item B<--critical-packets-in>
+
+Thresholds.
+
+=item B<--warning-packets-out>
+
+Thresholds.
+
+=item B<--critical-packets-out>
+
+Thresholds.
+
+=item B<--warning-dropped-packets-in>
+
+Thresholds.
+
+=item B<--critical-dropped-packets-in>
+
+Thresholds.
+
+=item B<--warning-dropped-packets-out>
+
+Thresholds.
+
+=item B<--critical-dropped-packets-out>
+
+Thresholds.
+
+
 
 =item B<--per-sec>
 
