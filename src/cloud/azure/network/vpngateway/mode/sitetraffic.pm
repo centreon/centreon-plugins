@@ -153,8 +153,29 @@ Filter metrics (can be: C<AverageBandwidth>, C<P2SBandwidth>, C<P2SConnectionCou
 (can be a regexp).
 
 
-Thresholds 
-($label$ can be: C<bandwidth-average>, C<p2s-bandwidth>, C<p2s-connections>)
+=item B<--warning-bandwidth-average>
+
+Thresholds.
+
+=item B<--critical-bandwidth-average>
+
+Thresholds.
+
+=item B<--warning-p2s-bandwidth>
+
+Thresholds.
+
+=item B<--critical-p2s-bandwidth>
+
+Thresholds.
+
+=item B<--warning-p2s-connections>
+
+Thresholds.
+
+=item B<--critical-p2s-connections>
+
+Thresholds.
 
 =back
 
