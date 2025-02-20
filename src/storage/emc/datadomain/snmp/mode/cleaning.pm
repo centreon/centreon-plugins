@@ -96,7 +96,7 @@ sub check_options {
     if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
         $self->{option_results}->{unit} = 'd';
     }
-    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '' && $self->{option_results}->{timezone} !~ /^[A-Za-z]+\/[A-Za-z_-]+$/) {
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '' && $self->{option_results}->{timezone} !~ /^[A-Za-z_\/0-9-]+$/) {
         $self->{output}->add_option_msg(short_msg => "Wrong timezone format '" . $self->{option_results}->{timezone} . "'. (Example format: 'America/Los_Angeles')");
         $self->{output}->option_exit();
     }
