@@ -70,7 +70,7 @@ fn main() {
         warning_agregation: cli.warning_agregation,
         critical_agregation: cli.critical_agregation,
     };
-    let result = cmd.execute(&url, &cli.community, &ext);
+    let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
     println!("{}", result.output);
     std::process::exit(result.status);
 }
