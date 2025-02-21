@@ -35,6 +35,7 @@ sub new {
         'discovery'   => 'apps::vmware::vsphere8::esx::mode::discovery',
         'host-status' => 'apps::vmware::vsphere8::esx::mode::hoststatus',
         'memory'      => 'apps::vmware::vsphere8::esx::mode::memory',
+        'power'       => 'apps::vmware::vsphere8::esx::mode::power',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';
