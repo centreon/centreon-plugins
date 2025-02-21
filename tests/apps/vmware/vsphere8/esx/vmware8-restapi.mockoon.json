@@ -590,6 +590,33 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "456efe0f-1b8b-4212-8933-6e4ef67df9ae",
+          "body": "{\"data_points\":[{\"val\":206.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152385},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152445},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152505}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "power.capacity.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,
