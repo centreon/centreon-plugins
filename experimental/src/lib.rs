@@ -172,7 +172,7 @@ pub fn r_snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
     trace!("Received {} bytes", resp.0);
     assert!(resp.0 > 0);
     let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-    build_response(decoded, false)
+    build_response(decoded, false).0
 }
 
 #[no_mangle]
@@ -252,7 +252,7 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
             }
             message = create_next_request(request_id, &resp_oid);
         }
-        retval.concat(build_response(decoded, true));
+        retval.concat(build_response(decoded, true).0);
         request_id += 1;
     }
     retval
@@ -274,8 +274,8 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
 /// use snmp_rust::r_snmp_bulk_walk;
 /// let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
 /// ```
-pub fn r_snmp_bulk_walk(target: &str, version: &str, community: &str, oid: &str) -> SnmpResult {
-    let oid_tab = oid
+pub fn r_snmp_bulk_walk(target: &str, _version: &str, community: &str, oid: &str) -> SnmpResult {
+    let mut oid_tab = oid
         .split('.')
         .map(|x| x.parse::<u32>().unwrap())
         .collect::<Vec<u32>>();
@@ -283,48 +283,58 @@ pub fn r_snmp_bulk_walk(target: &str, version: &str, community: &str, oid: &str)
     let mut retval = SnmpResult::new();
     let mut request_id: i32 = 1;
 
-    let variable_bindings = vec![VarBind {
-        name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
-        value: VarBindValue::Unspecified,
-    }];
-
-    let pdu = BulkPdu {
-        request_id,
-        non_repeaters: 0,
-        max_repetitions: 10,
-        variable_bindings,
-    };
-    let get_request: GetBulkRequest = GetBulkRequest(pdu);
-
-    let message: Message<GetBulkRequest> = Message {
-        version: 1.into(),
-        community: community.to_string().into(),
-        data: get_request.into(),
-    };
-
-    // Send the message through an UDP socket
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.connect(target).expect("connect function failed");
-    let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
-    let res: usize = socket.send(&encoded).unwrap();
-    assert!(res == encoded.len());
 
-    let mut buf: [u8; 1024] = [0; 1024];
-    let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+    loop {
+        let variable_bindings = vec![VarBind {
+            name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
+            value: VarBindValue::Unspecified,
+        }];
 
-    trace!("Received {} bytes", resp.0);
-    assert!(resp.0 > 0);
-    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-    if let Pdus::Response(resp) = &decoded.data {
-        let resp_oid = &resp.0.variable_bindings[0].name;
-        let n = resp_oid.len() - 1;
+        let pdu = BulkPdu {
+            request_id,
+            non_repeaters: 0,
+            max_repetitions: 10,
+            variable_bindings,
+        };
+
+        let get_request: GetBulkRequest = GetBulkRequest(pdu);
+
+        let message: Message<GetBulkRequest> = Message {
+            version: 1.into(),
+            community: community.to_string().into(),
+            data: get_request.into(),
+        };
+
+        // Send the message through an UDP socket
+        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+        let res: usize = socket.send(&encoded).unwrap();
+        assert!(res == encoded.len());
+
+        let mut buf: [u8; 1024] = [0; 1024];
+        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+        trace!("Received {} bytes", resp.0);
+        assert!(resp.0 > 0);
+        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+        if let Pdus::Response(resp) = &decoded.data {
+            let resp_oid = &resp.0.variable_bindings[0].name;
+            let n = resp_oid.len() - 1;
+        }
+        let (result, completed) = build_response(decoded, true);
+        retval.concat(result);
+        if completed {
+            break;
+        }
+        oid_tab = retval.variables.last().unwrap().name.split('.').map(|x| x.parse::<u32>().unwrap()).collect::<Vec<u32>>();
     }
-    retval.concat(build_response(decoded, true));
     retval
 }
 
-fn build_response(decoded: Message<Pdus>, walk: bool) -> SnmpResult {
+fn build_response(decoded: Message<Pdus>, walk: bool) -> (SnmpResult, bool) {
     let mut retval = SnmpResult::new();
+    let mut completed = false;
 
     if let Pdus::Response(resp) = &decoded.data {
         let vars = &resp.0.variable_bindings;
@@ -337,6 +347,7 @@ fn build_response(decoded: Message<Pdus>, walk: bool) -> SnmpResult {
                     let n = name.rfind('.').unwrap();
                     header = name[0..n].to_string();
                 } else if !name.starts_with(&header) {
+                    completed = true;
                     break;
                 }
             }
@@ -382,7 +393,7 @@ fn build_response(decoded: Message<Pdus>, walk: bool) -> SnmpResult {
             };
         }
     }
-    retval
+    (retval, completed)
 }
 
 mod tests {
