@@ -34,7 +34,7 @@ sub new {
             'esx-name:s'        => { name => 'esx_name' }
         }
     );
-    $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE8 HOST OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE 8 HOST OPTIONS', once => 1);
 
     return $self;
 }
@@ -77,6 +77,12 @@ sub get_esx_stats {
         rsrc_name => $self->{esx_name},
         rsrc_id   => $self->{esx_id}
     );
+}
+
+sub request_api {
+    my ($self, %options) = @_;
+
+    return $options{custom}->request_api(%options);
 }
 
 sub check_options {
