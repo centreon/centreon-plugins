@@ -21,7 +21,7 @@
 package apps::vmware::vsphere8::esx::mode::cpu;
 use strict;
 use warnings;
-use base qw(centreon::plugins::templates::counter);
+use base qw(apps::vmware::vsphere8::custom::modeesx);
 
 sub new {
     my ($class, %options) = @_;
@@ -45,10 +45,6 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::check_options(%options);
-    if (centreon::plugins::misc::is_empty($self->{option_results}->{esx_id})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --esx-id option.');
-        $self->{output}->option_exit();
-    }
 
     # If a threshold is given on contention, we enable the corresponding data collection
     if (grep {$_ =~ /contention/ && defined($self->{option_results}->{$_})} keys %{$self->{option_results}}) {
