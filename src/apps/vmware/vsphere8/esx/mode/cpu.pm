@@ -45,15 +45,15 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     # If a threshold is given on contention, we enable the corresponding data collection
-    if (grep {$_ =~ /contention/ && defined($self->{option_results}->{$_})} keys %{$self->{option_results}}) {
+    if (grep {$_ =~ /contention/ && defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne ''} keys %{$self->{option_results}}) {
         $self->{option_results}->{add_contention} = 1;
     }
     # If a threshold is given on demand, we enable the corresponding data collection
-    if (grep {$_ =~ /demand/ && defined($self->{option_results}->{$_})} keys %{$self->{option_results}}) {
+    if (grep {$_ =~ /demand/ && defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne ''} keys %{$self->{option_results}}) {
         $self->{option_results}->{add_demand} = 1;
     }
     # If a threshold is given on corecount, we enable the corresponding data collection
-    if (grep {$_ =~ /corecount/ && defined($self->{option_results}->{$_})} keys %{$self->{option_results}}) {
+    if (grep {$_ =~ /corecount/ && defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne ''} keys %{$self->{option_results}}) {
         $self->{option_results}->{add_corecount} = 1;
     }
 }
