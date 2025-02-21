@@ -21,7 +21,7 @@
 package apps::vmware::vsphere8::esx::mode::memory;
 use strict;
 use warnings;
-use base qw(centreon::plugins::templates::counter);
+use base qw(apps::vmware::vsphere8::custom::modeesx);
 
 my @counters = (
     #'mem.reservedCapacityPct.HOST',    # Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
@@ -37,36 +37,17 @@ sub custom_memory_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Memory used by VMs: %s %s used - Usable: %s %s',
+        'Memory used: %s %s used - Usable: %s %s',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_bytes}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{max_bytes})
     );
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-    bless $self, $class;
-
-    $options{options}->add_options(
-        arguments => {}
-    );
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-
-    $self->SUPER::check_options(%options);
-
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0 }
+        { name => 'memory', type => 0, message_separator => ' - '}
     ];
 
     $self->{maps_counters}->{memory} = [
@@ -76,7 +57,7 @@ sub set_counters {
             nlabel => 'vms.memory.usage.percentage',
             set    => {
                 key_values      => [ { name => 'used_prct' } ],
-                output_template => 'Memory used %2.f%%',
+                output_template => '%2.f%% of usable memory is used by VMs',
                 output_use      => 'used_prct',
                 threshold_use   => 'used_prct',
                 perfdatas       => [
@@ -115,10 +96,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %structure = map {
-        $_ => $options{custom}->get_stats(
-            cid => $_,
-            rsrc_name => $self->{option_results}->{esx_name},
-            rsrc_id => $self->{option_results}->{esx_id})
+        $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
 
     if (defined($structure{'mem.capacity.usable.HOST'}) && defined($structure{'mem.consumed.vms.HOST'})) {
@@ -138,7 +116,7 @@ sub manage_selection {
 
 =head1 MODE
 
-Monitor the status of VMware ESX hosts through vSphere 8 REST API.
+Monitor the memory of VMware ESX hosts consumed by the virtual machines through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
     mem.reservedCapacityPct.HOST     Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
@@ -151,10 +129,6 @@ Monitor the status of VMware ESX hosts through vSphere 8 REST API.
 
 
 =over 8
-
-=item B<--esx-id>
-
-Define which ESX id to monitor based on their name (example: C<host-16>).
 
 =item B<--warning-vms-usage-percentage>
 

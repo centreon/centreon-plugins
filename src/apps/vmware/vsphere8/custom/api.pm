@@ -50,8 +50,6 @@ sub new {
                 'proto:s'           => { name => 'proto',               default => 'https' },
                 'username:s'        => { name => 'username' },
                 'password:s'        => { name => 'password' },
-                'esx-id:s'          => { name => 'esx_id' },
-                'esx-name:s'        => { name => 'esx_name' },
                 'vstats-interval:s' => { name => 'vstats_interval',     default => 60 },
                 'vstats-duration:s' => { name => 'vstats_duration',     default => 2764800 }, # 2764800 seconds in 32 days
                 'timeout:s'         => { name => 'timeout',             default => 10 }
@@ -99,14 +97,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
         $self->{output}->option_exit();
     }
-    if (centreon::plugins::misc::is_empty($self->{option_results}->{esx_id})
-        && centreon::plugins::misc::is_empty($self->{option_results}->{esx_name})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify either --esx-id or --esx-name option.');
-        $self->{output}->option_exit();
-    }
-
-    $self->{rsrc_id}   = $self->{option_results}->{esx_id};
-    $self->{rsrc_name} = $self->{option_results}->{esx_name};
 
     $self->{cache}->check_options(option_results => $self->{option_results});
 
@@ -389,35 +379,10 @@ sub check_acq_spec {
     return 1;
 }
 
-sub get_rsrc_id_from_name {
-    my ($self, %options) = @_;
-
-    if ( centreon::plugins::misc::is_empty($self->{rsrc_name}) ) {
-        $self->{output}->add_option_msg(short_msg => "get_rsrc_id_from_name method called without rsrc_name, won't query");
-        $self->{output}->option_exit();
-    }
-
-    my $response = $self->request_api(
-        'endpoint' => '/vcenter/host',
-        'method' => 'GET'
-    );
-
-    for my $rsrc (@$response) {
-        next if ($rsrc->{name} ne $self->{rsrc_name});
-        $self->{rsrc_id} = $rsrc->{host};
-        $self->{output}->add_option_msg(long_msg => "get_rsrc_id_from_name method called to get " . $self->{rsrc_name}
-            . "'s id: " . $self->{rsrc_id} . ". Prefer using --esx-id to spare a query to the API.");
-        return $rsrc->{host};
-    }
-
-    return undef;
-
-}
-
 sub get_stats {
     my ($self, %options) = @_;
 
-    if ( centreon::plugins::misc::is_empty($self->{rsrc_id}) && ! $self->get_rsrc_id_from_name(%options)) {
+    if ( centreon::plugins::misc::is_empty($options{rsrc_id})) {
         # the previous call 'option_exit's in case ofso if we are still here we sould have the rsrc_id
         $self->{output}->add_option_msg(short_msg => "get_stats method called without rsrc_id, won't query");
         $self->{output}->option_exit();
@@ -428,14 +393,14 @@ sub get_stats {
         $self->{output}->option_exit();
     }
 
-    if ( !$self->check_acq_spec(%options, rsrc_id => $self->{rsrc_id}) ) {
+    if ( !$self->check_acq_spec(%options, rsrc_id => $options{rsrc_id}) ) {
         $self->{output}->add_option_msg(short_msg => "get_stats method failed to check_acq_spec()");
         $self->{output}->option_exit();
     }
 
     # compose the endpoint
     my $endpoint = '/stats/data/dp?'
-        . 'rsrcs=type.' . $self->compose_type_from_rsrc_id($self->{rsrc_id}) . '.moid=' . $self->{rsrc_id}
+        . 'rsrcs=type.' . $self->compose_type_from_rsrc_id($options{rsrc_id}) . '.moid=' . $options{rsrc_id}
         . '&cid=' . $options{cid}
         . '&start=' . (time() - 120); # get the last two minutes to be sure to get at least one value
 
@@ -445,7 +410,7 @@ sub get_stats {
     );
 
     # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
-    # FIXME: host-id must be checked at one moment
+    # FIXME: the existence of the resource id must be checked at one moment
     # return only the last value (if there are several)
     if ( scalar(@{ $result->{data_points} }) == 0 ) {
         $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
