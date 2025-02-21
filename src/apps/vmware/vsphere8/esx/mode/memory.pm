@@ -21,7 +21,7 @@
 package apps::vmware::vsphere8::esx::mode::memory;
 use strict;
 use warnings;
-use base qw(apps::vmware::vsphere8::custom::modeesx);
+use base qw(apps::vmware::vsphere8::esx::mode);
 
 my @counters = (
     #'mem.reservedCapacityPct.HOST',    # Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.

@@ -21,7 +21,7 @@
 package apps::vmware::vsphere8::esx::mode::cpu;
 use strict;
 use warnings;
-use base qw(apps::vmware::vsphere8::custom::modeesx);
+use base qw(apps::vmware::vsphere8::esx::mode);
 
 sub new {
     my ($class, %options) = @_;
