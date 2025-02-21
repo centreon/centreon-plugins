@@ -26,12 +26,10 @@ use base qw(apps::vmware::vsphere8::custom::modeesx);
 sub new {
     my ($class, %options) = @_;
 
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-    bless $self, $class;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
 
     $options{options}->add_options(
         arguments => {
-            'esx-id:s'       => { name => 'esx_id' },
             'add-contention' => { name => 'add_contention' },
             'add-demand'     => { name => 'add_demand' },
             'add-corecount'  => { name => 'add_corecount' }
@@ -66,7 +64,7 @@ sub skip_contention {
 
     return 0 if (defined($self->{cpu_contention})
         && ref($self->{cpu_contention}) eq 'HASH'
-        && scalar(keys %{$self->{cpu_contention}}) > 1);
+        && scalar(keys %{$self->{cpu_contention}}) > 0);
 
     return 1;
 }
@@ -152,39 +150,16 @@ sub set_counters {
             nlabel => 'cpu.capacity.contention.percentage',
             set    => {
                 output_template => 'CPU average contention is %.2f %%',
-                key_values      => [ { name => 'prct_contention' } ],
-                output_use      => 'prct_contention',
-                threshold_use   => 'prct_contention',
+                key_values      => [ { name => 'cpu.capacity.contention.HOST' } ],
+                output_use      => 'cpu.capacity.contention.HOST',
+                threshold_use   => 'cpu.capacity.contention.HOST',
                 perfdatas       => [
                     {
-                        value    => 'prct_contention',
+                        value    => 'cpu.capacity.contention.HOST',
                         template => '%.2f',
                         min      => 0,
                         max      => 100,
                         unit     => '%'
-                    }
-                ]
-            }
-        },
-        {
-            label  => 'contention-frequency',
-            type   => 1,
-            nlabel => 'cpu.capacity.contention.hertz',
-            set    => {
-                key_values      => [
-                    { name => 'cpu.capacity.contention.HOST' },
-                    { name => 'cpu_contention_hertz' },
-                    { name => 'cpu_provisioned_hertz' }
-                ],
-                output_use      => 'cpu.capacity.contention.HOST',
-                threshold_use   => 'cpu.capacity.contention.HOST',
-                output_template => 'contention frequency is %s kHz',
-                perfdatas       => [
-                    {
-                        value    => 'cpu_contention_hertz',
-                        template => '%s',
-                        max      => 'cpu_provisioned_hertz',
-                        unit     => 'Hz'
                     }
                 ]
             }
@@ -253,24 +228,24 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # Set the list of basic counters IDs
-    my @counters_list = (
+    my @counters = (
         'cpu.capacity.provisioned.HOST',
         'cpu.capacity.usage.HOST'
     );
 
-
-
     # Add some counters depending on the options
-    push @counters_list, 'cpu.capacity.contention.HOST'     if ($self->{option_results}->{add_contention});
-    push @counters_list, 'cpu.capacity.demand.HOST'         if ($self->{option_results}->{add_demand});
-    push @counters_list, 'cpu.corecount.provisioned.HOST',
+    push @counters, 'cpu.capacity.contention.HOST'     if ($self->{option_results}->{add_contention});
+    push @counters, 'cpu.capacity.demand.HOST'         if ($self->{option_results}->{add_demand});
+    push @counters, 'cpu.corecount.provisioned.HOST',
                          'cpu.corecount.usage.HOST'         if ($self->{option_results}->{add_corecount});
 
     # The corecount contention is available but does not seem useful atm. Keeping it here for later
     #push @counters_list, 'cpu.corecount.contention.HOST'    if ($self->{option_results}->{add_contention} && $self->{option_results}->{add_corecount});
 
     # Get all the needed stats
-    my %results = map {$_ => $options{custom}->get_stats(cid => $_, rsrc_id => $self->{option_results}->{esx_id})} @counters_list;
+    my %results = map {
+        $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
+    } @counters;
 
     # Fill the counter structure depending on their availability
     # Fill the basic stats
@@ -284,12 +259,9 @@ sub manage_selection {
     }
 
     # Fill the contention stats
-    if (defined($results{'cpu.capacity.contention.HOST'}) && defined($results{'cpu.capacity.provisioned.HOST'})) {
+    if ( defined($results{'cpu.capacity.contention.HOST'}) ) {
         $self->{cpu_contention} = {
-            'prct_contention'              => 100 * $results{'cpu.capacity.contention.HOST'} / $results{'cpu.capacity.provisioned.HOST'},
-            'cpu.capacity.contention.HOST' => $results{'cpu.capacity.contention.HOST'},
-            'cpu_contention_hertz'         => $results{'cpu.capacity.contention.HOST'} * 1000,
-            'cpu_provisioned_hertz'        => $results{'cpu.capacity.provisioned.HOST'} * 1000
+            'cpu.capacity.contention.HOST' => $results{'cpu.capacity.contention.HOST'}
         };
     }
 
@@ -326,6 +298,7 @@ sub manage_selection {
 
 1;
 
+__END__
 
 =head1 MODE
 
@@ -345,10 +318,6 @@ Monitor the status of VMware ESX hosts through vSphere 8 REST API.
     - cpu.capacity.usage.percentage based on 100 * cpu.capacity.usage.HOST / cpu.capacity.provisioned.HOST
 
 =over 8
-
-=item B<--esx-id>
-
-Define which ESX id to monitor based on their name (example: C<host-16>).
 
 =item B<--add-demand>
 

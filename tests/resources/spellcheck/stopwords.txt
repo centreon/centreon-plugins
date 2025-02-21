@@ -269,6 +269,7 @@ Veeam
 VeloCloud
 VM
 VMware
+VMWARE
 VPN
 vSAN
 Vserver
