@@ -20,7 +20,7 @@
 
 package apps::vmware::vsphere8::esx::mode::hoststatus;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(apps::vmware::vsphere8::esx::mode);
 
 use strict;
 use warnings;
@@ -44,37 +44,13 @@ sub prefix_host_output {
     return "Host '" . $options{instance_value}->{display} . "', id: '" . $options{instance_value}->{id} . "': ";
 }
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $options{options}->add_options(
-        arguments => {
-            'esx-name:s'                    => { name => 'esx_name',                    default => '.*' },
-            'warning-power-status:s'        => { name => 'warning-power-status' },
-            'critical-power-status:s'       => { name => 'critical-power-status',       default => '%{power_state} !~ /^powered_on$/i' },
-            'warning-connection-status:s'   => { name => 'warning-connection-status' },
-            'critical-connection-status:s'  => { name => 'critical-connection-status',  default => '%{connection_state} !~ /^connected$/i' },
-    });
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-
-    $self->SUPER::check_options(%options);
-    $self->change_macros(macros => ['warning-power-status', 'critical-power-status', 'warning-connection-status', 'critical-connection-status']);
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         {
-            name => 'host',
-            type => 1,
+            name             => 'host',
+            type             => 1,
             cb_prefix_output => 'prefix_host_output',
             message_multiple => 'All ESX Hosts are ok'
         }
@@ -84,20 +60,22 @@ sub set_counters {
         {
             label => 'power-status',
             type => 2,
+            critical_default => '%{power_state} !~ /^powered_on$/i',
             set => {
                 key_values => [ { name => 'display' }, { name => 'power_state' }, { name => 'id' } ],
-                closure_custom_output => $self->can('custom_power_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_power_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         {
             label => 'connection-status',
             type => 2,
+            critical_default => '%{connection_state} !~ /^connected$/i',
             set => {
                 key_values => [{ name => 'display' }, { name => 'connection_state' }],
-                closure_custom_output => $self->can('custom_connection_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_connection_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -107,14 +85,16 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->request_api(
+    my $response = $self->request_api(
+        %options,
         'endpoint' => '/vcenter/host',
         'method' => 'GET'
     );
 
     $self->{host} = {};
     foreach my $host (@{$response}) {
-        next if (!defined($host->{name}) || $host->{name} !~ $self->{option_results}->{esx_name});
+        next if (!defined($host->{name}) || defined($self->{option_results}->{esx_name}) && $host->{name} !~ $self->{option_results}->{esx_name});
+        next if (!defined($host->{host}) || defined($self->{option_results}->{esx_id}) && $host->{host} ne $self->{option_results}->{esx_id});
 
         $self->{host}->{$host->{host}} = {
             display          => $host->{name},
