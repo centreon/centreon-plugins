@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,9 +49,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(
-        arguments => {
-            'esx-id:s' => { name => 'esx_id' }
-        }
+        arguments => {}
     );
 
     return $self;
@@ -61,10 +59,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::check_options(%options);
-    if (centreon::plugins::misc::is_empty($self->{option_results}->{esx_id})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --esx-id option.');
-        $self->{output}->option_exit();
-    }
+
 }
 
 sub set_counters {
@@ -119,7 +114,12 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {$_ => $options{custom}->get_stats(cid => $_, rsrc_id => $self->{option_results}->{esx_id})} @counters;
+    my %structure = map {
+        $_ => $options{custom}->get_stats(
+            cid => $_,
+            rsrc_name => $self->{option_results}->{esx_name},
+            rsrc_id => $self->{option_results}->{esx_id})
+    } @counters;
 
     if (defined($structure{'mem.capacity.usable.HOST'}) && defined($structure{'mem.consumed.vms.HOST'})) {
         $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usable.HOST: ' . $structure{'mem.capacity.usable.HOST'});
