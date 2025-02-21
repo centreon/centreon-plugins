@@ -37,14 +37,14 @@ Host-Status ${tc}
     
     
     Examples:    tc    http_backend     esx_name         extraoptions    expected_result   --
-        ...      1     curl             esx1.acme.com    ${EMPTY}        OK: Host 'esx1.acme.com': power state is POWERED_ON, connection state is CONNECTED
-        ...      2     lwp              esx1.acme.com    ${EMPTY}        OK: Host 'esx1.acme.com': power state is POWERED_ON, connection state is CONNECTED
-        ...      3     curl             esx2.acme.com    ${EMPTY}        CRITICAL: Host 'esx2.acme.com': power state is POWERED_OFF
-        ...      4     lwp              esx2.acme.com    ${EMPTY}        CRITICAL: Host 'esx2.acme.com': power state is POWERED_OFF
-        ...      5     curl             esx3.acme.com    ${EMPTY}        CRITICAL: Host 'esx3.acme.com': connection state is DISCONNECTED
-        ...      6     lwp              esx3.acme.com    ${EMPTY}        CRITICAL: Host 'esx3.acme.com': connection state is DISCONNECTED
-        ...      7     curl             esx              ${EMPTY}        CRITICAL: Host 'esx2.acme.com': power state is POWERED_OFF - Host 'esx3.acme.com': connection state is DISCONNECTED
-        ...      8     lwp              esx              ${EMPTY}        CRITICAL: Host 'esx2.acme.com': power state is POWERED_OFF - Host 'esx3.acme.com': connection state is DISCONNECTED
+        ...      1     curl             esx1.acme.com    ${EMPTY}        OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
+        ...      2     lwp              esx1.acme.com    ${EMPTY}        OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
+        ...      3     curl             esx2.acme.com    ${EMPTY}        CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF
+        ...      4     lwp              esx2.acme.com    ${EMPTY}        CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF
+        ...      5     curl             esx3.acme.com    ${EMPTY}        CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
+        ...      6     lwp              esx3.acme.com    ${EMPTY}        CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
+        ...      7     curl             esx              ${EMPTY}        CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF - Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
+        ...      8     lwp              esx              ${EMPTY}        CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF - Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
         ...      9     curl             nothing          ${EMPTY}        UNKNOWN: No ESX Host found.
         ...     10     lwp              nothing          ${EMPTY}        UNKNOWN: No ESX Host found.
         ...     11     curl             esx1.acme.com    --port=8888     UNKNOWN: curl perform error : Couldn't connect to server

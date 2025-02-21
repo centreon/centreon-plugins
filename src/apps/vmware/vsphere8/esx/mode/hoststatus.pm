@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,7 +41,7 @@ sub custom_connection_status_output {
 sub prefix_host_output {
     my ($self, %options) = @_;
 
-    return "Host '" . $options{instance_value}->{display} . "': ";
+    return "Host '" . $options{instance_value}->{display} . "', id: '" . $options{instance_value}->{id} . "': ";
 }
 
 sub new {
@@ -85,7 +85,7 @@ sub set_counters {
             label => 'power-status',
             type => 2,
             set => {
-                key_values => [ { name => 'display' }, { name => 'power_state' } ],
+                key_values => [ { name => 'display' }, { name => 'power_state' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_power_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng

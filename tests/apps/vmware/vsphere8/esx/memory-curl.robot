@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --esx-id=host-22
 
 *** Test Cases ***
-Cpu with curl ${tc}
+Memory with curl ${tc}
     [Tags]    apps    api    vmware   vsphere8    esx
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
