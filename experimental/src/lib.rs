@@ -2,7 +2,6 @@ extern crate log;
 extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
-extern crate regex;
 
 use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
@@ -12,7 +11,6 @@ use rasn_snmp::v2::VarBindValue;
 use rasn_snmp::v2::{BulkPdu, Pdu};
 use rasn_snmp::v2::{GetBulkRequest, GetNextRequest, GetRequest};
 use rasn_snmp::v2c::Message;
-use regex::Regex;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::net::UdpSocket;
@@ -274,10 +272,9 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
 /// # Example
 /// ```
 /// use snmp_rust::r_snmp_bulk_walk;
-/// let result = r_snmp_bulk_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+/// let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
 /// ```
-pub fn r_snmp_bulk_walk(target: &str, oid: &str) -> SnmpResult {
-    let community = "public";
+pub fn r_snmp_bulk_walk(target: &str, version: &str, community: &str, oid: &str) -> SnmpResult {
     let oid_tab = oid
         .split('.')
         .map(|x| x.parse::<u32>().unwrap())
@@ -301,7 +298,7 @@ pub fn r_snmp_bulk_walk(target: &str, oid: &str) -> SnmpResult {
 
     let message: Message<GetBulkRequest> = Message {
         version: 1.into(),
-        community: community.into(),
+        community: community.to_string().into(),
         data: get_request.into(),
     };
 
@@ -417,7 +414,7 @@ mod tests {
 
     #[test]
     fn test_snmp_bulk_walk() {
-        let result = r_snmp_bulk_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+        let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
         let re = Regex::new(r"[0-9]+").unwrap();
         assert!(result.variables.len() > 0);
         for v in result.variables.iter() {

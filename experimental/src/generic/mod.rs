@@ -155,7 +155,13 @@ fn build_metrics<'a>(
 }
 
 impl Command {
-    pub fn execute(&self, target: &str, ext: &CommandExt) -> CmdResult {
+    pub fn execute(
+        &self,
+        target: &str,
+        version: &str,
+        community: &str,
+        ext: &CommandExt,
+    ) -> CmdResult {
         let mut agregation = ("", 0, Operation::None);
         let mut res: Option<(&str, SnmpResult)> = None;
         for (idx, entry) in self.leaf.entries.iter().enumerate() {
@@ -165,7 +171,10 @@ impl Command {
                 }
                 Entry::Query(query) => match query.query {
                     QueryType::Walk => {
-                        res = Some((&query.name, r_snmp_bulk_walk(target, &query.oid)));
+                        res = Some((
+                            &query.name,
+                            r_snmp_bulk_walk(target, version, community, &query.oid),
+                        ));
                     }
                 },
             }
