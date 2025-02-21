@@ -567,7 +567,7 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 
     my $spec = $self->get_acq_spec(%options);
 
-Retrieves the acquisition specification (acq_spec) for the given counter ID (cid) and resource ID (rsrc_id).
+Retrieves the acquisition specification (acq_spec) for the given counter ID (C<cid>) and resource ID (rsrc_id).
 
 =over 4
 
@@ -713,12 +713,12 @@ Define the password for authentication.
 
 =item B<--vstats-interval>
 
-Define the interval (in seconds) at which the vstats must be recorded (default: 300).
+Define the interval (in seconds) at which the C<vstats> must be recorded (default: 300).
 Used to create entries at the C</api/stats/acq-specs> endpoint.
 
 =item B<--vstats-duration>
 
-Define the time (in seconds) after which the vstats will stop being recorded (default: 2764800, meaning 32 days).
+Define the time (in seconds) after which the C<vstats> will stop being recorded (default: 2764800, meaning 32 days).
 Used to create entries at the C</api/stats/acq-specs> endpoint.
 
 =item B<--timeout>
