@@ -69,13 +69,13 @@ sub custom_generic_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label    => $options{option_results}->{perfdata_name},
-        unit     => $options{option_results}->{perfdata_unit},
+        label    => $self->{instance_mode}{option_results}->{perfdata_name},
+        unit     => $self->{instance_mode}{option_results}->{perfdata_unit},
         value    => $self->{result_values}->{numericvalue},
         warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min      => $options{option_results}->{perfdata_min},
-        max      => $options{option_results}->{perfdata_max}
+        min      => $self->{instance_mode}{option_results}->{perfdata_min},
+        max      => $self->{instance_mode}{option_results}->{perfdata_max}
     );
 }
 
