@@ -74,7 +74,7 @@ runs:
           error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
           echo "Package installation done."
           script_name=$(echo $package | tr '[:upper:]' '[:lower:]' | sed 's/\.\/perl-//' | sed 's/-[0-9\.-]*.el[0-9]..*.rpm//')
-          if [[ -f tests/cpan-libraries/$script_name.pl ]]; then
+          if [[ -f ./tests/cpan-libraries/$script_name.pl ]]; then
               echo "Testing package..."
               error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
               echo "Testing done."
@@ -123,7 +123,7 @@ runs:
           error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
           echo "Package installation done."
           script_name=$(echo $package | sed 's/.\/lib//' | sed 's/-perl_[0-9\.-]*-deb.*\.deb//')
-          if [[ -f tests/cpan-libraries/$script_name.pl ]]; then
+          if [[ -f ./tests/cpan-libraries/$script_name.pl ]]; then
               echo "Testing package..."
               error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
               echo "Testing done."

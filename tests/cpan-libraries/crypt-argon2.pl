@@ -38,4 +38,4 @@ argon2_verify($argon2d_encoded, $password) ? print "Argon2d password is correct.
 # Verify password with Argon2i
 argon2_verify($argon2i_encoded, $password) ? print "Argon2i password is correct.\n" : print "Argon2i password is incorrect.\n";
 # Verify password with Argon2id
-argon2_verify($salt, $password) ? print "Argon2id password is correct.\n" : print "Argon2id password is incorrect.\n";
+argon2_verify($argon2id_encoded, $password) ? print "Argon2id password is correct.\n" : print "Argon2id password is incorrect.\n";
