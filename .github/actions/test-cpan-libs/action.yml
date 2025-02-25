@@ -81,7 +81,6 @@ runs:
           else
               echo "No test script found for the package $package"
           fi
-          error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during testing of the package $package" >> $error_log; true; }
           echo "Package uninstallation..."
           error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           echo "Package uninstallation done."
