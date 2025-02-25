@@ -28,6 +28,7 @@ jobs:
         name:
           [
             "Crypt::Argon2",
+            "Exporter::Tiny",
             "JSON::Path",
             "Libssh::Session",
             "LV",
@@ -272,15 +273,12 @@ jobs:
             build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
             use_dh_make_perl: "false"
-            no-auto-depends: "true"
           - name: Libssh::Session
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
-            no-auto-depends: "true"
           - name: Net::Curl
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
-            no-auto-depends: "true"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
