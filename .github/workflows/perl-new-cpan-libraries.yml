@@ -90,7 +90,7 @@ jobs:
           package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 | tr '[upper]' '[lower]' || true)
           do_not_build="false"
           if [[ ! $package_info =~ "no matches found" ]]; then
-            package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+')
+            package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+")
             if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
               echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
