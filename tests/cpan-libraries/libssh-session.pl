@@ -1,14 +1,21 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Libssh::Session;
+use Libssh::Session qw(:all);
 use POSIX qw(WIFEXITED WEXITSTATUS);
 
-# Installation du serveur SSH
-system("apt-get update") == 0
-    or die "Échec de apt-get update: $?";
-system("apt-get install -y openssh-server") == 0
-    or die "Échec de l'installation: $?";
+# Install SSH server
+if (-f "/etc/debian_version") {
+    system("apt-get update") == 0
+        or die "Échec de apt-get update: $?";
+    system("apt-get install -y openssh-server") == 0
+        or die "Échec de l'installation: $?";
+} elsif (-f "/etc/redhat-release") {
+    system("dnf install -y openssh-server") == 0
+        or die "Échec de l'installation: $?";
+} else {
+    die "Système d'exploitation non supporté";
+}
 
 mkdir("/var/run/sshd") unless -d "/var/run/sshd";
 
@@ -25,7 +32,7 @@ if (getpwnam("testuser")) {
 system("echo 'testuser:testpassword' | chpasswd") == 0
     or die "Échec de configuration du mot de passe: $?";
 
-# Configuration SSH
+# SSH configuration
 open(my $fh, '>', '/etc/ssh/sshd_config')
     or die "Impossible d'ouvrir sshd_config: $!";
 print $fh "Port 2222\n";
@@ -34,7 +41,7 @@ print $fh "AllowUsers testuser\n";
 print $fh "PasswordAuthentication yes\n";
 close($fh);
 
-# Démarrage du serveur SSH
+# Start SSH server
 my $pid = fork();
 die "Fork failed: $!" unless defined $pid;
 
@@ -43,10 +50,10 @@ if ($pid == 0) {
         or die "Impossible de démarrer sshd: $!";
 }
 
-# Attente et vérification du port
+# Wait and check the port
 sleep(5);
 
-# Vérification du port avec Perl
+# Check the port with Perl
 use IO::Socket::INET;
 my $sock = IO::Socket::INET->new(
     PeerAddr => '127.0.0.1',
@@ -57,7 +64,7 @@ my $sock = IO::Socket::INET->new(
 die "Le port SSH 2222 n'est pas en écoute" unless $sock;
 $sock->close();
 
-# Test de la connexion avec plus de debug
+# Connection test with Libssh::Session
 eval {
     my $session = Libssh::Session->new();
     $session->options(
@@ -70,10 +77,10 @@ eval {
     );
 
     print "Tentative de connexion...\n";
-    $session->connect() == 0 or die "Échec de connexion: " . $session->get_error();
+    $session->connect() == SSH_OK or die "Échec de connexion: " . $session->get_error();
 
     print "Tentative d'authentification...\n";
-    $session->auth_password(password => "testpassword") == 0 or die "Échec d'authentification: " . $session->get_error();
+    $session->auth_password(password => "testpassword") == SSH_AUTH_SUCCESS or die "Échec d'authentification: " . $session->get_error();
 
     print "Test de connexion SSH réussi\n";
     $session->disconnect();
@@ -87,10 +94,16 @@ if ($@) {
 kill 'TERM', $pid;
 waitpid($pid, 0);
 
-system("apt-get purge -y openssh-server") == 0
-    or die "Échec de la désinstallation: $?";
-system("apt-get autoremove -y") == 0
-    or die "Échec de autoremove: $?";
+# On différencie les serveurs el et debian
+if (-f "/etc/debian_version") {
+    system("apt-get autoremove -y --purge openssh-server") == 0
+        or die "Échec de la désinstallation: $?";
+} elsif (-f "/etc/redhat-release") {
+    system("dnf autoremove --setopt=keepcache=True -y openssh-server") == 0
+        or die "Échec de la désinstallation: $?";
+} else {
+    die "Système d'exploitation non supporté";
+}
 
 system("userdel -r testuser") == 0
     or die "Échec de la suppression de l'utilisateur: $?";

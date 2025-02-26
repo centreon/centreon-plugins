@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Net::Curl::Easy;
+use Net::Curl::Easy qw(:constants);
 
 # URL à récupérer
 my $url = 'https://www.centreon.com';
@@ -20,7 +20,10 @@ my $response_body;
 $curl->setopt(CURLOPT_WRITEDATA, \$response_body);
 
 # Exécution de la requête
-$curl->perform() or die "Unable to fetch URL $url\n";
+eval {
+    $curl->perform();
+};
+die "Unable to fetch URL $url: $@" if $@;
 
 # Affichage du contenu de la page
 print "Response body:\n$response_body\n";
