@@ -114,6 +114,7 @@ IpAddr
 ip-label
 ipv4
 ipv6
+ipsec
 ISAM
 Iwsva
 jmeter
@@ -265,7 +266,6 @@ v1
 v2
 vdom
 Vdomain
-vdomain
 VDSL2
 Veeam
 VeloCloud
