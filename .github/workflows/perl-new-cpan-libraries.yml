@@ -289,12 +289,12 @@ jobs:
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
             no-auto-depends: "true"
-            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
           - name: Net::Curl
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
             no-auto-depends: "true"
-            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest

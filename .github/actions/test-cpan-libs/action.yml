@@ -32,7 +32,7 @@ runs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
-        apt-get install -y zstd perl wget gpg apt-utils procps
+        apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
         # Avoid apt to clean packages cache directory
         rm -f /etc/apt/apt.conf.d/docker-clean
