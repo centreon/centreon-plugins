@@ -265,7 +265,7 @@ userpass
 v1
 v2
 vdom
-Vdomain
+vdomain
 VDSL2
 Veeam
 VeloCloud
