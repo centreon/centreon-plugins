@@ -20,8 +20,7 @@ vpn ${tc}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/fortinet/fortigate/snmp/fortigate-vpn
-    ...    --snmp-timeout=10
-    ...    --snmp-retries=3
+    ...    --snmp-timeout=1
     ...    ${extra_options}
  
     Ctn Verify Command Output    ${command}    ${expected_result}
