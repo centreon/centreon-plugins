@@ -168,7 +168,7 @@ jobs:
           cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
             CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
@@ -473,7 +473,7 @@ jobs:
           cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
             CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
