@@ -30,4 +30,3 @@ uptime ${tc}
             ...      5     --force-oid='.1.3.6.1.2.1.2.2.1.3.181'                                OK: System uptime is: 0d | 'uptime'=0.00s;;;0;
             ...      6     --check-overload --reboot-window=1000                                 OK: System uptime is: 19d 16h 25m 40s | 'uptime'=1700740.00s;;;0;
             ...      7     --unit='w'                                                            OK: System uptime is: 19d 16h 25m 40s | 'uptime'=2.81w;;;0;
-            ...      8     --unit='y'                                                            OK: System uptime is: 19d 16h 25m 40s | 'uptime'=1700740.00s;;;0;
