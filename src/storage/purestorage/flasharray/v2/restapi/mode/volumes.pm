@@ -248,7 +248,7 @@ Filter volumes by name (can be a regexp).
 =item B<--perf-resolution>
 
 Time resolution for volumes performance.
-Can be: 1s, 30s, 5m, 30m, 2h, 8h, 24h (default: 5m).
+Can be: C<1s>, C<30s>, C<5m>, C<30m>, C<2h>, C<8h>, C<24h> (default: C<5m>).
 
 =item B<--warning-*> B<--critical-*>
 
