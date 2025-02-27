@@ -363,7 +363,7 @@ jobs:
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+            runner_name: centreon-collect-arm64
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
@@ -587,7 +587,7 @@ jobs:
             image: debian:bullseye
             distrib: bullseye
             arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+            runner_name: centreon-collect-arm64
 
     runs-on: ${{ matrix.runner_name }}
     container:

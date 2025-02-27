@@ -112,7 +112,7 @@ jobs:
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bullseye-arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+            runner_name: centreon-collect-arm64
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
@@ -333,7 +333,7 @@ jobs:
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
-            runner_name: ["self-hosted", "collect-arm64"]
+            runner_name: centreon-collect-arm64
 
     runs-on: ${{ matrix.runner_name }}
     container:
