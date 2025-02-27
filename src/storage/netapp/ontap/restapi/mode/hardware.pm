@@ -76,7 +76,7 @@ sub get_shelves {
 
     return if (defined($self->{shelves}));
 
-    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=name,state,serial_number,bay,frus');
+    $self->{shelves} = $self->{custom}->request_api(endpoint => '/api/storage/shelves?fields=name,state,serial_number,bays,frus');
 }
 
 sub save_custom {
