@@ -60,7 +60,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power supplies, chassis, io-cards, blades, fabric extenders).
+Check Hardware (Fans, Power supplies, chassis, I/O cards, blades, fabric extenders).
 
 =over 8
 
