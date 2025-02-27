@@ -155,7 +155,7 @@ Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h
 
 =item B<--timezone>
 
-Set equipment timezone if different from Europe/London.
+Set equipment timezone if different from Europe/London. Valid time zones can be found in C</usr/share/zoneinfo>.
 Format example : Europe/Paris and America/Los_Angeles
 
 =item B<--warning-*> B<--critical-*>
