@@ -72,5 +72,5 @@ fn main() {
     };
     let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
     println!("{}", result.output);
-    std::process::exit(result.status);
+    std::process::exit(result.status as i32);
 }
