@@ -406,7 +406,7 @@ jobs:
     if: |
       needs.get-environment.outputs.stability == 'stable' &&
       github.event_name == 'push'
-    runs-on: [self-hosted, common]
+    runs-on: centreon-common
 
     steps:
       - name: Checkout sources
