@@ -18,7 +18,7 @@ runs:
     - if: ${{ inputs.package_extension == 'rpm' }}
       name: Install zstd, perl and Centreon repositories
       run: |
-        dnf install -y zstd perl epel-release 'dnf-command(config-manager)' cpanminus
+        dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
         dnf config-manager --set-enabled powertools || true # alma 8
         dnf config-manager --set-enabled crb || true # alma 9
         # Import Centreon GPG key

@@ -53,7 +53,7 @@ jobs:
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
             "Email::Send::SMTP::Gmail",
-            "Exporter::Tiny",
+            "Exporter::Tiny", # Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path
             "FFI::CheckLib",
             "FFI::Platypus",
             "File::SearchPath",
@@ -167,7 +167,7 @@ jobs:
         run: |
           cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
             if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
@@ -190,7 +190,7 @@ jobs:
           do_not_build="false"
           if [[ ! $package_info =~ "no matches found" ]]; then
             package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+")
-            if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
+            if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" || "v$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
               echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
             else
@@ -472,7 +472,7 @@ jobs:
           apt-get update
           cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
             if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
@@ -498,7 +498,7 @@ jobs:
           do_not_build="false"
           if [[ -n $package_info ]]; then
             candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
-            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
+            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* || "v$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
               echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
             else
