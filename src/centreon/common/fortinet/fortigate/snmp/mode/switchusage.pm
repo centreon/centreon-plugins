@@ -217,14 +217,12 @@ Check switch usage through Fortigate Switch Controller.
 =item B<--warning-*>
 
 Warning threshold.
-Can be: 'cpu' (%), 'memory' (%),
-'clients'.
+Can be: 'cpu' (%), 'memory' (%).
 
 =item B<--critical-*>
 
 Critical threshold.
-Can be: 'cpu' (%), 'memory' (%),
-'clients'.
+Can be: 'cpu' (%), 'memory' (%).
 
 =item B<--filter-name>
 
