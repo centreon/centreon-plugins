@@ -58,7 +58,7 @@ jobs:
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
-            runner: ["self-hosted", "collect-arm64"]
+            runner: centreon-collect-arm64
             arch: arm64
 
     runs-on: ${{ matrix.runner }}

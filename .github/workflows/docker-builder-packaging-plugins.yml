@@ -45,7 +45,7 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
-          - runner: ["self-hosted", "collect-arm64"]
+          - runner: centreon-collect-arm64
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye-arm64
           - runner: ubuntu-22.04
