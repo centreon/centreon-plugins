@@ -6,6 +6,8 @@ Library             Process
 
 *** Variables ***
 ${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
+${GENERIC_SNMP}         experimental/target/release/generic-snmp
+
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
 ${HOSTNAME}             127.0.0.1
