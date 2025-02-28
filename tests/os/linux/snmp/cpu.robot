@@ -9,6 +9,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${GS_CMD}   ${GENERIC_SNMP} -j experimental/examples/cpu.json
 
 
 *** Test Cases ***
@@ -23,7 +24,7 @@ cpu ${tc}
     ...    --snmp-community=os/linux/snmp/network-interfaces
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                   expected_result    --
@@ -37,3 +38,18 @@ cpu ${tc}
             ...      8     --critical-average='0'          CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;;0:0;0;100 'cpu'=2.00%;;;0;100
             ...      9     --warning-core='0'              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
             ...      10    --critical-core='0'             CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
+
+gs_cpu ${tc}
+    [Tags]    os    linux    generic-snmp
+    ${command}    Catenate
+    ...    ${GS_CMD}
+    ...    --hostname=${HOSTNAME}
+    ...    --port=2024
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --community=os/linux/snmp/network-interfaces
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:         tc    extra_options                 expected_result    --
+            ...       1     ${EMPTY}                      OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
