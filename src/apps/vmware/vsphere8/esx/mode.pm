@@ -123,7 +123,7 @@ When possible, it is recommended to use C<--esx-id> instead.
 
 =head1 NAME
 
-apps::vmware::vsphere8::custom::modeesx - Template for modes monitoring VMware physical hosts
+apps::vmware::vsphere8::esx::mode - Template for modes monitoring VMware physical hosts
 
 =head1 SYNOPSIS
 
@@ -138,7 +138,7 @@ apps::vmware::vsphere8::custom::modeesx - Template for modes monitoring VMware p
     $api->set_options(option_results => $option_results);
     $api->check_options();
     my $response = $api->request_api(endpoint => '/vcenter/host');
-    my $host_cpu_capacity = $api->get_stats(
+    my $host_cpu_capacity = $self->get_esx_stats(
                                 cid     => 'cpu.capacity.provisioned.HOST',
                                 rsrc_id => 'host-18');
 
