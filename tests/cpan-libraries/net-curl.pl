@@ -3,29 +3,26 @@
 use strict;
 use warnings;
 use Net::Curl::Easy qw(:constants);
+# All comments and messages must be in english
 
-# URL à récupérer
+# URL to fetch
 my $url = 'https://www.centreon.com';
 
-# Création d'un nouvel objet Curl
+# Create a new Curl object
 my $curl = Net::Curl::Easy->new();
 
-# Configuration de l'URL
+# Prepare the request
 $curl->setopt(CURLOPT_URL, $url);
-
-# Variable pour stocker le contenu de la page
 my $response_body;
-
-# Configuration de l'option pour écrire la réponse dans la variable
 $curl->setopt(CURLOPT_WRITEDATA, \$response_body);
 
-# Exécution de la requête
+# Perform the request
 eval {
     $curl->perform();
 };
 die "Unable to fetch URL $url: $@" if $@;
 
-# Affichage du contenu de la page
+# Print the response body
 print "Response body:\n$response_body\n";
 
 print "Test completed successfully.\n";
