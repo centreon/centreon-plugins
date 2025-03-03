@@ -109,6 +109,7 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
+io-cards
 iops
 IpAddr
 ip-label
