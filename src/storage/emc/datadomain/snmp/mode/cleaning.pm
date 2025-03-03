@@ -119,7 +119,13 @@ sub manage_selection {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
             # if the equipment check is on another timezone than the system where the plugin is executed.
             if (defined($self->{option_results}->{timezone})){
-                $dt = $dt->set_time_zone($self->{option_results}->{timezone});
+                eval {
+                    $dt = $dt->set_time_zone($self->{option_results}->{timezone});
+                };
+                if ($@) {
+                    $self->{output}->add_option_msg(short_msg => "Invalid timezone provided: '" . $self->{option_results}->{timezone} . "'. Check in /usr/share/zoneinfo for valid time zones.");
+                     $self->{output}->option_exit();
+                 }
             }
             my $lastExecSeconds = $ctime - $dt->epoch();
             if ($self->{global}->{lastExecSeconds} == -1 || $self->{global}->{lastExecSeconds} > $lastExecSeconds) {
