@@ -29,8 +29,8 @@ Memory ${tc}
 
     Examples:    tc    extraoptions                                        expected_result   --
         ...      1     ${EMPTY}                                            OK: vms-usage-percentage : skipped (no value(s)) - vms-usage-bytes : skipped (no value(s)) - no data for host host-22 counter mem.capacity.usable.HOST at the moment.
-        ...      2     ${EMPTY}                                            OK: 39% of usable memory is used by VMs - Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056.32B;;;;272694090137.6
-        ...      3     --warning-vms-usage-percentage=0:0                  WARNING: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;0:0;;0;100 'vms.memory.usage.bytes'=107400208056.32B;;;;272694090137.6
-        ...      4     --critical-vms-usage-percentage=0:0                 CRITICAL: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;;0:0;0;100 'vms.memory.usage.bytes'=107400208056.32B;;;;272694090137.6
-        ...      5     --warning-vms-usage-bytes=0:0                       WARNING: Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056.32B;0:0;;;272694090137.6
-        ...      6     --critical-vms-usage-bytes=0:0                      CRITICAL: Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056.32B;;0:0;;272694090137.6
+        ...      2     ${EMPTY}                                            OK: 39% of usable memory is used by VMs - Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
+        ...      3     --warning-vms-usage-percentage=0:0                  WARNING: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;0:0;;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
+        ...      4     --critical-vms-usage-percentage=0:0                 CRITICAL: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;;0:0;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
+        ...      5     --warning-vms-usage-bytes=0:0                       WARNING: Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056B;0:0;;;272694090137
+        ...      6     --critical-vms-usage-bytes=0:0                      CRITICAL: Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056B;;0:0;;272694090137
