@@ -237,7 +237,7 @@ sub manage_selection {
     push @counters, 'cpu.capacity.contention.HOST'     if ($self->{option_results}->{add_contention});
     push @counters, 'cpu.capacity.demand.HOST'         if ($self->{option_results}->{add_demand});
     push @counters, 'cpu.corecount.provisioned.HOST',
-                         'cpu.corecount.usage.HOST'         if ($self->{option_results}->{add_corecount});
+                    'cpu.corecount.usage.HOST'         if ($self->{option_results}->{add_corecount});
 
     # The corecount contention is available but does not seem useful atm. Keeping it here for later
     #push @counters_list, 'cpu.corecount.contention.HOST'    if ($self->{option_results}->{add_contention} && $self->{option_results}->{add_corecount});

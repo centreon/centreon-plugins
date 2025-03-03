@@ -93,7 +93,7 @@ sub manage_selection {
 
     $self->{host} = {};
     foreach my $host (@{$response}) {
-        next if (!defined($host->{name}) || defined($self->{option_results}->{esx_name}) && $host->{name} !~ $self->{option_results}->{esx_name});
+        next if (!defined($host->{name}) || defined($self->{option_results}->{esx_name}) && $host->{name} ne $self->{option_results}->{esx_name});
         next if (!defined($host->{host}) || defined($self->{option_results}->{esx_id}) && $host->{host} ne $self->{option_results}->{esx_id});
 
         $self->{host}->{$host->{host}} = {
@@ -119,11 +119,6 @@ __END__
 Monitor the status of VMware ESX hosts through vSphere 8 REST API.
 
 =over 8
-
-=item B<--esx-name>
-
-Define which ESX server to monitor based on their name.
-This option will be treated as a regular expression.
 
 =item B<--warning-power-status>
 

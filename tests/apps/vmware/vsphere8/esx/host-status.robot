@@ -33,11 +33,12 @@ Host-Status ${tc}
         ...      1      --esx-name=esx1.acme.com    ${EMPTY}                            OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
         ...      2      --esx-name=esx2.acme.com    ${EMPTY}                            CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF
         ...      3      --esx-name=esx3.acme.com    ${EMPTY}                            CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
-        ...      4      --esx-name=esx              ${EMPTY}                            CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF - Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
+        ...      4      --esx-id=host-35            --esx-name=esx3.acme.com            CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
         ...      5      --esx-name=nothing          ${EMPTY}                            UNKNOWN: No ESX Host found.
-        ...      6      --esx-id=host-22            ${EMPTY}                            OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
-        ...      7      --esx-id=host-28            ${EMPTY}                            CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF
-        ...      8      --esx-id=host-35            ${EMPTY}                            CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
-        ...      9      --esx-id=nothing            ${EMPTY}                            UNKNOWN: No ESX Host found.
-        ...     10      --esx-id=host-28            --critical-power-status=0           OK: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF, connection state is CONNECTED
-        ...     11      --esx-id=host-35            --critical-connection-status=0      OK: Host 'esx3.acme.com', id: 'host-35': power state is POWERED_ON, connection state is DISCONNECTED
+        ...      6      --esx-id=host-35            --esx-name=esx2.acme.com            UNKNOWN: No ESX Host found.
+        ...      7      --esx-id=host-22            ${EMPTY}                            OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
+        ...      8      --esx-id=host-28            ${EMPTY}                            CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF
+        ...      9      --esx-id=host-35            ${EMPTY}                            CRITICAL: Host 'esx3.acme.com', id: 'host-35': connection state is DISCONNECTED
+        ...     10      --esx-id=nothing            ${EMPTY}                            UNKNOWN: No ESX Host found.
+        ...     11      --esx-id=host-28            --critical-power-status=0           OK: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF, connection state is CONNECTED
+        ...     12      --esx-id=host-35            --critical-connection-status=0      OK: Host 'esx3.acme.com', id: 'host-35': power state is POWERED_ON, connection state is DISCONNECTED
