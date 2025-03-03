@@ -82,7 +82,7 @@ sub set_counters {
                 perfdatas             => [
                     {
                         value    => 'used_bytes',
-                        template => '%s',
+                        template => '%d',
                         max      => 'max_bytes',
                         unit     => 'B'
                     }
@@ -104,8 +104,8 @@ sub manage_selection {
         $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.consumed.vms.HOST: ' . $structure{'mem.consumed.vms.HOST'});
         $self->{memory} = {
             used_prct  => (100 * $structure{'mem.consumed.vms.HOST'} / $structure{'mem.capacity.usable.HOST'}),
-            used_bytes => (1024 * 1024 * $structure{'mem.consumed.vms.HOST'}),
-            max_bytes  => (1024 * 1024 * $structure{'mem.capacity.usable.HOST'})
+            used_bytes => int(1024 * 1024 * $structure{'mem.consumed.vms.HOST'}),
+            max_bytes  => int(1024 * 1024 * $structure{'mem.capacity.usable.HOST'})
         };
     }
 
