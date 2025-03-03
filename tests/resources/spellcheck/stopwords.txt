@@ -114,6 +114,7 @@ IpAddr
 ip-label
 ipv4
 ipv6
+ipsec
 ISAM
 Iwsva
 jmeter
@@ -264,12 +265,14 @@ userpass
 v1
 v2
 vdom
+vdomain
 VDSL2
 Veeam
 VeloCloud
 VM
 VMware
 VPN
+vpn
 vSAN
 Vserver
 vSphere
