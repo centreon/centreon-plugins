@@ -59,10 +59,26 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{uuid} = '';
+    foreach ('filter_counters', 'filter_name', 'filter_active_status', 'filter_subsystem') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{uuid} .= $self->{option_results}->{$_};
+        }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs = $options{custom}->request_api(command => 'listJobs');
+    my %cmd = (command => 'listJobs', args => {});
+    if ($self->{uuid} ne '') {
+        $cmd{args}->{uuid} = $self->{uuid};
+    }
+    my $jobs = $options{custom}->request_api(%cmd);
 
     $self->{global} = { total => 0 };
     foreach my $entry (@{$jobs->{result}}) {

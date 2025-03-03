@@ -128,6 +128,18 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{uuid} = '';
+    foreach ('filter_counters', 'filter_subsystem_name', 'filter_subsystem_library') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{uuid} .= $self->{option_results}->{$_};
+        }
+    }
+}
+
 my $map_subsys_status = {
     '*ACTIVE' => 'active', 
     '*ENDING' => 'ending', 
@@ -139,7 +151,11 @@ my $map_subsys_status = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $subsys = $options{custom}->request_api(command => 'listSubsystems');
+    my %cmd = (command => 'listSubsystems', args => {});
+    if ($self->{uuid} ne '') {
+        $cmd{args}->{uuid} = $self->{uuid};
+    }
+    my $subsys = $options{custom}->request_api(%cmd);
 
     $self->{global} = { total => 0, active => 0, ending => 0, inactive => 0, restricted => 0, starting => 0 };
     $self->{subsys} = {};

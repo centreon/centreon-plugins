@@ -167,6 +167,18 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{uuid} = '';
+    foreach ('filter_counters', 'filter_disk_name') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{uuid} .= $self->{option_results}->{$_};
+        }
+    }
+}
+
 my $map_disk_status = {
     0 => 'noUnitControl', 1 => 'active', 2 => 'failed',
     3 => 'otherDiskSubFailed', 4 => 'hwFailurePerf', 5 => 'hwFailureOk',
@@ -178,9 +190,12 @@ my $map_disk_status = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %cmd = (command => 'listDisks');
+    my %cmd = (command => 'listDisks', args => {});
     if (defined($self->{option_results}->{disk_name}) && $self->{option_results}->{disk_name} ne '') {
-        $cmd{args} = { diskName => $self->{option_results}->{disk_name} };
+        $cmd{args}->{diskName} = $self->{option_results}->{disk_name};
+    }
+    if ($self->{uuid} ne '') {
+        $cmd{args}->{uuid} = $self->{uuid};
     }
     my $disks = $options{custom}->request_api(%cmd);
 
