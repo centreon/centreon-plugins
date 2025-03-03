@@ -383,7 +383,6 @@ sub get_stats {
     my ($self, %options) = @_;
 
     if ( centreon::plugins::misc::is_empty($options{rsrc_id})) {
-        # the previous call 'option_exit's in case ofso if we are still here we sould have the rsrc_id
         $self->{output}->add_option_msg(short_msg => "get_stats method called without rsrc_id, won't query");
         $self->{output}->option_exit();
     }
@@ -393,7 +392,7 @@ sub get_stats {
         $self->{output}->option_exit();
     }
 
-    if ( !$self->check_acq_spec(%options, rsrc_id => $options{rsrc_id}) ) {
+    if ( !$self->check_acq_spec(%options) ) {
         $self->{output}->add_option_msg(short_msg => "get_stats method failed to check_acq_spec()");
         $self->{output}->option_exit();
     }

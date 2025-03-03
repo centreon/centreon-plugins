@@ -43,7 +43,7 @@ sub get_esx_id_from_name {
     my ($self, %options) = @_;
 
     if ( centreon::plugins::misc::is_empty($self->{esx_name}) ) {
-        $self->{output}->add_option_msg(short_msg => "get_esx_id_from_name method called without esx_name option. This should never happen.");
+        $self->{output}->add_option_msg(short_msg => "get_esx_id_from_name method called without esx_name option. Please check configuration.");
         $self->{output}->option_exit();
     }
 
@@ -74,7 +74,6 @@ sub get_esx_stats {
 
     return $options{custom}->get_stats(
         %options,
-        rsrc_name => $self->{esx_name},
         rsrc_id   => $self->{esx_id}
     );
 }
@@ -128,7 +127,7 @@ apps::vmware::vsphere8::custom::modeesx - Template for modes monitoring VMware p
 
 =head1 SYNOPSIS
 
-    use base apps::vmware::vsphere8::custom::modeesx;
+    use base apps::vmware::vsphere8::esx::mode;
 
     sub set_counters {...}
     sub manage_selection {
@@ -165,7 +164,7 @@ Retrieves the ESX statistics for the given options using package apps::vmware::v
 
 =item * C<esx_id> - The ESX's C<rsrc_id> (resource ID) for which to retrieve the statistics. This option is optional if C<esx_name> is provided.
 
-=item * C<esx_name> - The ESX's name for which to retrieve the statistics. This option is optional if C<esx_id> is provided, which is the nominal usage of this function.
+=item * C<esx_name> - The ESX's name for which to retrieve the statistics. This option is not used if C<esx_id> is provided, which is the nominal usage of this function.
 
 =back
 
