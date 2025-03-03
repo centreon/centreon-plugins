@@ -1,0 +1,530 @@
+name: test-cpan-libraries
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/perl-new-cpan-libraries.yml"
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  package-rpm:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        distrib: [el8, el9]
+        name:
+          [
+            "Crypt::Argon2",
+            "Exporter::Tiny",
+            "JSON::Path",
+            "Libssh::Session",
+            "LV",
+            "Net::Curl"
+          ]
+        include:
+          - build_distribs: "el8,el9"
+          - rpm_dependencies: ""
+          - rpm_provides: ""
+          - version: ""
+          - spec_file: ""
+          - no-auto-depends: "false"
+          - preinstall_cpanlibs: ""
+          - distrib: el8
+            package_extension: rpm
+            image: packaging-plugins-alma8
+          - distrib: el9
+            package_extension: rpm
+            image: packaging-plugins-alma9
+          - name: Crypt::Argon2
+            preinstall_cpanlibs: "Dist::Build"
+          - name: Libssh::Session
+            rpm_dependencies: "libssh"
+          - name: Net::Curl
+            rpm_dependencies: "libcurl"
+
+    name: package ${{ matrix.distrib }} ${{ matrix.name }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+    steps:
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Get package infos
+        id: package-infos
+        run: |
+          cpan_info=$(cpanm --info ${{ matrix.name }})
+          if [ -z "${{ matrix.version }}" ]; then
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
+            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
+          else
+            PACKAGE_VERSION="${{ matrix.version }}"
+          fi
+          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g')
+          PACKAGE_NAME="perl-$CPAN_PACKAGE_NAME"
+          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Check if package already exists
+        id: check-package-existence
+        run: |
+          package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 | tr '[:upper:]' '[:lower:]' || true)
+          do_not_build="false"
+          if [[ ! $package_info =~ "no matches found" ]]; then
+            package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+")
+            if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
+              echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
+              do_not_build="true"
+            else
+              echo "::warning::Package ${{ matrix.name }} exists in the official ${{ matrix.distrib }} repository with a different version."
+              do_not_build="false"
+            fi
+          fi
+          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
+        run: |
+          PACKAGE_VERSION=" -v ${{ steps.package-infos.outputs.package_version }}"
+
+          if [ -z "${{ matrix.rpm_dependencies }}" ]; then
+            PACKAGE_DEPENDENCIES=""
+          else
+            for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
+            done
+          fi
+
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
+          fi
+
+          if [ -z "${{ matrix.rpm_provides }}" ]; then
+            PACKAGE_PROVIDES=""
+          else
+            for PACKAGE_PROVIDE in `echo "${{ matrix.rpm_provides }}"`; do
+              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
+            done
+          fi
+
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
+
+          export SYBASE="/usr"
+
+          temp_file=$(mktemp)
+          echo "default.local" | tee /etc/mailname
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: fpm command failed"
+            exit 1
+          fi
+          # Check rpm
+          rpm2cpio $created_package | cpio -t
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+
+          rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
+
+          cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
+        name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
+          path: ./*.${{ matrix.package_extension }}
+          retention-days: 1
+
+  merge-package-rpm-artifacts:
+    needs: [get-environment, package-rpm]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: packages-rpm-${{ matrix.distrib }}
+          pattern: packages-rpm-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: packages-rpm-${{ matrix.distrib }}-*
+          failOnError: false
+
+  sign-rpm:
+    needs: [get-environment, merge-package-rpm-artifacts]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [el8, el9]
+    name: sign rpm ${{ matrix.distrib }}
+    container:
+      image: docker.centreon.com/centreon-private/rpm-signing:latest
+      options: -t
+      credentials:
+        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
+        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
+
+    steps:
+      - run: apt-get install -y zstd
+        shell: bash
+
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: packages-rpm-${{ matrix.distrib }}
+          path: ./
+
+      - run: echo "HOME=/root" >> $GITHUB_ENV
+        shell: bash
+
+      - run: rpmsign --addsign ./*.rpm
+        shell: bash
+
+      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ./*.rpm
+          key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+
+  package-deb:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+
+    runs-on: ${{ matrix.runner_name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
+        name:
+          [
+            "Crypt::Argon2",
+            "Libssh::Session",
+            "Net::Curl"
+          ]
+        include:
+          - runner_name: ubuntu-24.04
+          - arch: amd64
+          - build_names: "bullseye-amd64,bookworm,jammy"
+          - deb_dependencies: ""
+          - version: ""
+          - use_dh_make_perl: "true"
+          - no-auto-depends: "false"
+          - preinstall_cpanlibs: ""
+          - build_name: bullseye-amd64
+            distrib: bullseye
+            package_extension: deb
+            image: packaging-plugins-bullseye
+          - build_name: bookworm
+            distrib: bookworm
+            package_extension: deb
+            image: packaging-plugins-bookworm
+          - build_name: jammy
+            distrib: jammy
+            package_extension: deb
+            image: packaging-plugins-jammy
+          - build_name: bullseye-arm64
+            distrib: bullseye
+            package_extension: deb
+            image: packaging-plugins-bullseye-arm64
+            arch: arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+          - name: Crypt::Argon2
+            build_names: "bullseye-amd64,jammy,bullseye-arm64"
+            preinstall_cpanlibs: "Dist::Build"
+            use_dh_make_perl: "false"
+            no-auto-depends: "true"
+            deb_dependencies: "libexporter-tiny-perl libtime-hires-perl libxsloader-perl"
+          - name: Libssh::Session
+            use_dh_make_perl: "false"
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            no-auto-depends: "true"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
+          - name: Net::Curl
+            use_dh_make_perl: "false"
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            no-auto-depends: "true"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
+    name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+      credentials:
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+    steps:
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
+        name: Parse distrib name
+        id: parse-distrib
+        uses: ./.github/actions/parse-distrib
+        with:
+          distrib: ${{ matrix.distrib }}
+
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
+        name: Get package infos
+        id: package-infos
+        run: |
+          apt-get update
+          cpan_info=$(cpanm --info ${{ matrix.name }})
+          if [ -z "${{ matrix.version }}" ]; then
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
+            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
+          else
+            PACKAGE_VERSION="${{ matrix.version }}"
+          fi
+          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
+          PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
+          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
+        name: Check if package already exists
+        id: check-package-existence
+        run: |
+          package_info=$(apt-cache policy ${{ steps.package-infos.outputs.package_name }})
+          if [[ -n $package_info && "${{ steps.package-infos.outputs.package_name }}" =~ "_" ]]; then
+            package_info=$(apt-cache policy $(echo ${{ steps.package-infos.outputs.package_name }} | sed 's/_//g'))
+          fi
+          do_not_build="false"
+          if [[ -n $package_info ]]; then
+            candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
+            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
+              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
+              do_not_build="true"
+            else
+              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} exists in the official ${{ matrix.distrib }} repository with a different version."
+              do_not_build="false"
+            fi
+          fi
+          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'false' }}
+        run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
+          if [ -z "${{ matrix.deb_dependencies }}" ]; then
+            PACKAGE_DEPENDENCIES=""
+          else
+            for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
+              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
+            done
+          fi
+          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
+            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
+          fi
+
+          temp_file=$(mktemp)
+          echo "default.local" | tee /etc/mailname
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: fpm command failed"
+            exit 1
+          fi
+          # Check deb
+          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
+        run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
+          temp_file=$(mktemp)
+          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          # Check package name
+          if [ -z "$created_package" ]; then
+            echo "Error: dh-make-perl command failed"
+            exit 1
+          fi
+          # Check deb
+          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
+        name: Replace '::' with - in the feature path
+        id: package-name
+        run: |
+          name="${{ matrix.name }}"
+          name_with_dash="${name//::/-}"
+          echo "Modified Name: $name_with_dash"
+          echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
+          path: ./*.${{ matrix.package_extension }}
+          retention-days: 1
+
+  merge-package-deb-artifacts:
+    needs: [get-environment, package-deb]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
+
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: packages-deb-${{ matrix.distrib }}
+          pattern: packages-deb-${{ matrix.distrib }}-*
+          delete-merged: false # cannot be set to true due to random fails: Failed to DeleteArtifact: Unable to make request: ECONNRESET
+          retention-days: 1
+
+      - name: Delete merged artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: packages-deb-${{ matrix.distrib }}-*
+          failOnError: false
+
+  download-and-cache-deb:
+    needs: [get-environment, merge-package-deb-artifacts]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distrib: [bullseye, bookworm, jammy]
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: packages-deb-${{ matrix.distrib }}
+          path: ./
+
+      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ./*.deb
+          key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
+
+  test-packages:
+    needs: [get-environment, sign-rpm, download-and-cache-deb]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: almalinux:8
+            distrib: el8
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: rpm
+            image: almalinux:9
+            distrib: el9
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:bullseye
+            distrib: bullseye
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:bookworm
+            distrib: bookworm
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: ubuntu:jammy
+            distrib: jammy
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:bullseye
+            distrib: bullseye
+            arch: arm64
+            runner_name: ["self-hosted", "collect-arm64"]
+
+    runs-on: ${{ matrix.runner_name }}
+    container:
+      image: ${{ matrix.image }}
+
+    name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
+    steps:
+
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Test packaged libs
+        uses: ./.github/actions/test-cpan-libs
+        with:
+          package_extension: ${{ matrix.package_extension }}
+          distrib: ${{ matrix.distrib }}
+          arch: ${{ matrix.arch }}
+
+      - name: Upload error log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
+          path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
