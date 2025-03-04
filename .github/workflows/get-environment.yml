@@ -250,9 +250,9 @@ jobs:
         with:
           script: |
             let version = '';
-            if ('${{ inputs.version_file }}'' == '**/pom.xml') {
-              version = execSync(`grep -m 1 "<version>.*</version>" ${inputs.version_file} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
-            else
+            if ('${{ inputs.version_file }}' === '**/pom.xml') {
+                version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
+              } else {
               if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
                 const branchName = "${{ github.head_ref || github.ref_name }}";
                 const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
