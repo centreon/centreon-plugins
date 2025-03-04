@@ -87,7 +87,7 @@ eval {
 };
 if ($@) {
     kill 'TERM', $pid;
-    die "Test échoué: $@";
+    die "Test failed: $@";
 }
 
 # Cleaning
