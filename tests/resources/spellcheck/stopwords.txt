@@ -110,10 +110,7 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
-<<<<<<< HEAD
 io-cards
-=======
->>>>>>> 17fa93985 (spellcheck)
 iops
 IpAddr
 ip-label
