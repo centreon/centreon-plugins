@@ -20,7 +20,7 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: as400/packaging/centreon-as400-daemon.yaml
+      version_file: as400/connector.as400/pom.xml
 
   package:
     needs: [get-environment]
@@ -63,13 +63,11 @@ jobs:
 
       - name: Prepare files for packaging
         run: |
-          # Get version from the pom.xml
-          version=$(grep -m 1 "<version>.*</version>" as400/connector.as400/pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
           find .     \
           -type f \
           -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
           -exec sed -i \
-          -e 's|@CONNECTOR_VERSION@|'"$version"'|g' \
+          -e 's|@CONNECTOR_VERSION@|'"${{ needs.get-environment.outputs.version }}"'|g' \
           -e 's|@CONNECTOR_HOME@|'"/usr/share/centreon-as400"'|g' \
           -e 's|@CONNECTOR_ETC@|'"/etc/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_LOG@|'"/var/log/centreon-as400/"'|g' \
