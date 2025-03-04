@@ -8,7 +8,6 @@ apt-get update
 apt-get install -y \
   ca-certificates \
   git \
-  libxml2-utils \
   openjdk-17-jdk \
   wget \
   zstd

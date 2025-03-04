@@ -8,7 +8,6 @@ apt-get update
 apt-get install -y \
   ca-certificates \
   git \
-  libxml2-utils \
   maven=3.8.7-1 \
   openjdk-17-jdk \
   zstd

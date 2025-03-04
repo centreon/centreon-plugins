@@ -7,7 +7,6 @@ RUN bash -e <<EOF
 dnf install -y \
   git \
   java-17-openjdk-devel \
-  libxml2 \
   wget \
   zstd
 

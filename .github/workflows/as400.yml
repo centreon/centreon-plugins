@@ -64,7 +64,7 @@ jobs:
       - name: Prepare files for packaging
         run: |
           # Get version from the pom.xml
-          version=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" as400/connector.as400/pom.xml)
+          version=$(grep -m 1 "<version>.*</version>" as400/connector.as400/pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
           find .     \
           -type f \
           -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
