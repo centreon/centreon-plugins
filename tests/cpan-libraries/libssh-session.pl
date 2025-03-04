@@ -77,10 +77,10 @@ eval {
     );
 
     print "Trying to connect...\n";
-    $session->connect() == SSH_OK or die "Échec de connexion: " . $session->get_error();
+    $session->connect() == SSH_OK or die "Connection failed: " . $session->get_error();
 
     print "Trying to authenticate...\n";
-    $session->auth_password(password => "testpassword") == SSH_AUTH_SUCCESS or die "Échec d'authentification: " . $session->get_error();
+    $session->auth_password(password => "testpassword") == SSH_AUTH_SUCCESS or die "Authentification failed: " . $session->get_error();
 
     print "SSH connection test succeeded\n";
     $session->disconnect();

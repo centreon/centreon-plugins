@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use Net::Curl::Easy qw(:constants);
-# All comments and messages must be in english
 
 # URL to fetch
 my $url = 'https://www.centreon.com';
