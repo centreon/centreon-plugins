@@ -27,7 +27,7 @@ equipment ${tc}
 
     Examples:        tc    extra_options                                                                                                expected_result    --
             ...      1     ${EMPTY}                                                                                                     WARNING: memory 'Anonymized-001/mem-12' presence is: 'missing' - memory 'Anonymized-001/mem-15' presence is: 'missing'
-            ...      2     --threshold-overload='presence,OK,missing' --threshold-overload='operability,OK,removed'                     OK: All 192 components are ok [192/192 memories]. | 'hardware.memory.count'=192;;;;
+            ...      2     --threshold-overload='presence,OK,missing' --threshold-overload='operability,OK,removed'                     OK: All 100 components are ok [100/100 memories]. | 'hardware.memory.count'=100;;;;
             ...      3     --threshold-overload='presence,UNKNOWN,missing' --component='memory'                                         UNKNOWN: memory 'Anonymized-001/mem-12' presence is: 'missing' - memory 'Anonymized-001/mem-15' presence is: 'missing'
             ...      4     --threshold-overload='operability,WARNING,missing' --component='memory'                                      WARNING: memory 'Anonymized-001/mem-12' presence is: 'missing' - memory 'Anonymized-001/mem-15' presence is: 'missing'
             ...      5     --component='cpu'                                                                                            OK: All 0 components are ok [].
