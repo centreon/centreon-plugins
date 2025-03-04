@@ -43,7 +43,7 @@ sub prefix_scenario_output {
 sub prefix_steps_output {
     my ($self, %options) = @_;
 
-    return sprintf("  Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
+    return sprintf("Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
 }
 
 sub set_counters {
@@ -61,9 +61,9 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'scenario-status',
             type => 2,
-            warning_default => '%{status} =~ /(Aborted|Stopped|Excluded|Degraded)/',
+            warning_default  => '%{status} =~ "Degraded"',
             critical_default => '%{status} =~ "Failure"',
-            unknown_default => '%{status} =~ /(Unknown|No execution)/',
+            unknown_default  => '%{status} =~ /(Unknown|No execution|Aborted|Stopped|Excluded)/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'num_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -182,7 +182,7 @@ sub manage_selection {
             }
         };
         if (!defined $scenario_detail->{results} or scalar(@{$scenario_detail->{results}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "Scenario '" . $scenario->{scenarioName} . "' Don't have any performance data, please try to add a bigger timeframe");
+            $self->{output}->add_option_msg(short_msg => "No execution, please try again with a bigger timeframe");
             next;
         }
         foreach my $kpi (@{$scenario_detail->{kpis}}) {
@@ -194,8 +194,17 @@ sub manage_selection {
                 $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
             }
         }
-
+        # The API is expected to sort the output to get the most recent data at the end of the array.
+        # We store the last execution date, and check it for every data point sent back by the api.
+        # If a step has failed, no data is sent by the api for this step, but the results of the previous executions are present.
+        # This allows to get perfdata for the last execution with a successful first step.
+        # If the first step fails, the script will take older data.
+        my $last_execution = @{$scenario_detail->{results}}[-1]->{planningTime};
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
+            if ($step_metrics->{planningTime} ne $last_execution){
+                $self->{output}->add_option_msg(long_msg => "Execution $step_metrics->{planningTime} of step $step_metrics->{stepId} is older than $last_execution, not taking it into account.", debug => 1);
+                next;
+            }
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
