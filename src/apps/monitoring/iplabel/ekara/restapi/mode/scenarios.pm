@@ -194,11 +194,11 @@ sub manage_selection {
                 $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
             }
         }
-        # api is expected to sort the output to get the most recent data at the end of the array.
-        # we store the last execution date, and check it for every data point sent back by the api.
-        # If a step fail, no data is sent by the api for this step, but the older execution are present.
-        # this allow to get perfdata for the last execution with a successfull first step.
-        # if the first step fail, the script will take older data.
+        # The API is expected to sort the output to get the most recent data at the end of the array.
+        # We store the last execution date, and check it for every data point sent back by the api.
+        # If a step has failed, no data is sent by the api for this step, but the results of the previous executions are present.
+        # This allows to get perfdata for the last execution with a successful first step.
+        # If the first step fails, the script will take older data.
         my $last_execution = @{$scenario_detail->{results}}[-1]->{planningTime};
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
             if ($step_metrics->{planningTime} ne $last_execution){
