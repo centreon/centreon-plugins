@@ -21,13 +21,10 @@ hardware ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    # first run to build cache
-    Run    ${command}
-    # second run to control the output
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
-            ...      1     £{EMPTY}                                                                                                OK: All 7 components are ok [1/1 psu, 6/6 temperatures]. | 'Anonymized 145#hardware.temperature.celsius'=60.00C;;;; 'Anonymized 096#hardware.temperature.celsius'=58.00C;;;; 'Anonymized 138#hardware.temperature.celsius'=20.50C;;;; 'Anonymized 186#hardware.temperature.celsius'=63.50C;;;; 'Anonymized 159#hardware.temperature.celsius'=63.25C;;;; 'Anonymized 101#hardware.temperature.celsius'=63.75C;;;; 'hardware.psu.count'=1;;;; 'hardware.temperature.count'=6;;;;
+            ...      1     ${EMPTY}                                                                                                OK: All 7 components are ok [1/1 psu, 6/6 temperatures]. | 'Anonymized 145#hardware.temperature.celsius'=60.00C;;;; 'Anonymized 096#hardware.temperature.celsius'=58.00C;;;; 'Anonymized 138#hardware.temperature.celsius'=20.50C;;;; 'Anonymized 186#hardware.temperature.celsius'=63.50C;;;; 'Anonymized 159#hardware.temperature.celsius'=63.25C;;;; 'Anonymized 101#hardware.temperature.celsius'=63.75C;;;; 'hardware.psu.count'=1;;;; 'hardware.temperature.count'=6;;;;
             ...      2     --component='.*'                                                                                        OK: All 7 components are ok [1/1 psu, 6/6 temperatures]. | 'Anonymized 145#hardware.temperature.celsius'=60.00C;;;; 'Anonymized 096#hardware.temperature.celsius'=58.00C;;;; 'Anonymized 138#hardware.temperature.celsius'=20.50C;;;; 'Anonymized 186#hardware.temperature.celsius'=63.50C;;;; 'Anonymized 159#hardware.temperature.celsius'=63.25C;;;; 'Anonymized 101#hardware.temperature.celsius'=63.75C;;;; 'hardware.psu.count'=1;;;; 'hardware.temperature.count'=6;;;;
             ...      3     --filter='psu'                                                                                          OK: All 6 components are ok [6/6 temperatures]. | 'Anonymized 145#hardware.temperature.celsius'=60.00C;;;; 'Anonymized 096#hardware.temperature.celsius'=58.00C;;;; 'Anonymized 138#hardware.temperature.celsius'=20.50C;;;; 'Anonymized 186#hardware.temperature.celsius'=63.50C;;;; 'Anonymized 159#hardware.temperature.celsius'=63.25C;;;; 'Anonymized 101#hardware.temperature.celsius'=63.75C;;;; 'hardware.temperature.count'=6;;;;
             ...      4     --no-component='CRITICAL' --filter='.*'                                                                 CRITICAL: No components are checked.
