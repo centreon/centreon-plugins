@@ -249,6 +249,7 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
+            const { execSync } = require('child_process');
             let version = '';
             if ('${{ inputs.version_file }}'.match(/pom\.xml$/)) {
                 version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
