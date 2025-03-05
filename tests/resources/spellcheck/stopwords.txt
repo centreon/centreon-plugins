@@ -31,6 +31,7 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+BackupJobSession
 base64
 blocked-by-uf
 BPL
@@ -215,6 +216,7 @@ QoS
 Qtree
 queue-messages-inflighted
 raidvolume
+ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
