@@ -61,12 +61,16 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'message-queue-path:s' => { name => 'message_queue_path' },
-        'memory'               => { name => 'memory' },
-        'filter-message-id:s'  => { name => 'filter_message_id' },
-        'min-severity:s'       => { name => 'min_severity' },
-        'max-severity:s'       => { name => 'max_severity' },
-        'display-messages'     => { name => 'display_messages' }
+        'message-queue-path:s'   => { name => 'message_queue_path' },
+        'memory'                 => { name => 'memory' },
+        'filter-message-id:s'    => { name => 'filter_message_id' },
+        'filter-reply-status:s'  => { name => 'filter_reply_status' },
+        'exclude-reply-status:s' => { name => 'exclude_reply_status' },
+        'filter-text:s'          => { name => 'filter_text' },
+        'exclude-text:s'         => { name => 'exclude_text' },
+        'min-severity:s'         => { name => 'min_severity' },
+        'max-severity:s'         => { name => 'max_severity' },
+        'display-messages'       => { name => 'display_messages' }
     });
     
     return $self;
@@ -79,6 +83,10 @@ sub check_options {
     if (!defined($self->{option_results}->{message_queue_path}) || $self->{option_results}->{message_queue_path} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --message-queue-path option.');
         $self->{output}->option_exit();
+    }
+
+    if (!defined($self->{option_results}->{exclude_reply_status})) {
+        $self->{option_results}->{exclude_reply_status} = 'A';
     }
 }
 
@@ -104,15 +112,27 @@ sub manage_selection {
     }
 
     foreach my $entry (@{$messages->{result}}) {
-         if (defined($self->{option_results}->{display_messages})) {
+        $entry->{replyStatus} = '-' if (exists($entry->{replyStatus}) && (!defined($entry->{replyStatus}) || $entry->{replyStatus} eq ''));
+        next if (defined($entry->{replyStatus}) && defined($self->{option_results}->{filter_reply_status}) && $self->{option_results}->{filter_reply_status} ne '' &&
+            $entry->{replyStatus} !~ /$self->{option_results}->{filter_reply_status}/);
+        next if (defined($entry->{replyStatus}) && defined($self->{option_results}->{exclude_reply_status}) && $self->{option_results}->{exclude_reply_status} ne '' &&
+            $entry->{replyStatus} =~ /$self->{option_results}->{exclude_reply_status}/);
+
+        next if (defined($entry->{text}) && defined($self->{option_results}->{filter_text}) && $self->{option_results}->{filter_text} ne '' &&
+            $entry->{text} !~ /$self->{option_results}->{filter_text}/);
+        next if (defined($entry->{text}) && defined($self->{option_results}->{exclude_text}) && $self->{option_results}->{exclude_text} ne '' &&
+            $entry->{text} =~ /$self->{option_results}->{exclude_text}/);
+
+        if (defined($self->{option_results}->{display_messages})) {
             $entry->{text} =~ s/\|/ /g;
             $self->{output}->output_add(
                 long_msg => sprintf(
-                    'message [id: %s] [severity: %s] [date: %s] [user: %s]: %s',
+                    'message [id: %s] [severity: %s] [date: %s] [user: %s]%s: %s',
                     $entry->{id},
                     $entry->{severity},
                     scalar(localtime($entry->{date} / 1000)),
                     defined($entry->{user}) ? $entry->{user} : '-',
+                    defined($entry->{replyStatus}) ? ' [replyStatus: ' . $entry->{replyStatus} . ']': '',
                     $entry->{text}
                 )
             );
@@ -143,6 +163,22 @@ Check only new messages.
 =item B<--filter-message-id>
 
 Filter messages by ID (can be a regexp).
+
+=item B<--filter-reply-status>
+
+Filter messages by reply status (can be a regexp).
+
+=item B<--exclude-reply-status>
+
+Exclude messages by reply status (can be a regexp) (default: 'A').
+
+=item B<--filter-text>
+
+Filter messages by text (can be a regexp).
+
+=item B<--exclude-text>
+
+Exclude messages by text (can be a regexp).
 
 =item B<--min-severity>
 
