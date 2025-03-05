@@ -6,9 +6,9 @@ RUN bash -e <<EOF
 
 dnf install -y \
   git \
+  java-17-openjdk-devel \
   wget \
-  zstd \
-  java-17-openjdk-devel
+  zstd
 
 cd /usr/local/src
 wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz

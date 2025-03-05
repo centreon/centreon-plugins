@@ -20,7 +20,7 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: as400/packaging/centreon-as400-daemon.yaml
+      version_file: as400/connector.as400/pom.xml
 
   package:
     needs: [get-environment]
