@@ -78,7 +78,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach my $uid (keys %$results) {
+    foreach my $uid (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[uid: %s][jobName: %s][jobType: %s]',
