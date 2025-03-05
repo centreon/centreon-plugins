@@ -112,6 +112,7 @@ sub manage_selection {
     }
 
     foreach my $entry (@{$messages->{result}}) {
+        # compatibility with old as400 daemon version
         $entry->{replyStatus} = '-' if (exists($entry->{replyStatus}) && (!defined($entry->{replyStatus}) || $entry->{replyStatus} eq ''));
         next if (defined($entry->{replyStatus}) && defined($self->{option_results}->{filter_reply_status}) && $self->{option_results}->{filter_reply_status} ne '' &&
             $entry->{replyStatus} !~ /$self->{option_results}->{filter_reply_status}/);
