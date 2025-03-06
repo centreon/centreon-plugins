@@ -24,6 +24,7 @@ api.meraki.com
 --api-username
 --api-version
 AppearTV
+AS400
 ASAM
 Avigilon
 Avocent
@@ -109,11 +110,13 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
+io-cards
 iops
 IpAddr
 ip-label
 ipv4
 ipv6
+ipsec
 ISAM
 Iwsva
 jmeter
@@ -264,12 +267,15 @@ userpass
 v1
 v2
 vdom
+vdomain
 VDSL2
 Veeam
 VeloCloud
 VM
 VMware
+VMWARE
 VPN
+vpn
 vSAN
 Vserver
 vSphere

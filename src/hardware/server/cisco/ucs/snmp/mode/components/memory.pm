@@ -77,8 +77,10 @@ sub check {
             );
             next;
         }
-        
-        $self->{components}->{memory}->{total}++;
+
+        if($result->{cucsMemoryUnitPresence} eq "equipped") {
+            $self->{components}->{memory}->{total}++;
+        }
 
         $exit = $self->get_severity(section => 'memory.operability', label => 'default.operability', value => $result2->{cucsMemoryUnitOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
