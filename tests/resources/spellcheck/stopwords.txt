@@ -75,6 +75,7 @@ eth
 ext4
 fanspeed
 FCCapacity
+fibre
 --filter-fs
 --filter-imei
 --filter-ppid
