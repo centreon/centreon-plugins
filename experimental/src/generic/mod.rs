@@ -330,7 +330,7 @@ impl Command {
             Some(d) => {
                 metrics.iter().for_each(|m| {
                     perfdata += format!(
-                        " {}={}{};{};{};{};{}",
+                        " '{}'={}{};{};{};{};{}",
                         m.name,
                         m.value,
                         d.uom,
@@ -357,7 +357,7 @@ impl Command {
             None => {
                 metrics.iter().for_each(|m| {
                     perfdata += format!(
-                        " {}={};{};{}",
+                        " '{}'={};{};{}",
                         m.name,
                         m.value,
                         match m.warning {
