@@ -12,6 +12,15 @@ pub enum Status {
     Unknown = 3,
 }
 
+struct Metric<'b> {
+    name: String,
+    value: f32,
+    warning: &'b Option<String>,
+    critical: &'b Option<String>,
+    status: Status,
+    agregated: bool,
+}
+
 fn worst(a: Status, b: Status) -> Status {
     let a_int = match a {
         Status::Ok => 0,
@@ -70,15 +79,9 @@ struct Data {
 }
 
 #[derive(Deserialize, Debug)]
-struct StatusText {
-    header: String,
-    text: String,
-}
-
-#[derive(Deserialize, Debug)]
 struct OutputTable {
-    default: String,
-    status: Option<StatusText>,
+    header: String,
+    text: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -126,11 +129,8 @@ fn build_metrics<'a>(
     values: &Vec<(String, f32)>,
     ag: &Option<(&str, usize, f32)>,
     ext: &'a CommandExt,
-) -> (
-    Vec<(String, f32, &'a Option<String>, &'a Option<String>, Status)>,
-    Status,
-) {
-    let mut metrics: Vec<(String, f32, &Option<String>, &Option<String>, Status)> = Vec::new();
+) -> (Vec<Metric<'a>>, Status) {
+    let mut metrics: Vec<Metric> = Vec::new();
     let mut status = Status::Ok;
     match ag {
         Some(a) => {
@@ -140,7 +140,14 @@ fn build_metrics<'a>(
                 let c = &ext.critical_agregation;
                 let current_status =
                     compute_status(a.2, &ext.warning_agregation, &ext.critical_agregation);
-                metrics.push((a.0.to_string(), a.2, w, c, current_status));
+                metrics.push(Metric {
+                    name: a.0.to_string(),
+                    value: a.2,
+                    warning: w,
+                    critical: c,
+                    status: current_status,
+                    agregated: true,
+                });
                 status = worst(current_status, status);
             }
         }
@@ -148,13 +155,14 @@ fn build_metrics<'a>(
     }
     values.iter().enumerate().for_each(|(i, v)| {
         let current_status = compute_status(v.1, &ext.warning_core, &ext.critical_core);
-        metrics.push((
-            values[i].0.clone(),
-            v.1,
-            &ext.warning_core,
-            &ext.critical_core,
-            current_status,
-        ));
+        metrics.push(Metric {
+            name: values[i].0.clone(),
+            value: v.1,
+            warning: &ext.warning_core,
+            critical: &ext.critical_core,
+            status: current_status,
+            agregated: false,
+        });
         status = worst(current_status, status);
     });
     match ag {
@@ -162,13 +170,14 @@ fn build_metrics<'a>(
             if a.1 > 0 {
                 let current_status =
                     compute_status(a.2, &ext.warning_agregation, &ext.critical_agregation);
-                metrics.push((
-                    a.0.to_string(),
-                    a.2,
-                    &ext.warning_agregation,
-                    &ext.critical_agregation,
-                    current_status,
-                ));
+                metrics.push(Metric {
+                    name: a.0.to_string(),
+                    value: a.2,
+                    warning: &ext.warning_agregation,
+                    critical: &ext.critical_agregation,
+                    status: current_status,
+                    agregated: true,
+                });
                 status = worst(current_status, status);
             }
         }
@@ -237,90 +246,99 @@ impl Command {
         &self,
         count: usize,
         status: Status,
-        metrics: &Vec<(String, f32, &Option<String>, &Option<String>, Status)>,
+        metrics: &Vec<Metric>,
         ag: &Option<(&str, usize, f32)>,
         ext: &CommandExt,
     ) -> String {
-        let mut output_text: String;
-        if status == Status::Ok {
-            output_text = self
-                .leaf
-                .output
-                .default
-                .replace("{count}", count.to_string().as_str())
-                .replace(
-                    "{status}",
-                    match status {
-                        Status::Ok => "OK",
-                        Status::Warning => "WARNING",
-                        Status::Critical => "CRITICAL",
-                        Status::Unknown => "UNKNOWN",
-                    },
-                );
-            match ag {
-                Some(a) => {
-                    output_text = output_text
-                        .replace(format!("{{{}}}", a.0).as_str(), a.2.to_string().as_str());
-                }
-                None => (),
+        let mut output_text = "".to_string();
+        let mut begun = false;
+        if &self.leaf.output.header != "" {
+            output_text = match status {
+                Status::Ok => self.leaf.output.header.replace("{status}", "OK"),
+                Status::Warning => self.leaf.output.header.replace("{status}", "WARNING"),
+                Status::Critical => self.leaf.output.header.replace("{status}", "CRITICAL"),
+                Status::Unknown => self.leaf.output.header.replace("{status}", "UNKNOWN"),
             };
-        } else {
-            let mut warning_array = Vec::new();
-            let mut critical_array = Vec::new();
-            let part = &self.leaf.output.status;
-            for (idx, m) in metrics.iter().enumerate() {
-                if m.4 == Status::Warning {
-                    let output_str = match *part {
-                        Some(ref s) => {
-                            s.text.replace("{value}", m.1.to_string().as_str())
-                                .replace("{idx}", idx.to_string().as_str())
+            begun = true;
+        }
+        let mut idx = 0;
+        for line in &self.leaf.output.text {
+            if line.contains("idx") {
+                // We have to iterate on metrics
+                let mut output_vec = (Vec::new(), Vec::new(), Vec::new());
+                for m in metrics.iter() {
+                    if !m.agregated {
+                        let text = line
+                            .replace("{idx}", idx.to_string().as_str())
+                            .replace("{name}", m.name.as_str())
+                            .replace("{value}", format!("{:.2}", m.value).as_str());
+                        match m.status {
+                            Status::Ok => {
+                                output_vec.0.push(text);
+                            }
+                            Status::Warning => {
+                                output_vec.1.push(text);
+                            }
+                            Status::Critical => {
+                                output_vec.2.push(text);
+                            }
+                            Status::Unknown => (),
                         }
-                        None => "".to_string(),
-                    };
-                    warning_array.push(output_str);
-                } else if m.4 == Status::Critical {
-                    let part = &self.leaf.output.status;
-                    let output_str = match *part {
-                        Some(ref s) => {
-                            s.text.replace("{value}", m.1.to_string().as_str())
-                                .replace("{idx}", idx.to_string().as_str())
-                        }
-                        None => "".to_string(),
-                    };
-                    critical_array.push(output_str);
+                        idx += 1;
+                    }
                 }
-            }
-            let warn_header = match *part {
-                Some(ref s) => &s.header.replace("{status}", "WARNING"),
-                None => "",
-            };
-            let crit_header = match *part {
-                Some(ref s) => &s.header.replace("{status}", "CRITICAL"),
-                None => "",
-            };
-            if !warning_array.is_empty() && !critical_array.is_empty() {
-                output_text = format!("{} {} - {} {}", crit_header, &critical_array.join(" - "), warn_header, &warning_array.join(" - "));
-            } else if !warning_array.is_empty() {
-                output_text = format!("{} {}", warn_header, &warning_array.join(" - "));
+                if !output_vec.2.is_empty() {
+                    if begun {
+                        output_text += " - ";
+                    } else {
+                        begun = true;
+                    }
+                    output_text += output_vec.2.join(" - ").as_str();
+                }
+                if !output_vec.1.is_empty() {
+                    if begun {
+                        output_text += " - ";
+                    } else {
+                        begun = true;
+                    }
+                    output_text += output_vec.1.join(" - ").as_str();
+                }
+                if !output_vec.0.is_empty() {
+                    if begun {
+                        output_text += " - ";
+                    }
+                    output_text += output_vec.0.join(" - ").as_str();
+                }
             } else {
-                output_text = format!("{} {}", crit_header, critical_array.join(" - "));
+                match ag {
+                    Some(a) => {
+                        output_text += line
+                            .replace(
+                                format!("{{{}}}", a.0).as_str(),
+                                format!("{:.2}", a.2).as_str(),
+                            )
+                            .as_str();
+                    }
+                    None => output_text += line,
+                };
             }
         }
+        output_text = output_text.replace("{count}", idx.to_string().as_str());
 
         let mut perfdata = " |".to_string();
         match &self.leaf.data {
             Some(d) => {
-                metrics.iter().for_each(|(k, v, w, c, s)| {
+                metrics.iter().for_each(|m| {
                     perfdata += format!(
                         " {}={}{};{};{};{};{}",
-                        k,
-                        v,
+                        m.name,
+                        m.value,
                         d.uom,
-                        match w {
+                        match m.warning {
                             Some(m) => m.to_string(),
                             None => "".to_string(),
                         },
-                        match c {
+                        match m.critical {
                             Some(m) => m.to_string(),
                             None => "".to_string(),
                         },
@@ -337,16 +355,16 @@ impl Command {
                 });
             }
             None => {
-                metrics.iter().for_each(|(k, v, w, c, s)| {
+                metrics.iter().for_each(|m| {
                     perfdata += format!(
                         " {}={};{};{}",
-                        k,
-                        v,
-                        match w {
+                        m.name,
+                        m.value,
+                        match m.warning {
                             Some(v) => v.to_string(),
                             None => "".to_string(),
                         },
-                        match c {
+                        match m.critical {
                             Some(v) => v.to_string(),
                             None => "".to_string(),
                         }
