@@ -39,12 +39,12 @@ cpu ${tc}
             ...      9     --warning-core='0'              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
             ...      10    --critical-core='0'             CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
 
-gs_cpu ${tc}
+gs-cpu ${tc}
     [Tags]    os    linux    generic-snmp
     ${command}    Catenate
     ...    ${GS_CMD}
     ...    --hostname=${HOSTNAME}
-    ...    --port=2024
+    ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
     ...    --community=os/linux/snmp/network-interfaces
     ...    ${extra_options}
@@ -53,3 +53,7 @@ gs_cpu ${tc}
 
     Examples:         tc    extra_options                 expected_result    --
             ...       1     ${EMPTY}                      OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
+            ...       2     --warning-agregation=0           WARNING: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;0:0;;0;100 'cpu'=2.00%;;;0;100
+            ...       3     --critical-agregation=0          CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;;0:0;0;100 'cpu'=2.00%;;;0;100
+            ...       4     --warning-core=0              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
+            ...       5     --critical-core=0              CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
