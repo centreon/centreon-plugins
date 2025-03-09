@@ -12,6 +12,17 @@ pub enum Status {
     Unknown = 3,
 }
 
+impl Status {
+    fn as_str(&self) -> &str {
+        match *self {
+            Status::Ok => "OK",
+            Status::Warning => "WARNING",
+            Status::Critical => "CRITICAL",
+            Status::Unknown => "UNKNOWN",
+        }
+    }
+}
+
 struct Metric<'b> {
     name: String,
     value: f32,
@@ -250,80 +261,88 @@ impl Command {
         ag: &Option<(&str, usize, f32)>,
         ext: &CommandExt,
     ) -> String {
+        let no_threshold = ext.warning_core.is_none()
+            && ext.critical_core.is_none()
+            && ext.warning_agregation.is_none()
+            && ext.critical_agregation.is_none();
+        let write_details =
+            no_threshold || (ext.warning_core.is_some() || ext.critical_core.is_some());
+        let write_agregation_details =
+            no_threshold || (ext.warning_agregation.is_some() || ext.critical_agregation.is_some());
         let mut output_text = "".to_string();
         let mut begun = false;
         if &self.leaf.output.header != "" {
-            output_text = match status {
-                Status::Ok => self.leaf.output.header.replace("{status}", "OK"),
-                Status::Warning => self.leaf.output.header.replace("{status}", "WARNING"),
-                Status::Critical => self.leaf.output.header.replace("{status}", "CRITICAL"),
-                Status::Unknown => self.leaf.output.header.replace("{status}", "UNKNOWN"),
-            };
-            begun = true;
+            output_text = self.leaf.output.header.replace("{status}", status.as_str());
         }
-        let mut idx = 0;
         for line in &self.leaf.output.text {
             if line.contains("idx") {
-                // We have to iterate on metrics
-                let mut output_vec = (Vec::new(), Vec::new(), Vec::new());
-                for m in metrics.iter() {
-                    if !m.agregated {
-                        let text = line
-                            .replace("{idx}", idx.to_string().as_str())
-                            .replace("{name}", m.name.as_str())
-                            .replace("{value}", format!("{:.2}", m.value).as_str());
-                        match m.status {
-                            Status::Ok => {
-                                output_vec.0.push(text);
+                if write_details {
+                    // We have to iterate on metrics
+                    let mut output_vec = (Vec::new(), Vec::new(), Vec::new());
+                    let mut idx = 0;
+                    for m in metrics.iter() {
+                        if !m.agregated {
+                            let text = line
+                                .replace("{idx}", idx.to_string().as_str())
+                                .replace("{name}", m.name.as_str())
+                                .replace("{value}", format!("{:.2}", m.value).as_str())
+                                .replace("{count}", count.to_string().as_str());
+                            match m.status {
+                                Status::Ok => {
+                                    output_vec.0.push(text);
+                                }
+                                Status::Warning => {
+                                    output_vec.1.push(text);
+                                }
+                                Status::Critical => {
+                                    output_vec.2.push(text);
+                                }
+                                Status::Unknown => (),
                             }
-                            Status::Warning => {
-                                output_vec.1.push(text);
-                            }
-                            Status::Critical => {
-                                output_vec.2.push(text);
-                            }
-                            Status::Unknown => (),
+                            idx += 1;
                         }
-                        idx += 1;
                     }
-                }
-                if !output_vec.2.is_empty() {
-                    if begun {
-                        output_text += " - ";
-                    } else {
-                        begun = true;
+                    if !output_vec.2.is_empty() {
+                        if begun {
+                            output_text += " - ";
+                        } else {
+                            begun = true;
+                        }
+                        output_text += output_vec.2.join(" - ").as_str();
                     }
-                    output_text += output_vec.2.join(" - ").as_str();
-                }
-                if !output_vec.1.is_empty() {
-                    if begun {
-                        output_text += " - ";
-                    } else {
-                        begun = true;
+                    if !output_vec.1.is_empty() {
+                        if begun {
+                            output_text += " - ";
+                        } else {
+                            begun = true;
+                        }
+                        output_text += output_vec.1.join(" - ").as_str();
                     }
-                    output_text += output_vec.1.join(" - ").as_str();
-                }
-                if !output_vec.0.is_empty() {
-                    if begun {
-                        output_text += " - ";
+                    if !output_vec.0.is_empty() {
+                        if begun {
+                            output_text += " - ";
+                        }
+                        output_text += output_vec.0.join(" - ").as_str();
                     }
-                    output_text += output_vec.0.join(" - ").as_str();
                 }
             } else {
-                match ag {
-                    Some(a) => {
-                        output_text += line
-                            .replace(
-                                format!("{{{}}}", a.0).as_str(),
-                                format!("{:.2}", a.2).as_str(),
-                            )
-                            .as_str();
-                    }
-                    None => output_text += line,
-                };
+                if write_agregation_details {
+                    match ag {
+                        Some(a) => {
+                            output_text += line
+                                .replace(
+                                    format!("{{{}}}", a.0).as_str(),
+                                    format!("{:.2}", a.2).as_str(),
+                                )
+                                .replace("{count}", count.to_string().as_str())
+                                .as_str();
+                            begun = true;
+                        }
+                        None => output_text += line,
+                    };
+                }
             }
         }
-        output_text = output_text.replace("{count}", idx.to_string().as_str());
 
         let mut perfdata = " |".to_string();
         match &self.leaf.data {
