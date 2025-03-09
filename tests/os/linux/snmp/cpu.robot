@@ -52,8 +52,8 @@ gs-cpu ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extra_options                 expected_result    --
-            ...       1     ${EMPTY}                      OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-            ...       2     --warning-agregation=0           WARNING: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;0:0;;0;100 'cpu'=2.00%;;;0;100
-            ...       3     --critical-agregation=0          CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;;0:0;0;100 'cpu'=2.00%;;;0;100
-            ...       4     --warning-core=0              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
-            ...       5     --critical-core=0              CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
+            ...       1     ${EMPTY}                      OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage: 2.00 % | 'total_cpu_avg'=2%;;;0;100 'cpu_0'=2%;;;0;100
+            ...       2     --warning-agregation=0           WARNING: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2%;0;;0;100 'cpu_0'=2%;;;0;100
+            ...       3     --critical-agregation=0          CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2%;;0;0;100 'cpu_0'=2%;;;0;100
+            ...       4     --warning-core=0              WARNING: CPU '0' usage: 2.00 % | 'total_cpu_avg'=2%;;;0;100 'cpu_0'=2%;0;;0;100
+            ...       5     --critical-core=0              CRITICAL: CPU '0' usage: 2.00 % | 'total_cpu_avg'=2%;;;0;100 'cpu_0'=2%;;0;0;100
