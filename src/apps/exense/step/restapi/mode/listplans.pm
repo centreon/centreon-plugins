@@ -66,10 +66,7 @@ sub manage_selection {
             'direction' => 'ASCENDING'
         }
     };
-    eval {
-        $payload = encode_json($payload);
-    };
-    if ($@) {
+    $payload = centreon::plugins::misc::json_encode($payload) or {
         $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
         $self->{output}->option_exit();
     }
