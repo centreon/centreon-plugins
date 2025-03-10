@@ -122,20 +122,6 @@ sub get_port {
     return $self->{port};
 }
 
-sub json_decode {
-    my ($self, %options) = @_;
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($self->{output}->decode($options{content}));
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
-}
 
 sub build_options_for_httplib {
     my ($self, %options) = @_;
