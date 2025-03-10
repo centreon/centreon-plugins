@@ -689,7 +689,7 @@ jobs:
             distrib: jammy
             arch: amd64
             runner_name: ubuntu-24.04
-          - package_extensions: deb
+          - package_extension: deb
             image: ubuntu:noble
             arch: amd64
             runner_name: ubuntu-24.04
