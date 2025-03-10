@@ -194,7 +194,7 @@ Filter switch by status
 
 Filter switch by admin connection state
 
-=item B<--filter-IP>
+=item B<--filter-ip>
 
 Filter switch by IP (can be a regexp).
 
