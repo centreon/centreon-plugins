@@ -531,7 +531,7 @@ jobs:
           if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
-          
+
           if [ -z "${{ matrix.deb_provides }}" ]; then
             PACKAGE_PROVIDES=""
           else
