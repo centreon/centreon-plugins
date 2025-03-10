@@ -110,6 +110,7 @@ jobs:
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
           - name: "Crypt::Argon2"
             preinstall_cpanlibs: "Dist::Build"
+            rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -124,12 +125,14 @@ jobs:
             no-auto-depends: "true"
           - name: "Libssh::Session"
             rpm_dependencies: "libssh"
+            rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
             no-auto-depends: "true"
           - name: "Net::Curl"
             rpm_dependencies: "libcurl"
+            rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -381,7 +384,7 @@ jobs:
           - arch: amd64
           - build_names: "bullseye-amd64,bookworm,jammy"
           - deb_dependencies: ""
-          - rpm_provides: ""
+          - deb_provides: ""
           - version: ""
           - use_dh_make_perl: "true"
           - no-auto-depends: "false"
@@ -410,6 +413,7 @@ jobs:
             use_dh_make_perl: "false"
             no-auto-depends: "true"
             deb_dependencies: "libexporter-tiny-perl libtime-hires-perl libxsloader-perl"
+            deb_provides: "libcrypt-argon2-perl-dbgsym"
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
@@ -426,6 +430,7 @@ jobs:
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
+            deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
           - name: "Net::Amazon::Signature::V4"
             build_names: ["bullseye-amd64", "jammy"]
           - name: "Net::Curl"
@@ -433,6 +438,7 @@ jobs:
             build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
+            deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
           - name: "Net::MQTT::Simple"
             version: "1.29"
           - name: "Paws"
@@ -526,9 +532,17 @@ jobs:
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
+          if [ -z "${{ matrix.deb_provides }}" ]; then
+            PACKAGE_PROVIDES=""
+          else
+            for PACKAGE_PROVIDE in `echo "${{ matrix.deb_provides }}"`; do
+              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
+            done
+          fi
+
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
