@@ -228,7 +228,7 @@ Can be: 'cpu' (%), 'memory' (%).
 
 Filter by switch name (can be a regexp).
 
-=item B<--filter-IP>
+=item B<--filter-ip>
 
 Filter by switch IP (can be a regexp).
 
