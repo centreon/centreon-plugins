@@ -274,7 +274,7 @@ sub request {
 
     return if (defined($options{skip_decode}));
 
-    my $decoded = $self->json_decode(content => $content);
+    my $decoded = centreon::plugins::misc::json_decode($content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
