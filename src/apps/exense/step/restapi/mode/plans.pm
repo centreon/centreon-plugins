@@ -461,11 +461,46 @@ You can use the following variables: %{status}, %{planName}
 Set critical threshold for last plan execution status.
 You can use the following variables: %{status}, %{planName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-plans-detected>
 
 Thresholds.
-Can be: 'plans-detected', 'plans-executions-detected', 'plan-executions-failed-prct',
-'plan-execution-last', 'plan-running-duration'.
+
+=item B<--critical-plans-detected>
+
+Thresholds.
+
+=item B<--warning-plans-executions-detected>
+
+Thresholds.
+
+=item B<--critical-plans-executions-detected>
+
+Thresholds.
+
+=item B<--warning-plan-executions-failed-prct>
+
+Thresholds.
+
+=item B<--critical-plan-executions-failed-prct>
+
+Thresholds.
+
+=item B<--warning-plan-execution-last>
+
+Thresholds.
+
+=item B<--critical-plan-execution-last>
+
+Thresholds.
+
+=item B<--warning-plan-running-duration>
+
+Thresholds.
+
+=item B<--critical-plan-running-duration>
+
+Thresholds.
+
 
 =back
 
