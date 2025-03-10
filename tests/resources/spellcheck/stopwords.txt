@@ -74,6 +74,7 @@ ESX
 eth
 ext4
 fanspeed
+fantray
 FCCapacity
 --filter-fs
 --filter-imei
