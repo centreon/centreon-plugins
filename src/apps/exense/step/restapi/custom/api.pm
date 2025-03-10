@@ -160,11 +160,7 @@ sub get_session_id {
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
         ) {
         my $json_request = { username => $self->{api_username}, password => $self->{api_password} };
-        my $encoded;
-        eval {
-            $encoded = encode_json($json_request);
-        };
-        if ($@) {
+        my $encoded =  centreon::plugins::misc::json_encode($json_request) or {
             $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
             $self->{output}->option_exit();
         }
