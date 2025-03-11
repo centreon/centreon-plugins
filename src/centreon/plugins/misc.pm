@@ -152,6 +152,15 @@ sub unix_execute {
             push @$args, $options{options}->{hostname};
         }
 
+        if (defined($options{options}->{ssh_option_eol})) {
+            foreach (@{$options{options}->{ssh_option_eol}}) {
+                if (/^(.*?)(?:=(.*))?$/) {
+                    push @$args, $1 if (defined($1));
+                    push @$args, $2 if (defined($2));
+                }
+            }
+        }
+
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
