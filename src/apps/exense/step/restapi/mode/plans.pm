@@ -358,6 +358,7 @@ sub manage_selection {
             next if (defined($self->{option_results}->{filter_environment}) && $self->{option_results}->{filter_environment} ne '' &&
                 $plan_exec->{executionParameters}->{customParameters}->{env} !~ /$self->{option_results}->{filter_environment}/);
 
+            # if the endTime is empty, we store this older running execution for later
             if (!defined($plan_exec->{endTime}) || $plan_exec->{endTime} eq '') {
                 $older_running_exec = $plan_exec;
             }
