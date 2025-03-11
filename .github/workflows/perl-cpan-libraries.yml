@@ -688,11 +688,11 @@ jobs:
             image: ubuntu:jammy
             distrib: jammy
             arch: amd64
-            runner_name: ubuntu-24.04
-          - package_extension: deb
-            image: ubuntu:noble
-            arch: amd64
-            runner_name: ubuntu-24.04
+          #   runner_name: ubuntu-24.04
+          # - package_extension: deb
+          #   image: ubuntu:noble
+          #   arch: amd64
+          #   runner_name: ubuntu-24.04
           - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
