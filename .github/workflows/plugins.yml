@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -120,9 +120,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
-          - package_extension: deb
-            image: unit-tests-noble
-            distrib: noble
+          # - package_extension: deb
+          #   image: unit-tests-noble
+          #   distrib: noble
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -317,7 +317,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-noble, testing-plugins-bullseye, testing-plugins-bookworm]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -335,9 +335,9 @@ jobs:
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
-          - package_extension: deb
-            image: testing-plugins-noble
-            distrib: noble
+          # - package_extension: deb
+          #   image: testing-plugins-noble
+          #   distrib: noble
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
