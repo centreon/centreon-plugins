@@ -209,7 +209,7 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
-          - package_extensions: deb
+          - package_extension: deb
             image: packaging-plugins-noble
             distrib: noble
 
