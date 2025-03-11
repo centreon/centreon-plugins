@@ -249,6 +249,10 @@ jobs:
           - distrib: jammy
             package_extension: deb
             arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: amd64
+
 
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
