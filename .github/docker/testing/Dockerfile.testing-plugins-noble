@@ -39,8 +39,8 @@ apt-get install -y nodejs
 npm install -g -D @mockoon/cli
 
 # Add Centreon plugins repositories
-echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ noble main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ noble main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 apt-get update
 
