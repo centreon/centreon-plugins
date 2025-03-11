@@ -37,7 +37,8 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
       release: ${{ steps.get_release.outputs.release }}
       stability: ${{ steps.get_stability.outputs.stability }}
-      target_stability: ${{ steps.get_stability.outputs.target_stability }}
+      # target_stability: ${{ steps.get_stability.outputs.target_stability }}
+      target_stability: unstable
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
       skip_workflow: ${{ steps.skip_workflow.outputs.result }}
