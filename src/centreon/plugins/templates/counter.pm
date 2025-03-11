@@ -365,10 +365,27 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
+    # The default sort method is cmp (string comparison)
     my $sort_method = 'cmp';
+    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
     $sort_method = $options{config}->{sort_method}
         if (defined($options{config}->{sort_method}));
-    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
+
+    # In the absence of sort_attribute the sort method is set now
+    my $sort_sub = $sort_subs->{$sort_method};
+
+    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
+    if (defined($options{config}->{sort_attribute})) {
+        my $sort_attribute = $options{config}->{sort_attribute};
+        if ($sort_method eq 'cmp') {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        } else {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        }
+    }
+
+    # Now the loop begins with the desired sorting method
+    foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
