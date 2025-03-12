@@ -503,7 +503,7 @@ jobs:
           CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
 
           # Handle specific cases of libssh-session
-          if [[ "$PACKAGE_NAME" == "libssh-session" ]];then
+          if [[ "$CPAN_PACKAGE_NAME" == "lib"* ]];then
             PACKAGE_NAME="$CPAN_PACKAGE_NAME-perl"
           else
             PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
