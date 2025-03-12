@@ -24,7 +24,7 @@ rm -f /etc/apt/apt.conf.d/docker-clean
 
 apt-get update
 # Install requirements for python virtual envs
-apt-get install python3-venv
+apt-get install -y python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
 # Install Robotframework
