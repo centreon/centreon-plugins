@@ -25,7 +25,7 @@ rm -f /etc/apt/apt.conf.d/docker-clean
 apt-get update
 # Install pipx
 apt-get install -y pipx
-pipx --global ensurepath
+pipx ensurepath
 # Install Robotframework
 apt-get install -y python3 python3-dev python3-pip
 pipx install robotframework robotframework-examples
