@@ -576,7 +576,7 @@ jobs:
           fi
 
           # Check deb
-          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+          dpkg-deb --verbose --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
 
           # REMOVE ME
           ls -l |grep ssh
