@@ -550,7 +550,7 @@ jobs:
 
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }}${{ matrix.revision }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
@@ -567,7 +567,7 @@ jobs:
             cpanm $CPANLIB_PREINSTALL
           done
           temp_file=$(mktemp)
-          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ steps.parse-distrib.outputs.package_distrib_name }}${{ matrix.revision }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: dh-make-perl command failed"

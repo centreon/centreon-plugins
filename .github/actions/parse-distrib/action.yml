@@ -41,12 +41,12 @@ runs:
           DISTRIB_FAMILY="el"
         elif [[ "${{ inputs.distrib }}" == "bullseye" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="+"
-          PACKAGE_DISTRIB_NAME="deb11u"
+          PACKAGE_DISTRIB_NAME="deb11u1"
           PACKAGE_EXTENSION="deb"
           DISTRIB_FAMILY="debian"
         elif [[ "${{ inputs.distrib }}" == "bookworm" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="+"
-          PACKAGE_DISTRIB_NAME="deb12u"
+          PACKAGE_DISTRIB_NAME="deb12u1"
           PACKAGE_EXTENSION="deb"
           DISTRIB_FAMILY="debian"
         elif [[ "${{ inputs.distrib }}" == "jammy" ]]; then
