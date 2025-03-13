@@ -567,7 +567,7 @@ jobs:
             cpanm $CPANLIB_PREINSTALL
           done
           temp_file=$(mktemp)
-          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }}${{ matrix.revision }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ steps.parse-distrib.outputs.package_distrib_name }}${{ matrix.revision }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: dh-make-perl command failed"
