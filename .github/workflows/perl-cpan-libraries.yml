@@ -564,7 +564,7 @@ jobs:
 
           # Handle specific case for libssh-session
           if [[ "${{ matrix.name }}" == "Libssh::Session" ]]; then
-            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} --name ${{ steps.package-infos.outputs.package_name }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} --name ssh-session ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           else
             created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           fi
