@@ -52,6 +52,7 @@ Ctn Cleanup Cache
 
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
+   Set Environment Variable    TZ    UTC
 
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
