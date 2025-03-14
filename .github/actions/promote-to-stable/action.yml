@@ -66,14 +66,14 @@ runs:
       shell: bash
 
     - name: Promote DEB package to stable
-      if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy"]'), inputs.distrib) }}
+      if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy", "noble"]'), inputs.distrib) }}
       run: |
         set -eux
 
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
         echo "[DEBUG] - Distrib: ${{ inputs.module }}"
 
-        if [[ "${{ inputs.distrib }}" == "jammy" ]]; then
+        if [[ "${{ inputs.distrib }}" == "jammy" || "${{ inputs.distrib }}" == "noble" ]]; then
           repo="ubuntu-plugins"
         else
           repo="apt-plugins"

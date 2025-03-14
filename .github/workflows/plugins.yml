@@ -120,6 +120,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
+          - package_extension: deb
+            image: unit-tests-noble
+            distrib: noble
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -206,6 +209,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -330,6 +336,9 @@ jobs:
             image: testing-plugins-jammy
             distrib: jammy
           - package_extension: deb
+            image: testing-plugins-noble
+            distrib: noble
+          - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
@@ -384,6 +393,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

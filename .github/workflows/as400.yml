@@ -47,7 +47,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
-
+          - package_extension: deb
+            image: packaging-plugins-java-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -129,6 +131,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

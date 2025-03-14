@@ -55,6 +55,11 @@ jobs:
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
+          - image: packaging-plugins-noble
+            distrib: noble
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -244,6 +249,10 @@ jobs:
           - distrib: jammy
             package_extension: deb
             arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: amd64
+
 
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:

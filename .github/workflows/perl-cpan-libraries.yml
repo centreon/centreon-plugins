@@ -351,7 +351,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
         name:
           [
             "ARGV::Struct",
@@ -386,7 +386,7 @@ jobs:
         include:
           - runner_name: ubuntu-24.04
           - arch: amd64
-          - build_names: "bullseye-amd64,bookworm,jammy"
+          - build_names: "bullseye-amd64,bookworm,jammy,noble"
           - deb_dependencies: ""
           - deb_provides: ""
           - version: ""
@@ -406,6 +406,10 @@ jobs:
             distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
+          - build_name: noble
+            distrib: noble
+            package_extension: deb
+            image: packaging-plugins-noble
           - build_name: bullseye-arm64
             distrib: bullseye
             package_extension: deb
@@ -413,7 +417,7 @@ jobs:
             arch: arm64
             runner_name: centreon-collect-arm64
           - name: "Crypt::Argon2"
-            build_names: "bullseye-amd64,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,jammy,noble,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
             use_dh_make_perl: "false"
             no-auto-depends: "true"
@@ -424,25 +428,25 @@ jobs:
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
             build_names: "bookworm"
           - name: "Device::Modbus::TCP::Client"
             build_names: "bookworm"
           - name: "Digest::SHA1"
-            build_names: "jammy"
+            build_names: "jammy,noble"
           - name: "Libssh::Session"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
             revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: ["bullseye-amd64", "jammy"]
+            build_names: ["bullseye-amd64", "jammy", "noble"]
           - name: "Net::Curl"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
             deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
@@ -460,7 +464,7 @@ jobs:
             use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -572,7 +576,8 @@ jobs:
           fi
 
           # Check deb
-          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+          dpkg-deb --verbose --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
@@ -617,7 +622,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm, jammy, noble]
 
     steps:
       - name: Merge Artifacts
@@ -642,7 +647,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm, jammy, noble]
     steps:
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
@@ -683,6 +688,10 @@ jobs:
           - package_extension: deb
             image: ubuntu:jammy
             distrib: jammy
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: ubuntu:noble
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
@@ -736,6 +745,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

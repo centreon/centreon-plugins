@@ -48,6 +48,9 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: jammy
             image: jammy
+          - runner: ubuntu-22.04
+            dockerfile: noble
+            image: noble
 
     runs-on: ${{ matrix.runner }}
 
