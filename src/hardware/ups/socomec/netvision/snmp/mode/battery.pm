@@ -36,7 +36,7 @@ sub custom_load_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'charge remaining: %s%% (%s minutes remaining)', 
+        'charge remaining: %s%% (%s minutes remaining)',
         $self->{result_values}->{charge_remain},
         $self->{result_values}->{minute_remain}
     );
@@ -102,6 +102,14 @@ sub set_counters {
                     { template => '%s', unit => 'C' }
                 ]
             }
+        },
+        { label => 'temperatureambient', nlabel => 'battery.temperatureambient.celsius', display_ok => 0, set => {
+                key_values => [ { name => 'temperatureambient', no_value => 0 } ],
+                output_template => 'temperatureambient: %s C',
+                perfdatas => [
+                    { template => '%s', unit => 'C' }
+                ]
+            }
         }
     ];
 }
@@ -110,7 +118,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 
@@ -130,19 +138,21 @@ my $map_status_v5 = {
 
 my $mapping = {
     netvision5 => {
-        status        => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.1', map => $map_status_v5 }, # upsBatteryStatus
-        minute_remain => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.3' }, # upsEstimatedMinutesRemaining
-        charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.4' }, # upsEstimatedChargeRemaining
-        voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.5' }, # upsBatteryVoltage (dV)
-        temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.6' }  # upsBatteryTemperature (degrees Centigrade)
+        status               => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.1', map => $map_status_v5 }, # upsBatteryStatus
+        minute_remain        => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.3' }, # upsEstimatedMinutesRemaining
+        charge_remain        => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.4' }, # upsEstimatedChargeRemaining
+        voltage              => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.5' }, # upsBatteryVoltage (dV)
+        temperature          => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.7' }, # upsBatteryTemperature (degrees Centigrade)
+        temperatureambient   => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.6' }  # upsAmbientTemperature (degrees Centigrade)
     },
     netvision6 => {
-        status        => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.1', map => $map_status_v6 }, # upsBatteryStatus
-        minute_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.3' }, # upsEstimatedMinutesRemaining
-        charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.4' }, # upsEstimatedChargeRemaining
-        voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.5' }, # upsBatteryVoltage (dV)
-        temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.6' }, # upsBatteryTemperature (degrees Centigrade)
-        current       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' }  # upsBatteryCurrent (dA)
+        status               => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.1', map => $map_status_v6 }, # upsBatteryStatus
+        minute_remain        => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.3' }, # upsEstimatedMinutesRemaining
+        charge_remain        => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.4' }, # upsEstimatedChargeRemaining
+        voltage              => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.5' }, # upsBatteryVoltage (dV)
+        temperature          => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.6' }, # upsBatteryTemperature (degrees Centigrade)
+        temperatureambient   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.7' }, # upsAmbientTemperature (degrees Centigrade)
+        current              => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' }  # upsBatteryCurrent (dA)
     }
 };
 
@@ -162,11 +172,12 @@ sub manage_selection {
     }
 
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping->{$label}, results => $snmp_result, instance => 0);
-    $self->{global}->{current} = (defined($self->{global}->{current}) && $self->{global}->{current} =~ /\d/ && $self->{global}->{current} != -1 && $self->{global}->{current} != 65535) ? 
+    $self->{global}->{current} = (defined($self->{global}->{current}) && $self->{global}->{current} =~ /\d/ && $self->{global}->{current} != -1 && $self->{global}->{current} != 65535) ?
         $self->{global}->{current} * 0.1 : 0;
     $self->{global}->{voltage} = (defined($self->{global}->{voltage}) && $self->{global}->{voltage} =~ /\d/ && $self->{global}->{voltage} != -1 && $self->{global}->{voltage} != 65535) ?
         $self->{global}->{voltage} * 0.1 : 0;
     $self->{global}->{temperature} = (defined($self->{global}->{temperature}) && $self->{global}->{temperature} =~ /\d/) ? $self->{global}->{temperature} * 0.1 : 0;
+    $self->{global}->{temperatureambient} = (defined($self->{global}->{temperatureambient}) && $self->{global}->{temperatureambient} =~ /\d/) ? $self->{global}->{temperatureambient} * 0.1 : 0;
     $self->{global}->{minute_remain} = (defined($self->{global}->{minute_remain}) && $self->{global}->{minute_remain} =~ /\d/ && $self->{global}->{minute_remain} != -1) ? $self->{global}->{minute_remain} : 'unknown';
     $self->{global}->{charge_remain} = (defined($self->{global}->{charge_remain}) && $self->{global}->{charge_remain} =~ /\d/) ? $self->{global}->{charge_remain} : undef;
 }
@@ -200,7 +211,7 @@ You can use the following variables: %{status}
 
 Thresholds.
 Can be: 'charge-remaining' (%), 'charge-remaining-minutes',
-'current' (A), 'voltage' (V), 'temperature' (C).
+'current' (A), 'voltage' (V), 'temperature' (C), 'temperatureambient' (C).
 
 =back
 
