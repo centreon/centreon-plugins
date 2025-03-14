@@ -201,7 +201,7 @@ sub manage_selection {
         if ($scenario_detail->{infos}->{info}->{hasStep}) {
             foreach my $steps (@{$scenario_detail->{steps}}) {
                 $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
-            } # at this point we have 0/Home, 1/Dashboard v2, 2/Dashboard v3
+            }
         }
         # The API is expected to sort the output to get the most recent data at the end of the array.
         # We store the last execution date, and check it for every data point sent back by the api.
