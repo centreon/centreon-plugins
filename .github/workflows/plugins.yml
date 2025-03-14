@@ -120,9 +120,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
-          # - package_extension: deb
-          #   image: unit-tests-noble
-          #   distrib: noble
+          - package_extension: deb
+            image: unit-tests-noble
+            distrib: noble
 
     runs-on: ${{ matrix.runner_name }}
     container:
