@@ -229,6 +229,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $jobs_exec = $options{custom}->get_backup_job_session(timeframe => $self->{option_results}->{timeframe});
+    my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
 
     my $ctime = time();
 
@@ -252,6 +253,50 @@ sub manage_selection {
         my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
         my $epoch = $dt->epoch();
         
+        if (!defined($self->{jobs}->{ $job->{JobUid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{JobUid} }->{executions}->{last}->{epoch}) {
+            $self->{jobs}->{ $job->{JobUid} }->{executions}->{last} = {
+                jobName => $job->{JobName},
+                started => $job->{CreationTimeUTC},
+                status => $job->{Result},
+                epoch => $epoch
+            };
+
+            $self->{jobs}->{ $job->{JobUid} }->{timers} = {
+                name => $job->{JobName},
+                lastExecSeconds => $ctime - $epoch,
+                lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $epoch)
+            };
+
+            if ($job->{State} =~ /Starting|Working|Resuming/i) {
+                my $duration = $ctime - $epoch;
+                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationSeconds} = $duration;
+                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+            }
+        }
+
+        $self->{jobs}->{ $job->{JobUid} }->{failed}->{total}++;
+        if (defined($job->{Result}) && $job->{Result} =~ /Failed/i) {
+            $self->{jobs}->{ $job->{JobUid} }->{failed}->{failed}++;
+        }
+    }
+    foreach my $job (@{$jobs_replica->{Entities}->{ReplicaJobSessions}->{ReplicaJobSessions}}) {
+        next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' && $job->{JobUid} !~ /$self->{option_results}->{filter_uid}/);
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $job->{JobName} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && $job->{JobType} !~ /$self->{option_results}->{filter_type}/);
+
+        if (!defined($self->{jobs}->{ $job->{JobUid} })) {
+            $self->{jobs}->{ $job->{JobUid} } = {
+                name => $job->{JobName},
+                type => $job->{JobType},
+                failed => { name => $job->{JobName}, total => 0, failed => 0 }
+            };
+            $self->{global}->{detected}++;
+        }
+
+        $job->{CreationTimeUTC} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+        my $epoch = $dt->epoch();
+
         if (!defined($self->{jobs}->{ $job->{JobUid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{JobUid} }->{executions}->{last}->{epoch}) {
             $self->{jobs}->{ $job->{JobUid} }->{executions}->{last} = {
                 jobName => $job->{JobName},
@@ -308,7 +353,7 @@ Filter jobs by type.
 
 =item B<--timeframe>
 
-Timeframe to get BackupJobSession (in seconds. Default: 86400). 
+Timeframe to get BackupJobSession and ReplicaJobSession (in seconds. Default: 86400).
 
 =item B<--unit>
 
