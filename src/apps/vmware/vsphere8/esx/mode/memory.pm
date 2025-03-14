@@ -119,14 +119,13 @@ sub manage_selection {
 Monitor the memory of VMware ESX hosts consumed by the virtual machines through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
-    mem.reservedCapacityPct.HOST     Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
-    mem.capacity.provisioned.HOST    Total amount of memory available to the host.
-    mem.capacity.usable.HOST         Amount of physical memory available for use by virtual machines on this host
-    mem.capacity.usage.HOST          Amount of physical memory actively used
-    mem.capacity.contention.HOST     Percentage of time VMs are waiting to access swapped, compressed or ballooned memory.
-    mem.consumed.vms.HOST            Amount of physical memory consumed by VMs on this host.
-    mem.consumed.userworlds.HOST     Amount of physical memory consumed by userworlds on this host
-
+    - mem.reservedCapacityPct.HOST     Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
+    - mem.capacity.provisioned.HOST    Total amount of memory available to the host.
+    - mem.capacity.usable.HOST         Amount of physical memory available for use by virtual machines on this host
+    - mem.capacity.usage.HOST          Amount of physical memory actively used
+    - mem.capacity.contention.HOST     Percentage of time VMs are waiting to access swapped, compressed or ballooned memory.
+    - mem.consumed.vms.HOST            Amount of physical memory consumed by VMs on this host.
+    - mem.consumed.userworlds.HOST     Amount of physical memory consumed by userworlds on this host
 
 =over 8
 
