@@ -335,9 +335,9 @@ jobs:
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
-          # - package_extension: deb
-          #   image: testing-plugins-noble
-          #   distrib: noble
+          - package_extension: deb
+            image: testing-plugins-noble
+            distrib: noble
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
