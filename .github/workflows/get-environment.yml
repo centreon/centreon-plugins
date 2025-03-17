@@ -271,12 +271,6 @@ jobs:
               for (const tag of tags) {
                 const match = tag.name.match(/^plugins-(\d{8})$/);
 
-                // log non matching just for debug
-                if (!match) {
-                  console.log(`Skipping non-matching tag: ${tag.name}`);
-                  continue;
-                }
-
                 const tagDate = parseInt(match[1], 10);
 
                 // get latest tag
