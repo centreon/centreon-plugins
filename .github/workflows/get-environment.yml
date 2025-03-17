@@ -282,6 +282,10 @@ jobs:
 
               console.log(`Most recent tag found: ${latestTag}`)
 
+              // Get current release tag from .version file
+              version = fs.readFileSync('.version.plugins', 'utf8').trim();
+
+
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.ref_name }}";
               const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
