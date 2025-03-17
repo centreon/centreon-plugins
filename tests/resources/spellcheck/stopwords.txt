@@ -70,6 +70,7 @@ dns-resolve-time
 Ekara
 -EncodedCommand
 env
+equipments
 ESX
 eth
 ext4
@@ -85,6 +86,7 @@ fibre
 --force-counters32
 --force-counters64
 --force-oid
+Forcepoint
 Fortigate
 Fortinet
 FQDN
