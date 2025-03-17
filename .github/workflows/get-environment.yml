@@ -209,7 +209,7 @@ jobs:
                   return 'unstable';
                 case /(^release.+)|(^hotfix.+)/.test(branchName):
                   return 'testing';
-                case /(^master$)|(^\d{2}\.\d{2}\.x$)|(^MON-159556-fix-plugins-version-detection-on-stable-branch-runs$)/.test(branchName):
+                case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
                   return 'stable';
                 default:
                   return 'canary';
