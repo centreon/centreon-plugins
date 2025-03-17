@@ -209,7 +209,7 @@ jobs:
                   return 'unstable';
                 case /(^release.+)|(^hotfix.+)/.test(branchName):
                   return 'testing';
-                case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
+                case /(^master$)|(^\d{2}\.\d{2}\.x$)|(^MON-159556-fix-plugins-version-detection-on-stable-branch-runs$)/.test(branchName):
                   return 'stable';
                 default:
                   return 'canary';
@@ -253,8 +253,6 @@ jobs:
             let version = '';
             if ('${{ inputs.version_file }}'.match(/pom\.xml$/)) {
                 version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
-            } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
-              const branchName = "${{ github.head_ref || github.ref_name }}";
 
             } else if ${{ steps.get_stability.outputs.stability }}' === 'stable' {
               const { owner, repo } = context.repo;
