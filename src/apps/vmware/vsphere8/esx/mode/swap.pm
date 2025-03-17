@@ -199,6 +199,14 @@ Monitor the swap usage of VMware ESX hosts through vSphere 8 REST API.
 Add counters related to swap read and write rates.
 This option is implicitly enabled if thresholds related to rates are set.
 
+=item B<--warning-read-rate-bps>
+
+Threshold in bytes per second.
+
+=item B<--critical-read-rate-bps>
+
+Threshold in bytes per second.
+
 =item B<--warning-usage-bytes>
 
 Threshold in B.
@@ -209,28 +217,19 @@ Threshold in B.
 
 =item B<--warning-usage-prct>
 
-Threshold in %.
+Threshold in percentage.
 
 =item B<--critical-usage-prct>
 
-Threshold in %.
-
-=item B<--warning-read-rate-bps>
-
-Threshold in Bps.
-
-=item B<--critical-read-rate-bps>
-
-Threshold in Bps.
+Threshold in percentage.
 
 =item B<--warning-write-rate-bps>
 
-Threshold in Bps.
+Threshold in bytes per second.
 
 =item B<--critical-write-rate-bps>
 
-Threshold in Bps.
-
+Threshold in bytes per second.
 
 =back
 

@@ -52,7 +52,7 @@ sub set_counters {
 
     $self->{maps_counters}->{memory} = [
         {
-            label  => 'vms-usage-percentage',
+            label  => 'usage-prct',
             type   => 1,
             nlabel => 'vms.memory.usage.percentage',
             set    => {
@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         {
-            label  => 'vms-usage-bytes',
+            label  => 'usage-bytes',
             type   => 1,
             nlabel => 'vms.memory.usage.bytes',
             set    => {
@@ -129,18 +129,22 @@ Monitor the memory of VMware ESX hosts consumed by the virtual machines through 
 
 =over 8
 
-=item B<--warning-vms-usage-percentage>
+=item B<--warning-usage-bytes>
 
-Thresholds in percentage.
+Threshold in bytes.
 
-=item B<--critical-vms-usage-percentage>
+=item B<--critical-usage-bytes>
 
-Thresholds in percentage.
+Threshold in bytes.
 
-=item B<--warning-vms-usage-bytes>
+=item B<--warning-usage-prct>
 
-Thresholds in bytes.
+Threshold in percentage.
 
-=item B<--critical-vms-usage-bytes>
+=item B<--critical-usage-prct>
 
-Thresholds in bytes.
+Threshold in percentage.
+
+=back
+
+=cut

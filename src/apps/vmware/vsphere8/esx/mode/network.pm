@@ -62,7 +62,7 @@ sub set_counters {
 
     $self->{maps_counters}->{network} = [
         {
-            label      => 'throughput-usage-bps',
+            label      => 'usage-bps',
             type       => 1,
             nlabel     => 'network.throughput.usage.bytespersecond',
             set        => {
@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         {
-            label      => 'throughput-usage-prct',
+            label      => 'usage-prct',
             type       => 1,
             nlabel     => 'network.throughput.usage.percent',
             set        => {
@@ -98,7 +98,6 @@ sub set_counters {
         }
     ];
 }
-
 
 sub new {
     my ($class, %options) = @_;
@@ -149,12 +148,9 @@ sub manage_selection {
     if ( defined($structure{'net.throughput.contention.HOST'}) ) {
         $self->{contention}->{'net.throughput.contention.HOST'} = $structure{'net.throughput.contention.HOST'};
     }
-
-    return 2;
 }
 
 1;
-
 
 =head1 MODE
 
@@ -174,27 +170,27 @@ This option is implicitly enabled if thresholds related to contention are set.
 
 =item B<--warning-contention-count>
 
-Threshold in number of packets.
+Threshold.
 
 =item B<--critical-contention-count>
 
-Threshold in number of packets.
+Threshold.
 
-=item B<--warning-throughput-usage-bps>
+=item B<--warning-usage-bps>
 
-Threshold in B/s.
+Threshold in bytes per second.
 
-=item B<--critical-throughput-usage-bps>
+=item B<--critical-usage-bps>
 
-Threshold in B/s.
+Threshold in bytes per second.
 
-=item B<--warning-throughput-usage-prct>
+=item B<--warning-usage-prct>
 
-Threshold in %.
+Threshold in percentage.
 
-=item B<--critical-throughput-usage-prct>
+=item B<--critical-usage-prct>
 
-Threshold in %.
+Threshold in percentage.
 
 =back
 

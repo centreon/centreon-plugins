@@ -23,10 +23,9 @@ use strict;
 use warnings;
 use base qw(apps::vmware::vsphere8::esx::mode);
 
-
 my @counters = (
-    "disk.throughput.usage.HOST",       # kiloBytesPerSecond - Aggregated disk I/O rate, including the rates for all virtual machines running on the host during the collection interval
-    "disk.throughput.contention.HOST"   # millisecond - Average amount of time for an I/O operation to complete successfully
+    "disk.throughput.usage.HOST",
+    "disk.throughput.contention.HOST"
 );
 
 sub custom_diskio_output {
@@ -37,6 +36,7 @@ sub custom_diskio_output {
     );
     return $msg;
 }
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -46,7 +46,7 @@ sub set_counters {
 
     $self->{maps_counters}->{diskio} = [
         {
-            label           => 'throughput-usage-bps',
+            label           => 'usage-bps',
             type            => 1,
             nlabel          => 'disk.throughput.usage.bytespersecond',
             set             => {
@@ -56,7 +56,7 @@ sub set_counters {
             }
         },
         {
-            label           => 'throughput-contention-milliseconds',
+            label           => 'contention-ms',
             type            => 1,
             nlabel          => 'disk.throughput.contention.milliseconds',
             set             => {
@@ -68,7 +68,6 @@ sub set_counters {
             }
         }
     ];
-
 }
 
 sub manage_selection {
@@ -82,7 +81,6 @@ sub manage_selection {
     if ( defined($structure{'disk.throughput.usage.HOST'}) ) {
         $self->{diskio}->{throughput_bps} = $structure{'disk.throughput.usage.HOST'} * 1024;
     }
-    return 1;
 }
 
 1;
@@ -97,21 +95,22 @@ Monitor the disk throughput and contention of VMware ESX hosts through vSphere 8
 
 =over 8
 
-=item B<--warning-throughput-contention-milliseconds>
+=item B<--warning-contention-ms>
 
-Threshold in ms.
+Threshold in milliseconds.
 
-=item B<--critical-throughput-contention-milliseconds>
+=item B<--critical-contention-ms>
 
-Threshold in ms.
+Threshold in milliseconds.
 
-=item B<--warning-throughput-usage-bps>
+=item B<--warning-usage-bps>
 
-Threshold in Bps.
+Threshold in bytes per second.
 
-=item B<--critical-throughput-usage-bps>
+=item B<--critical-usage-bps>
 
-Threshold in Bps.
+Threshold in bytes per second.
+
 
 =back
 

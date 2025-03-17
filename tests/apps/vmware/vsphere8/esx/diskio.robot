@@ -27,10 +27,10 @@ Disk-Io ${tc}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:    tc    extraoptions                                        expected_result   --
-        ...      1     ${EMPTY}                                             OK: throughput-usage-bps : skipped (no value(s)), throughput-contention-milliseconds : skipped (no value(s)) - no data for host host-22 counter disk.throughput.usage.HOST at the moment. - no data for host host-22 counter disk.throughput.contention.HOST at the moment.
-        ...      2     ${EMPTY}                                             OK: Disk throughput usage: 125.88 MB/s, Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
-        ...      3     --warning-throughput-contention-milliseconds=0:0     WARNING: Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;0:0;;;
-        ...      4     --critical-throughput-contention-milliseconds=0:0    CRITICAL: Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;;0:0;;
-        ...      5     --warning-throughput-usage-bps=0:0                   WARNING: Disk throughput usage: 125.88 MB/s | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;0:0;;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
-        ...      6     --critical-throughput-usage-bps=0:0                  CRITICAL: Disk throughput usage: 125.88 MB/s | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;0:0;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
+    Examples:    tc    extraoptions                              expected_result   --
+        ...      1     ${EMPTY}                                  OK: usage-bps : skipped (no value(s)), contention-ms : skipped (no value(s)) - no data for host host-22 counter disk.throughput.usage.HOST at the moment. - no data for host host-22 counter disk.throughput.contention.HOST at the moment.
+        ...      2     ${EMPTY}                                  OK: Disk throughput usage: 125.88 MB/s, Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
+        ...      3     --warning-contention-ms=0:0               WARNING: Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;0:0;;;
+        ...      4     --critical-contention-ms=0:0              CRITICAL: Disk throughput contention is 0.19 ms | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;;; 'disk.throughput.contention.milliseconds'=0.19ms;;0:0;;
+        ...      5     --warning-usage-bps=0:0                   WARNING: Disk throughput usage: 125.88 MB/s | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;0:0;;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
+        ...      6     --critical-usage-bps=0:0                  CRITICAL: Disk throughput usage: 125.88 MB/s | 'disk.throughput.usage.bytespersecond'=131992094.72Bps;;0:0;; 'disk.throughput.contention.milliseconds'=0.19ms;;;;
