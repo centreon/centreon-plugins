@@ -280,7 +280,7 @@ jobs:
                 }
               }
 
-              console.log("Most recent tag found: $latestTag")
+              console.log(`Most recent tag found: ${latestTag}`)
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.ref_name }}";
