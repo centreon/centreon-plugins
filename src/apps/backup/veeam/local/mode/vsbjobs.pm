@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,7 +128,8 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version' },
     });
 
     return $self;
@@ -139,23 +140,27 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
+        output          => $self->{output},
+        command         => $self->{option_results}->{command},
         command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
+        command_path    => $self->{option_results}->{command_path}
     );
 
     $self->{option_results}->{command} = 'powershell.exe'
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
     $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{veeam_version})
+        || $self->{option_results}->{veeam_version} !~ /^[\.\d]+$/) {
+        $self->{option_results}->{veeam_version} = '12';
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::veeam::vsbjobs::get_powershell();
+        my $ps = centreon::common::powershell::veeam::vsbjobs::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
                 severity => 'OK',
@@ -303,10 +308,38 @@ You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 Define the conditions to match for the status to be CRITICAL (default: 'not %{status} =~ /success/i').
 You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-detected>
 
-Thresholds.
-Can be: 'jobs-detected', 'jobs-success', 'jobs-warning', 'jobs-failed'.
+Threshold.
+
+=item B<--critical-jobs-detected>
+
+Threshold.
+
+=item B<--warning-jobs-failed>
+
+Threshold.
+
+=item B<--critical-jobs-failed>
+
+Threshold.
+
+=item B<--warning-jobs-success>
+
+Threshold.
+
+=item B<--critical-jobs-success>
+
+Threshold.
+
+=item B<--warning-jobs-warning>
+
+Threshold.
+
+=item B<--critical-jobs-warning>
+
+Threshold.
+
 
 =back
 

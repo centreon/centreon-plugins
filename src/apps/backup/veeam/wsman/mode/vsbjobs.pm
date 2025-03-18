@@ -123,10 +123,21 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version' },
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{veeam_version})
+        || $self->{option_results}->{veeam_version} !~ /^[\.\d]+$/) {
+        $self->{option_results}->{veeam_version} = '12';
+    }
 }
 
 sub manage_selection {
@@ -218,7 +229,6 @@ __END__
 
 =over 8
 
-
 =item B<--ps-display>
 
 Display powershell script.
@@ -254,10 +264,37 @@ Can used special variables like: %{name}, %{type}, %{status}, %{duration}.
 Set critical threshold for status (Default: 'not %{status} =~ /success/i').
 Can used special variables like: %{name}, %{type}, %{status}, %{duration}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-detected>
 
 Thresholds.
-Can be: 'jobs-detected', 'jobs-success', 'jobs-warning', 'jobs-failed'.
+
+=item B<--critical-jobs-detected>
+
+Thresholds.
+
+=item B<--warning-jobs-success>
+
+Thresholds.
+
+=item B<--critical-jobs-success>
+
+Thresholds.
+
+=item B<--warning-jobs-warning>
+
+Thresholds.
+
+=item B<--critical-jobs-warning>
+
+Thresholds.
+
+=item B<--warning-jobs-failed>
+
+Thresholds.
+
+=item B<--critical-jobs-failed>
+
+Thresholds.
 
 =back
 

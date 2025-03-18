@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,9 +24,21 @@ use strict;
 use warnings;
 use centreon::common::powershell::functions;
 use centreon::common::powershell::veeam::functions;
+use version;
 
 sub get_powershell {
     my (%options) = @_;
+
+    # if veeam_version is 12 or higher, the functions used are different from the previous versions
+    my ($get_session_cmd, $get_job_cmd);
+    # parsing versions x.y.z can be tedious, we rely on the `version` standard module
+    if (version->parse($options{veeam_version}) >= 12) {
+        $get_session_cmd = 'Get-VBRSureBackupSession';
+        $get_job_cmd     = 'Get-VBRSureBackupJob';
+    } else {
+        $get_session_cmd = 'Get-VSBSession';
+        $get_job_cmd     = 'Get-VSBJob';
+    }
 
     my $ps = '
 $ProgressPreference = "SilentlyContinue"
@@ -48,7 +60,7 @@ Try {
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
     $sessions = @{}
-    Get-VSBSession | Sort CreationTimeUTC -Descending | ForEach-Object {
+    ' . $get_session_cmd . ' | Sort CreationTimeUTC -Descending | ForEach-Object {
         $jobId = $_.jobId.toString()
         if (-not $sessions.ContainsKey($jobId)) {
             $sessions[$jobId] = @{}
@@ -58,7 +70,7 @@ Try {
         }
     }
 
-    Get-VSBJob | ForEach-Object {
+    ' . $get_job_cmd . ' | ForEach-Object {
         $item = @{}
         $item.name = $_.Name
         $item.type = $_.JobType.value__
