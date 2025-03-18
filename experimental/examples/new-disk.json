@@ -1,0 +1,46 @@
+{
+  "collect": {
+    "snmp": [
+      {
+	"name": "disk",
+	"oid": "1.3.6.1.2.1.25.2.3.1",
+	"query": "Walk",	    // par défaut walk
+	"labels": {
+	  ".3": "label",
+	  ".4": "allocationUnits",
+	  ".5": "size",
+	  ".6": "used"
+	}
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+	"prefix": "{disk.label}",		// par défaut "{idx}"
+	"name": "disk.usage.percent",
+	"value": "100 * {disk.used} / {disk.size}",
+	"uom": "%",	    // optional
+	"min": 0,	    // optional
+	"max": 100,	    // optional
+      },
+      {
+	"name": "disk.usage.bytes",
+	"value": "{disk.used} * {disk.allocationUnits}",
+	"uom": "B",	    // optional
+	"min": 0,	    // optional
+	"max_expr": "{disk.size} * {disk.allocationUnits}"  // optional
+      }
+    ],
+    "aggregations": [
+      {
+        "name": "avg.disk.usage.percent",
+	"value": "Average({metrics.disk.usage.percent})",	  // si agregation, pas de prefix
+	"uom": "%",     // optional
+	"min": 0,       // optional
+	"max": 100      // optional
+      }
+    ]
+  }
+}
+
