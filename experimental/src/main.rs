@@ -52,7 +52,10 @@ fn json_to_command(file_name: &str) -> Result<Command> {
     // Transform content of the file into a string
     let contents = match fs::read_to_string(file_name) {
         Ok(ret) => ret,
-        Err(err) => panic!("Could not deserialize the file, error code: {}", err),
+        Err(err) => {
+            println!("erreur: {}", err);
+            std::process::exit(3);
+        },
     };
 
     let module: Result<Command> = serde_json::from_str(&contents.as_str());

@@ -1,0 +1,18 @@
+{
+  "leaf": {
+    "name": "cpu",
+    "output": {
+      "status": "CPU {idx} usage: {value} %",
+      "default": "{status}: {count} CPU(s) average usage is {total_cpu_avg} %"
+    },
+    "entries": [
+      { "Agregation": { "name": "total_cpu_avg", "op": "Average"}},
+      { "Query": { "name": "cpu_{idx}", "oid": "1.3.6.1.2.1.25.3.3.1.2", "query": "Walk" }}
+    ],
+    "data": {
+      "uom": "%",
+      "min": 0,
+      "max": 100
+    }
+  }
+}
