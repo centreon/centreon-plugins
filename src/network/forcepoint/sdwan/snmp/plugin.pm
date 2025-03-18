@@ -36,7 +36,7 @@ sub new {
         'connections'      => 'network::forcepoint::sdwan::snmp::mode::connections',
         'cpu'              => 'snmp_standard::mode::cpu',
         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-        'disks'            => 'network::forcepoint::sdwan::snmp::mode::disks',
+        'disk-usage'       => 'network::forcepoint::sdwan::snmp::mode::diskusage',
         'dropped-packets'  => 'network::forcepoint::sdwan::snmp::mode::droppedpackets',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
