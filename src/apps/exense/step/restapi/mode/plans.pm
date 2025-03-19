@@ -109,10 +109,9 @@ sub plan_long_output {
 sub prefix_plan_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "plan '%s' ",
-        $options{instance_value}->{name}
-    );
+        my $plan_name = defined $options{instance_value}->{name} ? $options{instance_value}->{name} : 'unknown';
+
+    return sprintf("plan '%s' ", $plan_name);
 }
 
 sub prefix_global_output {
@@ -331,7 +330,7 @@ sub manage_selection {
     $self->{plans} = {};
     foreach my $plan (@{$plans->{data}}) {
         # skip plans created by keyword single execution
-        next if ($plan->{visible} =~ /false|0/);
+        next if (defined $plan->{visible} && $plan->{visible} =~ /false|0/);
         next if (defined($self->{option_results}->{filter_plan_id}) && $self->{option_results}->{filter_plan_id} ne '' &&
             $plan->{id} !~ /$self->{option_results}->{filter_plan_id}/);
         next if (defined($self->{option_results}->{filter_plan_name}) && $self->{option_results}->{filter_plan_name} ne '' &&
