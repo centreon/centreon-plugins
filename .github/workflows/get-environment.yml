@@ -286,7 +286,7 @@ jobs:
               // Get current release tag from .version file
               version = fs.readFileSync('.version.plugins', 'utf8').trim();
 
-              console.log(`Stable version will be: ${version}`)
+              console.log(`Stable version based on .version.plugins file will be: ${version}`)
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.head_ref || github.ref_name }}";
