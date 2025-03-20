@@ -50,6 +50,9 @@ jobs:
           - image: packaging-plugins-jammy
             distrib: jammy
             package_extension: deb
+          - image: packaging-plugins-noble
+            distrib: noble
+            package_extension: deb
 
     runs-on: ubuntu-22.04
 
@@ -141,6 +144,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

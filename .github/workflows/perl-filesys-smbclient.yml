@@ -129,6 +129,9 @@ jobs:
             distrib: bookworm
           - image: packaging-plugins-jammy
             distrib: jammy
+          - image: packaging-plugins-noble
+            distrib: noble
+
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -182,6 +185,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}
