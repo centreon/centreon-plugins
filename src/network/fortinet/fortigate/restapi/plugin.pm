@@ -33,6 +33,7 @@ sub new {
         'ha'       => 'network::fortinet::fortigate::restapi::mode::ha',
         'health'   => 'network::fortinet::fortigate::restapi::mode::health',
         'licenses' => 'network::fortinet::fortigate::restapi::mode::licenses',
+        'certificates' => 'network::fortinet::fortigate::restapi::mode::certificates',
         'system'   => 'network::fortinet::fortigate::restapi::mode::system'
     };
 
