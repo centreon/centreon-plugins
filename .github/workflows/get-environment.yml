@@ -250,9 +250,44 @@ jobs:
         with:
           script: |
             const { execSync } = require('child_process');
+            const fs = require('fs');
             let version = '';
             if ('${{ inputs.version_file }}'.match(/pom\.xml$/)) {
                 version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
+
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'stable') {
+              const { owner, repo } = context.repo;
+
+              // Fetch the most recent tag for plugins
+              const { data: tags } = await github.rest.repos.listTags({
+                owner,
+                repo,
+                per_page: 10
+              });
+
+              let latestTag = null;
+              let latestDate = 0;
+
+              // Filter tags matching format plugins-YYYYMMDD
+              for (const tag of tags) {
+                const match = tag.name.match(/^plugins-(\d{8})$/);
+
+                const tagDate = parseInt(match[1], 10);
+
+                // ensure we get the true latest tag and not the most recent created
+                if (tagDate > latestDate) {
+                  latestTag = tag.name;
+                  latestDate = tagDate;
+                }
+              }
+
+              console.log(`Most recent tag found: ${latestTag}`)
+
+              // Get current release tag from .version file
+              version = fs.readFileSync('.version.plugins', 'utf8').trim();
+
+              console.log(`Stable version based on .version.plugins file will be: ${version}`)
+
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.head_ref || github.ref_name }}";
               const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
