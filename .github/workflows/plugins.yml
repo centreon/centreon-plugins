@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -317,7 +317,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
