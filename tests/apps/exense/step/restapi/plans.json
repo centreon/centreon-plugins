@@ -1,1 +1,271 @@
-{"openapi":"3.0.0","info":{"title":"Plans","version":"1.0.0"},"servers":[{"url":"http://localhost:3000/"}],"paths":{"/rest/access/login":{"post":{"description":"","responses":{"200":{"description":"","content":{"application/json":{"example":{}}},"headers":{"Access-Control-Allow-Origin":{"schema":{"type":"string"},"example":"*"},"Access-Control-Allow-Methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"Access-Control-Allow-Headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"Set-Cookie":{"schema":{"type":"string"},"example":"sessionid=azertyuiop"}}}}}},"/rest/tenants/current":{"post":{"description":"","responses":{"204":{"description":"","content":{"text/html; charset=utf-8":{"example":"{}"}},"headers":{"Access-Control-Allow-Origin":{"schema":{"type":"string"},"example":"*"},"Access-Control-Allow-Methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"Access-Control-Allow-Headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"access-control-allow-origin":{"schema":{"type":"string"},"example":"*"},"content-security-policy":{"schema":{"type":"string"},"example":"default-src 'none'"},"x-content-type-options":{"schema":{"type":"string"},"example":"nosniff"}}}}}},"/rest/table/plans":{"post":{"description":"","responses":{"200":{"description":"","content":{"text/html; charset=utf-8":{"example":"{\r\n  \"recordsTotal\": 11,\r\n  \"recordsFiltered\": 3,\r\n  \"data\": [\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"66d1904664e24c6ef10f74d8\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"plop2-test\",\r\n        \"project\": \"66d18fc464e24c6ef10f6f02\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"plop2-test\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"66d1904664e24c6ef10f74d1\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"66d1904664e24c6ef10f74d2\"\r\n    },\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"669fc885498c2a0322a6aa13\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"test-plan\",\r\n        \"project\": \"669fc509498c2a0322a6a5ad\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"test-plan\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"669fc899498c2a0322a6aa27\"\r\n          },\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"669fc89f498c2a0322a6aa42\"\r\n          }\r\n        ],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"669fc855498c2a0322a6a9c4\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"669fc855498c2a0322a6a9c5\"\r\n    },\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"66d180a764e24c6ef10e0159\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"test-plan_Copy\",\r\n        \"project\": \"669fc509498c2a0322a6a5ad\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"test-plan\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"66d180a764e24c6ef10e0157\"\r\n          },\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"66d180a764e24c6ef10e0158\"\r\n          }\r\n        ],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"66d180a764e24c6ef10e0156\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"66d180a764e24c6ef10e0155\"\r\n    }\r\n  ]\r\n}\r\n"}},"headers":{"Access-Control-Allow-Origin":{"schema":{"type":"string"},"example":"*"},"Access-Control-Allow-Methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"Access-Control-Allow-Headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"access-control-allow-origin":{"schema":{"type":"string"},"example":"*"},"content-security-policy":{"schema":{"type":"string"},"example":"default-src 'none'"},"x-content-type-options":{"schema":{"type":"string"},"example":"nosniff"}}}}}},"/rest/table/executions":{"post":{"description":"","responses":{"200":{"description":"","content":{"text/html; charset=utf-8":{"example":"{}"}},"headers":{"Access-Control-Allow-Origin":{"schema":{"type":"string"},"example":"*"},"Access-Control-Allow-Methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"Access-Control-Allow-Headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-headers":{"schema":{"type":"string"},"example":"Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"},"access-control-allow-methods":{"schema":{"type":"string"},"example":"GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"},"access-control-allow-origin":{"schema":{"type":"string"},"example":"*"},"content-security-policy":{"schema":{"type":"string"},"example":"default-src 'none'"},"x-content-type-options":{"schema":{"type":"string"},"example":"nosniff"}}}}}}}}
+{
+  "uuid": "e891dab6-3274-4254-a8e4-eca570d48767",
+  "lastMigration": 32,
+  "name": "Plans",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "3ab70cc7-f1ca-499f-a1dd-7d5936584366",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "rest/access/login",
+      "responses": [
+        {
+          "uuid": "d5457a02-0f6a-4458-b40d-ebce60ac65a0",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Set-Cookie",
+              "value": "sessionid=azertyuiop"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "7e550eac-99a5-46ff-9010-52f01956e501",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "rest/tenants/current",
+      "responses": [
+        {
+          "uuid": "8d89d6e4-3e47-4799-9e8d-61fac4de755e",
+          "latency": 0,
+          "statusCode": 204,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "2edeed18-e233-453e-9c94-ade546710bdf",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "rest/table/plans",
+      "responses": [
+        {
+          "uuid": "1d3d9075-d62c-4031-9450-8858fe4d5f5a",
+          "body": "{\r\n  \"recordsTotal\": 11,\r\n  \"recordsFiltered\": 3,\r\n  \"data\": [\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"66d1904664e24c6ef10f74d8\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"plop2-test\",\r\n        \"project\": \"66d18fc464e24c6ef10f6f02\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"plop2-test\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"66d1904664e24c6ef10f74d1\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"66d1904664e24c6ef10f74d2\"\r\n    },\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"669fc885498c2a0322a6aa13\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"test-plan\",\r\n        \"project\": \"669fc509498c2a0322a6a5ad\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"test-plan\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"669fc899498c2a0322a6aa27\"\r\n          },\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"669fc89f498c2a0322a6aa42\"\r\n          }\r\n        ],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"669fc855498c2a0322a6a9c4\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"669fc855498c2a0322a6a9c5\"\r\n    },\r\n    {\r\n      \"customFields\": {\r\n        \"versionId\": \"66d180a764e24c6ef10e0159\"\r\n      },\r\n      \"attributes\": {\r\n        \"name\": \"test-plan_Copy\",\r\n        \"project\": \"669fc509498c2a0322a6a5ad\"\r\n      },\r\n      \"root\": {\r\n        \"_class\": \"TestCase\",\r\n        \"customFields\": null,\r\n        \"attributes\": {\r\n          \"name\": \"test-plan\"\r\n        },\r\n        \"dynamicName\": {\r\n          \"dynamic\": false,\r\n          \"value\": \"\",\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"useDynamicName\": false,\r\n        \"description\": null,\r\n        \"children\": [\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"66d180a764e24c6ef10e0157\"\r\n          },\r\n          {\r\n            \"_class\": \"CallKeyword\",\r\n            \"customFields\": null,\r\n            \"attributes\": {\r\n              \"name\": \"EBC_Put\"\r\n            },\r\n            \"dynamicName\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"\",\r\n              \"expression\": \"\",\r\n              \"expressionType\": null\r\n            },\r\n            \"useDynamicName\": false,\r\n            \"description\": null,\r\n            \"children\": [],\r\n            \"customAttributes\": null,\r\n            \"attachments\": null,\r\n            \"skipNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"instrumentNode\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"continueParentNodeExecutionOnError\": {\r\n              \"dynamic\": false,\r\n              \"value\": false,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"remote\": {\r\n              \"dynamic\": false,\r\n              \"value\": true,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"token\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"function\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{\\\"name\\\":{\\\"value\\\":\\\"EBC_Put\\\",\\\"dynamic\\\":false}}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"argument\": {\r\n              \"dynamic\": false,\r\n              \"value\": \"{}\",\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"resultMap\": {\r\n              \"dynamic\": false,\r\n              \"value\": null,\r\n              \"expression\": null,\r\n              \"expressionType\": null\r\n            },\r\n            \"id\": \"66d180a764e24c6ef10e0158\"\r\n          }\r\n        ],\r\n        \"customAttributes\": null,\r\n        \"attachments\": null,\r\n        \"skipNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"instrumentNode\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": \"\",\r\n          \"expressionType\": null\r\n        },\r\n        \"continueParentNodeExecutionOnError\": {\r\n          \"dynamic\": false,\r\n          \"value\": false,\r\n          \"expression\": null,\r\n          \"expressionType\": null\r\n        },\r\n        \"id\": \"66d180a764e24c6ef10e0156\"\r\n      },\r\n      \"functions\": null,\r\n      \"subPlans\": null,\r\n      \"visible\": true,\r\n      \"id\": \"66d180a764e24c6ef10e0155\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "87977f9d-1442-4765-bb44-565c645d436c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "rest/table/executions",
+      "responses": [
+        {
+          "uuid": "6e65ffd6-6f1d-4131-9b9f-345c3a15a090",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "3ab70cc7-f1ca-499f-a1dd-7d5936584366"
+    },
+    {
+      "type": "route",
+      "uuid": "7e550eac-99a5-46ff-9010-52f01956e501"
+    },
+    {
+      "type": "route",
+      "uuid": "2edeed18-e233-453e-9c94-ade546710bdf"
+    },
+    {
+      "type": "route",
+      "uuid": "87977f9d-1442-4765-bb44-565c645d436c"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

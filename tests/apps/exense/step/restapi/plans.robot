@@ -14,10 +14,11 @@ ${APIPORT}          3000
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::exense::step::restapi::plugin
+...                 --mode=plans
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
-...                 --timeout=15
+...                 --timeout=10
 ...                 --token=token   
 
 
@@ -26,9 +27,8 @@ plans ${tc}
     [Tags]    apps    
     ${command}    Catenate
     ...    ${cmd}
-    ...    --mode=plans
     ...    ${extraoptions}
-    #Log    ${cmd}
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extraoptions                                                                                                     expected_result    --
