@@ -8,9 +8,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}list-plans.json
-${HOSTNAME}         host.docker.internal
-${APIPORT}          3001
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::exense::step::restapi::plugin
