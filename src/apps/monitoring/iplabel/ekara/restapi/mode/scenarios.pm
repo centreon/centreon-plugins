@@ -53,7 +53,16 @@ sub set_counters {
         { name => 'scenarios', type => 3, cb_prefix_output => 'prefix_scenario_output', cb_long_output => 'prefix_scenario_output', indent_long_output => '    ', message_multiple => 'All scenarios are ok',
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'steps', display_long => 1, cb_prefix_output => 'prefix_steps_output',  message_multiple => 'All steps are ok', type => 1, skipped_code => { -10 => 1 } }
+                {
+                    name             => 'steps',
+                    type             => 1,
+                    cb_prefix_output => 'prefix_steps_output',
+                    display_long     => 1,
+                    message_multiple => 'All steps are ok',
+                    skipped_code     => { -10 => 1 },
+                    sort_method      => 'num',
+                    sort_attribute   => 'index'
+                }
             ]
         }
     ];
@@ -98,7 +107,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{steps} = [
         { label => 'time-step',  nlabel => 'scenario.step.time.milliseconds', set => {
-                key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' } ],
+                key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' }, { name => 'index' } ],
                 output_template => 'time step: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -106,7 +115,7 @@ sub set_counters {
             }
         },
          { label => 'time-total',  nlabel => 'scenario.steps.time.total.milliseconds', set => {
-                key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' } ],
+                key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' }, { name => 'index' } ],
                 output_template => 'time total: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -209,6 +218,7 @@ sub manage_selection {
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{index} = $step_metrics->{stepId};
         }
     }
 
@@ -254,14 +264,53 @@ Syntax: C<--warning-scenario-status='%{status} =~ "xxx"'>
 Critical threshold for scenario status (default: '%{status} =~ "Failure"').
 Syntax: --critical-scenario-status='%{status} =~ "xxx"'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-availability>
 
-Thresholds.
-Common: 'availability' (%),
-For WEB scenarios: 'time-total-allsteps' (ms), 'time-step' (ms),
-For HTTPR scenarios: 'time-total' (ms),
-FOR BPL scenarios: 'time-interaction' (ms), 'time-total' (ms).
+Thresholds in %.
 
+=item B<--critical-availability>
+
+Thresholds in %.
+
+=item B<--warning-time-total-allsteps>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--critical-time-total-allsteps>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--warning-time-step>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--critical-time-step>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--warning-time-total>
+
+Thresholds in ms for HTTPR scenarios.
+
+=item B<--critical-time-total>
+
+Thresholds in ms for HTTPR scenarios.
+
+=item B<--warning-time-interaction>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--critical-time-interaction>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--warning-time-total>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--critical-time-total>
+
+Thresholds in ms for BPL scenarios.
 
 =back
 
