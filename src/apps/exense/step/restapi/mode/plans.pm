@@ -469,11 +469,11 @@ Thresholds.
 
 Thresholds.
 
-=item B<--warning-plans-executions-detected>
+=item B<--warning-plan-executions-detected>
 
 Thresholds.
 
-=item B<--critical-plans-executions-detected>
+=item B<--critical-plan-executions-detected>
 
 Thresholds.
 
