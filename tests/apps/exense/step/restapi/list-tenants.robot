@@ -8,16 +8,14 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}list-tenants.json
-${HOSTNAME}         host.docker.internal
-${APIPORT}          3002
+${MOCKOON_JSON}     ${CURDIR}${/}list-tenats.json
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::exense::step::restapi::plugin
+...                 --mode=list-tenants
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
-...                 --timeout=15
 ...                 --token=token   
 
 
@@ -26,7 +24,6 @@ list-tenants ${tc}
     [Tags]    apps    
     ${command}    Catenate
     ...    ${cmd}
-    ...    --mode=list-tenants
     ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

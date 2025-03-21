@@ -9,11 +9,10 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}list-plans.json
-${HOSTNAME}         host.docker.internal
-${APIPORT}          3001
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::exense::step::restapi::plugin
+...                 --mode=list-plans
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
@@ -26,7 +25,6 @@ list-plans ${tc}
     [Tags]    apps    
     ${command}    Catenate
     ...    ${cmd}
-    ...    --mode=list-plans
     ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

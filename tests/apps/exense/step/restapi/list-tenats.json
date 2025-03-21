@@ -1,0 +1,101 @@
+{
+  "uuid": "fbe1c5e4-ac64-45c4-bc3b-2bab6f4caffd",
+  "lastMigration": 32,
+  "name": "List tenats",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "4663f7ab-d951-4a1b-87ea-a54e6f88e582",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/tenants",
+      "responses": [
+        {
+          "uuid": "8fbd8555-07e0-4676-81d7-b01d3ffd15d5",
+          "body": "[\r\n  {\r\n    \"name\": \"[All]\",\r\n    \"global\": true,\r\n    \"projectId\": null\r\n  },\r\n  {\r\n    \"name\": \"Common\",\r\n    \"global\": false,\r\n    \"projectId\": \"669fc509498c2a0322a6a5ad\"\r\n  },\r\n  {\r\n    \"name\": \"test-project\",\r\n    \"global\": false,\r\n    \"projectId\": \"66d18fc464e24c6ef10f6f02\"\r\n  }\r\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Authorization",
+              "value": ""
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "4663f7ab-d951-4a1b-87ea-a54e6f88e582"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    },
+    {
+      "key": "Authorization",
+      "value": "Bearer "
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
