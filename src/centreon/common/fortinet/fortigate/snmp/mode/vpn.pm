@@ -69,6 +69,14 @@ sub set_counters {
                     { label => 'active_tunnels', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'ipsec-tunnels-count', nlabel => 'vpn.ipsec.tunnels.state.count', set => {
+                key_values => [ { name => 'ipsec_tunnels_count' } ],
+                output_template => 'IPSec tunnels state up: %s',
+                perfdatas => [
+                    { label => 'ipsec-tunnels-count', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 
@@ -186,6 +194,7 @@ sub manage_selection {
 
     $self->{vd} = {};
     my $duplicated = {};
+    my $ipsec_tunnels_counter = 0;
     foreach my $oid (keys %{$snmp_result->{ $oid_fgVdEntName }}) {
         $oid =~ /^$oid_fgVdEntName\.(.*)$/;
         my $vdom_instance = $1;
@@ -203,7 +212,8 @@ sub manage_selection {
             global => {
                 users => $result->{fgVpnSslStatsLoginUsers},
                 tunnels => $result->{fgVpnSslStatsActiveTunnels},
-                sessions => $result->{fgVpnSslStatsActiveWebSessions}
+                sessions => $result->{fgVpnSslStatsActiveWebSessions},
+		ipsec_tunnels_count => $ipsec_tunnels_counter
             },
             vpn => {},
         };
@@ -238,8 +248,13 @@ sub manage_selection {
                 traffic_in => $result->{fgVpnTunEntInOctets} * 8,
                 traffic_out => $result->{fgVpnTunEntOutOctets} * 8
             };
+            # count tunnels in state up
+            if ($self->{vd}->{$vdomain_name}->{vpn}->{$name}->{state} eq "up") {
+                $ipsec_tunnels_counter++;
+            };
         }
-    }    
+        $self->{vd}->{$vdomain_name}->{global}->{ipsec_tunnels_count} = $ipsec_tunnels_counter;
+     }
 }
 
 1;
@@ -258,11 +273,11 @@ Filter name with regexp. Can be ('vdomain', 'vpn')
 
 =item B<--warning-*>
 
-Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out')
+Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count')
 
 =item B<--critical-*>
 
-Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out')
+Critical on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count'))
 
 =item B<--warning-status>
 
