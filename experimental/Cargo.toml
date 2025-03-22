@@ -9,6 +9,9 @@ crate-type = ["cdylib"]
 name = "generic-snmp"
 path = "src/main.rs"
 
+[build-dependencies]
+lalrpop = "0.22.1"
+
 [dependencies]
 regex = "1.11.1"
 rasn = "0.24.0"
@@ -18,3 +21,5 @@ log = "0.4.25"
 clap = { version = "4.5.29", features = ["derive"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
+lalrpop-util = { version = "0.22.1", features = ["lexer"] }
+

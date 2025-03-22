@@ -1,4 +1,5 @@
 extern crate clap;
+extern crate lalrpop_util;
 extern crate log;
 extern crate rasn;
 extern crate rasn_smi;
@@ -12,9 +13,12 @@ mod lib;
 
 use clap::Parser;
 use generic::{Command, CommandExt};
+use lalrpop_util::lalrpop_mod;
 use lib::r_snmp_get;
 use serde_json::Result;
 use std::fs;
+
+lalrpop_mod!(grammar);
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -55,7 +59,7 @@ fn json_to_command(file_name: &str) -> Result<Command> {
         Err(err) => {
             println!("erreur: {}", err);
             std::process::exit(3);
-        },
+        }
     };
 
     let module: Result<Command> = serde_json::from_str(&contents.as_str());
@@ -76,4 +80,60 @@ fn main() {
     let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
     println!("{}", result.output);
     std::process::exit(result.status as i32);
+}
+
+mod Test {
+    use super::*;
+
+    #[test]
+    fn term() {
+        assert!(grammar::TermParser::new().parse("132").is_ok());
+        assert!(grammar::TermParser::new().parse("((132))").is_ok());
+        assert!(grammar::TermParser::new().parse("((132)))").is_err());
+    }
+
+    #[test]
+    fn sum() {
+        let res = grammar::SumParser::new().parse("1 + 2");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 3_f32);
+        let res = grammar::SumParser::new().parse("1 + 2 + 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 6_f32);
+        let res = grammar::SumParser::new().parse("1 - 2 + 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 2_f32);
+        let res = grammar::SumParser::new().parse("1 + 2 - 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 0_f32);
+    }
+
+    #[test]
+    fn product() {
+        let res = grammar::ProductParser::new().parse("2 * 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 6_f32);
+
+        let res = grammar::ProductParser::new().parse("2 * 3 * 4");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 24_f32);
+
+        let res = grammar::ProductParser::new().parse("2 * 3 / 2");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 3_f32);
+
+        //        let res = grammar::ProductParser::new().parse("2 / 0");
+        //        assert!(res.is_err());
+    }
+
+    #[test]
+    fn sum_product() {
+        let res = grammar::SumParser::new().parse("1 + 2 * 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 7_f32);
+
+        let res = grammar::SumParser::new().parse("1 + (3 + 2 * 3) / 3");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 4_f32);
+    }
 }
