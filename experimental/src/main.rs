@@ -136,4 +136,15 @@ mod Test {
         assert!(res.is_ok());
         assert!(res.unwrap() == 4_f32);
     }
+
+    #[test]
+    fn function() {
+        let res = grammar::TermParser::new().parse("Average(1, 2, 3)");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 2_f32);
+
+        let res = grammar::TermParser::new().parse("Average(1 + 2 * 2, 3, 4)");
+        assert!(res.is_ok());
+        assert!(res.unwrap() == 4_f32);
+    }
 }
