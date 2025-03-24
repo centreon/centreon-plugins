@@ -251,17 +251,6 @@ sub cache_backup_job_session {
     return $datas;
 }
 
-sub cache_replica_job_session {
-    my ($self, %options) = @_;
-
-    my $datas = $self->get_replica_job_session(disable_cache => 1, timeframe => $options{timeframe});
-    $self->write_cache_file(
-        statefile => 'replica_job_session',
-        response => $datas
-    );
-
-    return $datas;
-}
 
 sub cache_repository {
     my ($self, %options) = @_;
