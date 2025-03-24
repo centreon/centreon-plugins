@@ -15,6 +15,7 @@ Alcatel
 allCapacity
 allsteps
 Ansible
+api
 --api-filter-orgs
 api.ip-label.net
 api.meraki.com
@@ -72,6 +73,7 @@ Ekara
 env
 ESX
 eth
+Exense
 ext4
 fanspeed
 FCCapacity
@@ -105,6 +107,7 @@ IMEI
 in-bcast
 in-crc
 in-fcserror
+informations
 in-mcast
 -InputFormat
 interface-dsl-name
