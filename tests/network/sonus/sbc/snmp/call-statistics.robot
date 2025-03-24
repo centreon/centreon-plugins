@@ -3,7 +3,7 @@
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-
+Suite Setup    Ctn Generic Suite Setup
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::sonus::sbc::snmp::plugin
