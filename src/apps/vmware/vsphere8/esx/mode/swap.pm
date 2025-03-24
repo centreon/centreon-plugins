@@ -33,7 +33,7 @@ my @counters = (
 sub custom_swap_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Swap usage: %s %s (target is %s %s)",
+    my $msg = sprintf("Swap usage: %s %s (max available is %s %s)",
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_bytes}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{max_bytes})
     );
