@@ -1,0 +1,28 @@
+title = "Gitleaks custom rules"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''test(|s)\/''',
+  '''Test(|s)\/''',
+  '''feature(|s)\/''',
+  '''node_modules\/''',
+  '''vendor\/''',
+  '''(.*?)\.rptlibrary''',
+  '''package\.json''',
+  '''package-lock\.json''',
+  '''pnpm-lock\.yaml''',
+  '''composer\.json''',
+  '''composer\.lock''',
+  '''yarn\.lock''',
+  '''\.gitleaks\.toml$''',
+  '''(.*?)(jpg|gif|doc|pdf|bin)$'''
+]
+
+regexTarget = "match"
+regexes = [
+  '''ABCDEFG1234567890''',
+  '''s.aBCD123DEF456GHI789JKL012'''
+]
