@@ -12,6 +12,7 @@ ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::exense::step::restapi::plugin
+...                 --mode=list-tenants
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
@@ -24,7 +25,6 @@ list-tenants ${tc}
     [Tags]    apps    
     ${command}    Catenate
     ...    ${cmd}
-    ...    --mode=list-tenants
     ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
