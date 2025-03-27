@@ -51,6 +51,7 @@ cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
+crc
 CX
 Cyberoam
 Datacore
@@ -220,6 +221,7 @@ raidvolume
 RestAPI
 RFC1628
 RRDCached
+rx
 Sansymphony
 SAS
 scenarii
@@ -234,8 +236,10 @@ SNMP
 snmpd.conf
 space-usage-prct
 --sql-errors-exit
+snr
 SSDCapacity
 SSH
+ssid
 standAlone
 statefile
 --statefile-concat-cwd
@@ -256,6 +260,7 @@ total-oper-up
 tower-cli
 TrendMicro
 tsdb-version
+tx
 UCD
 UDP
 UninterrupibleSleep
@@ -293,6 +298,7 @@ vSphere
 --warning-total-cpu-utilization
 WLAN
 WLC
+wifi
 WSMAN
 XPath
 ZFS
