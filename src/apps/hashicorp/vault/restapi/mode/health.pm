@@ -62,7 +62,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'code-parameters:s' => { name => 'code_parameters' }
+    });
 
     return $self;
 }
@@ -74,7 +76,8 @@ sub set_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $code_param = '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
+
+    my $code_param = (defined($self->{option_results}->{code_parameters})) ? $self->{option_results}->{code_parameters} : '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
     my $result = $options{custom}->request_api(url_path => 'health' . $code_param);
     my $cluster_name = defined($result->{cluster_name}) ? $result->{cluster_name} : $self->{option_results}->{hostname};
 
@@ -100,6 +103,12 @@ perl centreon_plugins.pl --plugin=apps::hashicorp::vault::restapi::plugin --mode
 More information on'https://www.vaultproject.io/api-docs/system/health'.
 
 =over 8
+
+=item B<--code-parameters>
+
+Specify the code parameters when calling health api (default: ?sealedcode=200&uninitcode=200).
+
+More information here: https://developer.hashicorp.com/vault/api-docs/system/health#parameters
 
 =item B<--warning-seal-status>
 
