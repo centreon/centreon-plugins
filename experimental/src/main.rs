@@ -1,4 +1,4 @@
-extern crate clap;
+extern crate lexopt;
 extern crate lalrpop_util;
 extern crate log;
 extern crate rasn;
@@ -11,8 +11,8 @@ extern crate serde_json;
 mod generic;
 mod lib;
 
-use clap::Parser;
 use generic::{Command, CommandExt};
+use std::ffi::{OsString, OsStr};
 use lalrpop_util::lalrpop_mod;
 use lib::r_snmp_get;
 use serde_json::Result;
@@ -20,35 +20,35 @@ use std::fs;
 
 lalrpop_mod!(grammar);
 
-#[derive(Parser, Debug)]
-#[command(version, about)]
+#[derive(Debug)]
+//#[command(version, about)]
 struct Cli {
     /// Hostname to operate on
-    #[arg(long, short = 'H', default_value = "localhost")]
+    //#[arg(long, short = 'H', default_value = "localhost")]
     hostname: String,
 
-    #[arg(long, short, default_value_t = 161)]
+    //#[arg(long, short, default_value_t = 161)]
     port: u16,
 
-    #[arg(long, short = 'v', default_value = "2c")]
+    //#[arg(long, short = 'v', default_value = "2c")]
     snmp_version: String,
 
-    #[arg(long, short, default_value = "public")]
+    //#[arg(long, short, default_value = "public")]
     community: String,
 
-    #[arg(long, short)]
+    //#[arg(long, short)]
     json_conf: String,
 
-    #[arg(long, short)]
+    //#[arg(long, short)]
     warning_core: Option<String>,
 
-    #[arg(long, short = 'C')]
+    //#[arg(long, short = 'C')]
     critical_core: Option<String>,
 
-    #[arg(long, short = 'a')]
+    //#[arg(long, short = 'a')]
     warning_agregation: Option<String>,
 
-    #[arg(long, short = 'b')]
+    //#[arg(long, short = 'b')]
     critical_agregation: Option<String>,
 }
 
@@ -67,19 +67,65 @@ fn json_to_command(file_name: &str) -> Result<Command> {
 }
 
 fn main() {
-    let cli = Cli::parse();
-    let url = format!("{}:{}", cli.hostname, cli.port);
-    let cmd = json_to_command(&cli.json_conf);
+    use lexopt::prelude::*;
+    let mut parser = lexopt::Parser::from_env();
+    let mut hostname = "localhost".to_string();
+    let mut port = 161;
+    let mut json = None;
+    loop {
+        let arg = parser.next();
+        match arg {
+            Ok(arg) => {
+                println!("{:?} ok", arg);
+                match arg {
+                    Some(arg) => {
+                        match arg {
+                            Short('H') | Long("hostname") => {
+                                hostname = parser.value().unwrap().into_string().unwrap();
+                            },
+                            Short('p') | Long("port") => {
+                                port = parser.value().unwrap().parse::<u16>().unwrap();
+                                println!("port: {}", port);
+                            },
+                            Short('j') | Long("json") => {
+                                json = Some(parser.value().unwrap().into_string().unwrap());
+                                println!("json: {:?}", json);
+                            },
+                            _ => {
+                                println!("other");
+                            }
+                        }
+                    },
+                    None => {
+                        break;
+                    }
+                }
+            },
+            Err(err) => {
+                println!("err: {:?}", err);
+                std::process::exit(3);
+            }
+        }
+    }
+    let url = format!("{}:{}", hostname, port);
+
+    if json.is_none() {
+        println!("json is empty");
+        std::process::exit(3);
+    }
+
+    let json = json.unwrap();
+    let cmd = json_to_command(&json);
     let cmd = cmd.unwrap();
-    let ext = CommandExt {
-        warning_core: cli.warning_core,
-        critical_core: cli.critical_core,
-        warning_agregation: cli.warning_agregation,
-        critical_agregation: cli.critical_agregation,
-    };
-    let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
-    println!("{}", result.output);
-    std::process::exit(result.status as i32);
+    //let ext = CommandExt {
+    //    warning_core: cli.warning_core,
+    //    critical_core: cli.critical_core,
+    //    warning_agregation: cli.warning_agregation,
+    //    critical_agregation: cli.critical_agregation,
+    //};
+    //let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
+    //println!("{}", result.output);
+    //std::process::exit(result.status as i32);
 }
 
 mod Test {

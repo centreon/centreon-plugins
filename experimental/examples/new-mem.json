@@ -4,12 +4,12 @@
       {
 	"name": "total",
 	"oid": "1.3.6.1.4.1.2021.4.6.0",
-	"query": "Get",	    // par défaut walk
+	"query": "Get"
       },
       {
 	"name": "free",
 	"oid": "1.3.6.1.4.1.2021.4.11.0",
-	"query": "Get",	    // par défaut walk
+	"query": "Get"
       }
     ]
   },
@@ -18,16 +18,17 @@
       {
         "name": "core.mem.usage.percent",
         "value": "100 * (1 - {free}/{cpu})",
-	"uom": "%",     // optional
-	"min": 0,       // optional
-	"max": 100      // optional
+	"uom": "%",
+	"min": 0,
+	"max": 100,
+	"threshold-suffix": "mem"
       },
       {
         "name": "avg.cpu.usage.percent",
-	"value": "Average({cpu})",	  // si agregation, pas de prefix
-	"uom": "%",     // optional
-	"min": 0,       // optional
-	"max": 100      // optional
+	"value": "Average({cpu})",
+	"uom": "%",
+	"min": 0,
+	"max": 100
       }
     ]
   }
