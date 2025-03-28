@@ -74,6 +74,7 @@ env
 equipments
 ESX
 eth
+Exense
 ext4
 fanspeed
 FCCapacity
