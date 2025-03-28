@@ -9,12 +9,12 @@ extern crate serde;
 extern crate serde_json;
 
 mod generic;
-mod lib;
+mod snmp;
 
 use generic::{Command, CommandExt};
 use std::ffi::{OsString, OsStr};
 use lalrpop_util::lalrpop_mod;
-use lib::r_snmp_get;
+use snmp::r_snmp_get;
 use serde_json::Result;
 use std::fs;
 
