@@ -276,7 +276,7 @@ Exense Step API
 
 =head1 SYNOPSIS
 
-Exense Step api
+Exense Step API
 
 =head1 REST API OPTIONS
 

@@ -432,7 +432,7 @@ Filter plan executions by environment name.
 
 =item B<--since-timeperiod>
 
-Time period to get plans execution informations (in seconds. default: 86400).
+Time period to get plans executions information (in seconds. default: 86400).
 
 =item B<--only-last-execution>
 
