@@ -73,6 +73,7 @@ Ekara
 env
 ESX
 eth
+Exense
 ext4
 fanspeed
 FCCapacity
