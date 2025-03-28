@@ -186,10 +186,13 @@ You can use the following variables: %{name}, %{status}.
 Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-expires>
 
 Thresholds.
-Can be: 'expires'.
+
+=item B<--critical-expires>
+
+Thresholds.
 
 =back
 
