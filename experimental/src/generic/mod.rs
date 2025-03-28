@@ -45,6 +45,7 @@ fn worst(a: Status, b: Status) -> Status {
 
 #[derive(Deserialize, Debug)]
 enum QueryType {
+    Get,
     Walk,
 }
 
@@ -60,7 +61,7 @@ struct Metric {
 #[derive(Deserialize, Debug)]
 pub struct Compute {
     metrics: Vec<Metric>,
-    aggregations: Vec<Metric>,
+    aggregations: Option<Vec<Metric>>,
 }
 
 #[derive(Deserialize, Debug)]
