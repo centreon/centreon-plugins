@@ -251,6 +251,7 @@ sub cache_backup_job_session {
     return $datas;
 }
 
+
 sub cache_repository {
     my ($self, %options) = @_;
 
@@ -275,6 +276,24 @@ sub get_backup_job_session {
         endpoint => '/api/query',
         get_param => [
             'type=BackupJobSession',
+            'format=Entities',
+            'filter=CreationTime>=' . $creation_time
+        ]
+    );
+}
+
+sub get_replica_job_session {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'replica_job_session')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+
+    my $creation_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601();
+
+    return $self->request_api(
+        endpoint => '/api/query',
+        get_param => [
+            'type=ReplicaJobSession',
             'format=Entities',
             'filter=CreationTime>=' . $creation_time
         ]
