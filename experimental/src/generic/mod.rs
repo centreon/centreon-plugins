@@ -1,7 +1,7 @@
 extern crate serde;
 extern crate serde_json;
 
-use lib::{r_snmp_bulk_walk, SnmpResult};
+use snmp::{r_snmp_bulk_walk, SnmpResult};
 use serde::Deserialize;
 
 #[derive(Copy, Clone, PartialEq)]
