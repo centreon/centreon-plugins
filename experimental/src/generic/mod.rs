@@ -2,7 +2,7 @@ extern crate serde;
 extern crate serde_json;
 
 use serde::Deserialize;
-use snmp::{r_snmp_bulk_walk, SnmpResult, SnmpValue};
+use snmp::{r_snmp_bulk_get, r_snmp_bulk_walk, SnmpResult, SnmpValue};
 
 use std::collections::BTreeMap;
 
@@ -182,6 +182,9 @@ impl Command {
         //ext: &CommandExt,
     ) -> CmdResult {
         let mut res: BTreeMap<String, i64> = BTreeMap::new();
+        let mut to_get = Vec::new();
+        let mut get_name = Vec::new();
+
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
@@ -203,8 +206,16 @@ impl Command {
                     }
                 }
                 QueryType::Get => {
-                    //                    let r = r_snmp_bulk_get(target, version, community, &s.oid);
-                    //                    res.insert(&s.name, r);
+                    to_get.push(s.oid.as_str());
+                    get_name.push(&s.name);
+                }
+            }
+        }
+        if !to_get.is_empty() {
+            let r = r_snmp_bulk_get(target, version, community, 1, 1, &to_get);
+            for (idx, result) in r.variables.iter().enumerate() {
+                if let SnmpValue::Integer(v) = result.value {
+                    res.insert(get_name[idx].to_string(), v);
                 }
             }
         }
