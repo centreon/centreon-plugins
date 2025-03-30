@@ -170,6 +170,9 @@ pub fn r_snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
     // Send the message through an UDP socket
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
+
     let encoded = rasn::der::encode(&message).unwrap();
     let res = socket.send(&encoded).unwrap();
     assert!(res == encoded.len());
@@ -237,11 +240,13 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
     };
 
     let mut message = create_next_request(request_id, &oid_tab);
+    // Send the message through an UDP socket
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
 
     loop {
-        // Send the message through an UDP socket
-        let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
-        socket.connect(target).expect("connect function failed");
         let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
         let res: usize = socket.send(&encoded).unwrap();
         assert!(res == encoded.len());
@@ -282,68 +287,67 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
 /// use snmp_rust::r_snmp_bulk_get;
 /// let result = r_snmp_bulk_get("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
 /// ```
-pub fn r_snmp_bulk_get(target: &str, _version: &str, community: &str, oid: &str) -> SnmpResult {
-    let mut oid_tab = oid
-        .split('.')
-        .map(|x| x.parse::<u32>().unwrap())
-        .collect::<Vec<u32>>();
+pub fn r_snmp_bulk_get(
+    target: &str,
+    _version: &str,
+    community: &str,
+    non_repeaters: u32,
+    max_repetitions: u32,
+    oid: &Vec<&str>,
+) -> SnmpResult {
+    let mut oids_tab = oid
+        .iter()
+        .map(|x| {
+            x.split('.')
+                .map(|x| x.parse::<u32>().unwrap())
+                .collect::<Vec<u32>>()
+        })
+        .collect::<Vec<Vec<u32>>>();
 
     let mut retval = SnmpResult::new();
     let mut request_id: i32 = 1;
 
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
 
-    loop {
-        let variable_bindings = vec![VarBind {
-            name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
+    let variable_bindings = oids_tab
+        .iter()
+        .map(|x| VarBind {
+            name: ObjectIdentifier::new_unchecked(x.to_vec().into()),
             value: VarBindValue::Unspecified,
-        }];
+        })
+        .collect::<Vec<VarBind>>();
 
-        let pdu = BulkPdu {
-            request_id,
-            non_repeaters: 0,
-            max_repetitions: 10,
-            variable_bindings,
-        };
+    let pdu = BulkPdu {
+        request_id,
+        non_repeaters,
+        max_repetitions,
+        variable_bindings,
+    };
 
-        let get_request: GetBulkRequest = GetBulkRequest(pdu);
+    let get_request: GetBulkRequest = GetBulkRequest(pdu);
 
-        let message: Message<GetBulkRequest> = Message {
-            version: 1.into(),
-            community: community.to_string().into(),
-            data: get_request.into(),
-        };
+    let message: Message<GetBulkRequest> = Message {
+        version: 1.into(),
+        community: community.to_string().into(),
+        data: get_request.into(),
+    };
 
-        // Send the message through an UDP socket
-        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
-        let res: usize = socket.send(&encoded).unwrap();
-        assert!(res == encoded.len());
+    // Send the message through an UDP socket
+    let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+    let res: usize = socket.send(&encoded).unwrap();
+    assert!(res == encoded.len());
 
-        let mut buf: [u8; 1024] = [0; 1024];
-        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+    let mut buf: [u8; 1024] = [0; 1024];
+    let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
 
-        trace!("Received {} bytes", resp.0);
-        assert!(resp.0 > 0);
-        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-        if let Pdus::Response(resp) = &decoded.data {
-            let resp_oid = &resp.0.variable_bindings[0].name;
-            let n = resp_oid.len() - 1;
-        }
-        let (result, completed) = build_response(decoded, true);
-        retval.concat(result);
-        if completed {
-            break;
-        }
-        oid_tab = retval
-            .variables
-            .last()
-            .unwrap()
-            .name
-            .split('.')
-            .map(|x| x.parse::<u32>().unwrap())
-            .collect::<Vec<u32>>();
-    }
+    trace!("Received {} bytes", resp.0);
+    assert!(resp.0 > 0);
+    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+    let (result, _completed) = build_response(decoded, false);
+    retval.concat(result);
     retval
 }
 
@@ -374,6 +378,8 @@ pub fn r_snmp_bulk_walk(target: &str, _version: &str, community: &str, oid: &str
 
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
 
     loop {
         let variable_bindings = vec![VarBind {
@@ -474,11 +480,14 @@ fn build_response(decoded: Message<Pdus>, walk: bool) -> (SnmpResult, bool) {
                                     // We transform the value into a rust String
                                     retval.add_variable(
                                         name,
-                                        SnmpValue::String(String::from_utf8(value.to_vec()).unwrap()),
+                                        SnmpValue::String(
+                                            String::from_utf8(value.to_vec()).unwrap(),
+                                        ),
                                     );
                                 }
                                 _ => {
-                                    retval.add_variable(name, SnmpValue::String("Other".to_string()));
+                                    retval
+                                        .add_variable(name, SnmpValue::String("Other".to_string()));
                                 }
                             };
                         }
