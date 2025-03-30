@@ -71,6 +71,8 @@ fn main() {
     let mut parser = lexopt::Parser::from_env();
     let mut hostname = "localhost".to_string();
     let mut port = 161;
+    let mut snmp_version = "2c".to_string();
+    let mut snmp_community = "public".to_string();
     let mut json = None;
     loop {
         let arg = parser.next();
@@ -90,6 +92,14 @@ fn main() {
                             Short('j') | Long("json") => {
                                 json = Some(parser.value().unwrap().into_string().unwrap());
                                 println!("json: {:?}", json);
+                            },
+                            Short('v') | Long("snmp-version") => {
+                                snmp_version = parser.value().unwrap().into_string().unwrap();
+                                println!("snmp_version: {}", snmp_version);
+                            },
+                            Short('c') | Long("snmp-community") => {
+                                snmp_community = parser.value().unwrap().into_string().unwrap();
+                                println!("snmp_community: {}", snmp_community);
                             },
                             _ => {
                                 println!("other");
@@ -123,7 +133,7 @@ fn main() {
     //    warning_agregation: cli.warning_agregation,
     //    critical_agregation: cli.critical_agregation,
     //};
-    //let result = cmd.execute(&url, &cli.snmp_version, &cli.community, &ext);
+    let result = cmd.execute(&url, &snmp_version, &snmp_community);
     //println!("{}", result.output);
     //std::process::exit(result.status as i32);
 }
