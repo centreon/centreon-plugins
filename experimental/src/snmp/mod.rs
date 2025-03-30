@@ -183,7 +183,7 @@ pub fn r_snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
     trace!("Received {} bytes", resp.0);
     assert!(resp.0 > 0);
     let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-    build_response(decoded, false).0
+    build_response(decoded, "", false).0
 }
 
 //#[no_mangle]
@@ -265,7 +265,7 @@ pub fn r_snmp_walk(target: &str, oid: &str) -> SnmpResult {
             }
             message = create_next_request(request_id, &resp_oid);
         }
-        retval.concat(build_response(decoded, true).0);
+        retval.concat(build_response(decoded, &oid, true).0);
         request_id += 1;
     }
     retval
@@ -346,7 +346,7 @@ pub fn r_snmp_bulk_get(
     trace!("Received {} bytes", resp.0);
     assert!(resp.0 > 0);
     let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
-    let (result, _completed) = build_response(decoded, false);
+    let (result, _completed) = build_response(decoded, "", false);
     retval.concat(result);
     retval
 }
@@ -417,7 +417,7 @@ pub fn r_snmp_bulk_walk(target: &str, _version: &str, community: &str, oid: &str
             let resp_oid = &resp.0.variable_bindings[0].name;
             let n = resp_oid.len() - 1;
         }
-        let (result, completed) = build_response(decoded, true);
+        let (result, completed) = build_response(decoded, &oid, true);
         retval.concat(result);
         if completed {
             break;
@@ -434,21 +434,16 @@ pub fn r_snmp_bulk_walk(target: &str, _version: &str, community: &str, oid: &str
     retval
 }
 
-fn build_response(decoded: Message<Pdus>, walk: bool) -> (SnmpResult, bool) {
+fn build_response(decoded: Message<Pdus>, oid: &str, walk: bool) -> (SnmpResult, bool) {
     let mut retval = SnmpResult::new();
     let mut completed = false;
 
     if let Pdus::Response(resp) = &decoded.data {
         let vars = &resp.0.variable_bindings;
-        let mut header = "".to_string();
         for var in vars {
             let name = var.name.to_string();
             if walk {
-                if header == "" {
-                    // We remove from name the last number after the last "." to get the header.
-                    let n = name.rfind('.').unwrap();
-                    header = name[0..n].to_string();
-                } else if !name.starts_with(&header) {
+                if !name.starts_with(oid) {
                     completed = true;
                     break;
                 }
