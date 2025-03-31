@@ -79,8 +79,8 @@ Check hardware (batteries, fan modules, fibre channels, flashcards, power suppli
 
 =item B<--component>
 
-Which component to check (default: 'all').
-Can be: 'battery', 'fan', 'fibrechannel', 'flashcard', 'psu'.
+Which component to check (default: '.*').
+Can be: C<battery>, C<fan>, C<fibrechannel>, C<flashcard>, C<psu>.
 
 =item B<--filter>
 
@@ -89,7 +89,7 @@ You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'notAvailable' (default is skipping) (comma separated list)
+Return an error if an entity is not C<notAvailable> (default is skipping) (comma separated list).
 Can be specific or global: --absent-problem=fan,2
 
 =item B<--no-component>

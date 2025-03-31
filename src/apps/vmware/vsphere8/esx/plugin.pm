@@ -33,9 +33,12 @@ sub new {
     $self->{modes} = {
         'cpu'         => 'apps::vmware::vsphere8::esx::mode::cpu',
         'discovery'   => 'apps::vmware::vsphere8::esx::mode::discovery',
+        'disk-io'     => 'apps::vmware::vsphere8::esx::mode::diskio',
         'host-status' => 'apps::vmware::vsphere8::esx::mode::hoststatus',
         'memory'      => 'apps::vmware::vsphere8::esx::mode::memory',
+        'network'     => 'apps::vmware::vsphere8::esx::mode::network',
         'power'       => 'apps::vmware::vsphere8::esx::mode::power',
+        'swap'        => 'apps::vmware::vsphere8::esx::mode::swap',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';
