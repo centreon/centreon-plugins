@@ -219,7 +219,7 @@ impl Command {
                 }
             }
         }
-        println!("{:?}", res);
+        println!("Result variables: {:?}", res);
         //        let mut aggregation = ("", 0, Operation::None);
         //        let mut res: Option<(&str, SnmpResult)> = None;
         //        for (idx, entry) in self.leaf.entries.iter().enumerate() {
