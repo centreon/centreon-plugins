@@ -392,21 +392,21 @@ Example: C<--filter-counters='^status|load$'>
 
 =item B<--replace-lasttime-format>
 
-Define the date format (default: C<%m/%d/%Y'>).
+Define the date format (default: C<%m/%d/%Y>).
 
 =item B<--unknown-status>
 
-Define the conditions to match for the status to be UNKNOWN (default: C<'%{status} =~ /unknown/i'>).
+Define the conditions to match for the status to be UNKNOWN (default: C<%{status} =~ /unknown/i>).
 You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /batteryLow/i'>).
+Define the conditions to match for the status to be WARNING (default: C<%{status} =~ /batteryLow/i>).
 You can use the following variables: C<%{status}>, C<%{replace}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{replace} =~ /yes/i'>).
+Define the conditions to match for the status to be CRITICAL (default: C<%{replace} =~ /yes/i>).
 You can use the following variables: C<%{status}>, C<%{replace}>
 
 =item B<--unknown-battery-pack-status>
@@ -421,7 +421,7 @@ You can use the following variables: C<%{status}>
 
 =item B<--critical-battery-pack-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{status} ne "OK"'>).
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} ne "OK">).
 You can use the following variables: C<%{status}>
 
 =item B<--unknown-cartridge-status>
@@ -436,7 +436,7 @@ You can use the following variables: C<%{status}>
 
 =item B<--critical-cartridge-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{status} ne "OK"'>).
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} ne "OK">).
 You can use the following variables: C<%{status}>
 
 =item B<--warning-load>
@@ -489,11 +489,11 @@ Critical threshold for battery last replace time (in seconds).
 
 =item B<--warning-timeon>
 
-Warning threshold for battery time on (in minutes).
+Warning threshold for time on battery (in minutes).
 
 =item B<--critical-timeon>
 
-Critical threshold for battery time on (in minutes).
+Critical threshold for time on battery (in minutes).
 
 =back
 
