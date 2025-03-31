@@ -1,5 +1,5 @@
-extern crate lexopt;
 extern crate lalrpop_util;
+extern crate lexopt;
 extern crate log;
 extern crate rasn;
 extern crate rasn_smi;
@@ -12,10 +12,10 @@ mod generic;
 mod snmp;
 
 use generic::{Command, CommandExt};
-use std::ffi::{OsString, OsStr};
 use lalrpop_util::lalrpop_mod;
-use snmp::r_snmp_get;
 use serde_json::Result;
+use snmp::r_snmp_get;
+use std::ffi::{OsStr, OsString};
 use std::fs;
 
 lalrpop_mod!(grammar);
@@ -80,37 +80,35 @@ fn main() {
             Ok(arg) => {
                 println!("{:?} ok", arg);
                 match arg {
-                    Some(arg) => {
-                        match arg {
-                            Short('H') | Long("hostname") => {
-                                hostname = parser.value().unwrap().into_string().unwrap();
-                            },
-                            Short('p') | Long("port") => {
-                                port = parser.value().unwrap().parse::<u16>().unwrap();
-                                println!("port: {}", port);
-                            },
-                            Short('j') | Long("json") => {
-                                json = Some(parser.value().unwrap().into_string().unwrap());
-                                println!("json: {:?}", json);
-                            },
-                            Short('v') | Long("snmp-version") => {
-                                snmp_version = parser.value().unwrap().into_string().unwrap();
-                                println!("snmp_version: {}", snmp_version);
-                            },
-                            Short('c') | Long("snmp-community") => {
-                                snmp_community = parser.value().unwrap().into_string().unwrap();
-                                println!("snmp_community: {}", snmp_community);
-                            },
-                            _ => {
-                                println!("other");
-                            }
+                    Some(arg) => match arg {
+                        Short('H') | Long("hostname") => {
+                            hostname = parser.value().unwrap().into_string().unwrap();
+                        }
+                        Short('p') | Long("port") => {
+                            port = parser.value().unwrap().parse::<u16>().unwrap();
+                            println!("port: {}", port);
+                        }
+                        Short('j') | Long("json") => {
+                            json = Some(parser.value().unwrap().into_string().unwrap());
+                            println!("json: {:?}", json);
+                        }
+                        Short('v') | Long("snmp-version") => {
+                            snmp_version = parser.value().unwrap().into_string().unwrap();
+                            println!("snmp_version: {}", snmp_version);
+                        }
+                        Short('c') | Long("snmp-community") => {
+                            snmp_community = parser.value().unwrap().into_string().unwrap();
+                            println!("snmp_community: {}", snmp_community);
+                        }
+                        _ => {
+                            println!("other");
                         }
                     },
                     None => {
                         break;
                     }
                 }
-            },
+            }
             Err(err) => {
                 println!("err: {:?}", err);
                 std::process::exit(3);
