@@ -50,7 +50,7 @@ sub set_counters {
             unknown_default  => '%{node_status} =~ /unknown/i',
             warning_default  => '%{node_status} =~ /lockedOnline/i',
             critical_default =>
-                '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i',
+                '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline)$/i',
             set              =>
                 {
                     key_values                     => [ { name => 'node_status' }, { name => 'node_member_id' } ],
@@ -121,7 +121,7 @@ You can use the following variables: %{node_status}, %{node_member_id}.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline)$/i').
 You can use the following variables: %{node_status}, %{node_member_id}.
 
 =back
