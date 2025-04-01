@@ -30,7 +30,7 @@ use POSIX qw(floor);
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -102,7 +102,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'generic',
           set   => {
-              key_values                     => [{ name => 'numericvalue' }],
+              key_values                     => [ { name => 'numericvalue' } ],
               closure_custom_output          => $self->can('custom_generic_output'),
               closure_custom_perfdata        => $self->can('custom_generic_perfdata'),
               closure_custom_threshold_check => $self->can('custom_generic_threshold')
