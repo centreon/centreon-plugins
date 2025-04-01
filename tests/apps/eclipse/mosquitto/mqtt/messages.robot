@@ -37,7 +37,7 @@ Mosquitto MQTT messages help
 
 Mosquitto MQTT messages ${tc}
     [Documentation]    Check Mosquitto MQTT messages
-    [Tags]    eclipse    mosquitto    mqtt   notauto
+    [Tags]    eclipse    mosquitto    mqtt    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    --warning-messages-stored=${warning-stored}
