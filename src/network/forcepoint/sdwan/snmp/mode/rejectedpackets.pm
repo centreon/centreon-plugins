@@ -20,56 +20,68 @@
 
 package network::forcepoint::sdwan::snmp::mode::rejectedpackets;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
+
+sub custom_reject_calc {
+    my ($self, %options) = @_;
+
+    # First call or reboot or counter goes back
+    if (!defined($options{old_datas}->{global_rejected})
+        || $options{new_datas}->{global_rejected} < $options{old_datas}->{global_rejected}
+    ) {
+        $self->{error_msg} = 'buffer creation';
+        return -1;
+    }
+
+    my $rejected = $options{new_datas}->{global_rejected} - $options{old_datas}->{global_rejected};
+    $self->{result_values}->{rejected_packets_per_sec} = $rejected / $options{delta_time};
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label  => 'rejected-packets-sec',
+            nlabel => 'rejected.packets.persecond',
+            set    => {
+                key_values          => [],
+                manual_keys         => 1,
+                closure_custom_calc => $self->can('custom_reject_calc'),
+                output_template     => 'Packets Rejected : %.2f /s',
+                output_use          => 'rejected_packets_per_sec', threshold_use => 'rejected_packets_per_sec',
+                perfdatas           => [
+                    { value => 'rejected_packets_per_sec', template => '%.2f', unit => 'packets/s', min => 0 }
+                ],
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(
-        arguments =>
-            {
-                "warning:s"  => { name => 'warning' },
-                "critical:s" => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {});
 
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-
+    $self->{cache_policy} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(
-        label => 'warning', value => $self->{option_results}->{warning})) == 0
-    ) {
-        $self->{output}->add_option_msg(
-            short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'."
-        );
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(
-        label => 'critical', value => $self->{option_results}->{critical})) == 0
-    ) {
-        $self->{output}->add_option_msg(
-            short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'."
-        );
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_value}->check_options(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
@@ -79,68 +91,17 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $new_datas = {};
-    $self->{statefile_value}->read(
-        statefile => "forcepoint_sdwan_" . $self->{hostname} . '_' . $self->{snmp_port} . '_' . $self->{mode}
-    );
-
     my $oid_fwRejected = '.1.3.6.1.4.1.47565.1.1.1.9.0';
     my $result = $self->{snmp}->get_leef(oids => [ $oid_fwRejected ], nothing_quit => 1);
 
-    my $rejected_packets = $result->{$oid_fwRejected};
-    $new_datas->{rejected_packets} = $rejected_packets;
-    $new_datas->{last_timestamp} = time();
+    $self->{global} = {
+        rejected => $result->{$oid_fwRejected}
+    };
 
-    my $old_datas = {};
-    $old_datas->{old_timestamp} = $self->{statefile_value}->get(name => 'last_timestamp');
-    $old_datas->{old_rejected_packets} = $self->{statefile_value}->get(name => 'rejected_packets');
-    if (!defined($old_datas->{old_rejected_packets}) || $new_datas->{rejected_packets} < $old_datas->{old_rejected_packets}) {
-        # We set 0. Has reboot.
-        $old_datas->{old_rejected_packets} = 0;
-    }
-
-    if (defined($old_datas->{old_timestamp})) {
-        my $time_delta = $new_datas->{last_timestamp} - $old_datas->{old_timestamp};
-        if ($time_delta <= 0) {
-            $time_delta = 1;
-        }
-
-        my $rejected = $new_datas->{rejected_packets} - $old_datas->{old_rejected_packets};
-        my $rejected_per_sec = $rejected / $time_delta;
-
-        my $exit = $self->{perfdata}->threshold_check(
-            value     => $rejected_per_sec,
-            threshold =>
-                [
-                    { label => 'critical', 'exit_litteral' => 'critical' },
-                    { label => 'warning', exit_litteral => 'warning' }
-                ]
-        );
-
-        $self->{output}->output_add(
-            severity  => $exit,
-            short_msg => sprintf("Packets Rejected : %.2f /s [%i packets]", $rejected_per_sec, $rejected)
-        );
-
-        $self->{output}->perfdata_add(
-            label    => 'rejected_packets_per_sec',
-            value    => sprintf("%.2f", $rejected_per_sec),
-            warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-            min      => 0
-        );
-
-    } else {
-        $self->{output}->output_add(
-            severity  => 'OK',
-            short_msg => "Buffer creation..."
-        );
-    }
-
-    $self->{statefile_value}->write(data => $new_datas);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cache_name} = "forcepoint_sdwan_" . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ?
+            md5_hex($self->{option_results}->{filter_counters}) :
+            md5_hex('all'));
 }
 
 1;
@@ -153,15 +114,14 @@ Check rejected packets per second by firewall.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-rejected-packets-sec>
 
-Warning threshold for blocked packets per second.
+Warning threshold.
 
-=item B<--critical>
+=item B<--critical-rejected-packets-sec>
 
-Critical threshold for blocked packets per second.
+Critical threshold.
 
 =back
 
 =cut
-    
