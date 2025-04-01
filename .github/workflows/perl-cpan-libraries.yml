@@ -43,6 +43,7 @@ jobs:
             "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
+            "Crypt::Argon2",
             "Crypt::Blowfish_PP",
             "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
@@ -52,15 +53,20 @@ jobs:
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
             "Email::Send::SMTP::Gmail",
+            "Exporter::Tiny", # Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path
             "FFI::CheckLib",
             "FFI::Platypus",
             "File::SearchPath",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
+            "JSON::Path",
+            "Libssh::Session",
+            "LV",
             "Mojo::IOLoop::Signal",
             "MongoDB",
             "MooseX::ClassAttribute",
             "Net::Amazon::Signature::V4",
+            "Net::Curl",
             "Net::DHCP",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
@@ -93,6 +99,8 @@ jobs:
           - version: ""
           - spec_file: ""
           - no-auto-depends: "false"
+          - preinstall_cpanlibs: ""
+          - revision: "1"
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -101,6 +109,10 @@ jobs:
             image: packaging-plugins-alma9
           - name: "BSON"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
+          - name: "Crypt::Argon2"
+            preinstall_cpanlibs: "Dist::Build"
+            rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
+            revision: "2"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -113,10 +125,18 @@ jobs:
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
             no-auto-depends: "true"
+          - name: "Libssh::Session"
+            rpm_dependencies: "libssh"
+            rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
+            revision: "2"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
             no-auto-depends: "true"
+          - name: "Net::Curl"
+            rpm_dependencies: "libcurl"
+            rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
+            revision: "2"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -146,7 +166,28 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
+        name: Get package infos
+        id: package-infos
+        run: |
+          cpan_info=$(cpanm --info ${{ matrix.name }})
+          if [ -z "${{ matrix.version }}" ]; then
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
+              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
+              exit 1
+            fi
+            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
+          else
+            PACKAGE_VERSION="${{ matrix.version }}"
+          fi
+          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
+          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g')
+          PACKAGE_NAME="perl-$CPAN_PACKAGE_NAME"
+          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
+        shell: bash
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Check if package already exists
@@ -155,8 +196,8 @@ jobs:
           package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 | tr '[:upper:]' '[:lower:]' || true)
           do_not_build="false"
           if [[ ! $package_info =~ "no matches found" ]]; then
-            package_version=$(echo $package_info | grep -oP 'perl\(${{ matrix.name }}\) = \K[0-9]+\.[0-9]+')
-            if [[ -z "${{ matrix.version }}" || "$package_version" == "${{ matrix.version }}" ]]; then
+            package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+")
+            if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" || "v$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
               echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
             else
@@ -169,11 +210,7 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
-          if [ -z "${{ matrix.version }}" ]; then
-            PACKAGE_VERSION=""
-          else
-            PACKAGE_VERSION=" -v ${{ matrix.version }}"
-          fi
+          PACKAGE_VERSION=" -v ${{ steps.package-infos.outputs.package_version }}"
 
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -195,10 +232,15 @@ jobs:
             done
           fi
 
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
+
           export SYBASE="/usr"
 
           temp_file=$(mktemp)
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          echo "default.local" | tee /etc/mailname
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
@@ -281,7 +323,7 @@ jobs:
       - run: apt-get install -y zstd
         shell: bash
 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
@@ -309,12 +351,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-bullseye-arm64]
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
         name:
           [
             "ARGV::Struct",
             "Config::AWS",
             "Convert::EBCDIC",
+            "Crypt::Argon2",
             "Crypt::Blowfish_PP",
             "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
@@ -327,8 +370,10 @@ jobs:
             "Hash::Ordered",
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
+            "Libssh::Session",
             "Mojo::IOLoop::Signal",
             "Net::Amazon::Signature::V4",
+            "Net::Curl",
             "Net::FTPSSL",
             "Net::HTTPTunnel",
             "Net::MQTT::Simple",
@@ -341,11 +386,14 @@ jobs:
         include:
           - runner_name: ubuntu-24.04
           - arch: amd64
-          - build_names: "bullseye-amd64,bookworm,jammy"
+          - build_names: "bullseye-amd64,bookworm,jammy,noble"
           - deb_dependencies: ""
-          - rpm_provides: ""
+          - deb_provides: ""
           - version: ""
           - use_dh_make_perl: "true"
+          - no-auto-depends: "false"
+          - preinstall_cpanlibs: ""
+          - revision: "1"
           - build_name: bullseye-amd64
             distrib: bullseye
             package_extension: deb
@@ -358,25 +406,51 @@ jobs:
             distrib: jammy
             package_extension: deb
             image: packaging-plugins-jammy
+          - build_name: noble
+            distrib: noble
+            package_extension: deb
+            image: packaging-plugins-noble
           - build_name: bullseye-arm64
             distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: centreon-collect-arm64
+          - name: "Crypt::Argon2"
+            build_names: "bullseye-amd64,jammy,noble,bullseye-arm64"
+            preinstall_cpanlibs: "Dist::Build"
+            use_dh_make_perl: "false"
+            no-auto-depends: "true"
+            deb_dependencies: "libexporter-tiny-perl libtime-hires-perl libxsloader-perl"
+            deb_provides: "libcrypt-argon2-perl-dbgsym"
+            revision: "2"
           - name: "Crypt::OpenSSL::AES"
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
             build_names: "bookworm"
           - name: "Device::Modbus::TCP::Client"
             build_names: "bookworm"
           - name: "Digest::SHA1"
-            build_names: "jammy"
+            build_names: "jammy,noble"
+          - name: "Libssh::Session"
+            use_dh_make_perl: "false"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            no-auto-depends: "true"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
+            deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
+            revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: ["bullseye-amd64", "jammy"]
+            build_names: ["bullseye-amd64", "jammy", "noble"]
+          - name: "Net::Curl"
+            use_dh_make_perl: "false"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            no-auto-depends: "true"
+            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
+            deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
+            revision: "2"
           - name: "Net::MQTT::Simple"
             version: "1.29"
           - name: "Paws"
@@ -390,7 +464,7 @@ jobs:
             use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
-            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -400,7 +474,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Parse distrib name
@@ -416,8 +490,8 @@ jobs:
           apt-get update
           cpan_info=$(cpanm --info ${{ matrix.name }})
           if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//' | sed 's/v//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+ ]]; then
+            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
+            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
               echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
               exit 1
             fi
@@ -427,7 +501,14 @@ jobs:
           fi
           echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
           CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
-          PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
+
+          # Handle specific cases of libssh-session
+          if [[ "$CPAN_PACKAGE_NAME" == "lib"* ]];then
+            PACKAGE_NAME="$CPAN_PACKAGE_NAME-perl"
+          else
+            PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
+          fi
+
           echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
         shell: bash
 
@@ -442,7 +523,7 @@ jobs:
           do_not_build="false"
           if [[ -n $package_info ]]; then
             candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
-            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
+            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* || "v$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
               echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
               do_not_build="true"
             else
@@ -455,6 +536,10 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'false' }}
         run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
           if [ -z "${{ matrix.deb_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
           else
@@ -466,24 +551,46 @@ jobs:
             PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
           fi
 
+          if [ -z "${{ matrix.deb_provides }}" ]; then
+            PACKAGE_PROVIDES=""
+          else
+            for PACKAGE_PROVIDE in `echo "${{ matrix.deb_provides }}"`; do
+              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
+            done
+          fi
+
           temp_file=$(mktemp)
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          echo "default.local" | tee /etc/mailname
+
+          # Handle specific case for libssh-session
+          if [[ "${{ matrix.name }}" == "Libssh::Session" ]]; then
+            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} --name ssh-session ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          else
+            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+          fi
+
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
             exit 1
           fi
+
           # Check deb
-          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+          dpkg-deb --verbose --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
         run: |
+          # Install needed cpan libs
+          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
+            cpanm $CPANLIB_PREINSTALL
+          done
           temp_file=$(mktemp)
-          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
-            echo "Error: fpm command failed"
+            echo "Error: dh-make-perl command failed"
             exit 1
           fi
           # Check deb
@@ -515,7 +622,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm, jammy, noble]
 
     steps:
       - name: Merge Artifacts
@@ -540,7 +647,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy]
+        distrib: [bullseye, bookworm, jammy, noble]
     steps:
       - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
@@ -584,6 +691,10 @@ jobs:
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
+            image: ubuntu:noble
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
             arch: arm64
@@ -595,114 +706,15 @@ jobs:
 
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
-      - if: ${{ matrix.package_extension == 'rpm' }}
-        name: Install zstd, perl and Centreon repositories
-        run: |
-          dnf install -y zstd perl epel-release 'dnf-command(config-manager)'
-          dnf config-manager --set-enabled powertools || true # alma 8
-          dnf config-manager --set-enabled crb || true # alma 9
-          # Import Centreon GPG key
-          GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
-          curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
-          rpm --import RPM-GPG-KEY-CES
-        shell: bash
 
-      - if: ${{ matrix.package_extension == 'deb' }}
-        name: Install zstd, perl and Centreon repositories
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install -y zstd perl wget gpg apt-utils procps
-          wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-          # Avoid apt to clean packages cache directory
-          rm -f /etc/apt/apt.conf.d/docker-clean
-          apt-get update
-        shell: bash
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
-      - name: Restore packages from cache
-        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+      - name: Test packaged libs
+        uses: ./.github/actions/test-cpan-libs
         with:
-          path: ./*.${{ matrix.package_extension }}
-          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          fail-on-cache-miss: true
-
-      - if: ${{ matrix.package_extension == 'rpm' }}
-        name: Install packages
-        run: |
-          error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.rpm; do
-            echo "Installing package: $package"
-            # List dependencies, and remove version and comparison operators
-            dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
-            for dependency in $dependencies; do
-              # Skip non-perl dependencies
-              if [[ $dependency != perl* ]]; then
-                continue
-              else
-                echo "Check dependency: $dependency"
-                # Update the dependency name to match the package name
-                dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
-              fi
-              # If the dependency has been built in the same workflow, install it
-              if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
-                echo "Installing dependency: $dependency"
-                error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-              fi
-            done
-            # Install package, then uninstall it with all his dependencies
-            echo "Package installation..."
-            error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
-            echo "Package installation done."
-            echo "Package uninstallation..."
-            error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
-            echo "Package uninstallation done."
-          done
-          # If the file error_log exists and is not empty, the workflow is in error
-          if [[ -s $error_log ]]; then
-              cat $error_log
-              exit 1
-          fi
-        shell: bash
-
-      - if: ${{ matrix.package_extension == 'deb' }}
-        name: Install packages
-        run: |
-          error_log="install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log"
-          for package in ./*.deb; do
-            # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
-            if [[ $package == *amd64.deb && ${{ matrix.arch }} != "amd64" || $package == *arm64.deb && ${{ matrix.arch }} != "arm64" ]]; then
-              continue
-            fi
-            echo "Installing package: $package"
-            # List dependencies
-            dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
-            for dependency in $dependencies; do
-              # If the dependency exists in the Debian repository, don't check the local dependencies
-              dependency_info=$(apt-cache policy $dependency)
-              if [[ -n $dependency_info ]]; then
-                echo "Dependency $dependency exists in debian repository."
-              else
-                # If the dependency has been built in the same workflow, install it
-                for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ matrix.arch }}\.deb"); do
-                  echo "Installing dependency: $dependency_package"
-                  error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-                done
-              fi
-            done
-            # Install package, then uninstall it with all his dependencies
-            echo "Package installation..."
-            error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
-            echo "Package installation done."
-            echo "Package uninstallation..."
-            error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
-            echo "Package uninstallation done."
-          done
-          # If the file error_log exists and is not empty, the workflow is in error
-          if [[ -s $error_log ]]; then
-              cat $error_log
-              exit 1
-          fi
-        shell: bash
+          package_extension: ${{ matrix.package_extension }}
+          distrib: ${{ matrix.distrib }}
+          arch: ${{ matrix.arch }}
 
       - name: Upload error log
         if: failure()
@@ -733,6 +745,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

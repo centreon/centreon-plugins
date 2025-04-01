@@ -63,6 +63,12 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-java-jammy
             image: packaging-plugins-java-jammy
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-noble
+            image: packaging-plugins-noble
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-java-noble
+            image: packaging-plugins-java-noble
 
     runs-on: ${{ matrix.runner }}
 

@@ -24,6 +24,7 @@ api.meraki.com
 --api-username
 --api-version
 AppearTV
+AS400
 ASAM
 Avigilon
 Avocent
@@ -31,6 +32,7 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+BackupJobSession
 base64
 blocked-by-uf
 BPL
@@ -71,9 +73,11 @@ Ekara
 env
 ESX
 eth
+Exense
 ext4
 fanspeed
 FCCapacity
+fibre
 --filter-fs
 --filter-imei
 --filter-ppid
@@ -215,6 +219,7 @@ QoS
 Qtree
 queue-messages-inflighted
 raidvolume
+ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached

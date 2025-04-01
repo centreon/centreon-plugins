@@ -83,6 +83,11 @@ jobs:
             runner: ubuntu-22.04
             arch: amd64
           - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
+            runner: ubuntu-22.04
+            arch: amd64
+          - package_extension: deb
             image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             runner: centreon-collect-arm64

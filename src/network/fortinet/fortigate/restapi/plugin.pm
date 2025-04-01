@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
         'ha'       => 'network::fortinet::fortigate::restapi::mode::ha',
         'health'   => 'network::fortinet::fortigate::restapi::mode::health',
         'licenses' => 'network::fortinet::fortigate::restapi::mode::licenses',
+        'certificates' => 'network::fortinet::fortigate::restapi::mode::certificates',
         'system'   => 'network::fortinet::fortigate::restapi::mode::system'
     };
 
