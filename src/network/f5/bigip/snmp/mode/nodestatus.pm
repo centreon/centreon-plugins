@@ -206,10 +206,13 @@ You can use the following variables: %{state}, %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "enabled" and %{status} eq "red"').
 You can use the following variables: %{state}, %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current-server-connections>
 
 Thresholds.
-Can be: 'current-server-connections'.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
 
 =back
 

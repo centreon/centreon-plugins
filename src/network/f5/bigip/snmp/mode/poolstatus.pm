@@ -360,10 +360,29 @@ You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeNam
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current-server-connections>
 
 Thresholds.
-Can be: 'current-server-connections', 'current-active-members', 'current-total-members'.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
+
+=item B<--warning-current-active-members>
+
+Thresholds.
+
+=item B<--critical-current-active-members>
+
+Thresholds.
+
+=item B<--warning-current-total-members>
+
+Thresholds.
+
+=item B<--critical-current-total-members>
+
+Thresholds.
 
 =back
 

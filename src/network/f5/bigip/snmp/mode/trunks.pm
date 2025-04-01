@@ -468,8 +468,8 @@ Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--speed>
 
-Set trunk speed in Mbps (default: sysTrunkOperBw).
-If not set and sysTrunkOperBw OID value is 0,
+Set trunk speed in Mbps (default: C<sysTrunkOperBw>).
+If not set and C<sysTrunkOperBw> OID value is 0,
 percentage thresholds will not be applied on traffic metrics.
 
 =item B<--add-interfaces>
@@ -506,12 +506,61 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-traffic-in>
 
 Thresholds.
-Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
-'packets-error-out' (%), 'packets-drop-in' (%), 'packets-drop-out' (%),
-'total-interfaces'.
+
+=item B<--critical-traffic-in>
+
+Thresholds.
+
+=item B<--warning-traffic-out>
+
+Thresholds.
+
+=item B<--critical-traffic-out>
+
+Thresholds.
+
+=item B<--warning-packets-error-in>
+
+Thresholds in %.
+
+=item B<--critical-packets-error-in>
+
+Thresholds in %.
+
+=item B<--warning-packets-error-out>
+
+Thresholds in %.
+
+=item B<--critical-packets-error-out>
+
+Thresholds in %.
+
+=item B<--warning-packets-drop-in>
+
+Thresholds in %.
+
+=item B<--critical-packets-drop-in>
+
+Thresholds in %.
+
+=item B<--warning-packets-drop-out>
+
+Thresholds in %.
+
+=item B<--critical-packets-drop-out>
+
+Thresholds in %.
+
+=item B<--warning-total-interfaces>
+
+Thresholds.
+
+=item B<--critical-total-interfaces>
+
+Thresholds.
 
 =back
 

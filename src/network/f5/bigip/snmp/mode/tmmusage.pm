@@ -221,7 +221,7 @@ __END__
 
 =head1 MODE
 
-Check TMM usages.
+Check TMM (Traffic Management Microkernel) usages.
 
 =over 8
 
@@ -232,19 +232,63 @@ Example : --filter-counters='^memory-usage$'
 
 =item B<--filter-name>
 
-Filter by TMM name (regexp can be used).
+Filter by TMM (Traffic Management Microkernel) name (regexp can be used).
 
-=item B<--warning-*>
+=item B<--warning-cpu-1m>
 
-Warning threshold.
-Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
-'total-server-connections', 'current-server-connections'.
+Thresholds.
 
-=item B<--critical-*>
+=item B<--critical-cpu-1m>
 
-Critical threshold.
-Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
-'total-server-connections', 'current-server-connections'.
+Thresholds.
+
+=item B<--warning-cpu-5m>
+
+Thresholds.
+
+=item B<--critical-cpu-5m>
+
+Thresholds.
+
+=item B<--warning-memory-usage>
+
+Thresholds in %.
+
+=item B<--critical-memory-usage>
+
+Thresholds in %.
+
+=item B<--warning-total-client-connections>
+
+Thresholds.
+
+=item B<--critical-total-client-connections>
+
+Thresholds.
+
+=item B<--warning-current-client-connections>
+
+Thresholds.
+
+=item B<--critical-current-client-connections>
+
+Thresholds.
+
+=item B<--warning-total-server-connections>
+
+Thresholds.
+
+=item B<--critical-total-server-connections>
+
+Thresholds.
+
+=item B<--warning-current-server-connections>
+
+Thresholds.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
 
 =back
 

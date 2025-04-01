@@ -153,15 +153,45 @@ Check current connections on F5 BIG IP device.
 Only display some counters (regexp can be used).
 Example to check SSL connections only : --filter-counters='^client-ssl|server-ssl$'
 
-=item B<--warning-*>
+=item B<--warning-client>
 
-Warning threshold.
-Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
+Thresholds.
 
-=item B<--critical-*>
+=item B<--critical-client>
 
-Critical threshold.
-Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
+Thresholds.
+
+=item B<--warning-server>
+
+Thresholds.
+
+=item B<--critical-server>
+
+Thresholds.
+
+=item B<--warning-client-ssl>
+
+Thresholds.
+
+=item B<--critical-client-ssl>
+
+Thresholds.
+
+=item B<--warning-server-ssl>
+
+Thresholds.
+
+=item B<--critical-server-ssl>
+
+Thresholds.
+
+=item B<--warning-client-ssl-tps>
+
+Thresholds.
+
+=item B<--critical-client-ssl-tps>
+
+Thresholds.
 
 =back
 
