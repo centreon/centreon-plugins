@@ -75,6 +75,8 @@ ESX
 eth
 Exense
 ext4
+F5
+failover
 fanspeed
 FCCapacity
 fibre
@@ -117,9 +119,9 @@ io-cards
 iops
 IpAddr
 ip-label
+ipsec
 ipv4
 ipv6
-ipsec
 ISAM
 Iwsva
 jmeter
@@ -150,6 +152,7 @@ memBuffer
 memTotalReal
 Meraki
 MIB
+Microkernel
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -250,6 +253,7 @@ teampass
 Teldat
 timeframe
 TiMOS
+TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted
 total-offline-prct
@@ -278,8 +282,8 @@ VeloCloud
 VM
 VMware
 VMWARE
-VPN
 vpn
+VPN
 vSAN
 Vserver
 vSphere

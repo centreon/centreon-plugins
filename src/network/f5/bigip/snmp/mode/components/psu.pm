@@ -57,14 +57,22 @@ sub check {
         
         $self->{components}->{psu}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance: %s].", 
-                                    $instance, $result->{sysChassisPowerSupplyStatus}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance: %s].", 
+                $instance, $result->{sysChassisPowerSupplyStatus}, $instance
+            )
+        );
+
         my $exit = $self->get_severity(section => 'psu', value => $result->{sysChassisPowerSupplyStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", 
-                                            $instance, $result->{sysChassisPowerSupplyStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' status is '%s'", 
+                    $instance, $result->{sysChassisPowerSupplyStatus}
+                )
+            );
         }
     }
 }
