@@ -214,21 +214,27 @@ Check switch usage through Fortigate Switch Controller.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-cpu>
 
-Warning threshold.
-Can be: 'cpu' (%), 'memory' (%).
+Warning threshold (%).
 
-=item B<--critical-*>
+=item B<--critical-cpu>
 
-Critical threshold.
-Can be: 'cpu' (%), 'memory' (%).
+Critical threshold (%).
+
+=item B<--warning-memory>
+
+Warning threshold (%).
+
+=item B<--critical-memory>
+
+Critical threshold (%).
 
 =item B<--filter-name>
 
 Filter by switch name (can be a regexp).
 
-=item B<--filter-IP>
+=item B<--filter-ip>
 
 Filter by switch IP (can be a regexp).
 
