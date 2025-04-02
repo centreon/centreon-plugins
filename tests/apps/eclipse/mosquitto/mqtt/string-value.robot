@@ -32,8 +32,7 @@ Mosquitto MQTT string-value help
     ...    ${CMD}
     ...    --help
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
+    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
 
 Mosquitto MQTT string-value ${tc}
     [Documentation]    Check Mosquitto MQTT string-value

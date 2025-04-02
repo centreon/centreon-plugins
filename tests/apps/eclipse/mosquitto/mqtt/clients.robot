@@ -32,8 +32,7 @@ Mosquitto MQTT clients help
     ...    ${CMD}
     ...    --help
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
+    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
 
 Mosquitto MQTT clients ${tc}
     [Documentation]    Check Mosquitto MQTT clients

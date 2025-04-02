@@ -32,8 +32,7 @@ Mosquitto MQTT uptime help
     ...    ${CMD}
     ...    --help
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
+    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
 
 Mosquitto MQTT uptime ${tc}
     [Documentation]    Check Mosquitto MQTT uptime
