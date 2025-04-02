@@ -40,20 +40,15 @@ Mosquitto MQTT messages ${tc}
     [Tags]    eclipse    mosquitto    mqtt    notauto
     ${command}    Catenate
     ...    ${CMD}
-    ...    --warning-messages-stored=${warning-stored}
-    ...    --critical-messages-stored=${critical-stored}
-    ...    --warning-messages-received=${warning-received}
-    ...    --critical-messages-received=${critical-received}
-    ...    --warning-messages-sent=${warning-sent}
-    ...    --critical-messages-sent=${critical-sent}
+    ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
-    Examples:    tc    warning-stored     critical-stored    warning-received    critical-received    warning-sent    critical-sent    expected_result    --
-        ...      1     ${EMPTY}           ${EMPTY}           ${EMPTY}            ${EMPTY}             ${EMPTY}        ${EMPTY}         ^OK: Stored messages: \\\\d+, Received messages: \\\\d+, Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
-        ...      2     @0:                ${EMPTY}           ${EMPTY}            ${EMPTY}             ${EMPTY}        ${EMPTY}         ^WARNING: Stored messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;@0:;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
-        ...      3     ${EMPTY}           @0:                ${EMPTY}            ${EMPTY}             ${EMPTY}        ${EMPTY}         ^CRITICAL: Stored messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;@0:;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
-        ...      4     ${EMPTY}           ${EMPTY}           @0:                 ${EMPTY}             ${EMPTY}        ${EMPTY}         ^WARNING: Received messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;@0:;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
-        ...      5     ${EMPTY}           ${EMPTY}           ${EMPTY}            @0:                  ${EMPTY}        ${EMPTY}         ^CRITICAL: Received messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;@0:;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
-        ...      6     ${EMPTY}           ${EMPTY}           ${EMPTY}            ${EMPTY}             @0:             ${EMPTY}         ^WARNING: Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;@0:;;\\\\d+;$
-        ...      7     ${EMPTY}           ${EMPTY}           ${EMPTY}            ${EMPTY}             ${EMPTY}        @0:              ^CRITICAL: Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;@0:;\\\\d+;$
+    Examples:    tc   extraoptions                         expected_result    --
+        ...      1     ${EMPTY}                            ^OK: Stored messages: \\\\d+, Received messages: \\\\d+, Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
+        ...      2     --warning-messages-stored=@0:       ^WARNING: Stored messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;@0:;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
+        ...      3     --critical-messages-stored=@0:      ^CRITICAL: Stored messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;@0:;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
+        ...      4     --warning-messages-received=@0:     ^WARNING: Received messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;@0:;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
+        ...      5     --critical-messages-received=@0:    ^CRITICAL: Received messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;@0:;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$
+        ...      6     --warning-messages-sent=@0:         ^WARNING: Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;@0:;;\\\\d+;$
+        ...      7     --critical-messages-sent=@0:        ^CRITICAL: Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;@0:;\\\\d+;$

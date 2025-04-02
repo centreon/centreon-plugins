@@ -40,24 +40,17 @@ Mosquitto MQTT clients ${tc}
     [Tags]    eclipse    mosquitto    mqtt    notauto
     ${command}    Catenate
     ...    ${CMD}
-    ...    --warning-clients-connected=${warning-connected}
-    ...    --critical-clients-connected=${critical-connected}
-    ...    --warning-clients-maximum=${warning-maximum}
-    ...    --critical-clients-maximum=${critical-maximum}
-    ...    --warning-clients-active=${warning-active}
-    ...    --critical-clients-active=${critical-active}
-    ...    --warning-clients-inactive=${warning-inactive}
-    ...    --critical-clients-inactive=${critical-inactive}
+    ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
-    Examples:    tc    warning-connected     critical-connected    warning-maximum    critical-maximum    warning-active    critical-active    warning-inactive    critical-inactive    expected_result    --
-        ...      1     ${EMPTY}              ${EMPTY}              ${EMPTY}           ${EMPTY}            ${EMPTY}          ${EMPTY}           ${EMPTY}            ${EMPTY}             ^OK: Connected clients: \\\\d+, Maximum clients: \\\\d+, Active clients: \\\\d+, Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      2     @0                    ${EMPTY}              ${EMPTY}           ${EMPTY}            ${EMPTY}          ${EMPTY}           ${EMPTY}            ${EMPTY}             ^WARNING: Connected clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;@0:0;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      3     ${EMPTY}              @0                    ${EMPTY}           ${EMPTY}            ${EMPTY}          ${EMPTY}           ${EMPTY}            ${EMPTY}             ^CRITICAL: Connected clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;@0:0;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      4     ${EMPTY}              ${EMPTY}              0                  ${EMPTY}            ${EMPTY}          ${EMPTY}           ${EMPTY}            ${EMPTY}             ^WARNING: Maximum clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;0:0;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      5     ${EMPTY}              ${EMPTY}              ${EMPTY}           0                   ${EMPTY}          ${EMPTY}           ${EMPTY}            ${EMPTY}             ^CRITICAL: Maximum clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;0:0;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      6     ${EMPTY}              ${EMPTY}              ${EMPTY}           ${EMPTY}            @0:1              ${EMPTY}           ${EMPTY}            ${EMPTY}             ^WARNING: Active clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;@0:1;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      7     ${EMPTY}              ${EMPTY}              ${EMPTY}           ${EMPTY}            ${EMPTY}          @0:1               ${EMPTY}            ${EMPTY}             ^CRITICAL: Active clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;@0:1;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
-        ...      8     ${EMPTY}              ${EMPTY}              ${EMPTY}           ${EMPTY}            ${EMPTY}          ${EMPTY}           @0                  ${EMPTY}             ^WARNING: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;@0:0;;\\\\d+;$
-        ...      9     ${EMPTY}              ${EMPTY}              ${EMPTY}           ${EMPTY}            ${EMPTY}          ${EMPTY}           ${EMPTY}            @0                   ^CRITICAL: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;@0:0;\\\\d+;$
+    Examples:    tc    extraoptions                       expected_result    --
+        ...      1     ${EMPTY}                           ^OK: Connected clients: \\\\d+, Maximum clients: \\\\d+, Active clients: \\\\d+, Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      2     --warning-clients-connected=@0     ^WARNING: Connected clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;@0:0;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      3     --critical-clients-connected=@0    ^CRITICAL: Connected clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;@0:0;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      4     --warning-clients-maximum=0        ^WARNING: Maximum clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;0:0;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      5     --critical-clients-maximum=0       ^CRITICAL: Maximum clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;0:0;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      6     --warning-clients-active=@0:1      ^WARNING: Active clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;@0:1;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      7     --critical-clients-active=@0:1     ^CRITICAL: Active clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;@0:1;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
+        ...      8     --warning-clients-inactive=@0      ^WARNING: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;@0:0;;\\\\d+;$
+        ...      9     --critical-clients-inactive=@0      ^CRITICAL: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;@0:0;\\\\d+;$

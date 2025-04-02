@@ -40,12 +40,11 @@ Mosquitto MQTT uptime ${tc}
     [Tags]    eclipse    mosquitto    mqtt    notauto
     ${command}    Catenate
     ...    ${CMD}
-    ...    --warning-uptime=${warning}
-    ...    --critical-uptime=${critical}
+    ...    ${extraoptions}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
-    Examples:    tc    warning     critical    expected_result    --
-        ...      1     ${EMPTY}    ${EMPTY}    ^OK: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;;;\\\\d+;$
-        ...      2     1           ${EMPTY}    ^WARNING: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;0:1;;\\\\d+;$
-        ...      3     ${EMPTY}    1           ^CRITICAL: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;;0:1;\\\\d+;$
+    Examples:    tc    extraoptions           expected_result    --
+        ...      1     ${EMPTY}               ^OK: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;;;\\\\d+;$
+        ...      2     --warning-uptime=1     ^WARNING: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;0:1;;\\\\d+;$
+        ...      3     --critical-uptime=1    ^CRITICAL: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;;0:1;\\\\d+;$
