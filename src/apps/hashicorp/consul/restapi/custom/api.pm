@@ -33,7 +33,7 @@ sub new {
             'auth-path:s'            => { name => 'auth_path' },
             'auth-settings:s%'       => { name => 'auth_settings' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'consul-token:s'          => { name => 'consul_token'}
+            'consul-token:s'         => { name => 'consul_token'}
         });
     };
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -55,11 +55,6 @@ sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-
-    if ($self->{option_results}->{auth_method} eq 'token' && (!defined($self->{option_results}->{consul_token}) || $self->{option_results}->{consul_token} eq '')) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --consul-token option");
-        $self->{output}->option_exit();
-    };
 
     if (defined($options{option_results}->{auth_path})) {		
         $self->{auth_path} = lc($options{option_results}->{auth_path});
@@ -208,11 +203,6 @@ sub request_api {
 
     $self->settings(%options);
     my ($json, $response);
-
-    # print($options{url_path});
-    # print("\n");
-    # print('/' . $self->{api_version} . '/' . $options{url_path});
-    # print("\n");
 
     $response = $self->{http}->request(
         method => 'GET',
