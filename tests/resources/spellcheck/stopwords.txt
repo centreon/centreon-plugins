@@ -126,6 +126,7 @@ ipv4
 ipv6
 ISAM
 Iwsva
+Jasmin
 jmeter
 JMeter
 --jobq
@@ -236,6 +237,7 @@ SFOS
 sfp.temperature
 --skip-ssl-check
 SkyHigh
+SMS
 SnapMirror
 SnapMirrors
 SNMP
