@@ -176,7 +176,7 @@ Define a pattern to extract a number from the returned string.
 
 =item B<--format>
 
-Output format (default: 'current value is %s')
+Output format (default: 'current value is %s').
 
 =item B<--format-custom>
 
@@ -185,19 +185,19 @@ Apply a custom change on the value
 
 =item B<--perfdata-unit>
 
-Perfdata unit in perfdata output (default: '')
+Perfdata unit in perfdata output (default: '').
 
 =item B<--perfdata-name>
 
-Perfdata name in perfdata output (default: 'value')
+Perfdata name in perfdata output (default: 'value').
 
 =item B<--perfdata-min>
 
-Minimum value to add in perfdata output (default: '')
+Minimum value to add in perfdata output (default: '').
 
 =item B<--perfdata-max>
 
-Maximum value to add in perfdata output (default: '')
+Maximum value to add in perfdata output (default: '').
 
 =back
 
