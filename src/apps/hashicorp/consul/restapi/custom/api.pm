@@ -29,9 +29,6 @@ sub new {
             'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'auth-method:s'          => { name => 'auth_method', default => 'token' },
-            'auth-path:s'            => { name => 'auth_path' },
-            'auth-settings:s%'       => { name => 'auth_settings' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'consul-token:s'         => { name => 'consul_token'}
         });
@@ -64,8 +61,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8200;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{auth_method} = lc($self->{option_results}->{auth_method});
-    $self->{auth_settings} = defined($self->{option_results}->{auth_settings}) && $self->{option_results}->{auth_settings} ne '' ? $self->{option_results}->{auth_settings} : {};
     $self->{consul_token} = $self->{option_results}->{consul_token};
     $self->{api_version} = (defined($self->{option_results}->{api_version})) ? $self->{option_results}->{api_version} : 'v1';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
@@ -73,11 +68,6 @@ sub check_options {
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
     $self->{cache}->check_options(option_results => $self->{option_results});
-
-    if (lc($self->{auth_method}) !~ m/azure|cert|github|ldap|okta|radius|userpass|token/ ) {
-        $self->{output}->add_option_msg(short_msg => "Incorrect or unsupported authentication method set in --auth-method");
-        $self->{output}->option_exit();
-    };
 
     return 0;
 }
@@ -254,24 +244,6 @@ Specify the Consul API version (default: 'v1')
 =item B<--consul-token>
 
 Specify the Consul access token (only for the 'token' authentication method)
-
-=item B<--auth-method>
-
-Specify the Consul authentication method (default: 'token').
-Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass', 'token'
-If different from 'token' the "--auth-settings" options must be set.
-
-=item B<--auth-settings>
-
-Specify the Consul authentication specific settings.
-Syntax: --auth-settings='<setting>=<value>'.Example for the 'userpass' method:
---auth-method='userpass' --auth-settings='username=my_account' --auth-settings='password=my_password'
-
-=item B<--auth-path>
-
-Authentication path for 'userpass'. Is an optional setting.
-
-More information here: https://developer.hashicorp.com/consul/docs/auth/userpass#configuration
 
 =item B<--timeout>
 
