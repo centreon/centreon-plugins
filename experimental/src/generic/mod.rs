@@ -2,7 +2,7 @@ extern crate serde;
 extern crate serde_json;
 
 use serde::Deserialize;
-use snmp::{r_snmp_bulk_get, r_snmp_bulk_walk, SnmpResult, SnmpValue};
+use snmp::{snmp_bulk_get, snmp_bulk_walk, SnmpResult, SnmpValue};
 
 use std::collections::BTreeMap;
 
@@ -71,6 +71,7 @@ pub struct Snmp {
     name: String,
     oid: String,
     query: QueryType,
+    labels: Option<BTreeMap<String, String>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -188,7 +189,7 @@ impl Command {
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
-                    let r = r_snmp_bulk_walk(target, version, community, &s.oid);
+                    let r = snmp_bulk_walk(target, version, community, &s.oid);
                     match r.variables.len() {
                         1 => {
                             let result = r.variables.get(0).unwrap();
@@ -212,7 +213,7 @@ impl Command {
             }
         }
         if !to_get.is_empty() {
-            let r = r_snmp_bulk_get(target, version, community, 1, 1, &to_get);
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get);
             for (idx, result) in r.variables.iter().enumerate() {
                 if let SnmpValue::Integer(v) = result.value {
                     res.insert(get_name[idx].to_string(), v);
@@ -231,7 +232,7 @@ impl Command {
         //                    QueryType::Walk => {
         //                        res = Some((
         //                            &query.name,
-        //                            r_snmp_bulk_walk(target, version, community, &query.oid),
+        //                            snmp_bulk_walk(target, version, community, &query.oid),
         //                        ));
         //                    }
         //                },
