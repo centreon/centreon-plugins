@@ -20,5 +20,6 @@ paths = [
 
 regexTarget = "match"
 regexes = [
-  '''ABCDEFG1234567890'''
+  '''ABCDEFG1234567890''',
+  '''s.aBCD123DEF456GHI789JKL012'''
 ]
