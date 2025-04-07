@@ -310,11 +310,11 @@ Filter job type (can be a regexp).
 
 =item B<--filter-start-time>
 
-Filter job with start time greater than current time less value in seconds.
+Tolerance value in seconds, to avoid skipping jobs whose start time is earlier than the current time.
 
 =item B<--filter-end-time>
 
-Filter job with end time greater than current time less value in seconds (default: 86400).
+Tolerance value in seconds, to avoid skipping jobs whose end time is earlier than the current time (default: 86400).
 
 =item B<--ok-status>
 

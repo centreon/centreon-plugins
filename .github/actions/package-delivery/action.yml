@@ -77,7 +77,7 @@ runs:
 
     - if: ${{ inputs.stability != 'stable' }}
       name: Restore packages from cache
-      uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
       with:
         path: ./*.${{ steps.parse-distrib.outputs.package_extension }}
         key: ${{ inputs.cache_key }}
@@ -107,7 +107,7 @@ runs:
           }
 
     - name: Download packages from testing
-      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy' }}
+      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' && (inputs.distrib != 'jammy' || inputs.distrib != 'noble') }}
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
@@ -170,7 +170,7 @@ runs:
     - name: Publish packages to ${{ inputs.stability }}
       if: |
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
-        (inputs.stability == 'stable' && github.event_name == 'push' && inputs.distrib != 'jammy')
+        (inputs.stability == 'stable' && github.event_name == 'push' && (inputs.distrib != 'jammy' || inputs.distrib != 'noble'))
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |

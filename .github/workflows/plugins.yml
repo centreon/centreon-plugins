@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -120,6 +120,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
+          - package_extension: deb
+            image: unit-tests-noble
+            distrib: noble
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -168,7 +171,7 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/plugins-source.container.pl "${{ needs.get-plugins.outputs.plugins }}" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -206,6 +209,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -219,7 +225,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -311,7 +317,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -329,6 +335,9 @@ jobs:
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
+          - package_extension: deb
+            image: testing-plugins-noble
+            distrib: noble
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
@@ -385,6 +394,8 @@ jobs:
             package_extension: deb
           - distrib: jammy
             package_extension: deb
+          - distrib: noble
+            package_extension: deb
 
     name: deliver ${{ matrix.distrib }}
     steps:
@@ -412,7 +423,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}

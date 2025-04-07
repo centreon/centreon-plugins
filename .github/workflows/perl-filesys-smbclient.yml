@@ -63,7 +63,7 @@ jobs:
           cp -r ~/rpmbuild/RPMS/x86_64/*.rpm .
         shell: bash
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -97,7 +97,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -108,7 +108,7 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -129,6 +129,9 @@ jobs:
             distrib: bookworm
           - image: packaging-plugins-jammy
             distrib: jammy
+          - image: packaging-plugins-noble
+            distrib: noble
+
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -155,7 +158,7 @@ jobs:
           DEB_BUILD_OPTIONS="nocheck nodocs notest noautodbgsym" dh-make-perl make --dist ${{ matrix.distrib }} --verbose --build --version 4.0${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} perl-filesys-smbclient/
         shell: bash
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
@@ -182,6 +185,8 @@ jobs:
           - distrib: bookworm
             package_extension: deb
           - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}

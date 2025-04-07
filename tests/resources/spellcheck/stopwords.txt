@@ -32,6 +32,7 @@ aws
 AWSCLI
 --aws-role-arn
 Backbox
+BackupJobSession
 base64
 blocked-by-uf
 BPL
@@ -72,9 +73,13 @@ Ekara
 env
 ESX
 eth
+Exense
 ext4
+F5
+failover
 fanspeed
 FCCapacity
+fibre
 --filter-fs
 --filter-imei
 --filter-ppid
@@ -114,11 +119,12 @@ io-cards
 iops
 IpAddr
 ip-label
+ipsec
 ipv4
 ipv6
-ipsec
 ISAM
 Iwsva
+Jasmin
 jmeter
 JMeter
 --jobq
@@ -147,6 +153,7 @@ memBuffer
 memTotalReal
 Meraki
 MIB
+Microkernel
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -216,6 +223,7 @@ QoS
 Qtree
 queue-messages-inflighted
 raidvolume
+ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
@@ -227,6 +235,7 @@ SFOS
 sfp.temperature
 --skip-ssl-check
 SkyHigh
+SMS
 SnapMirror
 SnapMirrors
 SNMP
@@ -246,6 +255,7 @@ teampass
 Teldat
 timeframe
 TiMOS
+TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted
 total-offline-prct
@@ -274,8 +284,8 @@ VeloCloud
 VM
 VMware
 VMWARE
-VPN
 vpn
+VPN
 vSAN
 Vserver
 vSphere
