@@ -65,6 +65,19 @@ sub get_dimensions_str {
     return $dimensions;
 }
 
+sub get_dimensions_str_short {
+    my ($self, %options) = @_;
+
+    my $dimensions = '';
+    my $append = '';
+    foreach (@{$options{dimensions}}) {
+        $dimensions .= $append . "$_->{Name}:$_->{Value}";
+        $append = ' ';
+    }
+
+    return $dimensions;
+}
+
 sub run {
     my ($self, %options) = @_;
 
@@ -97,6 +110,7 @@ sub disco_show {
             namespace => $_->{Namespace},
             metric => $_->{MetricName},
             dimensions => $self->get_dimensions_str(dimensions => $_->{Dimensions}),
+            dimension_metric => $_->{MetricName} . " " . $self->get_dimensions_str_short(dimensions => $_->{Dimensions})
         );
     }
 }
