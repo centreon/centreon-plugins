@@ -8,14 +8,14 @@ extern crate regex;
 extern crate serde;
 extern crate serde_json;
 
+mod compute;
 mod generic;
 mod snmp;
 
 use generic::{Command, CommandExt};
 use lalrpop_util::lalrpop_mod;
 use serde_json::Result;
-use snmp::r_snmp_get;
-use std::ffi::{OsStr, OsString};
+//use snmp::snmp_get;
 use std::fs;
 
 lalrpop_mod!(grammar);
