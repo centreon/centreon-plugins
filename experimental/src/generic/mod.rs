@@ -1,10 +1,11 @@
 extern crate serde;
 extern crate serde_json;
 
+use compute::Compute;
 use serde::Deserialize;
-use snmp::{snmp_bulk_get, snmp_bulk_walk, SnmpResult, SnmpValue};
+use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpResult, SnmpValue};
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum Status {
@@ -49,21 +50,6 @@ fn worst(a: Status, b: Status) -> Status {
 enum QueryType {
     Get,
     Walk,
-}
-
-#[derive(Deserialize, Debug)]
-struct Metric {
-    name: String,
-    value: String,
-    uom: Option<String>,
-    min: Option<f32>,
-    max: Option<f32>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Compute {
-    metrics: Vec<Metric>,
-    aggregations: Option<Vec<Metric>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -182,29 +168,36 @@ impl Command {
         community: &str,
         //ext: &CommandExt,
     ) -> CmdResult {
-        let mut res: BTreeMap<String, i64> = BTreeMap::new();
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
+        let mut collect = Vec::new();
 
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
-                    let r = snmp_bulk_walk(target, version, community, &s.oid);
-                    match r.variables.len() {
-                        1 => {
-                            let result = r.variables.get(0).unwrap();
-                            if let SnmpValue::Integer(v) = result.value {
-                                res.insert(s.name.clone(), v);
-                            }
-                        }
-                        _ => {
-                            for (idx, result) in r.variables.iter().enumerate() {
-                                if let SnmpValue::Integer(v) = result.value {
-                                    res.insert(format!("{}_{}", &s.name, idx), v);
-                                }
-                            }
-                        }
+                    if let Some(lab) = &s.labels {
+                        let r = snmp_bulk_walk_with_labels(
+                            target, version, community, &s.oid, &s.name, &lab,
+                        );
+                        collect.push(r);
+                    } else {
+                        let r = snmp_bulk_walk(target, version, community, &s.oid);
                     }
+                    //                    match r.variables.len() {
+                    //                        1 => {
+                    //                            let result = r.variables.get(0).unwrap();
+                    //                            if let SnmpValue::Integer(v) = result.value {
+                    //                                res.insert(s.name.clone(), v);
+                    //                            }
+                    //                        }
+                    //                        _ => {
+                    //                            for (idx, result) in r.variables.iter().enumerate() {
+                    //                                if let SnmpValue::Integer(v) = result.value {
+                    //                                    res.insert(format!("{}_{}", &s.name, idx), v);
+                    //                                }
+                    //                            }
+                    //                        }
+                    //                    }
                 }
                 QueryType::Get => {
                     to_get.push(s.oid.as_str());
@@ -212,15 +205,24 @@ impl Command {
                 }
             }
         }
-        if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get);
-            for (idx, result) in r.variables.iter().enumerate() {
-                if let SnmpValue::Integer(v) = result.value {
-                    res.insert(get_name[idx].to_string(), v);
-                }
-            }
+        println!("{:#?}", collect);
+        //let mut variables = HashMap::new();
+        //for res in collect.iter_mut() {
+        //    variables.extend(res.get_variables());
+        //}
+
+        for metric in &self.compute.metrics {
+            if let Some(prefix) = &metric.prefix {}
         }
-        println!("Result variables: {:?}", res);
+
+        if !to_get.is_empty() {
+            //            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get);
+            //            for (idx, result) in r.variables.iter().enumerate() {
+            //                if let SnmpValue::Integer(v) = result.value {
+            //                    res.insert(get_name[idx].to_string(), v);
+            //                }
+            //            }
+        }
         //        let mut aggregation = ("", 0, Operation::None);
         //        let mut res: Option<(&str, SnmpResult)> = None;
         //        for (idx, entry) in self.leaf.entries.iter().enumerate() {
