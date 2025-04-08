@@ -930,7 +930,7 @@ sub azure_get_usagedetails_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Consumption/usageDetails?\$filter=properties%2FusageStart ge %27" . $options{usage_start} . "%27 and properties%2FusageEnd le %27" . $options{usage_end} . "%27";
-    $url .= "&metric=actualcost";
+    $url .= "&metric=amortized";
     $url .= "&api-version=" . $self->{api_version};
     return $url;
 }
