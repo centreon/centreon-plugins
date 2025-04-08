@@ -18,7 +18,7 @@
     "metrics": [
       {
 	"prefix": "{disk.label}",		// par défaut "{idx}"
-	"name": "disk.usage.percent",
+	"name": "disk.usage.percent",		// le nom final est `prefix`#`name`
 	"value": "100 * {disk.used} / {disk.size}",
 	"uom": "%",	    // optional
 	"min": 0,	    // optional
