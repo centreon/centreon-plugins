@@ -64,12 +64,11 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'current-server-connections', set => {
+        { label => 'current-server-connections', nlabel => 'node.connections.server.current.count', set => {
                 key_values => [ { name => 'ltmNodeAddrStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections : %s',
                 perfdatas => [
-                    { label => 'current_server_connections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -78,7 +77,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -135,7 +134,7 @@ sub manage_selection {
     foreach my $oid (keys %{$snmp_result->{$branch_name}}) {
         $oid =~ /^$branch_name\.(.*?)\.(.*)$/;
         my ($num, $index) = ($1, $2);
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $num . '.' . $index);
         my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
 
@@ -207,10 +206,13 @@ You can use the following variables: %{state}, %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "enabled" and %{status} eq "red"').
 You can use the following variables: %{state}, %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current-server-connections>
 
 Thresholds.
-Can be: 'current-server-connections'.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
 
 =back
 

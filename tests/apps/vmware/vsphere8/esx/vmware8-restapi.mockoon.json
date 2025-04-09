@@ -287,7 +287,7 @@
           "body": "{\n  \"data_points\": []\n}\n",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "no data",
           "headers": [
             {
               "key": "access-control-allow-headers",
@@ -339,7 +339,7 @@
           "body": "{\"data_points\":[{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271090},{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271150},{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.capacity.provisioned.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -373,7 +373,7 @@
           "body": " {\"data_points\":[{\"val\":3572.68,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271090},{\"val\":3732.93,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271150},{\"val\":4603.44,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.capacity.usage.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -407,7 +407,7 @@
           "body": "{\"data_points\":[{\"val\":3494.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271090},{\"val\":3258.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271150},{\"val\":4201.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.capacity.demand.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -434,7 +434,7 @@
           "body": "{\"data_points\":[{\"val\":0.57,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271090},{\"val\":0.59,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271150},{\"val\":0.55,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.capacity.contention.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -461,7 +461,7 @@
           "body": "{\"data_points\":[{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271090},{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271150},{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.corecount.provisioned.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -488,7 +488,7 @@
           "body": "{\"data_points\":[{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271090},{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271150},{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.corecount.usage.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -515,7 +515,7 @@
           "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271090},{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271150},{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271210}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "cpu.corecount.contention.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -542,7 +542,7 @@
           "body": "{\"data_points\":[{\"val\":260061.38,\"mid\":\"7912217246818631397\",\"rid\":\"102\",\"cid\":\"mem.capacity.usable.HOST\",\"ts\":1740039750},{\"val\":260061.35,\"mid\":\"7912217246818631397\",\"rid\":\"102\",\"cid\":\"mem.capacity.usable.HOST\",\"ts\":1740039810}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "mem.capacity.usable.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -569,7 +569,7 @@
           "body": "{\"data_points\":[{\"val\":102424.82,\"mid\":\"-6907936868309351765\",\"rid\":\"102\",\"cid\":\"mem.consumed.vms.HOST\",\"ts\":1740039750},{\"val\":102424.82,\"mid\":\"-6907936868309351765\",\"rid\":\"102\",\"cid\":\"mem.consumed.vms.HOST\",\"ts\":1740039810}]}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "mem.consumed.vms.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -596,7 +596,7 @@
           "body": "{\"data_points\":[{\"val\":206.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152385},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152445},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152505}]}\n",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "power.capacity.usage.HOST",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -607,6 +607,263 @@
               "target": "query",
               "modifier": "cid",
               "value": "power.capacity.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4e2245ea-f82b-45d5-8061-6871a48ba52e",
+          "body": "{\"data_points\":[{\"val\":6543.2,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942492},{\"val\":4567.8,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942552},{\"val\":1234.5,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.writerate.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.writerate.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5c337e11-a16a-4448-bd57-a60ac2065c7a",
+          "body": "{\"data_points\":[{\"val\":123,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942492},{\"val\":234,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942552},{\"val\":6543.2,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.readrate.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.readrate.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "78891a5e-0a0e-445e-971a-4115156f9934",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942492},{\"val\":0.0,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942552},{\"val\":1073741824,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.target.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.target.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0fce549f-c109-48d4-87ca-2d04f771a314",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942492},{\"val\":0.0,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942552},{\"val\":123456.7,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.current.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.current.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "512cd1e2-dfa8-492e-bdd3-9f44251fbd8b",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203312},{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203372},{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203432}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7ebc4844-5c76-4dfb-927b-357474424de3",
+          "body": "{\"data_points\":[{\"val\":0.19,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207632},{\"val\":0.18,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207692},{\"val\":0.19,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207752}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "2",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "22c4ca77-fd52-4fd5-9f3e-a4c8645a21a9",
+          "body": "{\"data_points\":[{\"val\":134510.7,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207632},{\"val\":131375.23,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207692},{\"val\":128898.53,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207752}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "96281380-feb2-44ab-a6b4-9a339248c0bc",
+          "body": "{\"data_points\":[{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203312},{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203372},{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203432}]}\n\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.usable.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.usable.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "02f4462c-2753-4dc8-8cdf-0b639bdc2859",
+          "body": "{\"data_points\":[{\"val\":184.98,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203312},{\"val\":288.67,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203372},{\"val\":184.96,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203432}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.usage.HOST",
               "invert": false,
               "operator": "equals"
             }

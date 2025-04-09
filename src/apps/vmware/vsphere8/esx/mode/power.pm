@@ -37,7 +37,7 @@ sub set_counters {
 
     $self->{maps_counters}->{power} = [
         {
-            label           => 'power-usage-watts',
+            label           => 'usage-watts',
             type            => 1,
             nlabel          => 'power.capacity.usage.watts',
             output_template => 'Power usage is %d Watts',
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values      => [ { name => 'power.capacity.usage.HOST' } ],
                 output_use      => 'power.capacity.usage.HOST',
                 threshold_use   => 'power.capacity.usage.HOST',
-                perfdatas       => [ { value => 'power.capacity.usage.HOST', template => '%sW' } ]
+                perfdatas       => [ { value => 'power.capacity.usage.HOST', template => '%s', unit => 'W', min => 0 } ]
             }
         }
     ];
@@ -79,11 +79,11 @@ Since our tests showed that only C<power.capacity.usage.HOST> was different from
 
 =over 8
 
-=item B<--warning-power-usage-watts>
+=item B<--warning-usage-watts>
 
 Threshold in Watts.
 
-=item B<--critical-power-usage-watts>
+=item B<--critical-usage-watts>
 
 Threshold in Watts.
 
