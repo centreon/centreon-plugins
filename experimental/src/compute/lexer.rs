@@ -5,7 +5,7 @@ pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 #[derive(Debug, PartialEq)]
 pub enum Tok {
-    Num,
+    Num(f32),
     Id,
     OpStar,
     OpSlash,
@@ -57,7 +57,11 @@ impl<'input> Lexer<'input> {
             str::from_utf8(&chars[start..end]).unwrap_or("Bad value")
         );
         self.offset = end;
-        Some(Ok((start, Tok::Num, end)))
+        let value = str::from_utf8(&chars[start..end])
+            .unwrap_or("Bad value")
+            .parse::<f32>()
+            .unwrap_or(0.0);
+        Some(Ok((start, Tok::Num(value), end)))
     }
 
     fn identifier(
@@ -147,9 +151,9 @@ mod Test {
     fn test_lexer_num_id_num() {
         let input = "123 abc 456";
         let mut lexer = Lexer::new(input);
-        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num, 3))));
+        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(123_f32), 3))));
         assert_eq!(lexer.next(), Some(Ok((4, Tok::Id, 7))));
-        assert_eq!(lexer.next(), Some(Ok((8, Tok::Num, 11))));
+        assert_eq!(lexer.next(), Some(Ok((8, Tok::Num(456_f32), 11))));
         assert_eq!(lexer.next(), None);
     }
 
@@ -158,7 +162,7 @@ mod Test {
         let input = "abc 123 def";
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next(), Some(Ok((0, Tok::Id, 3))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num, 7))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(123_f32), 7))));
         assert_eq!(lexer.next(), Some(Ok((8, Tok::Id, 11))));
     }
 
@@ -166,11 +170,11 @@ mod Test {
     fn test_lexer_num_op() {
         let input = "1+2*3";
         let mut lexer = Lexer::new(input);
-        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num, 1))));
+        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(1_f32), 1))));
         assert_eq!(lexer.next(), Some(Ok((1, Tok::OpPlus, 2))));
-        assert_eq!(lexer.next(), Some(Ok((2, Tok::Num, 3))));
+        assert_eq!(lexer.next(), Some(Ok((2, Tok::Num(2_f32), 3))));
         assert_eq!(lexer.next(), Some(Ok((3, Tok::OpStar, 4))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num, 5))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(3_f32), 5))));
         assert_eq!(lexer.next(), None);
     }
 }
