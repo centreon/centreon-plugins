@@ -1,10 +1,9 @@
 extern crate serde;
 extern crate serde_json;
 
-use compute::Compute;
+use compute::{Compute, Parser};
 use serde::Deserialize;
-use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpResult, SnmpValue};
-
+use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use std::collections::{BTreeMap, HashMap};
 
 #[derive(Copy, Clone, PartialEq)]
@@ -99,67 +98,6 @@ fn compute_status(value: f32, warn: &Option<String>, crit: &Option<String>) -> S
     Status::Ok
 }
 
-//fn build_metrics<'a>(
-//    values: &Vec<(String, f32)>,
-//    ag: &Option<(&str, usize, f32)>,
-//    ext: &'a CommandExt,
-//) -> (Vec<Metric<'a>>, Status) {
-//    let mut metrics: Vec<Metric> = Vec::new();
-//    let mut status = Status::Ok;
-//    match ag {
-//        Some(a) => {
-//            // The agregation is located in first place
-//            if a.1 == 0 {
-//                let w = &ext.warning_agregation;
-//                let c = &ext.critical_agregation;
-//                let current_status =
-//                    compute_status(a.2, &ext.warning_agregation, &ext.critical_agregation);
-//                metrics.push(Metric {
-//                    name: a.0.to_string(),
-//                    value: a.2,
-//                    warning: w,
-//                    critical: c,
-//                    status: current_status,
-//                    agregated: true,
-//                });
-//                status = worst(current_status, status);
-//            }
-//        }
-//        None => (),
-//    }
-//    values.iter().enumerate().for_each(|(i, v)| {
-//        let current_status = compute_status(v.1, &ext.warning_core, &ext.critical_core);
-//        metrics.push(Metric {
-//            name: values[i].0.clone(),
-//            value: v.1,
-//            warning: &ext.warning_core,
-//            critical: &ext.critical_core,
-//            status: current_status,
-//            agregated: false,
-//        });
-//        status = worst(current_status, status);
-//    });
-//    match ag {
-//        Some(a) => {
-//            if a.1 > 0 {
-//                let current_status =
-//                    compute_status(a.2, &ext.warning_agregation, &ext.critical_agregation);
-//                metrics.push(Metric {
-//                    name: a.0.to_string(),
-//                    value: a.2,
-//                    warning: &ext.warning_agregation,
-//                    critical: &ext.critical_agregation,
-//                    status: current_status,
-//                    agregated: true,
-//                });
-//                status = worst(current_status, status);
-//            }
-//        }
-//        None => (),
-//    }
-//    (metrics, status)
-//}
-
 impl Command {
     pub fn execute(
         &self,
@@ -181,239 +119,34 @@ impl Command {
                         );
                         collect.push(r);
                     } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid);
+                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
+                        collect.push(r);
                     }
-                    //                    match r.variables.len() {
-                    //                        1 => {
-                    //                            let result = r.variables.get(0).unwrap();
-                    //                            if let SnmpValue::Integer(v) = result.value {
-                    //                                res.insert(s.name.clone(), v);
-                    //                            }
-                    //                        }
-                    //                        _ => {
-                    //                            for (idx, result) in r.variables.iter().enumerate() {
-                    //                                if let SnmpValue::Integer(v) = result.value {
-                    //                                    res.insert(format!("{}_{}", &s.name, idx), v);
-                    //                                }
-                    //                            }
-                    //                        }
-                    //                    }
                 }
                 QueryType::Get => {
                     to_get.push(s.oid.as_str());
-                    get_name.push(&s.name);
+                    get_name.push(s.name.as_str());
                 }
             }
         }
-        println!("{:#?}", collect);
-        //let mut variables = HashMap::new();
-        //for res in collect.iter_mut() {
-        //    variables.extend(res.get_variables());
-        //}
 
-        for metric in &self.compute.metrics {
-            if let Some(prefix) = &metric.prefix {}
+        let p = Parser::new(&collect);
+        for (idx, metric) in self.compute.metrics.iter().enumerate() {
+            let name = match &metric.prefix {
+                Some(prefix) => format!("{}#{}", p.eval(prefix), metric.name),
+                None => format!("{}#{}", idx, metric.name),
+            };
         }
 
         if !to_get.is_empty() {
-            //            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get);
-            //            for (idx, result) in r.variables.iter().enumerate() {
-            //                if let SnmpValue::Integer(v) = result.value {
-            //                    res.insert(get_name[idx].to_string(), v);
-            //                }
-            //            }
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            collect.push(r);
         }
-        //        let mut aggregation = ("", 0, Operation::None);
-        //        let mut res: Option<(&str, SnmpResult)> = None;
-        //        for (idx, entry) in self.leaf.entries.iter().enumerate() {
-        //            match entry {
-        //                Entry::Agregation(op) => {
-        //                    agregation = (&op.name, idx, op.op);
-        //                }
-        //                Entry::Query(query) => match query.query {
-        //                    QueryType::Walk => {
-        //                        res = Some((
-        //                            &query.name,
-        //                            snmp_bulk_walk(target, version, community, &query.oid),
-        //                        ));
-        //                    }
-        //                },
-        //            }
-        //        }
-        //        match res {
-        //            Some(r) => {
-        //                let mut values: Vec<(String, f32)> = Vec::new();
-        //                let mut idx = 0;
-        //                r.1.variables.iter().for_each(|v| {
-        //                    let label = r.0.replace("{idx}", &idx.to_string());
-        //                    values.push((label, v.value.parse().unwrap()));
-        //                    idx += 1;
-        //                });
-        //                let count = values.len();
-        //                let ag = match agregation.2 {
-        //                    Operation::Average => {
-        //                        let sum: f32 = values.iter().map(|(_, v)| v).sum();
-        //                        let avg = sum / values.len() as f32;
-        //                        Some((agregation.0, agregation.1, avg))
-        //                    }
-        //                    _ => None,
-        //                };
-        //                let (metrics, status) = build_metrics(&values, &ag, &ext);
-        //                let output = self.build_output(count, status, &metrics, &ag, &ext);
-        //                return CmdResult { status, output };
-        //            }
-        //            None => {
-        //                return CmdResult {
-        //                    status: Status::Unknown,
-        //                    output: "No result".to_string(),
-        //                };
-        //            }
-        //        }
+        println!("{:#?}", collect);
+
         CmdResult {
             status: Status::Unknown,
             output: "No result".to_string(),
         }
     }
-
-    //    fn build_output(
-    //        &self,
-    //        count: usize,
-    //        status: Status,
-    //        metrics: &Vec<Metric>,
-    //        ag: &Option<(&str, usize, f32)>,
-    //        ext: &CommandExt,
-    //    ) -> String {
-    //        let no_threshold = ext.warning_core.is_none()
-    //            && ext.critical_core.is_none()
-    //            && ext.warning_agregation.is_none()
-    //            && ext.critical_agregation.is_none();
-    //        let write_details =
-    //            no_threshold || (ext.warning_core.is_some() || ext.critical_core.is_some());
-    //        let write_agregation_details =
-    //            no_threshold || (ext.warning_agregation.is_some() || ext.critical_agregation.is_some());
-    //        let mut output_text = "".to_string();
-    //        let mut begun = false;
-    //        if &self.leaf.output.header != "" {
-    //            output_text = self.leaf.output.header.replace("{status}", status.as_str());
-    //        }
-    //        for line in &self.leaf.output.text {
-    //            if line.contains("idx") {
-    //                if write_details {
-    //                    // We have to iterate on metrics
-    //                    let mut output_vec = (Vec::new(), Vec::new(), Vec::new());
-    //                    let mut idx = 0;
-    //                    for m in metrics.iter() {
-    //                        if !m.agregated {
-    //                            let text = line
-    //                                .replace("{idx}", idx.to_string().as_str())
-    //                                .replace("{name}", m.name.as_str())
-    //                                .replace("{value}", format!("{:.2}", m.value).as_str())
-    //                                .replace("{count}", count.to_string().as_str());
-    //                            match m.status {
-    //                                Status::Ok => {
-    //                                    output_vec.0.push(text);
-    //                                }
-    //                                Status::Warning => {
-    //                                    output_vec.1.push(text);
-    //                                }
-    //                                Status::Critical => {
-    //                                    output_vec.2.push(text);
-    //                                }
-    //                                Status::Unknown => (),
-    //                            }
-    //                            idx += 1;
-    //                        }
-    //                    }
-    //                    if !output_vec.2.is_empty() {
-    //                        if begun {
-    //                            output_text += " - ";
-    //                        } else {
-    //                            begun = true;
-    //                        }
-    //                        output_text += output_vec.2.join(" - ").as_str();
-    //                    }
-    //                    if !output_vec.1.is_empty() {
-    //                        if begun {
-    //                            output_text += " - ";
-    //                        } else {
-    //                            begun = true;
-    //                        }
-    //                        output_text += output_vec.1.join(" - ").as_str();
-    //                    }
-    //                    if !output_vec.0.is_empty() {
-    //                        if begun {
-    //                            output_text += " - ";
-    //                        }
-    //                        output_text += output_vec.0.join(" - ").as_str();
-    //                    }
-    //                }
-    //            } else {
-    //                if write_agregation_details {
-    //                    match ag {
-    //                        Some(a) => {
-    //                            output_text += line
-    //                                .replace(
-    //                                    format!("{{{}}}", a.0).as_str(),
-    //                                    format!("{:.2}", a.2).as_str(),
-    //                                )
-    //                                .replace("{count}", count.to_string().as_str())
-    //                                .as_str();
-    //                            begun = true;
-    //                        }
-    //                        None => output_text += line,
-    //                    };
-    //                }
-    //            }
-    //        }
-    //
-    //        let mut perfdata = " |".to_string();
-    //        match &self.leaf.data {
-    //            Some(d) => {
-    //                metrics.iter().for_each(|m| {
-    //                    perfdata += format!(
-    //                        " '{}'={}{};{};{};{};{}",
-    //                        m.name,
-    //                        m.value,
-    //                        d.uom,
-    //                        match m.warning {
-    //                            Some(m) => m.to_string(),
-    //                            None => "".to_string(),
-    //                        },
-    //                        match m.critical {
-    //                            Some(m) => m.to_string(),
-    //                            None => "".to_string(),
-    //                        },
-    //                        match d.min {
-    //                            Some(m) => m.to_string(),
-    //                            None => "".to_string(),
-    //                        },
-    //                        match d.max {
-    //                            Some(m) => m.to_string(),
-    //                            None => "".to_string(),
-    //                        },
-    //                    )
-    //                    .as_str();
-    //                });
-    //            }
-    //            None => {
-    //                metrics.iter().for_each(|m| {
-    //                    perfdata += format!(
-    //                        " '{}'={};{};{}",
-    //                        m.name,
-    //                        m.value,
-    //                        match m.warning {
-    //                            Some(v) => v.to_string(),
-    //                            None => "".to_string(),
-    //                        },
-    //                        match m.critical {
-    //                            Some(v) => v.to_string(),
-    //                            None => "".to_string(),
-    //                        }
-    //                    )
-    //                    .as_str();
-    //                });
-    //            }
-    //        };
-    //        output_text + &perfdata
-    //    }
 }
