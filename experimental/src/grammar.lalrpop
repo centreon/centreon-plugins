@@ -2,19 +2,19 @@ use std::str::FromStr;
 
 grammar;
 
-pub Sum: f32 = {
+Sum: f32 = {
     <s:Sum> "+" <p:Product> => s + p,
     <s:Sum> "-" <p:Product> => s - p,
     <p:Product> => p,
 };
 
-pub Product: f32 = {
-    <p:Product> "*" <t:Term> => p * t,
-    <p:Product> "/" <t:Term> => p / t,
-    <t:Term> => t,
+Product: f32 = {
+    <p:Product> "*" <t:Expr> => p * t,
+    <p:Product> "/" <t:Expr> => p / t,
+    <t:Expr> => t,
 };
 
-pub Args = Comma<Sum>; // (0)
+Args = Comma<Sum>; // (0)
 
 Comma<T>: Vec<f32> = { // (1)
     <mut v:(<T> ",")*> <e:T?> => match e { // (2)
@@ -26,10 +26,19 @@ Comma<T>: Vec<f32> = { // (1)
     }
 };
 
-pub Term: f32 = {
+pub Expr: f32 = {
     <n:Num> => n,
     "(" <t:Sum> ")" => t,
     "Average" "(" <a:Args> ")" => { let sum:f32 = a.iter().sum(); sum / a.len() as f32 }
 };
 
-Num: f32 = <s:r"-?[0-9.]+"> => f32::from_str(s).unwrap();
+match {
+    r"-?[0-9.]+" => NUM,
+} else {
+    r"\w+" => ID,
+    _
+}
+
+Num: f32 = <s:NUM> => f32::from_str(s).unwrap();
+
+Identifier: String = <s:ID> => s.to_string();
