@@ -1277,6 +1277,8 @@ The following example show 4 new attributes:
 
 [Table of content (1)](#table_of_contents)
 
+<div id='sequence_diagram'/>
+
 ### 9. Sequence diagram
 
 A sequence diagram has been designed to help understand the timeline of a plugin execution.
