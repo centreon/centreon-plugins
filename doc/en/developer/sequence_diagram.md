@@ -33,7 +33,11 @@ In the diagram, almost all the `.pm` files' names are constants in every use cas
 - _plugin.pm_: the name is always the same by convention, but its location depends on what is given as the `--plugin` option
 - _themode.pm_: stands for the mode of the plugin that is being used (given as the `--mode` option). Eg. cpu.pm, memory.pm, ... 
 
-## Interesting diagram parts for developers
+### Complete diagram
+
+The complete diagram can be natively displayed by Github [here](sequence_diagram.mmd).
+
+## Interesting parts of the diagram for developers
 
 When you develop a new mode for a plugin, your responsibility will be to provide the necessary functions in _themode.pm_.
 
@@ -148,6 +152,9 @@ sequenceDiagram
 
 #### closure_custom_calc
 
+This function receives the raw values in a hash reference `$options{new_datas}` and must feed `$self->{result_values}`.
+The default is `centreon::plugins::templates::catalog_functions::catalog_status_calc()`.
+
 ```mermaid
 sequenceDiagram
     values.pm ->> themode.pm: $self->{closure_custom_calc}->(...)
@@ -155,9 +162,9 @@ sequenceDiagram
 
 #### closure_custom_output
 
-```perl
-return $self->{closure_custom_output}->($self);
-```
+Must be written as a method of `values` package/class.
+Using data stored as attributes of `$self->{result_values}` where the available keys are the strings listed in the
+`key_values` entries, the method must return a string.
 
 #### closure_custom_threshold_check
 
