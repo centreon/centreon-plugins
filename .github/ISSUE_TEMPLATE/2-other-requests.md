@@ -1,6 +1,6 @@
 ---
 name: Other requests
-about: For other requests such as questions or enhancements requests, take a look at this form.
+about: For other requests such as questions or enhancement requests, take a look at this form.
 title: ''
 labels: ''
 assignees: ''

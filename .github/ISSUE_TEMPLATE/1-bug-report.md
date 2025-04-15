@@ -25,7 +25,7 @@ If the same bug has already been logged, please close your issue and add a comme
 
 ## How to reproduce
 
-*Please provide below the initial conditions to reproduce the bug*
+*Please provide the initial conditions to reproduce the bug down below*
 
 - **Environment**: result of `uname -a ; cat /etc/redhat-release /etc/debian_version`.
 - **Version of the plugin**: version of the package or last commit date if using a clone of this repository.
@@ -34,7 +34,7 @@ If the same bug has already been logged, please close your issue and add a comme
 
 ## Expected result
 
-*What you were expecting to have as a result (output, exit return).*
+*What you were expecting to have as a result (output, exit return)?*
 
 ## Actual result
 
