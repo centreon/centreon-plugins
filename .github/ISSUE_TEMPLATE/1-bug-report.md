@@ -9,7 +9,7 @@ assignees: ''
 
 Thank you for using Centreon plugins!
 
-Please use this form for actual **bugs** only. See **Other requests** form for more details.
+Please use this form for actual **bugs** only. See the **Other requests** form for more details.
 All existing and future issues related to questions, new plugins or enhancements will be closed.
 
 # Bug report
