@@ -1,44 +1,38 @@
 use std::str::FromStr;
+use compute::lexer;
 
 grammar;
 
-Sum: f32 = {
-    <s:Sum> "+" <p:Product> => s + p,
-    <s:Sum> "-" <p:Product> => s - p,
+pub Expr: f32 = {
+    <s:Expr> "+" <p:Product> => s + p,
+    <s:Expr> "-" <p:Product> => s - p,
     <p:Product> => p,
 };
 
-Product: f32 = {
-    <p:Product> "*" <t:Expr> => p * t,
-    <p:Product> "/" <t:Expr> => p / t,
-    <t:Expr> => t,
+pub Product: f32 = {
+    <s:Product> "*" <v:Term> => s * v,
+    <s:Product> "/" <v:Term> => s / v,
+    <v:Term> => v,
 };
 
-Args = Comma<Sum>; // (0)
+pub Term: f32 = {
+    "num" => <>,
+    "(" <v:Expr> ")" => v,
+};
 
-Comma<T>: Vec<f32> = { // (1)
-    <mut v:(<T> ",")*> <e:T?> => match e { // (2)
-        None => v,
-        Some(e) => {
-            v.push(e);
-            v
-        }
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    // ...
+
+    enum lexer::Tok {
+	"*" => lexer::Tok::OpStar,
+	"/" => lexer::Tok::OpSlash,
+	"+" => lexer::Tok::OpPlus,
+	"-" => lexer::Tok::OpMinus,
+	"(" => lexer::Tok::LParen,
+	")" => lexer::Tok::RParen,
+	"num" => lexer::Tok::Num(<f32>)
     }
-};
-
-pub Expr: f32 = {
-    <n:Num> => n,
-    "(" <t:Sum> ")" => t,
-    "Average" "(" <a:Args> ")" => { let sum:f32 = a.iter().sum(); sum / a.len() as f32 }
-};
-
-match {
-    r"-?[0-9.]+" => NUM,
-} else {
-    r"\w+" => ID,
-    _
 }
-
-Num: f32 = <s:NUM> => f32::from_str(s).unwrap();
-
-Identifier: String = <s:ID> => s.to_string();
