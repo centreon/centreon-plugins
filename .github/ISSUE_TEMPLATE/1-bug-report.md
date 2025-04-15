@@ -21,7 +21,7 @@ If the same bug has already been logged, please close your issue and add a comme
 
 ## Quick description
 
-*In one or two sentences, what it your bug about?*
+*In one or two sentences, what is your bug about?*
 
 ## How to reproduce
 
