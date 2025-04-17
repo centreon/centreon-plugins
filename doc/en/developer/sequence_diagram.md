@@ -3,7 +3,7 @@
 ## Cookbook
 
 The description of the diagram uses the [Mermaid](https://mermaid.js.org/) syntax, which is natively supported by 
-Github. You also may checkout the file locally and generate the diagram with 
+Github. You may also check out the file locally and generate the diagram with the following
 [mermaid-cli](https://github.com/mermaid-js/mermaid-cli) (`mmdc`) command:
 
 ```bash
@@ -16,7 +16,7 @@ Other output formats such as *png* and *svg* are also available.
 
 ### Use case
 
-The provided sequence diagram has been written while debugging this command-line:
+The provided sequence diagram has been written while debugging this command line:
 
 ```bash
 perl centreon_plugins.pl --plugin='cloud::azure::database::elasticpool::plugin' --mode='storage'
@@ -31,7 +31,7 @@ The other types are not explained here, but you may find the keys to understandi
 
 In the diagram, almost all the `.pm` files' names are constants in every use case, except for two:
 - _plugin.pm_: the name is always the same by convention, but its location depends on what is given as the `--plugin` option
-- _themode.pm_: stands for the mode of the plugin that is being used (given as the `--mode` option). Eg. cpu.pm, memory.pm, ... 
+- _themode.pm_: stands for the mode of the plugin that is being used (given as the `--mode` option). For example, cpu.pm, memory.pm... 
 
 ### Complete diagram
 
