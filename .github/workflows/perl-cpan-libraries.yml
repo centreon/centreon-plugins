@@ -718,7 +718,7 @@ jobs:
 
       - name: Upload error log
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
           path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
