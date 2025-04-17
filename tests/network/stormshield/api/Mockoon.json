@@ -38,7 +38,7 @@
           "headers": [
             {
               "key": "Set-Cookie",
-              "value": "NETASQ_sslclient=bXljb29raWVmcm9tbHVjaWU=; Path=/api/; Secure; HttpOnly; SameSite=Strict"
+              "value": "NETASQ_sslclient=ABCDEFG1234567890=; Path=/api/; Secure; HttpOnly; SameSite=Strict"
             }
           ],
           "bodyType": "INLINE",
