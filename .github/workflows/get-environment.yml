@@ -52,7 +52,7 @@ jobs:
             let hasSkipLabel = false;
             let labels = [];
 
-            if (${{ contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }} === true) {
+            if (${{ contains(fromJSON('["pull_request"]') , github.event_name) }} === true) {
               try {
                 const fetchedLabels = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
