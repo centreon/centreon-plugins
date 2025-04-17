@@ -148,12 +148,12 @@ sequenceDiagram
 
 ### Callback functions
 
-> The callback functions must be defined in _themode.pm_ but actually apply to objects of **values** class.
+> The callback functions must be defined in the corresponding _themode.pm_ file but they actually apply to objects with the **values** class (defined in the **values.pm** file). You should bear it in mind while writing these functions, to know what data you can access.
 
 #### closure_custom_calc
 
-This function receives the raw values in a hash reference `$options{new_datas}` and must feed `$self->{result_values}`.
-The default is `centreon::plugins::templates::catalog_functions::catalog_status_calc()`.
+This function receives a hash called `%options`, which contains a hash reference under `$options{new_datas}`. The function must feed `$self->{result_values}` for further processing.
+The default function that will be called is `centreon::plugins::templates::catalog_functions::catalog_status_calc()`.
 
 ```mermaid
 sequenceDiagram
@@ -162,9 +162,7 @@ sequenceDiagram
 
 #### closure_custom_output
 
-Must be written as a method of `values` package/class.
-Using data stored as attributes of `$self->{result_values}` where the available keys are the strings listed in the
-`key_values` entries, the method must return a string.
+This method must return a string to be displayed in the output using data stored as attributes of `$self->{result_values}` where the available keys are the strings listed in the `key_values` entries.
 
 #### closure_custom_threshold_check
 
