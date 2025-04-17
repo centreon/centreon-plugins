@@ -16,6 +16,7 @@ Table of contents
 6. [HTTP](#lib_http)
 7. [DBI](#lib_dbi)
 8. [Model Classes Usage](#model_class_usage)
+9. [Sequence diagram](#sequence_diagram)
 *******
 
 <div id='lib_output'/>
@@ -1273,5 +1274,14 @@ The following example show 4 new attributes:
 * *closure_custom_output*: should be used to have a more complex output (An example: want to display the total, free and used value at the same time).
 * *closure_custom_perfdata*: should be used to manage yourself the perfdata.
 * *closure_custom_threshold_check*: should be used to manage yourself the threshold check.
+
+[Table of content (1)](#table_of_contents)
+
+<div id='sequence_diagram'/>
+
+### 9. Sequence diagram
+
+A sequence diagram has been designed to help understand the timeline of a plugin execution.
+All the explanations are [here](sequence_diagram.md) and the full diagram is [here](sequence_diagram.mmd).
 
 [Table of content (1)](#table_of_contents)
