@@ -12,7 +12,7 @@ mod compute;
 mod generic;
 mod snmp;
 
-use generic::{Command, CommandExt};
+use generic::Command;
 use lalrpop_util::lalrpop_mod;
 use serde_json::Result;
 //use snmp::snmp_get;

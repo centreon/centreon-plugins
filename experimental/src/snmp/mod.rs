@@ -11,26 +11,26 @@ use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
 use rasn_snmp::v2::{GetBulkRequest, GetNextRequest, GetRequest};
 use rasn_snmp::v2c::Message;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
 
 pub enum ValueType {
     None(()),
     Integer(i64),
-    Float(f32),
+    Float(f64),
     String(String),
 }
 
 #[derive(Debug)]
 pub enum SnmpItem {
-    Nbr(Vec<f32>),
+    Nbr(Vec<f64>),
     Str(Vec<String>),
 }
 
 #[derive(Debug)]
 pub struct SnmpResult {
-    items: BTreeMap<String, SnmpItem>,
+    pub items: HashMap<String, SnmpItem>,
     last_oid: Vec<u32>,
 }
 
@@ -179,7 +179,7 @@ pub fn snmp_bulk_get<'a>(
         .collect::<Vec<Vec<u32>>>();
 
     let mut retval = SnmpResult {
-        items: BTreeMap::new(),
+        items: HashMap::new(),
         last_oid: Vec::new(),
     };
     let mut request_id: i32 = 1;
@@ -256,7 +256,7 @@ pub fn snmp_bulk_walk<'a>(
         .collect::<Vec<u32>>();
     let mut oid_tab = &oid_init;
     let mut retval = SnmpResult {
-        items: BTreeMap::new(),
+        items: HashMap::new(),
         last_oid: Vec::new(),
     };
     let request_id: i32 = 1;
@@ -314,7 +314,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     community: &str,
     oid: &str,
     snmp_name: &str,
-    labels: &'a BTreeMap<String, String>,
+    labels: &'a HashMap<String, String>,
 ) -> SnmpResult {
     let oid_init = oid
         .split('.')
@@ -323,7 +323,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
 
     let mut oid_tab = &oid_init;
     let mut retval = SnmpResult {
-        items: BTreeMap::new(),
+        items: HashMap::new(),
         last_oid: Vec::new(),
     };
     let request_id: i32 = 1;
@@ -380,7 +380,7 @@ impl SnmpResult {
         decoded: Message<Pdus>,
         oid: &str,
         snmp_name: &str,
-        labels: &'a BTreeMap<String, String>,
+        labels: &'a HashMap<String, String>,
         walk: bool,
     ) -> bool {
         let mut completed = false;
@@ -461,7 +461,7 @@ impl SnmpResult {
                                     ValueType::String(_) => {
                                         panic!("Value should be a float");
                                     }
-                                    ValueType::Integer(i) => *i as f32,
+                                    ValueType::Integer(i) => *i as f64,
                                 }),
                                 SnmpItem::Str(v) => v.push(match &typ {
                                     ValueType::Float(_) => {
@@ -482,7 +482,7 @@ impl SnmpResult {
                                     panic!("Should not arrive");
                                 }
                                 ValueType::String(s) => SnmpItem::Str(vec![s]),
-                                ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f32]),
+                                ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
                             });
                     }
                 }
@@ -572,7 +572,7 @@ impl SnmpResult {
                             ValueType::String(_) => {
                                 panic!("Value should be a float");
                             }
-                            ValueType::Integer(i) => *i as f32,
+                            ValueType::Integer(i) => *i as f64,
                         }),
                         SnmpItem::Str(v) => v.push(match &typ {
                             ValueType::Float(_) => {
@@ -593,7 +593,7 @@ impl SnmpResult {
                             panic!("Should not arrive");
                         }
                         ValueType::String(s) => SnmpItem::Str(vec![s]),
-                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f32]),
+                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
                     });
             }
         }
@@ -714,7 +714,7 @@ impl SnmpResult {
                             ValueType::String(_) => {
                                 panic!("Value should be a float");
                             }
-                            ValueType::Integer(i) => *i as f32,
+                            ValueType::Integer(i) => *i as f64,
                         }),
                         SnmpItem::Str(v) => v.push(match &typ {
                             ValueType::Float(_) => {
@@ -735,7 +735,7 @@ impl SnmpResult {
                             panic!("Should not arrive");
                         }
                         ValueType::String(s) => SnmpItem::Str(vec![s]),
-                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f32]),
+                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
                     });
             }
         }

@@ -1,6 +1,9 @@
+pub mod ast;
 pub mod lexer;
 
-use lalrpop_util::lalrpop_mod;
+use self::ast::ExprResult;
+use self::lexer::{LexicalError, Tok};
+use lalrpop_util::{lalrpop_mod, ParseError};
 use serde::Deserialize;
 use snmp::SnmpResult;
 
@@ -10,10 +13,10 @@ lalrpop_mod!(grammar);
 pub struct Metric {
     pub name: String,
     pub prefix: Option<String>,
-    value: String,
+    pub value: String,
     uom: Option<String>,
-    min: Option<f32>,
-    max: Option<f32>,
+    min: Option<f64>,
+    max: Option<f64>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -35,8 +38,19 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn eval(&self, expr: &str) -> f32 {
-        2.0_f32
+    pub fn eval(
+        &self,
+        expr: &'a str,
+    ) -> Result<ExprResult, ParseError<usize, Tok<'a>, LexicalError>> {
+        let lexer = lexer::Lexer::new(expr);
+        let res = self.parser.parse(lexer);
+        match res {
+            Ok(res) => {
+                let res = res.eval(self.collect);
+                Ok(res)
+            }
+            Err(e) => Err(e),
+        }
     }
 }
 
@@ -48,7 +62,7 @@ mod Test {
         let lexer = lexer::Lexer::new("123");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 123_f32);
+        assert!(res.unwrap().eval() == 123_f32);
         let lexer = lexer::Lexer::new("123");
         assert!(grammar::ExprParser::new().parse(lexer).is_ok());
         let lexer = lexer::Lexer::new("(((123))");
@@ -61,27 +75,27 @@ mod Test {
         let lexer = lexer::Lexer::new("1 + 2");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 3_f32);
+        assert!(res.unwrap().eval() == 3_f32);
 
         let lexer = lexer::Lexer::new("1 + 2 - 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 0_f32);
+        assert!(res.unwrap().eval() == 0_f32);
 
         let lexer = lexer::Lexer::new("1 - 2 + 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 2_f32);
+        assert!(res.unwrap().eval() == 2_f32);
 
         let lexer = lexer::Lexer::new("1 - (2 + 3)");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == -4_f32);
+        assert!(res.unwrap().eval() == -4_f32);
 
         let lexer = lexer::Lexer::new("1 - (2 + (3 - (4 + (5 - (6 + 7)))))");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == -8_f32);
+        assert!((res.unwrap()).eval() == -8_f32);
     }
 
     #[test]
@@ -89,27 +103,27 @@ mod Test {
         let lexer = lexer::Lexer::new("2 * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 6_f32);
+        assert!(res.unwrap().eval() == 6_f32);
 
         let lexer = lexer::Lexer::new("1 + 2 * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 7_f32);
+        assert!(res.unwrap().eval() == 7_f32);
 
         let lexer = lexer::Lexer::new("(1 + 2) * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 9_f32);
+        assert!(res.unwrap().eval() == 9_f32);
 
         let lexer = lexer::Lexer::new("2 * 3 * 4");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 24_f32);
+        assert!(res.unwrap().eval() == 24_f32);
 
         let lexer = lexer::Lexer::new("2 * 3 / 2");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 3_f32);
+        assert!(res.unwrap().eval() == 3_f32);
 
         // We have an issue with 2/0, I know it but we'll fix it later.
     }
@@ -119,7 +133,20 @@ mod Test {
         let lexer = lexer::Lexer::new("1 + (3 + 2 * 3) / 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap() == 4_f32);
+        assert!(res.unwrap().eval() == 4_f32);
+    }
+
+    #[test]
+    fn identifier() {
+        let lexer = lexer::Lexer::new("{abc} + 1");
+        let res = grammar::ExprParser::new().parse(lexer);
+        assert!(res.is_ok());
+        println!("{:?}", res);
+        assert!(res.unwrap().eval() == 1_f32);
+
+        let lexer = lexer::Lexer::new("abc + 1");
+        let res = grammar::ExprParser::new().parse(lexer);
+        assert!(res.is_err());
     }
 
     #[test]

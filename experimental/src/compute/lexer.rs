@@ -4,20 +4,23 @@ use std::str;
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Tok {
-    Num(f32),
-    Id,
+pub enum Tok<'input> {
+    Num(f64),
+    Id(&'input [u8]),
     OpStar,
     OpSlash,
     OpPlus,
     OpMinus,
     LParen,
     RParen,
+    LBrace,
+    RBrace,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum LexicalError {
     NotPossible,
+    UnmatchedBrace,
     // Not possible
 }
 
@@ -35,8 +38,9 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn number(&mut self, start: usize, chars: &[u8]) -> Option<Spanned<Tok, usize, LexicalError>> {
+    fn number(&mut self, start: usize) -> Option<Spanned<Tok<'input>, usize, LexicalError>> {
         // Consume digits and decimal points
+        let chars = self.chars.as_bytes();
         let mut end = start;
         let mut done = false;
         for c in chars[(start + 1)..].iter() {
@@ -59,22 +63,19 @@ impl<'input> Lexer<'input> {
         self.offset = end;
         let value = str::from_utf8(&chars[start..end])
             .unwrap_or("Bad value")
-            .parse::<f32>()
+            .parse::<f64>()
             .unwrap_or(0.0);
         Some(Ok((start, Tok::Num(value), end)))
     }
 
-    fn identifier(
-        &mut self,
-        start: usize,
-        chars: &[u8],
-    ) -> Option<Spanned<Tok, usize, LexicalError>> {
+    fn identifier(&mut self, start: usize) -> Option<Spanned<Tok<'input>, usize, LexicalError>> {
         // Consume identifier
+        let chars = self.chars.as_bytes();
         let mut end = start;
         let mut done = false;
         for c in chars[(start + 1)..].iter() {
             end += 1;
-            if !c.is_ascii_alphanumeric() && *c != b'_' {
+            if !c.is_ascii_alphanumeric() && *c != b'_' && *c != b'.' {
                 done = true;
                 break;
             }
@@ -89,12 +90,12 @@ impl<'input> Lexer<'input> {
             str::from_utf8(&chars[start..end]).unwrap_or("Bad value")
         );
         self.offset = end;
-        Some(Ok((start, Tok::Id, end)))
+        Some(Ok((start, Tok::Id(&chars[start..end]), end)))
     }
 }
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Tok, usize, LexicalError>;
+    type Item = Spanned<Tok<'input>, usize, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         for (i, c) in self.chars.as_bytes().iter().enumerate().skip(self.offset) {
@@ -124,12 +125,20 @@ impl<'input> Iterator for Lexer<'input> {
                     self.offset = i + 1;
                     return Some(Ok((i, Tok::RParen, i + 1)));
                 }
+                b'{' => {
+                    self.offset = i + 1;
+                    return Some(Ok((i, Tok::LBrace, i + 1)));
+                }
+                b'}' => {
+                    self.offset = i + 1;
+                    return Some(Ok((i, Tok::RBrace, i + 1)));
+                }
                 b'0'..=b'9' => {
                     // Consume digits and decimal points
-                    return self.number(i, &self.chars.as_bytes());
+                    return self.number(i);
                 }
                 b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
-                    return self.identifier(i, &self.chars.as_bytes());
+                    return self.identifier(i);
                 }
                 _ => {
                     // Unknown character
@@ -151,9 +160,9 @@ mod Test {
     fn test_lexer_num_id_num() {
         let input = "123 abc 456";
         let mut lexer = Lexer::new(input);
-        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(123_f32), 3))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Id, 7))));
-        assert_eq!(lexer.next(), Some(Ok((8, Tok::Num(456_f32), 11))));
+        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(123_f64), 3))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::Id(b"abc"), 7))));
+        assert_eq!(lexer.next(), Some(Ok((8, Tok::Num(456_f64), 11))));
         assert_eq!(lexer.next(), None);
     }
 
@@ -161,20 +170,20 @@ mod Test {
     fn test_lexer_id_num_id() {
         let input = "abc 123 def";
         let mut lexer = Lexer::new(input);
-        assert_eq!(lexer.next(), Some(Ok((0, Tok::Id, 3))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(123_f32), 7))));
-        assert_eq!(lexer.next(), Some(Ok((8, Tok::Id, 11))));
+        assert_eq!(lexer.next(), Some(Ok((0, Tok::Id(b"abc"), 3))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(123_f64), 7))));
+        assert_eq!(lexer.next(), Some(Ok((8, Tok::Id(b"def"), 11))));
     }
 
     #[test]
     fn test_lexer_num_op() {
         let input = "1+2*3";
         let mut lexer = Lexer::new(input);
-        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(1_f32), 1))));
+        assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(1_f64), 1))));
         assert_eq!(lexer.next(), Some(Ok((1, Tok::OpPlus, 2))));
-        assert_eq!(lexer.next(), Some(Ok((2, Tok::Num(2_f32), 3))));
+        assert_eq!(lexer.next(), Some(Ok((2, Tok::Num(2_f64), 3))));
         assert_eq!(lexer.next(), Some(Ok((3, Tok::OpStar, 4))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(3_f32), 5))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(3_f64), 5))));
         assert_eq!(lexer.next(), None);
     }
 }
