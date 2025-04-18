@@ -1,23 +1,24 @@
-use std::str::FromStr;
 use compute::lexer;
+use compute::ast;
 
-grammar;
+grammar<'input>;
 
-pub Expr: f32 = {
-    <s:Expr> "+" <p:Product> => s + p,
-    <s:Expr> "-" <p:Product> => s - p,
-    <p:Product> => p,
+pub Expr: Box<ast::Expr<'input>> = {
+    <s:Expr> "+" <p:Product> => Box::new(ast::Expr::OpPlus(<>)),
+    <s:Expr> "-" <p:Product> => Box::new(ast::Expr::OpMinus(<>)),
+    Product,
 };
 
-pub Product: f32 = {
-    <s:Product> "*" <v:Term> => s * v,
-    <s:Product> "/" <v:Term> => s / v,
-    <v:Term> => v,
+pub Product: Box<ast::Expr<'input>> = {
+    <s:Product> "*" <v:Term> => Box::new(ast::Expr::OpStar(<>)),
+    <s:Product> "/" <v:Term> => Box::new(ast::Expr::OpSlash(<>)),
+    <v:Term> => <>,
 };
 
-pub Term: f32 = {
-    "num" => <>,
-    "(" <v:Expr> ")" => v,
+pub Term: Box<ast::Expr<'input>> = {
+    "num" => Box::new(ast::Expr::Number(<>)),
+    "(" <v:Expr> ")" => <>,
+    "{" <"id"> "}" => Box::new(ast::Expr::Id(<>)),
 };
 
 extern {
@@ -26,13 +27,16 @@ extern {
 
     // ...
 
-    enum lexer::Tok {
+    enum lexer::Tok<'input> {
 	"*" => lexer::Tok::OpStar,
 	"/" => lexer::Tok::OpSlash,
 	"+" => lexer::Tok::OpPlus,
 	"-" => lexer::Tok::OpMinus,
 	"(" => lexer::Tok::LParen,
 	")" => lexer::Tok::RParen,
-	"num" => lexer::Tok::Num(<f32>)
+	"{" => lexer::Tok::LBrace,
+	"}" => lexer::Tok::RBrace,
+	"num" => lexer::Tok::Num(<f64>),
+	"id" => lexer::Tok::Id(<&'input [u8]>),
     }
 }
