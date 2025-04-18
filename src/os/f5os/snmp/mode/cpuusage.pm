@@ -1,0 +1,217 @@
+#
+# Copyright 2025 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package os::f5os::snmp::mode::cpuusage;
+
+use base qw(centreon::plugins::templates::counter);
+
+use strict;
+use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU are ok' },
+    ];
+
+    $self->{maps_counters}->{cpu} = [
+
+        { label => 'core-current', nlabel => 'cpu.core.current.usage.percent', set => {
+                key_values => [ { name => 'CoreCurrent' }, { name => 'display' } ],
+                output_template => 'CPU Usage Current : %s %%', output_error_template => "CPU Usage Current : %s",
+                perfdatas => [
+                    { value => 'CoreCurrent',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+
+        { label => 'core-avg-5s', nlabel => 'cpu.core.usage.avg.5s.percent', set => {
+                key_values => [ { name => 'CoreTotal5secAvg' }, { name => 'display' } ],
+                output_template => 'CPU Usage 5sec : %s %%', output_error_template => "CPU Usage 5sec : %s",
+                perfdatas => [
+                    { value => 'CoreTotal5secAvg',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'core-avg-1m', nlabel => 'cpu.core.usage.avg.1m.percent', set => {
+                key_values => [ { name => 'CoreTotal1minAvg' }, { name => 'display' } ],
+                output_template => 'CPU Usage 1min : %s %%', output_error_template => "CPU Usage 1min : %s",
+                perfdatas => [
+                    { value => 'CoreTotal1minAvg',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'core-avg-5m', nlabel => 'cpu.core.usage.avg.5m.percent', set => {
+                key_values => [ { name => 'CoreTotal5minAvg' }, { name => 'display' } ],
+                output_template => 'CPU Usage 5min : %s %%', output_error_template => "CPU Usage 5min : %s",
+                perfdatas => [
+                    { value => 'CoreTotal5minAvg',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' "
+        unless $self->{output}->is_verbose();
+
+    return "CPU '" . $options{instance_value}->{display} . " [" .  $options{instance_value}->{CoreName}. "]' ";
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1 );
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-id:s' => { name => 'filter_id' },
+        'exclude-name:s' => { name => 'exclude_name' },
+        'exclude-id:s' => { name => 'exclude_id' },
+
+    });
+
+    return $self;
+}
+
+my $mapping = {
+    CoreIndex                   => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.1' },
+    CoreName                    => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.2' },
+    CoreCurrent                 => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.3' },
+    CoreTotal5secAvg            => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.4' },
+    CoreTotal1minAvg            => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.5' },
+    CoreTotal5minAvg            => { oid => '.1.3.6.1.4.1.12276.1.2.1.1.3.1.6' },
+};
+my $oid_cpuCoreStatsEntry = '.1.3.6.1.4.1.12276.1.2.1.1.3.1';
+
+sub manage_selection {
+    my ($self, %options) = @_;
+    if ($options{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->option_exit();
+    }
+
+    my $results = $options{snmp}->get_table(
+        oid => $oid_cpuCoreStatsEntry,
+        nothing_quit => 1
+    );
+
+    foreach ('filter_name', 'filter_id', 'exclude_name', 'exclude_id') {
+        $self->{option_results}->{$_} = '' unless defined $self->{option_results}->{$_};
+    }
+
+    $self->{cpu} = {};
+    foreach my $oid (keys %$results) {
+        next if ($oid !~ /^$mapping->{CoreIndex}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+
+
+        if ($self->{option_results}->{filter_name} ne '' || $self->{option_results}->{filter_id} ne '') {
+            my $match_filter_name = 0;
+            my $match_filter_id = 0;
+            $match_filter_name = 1 if $self->{option_results}->{filter_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{filter_name}/;
+            $match_filter_id = 1 if $self->{option_results}->{filter_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{filter_id}/;
+
+            unless ($match_filter_name + $match_filter_id) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': no matching include filter.", debug => 1);
+                next;
+            }
+        }
+
+        if (($self->{option_results}->{exclude_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{exclude_name}/) ||
+            ($self->{option_results}->{exclude_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{exclude_id}/)) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': matching exclude filter.", debug => 1);
+            next;
+        }
+
+        $self->{cpu}->{$result->{CoreIndex}} = {
+            display => $result->{CoreIndex},
+            %$result
+        };
+    }
+
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No CPU found.");
+        $self->{output}->option_exit();
+    }
+
+    $self->{cache_name} = "f5os_snmp_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check CPU usages.
+
+=over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example : --filter-counters='^core-current$'
+
+=item B<--filter-id>
+
+Filter by CPU id (regexp can be used).
+Example : --filter-id='2'
+
+=item B<--filter-name>
+
+Filter by CPU name (regexp can be used).
+Example : --filter-name='cpu02'
+
+=item B<--exclude-id>
+
+Exclude CPU id from check (can be a regexp).
+Example : --exclude-id='21'
+
+=item B<--exclude-name>
+
+Exclude CPU name from check (can be a regexp).
+Example : --exclude-name='cpu02'
+
+=item B<--warning-*>
+
+Warning threshold.
+Can be: 'core-current', 'core-avg-5s', 'core-avg-1m', 'core-avg-5m'.
+
+=item B<--critical-*>
+
+Critical threshold.
+Can be: 'core-current', 'core-avg-5s', 'core-avg-1m', 'core-avg-5m'.
+
+=back
+
+=cut
