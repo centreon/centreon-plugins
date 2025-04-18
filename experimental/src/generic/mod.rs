@@ -4,7 +4,7 @@ extern crate serde_json;
 use compute::{Compute, Parser};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum Status {
@@ -56,7 +56,7 @@ pub struct Snmp {
     name: String,
     oid: String,
     query: QueryType,
-    labels: Option<BTreeMap<String, String>>,
+    labels: Option<HashMap<String, String>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -82,7 +82,7 @@ pub struct CommandExt {
     pub critical_agregation: Option<String>,
 }
 
-fn compute_status(value: f32, warn: &Option<String>, crit: &Option<String>) -> Status {
+fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> Status {
     if let Some(c) = crit {
         let crit = c.parse().unwrap();
         if value > crit {
@@ -130,12 +130,20 @@ impl Command {
             }
         }
 
-        let p = Parser::new(&collect);
-        for (idx, metric) in self.compute.metrics.iter().enumerate() {
+        for (i, metric) in self.compute.metrics.iter().enumerate() {
             let name = match &metric.prefix {
-                Some(prefix) => format!("{}#{}", p.eval(prefix), metric.name),
-                None => format!("{}#{}", idx, metric.name),
+                Some(prefix) => {
+                    format!("{:?}#{}", prefix, metric.name)
+                }
+
+                None => format!("{}#{}", i, metric.name),
             };
+            println!("name: {}", name);
+            let value = &metric.value;
+            println!("value: {}", value);
+            let parser = Parser::new(&collect);
+            let value = parser.eval(value).unwrap();
+            println!("value result: {:?}", value);
         }
 
         if !to_get.is_empty() {
