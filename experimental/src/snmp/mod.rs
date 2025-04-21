@@ -34,6 +34,15 @@ pub struct SnmpResult {
     last_oid: Vec<u32>,
 }
 
+impl SnmpResult {
+    pub fn new(items: HashMap<String, SnmpItem>) -> SnmpResult {
+        SnmpResult {
+            items,
+            last_oid: Vec::new(),
+        }
+    }
+}
+
 //pub fn snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
 //    let oid_tab = oid
 //        .split('.')

@@ -56,13 +56,20 @@ impl<'a> Parser<'a> {
 
 mod Test {
     use super::*;
+    use snmp::SnmpItem;
+    use std::collections::HashMap;
 
     #[test]
     fn term() {
         let lexer = lexer::Lexer::new("123");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 123_f32);
+        let snmp_result = vec![];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 123_f64),
+            _ => panic!("Expected a scalar value"),
+        }
         let lexer = lexer::Lexer::new("123");
         assert!(grammar::ExprParser::new().parse(lexer).is_ok());
         let lexer = lexer::Lexer::new("(((123))");
@@ -75,27 +82,48 @@ mod Test {
         let lexer = lexer::Lexer::new("1 + 2");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 3_f32);
+        let snmp_result = vec![];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 3_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("1 + 2 - 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 0_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 0_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("1 - 2 + 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 2_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 2_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("1 - (2 + 3)");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == -4_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == -4_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("1 - (2 + (3 - (4 + (5 - (6 + 7)))))");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!((res.unwrap()).eval() == -8_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == -8_f64),
+            _ => panic!("Expected a scalar value"),
+        }
     }
 
     #[test]
@@ -103,27 +131,48 @@ mod Test {
         let lexer = lexer::Lexer::new("2 * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 6_f32);
+        let snmp_result = vec![];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 6_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("1 + 2 * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 7_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 7_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("(1 + 2) * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 9_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 9_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("2 * 3 * 4");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 24_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 24_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("2 * 3 / 2");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 3_f32);
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 3_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         // We have an issue with 2/0, I know it but we'll fix it later.
     }
@@ -133,7 +182,12 @@ mod Test {
         let lexer = lexer::Lexer::new("1 + (3 + 2 * 3) / 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        assert!(res.unwrap().eval() == 4_f32);
+        let snmp_result = vec![];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 4_f64),
+            _ => panic!("Expected a scalar value"),
+        }
     }
 
     #[test]
@@ -142,7 +196,13 @@ mod Test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         println!("{:?}", res);
-        assert!(res.unwrap().eval() == 1_f32);
+        let items = HashMap::from([("abc".to_string(), SnmpItem::Nbr(vec![1_f64]))]);
+        let snmp_result = vec![SnmpResult::new(items)];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 2_f64),
+            _ => panic!("Expected a scalar value"),
+        }
 
         let lexer = lexer::Lexer::new("abc + 1");
         let res = grammar::ExprParser::new().parse(lexer);
