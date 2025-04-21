@@ -119,10 +119,12 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 b'(' => {
                     self.offset = i + 1;
+                    debug!("Token LParen at {}", i);
                     return Some(Ok((i, Tok::LParen, i + 1)));
                 }
                 b')' => {
                     self.offset = i + 1;
+                    debug!("Token RParen at {}", i);
                     return Some(Ok((i, Tok::RParen, i + 1)));
                 }
                 b'{' => {
