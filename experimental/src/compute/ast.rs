@@ -249,9 +249,27 @@ impl<'input> Expr<'input> {
             Expr::Fn(func, expr) => {
                 let v = expr.eval(collect);
                 match func {
-                    Func::Average => v,
-                    Func::Min => v,
-                    Func::Max => v,
+                    Func::Average => match v {
+                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Vector(v) => {
+                            let sum = v.iter().sum::<f64>();
+                            ExprResult::Scalar(sum / v.len() as f64)
+                        }
+                    },
+                    Func::Min => match v {
+                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Vector(v) => {
+                            let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
+                            ExprResult::Scalar(min)
+                        }
+                    },
+                    Func::Max => match v {
+                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Vector(v) => {
+                            let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+                            ExprResult::Scalar(max)
+                        }
+                    },
                 }
             }
         }

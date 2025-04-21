@@ -211,12 +211,15 @@ mod Test {
 
     #[test]
     fn function() {
-        //        let res = grammar::ExprParser::new().parse("Average(1, 2, 3)");
-        //        assert!(res.is_ok());
-        //        assert!(res.unwrap() == 2_f32);
-        //
-        //        let res = grammar::ExprParser::new().parse("Average(1 + 2 * 2, 3, 4)");
-        //        assert!(res.is_ok());
-        //        assert!(res.unwrap() == 4_f32);
+        let lexer = lexer::Lexer::new("Average({abc})");
+        let res = grammar::ExprParser::new().parse(lexer);
+        assert!(res.is_ok());
+        let items = HashMap::from([("abc".to_string(), SnmpItem::Nbr(vec![1_f64, 2_f64, 3_f64]))]);
+        let snmp_result = vec![SnmpResult::new(items)];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 2_f64),
+            _ => panic!("Expected a scalar value"),
+        }
     }
 }

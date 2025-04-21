@@ -15,11 +15,28 @@ pub Product: Box<ast::Expr<'input>> = {
     <v:Term> => <>,
 };
 
+pub Function: Box<ast::Expr<'input>> = {
+    <f:"id"> "(" <a:Var> ")" => {
+      match f {
+	b"Average" => return Box::new(ast::Expr::Fn(ast::Func::Average, a)),
+	b"Max" => return Box::new(ast::Expr::Fn(ast::Func::Max, a)),
+	b"Min" => return Box::new(ast::Expr::Fn(ast::Func::Min, a)),
+	// FIXME DBO: This case is an error case...
+	_ => return a,
+      }
+    }
+};
+
 pub Term: Box<ast::Expr<'input>> = {
     "num" => Box::new(ast::Expr::Number(<>)),
+    Function => <>,
     "(" <v:Expr> ")" => <>,
-    "{" <"id"> "}" => Box::new(ast::Expr::Id(<>)),
+    Var => <>,
 };
+
+pub Var: Box<ast::Expr<'input>> = {
+    "{" <"id"> "}" => Box::new(ast::Expr::Id(<>)),
+}
 
 extern {
     type Location = usize;
