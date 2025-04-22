@@ -202,15 +202,37 @@ Example : --exclude-id='21'
 Exclude CPU name from check (can be a regexp).
 Example : --exclude-name='cpu02'
 
-=item B<--warning-*>
+=item B<--warning-core-avg-1m>
 
-Warning threshold.
-Can be: 'core-current', 'core-avg-5s', 'core-avg-1m', 'core-avg-5m'.
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--critical-core-avg-1m>
 
-Critical threshold.
-Can be: 'core-current', 'core-avg-5s', 'core-avg-1m', 'core-avg-5m'.
+Threshold in percentage.
+
+=item B<--warning-core-avg-5m>
+
+Threshold in percentage.
+
+=item B<--critical-core-avg-5m>
+
+Threshold in percentage.
+
+=item B<--warning-core-avg-5s>
+
+Threshold in percentage.
+
+=item B<--critical-core-avg-5s>
+
+Threshold in percentage.
+
+=item B<--warning-core-current>
+
+Threshold in percentage.
+
+=item B<--critical-core-current>
+
+Threshold in percentage.
 
 =back
 
