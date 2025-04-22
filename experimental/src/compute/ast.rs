@@ -1,5 +1,6 @@
 use snmp::{SnmpItem, SnmpResult};
 use std::str;
+use log::debug;
 
 #[derive(Debug)]
 pub enum Expr<'input> {
@@ -226,14 +227,17 @@ impl<'input> Expr<'input> {
         match self {
             Expr::Number(n) => ExprResult::Scalar(*n),
             Expr::Id(key) => {
+                println!("Evaluation of Id '{}'", str::from_utf8(key).unwrap());
                 for result in collect {
                     let k = str::from_utf8(key).unwrap();
                     let item = &result.items[k];
                     match item {
                         SnmpItem::Nbr(n) => {
                             if n.len() == 1 {
+                                println!("value {}", n[0]);
                                 return ExprResult::Scalar(n[0]);
                             } else {
+                                println!("value {:?}", n);
                                 return ExprResult::Vector(n.clone());
                             }
                         }
