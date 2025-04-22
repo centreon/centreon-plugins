@@ -16,19 +16,20 @@
   "compute": {
     "metrics": [
       {
-        "name": "core.mem.usage.percent",
-        "value": "100 * (1 - {free}/{cpu})",
+        "name": "core.mem.usage.percent1",
+        "value": "100 * (1 - {free} / {total})",
 	"uom": "%",
 	"min": 0,
 	"max": 100,
 	"threshold-suffix": "mem"
       },
       {
-        "name": "avg.cpu.usage.percent",
-	"value": "Average({cpu})",
+        "name": "core.mem.usage.percent",
+        "value": "100 * (1 - {free}/{total})",
 	"uom": "%",
 	"min": 0,
-	"max": 100
+	"max": 100,
+	"threshold-suffix": "mem"
       }
     ]
   }

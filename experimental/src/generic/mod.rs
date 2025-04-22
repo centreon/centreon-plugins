@@ -130,6 +130,12 @@ impl Command {
             }
         }
 
+        if !to_get.is_empty() {
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            collect.push(r);
+        }
+        println!("{:#?}", collect);
+
         for (i, metric) in self.compute.metrics.iter().enumerate() {
             let name = match &metric.prefix {
                 Some(prefix) => {
@@ -145,12 +151,6 @@ impl Command {
             let value = parser.eval(value).unwrap();
             println!("value result: {:?}", value);
         }
-
-        if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-            collect.push(r);
-        }
-        println!("{:#?}", collect);
 
         CmdResult {
             status: Status::Unknown,

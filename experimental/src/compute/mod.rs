@@ -210,6 +210,23 @@ mod Test {
     }
 
     #[test]
+    fn two_identifiers() {
+        let lexer = lexer::Lexer::new("100 * (1 - {free}/{total})");
+        let res = grammar::ExprParser::new().parse(lexer);
+        assert!(res.is_ok());
+        let items = HashMap::from([
+            ("free".to_string(), SnmpItem::Nbr(vec![29600_f64])),
+            ("total".to_string(), SnmpItem::Nbr(vec![747712_f64])),
+        ]);
+        let snmp_result = vec![SnmpResult::new(items)];
+        let res = res.unwrap().eval(&snmp_result);
+        match res {
+            ExprResult::Scalar(n) => assert!(n == 96.04125652657707_f64),
+            _ => panic!("Expected a scalar value"),
+        }
+    }
+
+    #[test]
     fn function() {
         let lexer = lexer::Lexer::new("Average({abc})");
         let res = grammar::ExprParser::new().parse(lexer);
