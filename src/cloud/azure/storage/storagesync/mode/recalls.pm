@@ -53,14 +53,6 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
 	    },
-        'storagesyncrecalliototalsizebytes' => {
-            'output' => 'Cloud tiering recall',
-            'label'  => 'total-recalls-size',
-            'nlabel' => 'storagesync.recalls.total.size.bytes',
-            'unit'   => 'B',
-            'min'    => '0',
-            'max'    => ''
-	    },
         'storagesyncrecallthroughputbytespersecond' => {
             'output' => 'Cloud tiering recall throughput',
             'label'  => 'throughput-recalls-size',
