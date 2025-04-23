@@ -86,7 +86,7 @@ sub prefix_cpu_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1 );
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1 );
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -161,10 +161,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No CPU found.");
         $self->{output}->option_exit();
     }
-
-    $self->{cache_name} = "f5os_snmp_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
