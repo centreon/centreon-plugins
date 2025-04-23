@@ -132,23 +132,21 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
 
-
         if ($self->{option_results}->{filter_name} ne '' || $self->{option_results}->{filter_id} ne '') {
-            my $match_filter_name = 0;
-            my $match_filter_id = 0;
-            $match_filter_name = 1 if $self->{option_results}->{filter_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{filter_name}/;
-            $match_filter_id = 1 if $self->{option_results}->{filter_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{filter_id}/;
+            my $whitelist = 0;
+            $whitelist = 1 if $self->{option_results}->{filter_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{filter_name}/;
+            $whitelist = 1 if $self->{option_results}->{filter_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{filter_id}/;
 
-            unless ($match_filter_name + $match_filter_id) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': no matching include filter.", debug => 1);
-                next;
+            if ($whitelist == 0) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': no including filter match.", debug => 1);
+                next
             }
         }
 
         if (($self->{option_results}->{exclude_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{exclude_name}/) ||
             ($self->{option_results}->{exclude_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{exclude_id}/)) {
             $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': matching exclude filter.", debug => 1);
-            next;
+            next
         }
 
         $self->{cpu}->{$result->{CoreIndex}} = {
