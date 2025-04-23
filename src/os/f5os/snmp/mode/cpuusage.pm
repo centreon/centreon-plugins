@@ -145,7 +145,7 @@ sub manage_selection {
 
         if (($self->{option_results}->{exclude_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{exclude_name}/) ||
             ($self->{option_results}->{exclude_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{exclude_id}/)) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': matching exclude filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': excluding filter match.", debug => 1);
             next
         }
 
