@@ -40,7 +40,7 @@ runs:
       shell: bash
 
     - name: Restore packages from cache
-      uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ github.sha }}-${{ github.run_id }}-${{ inputs.package_extension }}-${{ inputs.distrib }}
