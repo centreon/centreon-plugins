@@ -1,6 +1,6 @@
+use log::debug;
 use snmp::{SnmpItem, SnmpResult};
 use std::str;
-use log::debug;
 
 #[derive(Debug)]
 pub enum Expr<'input> {
