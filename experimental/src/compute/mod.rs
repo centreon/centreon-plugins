@@ -15,8 +15,10 @@ pub struct Metric {
     pub prefix: Option<String>,
     pub value: String,
     uom: Option<String>,
-    min: Option<f64>,
-    max: Option<f64>,
+    pub min_expr: Option<String>,
+    pub min: Option<f64>,
+    pub max_expr: Option<String>,
+    pub max: Option<f64>,
 }
 
 #[derive(Deserialize, Debug)]
