@@ -255,6 +255,7 @@ SysVol
 TCP
 teampass
 Teldat
+temperatureambient
 timeframe
 TiMOS
 TMM
