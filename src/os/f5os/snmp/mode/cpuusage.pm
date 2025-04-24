@@ -112,10 +112,6 @@ my $oid_cpuCoreStatsEntry = '.1.3.6.1.4.1.12276.1.2.1.1.3.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
-    if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
-        $self->{output}->option_exit();
-    }
 
     my $results = $options{snmp}->get_table(
         oid => $oid_cpuCoreStatsEntry,
@@ -169,6 +165,11 @@ __END__
 
 Check CPU usages.
 
+    - cpu.core.current.usage.percent       CPU core current utilization percentage.
+    - cpu.core.usage.avg.5s.percent        CPU core utilization average over the last five second.
+    - cpu.core.usage.avg.1m.percent        CPU core utilization average over the last one minute.
+    - cpu.core.usage.avg.5m.percent        CPU core utilization average over the last five minute.
+
 =over 8
 
 =item B<--filter-counters>
@@ -188,13 +189,29 @@ Example : --filter-name='cpu02'
 
 =item B<--exclude-id>
 
-Exclude CPU id from check (can be a regexp).
+Exclude CPU id from check (regexp can be used).
 Example : --exclude-id='21'
 
 =item B<--exclude-name>
 
-Exclude CPU name from check (can be a regexp).
+Exclude CPU name from check (regexp can be used).
 Example : --exclude-name='cpu02'
+
+=item B<--warning-core-current>
+
+Threshold in percentage.
+
+=item B<--critical-core-current>
+
+Threshold in percentage.
+
+=item B<--warning-core-avg-5s>
+
+Threshold in percentage.
+
+=item B<--critical-core-avg-5s>
+
+Threshold in percentage.
 
 =item B<--warning-core-avg-1m>
 
@@ -209,22 +226,6 @@ Threshold in percentage.
 Threshold in percentage.
 
 =item B<--critical-core-avg-5m>
-
-Threshold in percentage.
-
-=item B<--warning-core-avg-5s>
-
-Threshold in percentage.
-
-=item B<--critical-core-avg-5s>
-
-Threshold in percentage.
-
-=item B<--warning-core-current>
-
-Threshold in percentage.
-
-=item B<--critical-core-current>
 
 Threshold in percentage.
 
