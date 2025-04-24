@@ -249,6 +249,7 @@ SSH
 standAlone
 statefile
 --statefile-concat-cwd
+Stormshield
 SureBackup
 systemd
 SysVol
