@@ -1,10 +1,18 @@
 extern crate serde;
 extern crate serde_json;
 
-use compute::{Compute, Parser};
+use compute::{ast::ExprResult, Compute, Parser};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use std::collections::HashMap;
+
+#[derive(Debug)]
+struct Perfdata {
+    name: String,
+    value: f64,
+    min: Option<f64>,
+    max: Option<f64>,
+}
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum Status {
@@ -136,20 +144,126 @@ impl Command {
         }
         println!("{:#?}", collect);
 
-        for (i, metric) in self.compute.metrics.iter().enumerate() {
-            let name = match &metric.prefix {
-                Some(prefix) => {
-                    format!("{:?}#{}", prefix, metric.name)
-                }
-
-                None => format!("{}#{}", i, metric.name),
-            };
-            println!("name: {}", name);
+        let mut idx: u32 = 0;
+        let mut metrics = vec![];
+        for metric in self.compute.metrics.iter() {
             let value = &metric.value;
-            println!("value: {}", value);
+            let min = metric.min;
+            let max = metric.max;
             let parser = Parser::new(&collect);
             let value = parser.eval(value).unwrap();
-            println!("value result: {:?}", value);
+            match value {
+                ExprResult::Vector(v) => {
+                    for item in v {
+                        let name = match &metric.prefix {
+                            Some(prefix) => {
+                                format!("{:?}#{}", prefix, metric.name)
+                            }
+                            None => {
+                                let res = format!("{}#{}", idx, metric.name);
+                                idx += 1;
+                                res
+                            }
+                        };
+                        let m = Perfdata {
+                            name,
+                            value: item,
+                            min,
+                            max,
+                        };
+                        metrics.push(m);
+                    }
+                }
+                ExprResult::Scalar(s) => {
+                    let name = match &metric.prefix {
+                        Some(prefix) => {
+                            format!("{:?}#{}", prefix, metric.name)
+                        }
+                        None => {
+                            let res = format!("{}#{}", idx, metric.name);
+                            idx += 1;
+                            res
+                        }
+                    };
+                    let m = Perfdata {
+                        name,
+                        value: s,
+                        min,
+                        max,
+                    };
+                    metrics.push(m);
+                }
+            }
+            println!("perfdata: {:?}", metrics);
+        }
+        if let Some(aggregations) = self.compute.aggregations.as_ref() {
+            for metric in aggregations {
+                let value = &metric.value;
+                let parser = Parser::new(&collect);
+                let max = if let Some(max_expr) = metric.max_expr.as_ref() {
+                    let res = parser.eval(&max_expr).unwrap();
+                    Some(match res {
+                        ExprResult::Scalar(v) => v,
+                        ExprResult::Vector(v) => {
+                            assert!(v.len() == 1);
+                            v[0]
+                        }
+                    })
+                } else if let Some(max_value) = metric.max {
+                    Some(max_value)
+                } else {
+                    None
+                };
+                let min = if let Some(min_expr) = metric.min_expr.as_ref() {
+                    let res = parser.eval(&min_expr).unwrap();
+                    Some(match res {
+                        ExprResult::Scalar(v) => v,
+                        ExprResult::Vector(v) => {
+                            assert!(v.len() == 1);
+                            v[0]
+                        }
+                    })
+                } else if let Some(min_value) = metric.min {
+                    Some(min_value)
+                } else {
+                    None
+                };
+                let value = parser.eval(value).unwrap();
+                match value {
+                    ExprResult::Vector(v) => {
+                        for item in v {
+                            let name = match &metric.prefix {
+                                Some(prefix) => {
+                                    format!("{:?}#{}", prefix, metric.name)
+                                }
+                                None => {
+                                    let res = format!("{}#{}", idx, metric.name);
+                                    idx += 1;
+                                    res
+                                }
+                            };
+                            let m = Perfdata {
+                                name,
+                                value: item,
+                                min,
+                                max,
+                            };
+                            metrics.push(m);
+                        }
+                    }
+                    ExprResult::Scalar(s) => {
+                        let name = &metric.name;
+                        let m = Perfdata {
+                            name: name.to_string(),
+                            value: s,
+                            min,
+                            max,
+                        };
+                        metrics.push(m);
+                    }
+                }
+                println!("perfdata: {:?}", metrics);
+            }
         }
 
         CmdResult {
