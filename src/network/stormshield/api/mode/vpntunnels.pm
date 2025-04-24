@@ -259,7 +259,7 @@ You can use the following variables: %{ikeStatus}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL).
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{ikeStatus}, %{name}
 
 =item B<--warning-*> B<--critical-*>
