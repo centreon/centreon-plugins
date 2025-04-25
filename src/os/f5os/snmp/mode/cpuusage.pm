@@ -90,8 +90,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
-        'filter-id:s' => { name => 'filter_id' },
+        'include-name:s' => { name => 'include_name' },
+        'include-id:s' => { name => 'include_id' },
         'exclude-name:s' => { name => 'exclude_name' },
         'exclude-id:s' => { name => 'exclude_id' },
 
@@ -118,7 +118,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    foreach ('filter_name', 'filter_id', 'exclude_name', 'exclude_id') {
+    foreach ('include_name', 'include_id', 'exclude_name', 'exclude_id') {
         $self->{option_results}->{$_} = '' unless defined $self->{option_results}->{$_};
     }
 
@@ -128,10 +128,10 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
 
-        if ($self->{option_results}->{filter_name} ne '' || $self->{option_results}->{filter_id} ne '') {
+        if ($self->{option_results}->{include_name} ne '' || $self->{option_results}->{include_id} ne '') {
             my $whitelist = 0;
-            $whitelist = 1 if $self->{option_results}->{filter_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{filter_name}/;
-            $whitelist = 1 if $self->{option_results}->{filter_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{filter_id}/;
+            $whitelist = 1 if $self->{option_results}->{include_name} ne '' && $result->{CoreName} =~ /$self->{option_results}->{include_name}/;
+            $whitelist = 1 if $self->{option_results}->{include_id} ne '' && $result->{CoreIndex} =~ /$self->{option_results}->{include_id}/;
 
             if ($whitelist == 0) {
                 $self->{output}->output_add(long_msg => "skipping  '" . $result->{CoreIndex} .'-'. $result->{CoreName}. "': no including filter match.", debug => 1);
@@ -177,15 +177,15 @@ Check CPU usages.
 Only display some counters (regexp can be used).
 Example : --filter-counters='^core-current$'
 
-=item B<--filter-id>
+=item B<--include-id>
 
 Filter by CPU id (regexp can be used).
-Example : --filter-id='2'
+Example : --include-id='2'
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter by CPU name (regexp can be used).
-Example : --filter-name='cpu02'
+Example : --include-name='cpu02'
 
 =item B<--exclude-id>
 
