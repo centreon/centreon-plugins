@@ -24,8 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use network::lenovo::rackswitch::snmp::mode::resources;
 
 sub prefix_fan_output {
     my ($self, %options) = @_;
