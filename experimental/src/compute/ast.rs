@@ -1,5 +1,4 @@
-use log::debug;
-use snmp::{SnmpItem, SnmpResult};
+use snmp::SnmpResult;
 use std::str;
 
 #[derive(Debug)]
@@ -24,6 +23,7 @@ pub enum Func {
 pub enum ExprResult {
     Vector(Vec<f64>),
     Scalar(f64),
+    StrVector(Vec<String>),
 }
 
 impl std::ops::Add for ExprResult {
@@ -71,6 +71,7 @@ impl std::ops::Add for ExprResult {
                 }
                 ExprResult::Vector(result)
             }
+            _ => panic!("Invalid operation"),
         }
     }
 }
@@ -120,6 +121,7 @@ impl std::ops::Sub for ExprResult {
                 }
                 ExprResult::Vector(result)
             }
+            _ => panic!("Invalid operation"),
         }
     }
 }
@@ -169,6 +171,7 @@ impl std::ops::Mul for ExprResult {
                 }
                 ExprResult::Vector(result)
             }
+            _ => panic!("Invalid operation"),
         }
     }
 }
@@ -218,6 +221,7 @@ impl std::ops::Div for ExprResult {
                 }
                 ExprResult::Vector(result)
             }
+            _ => panic!("Invalid operation"),
         }
     }
 }
@@ -227,12 +231,12 @@ impl<'input> Expr<'input> {
         match self {
             Expr::Number(n) => ExprResult::Scalar(*n),
             Expr::Id(key) => {
-                println!("Evaluation of Id '{}'", str::from_utf8(key).unwrap());
+                let k = str::from_utf8(key).unwrap();
+                println!("Evaluation of Id '{}'", k);
                 for result in collect {
-                    let k = str::from_utf8(key).unwrap();
                     let item = &result.items[k];
                     match item {
-                        SnmpItem::Nbr(n) => {
+                        ExprResult::Vector(n) => {
                             if n.len() == 1 {
                                 println!("value {}", n[0]);
                                 return ExprResult::Scalar(n[0]);
@@ -259,6 +263,7 @@ impl<'input> Expr<'input> {
                             let sum = v.iter().sum::<f64>();
                             ExprResult::Scalar(sum / v.len() as f64)
                         }
+                        _ => panic!("Invalid operation"),
                     },
                     Func::Min => match v {
                         ExprResult::Scalar(n) => ExprResult::Scalar(n),
@@ -266,6 +271,7 @@ impl<'input> Expr<'input> {
                             let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
                             ExprResult::Scalar(min)
                         }
+                        _ => panic!("Invalid operation"),
                     },
                     Func::Max => match v {
                         ExprResult::Scalar(n) => ExprResult::Scalar(n),
@@ -273,6 +279,7 @@ impl<'input> Expr<'input> {
                             let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
                             ExprResult::Scalar(max)
                         }
+                        _ => panic!("Invalid operation"),
                     },
                 }
             }

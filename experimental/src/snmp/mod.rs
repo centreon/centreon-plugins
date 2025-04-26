@@ -3,6 +3,7 @@ extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
 
+use compute::ast::ExprResult;
 use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_snmp::v2::BulkPdu;
@@ -23,19 +24,13 @@ pub enum ValueType {
 }
 
 #[derive(Debug)]
-pub enum SnmpItem {
-    Nbr(Vec<f64>),
-    Str(Vec<String>),
-}
-
-#[derive(Debug)]
 pub struct SnmpResult {
-    pub items: HashMap<String, SnmpItem>,
+    pub items: HashMap<String, ExprResult>,
     last_oid: Vec<u32>,
 }
 
 impl SnmpResult {
-    pub fn new(items: HashMap<String, SnmpItem>) -> SnmpResult {
+    pub fn new(items: HashMap<String, ExprResult>) -> SnmpResult {
         SnmpResult {
             items,
             last_oid: Vec::new(),
@@ -462,7 +457,8 @@ impl SnmpResult {
                         self.items
                             .entry(key)
                             .and_modify(|e| match e {
-                                SnmpItem::Nbr(v) => v.push(match &typ {
+                                ExprResult::Scalar(_) => panic!("Should not arrive"),
+                                ExprResult::Vector(v) => v.push(match &typ {
                                     ValueType::Float(f) => *f,
                                     ValueType::None(()) => {
                                         panic!("Should not arrive");
@@ -472,7 +468,7 @@ impl SnmpResult {
                                     }
                                     ValueType::Integer(i) => *i as f64,
                                 }),
-                                SnmpItem::Str(v) => v.push(match &typ {
+                                ExprResult::StrVector(v) => v.push(match &typ {
                                     ValueType::Float(_) => {
                                         panic!("Value should be a string");
                                     }
@@ -486,12 +482,12 @@ impl SnmpResult {
                                 }),
                             })
                             .or_insert(match typ {
-                                ValueType::Float(f) => SnmpItem::Nbr(vec![f]),
+                                ValueType::Float(f) => ExprResult::Vector(vec![f]),
                                 ValueType::None(()) => {
                                     panic!("Should not arrive");
                                 }
-                                ValueType::String(s) => SnmpItem::Str(vec![s]),
-                                ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
+                                ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                                ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
                             });
                     }
                 }
@@ -573,7 +569,8 @@ impl SnmpResult {
                 self.items
                     .entry(key)
                     .and_modify(|e| match e {
-                        SnmpItem::Nbr(v) => v.push(match &typ {
+                        ExprResult::Scalar(_) => panic!("Should not arrive"),
+                        ExprResult::Vector(v) => v.push(match &typ {
                             ValueType::Float(f) => *f,
                             ValueType::None(()) => {
                                 panic!("Should not arrive");
@@ -583,7 +580,7 @@ impl SnmpResult {
                             }
                             ValueType::Integer(i) => *i as f64,
                         }),
-                        SnmpItem::Str(v) => v.push(match &typ {
+                        ExprResult::StrVector(v) => v.push(match &typ {
                             ValueType::Float(_) => {
                                 panic!("Value should be a string");
                             }
@@ -597,12 +594,12 @@ impl SnmpResult {
                         }),
                     })
                     .or_insert(match typ {
-                        ValueType::Float(f) => SnmpItem::Nbr(vec![f]),
+                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
                         ValueType::None(()) => {
                             panic!("Should not arrive");
                         }
-                        ValueType::String(s) => SnmpItem::Str(vec![s]),
-                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
+                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
                     });
             }
         }
@@ -715,7 +712,8 @@ impl SnmpResult {
                 self.items
                     .entry(key)
                     .and_modify(|e| match e {
-                        SnmpItem::Nbr(v) => v.push(match &typ {
+                        ExprResult::Scalar(_) => panic!("Should not arrive"),
+                        ExprResult::Vector(v) => v.push(match &typ {
                             ValueType::Float(f) => *f,
                             ValueType::None(()) => {
                                 panic!("Should not arrive");
@@ -725,7 +723,7 @@ impl SnmpResult {
                             }
                             ValueType::Integer(i) => *i as f64,
                         }),
-                        SnmpItem::Str(v) => v.push(match &typ {
+                        ExprResult::StrVector(v) => v.push(match &typ {
                             ValueType::Float(_) => {
                                 panic!("Value should be a string");
                             }
@@ -739,12 +737,12 @@ impl SnmpResult {
                         }),
                     })
                     .or_insert(match typ {
-                        ValueType::Float(f) => SnmpItem::Nbr(vec![f]),
+                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
                         ValueType::None(()) => {
                             panic!("Should not arrive");
                         }
-                        ValueType::String(s) => SnmpItem::Str(vec![s]),
-                        ValueType::Integer(i) => SnmpItem::Nbr(vec![i as f64]),
+                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
                     });
             }
         }
