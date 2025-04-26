@@ -152,6 +152,7 @@ impl Command {
             let max = metric.max;
             let parser = Parser::new(&collect);
             let value = parser.eval(value).unwrap();
+            println!("ExprResult: {:?}", value);
             match value {
                 ExprResult::Vector(v) => {
                     for item in v {
@@ -193,6 +194,7 @@ impl Command {
                     };
                     metrics.push(m);
                 }
+                _ => panic!("Aggregation must be applied to a vector"),
             }
             println!("perfdata: {:?}", metrics);
         }
@@ -208,6 +210,7 @@ impl Command {
                             assert!(v.len() == 1);
                             v[0]
                         }
+                        _ => panic!("Aggregation must be applied to a vector"),
                     })
                 } else if let Some(max_value) = metric.max {
                     Some(max_value)
@@ -222,6 +225,7 @@ impl Command {
                             assert!(v.len() == 1);
                             v[0]
                         }
+                        _ => panic!("Aggregation must be applied to a vector"),
                     })
                 } else if let Some(min_value) = metric.min {
                     Some(min_value)
@@ -261,6 +265,7 @@ impl Command {
                         };
                         metrics.push(m);
                     }
+                    _ => panic!("Aggregation must be applied to a vector"),
                 }
                 println!("perfdata: {:?}", metrics);
             }

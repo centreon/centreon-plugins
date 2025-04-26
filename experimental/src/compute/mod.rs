@@ -58,7 +58,6 @@ impl<'a> Parser<'a> {
 
 mod Test {
     use super::*;
-    use snmp::SnmpItem;
     use std::collections::HashMap;
 
     #[test]
@@ -198,7 +197,7 @@ mod Test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         println!("{:?}", res);
-        let items = HashMap::from([("abc".to_string(), SnmpItem::Nbr(vec![1_f64]))]);
+        let items = HashMap::from([("abc".to_string(), ExprResult::Vector(vec![1_f64]))]);
         let snmp_result = vec![SnmpResult::new(items)];
         let res = res.unwrap().eval(&snmp_result);
         match res {
@@ -217,8 +216,8 @@ mod Test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         let items = HashMap::from([
-            ("free".to_string(), SnmpItem::Nbr(vec![29600_f64])),
-            ("total".to_string(), SnmpItem::Nbr(vec![747712_f64])),
+            ("free".to_string(), ExprResult::Vector(vec![29600_f64])),
+            ("total".to_string(), ExprResult::Vector(vec![747712_f64])),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
         let res = res.unwrap().eval(&snmp_result);
@@ -233,7 +232,10 @@ mod Test {
         let lexer = lexer::Lexer::new("Average({abc})");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let items = HashMap::from([("abc".to_string(), SnmpItem::Nbr(vec![1_f64, 2_f64, 3_f64]))]);
+        let items = HashMap::from([(
+            "abc".to_string(),
+            ExprResult::Vector(vec![1_f64, 2_f64, 3_f64]),
+        )]);
         let snmp_result = vec![SnmpResult::new(items)];
         let res = res.unwrap().eval(&snmp_result);
         match res {
