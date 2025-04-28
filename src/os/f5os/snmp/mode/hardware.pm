@@ -41,7 +41,7 @@ sub set_counters {
     $self->{maps_counters}->{temperature} = [
         { label => 'current-temperature', nlabel => 'temperature.current.celsius', set => {
                 key_values => [ { name => 'tempCurrent' } ],
-                output_template => 'Temperature current: %s C',
+                output_template => 'Current temperature: %s C',
                 perfdatas => [
                     { template => '%s', unit => 'C', label_extra_instance => 0 }
                 ]
@@ -106,8 +106,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'component:s' => { name => 'component', default => '.*' },
         'no-component:s' => { name => 'no_component', default => 'CRITICAL' },
-        'include-id:s' => { name => 'include_id' },
-        'exclude-id:s' => { name => 'exclude_id' },
+        'include-id:s' => { name => 'include_id', default => '' },
+        'exclude-id:s' => { name => 'exclude_id', default => '' },
     });
 
     return $self;
@@ -121,10 +121,6 @@ sub manage_selection {
             { oid => $oid_temperatureStatsEntry },
             { oid => $oid_fantrayStatsEntry },
         ]);
-
-    foreach ('include_id', 'exclude_id') {
-        $self->{option_results}->{$_} = '' unless defined $self->{option_results}->{$_};
-    }
 
     if ($self->{option_results}->{component} eq '.*' || $self->{option_results}->{component} =~ /temperature/i) {
         my $result;
