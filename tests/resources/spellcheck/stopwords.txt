@@ -247,12 +247,14 @@ SSH
 standAlone
 statefile
 --statefile-concat-cwd
+Stormshield
 SureBackup
 systemd
 SysVol
 TCP
 teampass
 Teldat
+temperatureambient
 timeframe
 TiMOS
 TMM
