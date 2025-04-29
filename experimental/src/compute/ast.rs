@@ -1,3 +1,4 @@
+use log::{debug, info, trace};
 use snmp::SnmpResult;
 use std::str;
 
@@ -232,20 +233,21 @@ impl<'input> Expr<'input> {
             Expr::Number(n) => ExprResult::Scalar(*n),
             Expr::Id(key) => {
                 let k = str::from_utf8(key).unwrap();
-                println!("Evaluation of Id '{}'", k);
                 for result in collect {
-                    let item = &result.items[k];
-                    match item {
-                        ExprResult::Vector(n) => {
-                            if n.len() == 1 {
-                                println!("value {}", n[0]);
-                                return ExprResult::Scalar(n[0]);
-                            } else {
-                                println!("value {:?}", n);
-                                return ExprResult::Vector(n.clone());
+                    match result.items.get(k) {
+                        Some(item) => match item {
+                            ExprResult::Vector(n) => {
+                                if n.len() == 1 {
+                                    info!("ID '{}' has value {}", k, n[0]);
+                                    return ExprResult::Scalar(n[0]);
+                                } else {
+                                    info!("ID '{}' has value {:?}", k, n);
+                                    return ExprResult::Vector(n.clone());
+                                }
                             }
-                        }
-                        _ => panic!("Should be a number"),
+                            _ => panic!("Should be a number"),
+                        },
+                        None => continue,
                     }
                 }
                 ExprResult::Scalar(0.0)

@@ -2,9 +2,12 @@ extern crate serde;
 extern crate serde_json;
 
 use compute::{ast::ExprResult, Compute, Parser};
+use log::{debug, trace};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::IndexMut};
+
+use crate::snmp::SnmpResult;
 
 #[derive(Debug)]
 struct Perfdata {
@@ -142,22 +145,23 @@ impl Command {
             let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
             collect.push(r);
         }
-        println!("{:#?}", collect);
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
+        let mut my_res = SnmpResult::new(HashMap::new());
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
             let min = metric.min;
             let max = metric.max;
             let parser = Parser::new(&collect);
             let value = parser.eval(value).unwrap();
-            println!("ExprResult: {:?}", value);
-            match value {
+
+            match &value {
                 ExprResult::Vector(v) => {
                     for item in v {
                         let name = match &metric.prefix {
                             Some(prefix) => {
+                                let name_resolved = parser.eval_str(prefix).unwrap();
                                 format!("{:?}#{}", prefix, metric.name)
                             }
                             None => {
@@ -168,10 +172,11 @@ impl Command {
                         };
                         let m = Perfdata {
                             name,
-                            value: item,
+                            value: *item,
                             min,
                             max,
                         };
+                        trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
                     }
                 }
@@ -188,16 +193,20 @@ impl Command {
                     };
                     let m = Perfdata {
                         name,
-                        value: s,
+                        value: *s,
                         min,
                         max,
                     };
+                    trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
                 }
                 _ => panic!("Aggregation must be applied to a vector"),
             }
-            println!("perfdata: {:?}", metrics);
+            let key = format!("metrics.{}", metric.name);
+            debug!("New ID '{}' with content: {:?}", key, value);
+            my_res.items.insert(key, value);
         }
+        collect.push(my_res);
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             for metric in aggregations {
                 let value = &metric.value;
@@ -252,6 +261,7 @@ impl Command {
                                 min,
                                 max,
                             };
+                            trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
                         }
                     }
@@ -263,14 +273,16 @@ impl Command {
                             min,
                             max,
                         };
+                        trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
                     }
                     _ => panic!("Aggregation must be applied to a vector"),
                 }
-                println!("perfdata: {:?}", metrics);
             }
         }
 
+        trace!("collect: {:#?}", collect);
+        println!("metrics: {:#?}", metrics);
         CmdResult {
             status: Status::Unknown,
             output: "No result".to_string(),

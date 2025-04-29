@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, error, trace};
 use std::str;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -54,7 +54,7 @@ impl<'input> Lexer<'input> {
             end = chars.len();
         }
 
-        debug!(
+        trace!(
             "Token Number from {} to {} with value '{}'",
             start,
             end,
@@ -83,7 +83,7 @@ impl<'input> Lexer<'input> {
         if !done {
             end = chars.len();
         }
-        debug!(
+        trace!(
             "Token Identifier from {} to {} with value '{}'",
             start,
             end,
@@ -119,12 +119,12 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 b'(' => {
                     self.offset = i + 1;
-                    debug!("Token LParen at {}", i);
+                    trace!("Token LParen at {}", i);
                     return Some(Ok((i, Tok::LParen, i + 1)));
                 }
                 b')' => {
                     self.offset = i + 1;
-                    debug!("Token RParen at {}", i);
+                    trace!("Token RParen at {}", i);
                     return Some(Ok((i, Tok::RParen, i + 1)));
                 }
                 b'{' => {
@@ -144,7 +144,7 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 _ => {
                     // Unknown character
-                    debug!("Unknown character at {}: '{}'", i, *c as char);
+                    error!("Unknown character at {}: '{}'", i, *c as char);
                     self.offset = i + 1;
                     return Some(Err(LexicalError::NotPossible));
                 }
@@ -158,8 +158,13 @@ impl<'input> Iterator for Lexer<'input> {
 mod Test {
     use super::*;
 
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     #[test]
     fn test_lexer_num_id_num() {
+        init();
         let input = "123 abc 456";
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(123_f64), 3))));
@@ -170,6 +175,7 @@ mod Test {
 
     #[test]
     fn test_lexer_id_num_id() {
+        init();
         let input = "abc 123 def";
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next(), Some(Ok((0, Tok::Id(b"abc"), 3))));
@@ -179,6 +185,7 @@ mod Test {
 
     #[test]
     fn test_lexer_num_op() {
+        init();
         let input = "1+2*3";
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(1_f64), 1))));
