@@ -273,9 +273,9 @@ Check network repository function.
 
 =over 8
 
-=item B<--filter-id>
+=item B<--filter-cluster-repository>
 
-Filter clusters by id.
+Filter clusters by repository name.
 
 =item B<--unknown-node-status>
 
