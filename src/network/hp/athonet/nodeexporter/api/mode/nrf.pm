@@ -81,7 +81,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'global_registration', type => 0, cb_prefix_output => 'prefix_global_registration_output', skipped_code => { -10 => 1 } },
-        { name => 'registrations', type => 1, display_long => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All registration network functions are ok', skipped_code => { -10 => 1 } },
+        { name => 'registrations', type => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All registration network functions are ok', skipped_code => { -10 => 1 } },
         {
             name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
             group => [

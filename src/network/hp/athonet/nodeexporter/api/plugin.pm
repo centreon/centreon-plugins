@@ -33,6 +33,7 @@ sub new {
         'cpu'          => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
         'cpu-detailed' => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
         'interfaces'   => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
+        'licenses'     => 'network::hp::athonet::nodeexporter::api::mode::licenses',
         'load'         => 'cloud::prometheus::exporters::nodeexporter::mode::load',
         'memory'       => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
         'nrf'          => 'network::hp::athonet::nodeexporter::api::mode::nrf',
