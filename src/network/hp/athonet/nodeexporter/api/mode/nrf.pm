@@ -312,7 +312,7 @@ You can use the following variables: %{status}, %{nfType}
 Thresholds.
 Can be: 'clusters-detected',
 'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'nf-registration-last'.
+'nf-registration-last', 'nf-registrations-detected', 'nf-registrations-registered', 'nf-registrations-suspended'.
 
 =back
 
