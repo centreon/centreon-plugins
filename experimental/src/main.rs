@@ -1,3 +1,4 @@
+extern crate env_logger;
 extern crate lalrpop_util;
 extern crate lexopt;
 extern crate log;
@@ -14,8 +15,8 @@ mod snmp;
 
 use generic::Command;
 use lalrpop_util::lalrpop_mod;
+use log::{debug, info, trace};
 use serde_json::Result;
-//use snmp::snmp_get;
 use std::fs;
 
 lalrpop_mod!(grammar);
@@ -67,6 +68,8 @@ fn json_to_command(file_name: &str) -> Result<Command> {
 }
 
 fn main() {
+    env_logger::init();
+
     use lexopt::prelude::*;
     let mut parser = lexopt::Parser::from_env();
     let mut hostname = "localhost".to_string();
@@ -78,30 +81,30 @@ fn main() {
         let arg = parser.next();
         match arg {
             Ok(arg) => {
-                println!("{:?} ok", arg);
                 match arg {
                     Some(arg) => match arg {
                         Short('H') | Long("hostname") => {
                             hostname = parser.value().unwrap().into_string().unwrap();
+                            trace!("hostname: {:}", hostname);
                         }
                         Short('p') | Long("port") => {
                             port = parser.value().unwrap().parse::<u16>().unwrap();
-                            println!("port: {}", port);
+                            trace!("port: {}", port);
                         }
                         Short('j') | Long("json") => {
                             json = Some(parser.value().unwrap().into_string().unwrap());
-                            println!("json: {:?}", json);
+                            trace!("json: {:?}", json);
                         }
                         Short('v') | Long("snmp-version") => {
                             snmp_version = parser.value().unwrap().into_string().unwrap();
-                            println!("snmp_version: {}", snmp_version);
+                            trace!("snmp_version: {}", snmp_version);
                         }
                         Short('c') | Long("snmp-community") => {
                             snmp_community = parser.value().unwrap().into_string().unwrap();
-                            println!("snmp_community: {}", snmp_community);
+                            trace!("snmp_community: {}", snmp_community);
                         }
                         _ => {
-                            println!("other");
+                            debug!("other unknown argument");
                         }
                     },
                     None => {
