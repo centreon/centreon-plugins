@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu-usage'            => 'os::f5os::snmp::mode::cpuusage',
+        'memory'               => 'os::f5os::snmp::mode::memory',
     };
 
     return $self;
