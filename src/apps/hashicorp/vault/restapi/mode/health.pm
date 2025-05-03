@@ -54,7 +54,7 @@ sub set_counters {
 sub custom_prefix_output {
     my ($self, %options) = @_;
 
-    return 'Server ' . $options{instance_value}->{cluster_name} . ' ';
+    return 'Server ' . $options{instance_value}->{cluster_name} . ' Node : ' . $options{instance_value}->{standby} . ', ';
 }
 
 sub new {
@@ -74,7 +74,7 @@ sub set_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $code_param = '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
+    my $code_param = '?sealedcode=200&uninitcode=200&standbycode=200'; # By default API will return error codes if sealed or uninit
     my $result = $options{custom}->request_api(url_path => 'health' . $code_param);
     my $cluster_name = defined($result->{cluster_name}) ? $result->{cluster_name} : $self->{option_results}->{hostname};
 
@@ -82,6 +82,7 @@ sub manage_selection {
         cluster_name => $cluster_name,
         sealed => $result->{sealed} ? 'sealed' : 'unsealed',
         init => $result->{initialized} ? 'initialized' : 'not initialized',
+        standby => $result->{standby} ? 'standby' : 'active',
     };
 }
 
