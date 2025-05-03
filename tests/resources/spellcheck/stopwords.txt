@@ -101,6 +101,7 @@ hashicorpvault
 HPE
 HTTPR
 Huawei
+HyperCore
 ifAlias
 ifDesc
 ifName
@@ -152,6 +153,7 @@ memBuffer
 --memexpiration
 memTotalReal
 Meraki
+mhz
 MIB
 Microkernel
 module-cellradio-csq
@@ -189,6 +191,7 @@ notapplicable
 NTLMv2
 NTP
 NVOS
+NVRAM
 --oid
 OID
 --oid-display
@@ -198,6 +201,7 @@ OIDs
 okta
 oneaccess-sys-mib
 OpenMetrics
+os
 out-bcast
 out-fc-wait
 out-mcast
@@ -291,6 +295,7 @@ VPN
 vSAN
 Vserver
 vSphere
+VTPM
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts
 --warning-authserver-packets-access-requests
