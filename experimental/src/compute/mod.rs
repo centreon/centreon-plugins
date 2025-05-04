@@ -93,19 +93,6 @@ impl<'a> Parser<'a> {
     }
 }
 
-fn join_str_expr(prefix: &str, v: &ExprResult) -> Vec<String> {
-    match v {
-        ExprResult::StrVector(v) => {
-            let mut result = vec![];
-            for item in v {
-                result.push(format!("{}{}", prefix, item));
-            }
-            result
-        }
-        _ => panic!("Expected a string vector"),
-    }
-}
-
 mod Test {
     use super::*;
     use log::info;
