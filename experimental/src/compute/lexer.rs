@@ -186,13 +186,13 @@ mod Test {
     #[test]
     fn test_lexer_num_op() {
         init();
-        let input = "1+2*3";
+        let input = "1 +2*3";
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next(), Some(Ok((0, Tok::Num(1_f64), 1))));
-        assert_eq!(lexer.next(), Some(Ok((1, Tok::OpPlus, 2))));
-        assert_eq!(lexer.next(), Some(Ok((2, Tok::Num(2_f64), 3))));
-        assert_eq!(lexer.next(), Some(Ok((3, Tok::OpStar, 4))));
-        assert_eq!(lexer.next(), Some(Ok((4, Tok::Num(3_f64), 5))));
+        assert_eq!(lexer.next(), Some(Ok((2, Tok::OpPlus, 3))));
+        assert_eq!(lexer.next(), Some(Ok((3, Tok::Num(2_f64), 4))));
+        assert_eq!(lexer.next(), Some(Ok((4, Tok::OpStar, 5))));
+        assert_eq!(lexer.next(), Some(Ok((5, Tok::Num(3_f64), 6))));
         assert_eq!(lexer.next(), None);
     }
 }

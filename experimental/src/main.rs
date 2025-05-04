@@ -80,38 +80,36 @@ fn main() {
     loop {
         let arg = parser.next();
         match arg {
-            Ok(arg) => {
-                match arg {
-                    Some(arg) => match arg {
-                        Short('H') | Long("hostname") => {
-                            hostname = parser.value().unwrap().into_string().unwrap();
-                            trace!("hostname: {:}", hostname);
-                        }
-                        Short('p') | Long("port") => {
-                            port = parser.value().unwrap().parse::<u16>().unwrap();
-                            trace!("port: {}", port);
-                        }
-                        Short('j') | Long("json") => {
-                            json = Some(parser.value().unwrap().into_string().unwrap());
-                            trace!("json: {:?}", json);
-                        }
-                        Short('v') | Long("snmp-version") => {
-                            snmp_version = parser.value().unwrap().into_string().unwrap();
-                            trace!("snmp_version: {}", snmp_version);
-                        }
-                        Short('c') | Long("snmp-community") => {
-                            snmp_community = parser.value().unwrap().into_string().unwrap();
-                            trace!("snmp_community: {}", snmp_community);
-                        }
-                        _ => {
-                            debug!("other unknown argument");
-                        }
-                    },
-                    None => {
-                        break;
+            Ok(arg) => match arg {
+                Some(arg) => match arg {
+                    Short('H') | Long("hostname") => {
+                        hostname = parser.value().unwrap().into_string().unwrap();
+                        trace!("hostname: {:}", hostname);
                     }
+                    Short('p') | Long("port") => {
+                        port = parser.value().unwrap().parse::<u16>().unwrap();
+                        trace!("port: {}", port);
+                    }
+                    Short('j') | Long("json") => {
+                        json = Some(parser.value().unwrap().into_string().unwrap());
+                        trace!("json: {:?}", json);
+                    }
+                    Short('v') | Long("snmp-version") => {
+                        snmp_version = parser.value().unwrap().into_string().unwrap();
+                        trace!("snmp_version: {}", snmp_version);
+                    }
+                    Short('c') | Long("snmp-community") => {
+                        snmp_community = parser.value().unwrap().into_string().unwrap();
+                        trace!("snmp_community: {}", snmp_community);
+                    }
+                    _ => {
+                        debug!("other unknown argument");
+                    }
+                },
+                None => {
+                    break;
                 }
-            }
+            },
             Err(err) => {
                 println!("err: {:?}", err);
                 std::process::exit(3);
