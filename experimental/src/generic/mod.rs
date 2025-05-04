@@ -158,16 +158,20 @@ impl Command {
 
             match &value {
                 ExprResult::Vector(v) => {
-                    for item in v {
-                        let name = match &metric.prefix {
-                            Some(prefix) => {
-                                let name_resolved = parser.eval_str(prefix).unwrap();
-                                format!("{:?}#{}", prefix, metric.name)
-                            }
-                            None => {
+                    let prefix_str = match &metric.prefix {
+                        Some(prefix) => parser.eval_str(prefix).unwrap(),
+                        None => ExprResult::Empty,
+                    };
+                    for (i, item) in v.iter().enumerate() {
+                        let name = match &prefix_str {
+                            ExprResult::StrVector(v) => format!("{:?}#{}", v[i], metric.name),
+                            ExprResult::Empty => {
                                 let res = format!("{}#{}", idx, metric.name);
                                 idx += 1;
                                 res
+                            }
+                            _ => {
+                                panic!("A label must be a string");
                             }
                         };
                         let m = Perfdata {
@@ -180,7 +184,7 @@ impl Command {
                         metrics.push(m);
                     }
                 }
-                ExprResult::Scalar(s) => {
+                ExprResult::Number(s) => {
                     let name = match &metric.prefix {
                         Some(prefix) => {
                             format!("{:?}#{}", prefix, metric.name)
@@ -214,7 +218,7 @@ impl Command {
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
                     let res = parser.eval(&max_expr).unwrap();
                     Some(match res {
-                        ExprResult::Scalar(v) => v,
+                        ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
                             assert!(v.len() == 1);
                             v[0]
@@ -229,7 +233,7 @@ impl Command {
                 let min = if let Some(min_expr) = metric.min_expr.as_ref() {
                     let res = parser.eval(&min_expr).unwrap();
                     Some(match res {
-                        ExprResult::Scalar(v) => v,
+                        ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
                             assert!(v.len() == 1);
                             v[0]
@@ -265,7 +269,7 @@ impl Command {
                             metrics.push(m);
                         }
                     }
-                    ExprResult::Scalar(s) => {
+                    ExprResult::Number(s) => {
                         let name = &metric.name;
                         let m = Perfdata {
                             name: name.to_string(),

@@ -1,4 +1,4 @@
-use log::{debug, info, trace};
+use log::{debug, info, trace, warn};
 use snmp::SnmpResult;
 use std::str;
 
@@ -23,8 +23,10 @@ pub enum Func {
 #[derive(Debug)]
 pub enum ExprResult {
     Vector(Vec<f64>),
-    Scalar(f64),
+    Number(f64),
     StrVector(Vec<String>),
+    Str(String),
+    Empty,
 }
 
 impl std::ops::Add for ExprResult {
@@ -32,7 +34,7 @@ impl std::ops::Add for ExprResult {
 
     fn add(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Scalar(a), ExprResult::Scalar(b)) => ExprResult::Scalar(a + b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a + b),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -43,14 +45,18 @@ impl std::ops::Add for ExprResult {
                     }
                     ExprResult::Vector(result)
                 } else {
+                    warn!(
+                        "Trying to add to arrays of different lengths: {} and {}",
+                        len_a, len_b
+                    );
                     if len_a > len_b {
-                        let mut result = a.clone();
+                        let mut result = a;
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] += value;
                         }
                         ExprResult::Vector(result)
                     } else {
-                        let mut result = b.clone();
+                        let mut result = b;
                         for (idx, value) in a.iter().enumerate() {
                             result[idx] += value;
                         }
@@ -58,15 +64,15 @@ impl std::ops::Add for ExprResult {
                     }
                 }
             }
-            (ExprResult::Scalar(a), ExprResult::Vector(b)) => {
-                let mut result = b.clone();
+            (ExprResult::Number(a), ExprResult::Vector(b)) => {
+                let mut result = b;
                 for value in result.iter_mut() {
                     *value += a;
                 }
                 ExprResult::Vector(result)
             }
-            (ExprResult::Vector(a), ExprResult::Scalar(b)) => {
-                let mut result = a.clone();
+            (ExprResult::Vector(a), ExprResult::Number(b)) => {
+                let mut result = a;
                 for value in result.iter_mut() {
                     *value += b;
                 }
@@ -82,7 +88,7 @@ impl std::ops::Sub for ExprResult {
 
     fn sub(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Scalar(a), ExprResult::Scalar(b)) => ExprResult::Scalar(a - b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a - b),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -93,30 +99,38 @@ impl std::ops::Sub for ExprResult {
                     }
                     ExprResult::Vector(result)
                 } else {
+                    warn!(
+                        "Trying to subtract arrays of different lengths: {} and {}",
+                        len_a, len_b
+                    );
                     if len_a > len_b {
-                        let mut result = a.clone();
+                        let mut result = a;
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] -= value;
                         }
                         ExprResult::Vector(result)
                     } else {
-                        let mut result = b.clone();
-                        for (idx, value) in a.iter().enumerate() {
-                            result[idx] -= value;
+                        let mut result = b;
+                        for (idx, value) in result.iter_mut().enumerate() {
+                            if idx < a.len() {
+                                *value = a[idx] - *value;
+                            } else {
+                                *value = -*value;
+                            }
                         }
                         ExprResult::Vector(result)
                     }
                 }
             }
-            (ExprResult::Scalar(a), ExprResult::Vector(b)) => {
+            (ExprResult::Number(a), ExprResult::Vector(b)) => {
                 let mut result = vec![0_f64; b.len()];
                 for (idx, value) in result.iter_mut().enumerate() {
                     *value = a - b[idx];
                 }
                 ExprResult::Vector(result)
             }
-            (ExprResult::Vector(a), ExprResult::Scalar(b)) => {
-                let mut result = a.clone();
+            (ExprResult::Vector(a), ExprResult::Number(b)) => {
+                let mut result = a;
                 for value in result.iter_mut() {
                     *value -= b;
                 }
@@ -132,7 +146,7 @@ impl std::ops::Mul for ExprResult {
 
     fn mul(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Scalar(a), ExprResult::Scalar(b)) => ExprResult::Scalar(a * b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a * b),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -143,14 +157,18 @@ impl std::ops::Mul for ExprResult {
                     }
                     ExprResult::Vector(result)
                 } else {
+                    warn!(
+                        "Trying to multiply arrays of different lengths: {} and {}",
+                        len_a, len_b
+                    );
                     if len_a > len_b {
-                        let mut result = a.clone();
+                        let mut result = a;
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] *= value;
                         }
                         ExprResult::Vector(result)
                     } else {
-                        let mut result = b.clone();
+                        let mut result = b;
                         for (idx, value) in a.iter().enumerate() {
                             result[idx] *= value;
                         }
@@ -158,14 +176,14 @@ impl std::ops::Mul for ExprResult {
                     }
                 }
             }
-            (ExprResult::Scalar(a), ExprResult::Vector(b)) => {
+            (ExprResult::Number(a), ExprResult::Vector(b)) => {
                 let mut result = b.clone();
                 for value in result.iter_mut() {
                     *value *= a;
                 }
                 ExprResult::Vector(result)
             }
-            (ExprResult::Vector(a), ExprResult::Scalar(b)) => {
+            (ExprResult::Vector(a), ExprResult::Number(b)) => {
                 let mut result = a.clone();
                 for value in result.iter_mut() {
                     *value *= b;
@@ -182,7 +200,7 @@ impl std::ops::Div for ExprResult {
 
     fn div(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Scalar(a), ExprResult::Scalar(b)) => ExprResult::Scalar(a / b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a / b),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -193,30 +211,38 @@ impl std::ops::Div for ExprResult {
                     }
                     ExprResult::Vector(result)
                 } else {
+                    warn!(
+                        "Trying to divide arrays of different lengths: {} and {}",
+                        len_a, len_b
+                    );
                     if len_a > len_b {
-                        let mut result = a.clone();
+                        let mut result = a;
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] /= value;
                         }
                         ExprResult::Vector(result)
                     } else {
-                        let mut result = b.clone();
-                        for (idx, value) in a.iter().enumerate() {
-                            result[idx] /= value;
+                        let mut result = b;
+                        for (idx, value) in result.iter_mut().enumerate() {
+                            if idx < a.len() {
+                                *value = a[idx] / *value;
+                            } else {
+                                *value = 1_f64 / *value;
+                            }
                         }
                         ExprResult::Vector(result)
                     }
                 }
             }
-            (ExprResult::Scalar(a), ExprResult::Vector(b)) => {
+            (ExprResult::Number(a), ExprResult::Vector(b)) => {
                 let mut result = vec![0_f64; b.len()];
                 for (idx, value) in result.iter_mut().enumerate() {
                     *value = a / b[idx];
                 }
                 ExprResult::Vector(result)
             }
-            (ExprResult::Vector(a), ExprResult::Scalar(b)) => {
-                let mut result = a.clone();
+            (ExprResult::Vector(a), ExprResult::Number(b)) => {
+                let mut result = a;
                 for value in result.iter_mut() {
                     *value /= b;
                 }
@@ -227,10 +253,60 @@ impl std::ops::Div for ExprResult {
     }
 }
 
+impl ExprResult {
+    pub fn join(&mut self, other: &ExprResult) {
+        match self {
+            ExprResult::Empty => match other {
+                ExprResult::StrVector(vv) => {
+                    *self = ExprResult::StrVector(vv.clone());
+                }
+                ExprResult::Str(s) => {
+                    *self = ExprResult::Str(s.clone());
+                }
+                _ => panic!("Unable to join objects others than strings"),
+            },
+            ExprResult::StrVector(v) => match other {
+                ExprResult::StrVector(vv) => {
+                    if v.len() != vv.len() {
+                        warn!(
+                            "Trying to join arrays of different lengths: {} and {}",
+                            v.len(),
+                            vv.len()
+                        );
+                        if v.len() < vv.len() {
+                            v.resize(vv.len(), "".to_string());
+                        }
+                    }
+                    for (key, value) in v.iter_mut().enumerate() {
+                        value.push_str(vv.get(key).unwrap_or(&"".to_string()));
+                    }
+                }
+                ExprResult::Str(s) => {
+                    *v = v.iter().map(|a| format!("{}{}", a, s)).collect();
+                }
+                _ => panic!("Unable to join objects others than strings"),
+            },
+            ExprResult::Str(s) => match other {
+                ExprResult::StrVector(vv) => {
+                    *self =
+                        ExprResult::StrVector(vv.iter().map(|a| format!("{}{}", s, a)).collect());
+                }
+                ExprResult::Str(ss) => {
+                    *s = format!("{}{}", s, ss);
+                }
+                _ => panic!("Unable to join objects others than strings"),
+            },
+            _ => {
+                panic!("Unable to join objects that are not strings");
+            }
+        }
+    }
+}
+
 impl<'input> Expr<'input> {
     pub fn eval(&self, collect: &Vec<SnmpResult>) -> ExprResult {
         match self {
-            Expr::Number(n) => ExprResult::Scalar(*n),
+            Expr::Number(n) => ExprResult::Number(*n),
             Expr::Id(key) => {
                 let k = str::from_utf8(key).unwrap();
                 for result in collect {
@@ -239,7 +315,7 @@ impl<'input> Expr<'input> {
                             ExprResult::Vector(n) => {
                                 if n.len() == 1 {
                                     info!("ID '{}' has value {}", k, n[0]);
-                                    return ExprResult::Scalar(n[0]);
+                                    return ExprResult::Number(n[0]);
                                 } else {
                                     info!("ID '{}' has value {:?}", k, n);
                                     return ExprResult::Vector(n.clone());
@@ -250,7 +326,7 @@ impl<'input> Expr<'input> {
                         None => continue,
                     }
                 }
-                ExprResult::Scalar(0.0)
+                ExprResult::Number(0.0)
             }
             Expr::OpPlus(left, right) => left.eval(collect) + right.eval(collect),
             Expr::OpMinus(left, right) => left.eval(collect) - right.eval(collect),
@@ -260,26 +336,26 @@ impl<'input> Expr<'input> {
                 let v = expr.eval(collect);
                 match func {
                     Func::Average => match v {
-                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Number(n) => ExprResult::Number(n),
                         ExprResult::Vector(v) => {
                             let sum = v.iter().sum::<f64>();
-                            ExprResult::Scalar(sum / v.len() as f64)
+                            ExprResult::Number(sum / v.len() as f64)
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Min => match v {
-                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Number(n) => ExprResult::Number(n),
                         ExprResult::Vector(v) => {
                             let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
-                            ExprResult::Scalar(min)
+                            ExprResult::Number(min)
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Max => match v {
-                        ExprResult::Scalar(n) => ExprResult::Scalar(n),
+                        ExprResult::Number(n) => ExprResult::Number(n),
                         ExprResult::Vector(v) => {
                             let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-                            ExprResult::Scalar(max)
+                            ExprResult::Number(max)
                         }
                         _ => panic!("Invalid operation"),
                     },

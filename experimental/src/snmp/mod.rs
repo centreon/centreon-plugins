@@ -457,7 +457,8 @@ impl SnmpResult {
                         self.items
                             .entry(key)
                             .and_modify(|e| match e {
-                                ExprResult::Scalar(_) => panic!("Should not arrive"),
+                                ExprResult::Number(_) => panic!("Should not arrive"),
+                                ExprResult::Str(_) => panic!("Should not arrive"),
                                 ExprResult::Vector(v) => v.push(match &typ {
                                     ValueType::Float(f) => *f,
                                     ValueType::None(()) => {
@@ -480,6 +481,9 @@ impl SnmpResult {
                                         panic!("Value should be a string");
                                     }
                                 }),
+                                ExprResult::Empty => {
+                                    panic!("Value from SNMP query cannot be empty");
+                                }
                             })
                             .or_insert(match typ {
                                 ValueType::Float(f) => ExprResult::Vector(vec![f]),
@@ -569,7 +573,7 @@ impl SnmpResult {
                 self.items
                     .entry(key)
                     .and_modify(|e| match e {
-                        ExprResult::Scalar(_) => panic!("Should not arrive"),
+                        ExprResult::Number(_) => panic!("Should not arrive"),
                         ExprResult::Vector(v) => v.push(match &typ {
                             ValueType::Float(f) => *f,
                             ValueType::None(()) => {
@@ -580,6 +584,7 @@ impl SnmpResult {
                             }
                             ValueType::Integer(i) => *i as f64,
                         }),
+                        ExprResult::Str(_) => panic!("Should not arrive"),
                         ExprResult::StrVector(v) => v.push(match &typ {
                             ValueType::Float(_) => {
                                 panic!("Value should be a string");
@@ -592,6 +597,9 @@ impl SnmpResult {
                                 panic!("Value should be a string");
                             }
                         }),
+                        ExprResult::Empty => {
+                            panic!("Value should not be empty");
+                        }
                     })
                     .or_insert(match typ {
                         ValueType::Float(f) => ExprResult::Vector(vec![f]),
@@ -712,7 +720,7 @@ impl SnmpResult {
                 self.items
                     .entry(key)
                     .and_modify(|e| match e {
-                        ExprResult::Scalar(_) => panic!("Should not arrive"),
+                        ExprResult::Number(_) => panic!("Should not arrive"),
                         ExprResult::Vector(v) => v.push(match &typ {
                             ValueType::Float(f) => *f,
                             ValueType::None(()) => {
@@ -723,6 +731,7 @@ impl SnmpResult {
                             }
                             ValueType::Integer(i) => *i as f64,
                         }),
+                        ExprResult::Str(_) => panic!("Should not arrive"),
                         ExprResult::StrVector(v) => v.push(match &typ {
                             ValueType::Float(_) => {
                                 panic!("Value should be a string");
@@ -735,6 +744,9 @@ impl SnmpResult {
                                 panic!("Value should be a string");
                             }
                         }),
+                        ExprResult::Empty => {
+                            panic!("Value should be a string");
+                        }
                     })
                     .or_insert(match typ {
                         ValueType::Float(f) => ExprResult::Vector(vec![f]),
