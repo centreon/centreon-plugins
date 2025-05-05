@@ -142,6 +142,7 @@ ldap
 --legacy-api-beta
 license-instances-usage-prct
 Loggly
+LTE
 LUN
 LUNs
 machineaccount
@@ -156,6 +157,7 @@ memTotalReal
 Meraki
 MIB
 Microkernel
+Mikrotik
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -229,18 +231,22 @@ ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
+rsrp
+rsrq
+rssi
 Sansymphony
 SAS
 scenarii
 --scope-datacenter
 SFOS
 sfp.temperature
+sinr
 --skip-ssl-check
 SkyHigh
 SMS
-SnapMirror
 SnapMirrors
-SNMP
+SnapMirrors
+snmp
 snmpd.conf
 space-usage-prct
 --sql-errors-exit
@@ -251,6 +257,7 @@ statefile
 --statefile-concat-cwd
 Stormshield
 SureBackup
+superseed
 systemd
 SysVol
 TCP
@@ -280,6 +287,8 @@ userpass
 --use-ucd
 v1
 v2
+v2c
+v3
 vdom
 vdomain
 VDSL2
