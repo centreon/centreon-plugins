@@ -24,17 +24,28 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU are ok' },
+        { name => 'cpu_avg', type => 0 },
+        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_output' },
     ];
 
-    $self->{maps_counters}->{cpu} = [
+    $self->{maps_counters}->{cpu_avg} = [
+        { label => 'average', nlabel => 'cpu.usage.percent', set => {
+                key_values => [ { name => 'average' } ],
+                output_template => 'CPU(s) average usage is: %.2f %%',
+                perfdatas => [
+                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ]
+            }
+        }
+    ];
 
+    $self->{maps_counters}->{cpu_core} = [
         { label => 'core-current', nlabel => 'cpu.core.current.usage.percent', set => {
                 key_values => [ { name => 'CoreCurrent' }, { name => 'display' } ],
                 output_template => 'CPU Usage Current : %s %%', output_error_template => "CPU Usage Current : %s",
@@ -44,7 +55,6 @@ sub set_counters {
                 ],
             }
         },
-
         { label => 'core-avg-5s', nlabel => 'cpu.core.usage.avg.5s.percent', set => {
                 key_values => [ { name => 'CoreTotal5secAvg' }, { name => 'display' } ],
                 output_template => 'CPU Usage 5sec : %s %%', output_error_template => "CPU Usage 5sec : %s",
@@ -90,11 +100,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'include-name:s' => { name => 'include_name' },
-        'include-id:s' => { name => 'include_id' },
-        'exclude-name:s' => { name => 'exclude_name' },
-        'exclude-id:s' => { name => 'exclude_id' },
-
+        'include-name:s' => { name => 'include_name', default => '' },
+        'include-id:s' => { name => 'include_id', default => '' },
+        'exclude-name:s' => { name => 'exclude_name', default => '' },
+        'exclude-id:s' => { name => 'exclude_id', default => '' },
     });
 
     return $self;
@@ -118,11 +127,10 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    foreach ('include_name', 'include_id', 'exclude_name', 'exclude_id') {
-        $self->{option_results}->{$_} = '' unless defined $self->{option_results}->{$_};
-    }
+    $self->{cpu_core} = {};
+    $self->{cpu_avg} = {};
 
-    $self->{cpu} = {};
+    my $cpu = 0;
     foreach my $oid (keys %$results) {
         next if ($oid !~ /^$mapping->{CoreIndex}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -145,15 +153,20 @@ sub manage_selection {
             next
         }
 
-        $self->{cpu}->{$result->{CoreIndex}} = {
+        $self->{cpu_core}->{$result->{CoreIndex}} = {
             display => $result->{CoreIndex},
             %$result
         };
+
+        $cpu += $result->{CoreCurrent};
     }
 
-    if (scalar(keys %{$self->{cpu}}) <= 0) {
+    my $num_core = scalar(keys %{$self->{cpu_core}});
+    if ($num_core <= 0) {
         $self->{output}->add_option_msg(short_msg => "No CPU found.");
         $self->{output}->option_exit();
+    } else {
+        $self->{cpu_avg}->{average} = $cpu / $num_core;
     }
 }
 
@@ -175,6 +188,7 @@ Check CPU usages.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
+Can be : core-current, core-avg-5s, core-avg-1m, core-avg-5m
 Example : --filter-counters='^core-current$'
 
 =item B<--include-id>

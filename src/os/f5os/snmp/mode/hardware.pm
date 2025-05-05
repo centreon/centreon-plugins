@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'tempCurrent' } ],
                 output_template => 'Current temperature: %s C',
                 perfdatas => [
-                    { template => '%s', unit => 'C', label_extra_instance => 0 }
+                    { template => '%.1f', unit => 'C', label_extra_instance => 0 }
                 ]
             }
         },
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'tempAverage' } ],
                 output_template => 'average: %s C',
                 perfdatas => [
-                    { template => '%s', unit => 'C', label_extra_instance => 0 }
+                    { template => '%.1f', unit => 'C', label_extra_instance => 0 }
                 ]
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'tempMinimum' } ],
                 output_template => 'minimum: %s C',
                 perfdatas => [
-                    { template => '%s', unit => 'C', label_extra_instance => 0 }
+                    { template => '%.1f', unit => 'C', label_extra_instance => 0 }
                 ]
             }
         },
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'tempMaximum' } ],
                 output_template => 'maximum: %s C',
                 perfdatas => [
-                    { template => '%s', unit => 'C', label_extra_instance => 1 }
+                    { template => '%.1f', unit => 'C', label_extra_instance => 1 }
                 ]
             }
         }
@@ -128,6 +128,8 @@ sub manage_selection {
             next unless /^$mapping->{tempCurrent}->{oid}\.(.*)$/;
 
             $result = $options{snmp}->map_instance(mapping => $mapping, results => $results->{$oid_temperatureStatsEntry}, instance => $1);
+            $result->{$_} *= 0.1 for keys %{$result};
+
             last
         }
 
@@ -191,6 +193,12 @@ Can be: 'temperature', 'fantray'.
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Can be : fantray-fan-speed current-temperature average-temperature min-temperature max-temperature
+Example : --filter-counters='^current-temperature$'
 
 =item B<--include-id>
 

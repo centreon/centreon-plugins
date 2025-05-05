@@ -152,6 +152,7 @@ Check memory usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
+Can be : usage free usage-prct free-prct
 Example : --filter-counters='^usage$'
 
 =item B<--warning-free>
