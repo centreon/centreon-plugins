@@ -273,7 +273,9 @@ UninterrupibleSleep
 uniq
 uptime
 --urlpath
+µs
 usage-prct
+usec
 userpass
 --use-ucd
 v1
