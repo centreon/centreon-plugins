@@ -53,14 +53,6 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
 	    },
-        'storagesyncrecalliototalsizebytes' => {
-            'output' => 'Cloud tiering recall',
-            'label'  => 'total-recalls-size',
-            'nlabel' => 'storagesync.recalls.total.size.bytes',
-            'unit'   => 'B',
-            'min'    => '0',
-            'max'    => ''
-	    },
         'storagesyncrecallthroughputbytespersecond' => {
             'output' => 'Cloud tiering recall throughput',
             'label'  => 'throughput-recalls-size',
@@ -159,6 +151,10 @@ Set resource name or ID (required).
 =item B<--resource-group>
 
 Set resource group (required if resource's name is used).
+
+=item B<--filter-metric>
+
+Filter on specific metrics. The Azure format must be used (can be a regexp).
 
 =item B<--warning-*>
 
