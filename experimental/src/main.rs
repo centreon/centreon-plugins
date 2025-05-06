@@ -15,43 +15,13 @@ mod snmp;
 
 use generic::Command;
 use lalrpop_util::lalrpop_mod;
-use log::{debug, info, trace};
+use lexopt::Arg;
+use log::{debug, trace};
 use serde_json::Result;
+use std::collections::HashMap;
 use std::fs;
 
 lalrpop_mod!(grammar);
-
-#[derive(Debug)]
-//#[command(version, about)]
-struct Cli {
-    /// Hostname to operate on
-    //#[arg(long, short = 'H', default_value = "localhost")]
-    hostname: String,
-
-    //#[arg(long, short, default_value_t = 161)]
-    port: u16,
-
-    //#[arg(long, short = 'v', default_value = "2c")]
-    snmp_version: String,
-
-    //#[arg(long, short, default_value = "public")]
-    community: String,
-
-    //#[arg(long, short)]
-    json_conf: String,
-
-    //#[arg(long, short)]
-    warning_core: Option<String>,
-
-    //#[arg(long, short = 'C')]
-    critical_core: Option<String>,
-
-    //#[arg(long, short = 'a')]
-    warning_agregation: Option<String>,
-
-    //#[arg(long, short = 'b')]
-    critical_agregation: Option<String>,
-}
 
 fn json_to_command(file_name: &str) -> Result<Command> {
     // Transform content of the file into a string
@@ -76,7 +46,7 @@ fn main() {
     let mut port = 161;
     let mut snmp_version = "2c".to_string();
     let mut snmp_community = "public".to_string();
-    let mut json = None;
+    let mut cmd: Option<Command> = None;
     loop {
         let arg = parser.next();
         match arg {
@@ -91,8 +61,17 @@ fn main() {
                         trace!("port: {}", port);
                     }
                     Short('j') | Long("json") => {
-                        json = Some(parser.value().unwrap().into_string().unwrap());
+                        let json = Some(parser.value().unwrap().into_string().unwrap());
+                        let json = json.unwrap();
                         trace!("json: {:?}", json);
+                        let res_cmd = json_to_command(&json);
+                        cmd = Some(match res_cmd {
+                            Ok(c) => c,
+                            Err(err) => {
+                                println!("json_to_command error: {:?}", err);
+                                std::process::exit(3);
+                            }
+                        });
                     }
                     Short('v') | Long("snmp-version") => {
                         snmp_version = parser.value().unwrap().into_string().unwrap();
@@ -102,8 +81,34 @@ fn main() {
                         snmp_community = parser.value().unwrap().into_string().unwrap();
                         trace!("snmp_community: {}", snmp_community);
                     }
-                    _ => {
-                        debug!("other unknown argument");
+                    t => {
+                        if let Arg::Long(name) = t {
+                            if name.starts_with("warning-") {
+                                let wmetric = name[8..].to_string();
+                                let value = parser.value().unwrap().into_string().unwrap();
+                                match cmd.as_mut() {
+                                    Some(ref mut cmd) => {
+                                        cmd.add_warning(&wmetric, value);
+                                    }
+                                    None => {
+                                        println!("json is empty");
+                                        std::process::exit(3);
+                                    }
+                                }
+                            } else if name.starts_with("critical-") {
+                                let cmetric = name[9..].to_string();
+                                let value = parser.value().unwrap().into_string().unwrap();
+                                match cmd.as_mut() {
+                                    Some(ref mut cmd) => {
+                                        cmd.add_critical(&cmetric, value);
+                                    }
+                                    None => {
+                                        println!("json is empty");
+                                        std::process::exit(3);
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 None => {
@@ -118,21 +123,14 @@ fn main() {
     }
     let url = format!("{}:{}", hostname, port);
 
-    if json.is_none() {
-        println!("json is empty");
-        std::process::exit(3);
-    }
+    let result = match cmd {
+        Some(ref cmd) => cmd.execute(&url, &snmp_version, &snmp_community),
+        None => {
+            println!("json is empty");
+            std::process::exit(3);
+        }
+    };
 
-    let json = json.unwrap();
-    let cmd = json_to_command(&json);
-    let cmd = cmd.unwrap();
-    //let ext = CommandExt {
-    //    warning_core: cli.warning_core,
-    //    critical_core: cli.critical_core,
-    //    warning_agregation: cli.warning_agregation,
-    //    critical_agregation: cli.critical_agregation,
-    //};
-    let result = cmd.execute(&url, &snmp_version, &snmp_community);
     //println!("{}", result.output);
     //std::process::exit(result.status as i32);
 }
