@@ -152,7 +152,7 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping fantray fan '$fan_id': no including filter match.", debug => 1);
                 next
             }
-            if ($self->{option_results}->{exclude_id} && $fan_id !~ /$self->{option_results}->{exclude_id}/) {
+            if ($self->{option_results}->{exclude_id} && $fan_id =~ /$self->{option_results}->{exclude_id}/) {
                 $self->{output}->output_add(long_msg => "skipping fantray fan '$fan_id': excluding filter match.", debug => 1);
                 next
             }
