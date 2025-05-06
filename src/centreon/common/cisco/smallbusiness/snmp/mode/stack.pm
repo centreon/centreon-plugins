@@ -190,10 +190,21 @@ You can use the following variables: %{connectionStatus}, %{connectionSide}, %{c
 Set critical threshold for member connection status.
 You can use the following variables: %{connectionStatus}, %{connectionSide}, %{connectedMemberUnit}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-members-detected>
 
 Thresholds.
-Can be: 'members-detected', 'member-connected-members'.
+
+=item B<--critical-members-detected>
+
+Thresholds.
+
+=item B<--warning-member-connected-members>
+
+Thresholds.
+
+=item B<--critical-member-connected-members>
+
+Thresholds.
 
 =back
 
