@@ -25,6 +25,7 @@
 	"max": 100
       },
       {
+	"prefix": "{disk.label}",
 	"name": "disk.usage.bytes",
 	"value": "{disk.used} * {disk.allocationUnits}",
 	"uom": "B",
