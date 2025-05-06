@@ -122,7 +122,7 @@ sub manage_selection {
             { oid => $oid_fantrayStatsEntry },
         ]);
 
-    if ($self->{option_results}->{component} eq '.*' || $self->{option_results}->{component} =~ /temperature/i) {
+    if ('temperature' =~ /$self->{option_results}->{component}/) {
         my $result;
         foreach (keys %{$results->{$oid_temperatureStatsEntry}}) {
             next unless /^$mapping->{tempCurrent}->{oid}\.(.*)$/;
@@ -143,7 +143,7 @@ sub manage_selection {
         }
     }
 
-    if ($self->{option_results}->{component} eq '.*' || $self->{option_results}->{component} =~ /fantray/i) {
+    if ('fantray' =~ /$self->{option_results}->{component}/) {
         while (my ($oid, $values) = each %{$results->{$oid_fantrayStatsEntry}}) {
             next unless $oid =~ /^$oid_fantrayStatsEntry\.(\d+)/;
             my $fan_id = $1;
