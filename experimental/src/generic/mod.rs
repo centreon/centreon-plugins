@@ -110,6 +110,34 @@ fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> S
 }
 
 impl Command {
+    pub fn add_warning(&mut self, name: &str, value: String) {
+        if let Some(metric) =
+            self.compute
+                .metrics
+                .iter_mut()
+                .find(|metric| match &metric.threshold_suffix {
+                    Some(suffix) => suffix == name,
+                    None => false,
+                })
+        {
+            metric.warning = Some(value);
+        }
+    }
+
+    pub fn add_critical(&mut self, name: &str, value: String) {
+        if let Some(metric) =
+            self.compute
+                .metrics
+                .iter_mut()
+                .find(|metric| match &metric.threshold_suffix {
+                    Some(suffix) => suffix == name,
+                    None => false,
+                })
+        {
+            metric.critical = Some(value);
+        }
+    }
+
     pub fn execute(
         &self,
         target: &str,
@@ -151,11 +179,28 @@ impl Command {
         let mut my_res = SnmpResult::new(HashMap::new());
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
-            let min = metric.min;
-            let max = metric.max;
             let parser = Parser::new(&collect);
             let value = parser.eval(value).unwrap();
+            let min = if let Some(min_expr) = metric.min_expr.as_ref() {
+                parser.eval(&min_expr).unwrap()
+            } else if let Some(min_value) = metric.min {
+                ExprResult::Number(min_value)
+            } else {
+                ExprResult::Empty
+            };
+            let max = if let Some(max_expr) = metric.max_expr.as_ref() {
+                parser.eval(&max_expr).unwrap()
+            } else if let Some(max_value) = metric.max {
+                ExprResult::Number(max_value)
+            } else {
+                ExprResult::Empty
+            };
 
+            let compute_threshold = |idx: usize, expr: &ExprResult| match &expr {
+                ExprResult::Number(value) => Some(*value),
+                ExprResult::Vector(v) => Some(v[idx]),
+                _ => None,
+            };
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
@@ -177,8 +222,8 @@ impl Command {
                         let m = Perfdata {
                             name,
                             value: *item,
-                            min,
-                            max,
+                            min: compute_threshold(i, &min),
+                            max: compute_threshold(i, &max),
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -198,8 +243,8 @@ impl Command {
                     let m = Perfdata {
                         name,
                         value: *s,
-                        min,
-                        max,
+                        min: compute_threshold(0, &min),
+                        max: compute_threshold(0, &max),
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
