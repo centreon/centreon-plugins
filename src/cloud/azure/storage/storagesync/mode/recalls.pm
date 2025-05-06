@@ -156,17 +156,37 @@ Set resource group (required if resource's name is used).
 
 Filter on specific metrics. The Azure format must be used (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-application-recalls-size>
 
-Warning threshold where '*' can be:
-'successful-recalls', 'application-recalls-size', 
-'recalls-size', 'total-recalls-size', 'throughput-recalls-size'.
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-application-recalls-size>
 
-Critical threshold where '*' can be:
-'successful-recalls', 'application-recalls-size', 'recalls-size', 
-'total-recalls-size', 'throughput-recalls-size'.
+Threshold.
+
+=item B<--warning-recalls-size>
+
+Threshold.
+
+=item B<--critical-recalls-size>
+
+Threshold.
+
+=item B<--warning-successful-recalls>
+
+Threshold.
+
+=item B<--critical-successful-recalls>
+
+Threshold.
+
+=item B<--warning-throughput-recalls-size>
+
+Threshold.
+
+=item B<--critical-throughput-recalls-size>
+
+Threshold.
 
 =back
 
