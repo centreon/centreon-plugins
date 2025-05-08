@@ -1,5 +1,6 @@
 pub mod ast;
 pub mod lexer;
+pub mod threshold;
 
 use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
