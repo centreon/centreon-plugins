@@ -1,7 +1,7 @@
 extern crate serde;
 extern crate serde_json;
 
-use compute::{ast::ExprResult, Compute, Parser};
+use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
 use log::{debug, trace};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
@@ -10,11 +10,13 @@ use std::{collections::HashMap, ops::IndexMut};
 use crate::snmp::SnmpResult;
 
 #[derive(Debug)]
-struct Perfdata {
+struct Perfdata<'p> {
     name: String,
     value: f64,
     min: Option<f64>,
     max: Option<f64>,
+    warning: Option<&'p str>,
+    critical: Option<&'p str>,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -219,11 +221,22 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
+                        let status = compute_status(*item, &metric.warning, &metric.critical);
+                        let w = match metric.warning {
+                            Some(ref w) => Some(w.as_str()),
+                            None => None,
+                        };
+                        let c = match metric.critical {
+                            Some(ref c) => Some(c.as_str()),
+                            None => None,
+                        };
                         let m = Perfdata {
                             name,
                             value: *item,
                             min: compute_threshold(i, &min),
                             max: compute_threshold(i, &max),
+                            warning: w,
+                            critical: c,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -240,11 +253,22 @@ impl Command {
                             res
                         }
                     };
+                    let status = compute_status(*s, &metric.warning, &metric.critical);
+                    let w = match metric.warning {
+                        Some(ref w) => Some(w.as_str()),
+                        None => None,
+                    };
+                    let c = match metric.critical {
+                        Some(ref c) => Some(c.as_str()),
+                        None => None,
+                    };
                     let m = Perfdata {
                         name,
                         value: *s,
                         min: compute_threshold(0, &min),
                         max: compute_threshold(0, &max),
+                        warning: w,
+                        critical: c,
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
@@ -304,11 +328,22 @@ impl Command {
                                     res
                                 }
                             };
+                            let status = compute_status(item, &metric.warning, &metric.critical);
+                            let w = match metric.warning {
+                                Some(ref w) => Some(w.as_str()),
+                                None => None,
+                            };
+                            let c = match metric.critical {
+                                Some(ref c) => Some(c.as_str()),
+                                None => None,
+                            };
                             let m = Perfdata {
                                 name,
                                 value: item,
                                 min,
                                 max,
+                                warning: w,
+                                critical: c,
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -316,11 +351,22 @@ impl Command {
                     }
                     ExprResult::Number(s) => {
                         let name = &metric.name;
+                        let status = compute_status(s, &metric.warning, &metric.critical);
+                        let w = match metric.warning {
+                            Some(ref w) => Some(w.as_str()),
+                            None => None,
+                        };
+                        let c = match metric.critical {
+                            Some(ref c) => Some(c.as_str()),
+                            None => None,
+                        };
                         let m = Perfdata {
                             name: name.to_string(),
                             value: s,
                             min,
                             max,
+                            warning: w,
+                            critical: c,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
