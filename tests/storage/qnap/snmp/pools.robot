@@ -16,7 +16,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 Pools ${tc}
-    [Tags]    storage    qnap    hardware    
+    [Tags]    storage    qnap    pools    
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
