@@ -10,7 +10,11 @@ pub enum Error {
     ))]
     NegativeSimpleThreshold { value: f64 },
 
-    #[snafu(display("Threshold: The start value {} must be less than the end value {}", start, end))]
+    #[snafu(display(
+        "Threshold: The start value {} must be less than the end value {}",
+        start,
+        end
+    ))]
     BadThresholdRange { start: f64, end: f64 },
 
     #[snafu(display("Threshold: Unable to read configuration from {}", path.display()))]
@@ -23,7 +27,7 @@ pub enum Error {
     WriteResult { source: io::Error, path: PathBuf },
 }
 
-type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 fn process_data() -> Result<()> {
     let path = "config.toml";

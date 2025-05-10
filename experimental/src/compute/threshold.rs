@@ -100,12 +100,12 @@ impl Threshold {
         }
     }
 
-    fn in_alert(&self, value: f64) -> bool {
+    pub fn in_alert(&self, value: f64) -> bool {
         if value < self.start || value > self.end {
             if self.negation {
                 return false;
             } else {
-            return true;
+                return true;
             }
         }
         if self.negation {
@@ -234,8 +234,10 @@ mod Test {
                 panic!("The threshold '{}' should not be valid", expr);
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -249,8 +251,10 @@ mod Test {
                 panic!("The threshold '{}' should not be valid", expr);
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -264,8 +268,10 @@ mod Test {
                 panic!("The threshold '{}' should not be valid", expr);
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -279,8 +285,10 @@ mod Test {
                 panic!("The threshold '{}' should not be valid", expr);
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -327,8 +335,10 @@ mod Test {
                 panic!("We should not have a threshold here");
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -342,8 +352,10 @@ mod Test {
                 panic!("We should not have a threshold here");
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
@@ -357,8 +369,10 @@ mod Test {
                 panic!("We should not have a threshold here");
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'"
+                );
             }
         }
     }
