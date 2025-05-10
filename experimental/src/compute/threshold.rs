@@ -22,6 +22,9 @@ impl Threshold {
                 match c {
                     '0'..='9' => continue,
                     '.' | '-' | '+' | 'e' | 'E' => continue,
+                    '@' => {
+                        return Err(Error::BadThreshold);
+                    }
                     _ => {
                         in_number = false;
                         value[current] = match expr[start..idx].parse() {
@@ -36,6 +39,9 @@ impl Threshold {
                 match c {
                     '@' => {
                         negation += 1;
+                        if in_range > 0 || current > 0 {
+                            return Err(Error::BadThreshold);
+                        }
                     }
                     ' ' => continue,
                     '-' => {
@@ -290,6 +296,69 @@ mod Test {
             Err(err) => {
                 assert_eq!(err.to_string(),
                     "Threshold: This syntax is a shortcut of '0:-12', so -12 must be greater than 0.");
+            }
+        }
+    }
+
+    #[test]
+    fn test_threshold_negation() {
+        let expr = "@2:12";
+        let threshold = Threshold::parse(expr);
+        match threshold {
+            Ok(t) => {
+                assert!(!t.in_alert(1_f64));
+                assert!(t.in_alert(2_f64));
+                assert!(t.in_alert(3_f64));
+                assert!(t.in_alert(12_f64));
+                assert!(!t.in_alert(13_f64));
+            }
+            Err(err) => {
+                panic!("We should not have this error here: {}", err);
+            }
+        }
+    }
+
+    #[test]
+    fn test_threshold_bad_negation() {
+        let expr = "2@:12";
+        let threshold = Threshold::parse(expr);
+        match threshold {
+            Ok(_) => {
+                panic!("We should not have a threshold here");
+            }
+            Err(err) => {
+                assert_eq!(err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'");
+            }
+        }
+    }
+
+    #[test]
+    fn test_threshold_bad_negation1() {
+        let expr = "2:@12";
+        let threshold = Threshold::parse(expr);
+        match threshold {
+            Ok(_) => {
+                panic!("We should not have a threshold here");
+            }
+            Err(err) => {
+                assert_eq!(err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'");
+            }
+        }
+    }
+
+    #[test]
+    fn test_threshold_bad_negation2() {
+        let expr = "@@2:12";
+        let threshold = Threshold::parse(expr);
+        match threshold {
+            Ok(_) => {
+                panic!("We should not have a threshold here");
+            }
+            Err(err) => {
+                assert_eq!(err.to_string(),
+                    "Threshold: Threshold not of the form '[@]start:end'");
             }
         }
     }
