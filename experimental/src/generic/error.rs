@@ -4,17 +4,20 @@ use std::{fs, io, path::PathBuf};
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display(
-        "This syntax is a shortcut of '0:{}', so {} must be greater than 0.",
+        "Threshold: This syntax is a shortcut of '0:{}', so {} must be greater than 0.",
         value,
         value
     ))]
     NegativeSimpleThreshold { value: f64 },
 
-    #[snafu(display("The start value {} must be less than the end value {}", start, end))]
+    #[snafu(display("Threshold: The start value {} must be less than the end value {}", start, end))]
     BadThresholdRange { start: f64, end: f64 },
 
-    #[snafu(display("Unable to read configuration from {}", path.display()))]
+    #[snafu(display("Threshold: Unable to read configuration from {}", path.display()))]
     ReadConfiguration { source: io::Error, path: PathBuf },
+
+    #[snafu(display("Threshold: Threshold not of the form '[@]start:end'"))]
+    BadThreshold,
 
     #[snafu(display("Unable to write result to {}", path.display()))]
     WriteResult { source: io::Error, path: PathBuf },
