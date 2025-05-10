@@ -3,6 +3,7 @@ extern crate serde_json;
 
 pub mod error;
 
+use self::error::Result;
 use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
 use log::{debug, trace};
 use serde::Deserialize;
@@ -19,9 +20,10 @@ struct Perfdata<'p> {
     max: Option<f64>,
     warning: Option<&'p str>,
     critical: Option<&'p str>,
+    status: Status,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Status {
     Ok = 0,
     Warning = 1,
@@ -97,20 +99,20 @@ pub struct CommandExt {
     pub critical_agregation: Option<String>,
 }
 
-fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> Status {
+fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
     if let Some(c) = crit {
-        let crit = c.parse().unwrap();
-        if value > crit {
-            return Status::Critical;
+        let crit = Threshold::parse(c)?;
+        if crit.in_alert(value) {
+            return Ok(Status::Critical);
         }
     }
     if let Some(w) = warn {
-        let warn = w.parse().unwrap();
-        if value > warn {
-            return Status::Warning;
+        let warn = Threshold::parse(w)?;
+        if warn.in_alert(value) {
+            return Ok(Status::Warning);
         }
     }
-    Status::Ok
+    Ok(Status::Ok)
 }
 
 impl Command {
@@ -124,7 +126,20 @@ impl Command {
                     None => false,
                 })
         {
+            debug!("Adding warning to metric {}", metric.name);
             metric.warning = Some(value);
+        } else if let Some(aggregations) = self.compute.aggregations.as_mut() {
+            if let Some(metric) =
+                aggregations
+                    .iter_mut()
+                    .find(|metric| match &metric.threshold_suffix {
+                        Some(suffix) => suffix == name,
+                        None => false,
+                    })
+            {
+                debug!("Adding warning to aggregation metric {}", metric.name);
+                metric.warning = Some(value);
+            }
         }
     }
 
@@ -139,6 +154,19 @@ impl Command {
                 })
         {
             metric.critical = Some(value);
+            debug!("Adding critical to metric {}", metric.name);
+        } else if let Some(aggregations) = self.compute.aggregations.as_mut() {
+            if let Some(metric) =
+                aggregations
+                    .iter_mut()
+                    .find(|metric| match &metric.threshold_suffix {
+                        Some(suffix) => suffix == name,
+                        None => false,
+                    })
+            {
+                debug!("Adding critical to aggregation metric {}", metric.name);
+                metric.critical = Some(value);
+            }
         }
     }
 
@@ -239,6 +267,7 @@ impl Command {
                             max: compute_threshold(i, &max),
                             warning: w,
                             critical: c,
+                            status: status.unwrap(),
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -271,6 +300,7 @@ impl Command {
                         max: compute_threshold(0, &max),
                         warning: w,
                         critical: c,
+                        status: status.unwrap(),
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
@@ -346,6 +376,7 @@ impl Command {
                                 max,
                                 warning: w,
                                 critical: c,
+                                status: status.unwrap(),
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -369,6 +400,7 @@ impl Command {
                             max,
                             warning: w,
                             critical: c,
+                            status: status.unwrap(),
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
