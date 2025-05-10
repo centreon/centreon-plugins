@@ -8,6 +8,7 @@ extern crate rasn_snmp;
 extern crate regex;
 extern crate serde;
 extern crate serde_json;
+extern crate snafu;
 
 mod compute;
 mod generic;
@@ -18,7 +19,6 @@ use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::{debug, trace};
 use serde_json::Result;
-use std::collections::HashMap;
 use std::fs;
 
 lalrpop_mod!(grammar);
