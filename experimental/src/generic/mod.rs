@@ -1,6 +1,8 @@
 extern crate serde;
 extern crate serde_json;
 
+pub mod error;
+
 use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
 use log::{debug, trace};
 use serde::Deserialize;
