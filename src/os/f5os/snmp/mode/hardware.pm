@@ -242,11 +242,11 @@ Threshold in C.
 
 Threshold in C.
 
-=item B<--warning-fantray-speed>
+=item B<--warning-fantray-fan-speed>
 
 Threshold in rpm.
 
-=item B<--critical-fantray-speed>
+=item B<--critical-fantray-fan-speed>
 
 Threshold in rpm.
 
