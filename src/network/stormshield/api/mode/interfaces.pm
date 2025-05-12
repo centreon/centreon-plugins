@@ -234,7 +234,7 @@ sub set_counters {
             label => 'status',
             type => 2,
             filter => 'add_status',
-            critical_default => "%{state} eq 'enabled' and %{plugged} eq 'unplugged'", set => {
+            critical_default => "%{state} eq 'down'", set => {
                 key_values => [ { name => 'state' }, { name => 'plugged' }, { name => 'real_name' }, { name => 'user_name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -344,8 +344,8 @@ sub check_options {
     }
 }
 
-my $map_state = { 0 => 'disabled', 1 => 'enabled' };
-my $map_plugged = { 0 => 'unplugged', 1 => 'plugged' };
+my $map_state = { 0 => 'down', 1 => 'up' };
+my $map_plugged = { 0 => 'passive', 1 => 'active' };
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -444,7 +444,7 @@ You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: "%{state} eq 'enabled' and %{plugged} eq 'unplugged'")
+Define the conditions to match for the status to be CRITICAL (default: "%{state} eq 'down'")
 You can use the following variables: %{state}, %{plugged}, %{user_name}, %{real_name}
 
 =item B<--warning-*> B<--critical-*>

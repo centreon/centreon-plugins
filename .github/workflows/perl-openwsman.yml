@@ -22,7 +22,9 @@ jobs:
 
   package:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     strategy:
       fail-fast: false
@@ -53,10 +55,15 @@ jobs:
             package_extension: deb
             runner: ubuntu-22.04
             arch: amd64
+          - image: packaging-plugins-noble
+            distrib: noble
+            package_extension: deb
+            runner: ubuntu-22.04
+            arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
-            runner: ["self-hosted", "collect-arm64"]
+            runner: centreon-collect-arm64
             arch: arm64
 
     runs-on: ${{ matrix.runner }}
@@ -206,7 +213,7 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-      - uses: actions/cache/save@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      - uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.${{ matrix.package_extension }}
           key: cache-${{ github.sha }}-${{ matrix.package_extension }}-wsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
@@ -214,6 +221,7 @@ jobs:
   deliver-packages:
     needs: [get-environment, package]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -241,6 +249,10 @@ jobs:
           - distrib: jammy
             package_extension: deb
             arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: amd64
+
 
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
@@ -257,3 +269,12 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

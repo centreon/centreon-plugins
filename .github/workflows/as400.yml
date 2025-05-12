@@ -20,10 +20,13 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: as400/packaging/centreon-as400-daemon.yaml
+      version_file: as400/connector.as400/pom.xml
 
   package:
     needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -44,7 +47,9 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
-
+          - package_extension: deb
+            image: packaging-plugins-java-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -99,7 +104,7 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Save to cache
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
@@ -107,6 +112,7 @@ jobs:
   deliver-packages:
     needs: [get-environment, package]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -126,6 +132,8 @@ jobs:
             package_extension: deb
           - distrib: jammy
             package_extension: deb
+          - distrib: noble
+            package_extension: deb
 
     name: deliver ${{ matrix.distrib }}
     steps:
@@ -141,3 +149,12 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

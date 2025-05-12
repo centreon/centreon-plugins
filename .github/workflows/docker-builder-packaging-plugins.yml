@@ -18,7 +18,14 @@ on:
       - ".github/docker/packaging/*"
 
 jobs:
-  create-and-push-docker:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  dockerize:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +45,7 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
-          - runner: ["self-hosted", "collect-arm64"]
+          - runner: centreon-collect-arm64
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye-arm64
           - runner: ubuntu-22.04
@@ -56,6 +63,12 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-java-jammy
             image: packaging-plugins-java-jammy
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-noble
+            image: packaging-plugins-noble
+          - runner: ubuntu-22.04
+            dockerfile: packaging-plugins-java-noble
+            image: packaging-plugins-java-noble
 
     runs-on: ${{ matrix.runner }}
 
@@ -77,9 +90,9 @@ jobs:
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
-      - uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
-      - uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+      - uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
         with:
           file: .github/docker/packaging/Dockerfile.${{ matrix.dockerfile }}
           context: .
@@ -87,3 +100,12 @@ jobs:
           pull: true
           push: true
           tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+
+  set-skip-label:
+    needs: [get-environment, dockerize]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

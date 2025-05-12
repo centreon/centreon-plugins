@@ -15,7 +15,7 @@ ${CMD}                          ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtr
 
 
 *** Test Cases ***
-AWS CloudTrail count events
+AWS CloudTrail count events ${tc}
     [Documentation]    Check AWS CloudTrail count events
     [Tags]    cloud    aws    cloudtrail
 
