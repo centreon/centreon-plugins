@@ -87,6 +87,7 @@ overrides:
   rpm:
     depends:
       - perl(Crypt::OpenSSL::AES)
+      - perl(Crypt::SSLeay)
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
       - perl(LWP::Protocol::https)
@@ -94,10 +95,10 @@ overrides:
       - perl(ZMQ::Constants)
       - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
-      - perl-VMware-vSphere >= 5.1
   deb:
     depends:
       - libcrypt-openssl-aes-perl
+      - libcrypt-ssleay-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
       - liblwp-protocol-https-perl
@@ -105,7 +106,6 @@ overrides:
       - libtext-template-perl
       - libzmq-constants-perl
       - libzmq-libzmq4-perl
-      - perl-vmware-vsphere
 
 rpm:
   signature:
