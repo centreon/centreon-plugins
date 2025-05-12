@@ -188,7 +188,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'temperature', 'fantray'.
+Can be: C<temperature>, C<fantray>.
 
 =item B<--no-component>
 
@@ -197,8 +197,8 @@ Define the expected status if no components are found (default: critical).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Can be : fantray-fan-speed current-temperature average-temperature min-temperature max-temperature
-Example : --filter-counters='^current-temperature$'
+Can be : C<fantray-fan-speed> C<current-temperature> C<average-temperature> C<min-temperature> C<max-temperature>
+Example : C<--filter-counters='^current-temperature$'>
 
 =item B<--include-id>
 
@@ -242,11 +242,11 @@ Threshold in C.
 
 Threshold in C.
 
-=item B<--warning-fantray-speed>
+=item B<--warning-fantray-fan-speed>
 
 Threshold in rpm.
 
-=item B<--critical-fantray-speed>
+=item B<--critical-fantray-fan-speed>
 
 Threshold in rpm.
 
