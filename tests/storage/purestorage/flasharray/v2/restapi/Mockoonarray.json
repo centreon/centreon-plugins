@@ -1,0 +1,213 @@
+{
+  "uuid": "c9b3b02f-191c-4d8a-b857-a8348adb19ce",
+  "lastMigration": 32,
+  "name": "Mockoonarray",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "a0d08805-6167-49f6-9243-38f13da8eefc",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/2.5/login",
+      "responses": [
+        {
+          "uuid": "31fd12ed-865b-469b-9047-96ed7f0b0cc6",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "x-auth-token",
+              "value": "token"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "691523da-693b-4c88-8835-8a46815f7c07",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/2.5/arrays/space",
+      "responses": [
+        {
+          "uuid": "c91a64e2-6228-4554-b6d2-3101fc98aa11",
+          "body": "{\r\n  \"more_items_remaining\": false,\r\n  \"total_item_count\": 0,\r\n  \"continuation_token\": \"string\",\r\n  \"errors\": [\r\n    {\r\n      \"context\": \"<object_name>\",\r\n      \"message\": \"Object does not exist.\",\r\n      \"location_context\": {\r\n        \"id\": \"string\",\r\n        \"name\": \"string\",\r\n        \"resource_type\": \"string\"\r\n      }\r\n    }\r\n  ],\r\n  \"items\": [\r\n    {\r\n      \"id\": \"string\",\r\n      \"name\": \"array-1\",\r\n      \"capacity\": 10995116277760,\r\n      \"parity\": 0.99,\r\n      \"space\": {\r\n        \"data_reduction\": 0,\r\n        \"shared\": 111863360624,\r\n        \"snapshots\": 0,\r\n        \"system\": 0,\r\n        \"thin_provisioning\": 0,\r\n        \"total_physical\": 0,\r\n        \"total_provisioned\": 19937690345472,\r\n        \"total_reduction\": 0,\r\n        \"unique\": 0,\r\n        \"virtual\": 0,\r\n        \"used_provisioned\": 19937690345472,\r\n        \"total_used\": 0,\r\n        \"shared_effective\": 0,\r\n        \"snapshots_effective\": 0,\r\n        \"unique_effective\": 0,\r\n        \"total_effective\": 0,\r\n        \"replication\": 0,\r\n        \"footprint\": 0\r\n      },\r\n      \"time\": 0,\r\n      \"context\": {\r\n        \"id\": \"string\",\r\n        \"name\": \"string\"\r\n      }\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Api-token",
+              "value": "token"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "",
+              "value": "300000",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "08407b06-7357-4373-a47f-4384b0ae794c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/2.5/arrays/performance",
+      "responses": [
+        {
+          "uuid": "5d21658f-d789-48a5-8616-ea9dbf784443",
+          "body": "{\r\n   \"continuation_token\":null,\r\n   \"items\":[\r\n      {\r\n         \"san_usec_per_mirrored_write_op\":0,\r\n         \"queue_usec_per_mirrored_write_op\":0,\r\n         \"qos_rate_limit_usec_per_mirrored_write_op\":0,\r\n         \"service_usec_per_mirrored_write_op\":0,\r\n         \"bytes_per_mirrored_write\":0,\r\n         \"mirrored_write_bytes_per_sec\":0,\r\n         \"mirrored_writes_per_sec\":0,\r\n         \"usec_per_mirrored_write_op\":0,\r\n         \"time\":1728906220000,\r\n         \"name\":\"array-1\",\r\n         \"id\":\"ad78f444-4841-4814-3a35-4c3a650dba10\",\r\n         \"bytes_per_read\":0,\r\n         \"bytes_per_write\":0,\r\n         \"bytes_per_op\":0,\r\n         \"service_usec_per_read_op_cache_reduction\":null,\r\n         \"read_bytes_per_sec\":96748,\r\n         \"write_bytes_per_sec\":45754,\r\n         \"usec_per_read_op\":171,\r\n         \"usec_per_write_op\":190,\r\n         \"reads_per_sec\":6,\r\n         \"writes_per_sec\":2,\r\n         \"queue_usec_per_read_op\":2,\r\n         \"queue_usec_per_write_op\":2,\r\n         \"qos_rate_limit_usec_per_read_op\":0,\r\n         \"qos_rate_limit_usec_per_write_op\":0,\r\n         \"san_usec_per_read_op\":30,\r\n         \"san_usec_per_write_op\":51,\r\n         \"service_usec_per_read_op\":169,\r\n         \"service_usec_per_write_op\":188\r\n      }\r\n   ],\r\n   \"more_items_remaining\":null,\r\n   \"total\":[\r\n   ],\r\n   \"total_item_count\":null\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Api-token",
+              "value": "token"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "",
+              "value": "300000",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "a0d08805-6167-49f6-9243-38f13da8eefc"
+    },
+    {
+      "type": "route",
+      "uuid": "691523da-693b-4c88-8835-8a46815f7c07"
+    },
+    {
+      "type": "route",
+      "uuid": "08407b06-7357-4373-a47f-4384b0ae794c"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

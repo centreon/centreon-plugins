@@ -144,6 +144,10 @@ Set resource name or ID (required).
 
 Set resource group (required if resource's name is used).
 
+=item B<--filter-metric>
+
+Filter on specific metrics. The Azure format must be used (can be a regexp).
+
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
