@@ -254,7 +254,7 @@ You can use the following variables: %{ikeStatus}, %{name}
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{ikeStatus} =~ /connecting/'.
+Define the conditions to match for the status to be WARNING (default: '%{ikeStatus} =~ /connecting/').
 You can use the following variables: %{ikeStatus}, %{name}
 
 =item B<--critical-status>

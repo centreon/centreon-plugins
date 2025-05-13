@@ -53,14 +53,6 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
 	    },
-        'storagesyncrecalliototalsizebytes' => {
-            'output' => 'Cloud tiering recall',
-            'label'  => 'total-recalls-size',
-            'nlabel' => 'storagesync.recalls.total.size.bytes',
-            'unit'   => 'B',
-            'min'    => '0',
-            'max'    => ''
-	    },
         'storagesyncrecallthroughputbytespersecond' => {
             'output' => 'Cloud tiering recall throughput',
             'label'  => 'throughput-recalls-size',
@@ -160,17 +152,41 @@ Set resource name or ID (required).
 
 Set resource group (required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--filter-metric>
 
-Warning threshold where '*' can be:
-'successful-recalls', 'application-recalls-size', 
-'recalls-size', 'total-recalls-size', 'throughput-recalls-size'.
+Filter on specific metrics. The Azure format must be used (can be a regexp).
 
-=item B<--critical-*>
+=item B<--warning-application-recalls-size>
 
-Critical threshold where '*' can be:
-'successful-recalls', 'application-recalls-size', 'recalls-size', 
-'total-recalls-size', 'throughput-recalls-size'.
+Threshold.
+
+=item B<--critical-application-recalls-size>
+
+Threshold.
+
+=item B<--warning-recalls-size>
+
+Threshold.
+
+=item B<--critical-recalls-size>
+
+Threshold.
+
+=item B<--warning-successful-recalls>
+
+Threshold.
+
+=item B<--critical-successful-recalls>
+
+Threshold.
+
+=item B<--warning-throughput-recalls-size>
+
+Threshold.
+
+=item B<--critical-throughput-recalls-size>
+
+Threshold.
 
 =back
 

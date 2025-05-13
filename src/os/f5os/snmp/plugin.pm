@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::smallbusiness::standard::snmp::plugin;
+package os::f5os::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,17 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'                  => 'centreon::common::cisco::smallbusiness::snmp::mode::cpu',
-        'environment'          => 'centreon::common::cisco::smallbusiness::snmp::mode::environment',
-        'interfaces'           => 'snmp_standard::mode::interfaces',
-        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
-        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
-        'stack'                => 'centreon::common::cisco::smallbusiness::snmp::mode::stack',
-        'uptime'               => 'snmp_standard::mode::uptime',
-    );
+    $self->{modes} = {
+        'cpu-usage'            => 'os::f5os::snmp::mode::cpuusage',
+        'hardware'             => 'os::f5os::snmp::mode::hardware',
+        'memory'               => 'os::f5os::snmp::mode::memory',
+    };
 
     return $self;
 }
@@ -50,6 +44,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco SB series switches in SNMP.
+Check F5OS in SNMP.
+Please use the SNMP F5OS plugin for system checks (CPU, memory, hardware, ...).
 
 =cut
