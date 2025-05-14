@@ -875,6 +875,15 @@ Executes a command on Unix and returns the output.
 
 =item * C<timeout> - Timeout for the command execution.
 
+=item * C<wait_exit> - bool.
+
+=item * C<redirect_stderr> - bool.
+
+=item * C<sudo> - bool prepend sudo to the command executed.
+
+=item * C<no_shell_interpretation> - bool don't use sh interpolation on command executed
+
+
 =back
 
 =back
