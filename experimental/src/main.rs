@@ -14,30 +14,32 @@ mod compute;
 mod generic;
 mod snmp;
 
+use generic::error::*;
 use generic::Command;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::{debug, trace};
-use serde_json::Result;
+use snafu::ResultExt;
 use std::fs;
 
 lalrpop_mod!(grammar);
 
-fn json_to_command(file_name: &str) -> Result<Command> {
+fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
-    let contents = match fs::read_to_string(file_name) {
-        Ok(ret) => ret,
-        Err(err) => {
-            println!("erreur: {}", err);
-            std::process::exit(3);
-        }
-    };
+    let contents = fs::read_to_string(file_name).context(JsonReadSnafu { path: file_name })?;
 
-    let module: Result<Command> = serde_json::from_str(&contents.as_str());
-    module
+    let content = contents.as_str();
+
+    let module: serde_json::Result<Command> = serde_json::from_str(content);
+    match module {
+        Ok(c) => Ok(c),
+        Err(err) => Err(Error::JsonParse {
+            message: err.to_string(),
+        }),
+    }
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     env_logger::init();
 
     use lexopt::prelude::*;
@@ -64,14 +66,7 @@ fn main() {
                         let json = Some(parser.value().unwrap().into_string().unwrap());
                         let json = json.unwrap();
                         trace!("json: {:?}", json);
-                        let res_cmd = json_to_command(&json);
-                        cmd = Some(match res_cmd {
-                            Ok(c) => c,
-                            Err(err) => {
-                                println!("json_to_command error: {:?}", err);
-                                std::process::exit(3);
-                            }
-                        });
+                        cmd = Some(json_to_command(&json)?);
                     }
                     Short('v') | Long("snmp-version") => {
                         snmp_version = parser.value().unwrap().into_string().unwrap();
@@ -124,7 +119,7 @@ fn main() {
     let url = format!("{}:{}", hostname, port);
 
     let result = match cmd {
-        Some(ref cmd) => cmd.execute(&url, &snmp_version, &snmp_community),
+        Some(ref cmd) => cmd.execute(&url, &snmp_version, &snmp_community)?,
         None => {
             println!("json is empty");
             std::process::exit(3);
@@ -133,4 +128,5 @@ fn main() {
 
     //println!("{}", result.output);
     //std::process::exit(result.status as i32);
+    Ok(())
 }
