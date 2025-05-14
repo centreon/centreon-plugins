@@ -177,15 +177,27 @@ sub unix_execute {
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
-        $cmd .= $options{command} . ' ' if (defined($options{command}));
-        $cmd .= $options{command_options} if (defined($options{command_options}));
+        $cmd .= $options{command} if (defined($options{command}));
 
-        ($lerror, $stdout, $exit_code) = backtick(
-            command => $cmd,
-            timeout => $options{options}->{timeout},
-            wait_exit => $wait_exit,
-            redirect_stderr => $redirect_stderr
-        );
+        if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
+            my @args = split(' ',$options{command_options});
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $cmd,
+                arguments       => \@args,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
+        else {
+            $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $cmd,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
     }
 
     if (defined($options{options}->{show_output}) && 
