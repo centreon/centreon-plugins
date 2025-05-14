@@ -1,7 +1,9 @@
+use serde_json::Error as JsonError;
 use snafu::prelude::*;
-use std::{fs, io, path::PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Snafu)]
+#[snafu(visibility(pub))]
 pub enum Error {
     #[snafu(display(
         "Threshold: This syntax is a shortcut of '0:{}', so {} must be greater than 0.",
@@ -17,26 +19,17 @@ pub enum Error {
     ))]
     BadThresholdRange { start: f64, end: f64 },
 
-    #[snafu(display("Threshold: Unable to read configuration from {}", path.display()))]
-    ReadConfiguration { source: io::Error, path: PathBuf },
-
-    #[snafu(display("Threshold: Threshold not of the form '[@]start:end'"))]
+    #[snafu(display("Threshold: The threshold syntax must follow '[@]start:end'"))]
     BadThreshold,
 
-    #[snafu(display("Unable to write result to {}", path.display()))]
-    WriteResult { source: io::Error, path: PathBuf },
+    #[snafu(display("Json: Failed to parse JSON: {}", message))]
+    JsonParse { message: String },
+
+    #[snafu(display("Json: Unable to read the JSON file '{}'", path.display()))]
+    JsonRead {
+        source: std::io::Error,
+        path: PathBuf,
+    },
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-fn process_data() -> Result<()> {
-    let path = "config.toml";
-    let configuration = fs::read_to_string(path).context(ReadConfigurationSnafu { path })?;
-    let path = unpack_config(&configuration);
-    fs::write(&path, b"My complex calculation").context(WriteResultSnafu { path })?;
-    Ok(())
-}
-
-fn unpack_config(data: &str) -> &str {
-    "/some/path/that/does/not/exist"
-}

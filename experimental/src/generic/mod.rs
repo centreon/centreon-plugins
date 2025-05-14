@@ -176,7 +176,7 @@ impl Command {
         version: &str,
         community: &str,
         //ext: &CommandExt,
-    ) -> CmdResult {
+    ) -> Result<CmdResult> {
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
         let mut collect = Vec::new();
@@ -251,7 +251,7 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        let status = compute_status(*item, &metric.warning, &metric.critical);
+                        let status = compute_status(*item, &metric.warning, &metric.critical)?;
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
                             None => None,
@@ -267,7 +267,7 @@ impl Command {
                             max: compute_threshold(i, &max),
                             warning: w,
                             critical: c,
-                            status: status.unwrap(),
+                            status,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -284,7 +284,7 @@ impl Command {
                             res
                         }
                     };
-                    let status = compute_status(*s, &metric.warning, &metric.critical);
+                    let status = compute_status(*s, &metric.warning, &metric.critical)?;
                     let w = match metric.warning {
                         Some(ref w) => Some(w.as_str()),
                         None => None,
@@ -300,7 +300,7 @@ impl Command {
                         max: compute_threshold(0, &max),
                         warning: w,
                         critical: c,
-                        status: status.unwrap(),
+                        status,
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
@@ -360,7 +360,7 @@ impl Command {
                                     res
                                 }
                             };
-                            let status = compute_status(item, &metric.warning, &metric.critical);
+                            let status = compute_status(item, &metric.warning, &metric.critical)?;
                             let w = match metric.warning {
                                 Some(ref w) => Some(w.as_str()),
                                 None => None,
@@ -376,7 +376,7 @@ impl Command {
                                 max,
                                 warning: w,
                                 critical: c,
-                                status: status.unwrap(),
+                                status,
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -384,7 +384,7 @@ impl Command {
                     }
                     ExprResult::Number(s) => {
                         let name = &metric.name;
-                        let status = compute_status(s, &metric.warning, &metric.critical);
+                        let status = compute_status(s, &metric.warning, &metric.critical)?;
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
                             None => None,
@@ -400,7 +400,7 @@ impl Command {
                             max,
                             warning: w,
                             critical: c,
-                            status: status.unwrap(),
+                            status,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -412,9 +412,9 @@ impl Command {
 
         trace!("collect: {:#?}", collect);
         println!("metrics: {:#?}", metrics);
-        CmdResult {
+        Ok(CmdResult {
             status: Status::Unknown,
             output: "No result".to_string(),
-        }
+        })
     }
 }
