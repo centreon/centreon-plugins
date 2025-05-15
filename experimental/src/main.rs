@@ -83,7 +83,11 @@ fn main() -> Result<(), Error> {
                                 let value = parser.value().unwrap().into_string().unwrap();
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
-                                        cmd.add_warning(&wmetric, value);
+                                        if (!value.is_empty()) {
+                                            cmd.add_warning(&wmetric, value);
+                                        } else {
+                                            trace!("Warning metric '{}' is empty", wmetric);
+                                        }
                                     }
                                     None => {
                                         println!("json is empty");
@@ -95,7 +99,11 @@ fn main() -> Result<(), Error> {
                                 let value = parser.value().unwrap().into_string().unwrap();
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
-                                        cmd.add_critical(&cmetric, value);
+                                        if (!value.is_empty()) {
+                                            cmd.add_critical(&cmetric, value);
+                                        } else {
+                                            trace!("Critical metric '{}' is empty", cmetric);
+                                        }
                                     }
                                     None => {
                                         println!("json is empty");
