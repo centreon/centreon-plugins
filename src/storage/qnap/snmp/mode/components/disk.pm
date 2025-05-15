@@ -24,41 +24,48 @@ use strict;
 use warnings;
 
 my $map_status_disk = {
-    0 => 'ready',
+    0    => 'ready',
     '-5' => 'noDisk',
     '-6' => 'invalid',
     '-9' => 'rwError',
     '-4' => 'unknown'
 };
 my $map_smartinfo = {
-    2 => 'abnormal',
-    1 => 'warning',
-    0 => 'good',
+    2  => 'abnormal',
+    1  => 'warning',
+    0  => 'good',
     -1 => 'error'
 };
 
 my $mapping = {
     legacy => {
-        description => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' }, # hdDescr
-        temperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' }, # hdTemperature ("40 C/104 F")
-        status      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }, # HdStatus
-        smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }  # HdSmartInfo
+        description => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' },# hdDescr
+        temperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' },# hdTemperature ("40 C/104 F")
+        status      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk },# HdStatus
+        smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }# HdSmartInfo
     },
-    qts => {
-        description => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.2' }, # diskID
-        status      => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.7' }, # diskStatus
-        temperature => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.8' } # diskTemperature
+    qts    => {
+        description => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.2' },# diskID
+        status      => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.7' },# diskStatus
+        temperature => { oid => '.1.3.6.1.4.1.55062.1.10.2.1.8' }# diskTemperature
     },
-    ex => {
-        description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.2' }, # diskID
-        status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.5', map => $map_smartinfo }, # diskSmartInfo
-        temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.6' } # diskTemperture
+    quts   => {
+        description => { oid => '.1.3.6.1.4.1.55062.2.10.2.1.2' },# diskID
+        model       => { oid => '.1.3.6.1.4.1.55062.2.10.2.1.4' },# diskModel
+        serial      => { oid => '.1.3.6.1.4.1.55062.2.10.2.1.5' },# diskSerial
+        status      => { oid => '.1.3.6.1.4.1.55062.2.10.2.1.7' },# diskStatus
+        temperature => { oid => '.1.3.6.1.4.1.55062.2.10.2.1.8' }# diskTemperature
     },
-    es => {
-        description => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.2' }, # es-HdDescr
-        temperature => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.3' }, # es-HdTemperature ("26 C/78.8 F")
-        status      => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.4' }, # es-HdStatus
-        smartinfo   => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.7' }  # es-HdSmartInfo
+    ex     => {
+        description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.2' },# diskID
+        status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.5', map => $map_smartinfo },# diskSmartInfo
+        temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.6' }# diskTemperture
+    },
+    es     => {
+        description => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.2' },# es-HdDescr
+        temperature => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.3' },# es-HdTemperature ("26 C/78.8 F")
+        status      => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.4' },# es-HdStatus
+        smartinfo   => { oid => '.1.3.6.1.4.1.24681.2.2.11.1.7' }# es-HdSmartInfo
     }
 };
 
@@ -70,19 +77,24 @@ sub check_disk_legacy {
     return if (defined($self->{disk_checked}));
 
     my $snmp_result = $self->{snmp}->get_table(
-        oid => '.1.3.6.1.4.1.24681.1.2.11', # systemHdTable
+        oid   => '.1.3.6.1.4.1.24681.1.2.11',# systemHdTable
         start => $mapping->{description}->{oid}
-    ); 
+    );
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{legacy}->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{legacy}, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping =>
+            $mapping->{legacy},
+            results                                      =>
+                $snmp_result,
+            instance                                     =>
+                $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
         next if (
-            $result->{status} eq 'noDisk' && 
-            $self->absent_problem(section => 'disk', instance => $instance)
+            $result->{status} eq 'noDisk' &&
+                $self->absent_problem(section => 'disk', instance => $instance)
         );
 
         $self->{components}->{disk}->{total}++;
@@ -92,14 +104,14 @@ sub check_disk_legacy {
                 $result->{description},
                 $result->{status},
                 $instance,
-                $result->{temperature}, 
+                $result->{temperature},
                 defined($result->{smartinfo}) ? $result->{smartinfo} : '-',
             )
         );
         my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Disk '%s' status is %s.", $result->{description}, $result->{status}
                 )
@@ -110,7 +122,7 @@ sub check_disk_legacy {
             $exit = $self->get_severity(section => 'smartdisk', value => $result->{smartinfo});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity => $exit,
+                    severity  => $exit,
                     short_msg => sprintf(
                         "Disk '%s' smart status is %s.", $result->{description}, $result->{smartinfo}
                     )
@@ -121,20 +133,25 @@ sub check_disk_legacy {
         next if ($result->{temperature} !~ /([0-9]+)/);
 
         my $disk_temp = $1;
-        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section =>
+            'disk',
+            instance                                                    =>
+                $instance,
+            value                                                       =>
+                $disk_temp);
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit2,
+                severity  => $exit2,
                 short_msg => sprintf(
                     "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
                 )
             );
         }
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.disk.temperature.celsius',
-            unit => 'C',
+            nlabel    => 'hardware.disk.temperature.celsius',
+            unit      => 'C',
             instances => $instance,
-            value => $disk_temp
+            value     => $disk_temp
         );
     }
 }
@@ -143,16 +160,21 @@ sub check_disk_qts {
     my ($self, %options) = @_;
 
     my $snmp_result = $self->{snmp}->get_table(
-        oid => '.1.3.6.1.4.1.55062.1.10.2', # diskTable
+        oid   => '.1.3.6.1.4.1.55062.1.10.2',# diskTable
         start => $mapping->{qts}->{description}->{oid},
-        end => $mapping->{qts}->{temperature}->{oid}
+        end   => $mapping->{qts}->{temperature}->{oid}
     );
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{qts}->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
         $self->{disk_checked} = 1;
 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{qts}, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping =>
+            $mapping->{qts},
+            results                                      =>
+                $snmp_result,
+            instance                                     =>
+                $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
 
@@ -169,7 +191,7 @@ sub check_disk_qts {
         my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Disk '%s' status is %s.", $result->{description}, $result->{status}
                 )
@@ -179,20 +201,99 @@ sub check_disk_qts {
         next if ($result->{temperature} !~ /([0-9]+)/);
 
         my $disk_temp = $1;
-        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section =>
+            'disk',
+            instance                                                    =>
+                $instance,
+            value                                                       =>
+                $disk_temp);
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit2,
+                severity  => $exit2,
                 short_msg => sprintf(
                     "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
                 )
             );
         }
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.disk.temperature.celsius',
-            unit => 'C',
+            nlabel    => 'hardware.disk.temperature.celsius',
+            unit      => 'C',
             instances => $instance,
-            value => $disk_temp
+            value     => $disk_temp
+        );
+    }
+}
+
+sub check_disk_quts {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid   => '.1.3.6.1.4.1.55062.2.10.2',# diskTable
+        start => $mapping->{quts}->{description}->{oid},
+        end   => $mapping->{quts}->{temperature}->{oid}
+    );
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($oid !~ /^$mapping->{quts}->{description}->{oid}\.(\d+)$/);
+        my $instance = $1;
+        $self->{disk_checked} = 1;
+
+        my $result = $self->{snmp}->map_instance(mapping =>
+            $mapping->{quts},
+            results                                      =>
+                $snmp_result,
+            instance                                     =>
+                $instance);
+
+        next if ($self->check_filter(section => 'disk', instance => $instance));
+
+        $self->{components}->{disk}->{total}++;
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' - '%s' [%s] status is %s [instance: %s, temperature: %s]",
+                $result->{description},
+                $result->{model},
+                $result->{serial},
+                $result->{status},
+                $instance,
+                $result->{temperature}
+            )
+        );
+        my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity  => $exit,
+                short_msg => sprintf(
+                    "Disk '%s' - '%s' [%s] status is %s.",
+                    $result->{description},
+                    $result->{model},
+                    $result->{serial},
+                    $result->{status}
+                )
+            );
+        }
+
+        next if ($result->{temperature} !~ /([0-9]+)/);
+
+        my $disk_temp = $1;
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section =>
+            'disk',
+            instance                                                    =>
+                $instance,
+            value                                                       =>
+                $disk_temp);
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity  => $exit2,
+                short_msg => sprintf(
+                    "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
+                )
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel    => 'hardware.disk.temperature.celsius',
+            unit      => 'C',
+            instances => $instance,
+            value     => $disk_temp
         );
     }
 }
@@ -201,16 +302,21 @@ sub check_disk_ex {
     my ($self, %options) = @_;
 
     my $snmp_result = $self->{snmp}->get_table(
-        oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2', # diskTable
+        oid   => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2',# diskTable
         start => $mapping->{ex}->{description}->{oid},
-        end => $mapping->{ex}->{temperature}->{oid}
+        end   => $mapping->{ex}->{temperature}->{oid}
     );
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{ex}->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
         $self->{disk_checked} = 1;
 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{ex}, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping =>
+            $mapping->{ex},
+            results                                      =>
+                $snmp_result,
+            instance                                     =>
+                $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
 
@@ -227,7 +333,7 @@ sub check_disk_ex {
         my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Disk '%s' status is %s.", $result->{description}, $result->{status}
                 )
@@ -237,20 +343,25 @@ sub check_disk_ex {
         next if ($result->{temperature} !~ /([0-9]+)/);
 
         my $disk_temp = $1;
-        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section =>
+            'disk',
+            instance                                                    =>
+                $instance,
+            value                                                       =>
+                $disk_temp);
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit2,
+                severity  => $exit2,
                 short_msg => sprintf(
                     "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
                 )
             );
         }
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.disk.temperature.celsius',
-            unit => 'C',
+            nlabel    => 'hardware.disk.temperature.celsius',
+            unit      => 'C',
             instances => $instance,
-            value => $disk_temp
+            value     => $disk_temp
         );
     }
 }
@@ -258,14 +369,19 @@ sub check_disk_ex {
 sub check_disk_es {
     my ($self, %options) = @_;
 
-    my $snmp_result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.24681.2.2.11'); # es-SystemHdTable
+    my $snmp_result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.24681.2.2.11');# es-SystemHdTable
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{es}->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{es}, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping =>
+            $mapping->{es},
+            results                                      =>
+                $snmp_result,
+            instance                                     =>
+                $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
-        
+
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
@@ -273,14 +389,14 @@ sub check_disk_es {
                 $result->{description},
                 $result->{status},
                 $instance,
-                $result->{temperature}, 
+                $result->{temperature},
                 defined($result->{smartinfo}) ? $result->{smartinfo} : '-',
             )
         );
         my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Disk '%s' status is %s.", $result->{description}, $result->{status}
                 )
@@ -291,7 +407,7 @@ sub check_disk_es {
             $exit = $self->get_severity(section => 'smartdisk', value => $result->{smartinfo});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity => $exit,
+                    severity  => $exit,
                     short_msg => sprintf(
                         "Disk '%s' smart status is %s.", $result->{description}, $result->{smartinfo}
                     )
@@ -302,20 +418,25 @@ sub check_disk_es {
         next if ($result->{temperature} !~ /([0-9]+)/);
 
         my $disk_temp = $1;
-        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section =>
+            'disk',
+            instance                                                    =>
+                $instance,
+            value                                                       =>
+                $disk_temp);
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit2,
+                severity  => $exit2,
                 short_msg => sprintf(
                     "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
                 )
             );
         }
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.disk.temperature.celsius',
-            unit => 'C',
+            nlabel    => 'hardware.disk.temperature.celsius',
+            unit      => 'C',
             instances => $instance,
-            value => $disk_temp
+            value     => $disk_temp
         );
     }
 }
@@ -329,6 +450,8 @@ sub check {
 
     if ($self->{is_qts} == 1) {
         check_disk_qts($self);
+    } elsif ($self->{is_quts} == 1) {
+        check_disk_quts($self);
     } elsif ($self->{is_es} == 1) {
         check_disk_es($self);
     } else {
