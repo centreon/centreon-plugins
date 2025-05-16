@@ -134,7 +134,6 @@ fn main() -> Result<(), Error> {
         }
     };
 
-    //println!("{}", result.output);
-    //std::process::exit(result.status as i32);
-    Ok(())
+    println!("{:?}", result);
+    std::process::exit(result.status as i32);
 }
