@@ -94,6 +94,7 @@ overrides:
       - perl(LWP::Protocol::https)
       - perl(SOAP::Lite)
       - perl(Text::Template)
+      - perl(UUID)
       - perl(ZMQ::Constants)
       - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
@@ -108,6 +109,7 @@ overrides:
       - libnet-curl-perl
       - libsoap-lite-perl
       - libtext-template-perl
+      - libuuid-perl
       - libzmq-constants-perl
       - libzmq-libzmq4-perl
 
