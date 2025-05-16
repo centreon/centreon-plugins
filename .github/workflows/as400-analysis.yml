@@ -1,0 +1,45 @@
+name: as400-analysis
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 0 * * 1-5'
+  pull_request:
+    paths:
+      - 'as400/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'as400/**'
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: as400/connector.as400/pom.xml
+
+  checkmarx-analysis:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      github.event.pull_request.draft != 'true'
+    uses: ./.github/workflows/checkmarx-analysis.yml
+    with:
+      module_directory: as400
+      module_name: centreon-plugins-as400
+    secrets:
+      base_uri: ${{ secrets.AST_RND_SCANS_BASE_URI }}
+      cx_tenant: ${{ secrets.AST_RND_SCANS_TENANT }}
+      cx_client_id: ${{ secrets.AST_RND_SCANS_CLIENT_ID }}
+      cx_client_secret: ${{ secrets.AST_RND_SCANS_CLIENT_SECRET }}
+
+  set-skip-label:
+    needs: [get-environment, checkmarx-analysis]
+    if: needs.get-environment.outputs.skip_workflow == 'false'
+    uses: ./.github/workflows/set-pull-request-skip-label.yml
