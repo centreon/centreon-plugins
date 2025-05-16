@@ -8,7 +8,7 @@ use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
 use log::{debug, trace};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
-use std::{collections::HashMap, ops::IndexMut};
+use std::collections::HashMap;
 
 use crate::snmp::SnmpResult;
 
@@ -20,7 +20,6 @@ struct Perfdata<'p> {
     max: Option<f64>,
     warning: Option<&'p str>,
     critical: Option<&'p str>,
-    status: Status,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -87,6 +86,7 @@ pub struct Command {
     compute: Compute,
 }
 
+#[derive(Debug)]
 pub struct CmdResult {
     pub status: Status,
     pub output: String,
@@ -209,6 +209,7 @@ impl Command {
         let mut idx: u32 = 0;
         let mut metrics = vec![];
         let mut my_res = SnmpResult::new(HashMap::new());
+        let mut status = Status::Ok;
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
             let parser = Parser::new(&collect);
@@ -251,7 +252,8 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        let status = compute_status(*item, &metric.warning, &metric.critical)?;
+                        let current_status = compute_status(*item, &metric.warning, &metric.critical)?;
+                        status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
                             None => None,
@@ -267,7 +269,6 @@ impl Command {
                             max: compute_threshold(i, &max),
                             warning: w,
                             critical: c,
-                            status,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -284,7 +285,8 @@ impl Command {
                             res
                         }
                     };
-                    let status = compute_status(*s, &metric.warning, &metric.critical)?;
+                    let current_status = compute_status(*s, &metric.warning, &metric.critical)?;
+                    status = worst(status, current_status);
                     let w = match metric.warning {
                         Some(ref w) => Some(w.as_str()),
                         None => None,
@@ -300,7 +302,6 @@ impl Command {
                         max: compute_threshold(0, &max),
                         warning: w,
                         critical: c,
-                        status,
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
@@ -360,7 +361,8 @@ impl Command {
                                     res
                                 }
                             };
-                            let status = compute_status(item, &metric.warning, &metric.critical)?;
+                            let current_status = compute_status(item, &metric.warning, &metric.critical)?;
+                            status = worst(status, current_status);
                             let w = match metric.warning {
                                 Some(ref w) => Some(w.as_str()),
                                 None => None,
@@ -376,7 +378,6 @@ impl Command {
                                 max,
                                 warning: w,
                                 critical: c,
-                                status,
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -384,7 +385,8 @@ impl Command {
                     }
                     ExprResult::Number(s) => {
                         let name = &metric.name;
-                        let status = compute_status(s, &metric.warning, &metric.critical)?;
+                        let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                        status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
                             None => None,
@@ -400,7 +402,6 @@ impl Command {
                             max,
                             warning: w,
                             critical: c,
-                            status,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -413,7 +414,7 @@ impl Command {
         trace!("collect: {:#?}", collect);
         println!("metrics: {:#?}", metrics);
         Ok(CmdResult {
-            status: Status::Unknown,
+            status,
             output: "No result".to_string(),
         })
     }
