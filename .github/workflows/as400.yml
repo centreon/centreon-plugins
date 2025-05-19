@@ -1,4 +1,4 @@
-name: plugins-analysis
+name: as-400
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
