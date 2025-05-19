@@ -1,4 +1,4 @@
-name: as-400
+name: as400
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
