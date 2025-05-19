@@ -9,20 +9,21 @@ on:
   schedule:
     - cron: '30 0 * * 1-5'
   pull_request:
+    branches:
+      - develop
+      - master
     paths:
-      - 'as400/**'
+      - '**'
   push:
     branches:
       - develop
       - master
     paths:
-      - 'as400/**'
+      - '**'
 
 jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
-    with:
-      version_file: as400/connector.as400/pom.xml
 
   checkmarx-analysis:
     needs: [get-environment]
@@ -31,8 +32,7 @@ jobs:
       github.event.pull_request.draft != 'true'
     uses: ./.github/workflows/checkmarx-analysis.yml
     with:
-      module_directory: as400
-      module_name: centreon-plugins-as400
+      module_name: centreon-plugins
     secrets:
       base_uri: ${{ secrets.AST_RND_SCANS_BASE_URI }}
       cx_tenant: ${{ secrets.AST_RND_SCANS_TENANT }}
