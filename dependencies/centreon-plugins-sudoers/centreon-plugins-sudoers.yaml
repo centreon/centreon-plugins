@@ -1,0 +1,40 @@
+name: "centreon-plugins-sudoers"
+arch: "all"
+platform: "linux"
+version_schema: "none"
+version: "${VERSION}"
+release: "${RELEASE}${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  Sudoers configuration for centreon plugins
+  Commit: @COMMIT_HASH@
+vendor: "Centreon"
+homepage: "https://www.centreon.com"
+license: "Apache-2.0"
+
+contents:
+  - src: ./sudoersCentreonPlugins
+    dst: /etc/sudoers.d/centreon-plugins
+    file_info:
+      mode: 0600
+
+overrides:
+  rpm:
+    provides:
+      - centreon-cwrapper-perl
+    replaces:
+      - centreon-cwrapper-perl
+    depends:
+      - sudo
+  deb:
+    depends:
+      - sudo
+
+rpm:
+  summary: Sudoers configuration for centreon plugins
+  compression: zstd
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}
