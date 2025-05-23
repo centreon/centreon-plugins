@@ -43,7 +43,8 @@ sub new {
         'tmm-usage'            => 'network::f5::bigip::snmp::mode::tmmusage',
         'cpu-usage'            => 'network::f5::bigip::snmp::mode::cpuusage',
         'trunks'               => 'network::f5::bigip::snmp::mode::trunks',
-        'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus'
+        'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus',
+        'certificates'         => 'network::f5::bigip::snmp::mode::certificates'
     };
 
     return $self;
