@@ -313,7 +313,13 @@ sub request_api_paginate {
         );
 
         if (!defined($content) || $content eq '') {
-            return ; # If the content is empty, it means that the request failed. caller can try to get a new token and retry.
+            $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
+        if ($self->{http}->get_code() == 401) {
+            $self->{output}->add_option_msg(short_msg => "Request needs authentication!");
+            return
         }
 
         my $decoded;
@@ -372,6 +378,11 @@ sub request_api {
             get_param => $options{get_param},
             creds => $creds
         );
+    }
+
+    if ($self->{http}->get_code() == 401) {
+        $self->{output}->add_option_msg(short_msg => "Authentication failed");
+        $self->{output}->option_exit();
     }
 
     return $result;
