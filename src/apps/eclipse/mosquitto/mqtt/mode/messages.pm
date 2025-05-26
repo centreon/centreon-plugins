@@ -38,7 +38,7 @@ sub set_counters {
              { label  => 'messages-' . $label,
                nlabel => 'messages.' . $label . '.count',
                set    => {
-                   key_values      => [{ name => $label }],
+                   key_values      => [ { name => $label } ],
                    output_template => ucfirst($label) . ' messages: %d',
                    perfdatas       => [
                        { label => $label . '_messages', template => '%d',
@@ -51,7 +51,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     return $self;
@@ -62,7 +62,7 @@ sub manage_selection {
 
     my %results = $options{mqtt}->queries(
         base_topic => '$SYS/broker/messages/',
-        topics     => ['stored', 'received', 'sent']
+        topics     => [ 'stored', 'received', 'sent' ]
     );
     for my $topic (keys %results) {
         $self->{global}->{$topic} = $results{$topic};
@@ -79,10 +79,29 @@ Check messages statistics.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-messages-stored>
 
-Thresholds.
-Can be: 'messages-stored', 'messages-received', 'messages-sent'.
+Warning threshold for stored messages.
+
+=item B<--critical-messages-stored>
+
+Critical threshold for stored messages.
+
+=item B<--warning-messages-received>
+
+Warning threshold for received messages.
+
+=item B<--critical-messages-received>
+
+Critical threshold for received messages.
+
+=item B<--warning-messages-sent>
+
+Warning threshold for sent messages.
+
+=item B<--critical-messages-sent>
+
+Critical threshold for sent messages.
 
 =back
 

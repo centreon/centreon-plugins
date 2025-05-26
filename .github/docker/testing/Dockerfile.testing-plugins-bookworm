@@ -2,7 +2,7 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/debian:bookworm
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # fix locale
 RUN bash -e <<EOF
@@ -15,7 +15,7 @@ apt-get clean
 
 EOF
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN bash -e <<EOF
 
@@ -28,7 +28,7 @@ apt-get install -y python3-dev python3-pip
 rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED
 pip3 install robotframework robotframework-examples
 # Install snmpsim
-pip3 install snmpsim-lextudio
+pip3 install snmpsim
 
 # Install nodejs
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\

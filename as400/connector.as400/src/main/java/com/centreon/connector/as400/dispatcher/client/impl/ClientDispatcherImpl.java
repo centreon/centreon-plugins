@@ -52,37 +52,37 @@ public class ClientDispatcherImpl implements ClientDispatcher {
     }
 
     private synchronized CheckDispatcher createNewCheckDispatcher(final String host, final String login,
-            final String password) throws AS400SecurityException, IOException, DelayedConnectionException, Exception {
+            final String password, final Integer ssl) throws AS400SecurityException, IOException, DelayedConnectionException, Exception {
 
         ConnectorLogger.getInstance().info("create new As400 : " + host);
 
         CheckDispatcher resource = null;
-        resource = new CheckDispatcher(host, login, password);
+        resource = new CheckDispatcher(host, login, password, ssl);
 
         this.pool.put(resource, System.currentTimeMillis());
 
         return resource;
     }
 
-    private CheckDispatcher getAs400(final String host, final String login, final String password)
+    private CheckDispatcher getAs400(final String host, final String login, final String password, final Integer ssl)
             throws AS400SecurityException, IOException, DelayedConnectionException, Exception {
 
         for (final CheckDispatcher resource : this.pool.keySet()) {
             if (resource.getHost().equalsIgnoreCase(host) && resource.getLogin().equalsIgnoreCase(login)
-                    && resource.getPassword().equalsIgnoreCase(password)) {
+                    && resource.getPassword().equalsIgnoreCase(password) && resource.getSsl() == ssl) {
                 this.pool.put(resource, System.currentTimeMillis());
                 return resource;
             }
         }
 
-        return this.createNewCheckDispatcher(host, login, password);
+        return this.createNewCheckDispatcher(host, login, password, ssl);
     }
 
     @Override
     public synchronized void dispatch(final NetworkClient client)
             throws AS400SecurityException, IOException, DelayedConnectionException, Exception {
         final CheckDispatcher checkDispatcher = this.getAs400(client.getAs400Host(), client.getAs400Login(),
-                client.getAs400Password());
+                client.getAs400Password(), client.getAs400Ssl());
         checkDispatcher.dispatch(client);
     }
 }

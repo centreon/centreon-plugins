@@ -45,14 +45,14 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
 public class SystemHandler extends AbstractHandler implements ISystemHandler {
     private SystemStatus status = null;
 
-    public SystemHandler(final String host, final String login, final String password)
+    public SystemHandler(final String host, final String login, final String password, final Integer ssl)
             throws AS400SecurityException, IOException {
-        this(host, login, password, null);
+        this(host, login, password, null, ssl);
     }
 
-    public SystemHandler(final String host, final String login, final String password, SystemStatus as400Status)
+    public SystemHandler(final String host, final String login, final String password, SystemStatus as400Status, final Integer ssl)
             throws AS400SecurityException, IOException {
-        super(host, login, password);
+        super(host, login, password, ssl);
         this.status = as400Status == null ? new SystemStatus(getNewAs400()) : as400Status;
     }
 
