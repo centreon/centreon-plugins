@@ -23,6 +23,7 @@ package centreon::common::protocols::sql::mode::sqlstring;
 use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
@@ -73,6 +74,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'sql-statement:s'    => { name => 'sql_statement' },
+        'sql-file:s'         => { name => 'sql_file' },
         'key-column:s'       => { name => 'key_column' },
         'value-column:s'     => { name => 'value_column' },
         'printf-format:s'    => { name => 'printf_format' },
@@ -88,9 +90,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $self->{output}->option_exit();
+    $self->{query} = $self->{option_results}->{sql_statement};
+    if (!defined($self->{query}) || $self->{query} eq '') {
+        if (!defined($self->{option_results}->{sql_file}) || $self->{option_results}->{sql_file} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --sql-statement or --sql-file option.");
+            $self->{output}->option_exit();
+        }
+        $self->{query} = centreon::plugins::misc::slurp_file(output => $self->{output}, file => $self->{option_results}->{sql_file});
     }
 
     $self->{printf_value} = 'value_field';
@@ -108,7 +114,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => $self->{option_results}->{sql_statement});
+    $options{sql}->query(query => $self->{query});
     $self->{rows} = {};
     my $row_count = 0;
 
@@ -155,6 +161,10 @@ Check SQL statement to query string pattern (You cannot have more than to fiels 
 =item B<--sql-statement>
 
 SQL statement that returns a string.
+
+=item B<--sql-file>
+
+Define the file with the SQL request.
 
 =item B<--key-column>
 
