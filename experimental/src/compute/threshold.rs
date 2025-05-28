@@ -219,7 +219,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -236,7 +236,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -253,7 +253,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -270,7 +270,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -287,7 +287,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -337,7 +337,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -354,7 +354,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
@@ -371,7 +371,7 @@ mod Test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: Threshold not of the form '[@]start:end'"
+                    "Threshold: The threshold syntax must follow '[@]start:end'"
                 );
             }
         }
