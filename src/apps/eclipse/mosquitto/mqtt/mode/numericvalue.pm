@@ -30,13 +30,13 @@ use POSIX qw(floor);
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
         'topic:s'             => { name => 'topic' },
-        'warning:s'           => { name => 'warning' },
-        'critical:s'          => { name => 'critical' },
+        'warning:s'           => { name => 'warning', redirect => 'warning-generic' },
+        'critical:s'          => { name => 'critical', redirect => 'critical-generic' },
         'extracted-pattern:s' => { name => 'extracted_pattern' },
         'format:s'            => { name => 'format' },
         'format-custom:s'     => { name => 'format_custom' },
@@ -57,25 +57,20 @@ sub custom_generic_output {
         $format = $self->{instance_mode}{option_results}->{format};
     }
 
-    my $value = $self->{result_values}->{numericvalue};
-    if (!centreon::plugins::misc::is_empty($self->{instance_mode}{option_results}->{format_custom})) {
-        $value = eval "$value $self->{instance_mode}{option_results}->{format_custom}";
-    }
-
-    return sprintf($format, $value);
+    return sprintf($format, $self->{result_values}->{numericvalue});
 }
 
 sub custom_generic_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label    => $options{option_results}->{perfdata_name},
-        unit     => $options{option_results}->{perfdata_unit},
+        label    => $self->{instance_mode}->{option_results}->{perfdata_name},
+        unit     => $self->{instance_mode}->{option_results}->{perfdata_unit},
         value    => $self->{result_values}->{numericvalue},
-        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min      => $options{option_results}->{perfdata_min},
-        max      => $options{option_results}->{perfdata_max}
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-generic'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-generic'),
+        min      => $self->{instance_mode}->{option_results}->{perfdata_min},
+        max      => $self->{instance_mode}->{option_results}->{perfdata_max}
     );
 }
 
@@ -85,9 +80,9 @@ sub custom_generic_threshold {
     return $self->{perfdata}->threshold_check(
         value     => $self->{result_values}->{numericvalue},
         threshold => [
-            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' },
-            { label => 'unknown-' . $self->{thlabel}, exit_litteral => 'unknown' }
+            { label => 'critical-generic', exit_litteral => 'critical' },
+            { label => 'warning-generic', exit_litteral => 'warning' },
+            { label => 'unknown-generic', exit_litteral => 'unknown' }
         ]
     );
 }
@@ -102,7 +97,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'generic',
           set   => {
-              key_values                     => [{ name => 'numericvalue' }],
+              key_values                     => [ { name => 'numericvalue' } ],
               closure_custom_output          => $self->can('custom_generic_output'),
               closure_custom_perfdata        => $self->can('custom_generic_perfdata'),
               closure_custom_threshold_check => $self->can('custom_generic_threshold')
@@ -146,6 +141,10 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    if (!centreon::plugins::misc::is_empty($self->{option_results}->{format_custom})) {
+        $value = eval "$value $self->{option_results}->{format_custom}";
+    }
+
     $self->{global} = { numericvalue => $value };
 }
 
@@ -177,7 +176,7 @@ Define a pattern to extract a number from the returned string.
 
 =item B<--format>
 
-Output format (default: 'current value is %s')
+Output format (default: 'current value is %s').
 
 =item B<--format-custom>
 
@@ -186,19 +185,19 @@ Apply a custom change on the value
 
 =item B<--perfdata-unit>
 
-Perfdata unit in perfdata output (default: '')
+Perfdata unit in perfdata output (default: '').
 
 =item B<--perfdata-name>
 
-Perfdata name in perfdata output (default: 'value')
+Perfdata name in perfdata output (default: 'value').
 
 =item B<--perfdata-min>
 
-Minimum value to add in perfdata output (default: '')
+Minimum value to add in perfdata output (default: '').
 
 =item B<--perfdata-max>
 
-Maximum value to add in perfdata output (default: '')
+Maximum value to add in perfdata output (default: '').
 
 =back
 

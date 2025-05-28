@@ -38,7 +38,7 @@ sub set_counters {
              { label  => 'clients-' . $label,
                nlabel => 'clients.' . $label . '.count',
                set    => {
-                   key_values      => [{ name => $label }],
+                   key_values      => [ { name => $label } ],
                    output_template => ucfirst($label) . ' clients: %d',
                    perfdatas       => [
                        { label => $label . '_clients', template => '%d',
@@ -51,7 +51,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     return $self;
@@ -62,7 +62,7 @@ sub manage_selection {
 
     my %results = $options{mqtt}->queries(
         base_topic => '$SYS/broker/clients/',
-        topics     => ['connected', 'maximum', 'active', 'inactive']
+        topics     => [ 'connected', 'maximum', 'active', 'inactive' ]
     );
 
     for my $topic (keys %results) {
@@ -80,10 +80,37 @@ Check clients statistics.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-clients-connected>
 
-Thresholds.
-Can be: 'clients-connected', 'clients-maximum', 'clients-active', 'clients-inactive'.
+Warning threshold for connected clients.
+
+=item B<--critical-clients-connected>
+
+Critical threshold for connected clients.
+
+=item B<--warning-clients-maximum>
+
+Warning threshold for maximum clients.
+
+=item B<--critical-clients-maximum>
+
+Critical threshold for maximum clients.
+
+=item B<--warning-clients-active>
+
+Warning threshold for active clients.
+
+=item B<--critical-clients-active>
+
+Critical threshold for active clients.
+
+=item B<--warning-clients-inactive>
+
+Warning threshold for inactive clients.
+
+=item B<--critical-clients-inactive>
+
+Critical threshold for inactive clients.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'     => 'apps::vmware::vsphere8::esx::mode::discovery',
-        'host-status'   => 'apps::vmware::vsphere8::esx::mode::hoststatus'
+        'cpu'         => 'apps::vmware::vsphere8::esx::mode::cpu',
+        'discovery'   => 'apps::vmware::vsphere8::esx::mode::discovery',
+        'disk-io'     => 'apps::vmware::vsphere8::esx::mode::diskio',
+        'host-status' => 'apps::vmware::vsphere8::esx::mode::hoststatus',
+        'memory'      => 'apps::vmware::vsphere8::esx::mode::memory',
+        'network'     => 'apps::vmware::vsphere8::esx::mode::network',
+        'power'       => 'apps::vmware::vsphere8::esx::mode::power',
+        'swap'        => 'apps::vmware::vsphere8::esx::mode::swap',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';

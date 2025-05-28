@@ -29,7 +29,7 @@ my %map_psu_status = (
 );
 
 my $mapping = {
-    axisPsState => { oid => '.1.3.6.1.4.1.368.4.1.2.1.3', map => \%map_psu_status },
+    axisPsState => { oid => '.1.3.6.1.4.1.368.4.1.1.1.3', map => \%map_psu_status },
 };
 
 sub load {

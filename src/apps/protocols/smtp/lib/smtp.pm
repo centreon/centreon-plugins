@@ -127,7 +127,7 @@ sub connect {
         $self->{output}->exit();
     }
     if ($smtp_handle == -1) {
-        chomp $stdout;
+        chomp $stdout if (defined($stdout));
         $self->{output}->output_add(
             severity => $connection_exit,
             short_msg => 'Unable to connect to SMTP: ' . (defined($stdout) ? $stdout : $error_msg)

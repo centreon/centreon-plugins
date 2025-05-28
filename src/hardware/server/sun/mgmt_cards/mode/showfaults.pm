@@ -64,8 +64,8 @@ sub check_options {
         command => $self->{option_results}->{command_plink}
     );
 
-    $self->{option_results}->{command} = 'plink'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_plink} = 'plink'
+        if (!defined($self->{option_results}->{command_plink}) || $self->{option_results}->{command_plink} eq '');
 }
 
 sub run {
@@ -132,25 +132,25 @@ __END__
 
 =head1 MODE
 
-Check Sun 'T1xxx', 'T2xxx' Hardware (through ALOM4v).
+Check Sun C<T1xxx>, C<T2xxx> management cards hardware (using C<ALOM4v>).
 
 =over 8
 
 =item B<--hostname>
 
-Hostname to query.
+Define the hostname to query.
 
 =item B<--username>
 
-ssh username.
+Define the ssh username.
 
 =item B<--password>
 
-ssh password.
+Define the ssh password.
 
 =item B<--command-plink>
 
-Plink command (default: plink). Use to set a path.
+Define the C<plink> command (default: C<plink>).
 
 =item B<--timeout>
 

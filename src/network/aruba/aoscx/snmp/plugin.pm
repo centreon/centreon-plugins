@@ -30,13 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'             => 'network::aruba::aoscx::snmp::mode::cpu',
-        'hardware'        => 'network::aruba::aoscx::snmp::mode::hardware',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
-        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::aruba::aoscx::snmp::mode::memory',
-        'vsf'             => 'network::aruba::aoscx::snmp::mode::vsf',
-        'vsx'             => 'network::aruba::aoscx::snmp::mode::vsx'
+        'cpu'                   => 'network::aruba::aoscx::snmp::mode::cpu',
+        'hardware'              => 'network::aruba::aoscx::snmp::mode::hardware',
+        'interfaces'            => 'snmp_standard::mode::interfaces',
+        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'   => 'snmp_standard::mode::listspanningtrees',
+        'memory'                => 'network::aruba::aoscx::snmp::mode::memory',
+        'spanning-tree'         => 'snmp_standard::mode::spanningtree',
+        'stack'                 => 'network::aruba::aoscx::snmp::mode::stack',
+        'uptime'                => 'snmp_standard::mode::uptime',
+        'vsf'                   => 'network::aruba::aoscx::snmp::mode::vsf',
+        'vsx'                   => 'network::aruba::aoscx::snmp::mode::vsx'
     };
 
     return $self;

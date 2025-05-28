@@ -21,3 +21,6 @@ tests/**                           @centreon/owners-robot-e2e
 packaging/**                       @centreon/owners-perl
 selinux/**                         @centreon/owners-pipelines
 .github/scripts/pod_spell_check.t  @centreon/owners-perl
+
+.gitleaks.toml                     @centreon/owners-security
+.gitleaksignore                    @centreon/owners-security

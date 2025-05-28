@@ -127,7 +127,7 @@ Display alerts in verbose output.
 
 =item B<--truly-alert>
 
-Expression to define a truly alert (default: '%{severity} =~ /emergency|alert|warning|critical/i').
+Expression to define an actual alert (default: '%{severity} =~ /emergency|alert|warning|critical/i').
 
 =item B<--warning-*> B<--critical-*>
 

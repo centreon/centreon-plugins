@@ -304,7 +304,7 @@ __END__
 
 =head1 MODE
 
-Check read/write I/O disks (bytes per second, IOPs). 
+Check read/write I/O disks (bytes per second, IOPS).
 
 =over 8
 
@@ -324,11 +324,11 @@ Can be: 'read', 'write', 'read-iops', 'write-iops',
 
 =item B<--device>
 
-Set the device (number expected) example: 1, 2,... (empty means 'check all devices').
+Specify the device to be checked (number expected) example: 1, 2,... (empty means 'check all devices').
 
 =item B<--name>
 
-Allows to use device name with option --device instead of devoce oid index.
+Allows to use device name with option --device instead of device OID index.
 
 =item B<--regexp>
 

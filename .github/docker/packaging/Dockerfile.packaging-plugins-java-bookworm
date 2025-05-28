@@ -8,9 +8,9 @@ apt-get update
 apt-get install -y \
   ca-certificates \
   git \
-  zstd \
   maven=3.8.7-1 \
-  openjdk-17-jdk
+  openjdk-17-jdk \
+  zstd
 
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
 

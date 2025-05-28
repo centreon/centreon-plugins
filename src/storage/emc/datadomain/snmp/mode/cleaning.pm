@@ -82,7 +82,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unit:s' => { name => 'unit', default => 'd' }
+        'unit:s'     => { name => 'unit', default => 'd' },
+        'timezone:s' => { name => 'timezone'}
     });
 
     return $self;
@@ -94,6 +95,10 @@ sub check_options {
 
     if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
         $self->{option_results}->{unit} = 'd';
+    }
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '' && $self->{option_results}->{timezone} !~ /^[A-Za-z_\/0-9-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong timezone format '" . $self->{option_results}->{timezone} . "'. (Example format: 'America/Los_Angeles')");
+        $self->{output}->option_exit();
     }
 }
 
@@ -112,14 +117,28 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         if ($snmp_result->{$oid} =~ /\s+(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/) {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+            # if the equipment check is on another timezone than the system where the plugin is executed.
+            if (defined($self->{option_results}->{timezone})){
+                eval {
+                    $dt = $dt->set_time_zone($self->{option_results}->{timezone});
+                };
+                if ($@) {
+                    $self->{output}->add_option_msg(short_msg => "Invalid timezone provided: '" . $self->{option_results}->{timezone} . "'. Check in /usr/share/zoneinfo for valid time zones.");
+                     $self->{output}->option_exit();
+                 }
+            }
             my $lastExecSeconds = $ctime - $dt->epoch();
             if ($self->{global}->{lastExecSeconds} == -1 || $self->{global}->{lastExecSeconds} > $lastExecSeconds) {
                 $self->{global}->{lastExecSeconds} = $lastExecSeconds;
             }
+        } elsif ($snmp_result->{$oid} =~ /Cleaning: phase (\d+) of (\d+) \(([^)]+)\)/) {
+            $self->{global}->{lastExecHuman} = "running (phase $1 of $2 : $3)";
+            $self->{global}->{lastExecSeconds} = 0;
         }
     }
 
-    if ($self->{global}->{lastExecSeconds} != -1) {
+    # If there is a lastExecSeconds set (if above in the looop) and this is not a cleaning running (elsif above)
+    if ($self->{global}->{lastExecSeconds} > 0 || ($self->{global}->{lastExecSeconds} == 0 && $self->{global}->{lastExecHuman} eq "never")) {
         $self->{global}->{lastExecHuman} =  centreon::plugins::misc::change_seconds(
             value => $self->{global}->{lastExecSeconds}
         );
@@ -139,6 +158,11 @@ Check last time filesystems had been cleaned.
 =item B<--unit>
 
 Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks (default: 'd').
+
+=item B<--timezone>
+
+Set equipment timezone if different from Europe/London. Valid time zones can be found in C</usr/share/zoneinfo>.
+Format example : Europe/Paris and America/Los_Angeles
 
 =item B<--warning-*> B<--critical-*>
 

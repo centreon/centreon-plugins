@@ -12,7 +12,7 @@ dnf clean all
 dnf install -y python3.11 python3.11-pip
 pip3.11 install robotframework robotframework-examples
 # Install snmpsim
-pip3.11 install snmpsim-lextudio
+pip3.11 install snmpsim
 
 # Install node
 curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -

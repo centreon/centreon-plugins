@@ -72,7 +72,7 @@ sub process_test {
 
 sub main {
     #process_test('localhost', 443, 'https', '/v2', 10, 'user', 'pass');
-    process_test('localhost', 443, undef, undef, undef, undef, undef);
+    process_test('localhost', 3000, 'http', undef, 10, 'login', 'password');
 }
 
 main();

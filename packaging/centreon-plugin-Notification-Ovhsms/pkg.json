@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Ovhsms",
+    "pkg_summary": "Centreon Plugin to send notifications by OVH SMS API",
+    "plugin_name": "centreon_notification_ovhsms.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "notification/ovhsms"
+    ]
+}

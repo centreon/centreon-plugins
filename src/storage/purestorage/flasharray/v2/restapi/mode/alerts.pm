@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [
                     { name => 'category' }, { name => 'code' },
                     { name => 'severity' }, { name => 'opened' }, { name => 'state' },
-                    { name => 'component_name' }, { name => 'issue' }
+                    { name => 'component_name' }, { name => 'issue' }, { name => 'flagged' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -98,7 +98,7 @@ sub manage_selection {
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => 'purestorage_' . $self->{mode} . '_' . $options{custom}->get_connection_infos());
+        $self->{statefile_cache}->read(statefile => 'purestorage_' . $self->{mode} . '_' . $options{custom}->get_connection_info());
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
     
@@ -166,12 +166,12 @@ Filter by category name (can be a regexp).
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{state} ne "closed" and %{severity} =~ /warning/i')
-You can use the following variables: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
+You can use the following variables: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}, %{flagged}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "closed" and %{severity} =~ /critical/i').
-You can use the following variables: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}
+You can use the following variables: %{category}, %{code}, %{severity}, %{opened}, %{state}, %{issue}, %{component_name}, %{flagged}
 
 =item B<--memory>
 

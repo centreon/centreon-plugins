@@ -30,8 +30,9 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'memory_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -53,11 +54,12 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     
-    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -73,6 +75,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_tmm_output {
+    my ($self, %options) = @_;
+    
+    return "TMM '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -81,84 +89,73 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{tmm} = [
-        { label => 'memory-usage', set => {
+        { label => 'memory-usage', nlabel => 'tmm.memory.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'sysTmmStatMemoryTotal' }, { name => 'sysTmmStatMemoryUsed' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
-        { label => 'cpu-1m', set => {
+        { label => 'cpu-1m', nlabel => 'tmm.cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'sysTmmStatTmUsageRatio1m' }, { name => 'display' } ],
                 output_template => 'CPU Usage 1min : %s %%', output_error_template => "CPU Usage 1min : %s",
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'sysTmmStatTmUsageRatio1m',  template => '%s',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'cpu-5m', set => {
+        { label => 'cpu-5m', nlabel => 'tmm.cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'sysTmmStatTmUsageRatio5m' }, { name => 'display' } ],
                 output_template => 'CPU Usage 5min : %s %%', output_error_template => "CPU Usage 5min : %s",
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'sysTmmStatTmUsageRatio5m',  template => '%s',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'current-client-connections', set => {
+        { label => 'current-client-connections', nlabel => 'tmm.connections.client.curent.count', set => {
                 key_values => [ { name => 'sysTmmStatClientCurConns' }, { name => 'display' } ],
                 output_template => 'Current Client Connections : %s', output_error_template => "Current Client Connections : %s",
                 perfdatas => [
-                    { label => 'current_client_connections', value => 'sysTmmStatClientCurConns',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'current_client_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'total-client-connections', set => {
+        { label => 'total-client-connections', nlabel => 'tmm.connections.client.total.count', set => {
                 key_values => [ { name => 'sysTmmStatClientTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s', output_error_template => "Total Client Connections : %s",
                 perfdatas => [
-                    { label => 'total_client_connections', value => 'sysTmmStatClientTotConns',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'current-server-connections', set => {
+        { label => 'current-server-connections', nlabel => 'tmm.connections.server.current.count', set => {
                 key_values => [ { name => 'sysTmmStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'Current Server Connections : %s', output_error_template => "Current Server Connections : %s",
                 perfdatas => [
-                    { label => 'current_server_connections', value => 'sysTmmStatServerCurConns',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'total-server-connections', set => {
+        { label => 'total-server-connections', nlabel => 'tmm.connections.server.total.count', set => {
                 key_values => [ { name => 'sysTmmStatServerTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s', output_error_template => "Total Server Connections : %s",
                 perfdatas => [
-                    { label => 'total_server_connections', value => 'sysTmmStatServerTotConns',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_tmm_output {
-    my ($self, %options) = @_;
-    
-    return "TMM '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -207,12 +204,12 @@ sub manage_selection {
             %$result
         };
     }
-    
+
     if (scalar(keys %{$self->{tmm}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No TMM found.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{cache_name} = "f5_bipgip_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
@@ -224,7 +221,7 @@ __END__
 
 =head1 MODE
 
-Check TMM usages.
+Check TMM (Traffic Management Microkernel) usages.
 
 =over 8
 
@@ -235,19 +232,63 @@ Example : --filter-counters='^memory-usage$'
 
 =item B<--filter-name>
 
-Filter by TMM name (regexp can be used).
+Filter by TMM (Traffic Management Microkernel) name (regexp can be used).
 
-=item B<--warning-*>
+=item B<--warning-cpu-1m>
 
-Warning threshold.
-Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
-'total-server-connections', 'current-server-connections'.
+Thresholds.
 
-=item B<--critical-*>
+=item B<--critical-cpu-1m>
 
-Critical threshold.
-Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
-'total-server-connections', 'current-server-connections'.
+Thresholds.
+
+=item B<--warning-cpu-5m>
+
+Thresholds.
+
+=item B<--critical-cpu-5m>
+
+Thresholds.
+
+=item B<--warning-memory-usage>
+
+Thresholds in %.
+
+=item B<--critical-memory-usage>
+
+Thresholds in %.
+
+=item B<--warning-total-client-connections>
+
+Thresholds.
+
+=item B<--critical-total-client-connections>
+
+Thresholds.
+
+=item B<--warning-current-client-connections>
+
+Thresholds.
+
+=item B<--critical-current-client-connections>
+
+Thresholds.
+
+=item B<--warning-total-server-connections>
+
+Thresholds.
+
+=item B<--critical-total-server-connections>
+
+Thresholds.
+
+=item B<--warning-current-server-connections>
+
+Thresholds.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
 
 =back
 

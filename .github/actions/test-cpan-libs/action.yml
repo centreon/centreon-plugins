@@ -1,0 +1,141 @@
+name: "test-cpan-libs"
+description: "Test packaged CPAN libraries"
+inputs:
+  package_extension:
+    description: "The package extension (deb or rpm)"
+    required: true
+  distrib:
+    description: "The distribution name"
+    required: true
+  arch:
+    description: "The architecture (amd64 or arm64)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - if: ${{ inputs.package_extension == 'rpm' }}
+      name: Install zstd, perl and Centreon repositories
+      run: |
+        dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
+        dnf config-manager --set-enabled powertools || true # alma 8
+        dnf config-manager --set-enabled crb || true # alma 9
+        # Import Centreon GPG key
+        GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
+        curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
+        rpm --import RPM-GPG-KEY-CES
+      shell: bash
+
+    - if: ${{ inputs.package_extension == 'deb' }}
+      name: Install zstd, perl and Centreon repositories
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
+        wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+        # Avoid apt to clean packages cache directory
+        rm -f /etc/apt/apt.conf.d/docker-clean
+        apt-get update
+      shell: bash
+
+    - name: Restore packages from cache
+      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: ./*.${{ inputs.package_extension }}
+        key: ${{ github.sha }}-${{ github.run_id }}-${{ inputs.package_extension }}-${{ inputs.distrib }}
+        fail-on-cache-miss: true
+
+    - if: ${{ inputs.package_extension == 'rpm' }}
+      name: Check packages installation / uninstallation
+      run: |
+        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        for package in ./*.rpm; do
+          echo "Installing package: $package"
+          # List dependencies, and remove version and comparison operators
+          dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
+          for dependency in $dependencies; do
+            # Skip non-perl dependencies
+            if [[ $dependency != perl* ]]; then
+              continue
+            else
+              echo "Check dependency: $dependency"
+              # Update the dependency name to match the package name
+              dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
+            fi
+            # If the dependency has been built in the same workflow, install it
+            if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
+              echo "Installing dependency: $dependency"
+              error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+            fi
+          done
+          # Install package, then uninstall it with all his dependencies
+          echo "Package installation..."
+          error_output=$(dnf install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+          echo "Package installation done."
+          script_name=$(echo $package | tr '[:upper:]' '[:lower:]' | sed 's/\.\/perl-//' | sed 's/-[0-9\.-]*.el[0-9]..*.rpm//')
+          if [[ -f ./tests/cpan-libraries/$script_name.pl ]]; then
+              echo "Testing package..."
+              error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
+              echo "Testing done."
+          else
+              echo "No test script found for the package $package"
+          fi
+          echo "Package uninstallation..."
+          error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+          echo "Package uninstallation done."
+        done
+        # If the file error_log exists and is not empty, the workflow is in error
+        if [[ -s $error_log ]]; then
+            cat $error_log
+            exit 1
+        fi
+      shell: bash
+
+    - if: ${{ inputs.package_extension == 'deb' }}
+      name: Check packages installation / uninstallation
+      run: |
+        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        for package in ./*.deb; do
+          # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
+          if [[ $package == *amd64.deb && ${{ inputs.arch }} != "amd64" || $package == *arm64.deb && ${{ inputs.arch }} != "arm64" ]]; then
+            continue
+          fi
+          echo "Installing package: $package"
+          # List dependencies
+          dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
+          for dependency in $dependencies; do
+            # If the dependency exists in the Debian repository, don't check the local dependencies
+            dependency_info=$(apt-cache policy $dependency)
+            if [[ -n $dependency_info ]]; then
+              echo "Dependency $dependency exists in debian repository."
+            else
+              # If the dependency has been built in the same workflow, install it
+              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ inputs.arch }}\.deb"); do
+                echo "Installing dependency: $dependency_package"
+                error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              done
+            fi
+          done
+          # Install package, then uninstall it with all his dependencies
+          echo "Package installation..."
+          error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
+          echo "Package installation done."
+          script_name=$(echo $package | sed 's/.\/lib//' | sed 's/-perl_[0-9\.-]*-deb.*\.deb//')
+          if [[ -f ./tests/cpan-libraries/$script_name.pl ]]; then
+              echo "Testing package..."
+              error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
+              echo "Testing done."
+          else
+              echo "No test script found for the package $package"
+          fi
+          echo "Package uninstallation..."
+          error_output=$(apt-get autoremove -y --purge $(echo $package | sed 's/_[0-9].*\.deb//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+          echo "Package uninstallation done."
+        done
+        # If the file error_log exists and is not empty, the workflow is in error
+        if [[ -s $error_log ]]; then
+            cat $error_log
+            exit 1
+        fi
+      shell: bash

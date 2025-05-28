@@ -45,6 +45,18 @@ sub custom_expires_perfdata {
     );
 }
 
+sub custom_last_update_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{last_update_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
+}
+
 sub custom_expires_threshold {
     my ($self, %options) = @_;
 
@@ -95,7 +107,17 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_expires_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_expires_threshold')
             }
+        },
+	{ label => 'last-update', set => {
+                key_values      => [ { name => 'last_update_seconds' }, { name => 'last_update_human' }, { name => 'name' } ],
+                output_template => 'last_update is %s',
+                output_use => 'last_update_human',
+                #closure_custom_perfdata => $self->can('custom_expires_perfdata'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_last_update_threshold')
+            }
         }
+	
     ];
 }
 
@@ -132,6 +154,14 @@ sub add_license {
         name => $options{name},
         status => $options{entry}->{status}
     };
+
+    if (defined($options{entry}->{last_update})) {
+	 $self->{licenses}->{ $options{name} }->{last_update_seconds} = time() - $options{entry}->{last_update};
+	 $self->{licenses}->{ $options{name} }->{last_update_human} = centreon::plugins::misc::change_seconds(
+            value => $self->{licenses}->{ $options{name} }->{last_update_seconds}
+        );
+    }    
+
     if (defined($options{entry}->{expires})) {
         $self->{licenses}->{ $options{name} }->{expires_seconds} = $options{entry}->{expires} - time();
         $self->{licenses}->{ $options{name} }->{expires_seconds} = 0 if ($self->{licenses}->{ $options{name} }->{expires_seconds} < 0);
@@ -187,12 +217,13 @@ You can use the following variables: %{name}, %{status}.
 
 =item B<--unit>
 
-Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks.
+Default is seconds.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'expires'.
+Can be: 'expires', 'last-update'
 
 =back
 

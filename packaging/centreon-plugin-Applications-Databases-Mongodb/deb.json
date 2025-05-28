@@ -1,6 +1,13 @@
 {
     "dependencies": [
+        "libboolean-perl",
+        "libbson-perl",
         "libdatetime-perl",
-        "libmongodb-perl"
+        "libhash-ordered-perl",
+        "libmongodb-perl",
+        "libsafe-isa-perl",
+        "libtype-tiny-perl",
+        "libuuid-perl",
+        "libuuid-urandom-perl"
     ]
 }

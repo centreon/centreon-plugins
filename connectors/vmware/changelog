@@ -1,3 +1,6 @@
+2025-05-16 Olivier Mercier <omercier@centreon.com> - 20250501
+ * Fix: changed permissions for centreon_vmware.json config file.
+
 2024-12-05 Olivier Mercier <omercier@centreon.com> - 3.4.0
  * Enhancement: systemd service now takes its options from
  /etc/(default|sysconfig)/centreon_vmware.

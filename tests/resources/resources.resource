@@ -13,12 +13,16 @@ ${APIPORT}              3000
 ${SNMPPORT}             2024
 ${SNMPVERSION}          2c
 ${PERCENT}              %
-
+${MOCKOON_LOG_FILE}    /tmp/mockoon.log
 
 *** Keywords ***
 Start Mockoon
     [Arguments]    ${MOCKOON_JSON}
     Ctn Generic Suite Setup
+    Remove File    ${MOCKOON_LOG_FILE}
+
+    ${time_start}    Get Time    str=epoch
+
     ${process}    Start Process
     ...    mockoon-cli
     ...    start
@@ -26,10 +30,21 @@ Start Mockoon
     ...    ${MOCKOON_JSON}
     ...    --port
     ...    3000
-    Sleep    10s
+    ...    stdout=${MOCKOON_LOG_FILE}
+
+    Wait Until Created    ${MOCKOON_LOG_FILE}
+    Wait Until Keyword Succeeds
+    ...     30
+    ...     1
+    ...     File Should Not Be Empty	${MOCKOON_LOG_FILE}
+
+    ${time_end}    Get Time    str=epoch
+    ${duration} =     Evaluate    ${time_end} - ${time_start}
+    Log To Console    Mockoon finished starting after ${duration} seconds
 
 Stop Mockoon
     Terminate All Processes
+    Remove File    ${MOCKOON_LOG_FILE}
 
 Ctn Cleanup Cache
     Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
@@ -37,6 +52,7 @@ Ctn Cleanup Cache
 
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
+   Set Environment Variable    TZ    UTC
 
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}

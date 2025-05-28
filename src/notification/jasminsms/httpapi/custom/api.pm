@@ -150,7 +150,7 @@ __END__
 
 Jasmin SMS HTTP-API
 
-=head1 HTTP API OPTIONS
+=head1 REST API OPTIONS
 
 Jasmin SMS HTTP API
 

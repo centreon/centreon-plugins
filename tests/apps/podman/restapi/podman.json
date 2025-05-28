@@ -1,0 +1,257 @@
+{
+  "uuid": "213bb6ee-47d9-4256-a740-ee7472fb871a",
+  "lastMigration": 32,
+  "name": "Podman",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "f390a04c-57ee-49dc-a35a-62b296e75cdb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/info",
+      "responses": [
+        {
+          "uuid": "b885b4f3-683d-4974-b055-e64505c73b97",
+          "body": "{\n  \"host\": {\n    \"arch\": \"amd64\",\n    \"buildahVersion\": \"1.28.2\",\n    \"cgroupManager\": \"systemd\",\n    \"cgroupVersion\": \"v2\",\n    \"cgroupControllers\": [\n      \"cpu\",\n      \"memory\",\n      \"pids\"\n    ],\n    \"conmon\": {\n      \"package\": \"conmon_2.1.6+ds1-1_amd64\",\n      \"path\": \"/usr/bin/conmon\",\n      \"version\": \"conmon version 2.1.6, commit: unknown\"\n    },\n    \"cpus\": 2,\n    \"cpuUtilization\": {\n      \"userPercent\": 0.11,\n      \"systemPercent\": 1.08,\n      \"idlePercent\": 98.81\n    },\n    \"distribution\": {\n      \"distribution\": \"debian\",\n      \"version\": \"12\",\n      \"codename\": \"bookworm\"\n    },\n    \"eventLogger\": \"journald\",\n    \"hostname\": \"deb12\",\n    \"idMappings\": {\n      \"gidmap\": [\n        {\n          \"container_id\": 0,\n          \"host_id\": 1000,\n          \"size\": 1\n        },\n        {\n          \"container_id\": 1,\n          \"host_id\": 100000,\n          \"size\": 65536\n        }\n      ],\n      \"uidmap\": [\n        {\n          \"container_id\": 0,\n          \"host_id\": 1000,\n          \"size\": 1\n        },\n        {\n          \"container_id\": 1,\n          \"host_id\": 100000,\n          \"size\": 65536\n        }\n      ]\n    },\n    \"kernel\": \"6.1.0-15-amd64\",\n    \"logDriver\": \"journald\",\n    \"memFree\": 82362368,\n    \"memTotal\": 2062614528,\n    \"networkBackend\": \"netavark\",\n    \"ociRuntime\": {\n      \"name\": \"crun\",\n      \"package\": \"crun_1.8.1-1+deb12u1_amd64\",\n      \"path\": \"/usr/bin/crun\",\n      \"version\": \"crun version 1.8.1\\ncommit: f8a096be060b22ccd3d5f3ebe44108517fbf6c30\\nrundir: /run/user/1000/crun\\nspec: 1.0.0\\n+SYSTEMD +SELINUX +APPARMOR +CAP +SECCOMP +EBPF +YAJL\"\n    },\n    \"os\": \"linux\",\n    \"remoteSocket\": {\n      \"path\": \"unix:/run/user/1000/podman/podman.sock\",\n      \"exists\": true\n    },\n    \"serviceIsRemote\": false,\n    \"security\": {\n      \"apparmorEnabled\": false,\n      \"capabilities\": \"CAP_CHOWN,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_KILL,CAP_NET_BIND_SERVICE,CAP_SETFCAP,CAP_SETGID,CAP_SETPCAP,CAP_SETUID,CAP_SYS_CHROOT\",\n      \"rootless\": true,\n      \"seccompEnabled\": true,\n      \"seccompProfilePath\": \"/usr/share/containers/seccomp.json\",\n      \"selinuxEnabled\": false\n    },\n    \"slirp4netns\": {\n      \"executable\": \"/usr/bin/slirp4netns\",\n      \"package\": \"slirp4netns_1.2.0-1_amd64\",\n      \"version\": \"slirp4netns version 1.2.0\\ncommit: 656041d45cfca7a4176f6b7eed9e4fe6c11e8383\\nlibslirp: 4.7.0\\nSLIRP_CONFIG_VERSION_MAX: 4\\nlibseccomp: 2.5.4\"\n    },\n    \"swapFree\": 11401342,\n    \"swapTotal\": 84237968,\n    \"uptime\": \"14h 34m 45.00s (Approximately 0.58 days)\",\n    \"linkmode\": \"dynamic\"\n  },\n  \"store\": {\n    \"configFile\": \"/home/vagrant/.config/containers/storage.conf\",\n    \"containerStore\": {\n      \"number\": 6,\n      \"paused\": 1,\n      \"running\": 3,\n      \"stopped\": 2\n    },\n    \"graphDriverName\": \"vfs\",\n    \"graphOptions\": {},\n    \"graphRoot\": \"/home/vagrant/.local/share/containers/storage\",\n    \"graphRootAllocated\": 20956397568,\n    \"graphRootUsed\": 18267197440,\n    \"graphStatus\": {},\n    \"imageCopyTmpDir\": \"/var/tmp\",\n    \"imageStore\": {\n      \"number\": 4\n    },\n    \"runRoot\": \"/run/user/1000/containers\",\n    \"volumePath\": \"/home/vagrant/.local/share/containers/storage/volumes\"\n  },\n  \"registries\": {},\n  \"plugins\": {\n    \"volume\": [\n      \"local\"\n    ],\n    \"network\": [\n      \"bridge\",\n      \"macvlan\"\n    ],\n    \"log\": [\n      \"k8s-file\",\n      \"none\",\n      \"passthrough\",\n      \"journald\"\n    ],\n    \"authorization\": null\n  },\n  \"version\": {\n    \"APIVersion\": \"4.3.1\",\n    \"Version\": \"4.3.1\",\n    \"GoVersion\": \"go1.19.8\",\n    \"GitCommit\": \"\",\n    \"BuiltTime\": \"Thu Jan  1 00:00:00 1970\",\n    \"Built\": 0,\n    \"OsArch\": \"linux/amd64\",\n    \"Os\": \"linux\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "9b757a53-25b9-4a95-a43b-8a6ba3be1344",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/containers/json",
+      "responses": [
+        {
+          "uuid": "73f68e6e-2cbd-4770-9988-ac132f41ed27",
+          "body": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": null,\n    \"Created\": \"2025-01-28T10:46:54.159993093Z\",\n    \"CreatedAt\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": 1738080827,\n    \"ExitCode\": 0,\n    \"Id\": \"89325e86fd779dda83c0189d01a0802351da38d05e4312932b11eef239c9935d\",\n    \"Image\": \"localhost/podman-pause:4.3.1-0\",\n    \"ImageID\": \"376c7556c90714e22370636dc094d03c860301ee72b4c4d5a1bc1ad91a015293\",\n    \"IsInfra\": true,\n    \"Labels\": {\n      \"io.buildah.version\": \"1.28.2\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"adc8d2ac5d64-infra\"\n    ],\n    \"Namespaces\": {},\n    \"Networks\": [\n      \"podman\"\n    ],\n    \"Pid\": 1326,\n    \"Pod\": \"adc8d2ac5d64a38d9073f0c87f5137891a039c91ed8b7335c051528a0643046c\",\n    \"PodName\": \"blog\",\n    \"Ports\": [\n      {\n        \"host_ip\": \"\",\n        \"container_port\": 80,\n        \"host_port\": 8080,\n        \"range\": 1,\n        \"protocol\": \"tcp\"\n      }\n    ],\n    \"Size\": null,\n    \"StartedAt\": 1738241694,\n    \"State\": \"running\",\n    \"Status\": \"\"\n  },\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"apache2-foreground\"\n    ],\n    \"Created\": \"2025-01-28T10:47:41.119207776Z\",\n    \"CreatedAt\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": 1738080828,\n    \"ExitCode\": 0,\n    \"Id\": \"ad7efe36dbceffde5dabeec4205501b599118bb427fc2305903ab42cf6fbe7a8\",\n    \"Image\": \"docker.io/library/wordpress:latest\",\n    \"ImageID\": \"c012b71a41fc3c0c778ba2d120c275cc75f5181852be1bff3402eb21d5a758de\",\n    \"IsInfra\": false,\n    \"Labels\": null,\n    \"Mounts\": [\n      \"/var/www/html\"\n    ],\n    \"Names\": [\n      \"wordpress\"\n    ],\n    \"Namespaces\": {},\n    \"Networks\": [],\n    \"Pid\": 1331,\n    \"Pod\": \"adc8d2ac5d64a38d9073f0c87f5137891a039c91ed8b7335c051528a0643046c\",\n    \"PodName\": \"blog\",\n    \"Ports\": [\n      {\n        \"host_ip\": \"\",\n        \"container_port\": 80,\n        \"host_port\": 8080,\n        \"range\": 1,\n        \"protocol\": \"tcp\"\n      }\n    ],\n    \"Size\": null,\n    \"StartedAt\": 1738241695,\n    \"State\": \"running\",\n    \"Status\": \"\"\n  },\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"httpd-foreground\"\n    ],\n    \"Created\": \"2025-01-28T10:48:15.222853918Z\",\n    \"CreatedAt\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": 1738080827,\n    \"ExitCode\": 0,\n    \"Id\": \"480587ac39c4d852ec5cf8899d9a44788d32422f728679a7fa198723c23e3c35\",\n    \"Image\": \"docker.io/library/httpd:latest\",\n    \"ImageID\": \"f7d8bafbd9a9fc570c19628411a8441e8dc6697aa43c0c0cd863544f44fc4fb1\",\n    \"IsInfra\": false,\n    \"Labels\": null,\n    \"Mounts\": [\n      \"/usr/local/apache2/htdocs\"\n    ],\n    \"Names\": [\n      \"httpd\"\n    ],\n    \"Namespaces\": {},\n    \"Networks\": [],\n    \"Pid\": 1443,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": [\n      {\n        \"host_ip\": \"\",\n        \"container_port\": 80,\n        \"host_port\": 8081,\n        \"range\": 1,\n        \"protocol\": \"tcp\"\n      }\n    ],\n    \"Size\": null,\n    \"StartedAt\": 1738241724,\n    \"State\": \"running\",\n    \"Status\": \"\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "f8ac568a-c7e9-4116-9a2c-9de982ca9950",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/pods/json",
+      "responses": [
+        {
+          "uuid": "08d5f43b-3ae6-43d5-9996-5d7356a6da67",
+          "body": "[\n  {\n    \"Cgroup\": \"user.slice\",\n    \"Containers\": [\n      {\n        \"Id\": \"89325e86fd779dda83c0189d01a0802351da38d05e4312932b11eef239c9935d\",\n        \"Names\": \"adc8d2ac5d64-infra\",\n        \"Status\": \"running\"\n      },\n      {\n        \"Id\": \"ad7efe36dbceffde5dabeec4205501b599118bb427fc2305903ab42cf6fbe7a8\",\n        \"Names\": \"wordpress\",\n        \"Status\": \"running\"\n      },\n      {\n        \"Id\": \"fb20d214ce01fadfe16ef1a90781bfb494e4a1811e796c26f976782990352b28\",\n        \"Names\": \"mysql\",\n        \"Status\": \"exited\"\n      }\n    ],\n    \"Created\": \"2025-01-28T10:46:54.146102881Z\",\n    \"Id\": \"adc8d2ac5d64a38d9073f0c87f5137891a039c91ed8b7335c051528a0643046c\",\n    \"InfraId\": \"89325e86fd779dda83c0189d01a0802351da38d05e4312932b11eef239c9935d\",\n    \"Name\": \"blog\",\n    \"Namespace\": \"\",\n    \"Networks\": [\n      \"podman\"\n    ],\n    \"Status\": \"Degraded\",\n    \"Labels\": {}\n  },\n  {\n    \"Cgroup\": \"user.slice\",\n    \"Containers\": [\n      {\n        \"Id\": \"89325e86fd779dda83c0189d01a0802351da38d05e4312932b11eef239c9935d\",\n        \"Names\": \"adc8d2ac5d64-infra2\",\n        \"Status\": \"running\"\n      },\n      {\n        \"Id\": \"ad7efe36dbceffde5dabeec4205501b599118bb427fc2305903ab42cf6fbe7a8\",\n        \"Names\": \"wordpress2\",\n        \"Status\": \"running\"\n      },\n      {\n        \"Id\": \"fb20d214ce01fadfe16ef1a90781bfb494e4a1811e796c26f976782990352b28\",\n        \"Names\": \"mysql2\",\n        \"Status\": \"exited\"\n      }\n    ],\n    \"Created\": \"2025-01-28T10:46:54.146102881Z\",\n    \"Id\": \"adc8d2ac5d64a38d9073f0c87f5137891a039c91ed8b7335c051528a0643046d\",\n    \"InfraId\": \"89325e86fd779dda83c0189d01a0802351da38d05e4312932b11eef239c9935d\",\n    \"Name\": \"blog2\",\n    \"Namespace\": \"\",\n    \"Networks\": [\n      \"podman\"\n    ],\n    \"Status\": \"Degraded\",\n    \"Labels\": {}\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "29a8645f-5b09-44e3-a9af-130eb8674342",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/pods/stats",
+      "responses": [
+        {
+          "uuid": "f6d96ff7-cc6e-468e-b284-cd3646d6bde9",
+          "body": "[\n     {\n          \"CPU\": \"0.00%\",\n          \"MemUsage\": \"49.15kB / 2.052GB\",\n          \"MemUsageBytes\": \"48KiB / 1.911GiB\",\n          \"Mem\": \"0.00%\",\n          \"NetIO\": \"4.718kB / 1.188kB\",\n          \"BlockIO\": \"-- / --\",\n          \"PIDS\": \"1\",\n          \"Pod\": \"5de0484a9d3b\",\n          \"CID\": \"465c966f5696\",\n          \"Name\": \"5de0484a9d3b-infra\"\n     },\n     {\n          \"CPU\": \"1.43%\",\n          \"MemUsage\": \"450MB / 2.052GB\",\n          \"MemUsageBytes\": \"429.1MiB / 1.911GiB\",\n          \"Mem\": \"21.93%\",\n          \"NetIO\": \"4.718kB / 1.188kB\",\n          \"BlockIO\": \"0B / 123.9kB\",\n          \"PIDS\": \"35\",\n          \"Pod\": \"5de0484a9d3b\",\n          \"CID\": \"b9434955e2b8\",\n          \"Name\": \"mysql\"\n     },\n     {\n          \"CPU\": \"0.03%\",\n          \"MemUsage\": \"9.363MB / 2.052GB\",\n          \"MemUsageBytes\": \"8.93MiB / 1.911GiB\",\n          \"Mem\": \"0.46%\",\n          \"NetIO\": \"4.718kB / 1.188kB\",\n          \"BlockIO\": \"3.047MB / 82.37MB\",\n          \"PIDS\": \"6\",\n          \"Pod\": \"5de0484a9d3b\",\n          \"CID\": \"bde2cd1fa1af\",\n          \"Name\": \"wordpress\"\n     }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "842a425b-7697-4c8d-8caf-1cd394c7fecc",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/pods/:podName/json",
+      "responses": [
+        {
+          "uuid": "3b686944-9296-46ea-bfee-9ccdd90683f9",
+          "body": "{\n    \"Id\": \"5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a\",\n    \"Name\": \"{{urlParam 'podName'}}\",\n    \"Created\": \"2025-02-04T09:21:22.076484809+01:00\",\n    \"CreateCommand\": [\n         \"podman\",\n         \"pod\",\n         \"create\",\n         \"--name\",\n         \"blog\",\n         \"--infra\",\n         \"--publish\",\n         \"8080:80\",\n         \"--network\",\n         \"bridge\"\n    ],\n    \"ExitPolicy\": \"continue\",\n    \"State\": {{#if (eq (urlParam 'podName') 'blog')}}\"Running\"{{else}}\"Degraded\"{{/if}},\n    \"Hostname\": \"\",\n    \"CreateCgroup\": true,\n    \"CgroupParent\": \"user.slice\",\n    \"CgroupPath\": \"user.slice/user-501.slice/user@501.service/user.slice/user-libpod_pod_5de0484a9d3bd4d2f0626292c6734fcf7de9059f6a6802298ed80c3c46b7207a.slice\",\n    \"CreateInfra\": true,\n    \"InfraContainerID\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n    \"InfraConfig\": {\n         \"PortBindings\": {\n              \"80/tcp\": [\n                   {\n                        \"HostIp\": \"0.0.0.0\",\n                        \"HostPort\": \"8080\"\n                   }\n              ]\n         },\n         \"HostNetwork\": false,\n         \"StaticIP\": \"\",\n         \"StaticMAC\": \"\",\n         \"NoManageResolvConf\": false,\n         \"DNSServer\": null,\n         \"DNSSearch\": null,\n         \"DNSOption\": null,\n         \"NoManageHosts\": false,\n         \"HostAdd\": null,\n         \"Networks\": [\n              \"podman\"\n         ],\n         \"NetworkOptions\": null,\n         \"pid_ns\": \"private\",\n         \"userns\": \"host\",\n         \"uts_ns\": \"private\"\n    },\n    \"SharedNamespaces\": [\n         \"uts\",\n         \"ipc\",\n         \"net\"\n    ],\n    \"NumContainers\": 3,\n    \"Containers\": [\n         {\n              \"Id\": \"465c966f56967d1e2cee42b8af6271375483875d1547e8a41238c5dbca9d91c4\",\n              \"Name\": \"5de0484a9d3b-infra\",\n              \"State\": \"running\"\n         },\n         {\n              \"Id\": \"b9434955e2b87c64e1d3b1ffb85768a9639486593765120c286cfebb2b04c830\",\n              \"Name\": \"mysql\",\n              \"State\": \"running\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n              \"Name\": \"wordpress\",\n              \"State\": \"running\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a054\",\n              \"Name\": \"run\",\n              \"State\": \"running\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a053\",\n              \"Name\": \"wordpress\",\n              \"State\": \"running\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a063\",\n              \"Name\": \"exit1\",\n              \"State\": \"exited\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a064\",\n              \"Name\": \"exit2\",\n              \"State\": \"exited\"\n         },\n         {\n              \"Id\": \"bde2cd1fa1aff866cf5edd03d84677ed86792c9f1898861567ce4b1a1ca0a073\",\n              \"Name\": \"paused\",\n              \"State\": \"paused\"\n         }\n    ],\n    \"LockNumber\": 0\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "2f0c354c-a680-43a3-a970-e3621adba882",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v5.0.0/libpod/containers/stats",
+      "responses": [
+        {
+          "uuid": "54839cdf-a8d4-4c21-b034-a9938ff776c7",
+          "body": "{\n  \"Error\": null,\n  \"Stats\": [\n    {\n      \"AvgCPU\": 0.10607938362643086,\n      \"ContainerID\": \"76337a902ae6dbb440fb859574308d722046a9ced85d8bd012f203d28113b9b4\",\n      \"Name\": \"wordpress\",\n      \"PerCPU\": null,\n      \"CPU\": 0.10607938362643086,\n      \"CPUNano\": 859483000,\n      \"CPUSystemNano\": 734368,\n      \"SystemNano\": 1738829137318320000,\n      \"MemUsage\": 11374592,\n      \"MemLimit\": 2062614528,\n      \"MemPerc\": 0.5514647475614018,\n      \"NetInput\": 1006,\n      \"NetOutput\": 2146,\n      \"BlockInput\": 456812354,\n      \"BlockOutput\": 987156423,\n      \"PIDs\": 6,\n      \"UpTime\": 859483000,\n      \"Duration\": 859483000\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "f390a04c-57ee-49dc-a35a-62b296e75cdb"
+    },
+    {
+      "type": "route",
+      "uuid": "9b757a53-25b9-4a95-a43b-8a6ba3be1344"
+    },
+    {
+      "type": "route",
+      "uuid": "f8ac568a-c7e9-4116-9a2c-9de982ca9950"
+    },
+    {
+      "type": "route",
+      "uuid": "29a8645f-5b09-44e3-a9af-130eb8674342"
+    },
+    {
+      "type": "route",
+      "uuid": "842a425b-7697-4c8d-8caf-1cd394c7fecc"
+    },
+    {
+      "type": "route",
+      "uuid": "2f0c354c-a680-43a3-a970-e3621adba882"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

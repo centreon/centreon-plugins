@@ -9,8 +9,8 @@ function migrateConfigFromPmToJson() {
         /usr/bin/centreon_vmware_convert_config_file "$perl_config_file_path" > "$json_config_file_path"
         mv "$perl_config_file_path" "${perl_config_file_path}.deprecated"
     fi
-    chown centreon: "$json_config_file_path"
-    chmod 640 "$json_config_file_path"
+    chown centreon-gorgone:centreon "$json_config_file_path"
+    chmod 660 "$json_config_file_path"
 }
 
 function applyToSystemD() {

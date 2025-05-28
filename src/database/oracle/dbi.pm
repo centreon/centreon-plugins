@@ -26,6 +26,11 @@ use strict;
 use warnings;
 use POSIX qw(:signal_h);
 
+BEGIN {
+    # ORACLE_HOME environment variable must be defined
+    $ENV{'ORACLE_HOME'} = '' unless $ENV{'ORACLE_HOME'};
+}
+
 sub connect_oracle {
     my ($self, %options) = @_;
 
