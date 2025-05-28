@@ -736,14 +736,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distrib: el8
-            package_extension: rpm
-          - distrib: el9
-            package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
-          - distrib: bookworm
-            package_extension: deb
+          # - distrib: el8
+          #   package_extension: rpm
+          # - distrib: el9
+          #   package_extension: rpm
+          # - distrib: bullseye
+          #   package_extension: deb
+          # - distrib: bookworm
+          #   package_extension: deb
           - distrib: jammy
             package_extension: deb
           - distrib: noble
