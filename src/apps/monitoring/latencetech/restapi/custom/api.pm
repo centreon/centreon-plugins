@@ -44,7 +44,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'agent-id:s'    => { name => 'agent_id' },
             'api-key:s'     => { name => 'api_key' },
-            'api-path:s'    => { name => 'api_path', default => '/api/v1' },
+            'api-path:s'    => { name => 'api_path' },
             'customer-id:s' => { name => 'customer_id' },
             'hostname:s'    => { name => 'hostname' },
             'port:s'        => { name => 'port' },
@@ -74,8 +74,8 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{customer_id} = (defined($self->{option_results}->{customer_id})) ? $self->{option_results}->{customer_id} : undef;
     $self->{agent_id} = (defined($self->{option_results}->{agent_id})) ? $self->{option_results}->{agent_id} : undef;
-    $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : '';
-    $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '';
+    $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : undef;
+    $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/v1';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : '12099';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
@@ -105,6 +105,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{proto} = $self->{proto};
+    $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 500';
