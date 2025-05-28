@@ -81,9 +81,54 @@ pub struct Collect {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct Output {
+    #[serde(default = "default_ok")]
+    ok: String,
+    #[serde(default = "default_detail_ok")]
+    detail_ok: bool,
+    #[serde(default = "default_warning")]
+    warning: String,
+    #[serde(default = "default_detail_warning")]
+    detail_warning: bool,
+    #[serde(default = "default_critical")]
+    critical: String,
+    #[serde(default = "default_detail_critical")]
+    detail_critical: bool,
+    #[serde(default = "default_instance_separator")]
+    instance_separator: String,
+    #[serde(default = "default_metric_separator")]
+    metric_separator: String,
+}
+fn default_ok() -> String {
+    "Everything is OK".to_string()
+}
+fn default_detail_ok() -> bool {
+    false
+}
+fn default_warning() -> String {
+    "WARNING: ".to_string()
+}
+fn default_detail_warning() -> bool {
+    true
+}
+fn default_critical() -> String {
+    "CRITICAL: ".to_string()
+}
+fn default_detail_critical() -> bool {
+    true
+}
+fn default_instance_separator() -> String {
+    " - ".to_string()
+}
+fn default_metric_separator() -> String {
+    ", ".to_string()
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Command {
     collect: Collect,
     compute: Compute,
+    output: Output,
 }
 
 #[derive(Debug)]
@@ -252,7 +297,8 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        let current_status = compute_status(*item, &metric.warning, &metric.critical)?;
+                        let current_status =
+                            compute_status(*item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
@@ -361,7 +407,8 @@ impl Command {
                                     res
                                 }
                             };
-                            let current_status = compute_status(item, &metric.warning, &metric.critical)?;
+                            let current_status =
+                                compute_status(item, &metric.warning, &metric.critical)?;
                             status = worst(status, current_status);
                             let w = match metric.warning {
                                 Some(ref w) => Some(w.as_str()),

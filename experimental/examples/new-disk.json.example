@@ -4,7 +4,7 @@
       {
 	"name": "disk",
 	"oid": "1.3.6.1.2.1.25.2.3.1",
-	"query": "Walk",	    // par défaut walk
+	"query": "Walk",
 	"labels": {
 	  ".3": "label",
 	  ".4": "allocationUnits",
@@ -17,30 +17,42 @@
   "compute": {
     "metrics": [
       {
-	"prefix": "{disk.label}",		// par défaut "{idx}"
-	"name": "disk.usage.percent",		// le nom final est `prefix`#`name`
+	"prefix": "{disk.label}",
+	"name": "disk.usage.percent",
 	"value": "100 * {disk.used} / {disk.size}",
-	"uom": "%",	    // optional
-	"min": 0,	    // optional
-	"max": 100,	    // optional
+	"uom": "%",
+	"min": 0,
+	"max": 100,
+	"output": "{prefix}: {metrics.value}% used"       // optional : displayed if output. Default value: "{metrics.prefix}: {value}{metrics.uom}"
       },
       {
+	"prefix": "{disk.label}",
 	"name": "disk.usage.bytes",
 	"value": "{disk.used} * {disk.allocationUnits}",
-	"uom": "B",	    // optional
-	"min": 0,	    // optional
-	"max_expr": "{disk.size} * {disk.allocationUnits}"  // optional
+	"uom": "B",
+	"min": 0,
+	"max_expr": "{disk.size} * {disk.allocationUnits}"
       }
     ],
     "aggregations": [
       {
         "name": "avg.disk.usage.percent",
-	"value": "Average({metrics.disk.usage.percent})",	  // si agregation, pas de prefix
-	"uom": "%",     // optional
-	"min": 0,       // optional
-	"max": 100      // optional
+	"value": "Average({metrics.disk.usage.percent})",
+	"uom": "%",
+	"min": 0,
+	"max": 100
       }
     ]
+  },
+  "output": {
+    "ok": "Disk usage OK: {aggregations.avg.disk.usage.percent}% used",	// optional: default value: "Everything is OK"
+    "detail_ok": False,                                                 // optional: default value: False, if True, metrics are concatenated to the output
+    "warning": "Disk usage WARNING:",                                   // optional: default value: "WARNING:"
+    "detail_warning": True,                                             // optional: default value: True
+    "critical": "Disk usage CRITICAL:",                                 // optional: default value: "CRITICAL:"
+    "detail_critical": True,                                            // optional: default value: True
+    "instance_separator": " - ",                                        // optional: default value: " - "
+    "metric_separator": ", ",                                           // optional: default value: ", "
   }
 }
 

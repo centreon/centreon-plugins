@@ -22,7 +22,8 @@
 	"value": "100 * {disk.used} / {disk.size}",
 	"uom": "%",
 	"min": 0,
-	"max": 100
+	"max": 100,
+	"output": "{prefix}: {metrics.value}% used"
       },
       {
 	"prefix": "{disk.label}",
@@ -42,6 +43,16 @@
 	"max": 100
       }
     ]
+  },
+  "output": {
+    "ok": "Disk usage OK: {aggregations.avg.disk.usage.percent}% used",
+    "detail_ok": false,
+    "warning": "Disk usage WARNING:",
+    "detail_warning": true,
+    "critical": "Disk usage CRITICAL:",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
   }
 }
 
