@@ -97,8 +97,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-
-
     my $results = $options{custom}->request_api(endpoint => '/radio');
     $self->{global}->{display} = $results->{agentID};
     foreach my $kpi (keys %{$results}) {
@@ -106,7 +104,6 @@ sub manage_selection {
             $self->{global}->{$kpi} = $results->{$kpi};
         }
     }
-
 }
 
 1;
@@ -115,7 +112,7 @@ __END__
 
 =head1 MODE
 
-Check radio statistics.
+Check agent radio statistics.
 
 =over 8
 

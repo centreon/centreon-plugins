@@ -90,8 +90,6 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
     foreach my $protocol ('tcp', 'udp', 'http', 'https', 'icmp', 'twamp') {
         next if (defined($self->{option_results}->{filter_protocol}) && $self->{option_results}->{filter_protocol} ne '' &&
             $protocol !~ /$self->{option_results}->{filter_protocol}/i);

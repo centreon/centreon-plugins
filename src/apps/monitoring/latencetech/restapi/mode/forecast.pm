@@ -77,7 +77,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-
     my $results = $options{custom}->request_api(endpoint => '/forecast');
     $self->{global}->{display} = $results->{agentID};
     foreach my $kpi (keys %{$results}) {
@@ -91,7 +90,7 @@ __END__
 
 =head1 MODE
 
-Check forecast statistics.
+Check agent forecast statistics.
 
 =over 8
 

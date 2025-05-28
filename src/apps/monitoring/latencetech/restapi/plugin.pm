@@ -32,13 +32,13 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         
-        'connectivity'  => 'apps::monitoring::latencetech::restapi::mode::connectivity',
-        'discovery'     => 'apps::monitoring::latencetech::restapi::mode::discovery',
-        'forecast'      => 'apps::monitoring::latencetech::restapi::mode::forecast',
-        'latency'       => 'apps::monitoring::latencetech::restapi::mode::latency',
-        'radio'         => 'apps::monitoring::latencetech::restapi::mode::radio',
-        'throughput'    => 'apps::monitoring::latencetech::restapi::mode::throughput',
-        'twamp'         => 'apps::monitoring::latencetech::restapi::mode::twamp'
+        'connectivity' => 'apps::monitoring::latencetech::restapi::mode::connectivity',
+        'discovery'    => 'apps::monitoring::latencetech::restapi::mode::discovery',
+        'forecast'     => 'apps::monitoring::latencetech::restapi::mode::forecast',
+        'latency'      => 'apps::monitoring::latencetech::restapi::mode::latency',
+        'radio'        => 'apps::monitoring::latencetech::restapi::mode::radio',
+        'throughput'   => 'apps::monitoring::latencetech::restapi::mode::throughput',
+        'twamp'        => 'apps::monitoring::latencetech::restapi::mode::twamp'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::latencetech::restapi::custom::api';

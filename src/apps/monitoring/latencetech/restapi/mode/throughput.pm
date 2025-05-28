@@ -97,7 +97,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-
     my $results = $options{custom}->request_api(endpoint => '/lifbe');
     $self->{global}->{display} = $results->{agentID};
     foreach my $kpi (keys %{$results}) {
@@ -111,7 +110,7 @@ __END__
 
 =head1 MODE
 
-Check throughput statistics.
+Check agent throughput statistics.
 
 =over 8
 

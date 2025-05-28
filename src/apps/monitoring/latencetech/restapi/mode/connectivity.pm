@@ -240,8 +240,6 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
     my $results = $options{custom}->request_api(endpoint => '/ci');
     foreach my $kpi (keys %{$results->{KPIs}}) {
         $self->{kpis}->{$results->{AgentID}}->{display} = $results->{AgentID} . '-' . $results->{Attributes}->{agentName};

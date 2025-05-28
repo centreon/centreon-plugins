@@ -88,7 +88,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-
     my $results = $options{custom}->request_api(endpoint => '/twamp');
     $self->{global}->{display} = $results->{agentID};
     foreach my $kpi (keys %{$results}) {
@@ -102,7 +101,7 @@ __END__
 
 =head1 MODE
 
-Check TWAMP statistics.
+Check agent TWAMP statistics.
 
 =over 8
 
