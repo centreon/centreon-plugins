@@ -727,7 +727,7 @@ jobs:
     needs: [get-environment, sign-rpm, download-and-cache-deb, test-packages]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -760,8 +760,8 @@ jobs:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-          release_type: ${{ needs.get-environment.outputs.release_type }}
+          stability: stable
+          release_type: release
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   set-skip-label:
