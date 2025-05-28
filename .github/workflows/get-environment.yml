@@ -289,7 +289,8 @@ jobs:
               console.log(`Stable version based on .version.plugins file will be: ${version}`)
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
-              const branchName = "${{ github.head_ref || github.ref_name }}";
+              // const branchName = "${{ github.head_ref || github.ref_name }}";
+              const branchName = "release-20250501"
               const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
               if (matches) {
                 version = matches[1];
