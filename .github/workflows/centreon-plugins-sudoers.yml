@@ -1,4 +1,4 @@
-name: centreon-plugins-sudoers.yml
+name: centreon-plugins-sudoers
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -12,9 +12,7 @@ on:
   push:
     branches:
       - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
       - master
-      - "[2-9][0-9].[0-9][0-9].x"
     paths:
       - "dependencies/centreon-plugins-sudoers/**"
 
@@ -54,7 +52,7 @@ jobs:
             distrib: noble
             package_extension: deb
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
