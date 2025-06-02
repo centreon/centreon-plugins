@@ -76,6 +76,10 @@ contents:
     type: config|noreplace
     packager: deb
 
+  - src: "config/logrotate/centreon_vmware"
+    dst: "/etc/logrotate.d/centreon_vmware"
+    type: config|noreplace
+
   - src: "config/centreon_vmware-conf.json"
     dst: "/etc/centreon/centreon_vmware.json"
     type: config|noreplace
