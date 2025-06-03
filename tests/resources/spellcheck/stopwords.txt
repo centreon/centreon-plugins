@@ -234,6 +234,7 @@ RRDCached
 rsrp
 rsrq
 rssi
+µs
 Sansymphony
 SAS
 scenarii
@@ -245,7 +246,6 @@ sinr
 SkyHigh
 SMS
 SnapMirrors
-SnapMirrors
 snmp
 snmpd.conf
 space-usage-prct
@@ -256,8 +256,8 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
-SureBackup
 superseed
+SureBackup
 systemd
 SysVol
 TCP
@@ -282,7 +282,6 @@ UninterrupibleSleep
 uniq
 uptime
 --urlpath
-µs
 usage-prct
 usec
 userpass
@@ -297,6 +296,7 @@ VDSL2
 Veeam
 VeloCloud
 VM
+VMs
 VMware
 VMWARE
 vpn
