@@ -12,13 +12,14 @@ extern crate snafu;
 
 mod compute;
 mod generic;
+mod output;
 mod snmp;
 
 use generic::error::*;
 use generic::Command;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
-use log::{debug, trace};
+use log::trace;
 use snafu::ResultExt;
 use std::fs;
 
@@ -83,7 +84,7 @@ fn main() -> Result<(), Error> {
                                 let value = parser.value().unwrap().into_string().unwrap();
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
-                                        if (!value.is_empty()) {
+                                        if !value.is_empty() {
                                             cmd.add_warning(&wmetric, value);
                                         } else {
                                             trace!("Warning metric '{}' is empty", wmetric);
@@ -99,7 +100,7 @@ fn main() -> Result<(), Error> {
                                 let value = parser.value().unwrap().into_string().unwrap();
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
-                                        if (!value.is_empty()) {
+                                        if !value.is_empty() {
                                             cmd.add_critical(&cmetric, value);
                                         } else {
                                             trace!("Critical metric '{}' is empty", cmetric);
@@ -134,6 +135,6 @@ fn main() -> Result<(), Error> {
         }
     };
 
-    println!("{:?}", result);
+    println!("{}", result.output);
     std::process::exit(result.status as i32);
 }
