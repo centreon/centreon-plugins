@@ -805,42 +805,6 @@
         <status>OK</status>
         <temperature junos:celsius="36">36 degrees C / 96 degrees F</temperature>
     </environment-item>
-    <environment-item>
-        <name>Top Rear Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
-    <environment-item>
-        <name>Bottom Rear Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
-    <environment-item>
-        <name>Top Middle Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
-    <environment-item>
-        <name>Bottom Middle Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
-    <environment-item>
-        <name>Top Front Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
-    <environment-item>
-        <name>Bottom Front Fan</name>
-        <class>Fans</class>
-        <status>OK</status>
-        <comment>Spinning at intermediate-speed</comment>
-    </environment-item>
 </environment-information>
 <power-usage-information>
 <power-usage-item>
@@ -954,42 +918,6 @@
 </power-usage-system>
 </power-usage-information>
 <fan-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="rpm">
-<fan-information-rpm-item>
-    <name>Top Rear Fan</name>
-    <status>OK</status>
-    <rpm>3930</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
-<fan-information-rpm-item>
-    <name>Bottom Rear Fan</name>
-    <status>OK</status>
-    <rpm>3810</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
-<fan-information-rpm-item>
-    <name>Top Middle Fan</name>
-    <status>OK</status>
-    <rpm>3810</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
-<fan-information-rpm-item>
-    <name>Bottom Middle Fan</name>
-    <status>OK</status>
-    <rpm>3780</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
-<fan-information-rpm-item>
-    <name>Top Front Fan</name>
-    <status>OK</status>
-    <rpm>3870</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
-<fan-information-rpm-item>
-    <name>Bottom Front Fan</name>
-    <status>OK</status>
-    <rpm>3870</rpm>
-    <comment>Spinning at intermediate-speed</comment>
-</fan-information-rpm-item>
 </fan-information>
 <fpc-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="brief">
 <fpc>
@@ -1288,15 +1216,6 @@
                 </chassis-sub-sub-sub-module>
             </chassis-sub-sub-module>
         </chassis-sub-module>
-    </chassis-module>
-    <chassis-module>
-        <name>Fan Tray 0</name>
-        <version>REV 03</version>
-        <part-number>711-049570</part-number>
-        <serial-number>CAKD1828</serial-number>
-        <description>Fan Tray</description>
-        <clei-code>IPUCBEVCAA</clei-code>
-        <model-number>FANTRAY-MX104-S</model-number>
     </chassis-module>
 </chassis>
 </chassis-inventory>

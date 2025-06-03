@@ -43,10 +43,10 @@ sub custom_select_threshold {
         $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
         $status = 'critical';
     } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-        $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
+             $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
         $status = 'warning';
     } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-        $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
+             $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
         $status = 'unknown';
     }
     if ($@) {
@@ -109,11 +109,11 @@ sub set_counters {
 
     $self->{maps_counters}->{selections} = [
         { label => 'select', threshold => 0, set => {
-                key_values => [ { name => 'expand' }, { name => 'config' } ],
-                closure_custom_output => $self->can('custom_select_output'),
-                closure_custom_perfdata => $self->can('custom_select_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_select_threshold')
-            }
+            key_values                     => [ { name => 'expand' }, { name => 'config' } ],
+            closure_custom_output          => $self->can('custom_select_output'),
+            closure_custom_perfdata        => $self->can('custom_select_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_select_threshold')
+        }
         }
     ];
 }
@@ -122,7 +122,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-   
+
     $options{options}->add_options(arguments => {
         'config:s'            => { name => 'config' },
         'filter-selection:s%' => { name => 'filter_selection' },
@@ -171,7 +171,7 @@ sub read_config {
     my ($self, %options) = @_;
 
     my $content;
-    if ($self->{option_results}->{config} =~ /\n/m || ! -f "$self->{option_results}->{config}") {
+    if ($self->{option_results}->{config} =~ /\n/m || !-f "$self->{option_results}->{config}") {
         $content = $self->{option_results}->{config};
     } else {
         $content = $self->slurp_file(file => $self->{option_results}->{config});
@@ -246,7 +246,7 @@ sub parse_txt {
         push @entries, $_;
     }
 
-    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content}; 
+    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content};
 
     my $local = {};
     my $i = 0;
@@ -352,11 +352,11 @@ sub parse_structure {
 
                 if (!defined($value->{ $_->{id} })) {
                     # Check and assume in case of hash reference first part is the hash ref and second the hash key
-                    if($_->{id} =~ /^(.+?)\.(.*)$/){
+                    if ($_->{id} =~ /^(.+?)\.(.*)$/) {
                         if (!defined($value->{$1}->{$2})) {
                             $entry->{ $_->{id} } = '';
                             next;
-                        } else{
+                        } else {
                             $entry->{ $_->{id} } = $value->{$1}->{$2};
                         }
                     } else {
@@ -397,7 +397,6 @@ sub parse_structure {
     return $local;
 }
 
-
 sub collect_api_commands {
     my ($self, %options) = @_;
 
@@ -419,10 +418,10 @@ sub collect_api_commands {
                     $lentries = $self->parse_txt(name => $command->{name}, content => $content, conf => $conf);
                 } else {
                     $lentries = $self->parse_structure(
-                        name => $command->{name},
-                        content => $content,
-                        conf => $conf,
-                        rtype => $command->{rtype},
+                        name        => $command->{name},
+                        content     => $content,
+                        conf        => $conf,
+                        rtype       => $command->{rtype},
                         force_array => $command->{force_array}
                     );
                 }
@@ -432,9 +431,9 @@ sub collect_api_commands {
         }
 
         $self->set_functions(
-            section => "api > commands > $command->{name}",
+            section   => "api > commands > $command->{name}",
             functions => $command->{functions},
-            default => 1
+            default   => 1
         );
     }
 }
@@ -443,7 +442,7 @@ sub is_api_cache_enabled {
     my ($self, %options) = @_;
 
     return 0 if (
-        !defined($self->{config}->{api}->{cache}) || 
+        !defined($self->{config}->{api}->{cache}) ||
         !defined($self->{config}->{api}->{cache}->{enable}) ||
         $self->{config}->{api}->{cache}->{enable} !~ /^true|1$/i
     );
@@ -458,14 +457,14 @@ sub use_api_cache {
 
     my $has_cache_file = $self->{api_cache}->read(
         statefile => 'cache_juniper_collection_' . $options{custom}->get_identifier() . '_' .
-            md5_hex($self->{option_results}->{config}) 
+                     md5_hex($self->{option_results}->{config})
     );
     $self->{api_collected} = $self->{api_cache}->get(name => 'api_collected');
-    my $reload = defined($self->{config}->{api}->{cache}->{reload}) && $self->{config}->{api}->{cache}->{reload} =~ /(\d+)/ ? 
-        $self->{config}->{api}->{cache}->{reload} : 30;
+    my $reload = defined($self->{config}->{api}->{cache}->{reload}) && $self->{config}->{api}->{cache}->{reload} =~ /(\d+)/ ?
+                 $self->{config}->{api}->{cache}->{reload} : 30;
     return 0 if (
-        $has_cache_file == 0 || 
-        !defined($self->{api_collected}) || 
+        $has_cache_file == 0 ||
+        !defined($self->{api_collected}) ||
         ((time() - $self->{api_collected}->{epoch}) > ($reload * 60))
     );
 
@@ -541,12 +540,12 @@ sub display_variables {
                         $expr . ".[$instance].$attr",
                         $self->{api_collected}->{tables}->{$tbl_name}->{$instance}->{$attr}
                     ),
-                    debug => 1
+                    debug    => 1
                 );
             }
         }
     }
-    
+
     foreach my $name (keys %{$self->{expand}}) {
         $self->{output}->output_add(
             long_msg => sprintf(
@@ -554,7 +553,7 @@ sub display_variables {
                 $name,
                 $self->{expand}->{$name}
             ),
-            debug => 1
+            debug    => 1
         );
     }
 }
@@ -597,7 +596,7 @@ sub exist_table_name {
 sub get_local_variable {
     my ($self, %options) = @_;
 
-    if (defined( $self->{expand}->{ $options{name} })) {
+    if (defined($self->{expand}->{ $options{name} })) {
         return $self->{expand}->{ $options{name} };
     } else {
         $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", keys(%{$self->{expand}})) . "')", debug => 1);
@@ -637,7 +636,10 @@ sub get_table_instance {
         return undef;
     }
     if (!defined($self->{api_collected}->{tables}->{ $options{table} }->{ $options{instance} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{api_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg =>
+                                        "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{api_collected}->{tables}->{ $options{table} }})) . "')",
+                                        debug     =>
+                                        1);
         return undef;
     }
     return $self->{api_collected}->{tables}->{ $options{table} }->{ $options{instance} };
@@ -674,8 +676,8 @@ sub get_special_variable_value {
         $data = $self->get_table(table => $options{table});
     } elsif ($options{type} == 4) {
         $data = $self->get_table_attribute_value(
-            table => $options{table},
-            instance => $options{instance},
+            table     => $options{table},
+            instance  => $options{instance},
             attribute => $options{label}
         );
     }
@@ -691,10 +693,10 @@ sub set_special_variable_value {
         $data = $self->set_local_variable(name => $options{label}, value => $options{value});
     } elsif ($options{type} == 4) {
         $data = $self->set_table_attribute_value(
-            table => $options{table},
-            instance => $options{instance},
+            table     => $options{table},
+            instance  => $options{instance},
             attribute => $options{label},
-            value => $options{value}
+            value     => $options{value}
         );
     }
 
@@ -755,10 +757,10 @@ sub parse_api_tables {
 
     my ($code, $msg_error, $end, $table_label, $instance_label, $label);
     ($code, $msg_error, $end, $table_label) = $self->parse_forward(
-        chars => $options{chars},
-        start => $options{start}, 
+        chars   => $options{chars},
+        start   => $options{start},
         allowed => '[a-zA-Z0-9_\-]',
-        stop => '[).]'
+        stop    => '[).]'
     );
     if ($code) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
@@ -790,18 +792,18 @@ sub parse_api_tables {
             $instance_label = $self->get_local_variable(name => $result->{label});
         } elsif ($result->{type} == 4) {
             $instance_label = $self->get_table_attribute_value(
-                table => $result->{table},
-                instance => $result->{instance},
+                table     => $result->{table},
+                instance  => $result->{instance},
                 attribute => $result->{label}
             );
         }
         $instance_label = defined($instance_label) ? $instance_label : '';
     } else {
         ($code, $msg_error, $end, $instance_label) = $self->parse_forward(
-            chars => $options{chars},
-            start => $end + 2, 
+            chars   => $options{chars},
+            start   => $end + 2,
             allowed => '[^\]]',
-            stop => '[\]]'
+            stop    => '[\]]'
         );
         if ($code) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
@@ -820,10 +822,10 @@ sub parse_api_tables {
     }
 
     ($code, $msg_error, $end, $label) = $self->parse_forward(
-        chars => $options{chars},
-        start => $end + 2,
+        chars   => $options{chars},
+        start   => $end + 2,
         allowed => '[a-zA-Z0-9_\-]',
-        stop => '[)]'
+        stop    => '[)]'
     );
     if ($code) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
@@ -848,7 +850,7 @@ sub parse_special_variable {
     my ($self, %options) = @_;
 
     my $start = $options{start};
-    if ($options{chars}->[$start] ne '%' || 
+    if ($options{chars}->[$start] ne '%' ||
         $options{chars}->[$start + 1] ne '(') {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable not starting by %(');
         $self->{output}->option_exit();
@@ -860,10 +862,10 @@ sub parse_special_variable {
         $result = { %$parse, %$result };
     } else {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
-            chars => $options{chars},
-            start => $start + 2, 
+            chars   => $options{chars},
+            start   => $start + 2,
             allowed => '[a-zA-Z0-9\._\-]',
-            stop => '[)]'
+            stop    => '[)]'
         );
         if ($code) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
@@ -882,7 +884,7 @@ sub substitute_string {
 
     return undef if (!defined($options{value}));
 
-    my $arr = [split //, $options{value}];
+    my $arr = [ split //, $options{value} ];
     my $results = {};
     my $last_end = -1;
     while ($options{value} =~ /\Q%(\E/g) {
@@ -952,7 +954,7 @@ sub set_expand_table {
     return if (!defined($options{expand}));
     foreach my $name (keys %{$options{expand}}) {
         $self->{current_section} = '[' . $options{section} . ' > ' . $name . ']';
-        my $result = $self->parse_special_variable(chars => [split //, $options{expand}->{$name}], start => 0);
+        my $result = $self->parse_special_variable(chars => [ split //, $options{expand}->{$name} ], start => 0);
         if ($result->{type} != 3) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
             $self->{output}->option_exit();
@@ -989,7 +991,7 @@ sub exec_func_map {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|1|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1002,13 +1004,13 @@ sub exec_func_map {
     }
     my $save = $result;
     if (defined($options{save}) && $options{save} ne '') {
-        $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        $save = $self->parse_special_variable(chars => [ split //, $options{save} ], start => 0);
         if ($save->{type} !~ /^(?:0|1|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
         }
     } elsif (defined($options{dst}) && $options{dst} ne '') {
-        $save = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
+        $save = $self->parse_special_variable(chars => [ split //, $options{dst} ], start => 0);
         if ($save->{type} !~ /^(?:0|1|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in dst attribute");
             $self->{output}->option_exit();
@@ -1078,20 +1080,20 @@ sub exec_func_scale {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
     }
     my $data = $self->get_special_variable_value(%$result);
     my ($save_value, $save_unit) = $self->scale(
-        value => $data,
+        value    => $data,
         src_unit => $options{src_unit},
         dst_unit => $options{dst_unit}
     );
 
     if (defined($options{save_value}) && $options{save_value} ne '') {
-        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        my $var_save_value = $self->parse_special_variable(chars => [ split //, $options{save_value} ], start => 0);
         if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
             $self->{output}->option_exit();
@@ -1099,7 +1101,7 @@ sub exec_func_scale {
         $self->set_special_variable_value(value => $save_value, %$var_save_value);
     }
     if (defined($options{save_unit}) && $options{save_unit} ne '') {
-        my $var_save_unit = $self->parse_special_variable(chars => [split //, $options{save_unit}], start => 0);
+        my $var_save_unit = $self->parse_special_variable(chars => [ split //, $options{save_unit} ], start => 0);
         if ($var_save_unit->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
             $self->{output}->option_exit();
@@ -1122,7 +1124,7 @@ sub exec_func_second2human {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1144,7 +1146,7 @@ sub exec_func_second2human {
         $sign = '-';
         $data = abs($data);
     }
-    
+
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($data / $_->{value});
@@ -1161,7 +1163,7 @@ sub exec_func_second2human {
     }
 
     if (defined($options{save_value}) && $options{save_value} ne '') {
-        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        my $var_save_value = $self->parse_special_variable(chars => [ split //, $options{save_value} ], start => 0);
         if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
             $self->{output}->option_exit();
@@ -1175,7 +1177,7 @@ sub exec_func_date2epoch {
 
     if (!defined($self->{module_datetime_loaded})) {
         centreon::plugins::misc::mymodule_load(
-            module => 'DateTime',
+            module    => 'DateTime',
             error_msg => "Cannot load module 'DateTime'."
         );
         $self->{module_datetime_loaded} = 1;
@@ -1197,7 +1199,7 @@ sub exec_func_date2epoch {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
         $self->{output}->option_exit();
     }
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|1|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1211,8 +1213,8 @@ sub exec_func_date2epoch {
         my @matches = ($data =~ /$options{format_custom}/);
         my $date = {};
         foreach (('year', 'month', 'day', 'hour', 'minute', 'second')) {
-            $date->{$_} = $matches[ $options{$_} -1 ]
-                if (defined($options{$_}) && $options{$_} =~ /^\d+$/ && defined($matches[ $options{$_} -1 ]));
+            $date->{$_} = $matches[ $options{$_} - 1 ]
+                if (defined($options{$_}) && $options{$_} =~ /^\d+$/ && defined($matches[ $options{$_} - 1 ]));
         }
 
         foreach (('year', 'month', 'day')) {
@@ -1236,7 +1238,7 @@ sub exec_func_date2epoch {
         my $attr = '%(' . $result->{label} . ucfirst($_) . ')';
         $attr = $options{'save_' . $_}
             if (defined($options{'save_' . $_}) && $options{'save_' . $_} ne '');
-        my $var_save_value = $self->parse_special_variable(chars => [split //, $attr], start => 0);
+        my $var_save_value = $self->parse_special_variable(chars => [ split //, $attr ], start => 0);
         if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_$_ attribute");
             $self->{output}->option_exit();
@@ -1250,7 +1252,7 @@ sub exec_func_epoch2date {
 
     if (!defined($self->{module_datetime_loaded})) {
         centreon::plugins::misc::mymodule_load(
-            module => 'DateTime',
+            module    => 'DateTime',
             error_msg => "Cannot load module 'DateTime'."
         );
         $self->{module_datetime_loaded} = 1;
@@ -1268,7 +1270,7 @@ sub exec_func_epoch2date {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
         $self->{output}->option_exit();
     }
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1285,7 +1287,7 @@ sub exec_func_epoch2date {
     my $time_value = $dt->strftime($options{format});
 
     if (defined($options{save}) && $options{save} ne '') {
-        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        my $var_save_value = $self->parse_special_variable(chars => [ split //, $options{save} ], start => 0);
         if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
@@ -1307,7 +1309,7 @@ sub exec_func_count {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^2$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1331,7 +1333,7 @@ sub exec_func_count {
     }
 
     if (defined($options{save}) && $options{save} ne '') {
-        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        my $save = $self->parse_special_variable(chars => [ split //, $options{save} ], start => 0);
         if ($save->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
@@ -1357,7 +1359,7 @@ sub exec_func_replace {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1392,7 +1394,7 @@ sub exec_func_assign {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{save} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
@@ -1431,11 +1433,11 @@ sub exec_func_capture {
         $self->{output}->option_exit();
     }
 
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
-    } 
+    }
     my $data = $self->get_special_variable_value(%$result);
 
     my @matches = ($data =~ /$options{pattern}/);
@@ -1448,7 +1450,7 @@ sub exec_func_capture {
             $value = $matches[ $_->{offset} ];
         }
 
-        my $save = $self->parse_special_variable(chars => [split //, $_->{save}], start => 0);
+        my $save = $self->parse_special_variable(chars => [ split //, $_->{save} ], start => 0);
         if ($save->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
@@ -1470,17 +1472,17 @@ sub exec_func_scientific2number {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
         $self->{output}->option_exit();
     }
-    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    my $result = $self->parse_special_variable(chars => [ split //, $options{src} ], start => 0);
     if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
-    } 
+    }
     my $data = $self->get_special_variable_value(%$result);
 
     $data = centreon::plugins::misc::expand_exponential(value => $data);
 
     if (defined($options{save}) && $options{save} ne '') {
-        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        my $save = $self->parse_special_variable(chars => [ split //, $options{save} ], start => 0);
         if ($save->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
@@ -1576,8 +1578,8 @@ sub check_filter_option {
     my ($self, %options) = @_;
     foreach (keys %{$self->{option_results}->{filter_selection}}) {
 
-        if(!defined($self->{expand}->{$_}) && grep {/^src\./} keys(%{$self->{expand}}) ne '') {
-            $self->{output}->add_option_msg(long_msg => "Wrong filter-selection - Available attributes for filtering: " . join(", ", grep {/^src\./} keys(%{$self->{expand}})), debug => 1);
+        if (!defined($self->{expand}->{$_}) && grep { /^src\./ } keys(%{$self->{expand}}) ne '') {
+            $self->{output}->add_option_msg(long_msg => "Wrong filter-selection - Available attributes for filtering: " . join(", ", grep { /^src\./ } keys(%{$self->{expand}})), debug => 1);
         }
 
         return 1 if (
@@ -1664,7 +1666,7 @@ sub add_selection {
 
         if ($self->check_filter2(filter => $_->{exit}, values => $self->{expand})) {
             $self->{exit_selection} = 1;
-            return ;
+            return;
         }
     }
 }
@@ -1683,7 +1685,7 @@ sub add_selection_loop {
         next if (!defined($_->{source}) || $_->{source} eq '');
         $self->{current_section} = '[selection_loop > ' . $i . ' > source]';
 
-        my $result = $self->parse_special_variable(chars => [split //, $_->{source}], start => 0);
+        my $result = $self->parse_special_variable(chars => [ split //, $_->{source} ], start => 0);
         if ($result->{type} != 2) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
             $self->{output}->option_exit();
@@ -1722,7 +1724,7 @@ sub add_selection_loop {
 
             if ($self->check_filter2(filter => $_->{exit}, values => $self->{expand})) {
                 $self->{exit_selection} = 1;
-                return ;
+                return;
             }
         }
     }
@@ -1740,11 +1742,10 @@ sub set_formatting {
     }
 }
 
-
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => [ 'name' ]);
 }
 
 sub disco_show {

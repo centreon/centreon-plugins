@@ -36,15 +36,14 @@ sub custom_lsp_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel    => $self->{nlabel},
         instances => $instances,
-        value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        value     => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
     );
 }
-
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -90,38 +89,38 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'lsp', type => 3, cb_prefix_output => 'prefix_lsp_output', cb_long_output => 'lsp_long_output',
+        { name               => 'lsp', type => 3, cb_prefix_output => 'prefix_lsp_output', cb_long_output => 'lsp_long_output',
           indent_long_output => '    ', message_multiple => 'All LSP sessions are ok',
-            group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, skipped_code => { -10 => 1 } }
-            ]
+          group              => [
+              { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+              { name => 'traffic', type => 0, skipped_code => { -10 => 1 } }
+          ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'lsp-sessions-detected', display_ok => 0, nlabel => 'lsp.sessions.detected.count', set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'detected: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [ { name => 'detected' } ],
+            output_template => 'detected: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         }
     ];
 
     $self->{maps_counters}->{status} = [
         {
-            label => 'status',
-            type => 2,
+            label            => 'status',
+            type             => 2,
             critical_default => '%{lspState} !~ /up/i',
-            set => {
-                key_values => [
+            set              => {
+                key_values                     => [
                     { name => 'type' }, { name => 'name' }, { name => 'srcAddress' }, { name => 'dstAddress' },
                     { name => 'lspState' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -129,11 +128,11 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'lsp-session-traffic', nlabel => 'lsp.session.traffic.bytespersecond', set => {
-                key_values => [ { name => 'lspBytes', per_second => 1 }, { name => 'type' }, { name => 'name' }, { name => 'srcAddress' }, { name => 'dstAddress' } ],
-                output_template => 'traffic: %s %s/s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_lsp_perfdata')
-            }
+            key_values              => [ { name => 'lspBytes', per_second => 1 }, { name => 'type' }, { name => 'name' }, { name => 'srcAddress' }, { name => 'dstAddress' } ],
+            output_template         => 'traffic: %s %s/s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_lsp_perfdata')
+        }
         }
     ];
 }
@@ -143,7 +142,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'filter-type:s'               => { name => 'filter_type' },
         'filter-name:s'               => { name => 'filter_name' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
@@ -162,8 +161,8 @@ sub check_options {
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
-        instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { type => 1, name => 1, srcAddress => 1, dstAddress => 1 }
+        instances   => $self->{option_results}->{custom_perfdata_instances},
+        labels      => { type => 1, name => 1, srcAddress => 1, dstAddress => 1 }
     );
 }
 
@@ -176,39 +175,39 @@ sub manage_selection {
     $self->{lsp} = {};
     foreach my $item (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $item->{name} !~ /$self->{option_results}->{filter_name}/);
+                 $item->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $item->{type} !~ /$self->{option_results}->{filter_type}/);
+                 $item->{type} !~ /$self->{option_results}->{filter_type}/);
 
         $self->{lsp}->{ $item->{type} . '-' . $item->{name} } = {
-            type => $item->{type},
-            name => $item->{name},
+            type       => $item->{type},
+            name       => $item->{name},
             srcAddress => $item->{srcAddress},
             dstAddress => $item->{dstAddress},
-            status => {
-                type => $item->{type},
-                name => $item->{name},
+            status     => {
+                type       => $item->{type},
+                name       => $item->{name},
                 srcAddress => $item->{srcAddress},
                 dstAddress => $item->{dstAddress},
-                lspState => $item->{lspState}
+                lspState   => $item->{lspState}
             },
-            traffic => {
-                type => $item->{type},
-                name => $item->{name},
+            traffic    => {
+                type       => $item->{type},
+                name       => $item->{name},
                 srcAddress => $item->{srcAddress},
                 dstAddress => $item->{dstAddress},
-                lspBytes => $item->{lspBytes}
+                lspBytes   => $item->{lspBytes}
             }
         };
         $self->{global}->{detected}++;
     }
 
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
-            (defined($self->{option_results}->{filter_type}) ? $self->{option_results}->{filter_type} : '')
-        );
+                          md5_hex(
+                              (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+                              (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+                              (defined($self->{option_results}->{filter_type}) ? $self->{option_results}->{filter_type} : '')
+                          );
 }
 
 1;
@@ -248,10 +247,21 @@ You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddre
 Define the conditions to match for the status to be CRITICAL (default: '%{lspState} !~ /up/i').
 You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddress}, %{lspState}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-lsp-sessions-detected>
 
-Thresholds.
-Can be: 'lsp-sessions-detected', 'lsp-session-traffic'.
+Define the LSP sessions detected conditions to match for the status to be WARNING.
+
+=item B<--critical-lsp-sessions-detected>
+
+Define the LSP sessions detected conditions to match for the status to be CRITICAL.
+
+=item B<--warning-lsp-session-traffic>
+
+Define the LSP session traffic conditions to match for the status to be WARNING.
+
+=item B<--critical-lsp-session-traffic>
+
+Define the LSP session traffic conditions to match for the status to be CRITICAL.
 
 =back
 

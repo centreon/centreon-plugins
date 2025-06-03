@@ -29,54 +29,54 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|psu|temperature)$';
-    
+
     $self->{cb_hook2} = 'api_execute';
-    
+
     $self->{thresholds} = {
-        afeb => [
-            ['Online', 'OK'],
-            ['Offline', 'OK'],
-            ['Check', 'CRITICAL']
+        afeb        => [
+            [ 'Online', 'OK' ],
+            [ 'Offline', 'OK' ],
+            [ 'Check', 'CRITICAL' ]
         ],
-        fan => [
-            ['OK', 'OK'],
-            ['Check', 'WARNING']
+        fan         => [
+            [ 'OK', 'OK' ],
+            [ 'Check', 'WARNING' ]
         ],
-        fpc => [
-            ['Online', 'OK'],
-            ['Dead', 'CRITICAL'],
-            ['Diag', 'WARNING'],
-            ['Empty', 'OK'],
-            ['Offline', 'CRITICAL'],
-            ['Present', 'CRITICAL'],
-            ['Probed', 'WARNING'],
-            ['Unknown', 'UNKNOWN'],
-            ['Offlining', 'OK'],
-            ['Spare', 'OK'],
-            ['Fault', 'CRITICAL'] # Fault-off also
+        fpc         => [
+            [ 'Online', 'OK' ],
+            [ 'Dead', 'CRITICAL' ],
+            [ 'Diag', 'WARNING' ],
+            [ 'Empty', 'OK' ],
+            [ 'Offline', 'CRITICAL' ],
+            [ 'Present', 'CRITICAL' ],
+            [ 'Probed', 'WARNING' ],
+            [ 'Unknown', 'UNKNOWN' ],
+            [ 'Offlining', 'OK' ],
+            [ 'Spare', 'OK' ],
+            [ 'Fault', 'CRITICAL' ] # Fault-off also
         ],
-        pic => [
-            ['Online', 'OK'],
-            ['.*', 'CRITICAL']
+        pic         => [
+            [ 'Online', 'OK' ],
+            [ '.*', 'CRITICAL' ]
         ],
-        mic => [
-            ['Online', 'OK'],
-            ['Error', 'CRITICAL']
+        mic         => [
+            [ 'Online', 'OK' ],
+            [ 'Error', 'CRITICAL' ]
         ],
-        psu => [
-            ['Online', 'OK'],
-            ['Empty', 'OK'],
-            ['Present', 'WARNING'] # present but not online
+        psu         => [
+            [ 'Online', 'OK' ],
+            [ 'Empty', 'OK' ],
+            [ 'Present', 'WARNING' ] # present but not online
         ],
         temperature => [
-            ['OK', 'OK'],
-            ['Absent', 'OK'],
-            ['.*', 'CRITICAL']
+            [ 'OK', 'OK' ],
+            [ 'Absent', 'OK' ],
+            [ '.*', 'CRITICAL' ]
         ]
     };
-    
-    $self->{components_path} = 'network::juniper::common::junos::api::mode::components';
-    $self->{components_module} = ['afeb', 'fan', 'fpc', 'mic', 'pic', 'psu', 'temperature'];
+
+    $self->{components_path} = 'network::juniper::common::junos::netconf::mode::components';
+    $self->{components_module} = [ 'afeb', 'fan', 'fpc', 'mic', 'pic', 'psu', 'temperature' ];
 }
 
 sub api_execute {

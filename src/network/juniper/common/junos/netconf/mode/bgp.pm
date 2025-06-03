@@ -36,12 +36,12 @@ sub custom_bgp_rib_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel    => $self->{nlabel},
         instances => $instances,
-        value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        value     => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
     );
 }
 
@@ -51,15 +51,15 @@ sub custom_bgp_peer_perfdata {
     my $instances = [];
     foreach (@{$self->{instance_mode}->{custom_perfdata_instances_bgp_peer}}) {
         push @$instances, $self->{result_values}->{$_};
-    }   
+    }
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel    => $self->{nlabel},
         instances => $instances,
-        value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        value     => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
     );
 }
 
@@ -131,40 +131,40 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'bgp', type => 3, cb_prefix_output => 'prefix_bgp_output', cb_long_output => 'bgp_long_output',
+        { name               => 'bgp', type => 3, cb_prefix_output => 'prefix_bgp_output', cb_long_output => 'bgp_long_output',
           indent_long_output => '    ', message_multiple => 'All BGP peers are ok',
-            group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
-                { name => 'ribs', display_long => 1, cb_prefix_output => 'prefix_rib_output',
-                  message_multiple => 'All BGP ribs are ok', type => 1 }
-            ]
+          group              => [
+              { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+              { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
+              { name             => 'ribs', display_long => 1, cb_prefix_output => 'prefix_rib_output',
+                message_multiple => 'All BGP ribs are ok', type => 1 }
+          ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'bgp-peer-detected', display_ok => 0, nlabel => 'bgp.peers.detected.count', set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'detected: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [ { name => 'detected' } ],
+            output_template => 'detected: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         }
     ];
 
     $self->{maps_counters}->{status} = [
         {
-            label => 'status',
-            type => 2,
+            label            => 'status',
+            type             => 2,
             critical_default => '%{peerState} !~ /established/i',
-            set => {
-                key_values => [
+            set              => {
+                key_values                     => [
                     { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
                     { name => 'peerState' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -172,43 +172,43 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'bgp-peer-traffic-in', nlabel => 'bgp.peer.traffic.in.bytes', set => {
-                key_values => [ { name => 'inBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
-                output_template => 'in: %s %s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
-            }
+            key_values              => [ { name => 'inBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
+            output_template         => 'in: %s %s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
+        }
         },
         { label => 'bgp-peer-traffic-out', nlabel => 'bgp.peer.traffic.out.bytes', set => {
-                key_values => [ { name => 'outBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
-                output_template => 'out: %s %s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
-            }
+            key_values              => [ { name => 'outBytes', diff => 1 }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' } ],
+            output_template         => 'out: %s %s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_bgp_peer_perfdata')
+        }
         }
     ];
 
     $self->{maps_counters}->{ribs} = [
         {
             label => 'rib-status',
-            type => 2,
-            set => {
-                key_values => [
+            type  => 2,
+            set   => {
+                key_values                     => [
                     { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
                     { name => 'ribName' }, { name => 'sendState' }
                 ],
-                closure_custom_output => $self->can('custom_rib_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_rib_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'bgp-peer-rib-prefixes-active', nlabel => 'bgp.peer.rib.prefixes.active.count', set => {
-                key_values => [
-                    { name => 'activePrefix' }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
-                    { name => 'ribName' }
-                ],
-                output_template => 'prefixes active: %d',
-                closure_custom_perfdata => $self->can('custom_bgp_rib_perfdata')
-            }
+            key_values              => [
+                { name => 'activePrefix' }, { name => 'localAddr' }, { name => 'localAs' }, { name => 'peerAddr' }, { name => 'peerAs' },
+                { name => 'ribName' }
+            ],
+            output_template         => 'prefixes active: %d',
+            closure_custom_perfdata => $self->can('custom_bgp_rib_perfdata')
+        }
         }
     ];
 }
@@ -219,7 +219,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-snmp-index:s'                  => { name => 'filter_snmp_index' },        
+        'filter-snmp-index:s'                  => { name => 'filter_snmp_index' },
         'filter-local-address:s'               => { name => 'filter_local_address' },
         'filter-peer-address:s'                => { name => 'filter_peer_address' },
         'filter-rib-name:s'                    => { name => 'filter_rib_name' },
@@ -240,8 +240,8 @@ sub check_options {
 
     $self->{custom_perfdata_instances_bgp_peer} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances-bgp-peer',
-        instances => $self->{option_results}->{custom_perfdata_instances_bgp_peer},
-        labels => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1 }
+        instances   => $self->{option_results}->{custom_perfdata_instances_bgp_peer},
+        labels      => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1 }
     );
 
     if (!defined($self->{option_results}->{custom_perfdata_instances_bgp_rib}) || $self->{option_results}->{custom_perfdata_instances_bgp_rib} eq '') {
@@ -250,8 +250,8 @@ sub check_options {
 
     $self->{custom_perfdata_instances_bgp_rib} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances-bgp-rib',
-        instances => $self->{option_results}->{custom_perfdata_instances_bgp_rib},
-        labels => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1, ribName => 1 }
+        instances   => $self->{option_results}->{custom_perfdata_instances_bgp_rib},
+        labels      => { localAddr => 1, localAs => 1, peerAddr => 1, peerAs => 1, ribName => 1 }
     );
 }
 
@@ -264,44 +264,44 @@ sub manage_selection {
     $self->{bgp} = {};
     foreach my $item (@$result) {
         next if (defined($self->{option_results}->{filter_snmp_index}) && $self->{option_results}->{filter_snmp_index} ne '' &&
-            $item->{snmpIndex} !~ /$self->{option_results}->{filter_snmp_index}/);
+                 $item->{snmpIndex} !~ /$self->{option_results}->{filter_snmp_index}/);
         next if (defined($self->{option_results}->{filter_local_address}) && $self->{option_results}->{filter_local_address} ne '' &&
-            $item->{localAddr} !~ /$self->{option_results}->{filter_local_address}/);
+                 $item->{localAddr} !~ /$self->{option_results}->{filter_local_address}/);
         next if (defined($self->{option_results}->{filter_peer_address}) && $self->{option_results}->{filter_peer_address} ne '' &&
-            $item->{peerAddr} !~ /$self->{option_results}->{filter_peer_address}/);
+                 $item->{peerAddr} !~ /$self->{option_results}->{filter_peer_address}/);
 
         $self->{bgp}->{ $item->{snmpIndex} } = {
             localAddr => $item->{localAddr},
-            localAs => $item->{localAs},
-            peerAddr => $item->{peerAddr},
-            peerAs => $item->{peerAs},
-            status => {
+            localAs   => $item->{localAs},
+            peerAddr  => $item->{peerAddr},
+            peerAs    => $item->{peerAs},
+            status    => {
                 localAddr => $item->{localAddr},
-                localAs => $item->{localAs},
-                peerAddr => $item->{peerAddr},
-                peerAs => $item->{peerAs},
+                localAs   => $item->{localAs},
+                peerAddr  => $item->{peerAddr},
+                peerAs    => $item->{peerAs},
                 peerState => $item->{peerState}
             },
-            traffic => {
+            traffic   => {
                 localAddr => $item->{localAddr},
-                localAs => $item->{localAs},
-                peerAddr => $item->{peerAddr},
-                peerAs => $item->{peerAs},
-                inBytes => $item->{inBytes},
-                outBytes => $item->{outBytes}
+                localAs   => $item->{localAs},
+                peerAddr  => $item->{peerAddr},
+                peerAs    => $item->{peerAs},
+                inBytes   => $item->{inBytes},
+                outBytes  => $item->{outBytes}
             },
-            ribs => {}
+            ribs      => {}
         };
 
         foreach (@{$item->{ribs}}) {
             next if (defined($self->{option_results}->{filter_rib_name}) && $self->{option_results}->{filter_rib_name} ne '' &&
-                $_->{ribName} !~ /$self->{option_results}->{filter_rib_name}/);
+                     $_->{ribName} !~ /$self->{option_results}->{filter_rib_name}/);
 
             $self->{bgp}->{ $item->{snmpIndex} }->{ribs}->{ $_->{ribName} } = {
                 localAddr => $item->{localAddr},
-                localAs => $item->{localAs},
-                peerAddr => $item->{peerAddr},
-                peerAs => $item->{peerAs},
+                localAs   => $item->{localAs},
+                peerAddr  => $item->{peerAddr},
+                peerAs    => $item->{peerAs},
                 %$_
             };
         }
@@ -310,13 +310,13 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_snmp_index}) ? $self->{option_results}->{filter_snmp_index} : '') . '_' .
-            (defined($self->{option_results}->{filter_local_address}) ? $self->{option_results}->{filter_local_address} : '') . '_' .
-            (defined($self->{option_results}->{filter_peer_address}) ? $self->{option_results}->{filter_peer_address} : '') . '_' .
-            (defined($self->{option_results}->{filter_rib_name}) ? $self->{option_results}->{filter_rib_name} : '')
-        );
+                          md5_hex(
+                              (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+                              (defined($self->{option_results}->{filter_snmp_index}) ? $self->{option_results}->{filter_snmp_index} : '') . '_' .
+                              (defined($self->{option_results}->{filter_local_address}) ? $self->{option_results}->{filter_local_address} : '') . '_' .
+                              (defined($self->{option_results}->{filter_peer_address}) ? $self->{option_results}->{filter_peer_address} : '') . '_' .
+                              (defined($self->{option_results}->{filter_rib_name}) ? $self->{option_results}->{filter_rib_name} : '')
+                          );
 }
 
 1;
@@ -379,10 +379,29 @@ You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{pe
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{localAddr}, %{localAs}, %{peerAddr}, %{peerAs}, %{peerState}, %{ribName}, %{sendState}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-bgp-peer-detected>
 
-Thresholds.
-Can be: 'bgp-peer-detected', 'bgp-peer-traffic-in', 'bgp-peer-traffic-out'.
+Warning threshold for number of BGP peers detected.
+
+=item B<--critical-bgp-peer-detected>
+
+Critical threshold for number of BGP peers detected.
+
+=item B<--warning-bgp-peer-traffic-in>
+
+Warning threshold for BGP peer traffic in.
+
+=item B<--critical-bgp-peer-traffic-in>
+
+Critical threshold for BGP peer traffic in.
+
+=item B<--warning-bgp-peer-traffic-out>
+
+Warning threshold for BGP peer traffic out.
+
+=item B<--critical-bgp-peer-traffic-out>
+
+Critical threshold for BGP peer traffic out.
 
 =back
 

@@ -40,12 +40,12 @@ sub set_counters {
 
     $self->{maps_counters}->{memory} = [
         { label => 'usage-prct', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'mem_used' } ],
-                output_template => '%.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'mem_used' } ],
+            output_template => '%.2f %%',
+            perfdatas       => [
+                { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 }
@@ -54,7 +54,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' }
     });
@@ -70,7 +70,7 @@ sub manage_selection {
     $self->{memory} = {};
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_name}/);
+                 $_->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{memory}->{ $_->{name} } = $_;
     }
@@ -90,10 +90,13 @@ Check memory usage.
 
 Filter memory by name.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage-prct>
 
-Thresholds.
-Can be: 'usage-prct' (%).
+Warning threshold for memory usage (%).
+
+=item B<--critical-usage-prct>
+
+Critical threshold for memory usage (%).
 
 =back
 

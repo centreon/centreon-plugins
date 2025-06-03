@@ -30,20 +30,20 @@ sub disco_show {
 
     foreach my $item (sort { $a->{instance} cmp $b->{instance} } values %{$self->{results}->{mic}}) {
         next if (scalar(@{$item->{pics}}) <= 0);
-        
+
         $self->{output}->add_disco_entry(
-            component => 'mic',
-            instance => $item->{instance},
+            component   => 'mic',
+            instance    => $item->{instance},
             description => $item->{description},
-            fpc_slot => $item->{fpc_slot},
-            mic_slot => $item->{mic_slot}
+            fpc_slot    => $item->{fpc_slot},
+            mic_slot    => $item->{mic_slot}
         );
     }
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "checking mic");
     $self->{components}->{mic} = { name => 'mic', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'mic'));
@@ -76,7 +76,7 @@ sub check {
         my $exit = $self->get_severity(section => 'mic', value => $status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "mic '%s @ %s' status is %s [%s]",
                     $item->{description},

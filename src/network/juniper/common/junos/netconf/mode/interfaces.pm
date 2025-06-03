@@ -49,22 +49,22 @@ sub custom_traffic_perfdata {
         my $nlabel = $self->{nlabel};
         $nlabel =~ s/bitspersecond/bits/;
         $self->{output}->perfdata_add(
-            nlabel => $nlabel,
-            unit => 'b',
+            nlabel    => $nlabel,
+            unit      => 'b',
             instances => $self->{result_values}->{display},
-            value => $self->{result_values}->{traffic_counter},
-            warning => $warning,
-            critical => $critical,
-            min => 0
+            value     => $self->{result_values}->{traffic_counter},
+            warning   => $warning,
+            critical  => $critical,
+            min       => 0
         );
     } else {
         $self->{output}->perfdata_add(
-            nlabel => $self->{nlabel},
+            nlabel    => $self->{nlabel},
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => sprintf('%d', $self->{result_values}->{traffic_per_seconds}),
-            warning => $warning,
-            critical => $critical,
-            min => 0, max => $self->{result_values}->{speed}
+            value     => sprintf('%d', $self->{result_values}->{traffic_per_seconds}),
+            warning   => $warning,
+            critical  => $critical,
+            min       => 0, max => $self->{result_values}->{speed}
         );
     }
 }
@@ -74,11 +74,23 @@ sub custom_traffic_threshold {
 
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value     =>
+                                                   $self->{result_values}->{traffic_prct},
+                                                   threshold =>
+                                                   [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                     { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'bps') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value     =>
+                                                   $self->{result_values}->{traffic_per_seconds},
+                                                   threshold =>
+                                                   [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                     { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value     =>
+                                                   $self->{result_values}->{traffic_counter},
+                                                   threshold =>
+                                                   [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                     { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -86,7 +98,7 @@ sub custom_traffic_threshold {
 sub custom_traffic_output {
     my ($self, %options) = @_;
 
-    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);
     return sprintf(
         'traffic %s: %s/s (%s)',
         $self->{result_values}->{label}, $traffic_value . $traffic_unit,
@@ -96,14 +108,17 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) / 
-        $options{delta_time};
+    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{                 $self
+                                                                                                                                                                                        ->{instance} . '_' . $options{extra_options}
+                                                                                                                                                                                        ->{label_ref}})
+                                                    /
+                                                    $options{delta_time};
     $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
 
     $self->{result_values}->{traffic_per_seconds} = sprintf('%d', $self->{result_values}->{traffic_per_seconds});
 
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) &&
-        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} ne '' && 
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} ne '' &&
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
@@ -122,24 +137,24 @@ sub custom_errors_perfdata {
         $nlabel =~ s/count$/percentage/;
 
         $self->{output}->perfdata_add(
-            nlabel => $nlabel,
-            unit => '%',
+            nlabel    => $nlabel,
+            unit      => '%',
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => sprintf('%.2f', $self->{result_values}->{prct}),
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-            min => 0,
-            max => 100
+            value     => sprintf('%.2f', $self->{result_values}->{prct}),
+            warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min       => 0,
+            max       => 100
         );
     } else {
         $self->{output}->perfdata_add(
-            nlabel => $self->{nlabel},
+            nlabel    => $self->{nlabel},
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => $self->{result_values}->{used},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-            min => 0,
-            max => $self->{result_values}->{total}
+            value     => $self->{result_values}->{used},
+            warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min       => 0,
+            max       => $self->{result_values}->{total}
         );
     }
 }
@@ -149,9 +164,17 @@ sub custom_errors_threshold {
 
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value     =>
+                                                   $self->{result_values}->{prct},
+                                                   threshold =>
+                                                   [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                     { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } else {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value     =>
+                                                   $self->{result_values}->{used},
+                                                   threshold =>
+                                                   [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                     { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -172,11 +195,11 @@ sub custom_errors_calc {
     my ($self, %options) = @_;
 
     my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
-    my $errors_diff = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } 
-        -  $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
+    my $errors_diff = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} }
+                      - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
     my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
     my $total_diff = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'}
-        - $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+                     - $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
 
     $errors_diff = sprintf('%d', $errors_diff);
     $total_diff = sprintf('%d', $total_diff);
@@ -239,27 +262,27 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interfaces', type => 3, cb_prefix_output => 'prefix_interface_output', cb_long_output => 'interface_long_output', 
+        { name               => 'interfaces', type => 3, cb_prefix_output => 'prefix_interface_output', cb_long_output => 'interface_long_output',
           indent_long_output => '    ', message_multiple => 'All interfaces are ok',
-            group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'packets_in', type => 0, cb_prefix_output => 'prefix_packets_in_output', skipped_code => { -10 => 1 } },
-                { name => 'packets_out', type => 0, cb_prefix_output => 'prefix_packets_out_output', skipped_code => { -10 => 1 } },
-                { name => 'optical', type => 0, skipped_code => { -10 => 1 } }
-            ]
+          group              => [
+              { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+              { name => 'traffic', type => 0, skipped_code => { -10 => 1 } },
+              { name => 'packets_in', type => 0, cb_prefix_output => 'prefix_packets_in_output', skipped_code => { -10 => 1 } },
+              { name => 'packets_out', type => 0, cb_prefix_output => 'prefix_packets_out_output', skipped_code => { -10 => 1 } },
+              { name => 'optical', type => 0, skipped_code => { -10 => 1 } }
+          ]
         }
     ];
 
     $self->{maps_counters}->{status} = [
-         {
-            label => 'status',
-            type => 2,
+        {
+            label            => 'status',
+            type             => 2,
             critical_default => '%{admstatus} eq "up" and %{opstatus} ne "up"',
-            set => {
-                key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+            set              => {
+                key_values                     => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -267,290 +290,290 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'in-traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'traffic in: %s',
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
-            }
+            key_values                     => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+            closure_custom_output          => $self->can('custom_traffic_output'), output_error_template => 'traffic in: %s',
+            closure_custom_perfdata        => $self->can('custom_traffic_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+        }
         },
         { label => 'out-traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'traffic out: %s',
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
-            }
+            key_values                     => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+            closure_custom_output          => $self->can('custom_traffic_output'), output_error_template => 'traffic out: %s',
+            closure_custom_perfdata        => $self->can('custom_traffic_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+        }
         }
     ];
 
     $self->{maps_counters}->{packets_in} = [
         { label => 'in-discard', nlabel => 'interface.packets.in.discard.count', set => {
-                key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'discard: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                     => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
+            closure_custom_output          => $self->can('custom_errors_output'), output_error_template => 'discard: %s',
+            closure_custom_perfdata        => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-error', nlabel => 'interface.packets.in.error.count', set => {
-                key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                     => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
+            closure_custom_output          => $self->can('custom_errors_output'), output_error_template => 'error: %s',
+            closure_custom_perfdata        => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-fcserror', nlabel => 'interface.packets.in.fcserror.count', set => {
-                key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'fcs error', label_ref1 => 'in', label_ref2 => 'fcserror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'fcs error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'fcs error', label_ref1 => 'in', label_ref2 => 'fcserror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'fcs error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-runts', nlabel => 'interface.packets.in.runts.count', set => {
-                key_values => [ { name => 'inrunts', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'runts' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'runts: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'inrunts', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'runts' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'runts: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-giant', nlabel => 'interface.packets.in.giant.count', set => {
-                key_values => [ { name => 'ingiant', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'giant' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'giant: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'ingiant', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'giant' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'giant: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-l3-incomplete', nlabel => 'interface.packets.in.l3incomplete.count', set => {
-                key_values => [ { name => 'inl3incomplete', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'l3 incomplete', label_ref1 => 'in', label_ref2 => 'l3incomplete' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'l3 incomplete: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'inl3incomplete', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'l3 incomplete', label_ref1 => 'in', label_ref2 => 'l3incomplete' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'l3 incomplete: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-fifo-error', nlabel => 'interface.packets.in.fifo.error.count', set => {
-                key_values => [ { name => 'infifoerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'fifo error', label_ref1 => 'in', label_ref2 => 'fifoerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'fifo error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'infifoerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'fifo error', label_ref1 => 'in', label_ref2 => 'fifoerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'fifo error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-l2-mismatch-timeout', nlabel => 'interface.packets.in.l2mismatch.timeout.count', set => {
-                key_values => [ { name => 'inl2mismatchtimeout', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'l2 mismatch timeout', label_ref1 => 'in', label_ref2 => 'l2mismatchtimeout' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'l2 mismatch timeout: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'inl2mismatchtimeout', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'l2 mismatch timeout', label_ref1 => 'in', label_ref2 => 'l2mismatchtimeout' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'l2 mismatch timeout: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-drop', nlabel => 'interface.packets.in.drop.count', set => {
-                key_values => [ { name => 'indrop', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'drop' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'drop: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'indrop', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'drop' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'drop: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'in-resource-error', nlabel => 'interface.packets.in.resource.error.count', set => {
-                key_values => [ { name => 'inresourceerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'resource error', label_ref1 => 'in', label_ref2 => 'resourceerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'resource error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'inresourceerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'resource error', label_ref1 => 'in', label_ref2 => 'resourceerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'resource error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         }
     ];
 
     $self->{maps_counters}->{packets_out} = [
         { label => 'out-discard', nlabel => 'interface.packets.out.discard.count', set => {
-                key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'discard: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                     => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
+            closure_custom_output          => $self->can('custom_errors_output'), output_error_template => 'discard: %s',
+            closure_custom_perfdata        => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-error', nlabel => 'interface.packets.out.error.count', set => {
-                key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                     => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
+            closure_custom_output          => $self->can('custom_errors_output'), output_error_template => 'error: %s',
+            closure_custom_perfdata        => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-drop', nlabel => 'interface.packets.out.drop.count', set => {
-                key_values => [ { name => 'outdrop', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'drop' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'drop: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                     => [ { name => 'outdrop', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc            => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'drop' },
+            closure_custom_output          => $self->can('custom_errors_output'), output_error_template => 'drop: %s',
+            closure_custom_perfdata        => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-carrier-transition', nlabel => 'interface.packets.out.carrier.transition.count', set => {
-                key_values => [ { name => 'outcarriertransition', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'carrier transition', label_ref1 => 'out', label_ref2 => 'carriertransition' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'carrier transition: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outcarriertransition', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'carrier transition', label_ref1 => 'out', label_ref2 => 'carriertransition' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'carrier transition: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-collision', nlabel => 'interface.packets.out.collision.count', set => {
-                key_values => [ { name => 'outcollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'collision' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'collision: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outcollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'collision' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'collision: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-mtu-error', nlabel => 'interface.packets.out.mtu.error.count', set => {
-                key_values => [ { name => 'outmtuerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'mtu error', label_ref1 => 'out', label_ref2 => 'mtuerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'mtu error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outmtuerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'mtu error', label_ref1 => 'out', label_ref2 => 'mtuerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'mtu error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-aged', nlabel => 'interface.packets.out.aged.count', set => {
-                key_values => [ { name => 'outaged', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'aged' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'packets out aged: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outaged', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'aged' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'packets out aged: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-hslink-crc-error', nlabel => 'interface.packets.out.hslink.crc.error.count', set => {
-                key_values => [ { name => 'outhslinkcrcerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'hs link crc error', label_ref1 => 'out', label_ref2 => 'hslinkcrcerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'hs link crc error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outhslinkcrcerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'hs link crc error', label_ref1 => 'out', label_ref2 => 'hslinkcrcerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'hs link crc error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-fifo-error', nlabel => 'interface.packets.out.fifo.error.count', set => {
-                key_values => [ { name => 'outfifoerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'fifo error', label_ref1 => 'out', label_ref2 => 'fifoerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'fifo error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outfifoerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'fifo error', label_ref1 => 'out', label_ref2 => 'fifoerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'fifo error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
         { label => 'out-resource-error', nlabel => 'interface.packets.out.resource.error.count', set => {
-                key_values => [ { name => 'outresourceerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { label => 'resource error', label_ref1 => 'out', label_ref2 => 'resourceerror' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'resource error: %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold')
-            }
+            key_values                        => [ { name => 'outresourceerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' } ],
+            closure_custom_calc               => $self->can('custom_errors_calc'),
+            closure_custom_calc_extra_options => { label => 'resource error', label_ref1 => 'out', label_ref2 => 'resourceerror' },
+            closure_custom_output             => $self->can('custom_errors_output'), output_error_template => 'resource error: %s',
+            closure_custom_perfdata           => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check    => $self->can('custom_errors_threshold')
+        }
         },
     ];
 
     $self->{maps_counters}->{optical} = [
         { label => 'input-power', nlabel => 'interface.input.power.dbm', set => {
-                key_values => [ { name => 'inputPowerDbm' }, { name => 'display' } ],
-                output_template => 'input power: %s dBm',
-                closure_custom_threshold_check => sub {
-                    my ($self, %options) = @_;
+            key_values                     => [ { name => 'inputPowerDbm' }, { name => 'display' } ],
+            output_template                => 'input power: %s dBm',
+            closure_custom_threshold_check => sub {
+                my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(
-                        value => $self->{result_values}->{inputPowerDbm},
-                        threshold => [
-                            {
-                                label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, 
-                                exit_litteral => 'critical'
-                            },
-                            {
-                                label => 'warning-'. $self->{thlabel} . '-' . $self->{instance},
-                                exit_litteral => 'warning'
-                            }
-                        ]
-                    );
-                },
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
+                return $self->{perfdata}->threshold_check(
+                    value     => $self->{result_values}->{inputPowerDbm},
+                    threshold => [
+                        {
+                            label         => 'critical-' . $self->{thlabel} . '-' . $self->{instance},
+                            exit_litteral => 'critical'
+                        },
+                        {
+                            label         => 'warning-' . $self->{thlabel} . '-' . $self->{instance},
+                            exit_litteral => 'warning'
+                        }
+                    ]
+                );
+            },
+            closure_custom_perfdata        => sub {
+                my ($self, %options) = @_;
 
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'dBm',
-                        instances => $self->{result_values}->{display},
-                        value => $self->{result_values}->{inputPowerDbm},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
-                        min => 0
-                    );
-                }
+                $self->{output}->perfdata_add(
+                    nlabel    => $self->{nlabel},
+                    unit      => 'dBm',
+                    instances => $self->{result_values}->{display},
+                    value     => $self->{result_values}->{inputPowerDbm},
+                    warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
+                    critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                    min       => 0
+                );
             }
+        }
         },
         { label => 'bias-current', nlabel => 'interface.bias.current.milliampere', set => {
-                key_values => [ { name => 'biasCurrent' }, { name => 'display' } ],
-                output_template => 'bias current: %s mA',
-                perfdatas => [
-                    { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
+            key_values      => [ { name => 'biasCurrent' }, { name => 'display' } ],
+            output_template => 'bias current: %s mA',
+            perfdatas       => [
+                { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
+            ]
+        }
         },
         { label => 'output-power', nlabel => 'interface.output.power.dbm', set => {
-                key_values => [ { name => 'outputPowerDbm' }, { name => 'display' } ],
-                output_template => 'output power: %s dBm',
-                closure_custom_threshold_check => sub {
-                    my ($self, %options) = @_;
+            key_values                     => [ { name => 'outputPowerDbm' }, { name => 'display' } ],
+            output_template                => 'output power: %s dBm',
+            closure_custom_threshold_check => sub {
+                my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(
-                        value => $self->{result_values}->{outputPowerDbm},
-                        threshold => [
-                            {
-                                label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, 
-                                exit_litteral => 'critical'
-                            },
-                            {
-                                label => 'warning-'. $self->{thlabel} . '-' . $self->{instance},
-                                exit_litteral => 'warning'
-                            }
-                        ]
-                    );
-                },
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
+                return $self->{perfdata}->threshold_check(
+                    value     => $self->{result_values}->{outputPowerDbm},
+                    threshold => [
+                        {
+                            label         => 'critical-' . $self->{thlabel} . '-' . $self->{instance},
+                            exit_litteral => 'critical'
+                        },
+                        {
+                            label         => 'warning-' . $self->{thlabel} . '-' . $self->{instance},
+                            exit_litteral => 'warning'
+                        }
+                    ]
+                );
+            },
+            closure_custom_perfdata        => sub {
+                my ($self, %options) = @_;
 
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'dBm',
-                        instances => $self->{result_values}->{display},
-                        value => $self->{result_values}->{outputPowerDbm},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
-                        min => 0
-                    );
-                }
+                $self->{output}->perfdata_add(
+                    nlabel    => $self->{nlabel},
+                    unit      => 'dBm',
+                    instances => $self->{result_values}->{display},
+                    value     => $self->{result_values}->{outputPowerDbm},
+                    warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
+                    critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                    min       => 0
+                );
             }
+        }
         },
         { label => 'module-temperature', nlabel => 'interface.module.temperature.celsius', set => {
-                key_values => [ { name => 'moduleTemperature' }, { name => 'display' } ],
-                output_template => 'module temperature: %.2f C',
-                perfdatas => [
-                    { template => '%.2f', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
+            key_values      => [ { name => 'moduleTemperature' }, { name => 'display' } ],
+            output_template => 'module temperature: %.2f C',
+            perfdatas       => [
+                { template => '%.2f', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
+            ]
+        }
         }
     ];
 }
@@ -586,7 +609,7 @@ sub check_options {
     if (!defined($self->{option_results}->{add_traffic}) &&
         !defined($self->{option_results}->{add_status}) &&
         !defined($self->{option_results}->{add_optical}) &&
-        !defined($self->{option_results}->{add_errors}) && 
+        !defined($self->{option_results}->{add_errors}) &&
         !defined($self->{option_results}->{add_extra_errors})) {
         $self->{option_results}->{add_status} = 1;
     }
@@ -660,39 +683,39 @@ sub do_selection_interface {
     $self->{interfaces} = {};
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $_->{ $self->{option_results}->{filter_use} } !~ /$self->{option_results}->{filter_interface}/);
+                 $_->{ $self->{option_results}->{filter_use} } !~ /$self->{option_results}->{filter_interface}/);
         next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
-            $_->{ $self->{option_results}->{filter_use} } =~ /$self->{option_results}->{exclude_interface}/);
+                 $_->{ $self->{option_results}->{filter_use} } =~ /$self->{option_results}->{exclude_interface}/);
 
         $self->{interfaces}->{ $_->{name} } = {
-            display => $_->{ $self->{option_results}->{display_use} },
-            packets_in => {
-                display => $_->{ $self->{option_results}->{display_use} },
+            display     => $_->{ $self->{option_results}->{display_use} },
+            packets_in  => {
+                display          => $_->{ $self->{option_results}->{display_use} },
                 total_in_packets => $_->{inPkts}
             },
             packets_out => {
-                display => $_->{ $self->{option_results}->{display_use} },
+                display           => $_->{ $self->{option_results}->{display_use} },
                 total_out_packets => $_->{outPkts}
             },
-            optical => {
+            optical     => {
                 display => $_->{ $self->{option_results}->{display_use} },
             }
         };
 
         if (defined($self->{option_results}->{add_status})) {
             $self->{interfaces}->{ $_->{name} }->{status} = {
-                display => $_->{ $self->{option_results}->{display_use} },
-                opstatus => $_->{opstatus},
+                display   => $_->{ $self->{option_results}->{display_use} },
+                opstatus  => $_->{opstatus},
                 admstatus => $_->{admstatus},
             };
         }
 
         if (defined($self->{option_results}->{add_traffic})) {
             $self->{interfaces}->{ $_->{name} }->{traffic} = {
-                display => $_->{ $self->{option_results}->{display_use} },
-                in => $_->{in},
-                out => $_->{out},
-                speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
+                display   => $_->{ $self->{option_results}->{display_use} },
+                in        => $_->{in},
+                out       => $_->{out},
+                speed_in  => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
                 speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $_->{speed},
             };
         };
@@ -744,13 +767,13 @@ sub do_selection_interface_optical {
                 defined($self->{option_results}->{add_errors}) || defined($self->{option_results}->{add_extra_errors})
             )
             && !defined($self->{interfaces}->{ $_->{name} }));
-        
+
         # only --add-optical option
         if (!defined($self->{interfaces}->{ $_->{name} })) {
             next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-                $_->{name} !~ /$self->{option_results}->{filter_interface}/);
+                     $_->{name} !~ /$self->{option_results}->{filter_interface}/);
             next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
-                $_->{name} =~ /$self->{option_results}->{exclude_interface}/);
+                     $_->{name} =~ /$self->{option_results}->{exclude_interface}/);
 
             $self->{interfaces}->{ $_->{name} } = { display => $_->{name}, optical => { display => $_->{name} } };
         }
@@ -809,18 +832,18 @@ sub manage_selection {
 
     $self->do_selection_interface(custom => $options{custom});
     $self->do_selection_interface_optical(custom => $options{custom});
-    
+
     if (scalar(keys %{$self->{interfaces}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();
     }
 
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
-            (defined($self->{option_results}->{filter_interface}) ? $self->{option_results}->{filter_interface} : 'all') . '_' .
-            $self->{checking}
-        );
+                          md5_hex(
+                              (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
+                              (defined($self->{option_results}->{filter_interface}) ? $self->{option_results}->{filter_interface} : 'all') . '_' .
+                              $self->{checking}
+                          );
 }
 
 1;

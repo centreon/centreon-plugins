@@ -31,7 +31,7 @@ sub disco_show {
     foreach my $item (@{$self->{results}->{psu}}) {
         $self->{output}->add_disco_entry(
             component => 'psu',
-            instance => $item->{name}
+            instance  => $item->{name}
         );
     }
 }
@@ -60,33 +60,33 @@ sub check {
         my $exit = $self->get_severity(section => 'psu', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Power supply '%s' status is %s",
                     $item->{name}, $item->{status}
                 )
             );
         }
-        
+
         if (defined($item->{dc_output_load})) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $item->{name}, value => $item->{dc_output_load});
 
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity => $exit2,
+                    severity  => $exit2,
                     short_msg => sprintf("Power supply '%s' DC output load is %s%%", $item->{name}, $item->{dc_output_load})
                 );
             }
 
-            $self->{output}->perfdata_add( 
-                nlabel => 'hardware.psu.dc.output.load.percentage',
-                unit => '%',
+            $self->{output}->perfdata_add(
+                nlabel    => 'hardware.psu.dc.output.load.percentage',
+                unit      => '%',
                 instances => $item->{name},
-                value => $item->{dc_output_load},
-                warning => $warn,
-                critical => $crit,
-                min => 0,
-                max => 100
+                value     => $item->{dc_output_load},
+                warning   => $warn,
+                critical  => $crit,
+                min       => 0,
+                max       => 100
             );
         }
     }

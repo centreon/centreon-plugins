@@ -31,14 +31,14 @@ sub disco_show {
     foreach my $item (@{$self->{results}->{fpc}}) {
         $self->{output}->add_disco_entry(
             component => 'fpc',
-            instance => $item->{name}
+            instance  => $item->{name}
         );
     }
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "checking fpc");
     $self->{components}->{fpc} = { name => 'fpc', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fpc'));
@@ -59,7 +59,7 @@ sub check {
         my $exit = $self->get_severity(section => 'fpc', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "%s status is %s",
                     $item->{name}, $item->{status}

@@ -35,7 +35,7 @@ sub custom_ldp_perfdata {
         my $value;
         if ($_ eq 'messageType') {
             $value = $self->{key_values}->[0]->{name};
-            $value =~ s/_/ /g;            
+            $value =~ s/_/ /g;
         } else {
             $value = $self->{result_values}->{$_};
         }
@@ -43,12 +43,12 @@ sub custom_ldp_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel    => $self->{nlabel},
         instances => $instances,
-        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        value     => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
     );
 }
 
@@ -103,38 +103,38 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'ldp', type => 3, cb_prefix_output => 'prefix_ldp_output', cb_long_output => 'ldp_long_output',
+        { name               => 'ldp', type => 3, cb_prefix_output => 'prefix_ldp_output', cb_long_output => 'ldp_long_output',
           indent_long_output => '    ', message_multiple => 'All LDP sessions are ok',
-            group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'messages_sent', type => 0, cb_prefix_output => 'prefix_messages_sent_output', skipped_code => { -10 => 1 } },
-                { name => 'messages_received', type => 0, cb_prefix_output => 'prefix_messages_received_output', skipped_code => { -10 => 1 } }
-            ]
+          group              => [
+              { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+              { name => 'messages_sent', type => 0, cb_prefix_output => 'prefix_messages_sent_output', skipped_code => { -10 => 1 } },
+              { name => 'messages_received', type => 0, cb_prefix_output => 'prefix_messages_received_output', skipped_code => { -10 => 1 } }
+          ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'ldp-sessions-detected', display_ok => 0, nlabel => 'ldp.sessions.detected.count', set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'detected: %s',
-                perfdatas => [
-                    { template => '%s', min => 0 }
-                ]
-            }
+            key_values      => [ { name => 'detected' } ],
+            output_template => 'detected: %s',
+            perfdatas       => [
+                { template => '%s', min => 0 }
+            ]
+        }
         }
     ];
 
     $self->{maps_counters}->{status} = [
         {
-            label => 'status',
-            type => 2,
+            label            => 'status',
+            type             => 2,
             critical_default => '%{connectionState} !~ /open$/i || %{sessionState} !~ /operational/i',
-            set => {
-                key_values => [
+            set              => {
+                key_values                     => [
                     { name => 'id' }, { name => 'remoteAddress' }, { name => 'sessionState' }, { name => 'connectionState' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -142,24 +142,24 @@ sub set_counters {
 
     $self->{maps_counters}->{messages_sent} = [];
     $self->{maps_counters}->{messages_received} = [];
-    foreach (('initialization', 'keeaplive', 'notification', 'address', 'address withdraw', 
-        'label mapping', 'label request', 'label withdraw', 'label release', 'label abort')) {
+    foreach (('initialization', 'keeaplive', 'notification', 'address', 'address withdraw',
+              'label mapping', 'label request', 'label withdraw', 'label release', 'label abort')) {
         my ($label, $nlabel) = ($_, $_);
         $label =~ s/\s+/-/g;
         $nlabel =~ s/\s+/_/g;
-        push @{$self->{maps_counters}->{messages_sent}}, { 
+        push @{$self->{maps_counters}->{messages_sent}}, {
             label => 'ldp-session-messages-' . $label . '-sent', nlabel => 'ldp.session.messages.sent.count', set => {
-                key_values => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
-                output_template => $_ . ': %s%s',
-                closure_custom_perfdata => $self->can('custom_ldp_perfdata')
-            }
+            key_values              => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
+            output_template         => $_ . ': %s%s',
+            closure_custom_perfdata => $self->can('custom_ldp_perfdata')
+        }
         };
-        push @{$self->{maps_counters}->{messages_received}}, { 
+        push @{$self->{maps_counters}->{messages_received}}, {
             label => 'ldp-session-messages-' . $label . '-received', nlabel => 'ldp.session.messages.received.count', set => {
-                key_values => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
-                output_template => $_ . ': %s%s',
-                closure_custom_perfdata => $self->can('custom_ldp_perfdata')
-            }
+            key_values              => [ { name => $nlabel, diff => 1 }, { name => 'id' }, { name => 'remoteAddress' } ],
+            output_template         => $_ . ': %s%s',
+            closure_custom_perfdata => $self->can('custom_ldp_perfdata')
+        }
         };
     }
 }
@@ -169,7 +169,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'filter-id:s'                 => { name => 'filter_id' },
         'filter-remote-address:s'     => { name => 'filter_remote_address' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
@@ -188,8 +188,8 @@ sub check_options {
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
-        instances => $self->{option_results}->{custom_perfdata_instances},
-        labels => { id => 1, remoteAddress => 1, messageType => 1 }
+        instances   => $self->{option_results}->{custom_perfdata_instances},
+        labels      => { id => 1, remoteAddress => 1, messageType => 1 }
     );
 }
 
@@ -202,24 +202,24 @@ sub manage_selection {
     $self->{ldp} = {};
     foreach my $item (@$result) {
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $item->{id} !~ /$self->{option_results}->{filter_id}/);
+                 $item->{id} !~ /$self->{option_results}->{filter_id}/);
         next if (defined($self->{option_results}->{filter_remote_address}) && $self->{option_results}->{filter_remote_address} ne '' &&
-            $item->{remoteAddress} !~ /$self->{option_results}->{filter_remote_address}/);
+                 $item->{remoteAddress} !~ /$self->{option_results}->{filter_remote_address}/);
 
         $self->{ldp}->{ $item->{id} } = {
-            remoteAddress => $item->{remoteAddress},
-            status => {
-                id => $item->{id},
-                remoteAddress => $item->{remoteAddress},
-                sessionState => $item->{sessionState},
+            remoteAddress     => $item->{remoteAddress},
+            status            => {
+                id              => $item->{id},
+                remoteAddress   => $item->{remoteAddress},
+                sessionState    => $item->{sessionState},
                 connectionState => $item->{connectionState}
             },
-            messages_sent => {
-                id => $item->{id},
+            messages_sent     => {
+                id            => $item->{id},
                 remoteAddress => $item->{remoteAddress}
             },
             messages_received => {
-                id => $item->{id},
+                id            => $item->{id},
                 remoteAddress => $item->{remoteAddress}
             }
         };
@@ -235,11 +235,11 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'juniper_api_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
-            (defined($self->{option_results}->{filter_remote_address}) ? $self->{option_results}->{filter_remote_address} : '')
-        );
+                          md5_hex(
+                              (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+                              (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
+                              (defined($self->{option_results}->{filter_remote_address}) ? $self->{option_results}->{filter_remote_address} : '')
+                          );
 }
 
 1;
