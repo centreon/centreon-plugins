@@ -248,7 +248,6 @@ rsrp
 rsrq
 rssi
 Rubrik
-µs
 Sansymphony
 SAS
 scenarii
@@ -300,6 +299,7 @@ UninterrupibleSleep
 uniq
 uptime
 --urlpath
+µs
 usage-prct
 usec
 userpass
@@ -314,6 +314,7 @@ VDSL2
 Veeam
 VeloCloud
 VM
+VMs
 VMware
 VMWARE
 vpn
