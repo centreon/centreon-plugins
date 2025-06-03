@@ -5,7 +5,7 @@ pub mod threshold;
 use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
 use lalrpop_util::{lalrpop_mod, ParseError};
-use log::{debug, trace};
+use log::debug;
 use regex::Regex;
 use serde::Deserialize;
 use snmp::SnmpResult;

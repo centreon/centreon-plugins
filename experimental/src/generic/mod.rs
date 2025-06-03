@@ -6,6 +6,7 @@ pub mod error;
 use self::error::Result;
 use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
 use log::{debug, trace};
+use output::{Output, OutputFormatter};
 use serde::Deserialize;
 use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use std::collections::HashMap;
@@ -13,13 +14,13 @@ use std::collections::HashMap;
 use crate::snmp::SnmpResult;
 
 #[derive(Debug)]
-struct Perfdata<'p> {
-    name: String,
-    value: f64,
-    min: Option<f64>,
-    max: Option<f64>,
-    warning: Option<&'p str>,
-    critical: Option<&'p str>,
+pub struct Perfdata<'p> {
+    pub name: String,
+    pub value: f64,
+    pub min: Option<f64>,
+    pub max: Option<f64>,
+    pub warning: Option<&'p str>,
+    pub critical: Option<&'p str>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -81,67 +82,16 @@ pub struct Collect {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Output {
-    #[serde(default = "default_ok")]
-    ok: String,
-    #[serde(default = "default_detail_ok")]
-    detail_ok: bool,
-    #[serde(default = "default_warning")]
-    warning: String,
-    #[serde(default = "default_detail_warning")]
-    detail_warning: bool,
-    #[serde(default = "default_critical")]
-    critical: String,
-    #[serde(default = "default_detail_critical")]
-    detail_critical: bool,
-    #[serde(default = "default_instance_separator")]
-    instance_separator: String,
-    #[serde(default = "default_metric_separator")]
-    metric_separator: String,
-}
-fn default_ok() -> String {
-    "Everything is OK".to_string()
-}
-fn default_detail_ok() -> bool {
-    false
-}
-fn default_warning() -> String {
-    "WARNING: ".to_string()
-}
-fn default_detail_warning() -> bool {
-    true
-}
-fn default_critical() -> String {
-    "CRITICAL: ".to_string()
-}
-fn default_detail_critical() -> bool {
-    true
-}
-fn default_instance_separator() -> String {
-    " - ".to_string()
-}
-fn default_metric_separator() -> String {
-    ", ".to_string()
-}
-
-#[derive(Deserialize, Debug)]
 pub struct Command {
     collect: Collect,
     compute: Compute,
-    output: Output,
+    pub output: Output,
 }
 
 #[derive(Debug)]
 pub struct CmdResult {
     pub status: Status,
     pub output: String,
-}
-
-pub struct CommandExt {
-    pub warning_core: Option<String>,
-    pub critical_core: Option<String>,
-    pub warning_agregation: Option<String>,
-    pub critical_agregation: Option<String>,
 }
 
 fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
@@ -215,13 +165,7 @@ impl Command {
         }
     }
 
-    pub fn execute(
-        &self,
-        target: &str,
-        version: &str,
-        community: &str,
-        //ext: &CommandExt,
-    ) -> Result<CmdResult> {
+    pub fn execute(&self, target: &str, version: &str, community: &str) -> Result<CmdResult> {
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
         let mut collect = Vec::new();
@@ -460,9 +404,8 @@ impl Command {
 
         trace!("collect: {:#?}", collect);
         println!("metrics: {:#?}", metrics);
-        Ok(CmdResult {
-            status,
-            output: "No result".to_string(),
-        })
+        let output_formatter = OutputFormatter::new(status, &metrics, &self.output);
+        let output = output_formatter.to_string();
+        Ok(CmdResult { status, output })
     }
 }
