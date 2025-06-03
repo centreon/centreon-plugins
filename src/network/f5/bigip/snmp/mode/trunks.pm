@@ -42,8 +42,9 @@ sub custom_traffic_perfdata {
     my $speed = $self->{result_values}->{speed} > 0 ? $self->{result_values}->{speed} : undef;
 
     $self->{output}->perfdata_add(
-        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $self->{nlabel},
+        unit => 'b/s',
+        instances => $self->{result_values}->{display},
         value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
         warning => $warning,
         critical => $critical,
@@ -101,8 +102,9 @@ sub custom_errors_perfdata {
     my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
 
     $self->{output}->perfdata_add(
-        label => 'packets_error_' . $self->{result_values}->{label}, unit => '%',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $self->{nlabel},
+        unit => '%',
+        instances => $self->{result_values}->{display},
         value => sprintf("%.2f", $self->{result_values}->{errors_prct}),
         warning => $warning,
         critical => $critical,
@@ -150,8 +152,9 @@ sub custom_drops_perfdata {
     my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     
     $self->{output}->perfdata_add(
-        label => 'packets_drop_' . $self->{result_values}->{label}, unit => '%',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $self->{nlabel},
+        unit => '%',
+        instances => $self->{result_values}->{display},
         value => sprintf("%.2f", $self->{result_values}->{drops_prct}),
         warning => $warning,
         critical => $critical,
@@ -233,7 +236,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'trunk.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'sysTrunkStatBytesIn', diff => 1 }, { name => 'sysTrunkOperBw', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'sysTrunkStatBytesIn', speed => 'sysTrunkOperBw', label => 'in' },
@@ -242,7 +245,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'trunk.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'sysTrunkStatBytesOut', diff => 1 }, { name => 'sysTrunkOperBw', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'sysTrunkStatBytesOut', speed => 'sysTrunkOperBw', label => 'out' },
@@ -251,7 +254,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'packets-error-in', set => {
+        { label => 'packets-error-in', nlabel => 'trunk.packets.in.error.percentage', set => {
                 key_values => [ { name => 'sysTrunkStatErrorsIn', diff => 1 }, { name => 'sysTrunkStatPktsIn', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'),
                 closure_custom_calc_extra_options => { errors => 'sysTrunkStatErrorsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
@@ -260,7 +263,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
-        { label => 'packets-error-out', set => {
+        { label => 'packets-error-out', nlabel => 'trunk.packets.out.error.percentage', set => {
                 key_values => [ { name => 'sysTrunkStatErrorsOut', diff => 1 }, { name => 'sysTrunkStatPktsOut', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'),
                 closure_custom_calc_extra_options => { errors => 'sysTrunkStatErrorsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
@@ -269,7 +272,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
-        { label => 'packets-drop-in', set => {
+        { label => 'packets-drop-in', nlabel => 'trunk.packets.in.dropped.percentage', set => {
                 key_values => [ { name => 'sysTrunkStatDropsIn', diff => 1 }, { name => 'sysTrunkStatPktsIn', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_drops_calc'),
                 closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
@@ -278,7 +281,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_drops_threshold')
             }
         },
-        { label => 'packets-drop-out', set => {
+        { label => 'packets-drop-out', nlabel => 'trunk.packets.out.dropped.percentage', set => {
                 key_values => [ { name => 'sysTrunkStatDropsOut', diff => 1 }, { name => 'sysTrunkStatPktsOut', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_drops_calc'),
                 closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
@@ -291,7 +294,7 @@ sub set_counters {
                 key_values => [ { name => 'total_interfaces' }, { name => 'display' } ],
                 output_template => 'total interfaces: %s',
                 perfdatas => [
-                    { label => 'total_interfaces', template => '%d', min => 0, label_extra_instance => 1 }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -310,7 +313,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -465,8 +468,8 @@ Units of thresholds for the traffic (default: '%') ('%', 'b/s').
 
 =item B<--speed>
 
-Set trunk speed in Mbps (default: sysTrunkOperBw).
-If not set and sysTrunkOperBw OID value is 0,
+Set trunk speed in Mbps (default: C<sysTrunkOperBw>).
+If not set and C<sysTrunkOperBw> OID value is 0,
 percentage thresholds will not be applied on traffic metrics.
 
 =item B<--add-interfaces>
@@ -503,12 +506,61 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-traffic-in>
 
 Thresholds.
-Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
-'packets-error-out' (%), 'packets-drop-in' (%), 'packets-drop-out' (%),
-'total-interfaces'.
+
+=item B<--critical-traffic-in>
+
+Thresholds.
+
+=item B<--warning-traffic-out>
+
+Thresholds.
+
+=item B<--critical-traffic-out>
+
+Thresholds.
+
+=item B<--warning-packets-error-in>
+
+Thresholds in %.
+
+=item B<--critical-packets-error-in>
+
+Thresholds in %.
+
+=item B<--warning-packets-error-out>
+
+Thresholds in %.
+
+=item B<--critical-packets-error-out>
+
+Thresholds in %.
+
+=item B<--warning-packets-drop-in>
+
+Thresholds in %.
+
+=item B<--critical-packets-drop-in>
+
+Thresholds in %.
+
+=item B<--warning-packets-drop-out>
+
+Thresholds in %.
+
+=item B<--critical-packets-drop-out>
+
+Thresholds in %.
+
+=item B<--warning-total-interfaces>
+
+Thresholds.
+
+=item B<--critical-total-interfaces>
+
+Thresholds.
 
 =back
 

@@ -43,7 +43,7 @@ sub prefix_scenario_output {
 sub prefix_steps_output {
     my ($self, %options) = @_;
 
-    return sprintf("  Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
+    return sprintf("Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
 }
 
 sub set_counters {
@@ -53,7 +53,16 @@ sub set_counters {
         { name => 'scenarios', type => 3, cb_prefix_output => 'prefix_scenario_output', cb_long_output => 'prefix_scenario_output', indent_long_output => '    ', message_multiple => 'All scenarios are ok',
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'steps', display_long => 1, cb_prefix_output => 'prefix_steps_output',  message_multiple => 'All steps are ok', type => 1, skipped_code => { -10 => 1 } }
+                {
+                    name             => 'steps',
+                    type             => 1,
+                    cb_prefix_output => 'prefix_steps_output',
+                    display_long     => 1,
+                    message_multiple => 'All steps are ok',
+                    skipped_code     => { -10 => 1 },
+                    sort_method      => 'num',
+                    sort_attribute   => 'index'
+                }
             ]
         }
     ];
@@ -61,8 +70,9 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'scenario-status',
             type => 2,
-            warning_default => '%{status} !~ "Success"',
+            warning_default  => '%{status} =~ "Degraded"',
             critical_default => '%{status} =~ "Failure"',
+            unknown_default  => '%{status} =~ /(Unknown|No execution|Aborted|Stopped|Excluded)/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'num_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -97,7 +107,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{steps} = [
         { label => 'time-step',  nlabel => 'scenario.step.time.milliseconds', set => {
-                key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' } ],
+                key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' }, { name => 'index' } ],
                 output_template => 'time step: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -105,7 +115,7 @@ sub set_counters {
             }
         },
          { label => 'time-total',  nlabel => 'scenario.steps.time.total.milliseconds', set => {
-                key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' } ],
+                key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' }, { name => 'index' } ],
                 output_template => 'time total: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -133,7 +143,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{timeframe} = defined($self->{option_results}->{timeframe})  && $self->{option_results}->{timeframe} ne '' ? $self->{option_results}->{timeframe} : '900';
+    $self->{timeframe} = defined($self->{option_results}->{timeframe})  && $self->{option_results}->{timeframe} ne '' ? $self->{option_results}->{timeframe} : '7500';
 }
 
 my $status_mapping = {
@@ -181,7 +191,7 @@ sub manage_selection {
             }
         };
         if (!defined $scenario_detail->{results} or scalar(@{$scenario_detail->{results}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "Scenario '" . $scenario->{scenarioName} . "' Don't have any performance data, please try to add a bigger timeframe");
+            $self->{output}->add_option_msg(short_msg => "No execution, please try again with a bigger timeframe");
             next;
         }
         foreach my $kpi (@{$scenario_detail->{kpis}}) {
@@ -193,12 +203,22 @@ sub manage_selection {
                 $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
             }
         }
-
+        # The API is expected to sort the output to get the most recent data at the end of the array.
+        # We store the last execution date, and check it for every data point sent back by the api.
+        # If a step has failed, no data is sent by the api for this step, but the results of the previous executions are present.
+        # This allows to get perfdata for the last execution with a successful first step.
+        # If the first step fails, the script will take older data.
+        my $last_execution = @{$scenario_detail->{results}}[-1]->{planningTime};
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
+            if ($step_metrics->{planningTime} ne $last_execution){
+                $self->{output}->add_option_msg(long_msg => "Execution $step_metrics->{planningTime} of step $step_metrics->{stepId} is older than $last_execution, not taking it into account.", debug => 1);
+                next;
+            }
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
             $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{index} = $step_metrics->{stepId};
         }
     }
 
@@ -220,34 +240,77 @@ Check ip-label Ekara scenarios.
 
 =item B<--timeframe>
 
-Set timeframe period in seconds. (default: 900)
-Example: --timeframe='3600' will check the last hour
-
-
+Set timeframe period in seconds. (default: 7500)
+Example: C<--timeframe='3600'> will check the last hour.
+Note: If the API/Poller is overloaded, it is preferable to refine
+this value according to the highest check frequency in the scenario.
 
 =item B<--filter-type>
 
 Filter by scenario type.
 Can be: 'WEB', 'HTTPR', 'BROWSER PAGE LOAD'
 
+=item B<--unknown-scenario-status>
+Unknown threshold for scenario status (default: C<%{status} !~ /(Unknown|No execution)/>).
+Syntax: C<--unknown-scenario-status='%{status} =~ "xxx"'>
+
 =item B<--warning-scenario-status>
 
-Warning threshold for scenario status (default: '%{status} !~ "Success"').
-Syntax: --warning-scenario-status='%{status} =~ "xxx"'
+Warning threshold for scenario status (default: C<%{status} !~ /(Aborted|Stopped|Excluded|Degraded)/>).
+Syntax: C<--warning-scenario-status='%{status} =~ "xxx"'>
 
 =item B<--critical-scenario-status>
 
 Critical threshold for scenario status (default: '%{status} =~ "Failure"').
 Syntax: --critical-scenario-status='%{status} =~ "xxx"'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-availability>
 
-Thresholds.
-Common: 'availability' (%),
-For WEB scenarios: 'time-total-allsteps' (ms), 'time-step' (ms),
-For HTTPR scenarios: 'time-total' (ms),
-FOR BPL scenarios: 'time-interaction' (ms), 'time-total' (ms).
+Thresholds in %.
 
+=item B<--critical-availability>
+
+Thresholds in %.
+
+=item B<--warning-time-total-allsteps>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--critical-time-total-allsteps>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--warning-time-step>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--critical-time-step>
+
+Thresholds in ms for WEB scenarios.
+
+=item B<--warning-time-total>
+
+Thresholds in ms for HTTPR scenarios.
+
+=item B<--critical-time-total>
+
+Thresholds in ms for HTTPR scenarios.
+
+=item B<--warning-time-interaction>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--critical-time-interaction>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--warning-time-total>
+
+Thresholds in ms for BPL scenarios.
+
+=item B<--critical-time-total>
+
+Thresholds in ms for BPL scenarios.
 
 =back
 

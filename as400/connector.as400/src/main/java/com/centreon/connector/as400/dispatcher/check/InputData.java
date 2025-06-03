@@ -31,6 +31,7 @@ public class InputData {
 	private String password = null;
     private String host = null;
     private String command = null;
+    private Integer ssl = null;
     Map<String, Object> args = null;
 
 	public InputData() {
@@ -42,6 +43,13 @@ public class InputData {
 
     public String getPassword() {
         return this.password;
+	}
+
+    public Integer getSsl() {
+        if (this.ssl == null || this.ssl == 0) {
+            return 0;
+        }
+        return 1;
 	}
 
     public String getHost() {
