@@ -81,11 +81,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if ($self->{teams_workflow_params} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify the --teams-workflow-params option.');
-        $self->{output}->option_exit();
-    }
-
     $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
     
     return 0;
@@ -111,9 +106,14 @@ sub teams_post_notification {
     my ($self, %options) = @_;
 
     my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
-    my $full_url = $self->{teams_workflow} . '?';
-    foreach (split(/,/, $self->{teams_workflow_params})) {
-         $full_url .= $_ . '&';
+    my $full_url = $self->{teams_workflow};
+    
+    if (defined($self->{teams_workflow_params}) && $self->{teams_workflow_params} ne '') {
+        $full_url .= '?';
+        
+        foreach (split(/,/, $self->{teams_workflow_params})) {
+            $full_url .= $_ . '&';
+        }
     }
 
     $full_url =~ s/&$//; 
@@ -145,10 +145,12 @@ Microsoft Office 365 Teams Workflows API
 =item B<--teams-workflow>
 
 Define the Workflow URL (required).
+Example: 
+perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke?api-version=2023-11-01&sp=%2Ftriggers%2Fmanual%2Frunsv=1.0&sig=sigId' 
 
 =item B<--teams-workflow-params>
 
-Define the Workflow URL parameters separated by commas (required).
+Define the Workflow URL parameters separated by commas (required). This option should be used if "&" is in the Centreon Engine illegal characters list.
 Example: 
 perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke' --teams-workflow-params='api-version=2023-11-01,sp=%2Ftriggers%2Fmanual%2Frunsv=1.0,sig=sigId' 
 
