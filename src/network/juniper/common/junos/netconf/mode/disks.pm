@@ -42,7 +42,7 @@ sub custom_space_usage_output {
 sub prefix_disk_output {
     my ($self, %options) = @_;
 
-    return "Disk '" . $options{instance}. "' ";
+    return "Disk '" . $options{instance} . "' ";
 }
 
 sub prefix_global_output {
@@ -60,28 +60,28 @@ sub set_counters {
 
     $self->{maps_counters}->{disks} = [
         { label => 'space-usage', nlabel => 'disk.space.usage.bytes', set => {
-                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
-                ]
-            }
+            key_values            => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             => [
+                { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'space-usage-free', nlabel => 'disk.space.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
-                ]
-            }
+            key_values            => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             => [
+                { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'space-usage-prct', nlabel => 'disk.space.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
+            key_values            => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             => [
+                { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 }
@@ -90,11 +90,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
+
+    $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' }
     });
-    
+
     return $self;
 }
 
@@ -106,19 +106,18 @@ sub manage_selection {
     $self->{cpu} = {};
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{mount} !~ /$self->{option_results}->{filter_name}/);
+                 $_->{mount} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{disks}->{ $_->{mount} } = {
-            name => $_->{mount},
-            free_space => $_->{space_free},
-            total_space => $_->{space_total},
-            used_space => $_->{space_used},
+            name            => $_->{mount},
+            free_space      => $_->{space_free},
+            total_space     => $_->{space_total},
+            used_space      => $_->{space_used},
             prct_used_space => $_->{space_used_prct},
             prct_free_space => $_->{space_free_prct}
         };
     }
 
-    
 }
 
 1;
@@ -135,10 +134,29 @@ Check disks.
 
 Filter disks by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Warning threshold for space usage (in bytes).
+
+=item B<--critical-space-usage>
+
+Critical threshold for space usage (in bytes).
+
+=item B<--warning-space-usage-free>
+
+Warning threshold for free space (in bytes).
+
+=item B<--critical-space-usage-free>
+
+Critical threshold for free space (in bytes).
+
+=item B<--warning-space-usage-prct>
+
+Warning threshold for space usage (in percentage).
+
+=item B<--critical-space-usage-prct>
+
+Critical threshold for space usage (in percentage).
 
 =back
 

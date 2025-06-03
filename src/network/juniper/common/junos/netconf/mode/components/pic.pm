@@ -33,8 +33,8 @@ sub disco_show {
         $attrs{mic_slot} = $item->{mic_slot} if (defined($item->{mic_slot}));
 
         $self->{output}->add_disco_entry(
-            component => 'pic',
-            instance => $item->{instance},
+            component   => 'pic',
+            instance    => $item->{instance},
             description => $item->{description},
             %attrs
         );
@@ -69,7 +69,7 @@ sub check {
         my $exit = $self->get_severity(section => 'pic', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "pic '%s @ %s' status is %s [%s]",
                     $item->{description},

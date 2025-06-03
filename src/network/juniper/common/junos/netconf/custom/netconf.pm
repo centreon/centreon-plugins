@@ -29,7 +29,7 @@ use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -42,7 +42,7 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {                      
+        $options{options}->add_options(arguments => {
             'hostname:s'        => { name => 'hostname' },
             'timeout:s'         => { name => 'timeout', default => 45 },
             'command:s'         => { name => 'command' },
@@ -73,7 +73,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{ssh}->check_options(
-            option_results => $self->{option_results},
+            option_results   => $self->{option_results},
             default_ssh_port => 830
         );
 
@@ -84,13 +84,13 @@ sub check_options {
     }
 
     centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
+        output          => $self->{output},
+        command         => $self->{option_results}->{command},
         command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
+        command_path    => $self->{option_results}->{command_path}
     );
 
-     $self->{cache}->check_options(option_results => $self->{option_results}, default_format => 'json');
+    $self->{cache}->check_options(option_results => $self->{option_results}, default_format => 'json');
 
     return 0;
 }
@@ -154,18 +154,18 @@ sub execute_command {
     $self->{ssh_commands} = '';
     my $append = '';
     foreach (@{$options{commands}}) {
-       $self->{ssh_commands} .= $append . " $_";
-       $append = "\n]]>]]>\n\n";
+        $self->{ssh_commands} .= $append . " $_";
+        $append = "\n]]>]]>\n\n";
     }
 
     my $content;
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         ($content) = $self->{ssh}->execute(
-            ssh_pipe => 1,
-            hostname => $self->{option_results}->{hostname},
-            command => $self->{ssh_commands},
-            timeout => $self->{option_results}->{timeout},
-            default_sshcli_option_eol => ['-s=netconf']
+            ssh_pipe                  => 1,
+            hostname                  => $self->{option_results}->{hostname},
+            command                   => $self->{ssh_commands},
+            timeout                   => $self->{option_results}->{timeout},
+            default_sshcli_option_eol => [ '-s=netconf' ]
         );
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
@@ -173,35 +173,35 @@ sub execute_command {
             $self->{output}->option_exit();
         }
         ($content) = centreon::plugins::misc::execute(
-            ssh_pipe => 1,
-            output => $self->{output},
-            options => { timeout => $self->{option_results}->{timeout} },
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
+            ssh_pipe        => 1,
+            output          => $self->{output},
+            options         => { timeout => $self->{option_results}->{timeout} },
+            command         => $self->{option_results}->{command},
+            command_path    => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
         );
     }
-    
+
     return $content;
 }
 
 my $commands = {
-    'show chassis routing-engine' => '<rpc><get-route-engine-information></get-route-engine-information></rpc>',
-    'show chassis fpc' => '<rpc><get-fpc-information></get-fpc-information></rpc>',
-    'show system storage detail' => '<rpc><get-system-storage><detail/></get-system-storage></rpc>',
-    'show chassis environment' => '<rpc><get-environment-information></get-environment-information></rpc>',
-    'show chassis power' => '<rpc><get-power-usage-information></get-power-usage-information></rpc>',
-    'show chassis fan' => '<rpc><get-fan-information></get-fan-information></rpc>',
-    'show chassis fpc pic-status' => '<rpc><get-pic-information></get-pic-information></rpc>',
-    'show chassis afeb' => '<rpc><get-afeb-information></get-afeb-information></rpc>',
-    'show chassis hardware' => '<rpc><get-chassis-inventory></get-chassis-inventory></rpc>',
-    'show interfaces extensive' => '<rpc><get-interface-information><extensive/></get-interface-information></rpc>',
-    'show bgp neighbor' => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
-    'show ldp session extensive' => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
-    'show mpls lsp' => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
-    'show rsvp session statistics' => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>',
-    'show services rpm probe-results' => '<rpc><get-probe-results></get-probe-results></rpc>',
-    'show ospf neighbor detail' => '<rpc><get-ospf-neighbor-information><detail/></get-ospf-neighbor-information></rpc>',
+    'show chassis routing-engine'        => '<rpc><get-route-engine-information></get-route-engine-information></rpc>',
+    'show chassis fpc'                   => '<rpc><get-fpc-information></get-fpc-information></rpc>',
+    'show system storage detail'         => '<rpc><get-system-storage><detail/></get-system-storage></rpc>',
+    'show chassis environment'           => '<rpc><get-environment-information></get-environment-information></rpc>',
+    'show chassis power'                 => '<rpc><get-power-usage-information></get-power-usage-information></rpc>',
+    'show chassis fan'                   => '<rpc><get-fan-information></get-fan-information></rpc>',
+    'show chassis fpc pic-status'        => '<rpc><get-pic-information></get-pic-information></rpc>',
+    'show chassis afeb'                  => '<rpc><get-afeb-information></get-afeb-information></rpc>',
+    'show chassis hardware'              => '<rpc><get-chassis-inventory></get-chassis-inventory></rpc>',
+    'show interfaces extensive'          => '<rpc><get-interface-information><extensive/></get-interface-information></rpc>',
+    'show bgp neighbor'                  => '<rpc><get-bgp-neighbor-information></get-bgp-neighbor-information></rpc>',
+    'show ldp session extensive'         => '<rpc><get-ldp-session-information><extensive/></get-ldp-session-information></rpc>',
+    'show mpls lsp'                      => '<rpc><get-mpls-lsp-information><statistics/></get-mpls-lsp-information></rpc>',
+    'show rsvp session statistics'       => '<rpc><get-rsvp-session-information><statistics/></get-rsvp-session-information></rpc>',
+    'show services rpm probe-results'    => '<rpc><get-probe-results></get-probe-results></rpc>',
+    'show ospf neighbor detail'          => '<rpc><get-ospf-neighbor-information><detail/></get-ospf-neighbor-information></rpc>',
     'show interfaces diagnostics optics' => '<rpc><get-interface-optics-diagnostics-information /></rpc>'
 };
 
@@ -250,7 +250,7 @@ sub get_rpc_commands {
         }
     }
 
-    return [values(%$rpc_commands)];
+    return [ values(%$rpc_commands) ];
 }
 
 sub get_cache_file_response_command {
@@ -285,18 +285,17 @@ sub cache_commands {
         }
     }
 
-
     $self->{cache}->read(statefile => 'cache_juniper_api_' . $self->get_identifier());
     $self->{cache}->write(data => {
         update_time => time(),
-        response => $response
+        response    => $response
     });
 }
 
 sub get_command_raw_result {
     my ($self, %options) = @_;
 
-    my $content = $self->execute_command(commands => [$options{command}]);
+    my $content = $self->execute_command(commands => [ $options{command} ]);
     $content =~ /(<nc:rpc-reply.*<\/nc:rpc-reply>)/msg;
     $content = $1;
     $content =~ s/junos://msg;
@@ -312,30 +311,30 @@ sub get_cpu_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['cpu']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'cpu' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => [ 'route-engine' ]);
 
     foreach (@{$result->{'route-engine'}}) {
         push @$results, {
-            name => 'route engine slot ' . $_->{slot},
-            cpu_1min_avg => 100 - $_->{'cpu-idle1'},
-            cpu_5min_avg => 100 - $_->{'cpu-idle2'},
+            name          => 'route engine slot ' . $_->{slot},
+            cpu_1min_avg  => 100 - $_->{'cpu-idle1'},
+            cpu_5min_avg  => 100 - $_->{'cpu-idle2'},
             cpu_15min_avg => 100 - $_->{'cpu-idle3'}
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => ['fpc']);
+    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => [ 'fpc' ]);
 
     foreach (@{$result->{fpc}}) {
         next if (!defined($_->{'cpu-1min-avg'}));
 
         push @$results, {
-            name => 'fpc slot ' . $_->{slot},
-            cpu_1min_avg => $_->{'cpu-1min-avg'},
-            cpu_5min_avg => $_->{'cpu-5min-avg'},
+            name          => 'fpc slot ' . $_->{slot},
+            cpu_1min_avg  => $_->{'cpu-1min-avg'},
+            cpu_5min_avg  => $_->{'cpu-5min-avg'},
             cpu_15min_avg => $_->{'cpu-15min-avg'}
         };
     }
@@ -352,18 +351,18 @@ sub get_disk_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['disk']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'disk' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<system-storage-information.*?>', end_tag => '</system-storage-information>', force_array => ['filesystem']);
+    my $result = $self->load_xml(data => $content, start_tag => '<system-storage-information.*?>', end_tag => '</system-storage-information>', force_array => [ 'filesystem' ]);
 
     foreach (@{$result->{filesystem}}) {
         push @$results, {
-            mount => centreon::plugins::misc::trim($_->{'mounted-on'}),
-            space_used => $_->{'used-blocks'}->{format} * 1024,
-            space_total => $_->{'total-blocks'}->{format} * 1024,
-            space_free => $_->{'available-blocks'}->{format} * 1024,
+            mount           => centreon::plugins::misc::trim($_->{'mounted-on'}),
+            space_used      => $_->{'used-blocks'}->{format} * 1024,
+            space_total     => $_->{'total-blocks'}->{format} * 1024,
+            space_free      => $_->{'available-blocks'}->{format} * 1024,
             space_used_prct => centreon::plugins::misc::trim($_->{'used-percent'}),
             space_free_prct => 100 - centreon::plugins::misc::trim($_->{'used-percent'})
         };
@@ -381,33 +380,33 @@ sub get_hardware_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['hardware']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'hardware' ]));
     }
 
     my $results = { 'fan' => [], 'psu' => [], 'env' => [], 'fpc' => [], 'pic' => {}, mic => {}, 'afeb' => [] };
-    my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => ['fan-information-rpm-item']);
+    my $result = $self->load_xml(data => $content, start_tag => '<fan-information.*?>', end_tag => '</fan-information>', force_array => [ 'fan-information-rpm-item' ]);
 
     foreach (@{$result->{'fan-information-rpm-item'}}) {
         push @{$results->{fan}}, {
-            name => $_->{name},
+            name   => $_->{name},
             status => $_->{status},
-            rpm => $_->{rpm}
+            rpm    => $_->{rpm}
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<power-usage-information.*?>', end_tag => '</power-usage-information>', force_array => ['power-usage-item'], error_continue => 1);
+    $result = $self->load_xml(data => $content, start_tag => '<power-usage-information.*?>', end_tag => '</power-usage-information>', force_array => [ 'power-usage-item' ], error_continue => 1);
 
     if (defined($result->{'power-usage-item'})) {
         foreach (@{$result->{'power-usage-item'}}) {
             push @{$results->{psu}}, {
-                name => $_->{name},
-                status => $_->{state},
+                name           => $_->{name},
+                status         => $_->{state},
                 dc_output_load => $_->{'dc-output-detail'}->{'dc-load'}
             };
         }
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<environment-information.*?>', end_tag => '</environment-information>', force_array => ['environment-item']);
+    $result = $self->load_xml(data => $content, start_tag => '<environment-information.*?>', end_tag => '</environment-information>', force_array => [ 'environment-item' ]);
 
     foreach (@{$result->{'environment-item'}}) {
         my $temperature = '';
@@ -415,63 +414,63 @@ sub get_hardware_infos {
             $temperature = $_->{temperature}->{celsius};
         }
         push @{$results->{env}}, {
-            name => $_->{name},
-            status => $_->{status},
-            class => $_->{class},
+            name        => $_->{name},
+            status      => $_->{status},
+            class       => $_->{class},
             temperature => $temperature
         };
     }
 
     $result = $self->load_xml(
-        data => $content,
-        start_tag => '<fpc-information',
-        end_tag => '</fpc-information>',
-        middle_tag => 'fpc.*?(cpu-15min-avg|memory-dram-size)',
-        force_array => ['fpc']
+        data        => $content,
+        start_tag   => '<fpc-information',
+        end_tag     => '</fpc-information>',
+        middle_tag  => 'fpc.*?(cpu-15min-avg|memory-dram-size)',
+        force_array => [ 'fpc' ]
     );
 
     foreach (@{$result->{fpc}}) {
         push @{$results->{fpc}}, {
-            name => 'fpc slot ' . $_->{slot},
+            name   => 'fpc slot ' . $_->{slot},
             status => $_->{state}
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<scb-information.*?>', end_tag => '</scb-information>', force_array => ['scb'], error_continue => 1);
+    $result = $self->load_xml(data => $content, start_tag => '<scb-information.*?>', end_tag => '</scb-information>', force_array => [ 'scb' ], error_continue => 1);
 
     foreach (@{$result->{scb}}) {
         push @{$results->{afeb}}, {
-            name => 'afeb slot ' . $_->{slot},
+            name   => 'afeb slot ' . $_->{slot},
             status => $_->{state}
         };
     }
 
     $result = $self->load_xml(
-        data => $content,
-        start_tag => '<fpc-information',
-        end_tag => '</fpc-information>',
-        middle_tag => 'pic-state',
-        force_array => ['fpc', 'pic'],
+        data           => $content,
+        start_tag      => '<fpc-information',
+        end_tag        => '</fpc-information>',
+        middle_tag     => 'pic-state',
+        force_array    => [ 'fpc', 'pic' ],
         error_continue => 1
     );
 
     foreach my $fpc (@{$result->{fpc}}) {
         foreach (@{$fpc->{pic}}) {
             $results->{pic}->{'fpc' . $fpc->{slot} . '-pic' . $_->{'pic-slot'}} = {
-                fpc_slot => $fpc->{slot},
-                pic_slot => $_->{'pic-slot'},
+                fpc_slot    => $fpc->{slot},
+                pic_slot    => $_->{'pic-slot'},
                 description => $_->{'pic-type'},
-                instance => $fpc->{slot} . '/' . $_->{'pic-slot'},
-                status => $_->{'pic-state'}
+                instance    => $fpc->{slot} . '/' . $_->{'pic-slot'},
+                status      => $_->{'pic-state'}
             };
         }
     }
- 
+
     $result = $self->load_xml(
-        data => $content,
-        start_tag => '<chassis-inventory.*?>',
-        end_tag => '</chassis-inventory>',
-        force_array => ['chassis-sub-module', 'chassis-sub-sub-module']
+        data        => $content,
+        start_tag   => '<chassis-inventory.*?>',
+        end_tag     => '</chassis-inventory>',
+        force_array => [ 'chassis-sub-module', 'chassis-sub-sub-module' ]
     );
 
     foreach my $module (@{$result->{chassis}->{'chassis-module'}}) {
@@ -483,10 +482,10 @@ sub get_hardware_infos {
             my $mic_slot = $1;
 
             $results->{mic}->{'fpc' . $fpc_slot . '-mic' . $mic_slot} = {
-                pics => [],
-                fpc_slot => $fpc_slot,
-                mic_slot => $mic_slot,
-                instance => $fpc_slot . '/' . $mic_slot,
+                pics        => [],
+                fpc_slot    => $fpc_slot,
+                mic_slot    => $mic_slot,
+                instance    => $fpc_slot . '/' . $mic_slot,
                 description => $submodule->{description}
             };
             foreach my $subsubmodule (@{$submodule->{'chassis-sub-sub-module'}}) {
@@ -512,16 +511,16 @@ sub get_interface_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['interface']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'interface' ]));
     }
 
     my $results = [];
     my $result = $self->load_xml(
-        data => $content,
-        start_tag => '<interface-information',
-        end_tag => '</interface-information>',
-        middle_tag => 'admin-status',
-        force_array => ['physical-interface', 'logical-interface']
+        data        => $content,
+        start_tag   => '<interface-information',
+        end_tag     => '</interface-information>',
+        middle_tag  => 'admin-status',
+        force_array => [ 'physical-interface', 'logical-interface' ]
     );
 
     foreach (@{$result->{'physical-interface'}}) {
@@ -531,26 +530,26 @@ sub get_interface_infos {
             ($speed_value, $speed_unit) = ($1, $2);
         }
         $speed = centreon::plugins::misc::scale_bytesbit(
-            value => $speed_value,
+            value        => $speed_value,
             src_quantity => $speed_unit,
             dst_quantity => '',
-            src_unit => 'b',
-            dst_unit => 'b'
+            src_unit     => 'b',
+            dst_unit     => 'b'
         );
 
         my $descr = centreon::plugins::misc::trim($_->{'description'});
         my $name = centreon::plugins::misc::trim($_->{'name'});
 
-        my $item =  {
-            descr => defined($descr) && $descr ne '' ? $descr : $name,
-            name => $name,
-            opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
+        my $item = {
+            descr     => defined($descr) && $descr ne '' ? $descr : $name,
+            name      => $name,
+            opstatus  => centreon::plugins::misc::trim($_->{'oper-status'}),
             admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
-            in => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
-            out => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
-            inPkts => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-packets'}),
-            outPkts => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-packets'}),
-            speed => $speed
+            in        => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-bytes'}) * 8,
+            out       => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-bytes'}) * 8,
+            inPkts    => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'input-packets'}),
+            outPkts   => centreon::plugins::misc::trim($_->{'traffic-statistics'}->{'output-packets'}),
+            speed     => $speed
         };
         if (defined($_->{'input-error-list'})) {
             foreach my $label (keys %{$_->{'input-error-list'}}) {
@@ -567,13 +566,13 @@ sub get_interface_infos {
 
         foreach my $logint (@{$_->{'logical-interface'}}) {
             push @$results, {
-                descr => centreon::plugins::misc::trim($logint->{'name'}),
-                name => centreon::plugins::misc::trim($logint->{'name'}),
-                opstatus => centreon::plugins::misc::trim($_->{'oper-status'}),
+                descr     => centreon::plugins::misc::trim($logint->{'name'}),
+                name      => centreon::plugins::misc::trim($logint->{'name'}),
+                opstatus  => centreon::plugins::misc::trim($_->{'oper-status'}),
                 admstatus => centreon::plugins::misc::trim($_->{'admin-status'}->{content}),
-                in => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'input-bytes'}) * 8,
-                out => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'output-bytes'}) * 8,
-                speed => $speed
+                in        => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'input-bytes'}) * 8,
+                out       => centreon::plugins::misc::trim($logint->{'traffic-statistics'}->{'output-bytes'}) * 8,
+                speed     => $speed
             };
         }
     }
@@ -590,16 +589,16 @@ sub get_interface_optical_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['interface_optical']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'interface_optical' ]));
     }
 
     my $results = [];
     my $result = $self->load_xml(
-        data => $content,
-        start_tag => '<interface-information',
-        end_tag => '</interface-information>',
-        middle_tag => 'optics-diagnostics',
-        force_array => ['physical-interface']
+        data        => $content,
+        start_tag   => '<interface-information',
+        end_tag     => '</interface-information>',
+        middle_tag  => 'optics-diagnostics',
+        force_array => [ 'physical-interface' ]
     );
 
     foreach (@{$result->{'physical-interface'}}) {
@@ -638,36 +637,35 @@ sub get_memory_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['memory']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'memory' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => ['route-engine']);
+    my $result = $self->load_xml(data => $content, start_tag => '<route-engine-information.*?>', end_tag => '</route-engine-information>', force_array => [ 'route-engine' ]);
 
     foreach (@{$result->{'route-engine'}}) {
         push @$results, {
-            name => 'route engine slot ' . $_->{slot},
+            name     => 'route engine slot ' . $_->{slot},
             mem_used => $_->{'memory-buffer-utilization'}
         };
     }
 
-    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => ['fpc']);
+    $result = $self->load_xml(data => $content, start_tag => '<fpc-information.*?>', end_tag => '</fpc-information>', force_array => [ 'fpc' ]);
 
     foreach (@{$result->{fpc}}) {
         next if (!defined($_->{'memory-heap-utilization'}));
 
         push @$results, {
-            name => 'fpc slot ' . $_->{slot} . ' heap',
+            name     => 'fpc slot ' . $_->{slot} . ' heap',
             mem_used => $_->{'memory-heap-utilization'}
-        }, {
-           name => 'fpc slot ' . $_->{slot} . ' buffer',
-           mem_used => $_->{'memory-buffer-utilization'}
-        };
+        },   {
+                 name     => 'fpc slot ' . $_->{slot} . ' buffer',
+                 mem_used => $_->{'memory-buffer-utilization'}
+             };
     }
 
     return $results;
 }
-
 
 sub get_ospf_infos {
     my ($self, %options) = @_;
@@ -678,18 +676,18 @@ sub get_ospf_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['ospf']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'ospf' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<ospf-neighbor-informatio.*?>', end_tag => '</ospf-neighbor-information>', force_array => ['ospf-neighbor']);
+    my $result = $self->load_xml(data => $content, start_tag => '<ospf-neighbor-informatio.*?>', end_tag => '</ospf-neighbor-information>', force_array => [ 'ospf-neighbor' ]);
 
     foreach (@{$result->{'ospf-neighbor'}}) {
         push @$results, {
-            neighborId => $_->{'neighbor-id'},
+            neighborId      => $_->{'neighbor-id'},
             neighborAddress => $_->{'neighbor-address'},
-            interfaceName => $_->{'interface-name'},
-            state => $_->{'ospf-neighbor-state'}
+            interfaceName   => $_->{'interface-name'},
+            state           => $_->{'ospf-neighbor-state'}
         };
     }
 
@@ -705,18 +703,18 @@ sub get_bgp_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['bgp']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'bgp' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<bgp-information.*?>', end_tag => '</bgp-information>', force_array => ['bgp-peer', 'bgp-rib']);
+    my $result = $self->load_xml(data => $content, start_tag => '<bgp-information.*?>', end_tag => '</bgp-information>', force_array => [ 'bgp-peer', 'bgp-rib' ]);
 
     foreach my $item (@{$result->{'bgp-peer'}}) {
         my $ribs = [];
         foreach (@{$item->{'bgp-rib'}}) {
             push @$ribs, {
-                ribName => $_->{name},
-                sendState => $_->{'send-state'},
+                ribName      => $_->{name},
+                sendState    => $_->{'send-state'},
                 activePrefix => $_->{'active-prefix-count'}
             };
         }
@@ -727,13 +725,13 @@ sub get_bgp_infos {
         push @$results, {
             snmpIndex => $item->{'snmp-index'},
             localAddr => $item->{'local-address'},
-            localAs => $item->{'local-as'},
-            peerAddr => $item->{'peer-address'},
-            peerAs => $item->{'peer-as'},
+            localAs   => $item->{'local-as'},
+            peerAddr  => $item->{'peer-address'},
+            peerAs    => $item->{'peer-as'},
             peerState => $item->{'peer-state'},
-            inBytes => $item->{'input-octets'},
-            outBytes => $item->{'output-octets'},
-            ribs => $ribs
+            inBytes   => $item->{'input-octets'},
+            outBytes  => $item->{'output-octets'},
+            ribs      => $ribs
         };
     }
 
@@ -749,28 +747,28 @@ sub get_ldp_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['ldp']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'ldp' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<ldp-session-information.*?>', end_tag => '</ldp-session-information>', force_array => ['ldp-session', 'ldp-session-statistics']);
+    my $result = $self->load_xml(data => $content, start_tag => '<ldp-session-information.*?>', end_tag => '</ldp-session-information>', force_array => [ 'ldp-session', 'ldp-session-statistics' ]);
 
     foreach my $item (@{$result->{'ldp-session'}}) {
         my $stats = [];
         foreach (@{$item->{'ldp-session-statistics'}}) {
             push @$stats, {
                 messageType => lc($_->{'ldp-message-type'}),
-                sent => $_->{'ldp-messages-sent'},
-                received => $_->{'ldp-messages-received'}
+                sent        => $_->{'ldp-messages-sent'},
+                received    => $_->{'ldp-messages-received'}
             };
         }
 
         push @$results, {
-            id => $item->{'ldp-session-id'},
-            remoteAddress => $item->{'ldp-remote-address'},
-            sessionState => $item->{'ldp-session-state'},
+            id              => $item->{'ldp-session-id'},
+            remoteAddress   => $item->{'ldp-remote-address'},
+            sessionState    => $item->{'ldp-session-state'},
             connectionState => $item->{'ldp-connection-state'},
-            stats => $stats
+            stats           => $stats
         };
     }
 
@@ -786,11 +784,11 @@ sub get_lsp_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['lsp']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'lsp' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<mpls-lsp-information.*?>', end_tag => '</mpls-lsp-information>', force_array => ['rsvp-session-data', 'rsvp-session']);
+    my $result = $self->load_xml(data => $content, start_tag => '<mpls-lsp-information.*?>', end_tag => '</mpls-lsp-information>', force_array => [ 'rsvp-session-data', 'rsvp-session' ]);
 
     foreach my $item (@{$result->{'rsvp-session-data'}}) {
         foreach (@{$item->{'rsvp-session'}}) {
@@ -800,12 +798,12 @@ sub get_lsp_infos {
             }
 
             push @$results, {
-                type => $item->{'session-type'},
-                name => $lsp->{name},
+                type       => $item->{'session-type'},
+                name       => $lsp->{name},
                 srcAddress => $lsp->{'source-address'},
                 dstAddress => $lsp->{'destination-address'},
-                lspState => $lsp->{'lsp-state'},
-                lspBytes => $lsp->{'lsp-bytes'}
+                lspState   => $lsp->{'lsp-state'},
+                lspBytes   => $lsp->{'lsp-bytes'}
             };
         }
     }
@@ -822,10 +820,10 @@ sub get_rsvp_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['rsvp']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'rsvp' ]));
     }
 
-    my $result = $self->load_xml(data => $content, start_tag => '<rsvp-session-information.*?>', end_tag => '</rsvp-session-information>', force_array => ['rsvp-session-data', 'rsvp-session']);
+    my $result = $self->load_xml(data => $content, start_tag => '<rsvp-session-information.*?>', end_tag => '</rsvp-session-information>', force_array => [ 'rsvp-session-data', 'rsvp-session' ]);
 
     my $results = [];
     foreach my $item (@{$result->{'rsvp-session-data'}}) {
@@ -836,12 +834,12 @@ sub get_rsvp_infos {
             }
 
             push @$results, {
-                type => $item->{'session-type'},
-                name => $_->{name},
+                type       => $item->{'session-type'},
+                name       => $_->{name},
                 srcAddress => $_->{'source-address'},
                 dstAddress => $_->{'destination-address'},
-                lspState => $_->{'lsp-state'},
-                lspBytes => $bytes
+                lspState   => $_->{'lsp-state'},
+                lspBytes   => $bytes
             };
         }
     }
@@ -858,29 +856,80 @@ sub get_service_rpm_infos {
 
     my $content = $options{content};
     if (!defined($content)) {
-        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => ['service_rpm']));
+        $content = $self->execute_command(commands => $self->get_rpc_commands(commands => [ 'service_rpm' ]));
     }
 
     my $results = [];
-    my $result = $self->load_xml(data => $content, start_tag => '<probe-results.*?>', end_tag => '</probe-results>', force_array => ['probe-test-results']);
+    my $result = $self->load_xml(data => $content, start_tag => '<probe-results.*?>', end_tag => '</probe-results>', force_array => [ 'probe-test-results' ]);
 
     foreach (@{$result->{'probe-test-results'}}) {
         push @$results, {
-            testName => $_->{'test-name'},
-            targetAddress => $_->{'target-address'},
-            sourceAddress => $_->{'source-address'},
-            probeType => $_->{'probe-type'},
-            probeStatus => $_->{'probe-single-results'}->{'probe-status'},
-            lastLossPercentage => $_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'loss-percentage'},
-            lastRTTAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
-            lastRTTJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
-            lastRTTStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
-            lastPRTJAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
-            lastPRTJJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
-            lastPRTJStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-positive-round-trip-jitter'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
-            lastNRTJAvgDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
-            lastNRTJJitterDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
-            lastNRTJStdevDelay => centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-negative-round-trip-jitter'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
+            testName            =>
+            $_->{'test-name'},
+            targetAddress       =>
+            $_->{'target-address'},
+            sourceAddress       =>
+            $_->{'source-address'},
+            probeType           =>
+            $_->{'probe-type'},
+            probeStatus         =>
+            $_->{'probe-single-results'}->{'probe-status'},
+            lastLossPercentage  =>
+            $_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'loss-percentage'},
+            lastRTTAvgDelay     =>
+            centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'avg-delay'}->{content}),
+            lastRTTJitterDelay  =>
+            centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'jitter-delay'}->{content}),
+            lastRTTStdevDelay   =>
+            centreon::plugins::misc::trim($_->{'probe-last-test-results'}->{'probe-test-generic-results'}->{'probe-test-rtt'}->{'probe-summary-results'}->{'stddev-delay'}->{content}),
+            lastPRTJAvgDelay    =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-positive-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'avg-delay'}
+                ->{content}),
+            lastPRTJJitterDelay =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-positive-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'jitter-delay'}
+                ->{content}),
+            lastPRTJStdevDelay  =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-positive-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'stddev-delay'}
+                ->{content}),
+            lastNRTJAvgDelay    =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-negative-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'avg-delay'}
+                ->{content}),
+            lastNRTJJitterDelay =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-negative-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'jitter-delay'}
+                ->{content}),
+            lastNRTJStdevDelay  =>
+            centreon::plugins::misc::trim($_
+                ->{'probe-last-test-results'}
+                ->{'probe-test-generic-results'}
+                ->{'probe-test-negative-round-trip-jitter'}
+                ->{'probe-summary-results'}
+                ->{'stddev-delay'}
+                ->{content}),
         };
     }
 

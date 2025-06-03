@@ -32,14 +32,14 @@ sub disco_show {
         next if ($item->{class} ne 'Temp');
         $self->{output}->add_disco_entry(
             component => 'temperature',
-            instance => $item->{name}
+            instance  => $item->{name}
         );
     }
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "checking temperatures");
     $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
@@ -62,32 +62,32 @@ sub check {
         my $exit = $self->get_severity(section => 'temperature', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Temperature '%s' status is %s",
                     $item->{name}, $item->{status}
                 )
             );
         }
-        
+
         next if ($item->{temperature} eq '');
 
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $item->{name}, value => $item->{temperature});
 
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit2,
+                severity  => $exit2,
                 short_msg => sprintf("Temperature '%s' is %s degree centigrade", $item->{name}, $item->{temperature})
             );
         }
 
-        $self->{output}->perfdata_add( 
-            nlabel => 'hardware.temperature.celsius',
-            unit => 'C',
+        $self->{output}->perfdata_add(
+            nlabel    => 'hardware.temperature.celsius',
+            unit      => 'C',
             instances => $item->{name},
-            value => $item->{temperature},
-            warning => $warn,
-            critical => $crit
+            value     => $item->{temperature},
+            warning   => $warn,
+            critical  => $crit
         );
     }
 }

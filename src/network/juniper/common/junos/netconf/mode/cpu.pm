@@ -40,28 +40,28 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu} = [
         { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'cpu_1min_avg' } ],
-                output_template => '%.2f %% (1m)',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_1min_avg' } ],
+            output_template => '%.2f %% (1m)',
+            perfdatas       => [
+                { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
-                key_values => [ { name => 'cpu_5min_avg' } ],
-                output_template => '%.2f %% (5m)',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_5min_avg' } ],
+            output_template => '%.2f %% (5m)',
+            perfdatas       => [
+                { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'average-15m', nlabel => 'cpu.utilization.15m.percentage', set => {
-                key_values => [ { name => 'cpu_15min_avg' } ],
-                output_template => '%.2f %% (15m)',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_15min_avg' } ],
+            output_template => '%.2f %% (15m)',
+            perfdatas       => [
+                { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 }
@@ -70,7 +70,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' }
     });
@@ -86,7 +86,7 @@ sub manage_selection {
     $self->{cpu} = {};
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_name}/);
+                 $_->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{cpu}->{ $_->{name} } = $_;
     }

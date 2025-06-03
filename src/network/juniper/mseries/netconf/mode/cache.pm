@@ -45,7 +45,7 @@ sub check_options {
         $self->{option_results}->{commands} = 'bgp,cpu,disk,hardware,interface,interface_optical,ldp,lsp,memory,ospf,rsvp,service_rpm';
     }
 
-    $self->{option_results}->{commands} = [split(/,/, $self->{option_results}->{commands})];
+    $self->{option_results}->{commands} = [ split(/,/, $self->{option_results}->{commands}) ];
 }
 
 sub manage_selection {
@@ -54,7 +54,7 @@ sub manage_selection {
     $options{custom}->cache_commands(commands => $self->{option_results}->{commands});
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'Cache files created successfully'
     );
 }

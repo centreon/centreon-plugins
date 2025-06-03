@@ -1,3 +1,0 @@
-#!/bin/bash
-
-cat tests/network/juniper/mseries/netconf/data/cpu.netconf

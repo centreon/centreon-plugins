@@ -31,14 +31,14 @@ sub disco_show {
     foreach my $item (@{$self->{results}->{fan}}) {
         $self->{output}->add_disco_entry(
             component => 'fan',
-            instance => $item->{name}
+            instance  => $item->{name}
         );
     }
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "checking fans");
     $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
@@ -60,32 +60,32 @@ sub check {
         my $exit = $self->get_severity(section => 'fan', value => $item->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity =>  $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "Fan '%s' status is %s",
                     $item->{name}, $item->{status}
                 )
             );
         }
-        
+
         if (defined($item->{rpm})) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $item->{name}, value => $item->{rpm});
 
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity => $exit2,
+                    severity  => $exit2,
                     short_msg => sprintf("Fan '%s' speed is %s rpm", $item->{name}, $item->{rpm})
                 );
             }
 
-            $self->{output}->perfdata_add( 
-                nlabel => 'hardware.fan.speed.rpm',
-                unit => 'rpm',
+            $self->{output}->perfdata_add(
+                nlabel    => 'hardware.fan.speed.rpm',
+                unit      => 'rpm',
                 instances => $item->{name},
-                value => $item->{rpm},
-                warning => $warn,
-                critical => $crit,
-                min => 0
+                value     => $item->{rpm},
+                warning   => $warn,
+                critical  => $crit,
+                min       => 0
             );
         }
     }

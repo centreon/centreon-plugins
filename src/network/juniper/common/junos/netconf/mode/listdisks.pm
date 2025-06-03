@@ -53,7 +53,7 @@ sub manage_selection {
     my $results = {};
     foreach (@$disks) {
         $results->{ $_->{mount} } = {
-            name   => $_->{mount},
+            name            => $_->{mount},
             space_used_prct => $_->{space_used_prct}
         };
     }
@@ -67,12 +67,12 @@ sub run {
     my $results = $self->manage_selection(custom => $options{custom});
     foreach my $instance (sort keys %$results) {
         $self->{output}->output_add(long_msg =>
-            join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
+                                    join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
         );
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List disks:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -82,7 +82,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [@labels]);
+    $self->{output}->add_disco_format(elements => [ @labels ]);
 }
 
 sub disco_show {
