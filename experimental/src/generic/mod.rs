@@ -85,7 +85,12 @@ pub struct Collect {
 pub struct Command {
     collect: Collect,
     compute: Compute,
+    #[serde(default = "default_output")]
     pub output: Output,
+}
+
+fn default_output() -> Output {
+    Output::new()
 }
 
 #[derive(Debug)]
@@ -403,7 +408,7 @@ impl Command {
         }
 
         trace!("collect: {:#?}", collect);
-        println!("metrics: {:#?}", metrics);
+        trace!("metrics: {:#?}", metrics);
         let output_formatter = OutputFormatter::new(status, &metrics, &self.output);
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
