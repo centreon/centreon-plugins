@@ -1,4 +1,4 @@
-use log::{debug, error, trace};
+use log::{error, trace};
 use std::str;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -155,7 +155,7 @@ impl<'input> Iterator for Lexer<'input> {
     }
 }
 
-mod Test {
+mod test {
     use super::*;
 
     fn init() {
