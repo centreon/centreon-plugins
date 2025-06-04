@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'sms'    => 'notification::isendpro::mode::sms'
-    );
+    $self->{modes} = {
+        'sms' => 'notification::isendpro::mode::sms'
+    };
 
     return $self;
 }
