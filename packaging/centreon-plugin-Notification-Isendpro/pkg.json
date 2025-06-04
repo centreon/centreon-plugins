@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Isendpro",
+    "pkg_summary": "Centreon Plugin to send notifications by iSendPro",
+    "plugin_name": "centreon_notification_isendpro.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "notification/isendpro"
+    ]
+}
