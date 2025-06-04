@@ -307,13 +307,13 @@ __END__
 
 =head1 NAME
 
-mysqlcmd global
+MySQL command global
 
 =head1 SYNOPSIS
 
-mysqlcmd class
+MySQL command class
 
-=head1 MYSQLCMD OPTIONS
+=head1 MYSQL COMMAND OPTIONS
 
 =over 8
 
