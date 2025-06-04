@@ -116,7 +116,7 @@ impl Threshold {
     }
 }
 
-mod Test {
+mod test {
     use super::*;
 
     #[test]

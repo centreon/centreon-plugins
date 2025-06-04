@@ -98,7 +98,7 @@ impl<'a> Parser<'a> {
     }
 }
 
-mod Test {
+mod test {
     use super::*;
     use log::info;
     use std::collections::HashMap;
