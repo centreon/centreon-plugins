@@ -93,7 +93,10 @@ sub run {
         header => [
             'cache-control: no-cache',
             'Content-Type: application/json'
-        ]
+        ],
+        unknown_status => '',
+        warning_status => '',
+        critical_status => ''
     );
 
     my $json = centreon::plugins::misc::json_decode($response);
@@ -101,7 +104,7 @@ sub run {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'wrong json format'
-        ); 
+        );
     } elsif ($json->{etat}->{etat}->[0]->{code} == 0) {
         $self->{output}->output_add(
             severity => 'OK',
