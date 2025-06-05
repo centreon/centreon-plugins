@@ -90,7 +90,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $interface->{metric}->{device} !~ /$self->{option_results}->{filter_name}/);
  
-        $instances->{$interface->{metric}->{instance}} = 1;
+        $instances->{ $interface->{metric}->{instance} } = 1;
         $self->{interfaces}->{ $interface->{metric}->{instance} . $interface->{metric}->{device} } = {
             instance => $interface->{metric}->{instance},
             name => $interface->{metric}->{device},
@@ -101,6 +101,27 @@ sub manage_selection {
 
     $self->{multiple_instances} = scalar(keys %$instances) > 1 ? 1 : 0;
 }
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['instance', 'name', 'opstatus', 'admstatus']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    my $interfaces = $options{custom}->query(queries => ['node_network_info']);
+    foreach my $interface (@$interfaces) {
+        $self->{output}->add_disco_entry(
+            instance => $interface->{metric}->{instance},
+            name => $interface->{metric}->{device},
+            opstatus => $interface->{metric}->{operstate},
+            admstatus => $interface->{metric}->{adminstate}
+        );
+    }
+}
+
 
 1;
 

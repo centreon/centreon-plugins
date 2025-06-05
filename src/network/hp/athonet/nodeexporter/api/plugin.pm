@@ -30,15 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'          => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
-        'cpu-detailed' => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
-        'interfaces'   => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
-        'licenses'     => 'network::hp::athonet::nodeexporter::api::mode::licenses',
-        'load'         => 'cloud::prometheus::exporters::nodeexporter::mode::load',
-        'memory'       => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
-        'nrf'          => 'network::hp::athonet::nodeexporter::api::mode::nrf',
-        'storage'      => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
-        'uptime'       => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
+        'cpu'             => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
+        'cpu-detailed'    => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+        'dra'             => 'network::hp::athonet::nodeexporter::api::mode::dra',
+        'interfaces'      => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
+        'licenses'        => 'network::hp::athonet::nodeexporter::api::mode::licenses',
+        'list-interfaces' => 'network::hp::athonet::nodeexporter::api::mode::listdra',
+        'load'            => 'cloud::prometheus::exporters::nodeexporter::mode::load',
+        'memory'          => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
+        'nrf'             => 'network::hp::athonet::nodeexporter::api::mode::nrf',
+        'storage'         => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
+        'uptime'          => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'network::hp::athonet::nodeexporter::api::custom::api';
