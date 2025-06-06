@@ -262,22 +262,22 @@ Filter LDP session by remote address.
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(remoteAddress) %(messageType)')
+Define performance datas instance (default: C<%(remoteAddress) %(messageType)>)
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+You can use the following variables: C<%{id}>, C<%{remoteAddress}>, C<%{connectionState}>, C<%{sessionState}>
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+You can use the following variables: C<%{id}>, C<%{remoteAddress}>, C<%{connectionState}>, C<%{sessionState}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{lspState} !~ /up/i').
-You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{lspState} !~ /up/i'>).
+You can use the following variables: C<%{id}>, C<%{remoteAddress}>, C<%{connectionState}>, C<%{sessionState}>
 
 =item B<--warning-ldp-session-messages-address-received>
 

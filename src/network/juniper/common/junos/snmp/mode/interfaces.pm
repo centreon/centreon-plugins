@@ -248,7 +248,7 @@ Check interfaces.
 
 =item B<--add-global>
 
-Check global port statistics (by default if no --add-* option is set).
+Check global port statistics (by default if no C<--add-*> option is set).
 
 =item B<--add-status>
 
@@ -256,7 +256,7 @@ Check interface status.
 
 =item B<--add-duplex-status>
 
-Check duplex status (with --warning-status and --critical-status).
+Check duplex status (with C<--warning-status> and C<--critical-status>).
 
 =item B<--add-traffic>
 
@@ -284,17 +284,17 @@ Check interface optical metrics.
 
 =item B<--check-metrics>
 
-If the expression is true, metrics are checked (default: '%{opstatus} eq "up"').
+If the expression is true, metrics are checked (default: C<'%{opstatus} eq "up"'>).
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+You can use the following variables: C<%{admstatus}>, C<%{opstatus}>, C<%{duplexstatus}>, C<%{display}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{admstatus} eq "up" and %{opstatus} ne "up"'>).
+You can use the following variables: C<%{admstatus}>, C<%{opstatus}>, C<%{duplexstatus}>, C<%{display}>
 
 =item B<--warning-errors>
 
@@ -304,31 +304,205 @@ Set warning threshold for all error counters.
 
 Set critical threshold for all error counters.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-total-port>
 
-Thresholds (will superseed --[warning-critical]-errors).
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
-'speed' (b/s).
+Threshold.
 
-And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+=item B<--critical-total-port>
+
+Threshold.
+
+=item B--warning-total-admin-up>
+
+Threshold.
+
+=item B<--critical-total-admin-up>
+
+Threshold.
+
+=item B<--warning-total-admin-down>
+
+Threshold.
+
+=item B<--critical-total-admin-down>
+
+Threshold.
+
+=item B<--warning-total-oper-up>
+
+Threshold.
+
+=item B<--critical-total-oper-up>
+
+Threshold.
+
+=item B<--warning-total-oper-down>
+
+Threshold.
+
+=item B<--critical-total-oper-down>
+
+Threshold.
+
+=item B<--warning-in-traffic>
+
+Set warning threshold for in traffic.
+
+=item B<--critical-in-traffic>
+
+Set critical threshold for in traffic.
+
+=item B<--warning-out-traffic>
+
+Set warning threshold for out traffic.
+
+=item B<--critical-out-traffic>
+
+Set critical threshold for out traffic.
+
+=item B<--warning-in-error>
+
+Set warning threshold for in error traffic.
+
+=item B<--critical-in-error>
+
+Set critical threshold for in error traffic.
+
+=item B<--warning-in-discard>
+
+Set warning threshold for in discard traffic.
+
+=item B<--critical-in-discard>
+
+Set critical threshold for in discard traffic.
+
+=item B--warning-out-error>
+
+Set warning threshold for out error traffic.
+
+=item B<--critical-out-error>
+
+Set critical threshold for out error traffic.
+
+=item B<--warning-out-discard>
+
+Set warning threshold for out discard traffic.
+
+=item B<--critical-out-discard>
+
+Set critical threshold for out discard traffic.
+
+=item B<--warning-in-ucast>
+
+Set warning threshold for in unicast traffic.
+
+=item B<--critical-in-ucast>
+
+Set critical threshold for in unicast traffic.
+
+=item B<--warning-in-bcast>
+
+Set warning threshold for in broadcast traffic.
+
+=item B<--critical-in-bcast>
+
+Set critical threshold for in broadcast traffic.
+
+=item B<--warning-in-mcast>
+
+Set warning threshold for in multicast traffic.
+
+=item B<--critical-in-mcast>
+
+Set critical threshold for in multicast traffic.
+
+=item B<--warning-out-ucast>
+
+Set warning threshold for out unicast traffic.
+
+=item B<--critical-out-ucast>
+
+Set critical threshold for out unicast traffic.
+
+=item B<--warning-out-bcast>
+
+Set warning threshold for out broadcast traffic.
+
+=item B<--critical-out-bcast>
+
+Set critical threshold for out broadcast traffic.
+
+=item B<--warning-out-mcast>
+
+Set warning threshold for out multicast traffic.
+
+=item B<--critical-out-mcast>
+
+Set critical threshold for out multicast traffic.
+
+=item B<--warning-speed>
+
+Set warning threshold for speed (in b/s).
+
+=item B<--critical-speed>
+
+Set critical threshold for speed (in b/s).
+
+=item B<--warning-fcs-errors>
+
+Set warning threshold for FCS errors (in percent).
+
+=item B<--critical-fcs-errors>
+
+Set critical threshold for FCS errors (in percent).
+
+=item B<--warning-input-power>
+
+Set warning threshold for input power (dBm).
+
+=item B<--critical-input-power>
+
+Set critical threshold for input power (dBm).
+
+=item B<--warning-bias-current>
+
+Set warning threshold for bias current (mA).
+
+=item B<--critical-bias-current>
+
+Set critical threshold for bias current (mA).
+
+=item B<--warning-output-power>
+
+Set warning threshold for output power (dBm).
+
+=item B<--critical-output-power>
+
+Set critical threshold for output power (dBm).
+
+=item B<--warning-module-temperature>
+
+Set warning threshold for module temperature (C).
+
+=item B<--critical-module-temperature>
+
+Set critical threshold for module temperature (C).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: C<%{percent_delta}>) (C<%{percent_delta}>, C<%{bps}>, C<%{counter}>).
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for errors/discards (default: C<%{percent_delta}>) (C<%{percent_delta}>, C<%{percent}>, C<%{delta}>, C<%{deltaps}>, C<%{counter}>).
 
 =item B<--units-cast>
 
-Units of thresholds for communication types (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for communication types (default: C<%{percent_delta}>) (C<%{percent_delta}>, C<%{percent}>, C<%{delta}>, C<%{deltaps}>, C<%{counter}>).
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic performance data to be compatible with nagvis widget.
 
 =item B<--interface>
 
@@ -336,7 +510,7 @@ Set the interface (number expected) example: 1,2,... (empty means 'check all int
 
 =item B<--name>
 
-Allows you to define the interface (in option --interface) by name instead of OID index. The name matching mode supports regular expressions.
+Allows you to define the interface (in option C<--interface>) by name instead of OID index. The name matching mode supports regular expressions.
 
 =item B<--speed>
 
@@ -360,11 +534,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Define the OID to be used to filter interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID to be used to filter interfaces (default: C<ifName>) (values: C<ifDesc>, C<ifAlias>, C<ifName>, C<IpAddr>).
 
 =item B<--oid-display>
 
-Define the OID that will be used to name the interfaces (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Define the OID that will be used to name the interfaces (default: C<ifName>) (values: C<ifDesc>, C<ifAlias>, C<ifName>, C<IpAddr>).
 
 =item B<--oid-extra-display>
 
@@ -374,7 +548,7 @@ Add an OID to display.
 
 Modify the interface name displayed by using a regular expression.
 
-Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding C<--display-transform-src='eth' --display-transform-dst='ens'> will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 

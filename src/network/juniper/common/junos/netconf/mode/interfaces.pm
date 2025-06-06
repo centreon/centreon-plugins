@@ -108,9 +108,9 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{                 $self
-                                                                                                                                                                                        ->{instance} . '_' . $options{extra_options}
-                                                                                                                                                                                        ->{label_ref}})
+    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{                                  $self
+                                                                                                                                                                                                         ->{instance} . '_' . $options{extra_options}
+                                                                                                                                                                                                         ->{label_ref}})
                                                     /
                                                     $options{delta_time};
     $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
@@ -879,12 +879,12 @@ Check interface optical.
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{admstatus}, %{opstatus}, %{display}
+You can use the following variables: C<%{admstatus}>, C<%{opstatus}>, C<%{display}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-You can use the following variables: %{admstatus}, %{opstatus}, %{display}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{admstatus} eq "up" and %{opstatus} ne "up"'>).
+You can use the following variables: C<%{admstatus}>, C<%{opstatus}>, C<%{display}>
 
 =item B<--warning-bias-current>
 
@@ -1096,19 +1096,19 @@ Threshold in dBm.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: C<percent_delta>) (C<percent_delta>, C<bps>, C<counter>).
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+Units of thresholds for errors/discards (default: C<percent_delta>) (C<percent_delta>, C<percent>, C<delta>, C<counter>).
 
 =item B<--filter-use>
 
-Define the value to be used to filter interfaces (default: name) (values: name, descr).
+Define the value to be used to filter interfaces (default: C<name>) (values: C<name>, C<descr>).
 
 =item B<--display-use>
 
-Define the value that will be used to name the interfaces (default: name) (values: name, descr).
+Define the value that will be used to name the interfaces (default: C<name>) (values: C<name>, C<descr>).
 
 =item B<--filter-interface>
 

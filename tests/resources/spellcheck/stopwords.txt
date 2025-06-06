@@ -34,6 +34,7 @@ AWSCLI
 Backbox
 BackupJobSession
 base64
+BGP
 blocked-by-uf
 BPL
 --cacert-file
@@ -124,6 +125,7 @@ ipsec
 ipv4
 ipv6
 ISAM
+IVE
 Iwsva
 Jasmin
 jmeter
@@ -138,9 +140,11 @@ keepass
 Keysight
 Kubernetes
 ldap
+LDP
 --legacy-api-beta
 license-instances-usage-prct
 Loggly
+LSP
 LTE
 LUN
 LUNs
@@ -201,6 +205,7 @@ OIDs
 okta
 oneaccess-sys-mib
 OpenMetrics
+OSPF
 out-bcast
 out-fc-wait
 out-mcast
