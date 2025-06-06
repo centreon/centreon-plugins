@@ -40,6 +40,7 @@ sub new {
         'memory'          => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
         'mme'             => 'network::hp::athonet::nodeexporter::api::mode::mme',
         'nrf'             => 'network::hp::athonet::nodeexporter::api::mode::nrf',
+        'smf'             => 'network::hp::athonet::nodeexporter::api::mode::smf',
         'smsf'            => 'network::hp::athonet::nodeexporter::api::mode::smsf',
         'storage'         => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
         'udm'             => 'network::hp::athonet::nodeexporter::api::mode::udm',

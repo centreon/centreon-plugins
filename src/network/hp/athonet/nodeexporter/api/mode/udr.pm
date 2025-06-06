@@ -80,19 +80,10 @@ sub prefix_cluster_metrics_output {
     return 'number of nodes ';
 }
 
-sub prefix_registration_output {
+sub prefix_sbi_registration_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "SBI registration network function host '%s' ",
-        $options{instance_value}->{host}
-    );
-}
-
-sub prefix_global_registration_output {
-    my ($self, %options) = @_;
-
-    return 'Number of SBI network function registrations ';
+    return "SBI registration network function";
 }
 
 sub set_counters {
@@ -100,8 +91,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'global_registration', type => 0, cb_prefix_output => 'prefix_global_registration_output', skipped_code => { -10 => 1 } },
-        { name => 'registrations', type => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All SBI network function registrations are ok', skipped_code => { -10 => 1 } },
+        { name => 'sbi_registration', type => 0, cb_prefix_output => 'prefix_sbi_registration_output', skipped_code => { -10 => 1 } },
         { name => 'license_supi', type => 0, cb_prefix_output => 'prefix_license_supi_output', skipped_code => { -10 => 1 } },
         {
             name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
@@ -126,33 +116,6 @@ sub set_counters {
                 output_template => 'SUPI change last 24h: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', unit => '%' }
-                ]
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{global_registration} = [
-        { label => 'sbi-nf-registrations-detected', display_ok => 0, nlabel => 'sbi.nf.registrations.detected.count', display_ok => 0, set => {
-                key_values => [ { name => 'detected' } ],
-                output_template => 'detected: %d',
-                perfdatas => [
-                    { template => '%d', min => 0 }
-                ]
-            }
-        },
-        { label => 'sbi-nf-registrations-registered', display_ok => 0, nlabel => 'sbi.nf.registrations.registered.count', display_ok => 0, set => {
-                key_values => [ { name => 'registered' }, { name => 'detected' } ],
-                output_template => 'registered: %d',
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'detected' }
-                ]
-            }
-        },
-        { label => 'sbi-nf-registrations-suspended', display_ok => 0, nlabel => 'sbi.nf.registrations.suspended.count', display_ok => 0, set => {
-                key_values => [ { name => 'suspended' }, { name => 'detected' } ],
-                output_template => 'suspended: %d',
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'detected' }
                 ]
             }
         }
@@ -195,12 +158,36 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{registrations} = [
+    $self->{maps_counters}->{sbi_registration} = [
         { label => 'sbi-nf-registration-status', type => 2, critical_default => '%{status} =~ /suspended/i', set => {
-                key_values => [ { name => 'status' }, { name => 'host' } ],
+                key_values => [ { name => 'status' } ],
                 output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'sbi-nf-registration-detected', display_ok => 0, nlabel => 'sbi.nf.registration.detected.count', display_ok => 0, set => {
+                key_values => [ { name => 'detected' } ],
+                output_template => 'detected: %d',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'sbi-nf-registration-registered', display_ok => 0, nlabel => 'sbi.nf.registration.registered.count', display_ok => 0, set => {
+                key_values => [ { name => 'registered' }, { name => 'detected' } ],
+                output_template => 'registered: %d',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'detected' }
+                ]
+            }
+        },
+        { label => 'sbi-nf-registration-suspended', display_ok => 0, nlabel => 'sbi.nf.registration.suspended.count', display_ok => 0, set => {
+                key_values => [ { name => 'suspended' }, { name => 'detected' } ],
+                output_template => 'suspended: %d',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'detected' }
+                ]
             }
         }
     ];
@@ -288,15 +275,11 @@ sub manage_selection {
 
     my $registration_infos = $options{custom}->query(queries => ['sbi_nrf_registration_status{target_type="udr"}']);
 
-    $self->{global_registration} = { detected => 0, registered => 0, suspended => 0 };
-    $self->{registrations} = {};
+    $self->{sbi_registration} = { detected => 0, registered => 0, suspended => 0 };
     foreach my $info (@$registration_infos) {
-        $self->{registrations}->{ $info->{metric}->{host} } = {
-            host => $info->{metric}->{host},
-            status => $map_registration_status->{ $info->{value}->[1] }
-        };
-        $self->{global_registration}->{detected}++;
-        $self->{global_registration}->{lc($map_registration_status->{ $info->{value}->[1] })}++;
+        $self->{sbi_registration}->{status} = $map_registration_status->{ $info->{value}->[1] };
+        $self->{sbi_registration}->{detected}++;
+        $self->{sbi_registration}->{lc($map_registration_status->{ $info->{value}->[1] })}++;
     }
 
     my $response = $options{custom}->query(queries => ['nf_data_layer_table_row_count{table="supi"}']);
@@ -351,24 +334,24 @@ You can use the following variables: %{status}, %{repository}, %{node}
 =item B<--unknown-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{host}
+You can use the following variables: %{status}
 
 =item B<--warning-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{host}
+You can use the following variables: %{status}
 
 =item B<--critical-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
-You can use the following variables: %{status}, %{host}
+You can use the following variables: %{status}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'clusters-detected',
 'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'sbi-nf-registrations-detected', 'sbi-nf-registrations-registered', 'sbi-nf-registrations-suspended',
+'sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended',
 'license-supi-usage', 'license-supi-usage-free', 'license-supi-usage-prct',
 'supi-change-last24h'.
 
