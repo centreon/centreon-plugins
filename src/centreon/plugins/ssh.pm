@@ -25,7 +25,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
@@ -40,22 +40,22 @@ sub new {
     }
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::sshcli',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::sshcli',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::sshcli'."
     );
     $self->{backend_sshcli} = centreon::plugins::backend::ssh::sshcli->new(%options);
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::plink',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::plink',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::plink'."
     );
     $self->{backend_plink} = centreon::plugins::backend::ssh::plink->new(%options);
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::libssh',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::libssh',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::libssh'."
     );
     $self->{backend_libssh} = centreon::plugins::backend::ssh::libssh->new(%options);
@@ -119,7 +119,7 @@ SSH abstraction layer for sscli, plink and libssh backends
 =item B<--ssh-backend>
 
 Define the backend you want to use.
-It can be: sshcli (default), plink and libssh.
+It can be: C<sshcli> (default), C<plink> and C<libssh>.
 
 =item B<--ssh-username>
 
@@ -128,8 +128,8 @@ Define the user name to log in to the host.
 =item B<--ssh-password>
 
 Define the password associated with the user name.
-Cannot be used with the sshcli backend.
-Warning: using a password is not recommended. Use --ssh-priv-key instead.
+Cannot be used with the C<sshcli> backend.
+Warning: using a password is not recommended. Use C<--ssh-priv-key> instead.
 
 =item B<--ssh-port>
 

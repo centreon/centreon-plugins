@@ -185,34 +185,34 @@ __END__
 
 =head1 MODE
 
-Check LSPs (Label Switched Path) status.
+Check LSP (Label Switched Path) status.
 
 =over 8
 
 =item B<--filter-*>
 
-Filter LSPs.
-Can be: 'name', 'from', 'to' (can be a regexp).
+Filter Label Switched Paths.
+Can be: C<name>, C<from>, C<to> (can be a regexp).
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: %{state}
+Define the conditions to match for the status to be WARNING (default: C<''>).
+You can use the following variables: C<%{state}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} !~ /up/i').
-You can use the following variables: %{state}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{state} !~ /up/i'>).
+You can use the following variables: C<%{state}>
 
 =item B<--warning-*>
 
 Warning threshold.
-Can be: 'transition-count', 'last-transition' (seconds).
+Can be: C<%{transition-count}>, C<%{last-transition}> (seconds).
 
 =item B<--critical-*>
 
 Critical threshold.
-Can be: 'transition-count', 'last-transition' (seconds).
+Can be: C<%{transition-count}>, C<%{last-transition}> (seconds).
 
 =back
 

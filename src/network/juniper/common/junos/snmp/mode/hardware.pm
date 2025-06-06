@@ -206,8 +206,8 @@ Check Hardware (JUNIPER-MIB) (frus, operating).
 
 =item B<--component>
 
-Which component to check (default: '.*').
-Can be: 'fru', 'operating', 'alarm'.
+Which component to check (default: C<'.*'>).
+Can be: C<fru>, C<operating>, C<alarm>.
 
 =item B<--add-name-instance>
 
@@ -215,33 +215,32 @@ Add literal description for instance value (used in filter, absent-problem and t
 
 =item B<--filter>
 
-Exclude the items given as a comma-separated list (example: --filter=fru).
-You can also exclude items from specific instances: --filter=fru,7.3.0.0
+Exclude the items given as a comma-separated list (example: C<--filter=fru>).
+You can also exclude items from specific instances: C<--filter=fru,7.3.0.0>
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma separated list)
-Can be specific or global: --absent-problem=fru,7.1.0.0
+Can be specific or global: C<--absent-problem=fru,7.1.0.0>
 
 =item B<--no-component>
 
-Define the expected status if no components are found (default: critical).
-
+Define the expected status if no components are found (default: C<critical>).
 
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='operating,CRITICAL,^(?!(running)$)'
+Example: C<--threshold-overload='operating,CRITICAL,^(?!(running)$)'>
 
 =item B<--warning>
 
 Set warning threshold  (syntax: type,regexp,threshold)
-Example: --warning='operating-temperature,.*,30'
+Example: C<--warning='operating-temperature,.*,30'>
 
 =item B<--critical>
 
 Set critical threshold (syntax: type,regexp,threshold)
-Example: --critical='operating-temperature,.*,40'
+Example: C<--critical='operating-temperature,.*,40'>
 
 =item B<--reload-cache-time>
 

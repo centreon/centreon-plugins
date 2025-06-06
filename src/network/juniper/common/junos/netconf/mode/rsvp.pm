@@ -190,22 +190,22 @@ Filter RSVP session by type.
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(type) %(name)')
+Define performance datas instance (default: C<'%(type) %(name)'>)
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddress}, %{lspState}
+You can use the following variables: C<%{type}>, C<%{name}>, C<%{srcAddress}>, C<%{dstAddress}>, C<%{lspState}>
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddress}, %{lspState}
+You can use the following variables: C<%{type}>, C<%{name}>, C<%{srcAddress}>, C<%{dstAddress}>, C<%{lspState}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{lspState} !~ /up/i').
-You can use the following variables: %{type}, %{name}, %{srcAddress}, %{dstAddress}, %{lspState}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{lspState} !~ /up/i'>).
+You can use the following variables: C<%{type}>, C<%{name}>, C<%{srcAddress}>, C<%{dstAddress}>, C<%{lspState}>
 
 =item B<--warning-rsvp-sessions-detected>
 

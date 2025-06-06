@@ -181,7 +181,7 @@ __END__
 
 =head1 MODE
 
-Check BGP peer state (BGP4-V2-MIB-JUNIPER)
+Check BGP peer state (C<BGP4-V2-MIB-JUNIPER>)
 
 =over 8
 
@@ -191,7 +191,7 @@ Filter by peer identifier (can be regexp)
 
 =item B<--filter-remote-ip>
 
-Filter by remote ip address (can be regexp)
+Filter by remote IP address (can be regexp)
 
 =item B<--filter-local-as>
 
@@ -200,16 +200,16 @@ Filter by local AS (can be regexp)
 =item B<--warning-status>
 
 Specify warning threshold.
-Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
-%{local_type}, %{local_ip}, %{local_port}, %{local_as},
-%{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}
+Can use special variables like C<%{peer_identifier}>, C<%{peer_state}>, C<%{peer_status}>,
+C<%{local_type}>, C<%{local_ip}>, C<%{local_port}>, C<%{local_as}>,
+C<%{remote_type}>, C<%{remote_ip}>, C<%{remote_port}>, C<%{remote_as}>
 
 =item B<--critical-status>
 
-Specify critical threshold (default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
-Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
-%{local_type}, %{local_ip}, %{local_port}, %{local_as},
-%{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}
+Specify critical threshold (default: C<'%{peer_status} =~ /running/ && %{peer_state} !~ /established/'>).
+Can use special variables like C<%{peer_identifier}>, C<%{peer_state}>, C<%{peer_status}>,
+C<%{local_type}>, C<%{local_ip}>, C<%{local_port}>, C<%{local_as}>,
+C<%{remote_type}>, C<%{remote_ip}>, C<%{remote_port}>, C<%{remote_as}>
 
 =back
 

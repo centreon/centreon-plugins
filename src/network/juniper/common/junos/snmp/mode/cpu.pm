@@ -147,12 +147,39 @@ Check CPU usage.
 
 =item B<--filter>
 
-Filter operating (default: 'routing|fpc').
+Filter operating (default: C<'routing|fpc'>).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-utilization>
 
-Thresholds.
-Can be: 'utilization', 'load-1m', 'load-5m', 'load-15m'.
+Warning threshold for CPU utilization (in percent).
+
+=item B<--critical-utilization>
+
+Critical threshold for CPU utilization (in percent).
+
+=item B<--warning-load-1m>
+
+Warning threshold for CPU load 1 minute (in percent).
+
+=item B<--critical-load-1m>
+
+Critical threshold for CPU load 1 minute (in percent).
+
+=item B<--warning-load-5m>
+
+Warning threshold for CPU load 5 minutes (in percent).
+
+=item B<--critical-load-5m>
+
+Critical threshold for CPU load 5 minutes (in percent).
+
+=item B<--warning-load-15m>
+
+Warning threshold for CPU load 15 minutes (in percent).
+
+=item B<--critical-load-15m>
+
+Critical threshold for CPU load 15 minutes (in percent).
 
 =back
 

@@ -110,31 +110,31 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'afeb', 'fan', 'fpc', 'mic', 'pic', 'psu', 'temperature'.
+Can be: C<afeb>, C<fan>, C<fpc>, C<mic>, C<pic>, C<psu>, C<temperature>.
 
 =item B<--filter>
 
-Exclude the items given as a comma-separated list (example: --filter=fan).
-You can also exclude items from specific instances: --filter=fan,Top
+Exclude the items given as a comma-separated list (example: C<--filter=fan>).
+You can also exclude items from specific instances: C<--filter=fan,Top>
 
 =item B<--no-component>
 
-Define the expected status if no components are found (default: critical).
+Define the expected status if no components are found (default: C<critical>).
 
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='fpc,CRITICAL,Unknown'
+Example: C<--threshold-overload='fpc,CRITICAL,Unknown'>
 
 =item B<--warning>
 
 Set warning threshold (syntax: type,regexp,threshold)
-Example: --warning='temperature,.*,30'
+Example: C<--warning='temperature,.*,30'>
 
 =item B<--critical>
 
 Set critical threshold (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,40'
+Example: C<--critical='temperature,.*,40'>
 
 =back
 

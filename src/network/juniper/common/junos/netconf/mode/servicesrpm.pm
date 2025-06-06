@@ -353,22 +353,22 @@ Filter service by type.
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(testName)')
+Define performance datas instance (default: C<%(testName)>)
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{testName}, %{probeType}, %{sourceAddress}, %{targetAddress}, %{probeStatus}
+You can use the following variables: C<%{testName}>, C<%{probeType}>, C<%{sourceAddress}>, C<%{targetAddress}>, C<%{probeStatus}>
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{testName}, %{probeType}, %{sourceAddress}, %{targetAddress}, %{probeStatus}
+You can use the following variables: C<%{testName}>, C<%{probeType}>, C<%{sourceAddress}>, C<%{targetAddress}>, C<%{probeStatus}>
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{testName}, %{probeType}, %{sourceAddress}, %{targetAddress}, %{probeStatus}
+You can use the following variables: C<%{testName}>, C<%{probeType}>, C<%{sourceAddress}>, C<%{targetAddress}>, C<%{probeStatus}>
 
 =item B<--warning-services-detected>
 
@@ -388,27 +388,27 @@ Define the service RPM probe loss percentage conditions to match for the status 
 
 =item B<--warning-service-rpm-probe-rtt-delay-average>
 
-Define the service RPM probe RTT delay average conditions to match for the status to be WARNING.
+Define the service RPM probe route-trip time delay average conditions to match for the status to be WARNING.
 
 =item B<--critical-service-rpm-probe-rtt-delay-average>
 
-Define the service RPM probe RTT delay average conditions to match for the status to be CRITICAL.
+Define the service RPM probe route-trip time delay average conditions to match for the status to be CRITICAL.
 
 =item B<--warning-service-rpm-probe-rtt-delay-jitter>
 
-Define the service RPM probe RTT delay jitter conditions to match for the status to be WARNING.
+Define the service RPM probe route-trip time delay jitter conditions to match for the status to be WARNING.
 
 =item B<--critical-service-rpm-probe-rtt-delay-jitter>
 
-Define the service RPM probe RTT delay jitter conditions to match for the status to be CRITICAL.
+Define the service RPM probe route-trip time delay jitter conditions to match for the status to be CRITICAL.
 
 =item B<--warning-service-rpm-probe-rtt-delay-stdev>
 
-Define the service RPM probe RTT delay standard deviation conditions to match for the status to be WARNING.
+Define the service RPM probe route-trip time delay standard deviation conditions to match for the status to be WARNING.
 
 =item B<--critical-service-rpm-probe-rtt-delay-stdev>
 
-Define the service RPM probe RTT delay standard deviation conditions to match for the status to be CRITICAL.
+Define the service RPM probe route-trip time delay standard deviation conditions to match for the status to be CRITICAL.
 
 =item B<--warning-service-rpm-probe-prtj-delay-average>
 
