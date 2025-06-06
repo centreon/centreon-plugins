@@ -110,10 +110,10 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{gtpc} = [
-        { label => 'gtpc-connection-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
+    $self->{maps_counters}->{pfcp_nodes} = [
+        { label => 'pfcp-node-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
                 key_values => [ { name => 'status' }, { name => 'localIP' }, { name => 'remoteIP' } ],
-                output_template => 'connection status: %s',
+                output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -215,7 +215,8 @@ You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: ''sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended'.
+Can be: 'sessions', 'supi',
+'sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended'.
 
 =back
 

@@ -248,7 +248,6 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_gtpc_tun_perfdata')
             }
         }
-
     ];
 }
 
