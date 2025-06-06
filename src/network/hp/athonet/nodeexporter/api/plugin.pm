@@ -41,6 +41,7 @@ sub new {
         'mme'             => 'network::hp::athonet::nodeexporter::api::mode::mme',
         'nrf'             => 'network::hp::athonet::nodeexporter::api::mode::nrf',
         'storage'         => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
+        'udm'             => 'network::hp::athonet::nodeexporter::api::mode::udm',
         'uptime'          => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
     };
 

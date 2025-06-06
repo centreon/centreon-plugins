@@ -355,10 +355,6 @@ Check mobility management entity.
 
 =over 8
 
-=item B<--filter-cluster-repository>
-
-Filter clusters by repository name.
-
 =item B<--unknown-interface-s1enb-status-status>
 
 Define the conditions to match for the status to be UNKNOWN.

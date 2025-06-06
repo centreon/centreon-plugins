@@ -18,14 +18,23 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::nrf;
+package network::hp::athonet::nodeexporter::api::mode::udm;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc;
+
+sub prefix_diameter_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "diamater stack '%s' origin host '%s' ",
+        $options{instance_value}->{stack},
+        $options{instance_value}->{originHost}
+    );
+}
 
 sub cluster_long_output {
     my ($self, %options) = @_;
@@ -64,15 +73,15 @@ sub prefix_registration_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "registration network function '%s' ",
-        $options{instance_value}->{nfType}
+        "SBI registration network function host '%s' ",
+        $options{instance_value}->{host}
     );
 }
 
 sub prefix_global_registration_output {
     my ($self, %options) = @_;
 
-    return 'Number of network function registrations ';
+    return 'Number of SBI network function registrations ';
 }
 
 sub set_counters {
@@ -81,14 +90,15 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'global_registration', type => 0, cb_prefix_output => 'prefix_global_registration_output', skipped_code => { -10 => 1 } },
-        { name => 'registrations', type => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All registration network functions are ok', skipped_code => { -10 => 1 } },
+        { name => 'registrations', type => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All SBI network function registrations are ok', skipped_code => { -10 => 1 } },
         {
             name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
             group => [
                 { name => 'cluster_metrics', type => 0, cb_prefix_output => 'prefix_cluster_metrics_output' },
                 { name => 'nodes', type => 1, display_long => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'nodes are ok', skipped_code => { -10 => 1 } }
             ]
-        }
+        },
+        { name => 'diameters', type => 1, cb_prefix_output => 'prefix_diameter_output', message_multiple => 'All diameter connections are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -103,7 +113,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global_registration} = [
-        { label => 'nf-registrations-detected', display_ok => 0, nlabel => 'nf.registrations.detected.count', display_ok => 0, set => {
+        { label => 'sbi-nf-registrations-detected', display_ok => 0, nlabel => 'sbi.nf.registrations.detected.count', display_ok => 0, set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %d',
                 perfdatas => [
@@ -111,7 +121,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'nf-registrations-registered', display_ok => 0, nlabel => 'nf.registrations.registered.count', display_ok => 0, set => {
+        { label => 'sbi-nf-registrations-registered', display_ok => 0, nlabel => 'sbi.nf.registrations.registered.count', display_ok => 0, set => {
                 key_values => [ { name => 'registered' }, { name => 'detected' } ],
                 output_template => 'registered: %d',
                 perfdatas => [
@@ -119,7 +129,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'nf-registrations-suspended', display_ok => 0, nlabel => 'nf.registrations.suspended.count', display_ok => 0, set => {
+        { label => 'sbi-nf-registrations-suspended', display_ok => 0, nlabel => 'sbi.nf.registrations.suspended.count', display_ok => 0, set => {
                 key_values => [ { name => 'suspended' }, { name => 'detected' } ],
                 output_template => 'suspended: %d',
                 perfdatas => [
@@ -167,20 +177,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{registrations} = [
-        { label => 'nf-registration-status', type => 2, critical_default => '%{status} =~ /suspended/i', set => {
-                key_values => [ { name => 'status' }, { name => 'nfType' } ],
+        { label => 'sbi-nf-registration-status', type => 2, critical_default => '%{status} =~ /suspended/i', set => {
+                key_values => [ { name => 'status' }, { name => 'host' } ],
                 output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
-        { label => 'nf-registration-last', nlabel => 'nf.registration.last.seconds', set => {
-                key_values => [ { name => 'registered_since_seconds' }, { name => 'registered_since_human' } ],
-                output_template => 'last registered: %s',
-                output_use => 'registered_since_human',
-                perfdatas => [
-                    { template => '%s', unit => 's', min => 0 }
-                ]
+        }
+    ];
+
+    $self->{maps_counters}->{diameters} = [
+        { label => 'diameter-connection-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
+                key_values => [ { name => 'status' }, { name => 'originHost' }, { name => 'stack' } ],
+                output_template => 'connection status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -201,11 +212,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $clusters = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes{target_type="nrf"}']);
-    my $nodes = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes_status{target_type="nrf"}']);
+    my $clusters = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes{target_type="udm"}']);
+    my $nodes = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes_status{target_type="udm"}']);
 
     my $map_node_status = { 1 => 'running', 0 => 'notRunning' };
     my $map_registration_status = { 1 => 'registered', 0 => 'suspended' };
+    my $map_interface_status = { 1 => 'up', 0 => 'down' };
 
     $self->{global} = { clusters_detected => 0 };
     $self->{clusters} = {};
@@ -238,28 +250,31 @@ sub manage_selection {
         }
     }
 
+    my $response = $options{custom}->query(queries => ['diameter_peer_status{target_type="udm"}']);
+    $self->{diameters} = {};
+    my $id = 0;
+    foreach (@$response) {
+        $self->{diameters}->{$id} = {
+            originHost => $_->{metric}->{orig_host},
+            stack => $_->{metric}->{stack},
+            status => $map_interface_status->{ $_->{value}->[1] }
+        };
+        
+        $id++;
+    }
+
     my $ctime = time();
-    my $registration_infos = $options{custom}->query(queries => ['nf_registration_status{nfType!~"AUSF|AMF"}']);
-    my $registration_ts = $options{custom}->query(queries => ['nf_registration_timestamp_seconds{nfType!~"AUSF|AMF"}']);
+    my $registration_infos = $options{custom}->query(queries => ['sbi_nrf_registration_status{target_type="udm"}']);
 
     $self->{global_registration} = { detected => 0, registered => 0, suspended => 0 };
     $self->{registrations} = {};
     foreach my $info (@$registration_infos) {
-        $self->{registrations}->{ $info->{metric}->{nfType} } = {
-            nfType => $info->{metric}->{nfType},
+        $self->{registrations}->{ $info->{metric}->{host} } = {
+            host => $info->{metric}->{host},
             status => $map_registration_status->{ $info->{value}->[1] }
         };
         $self->{global_registration}->{detected}++;
         $self->{global_registration}->{lc($map_registration_status->{ $info->{value}->[1] })}++;
-
-        foreach my $ts (@$registration_ts) {
-            next if ($info->{metric}->{nfType} ne $ts->{metric}->{nfType});
-
-            $self->{registrations}->{ $info->{metric}->{nfType} }->{registered_since_seconds} = $ctime - $ts->{value}->[1];
-            $self->{registrations}->{ $info->{metric}->{nfType} }->{registered_since_human} = centreon::plugins::misc::change_seconds(
-                value => $self->{registrations}->{ $info->{metric}->{nfType} }->{registered_since_seconds}
-            );
-        }
     }
 }
 
@@ -269,7 +284,7 @@ __END__
 
 =head1 MODE
 
-Check network repository function.
+Check unified data management.
 
 =over 8
 
@@ -292,27 +307,42 @@ You can use the following variables: %{status}, %{repository}, %{node}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /notRunning/i').
 You can use the following variables: %{status}, %{repository}, %{node}
 
-=item B<--unknown-nf-registration-status>
+=item B<--unknown-diameter-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{nfType}
+You can use the following variables: %{status}, %{originHost}, %{stack}
 
-=item B<--warning-nf-registration-status>
+=item B<--warning-diameter-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{nfType}
+You can use the following variables: %{status}, %{originHost}, %{stack}
 
-=item B<--critical-nf-registration-status>
+=item B<--critical-diameter-connection-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
+You can use the following variables: %{status}, %{originHost}, %{stack}
+
+=item B<--unknown-sbi-nf-registration-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{status}, %{host}
+
+=item B<--warning-sbi-nf-registration-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{status}, %{host}
+
+=item B<--critical-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
-You can use the following variables: %{status}, %{nfType}
+You can use the following variables: %{status}, %{host}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'clusters-detected',
 'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'nf-registration-last', 'nf-registrations-detected', 'nf-registrations-registered', 'nf-registrations-suspended'.
+'sbi-nf-registrations-detected', 'sbi-nf-registrations-registered', 'sbi-nf-registrations-suspended'.
 
 =back
 
