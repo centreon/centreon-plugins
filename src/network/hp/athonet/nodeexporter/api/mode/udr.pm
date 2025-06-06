@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::udm;
+package network::hp::athonet::nodeexporter::api::mode::udr;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,13 +26,24 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_diameter_output {
+sub custom_license_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
-        $options{instance_value}->{stack},
-        $options{instance_value}->{originHost}
+        "usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        $self->{result_values}->{total},
+        $self->{result_values}->{used},
+        $self->{result_values}->{prct_used},
+        $self->{result_values}->{free},
+        $self->{result_values}->{prct_free}
+    );
+}
+
+sub prefix_license_supi_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "license SUPI ",
     );
 }
 
@@ -91,14 +102,14 @@ sub set_counters {
         { name => 'global', type => 0 },
         { name => 'global_registration', type => 0, cb_prefix_output => 'prefix_global_registration_output', skipped_code => { -10 => 1 } },
         { name => 'registrations', type => 1, cb_prefix_output => 'prefix_registration_output', message_multiple => 'All SBI network function registrations are ok', skipped_code => { -10 => 1 } },
+        { name => 'license_supi', type => 0, cb_prefix_output => 'prefix_license_supi_output', skipped_code => { -10 => 1 } },
         {
             name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
             group => [
                 { name => 'cluster_metrics', type => 0, cb_prefix_output => 'prefix_cluster_metrics_output' },
                 { name => 'nodes', type => 1, display_long => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'nodes are ok', skipped_code => { -10 => 1 } }
             ]
-        },
-        { name => 'diameters', type => 1, cb_prefix_output => 'prefix_diameter_output', message_multiple => 'All diameter connections are ok', skipped_code => { -10 => 1 } }
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -107,6 +118,14 @@ sub set_counters {
                 output_template => 'Number of clusters detected: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'supi-change-last24h', display_ok => 0, nlabel => 'udr.supi.change.last24h.percentage', set => {
+                key_values => [ { name => 'supi_change_last24h' } ],
+                output_template => 'SUPI change last 24h: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%' }
                 ]
             }
         }
@@ -186,12 +205,29 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{diameters} = [
-        { label => 'diameter-connection-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
-                key_values => [ { name => 'status' }, { name => 'originHost' }, { name => 'stack' } ],
-                output_template => 'connection status: %s',
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+    $self->{maps_counters}->{license_supi} = [
+        { label => 'license-supi-usage', nlabel => 'udr.license.supi.usage.count', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'license-supi-usage-free', display_ok => 0, nlabel => 'udr.license.supi.free.count', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'license-supi-usage-prct', display_ok => 0, nlabel => 'udr.license.supi.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         }
     ];
@@ -212,8 +248,8 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $clusters = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes{target_type="udm"}']);
-    my $nodes = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes_status{target_type="udm"}']);
+    my $clusters = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes{target_type="udr"}']);
+    my $nodes = $options{custom}->query(queries => ['nf_data_layer_cluster_nodes_status{target_type="udr"}']);
 
     my $map_node_status = { 1 => 'running', 0 => 'notRunning' };
     my $map_registration_status = { 1 => 'registered', 0 => 'suspended' };
@@ -250,20 +286,7 @@ sub manage_selection {
         }
     }
 
-    my $response = $options{custom}->query(queries => ['diameter_peer_status{target_type="udm"}']);
-    $self->{diameters} = {};
-    my $id = 0;
-    foreach (@$response) {
-        $self->{diameters}->{$id} = {
-            originHost => $_->{metric}->{orig_host},
-            stack => $_->{metric}->{stack},
-            status => $map_interface_status->{ $_->{value}->[1] }
-        };
-        
-        $id++;
-    }
-
-    my $registration_infos = $options{custom}->query(queries => ['sbi_nrf_registration_status{target_type="udm"}']);
+    my $registration_infos = $options{custom}->query(queries => ['sbi_nrf_registration_status{target_type="udr"}']);
 
     $self->{global_registration} = { detected => 0, registered => 0, suspended => 0 };
     $self->{registrations} = {};
@@ -275,6 +298,25 @@ sub manage_selection {
         $self->{global_registration}->{detected}++;
         $self->{global_registration}->{lc($map_registration_status->{ $info->{value}->[1] })}++;
     }
+
+    my $response = $options{custom}->query(queries => ['nf_data_layer_table_row_count{table="supi"}']);
+    my $used_supi = $response->[0]->{value}->[1];
+
+    $response = $options{custom}->query(queries => ['license_constraint']);
+    $self->{license_supi} = { used => $used_supi };
+    foreach (@$response) {
+        next if ($_->{metric}->{target_type} ne 'udr');
+
+        if ($_->{metric}->{param} eq 'max_provisioned_supis') {
+            $self->{license_supi}->{total} = $_->{value}->[1];
+            $self->{license_supi}->{free} = $self->{license_supi}->{total} - $self->{license_supi}->{used};
+            $self->{license_supi}->{prct_used} = $self->{license_supi}->{used} * 100 / $self->{license_supi}->{total};
+            $self->{license_supi}->{prct_free} = 100 - $self->{license_supi}->{prct_used};
+        }
+    }
+
+    $response = $options{custom}->query(queries => ['100*scalar(delta(nf_data_layer_table_row_count{table="supi"}[24h]))/(scalar(delta(nf_data_layer_table_row_count{table="supi"}[24h]))-scalar(nf_data_layer_table_row_count{table="supi"}))']);
+    $self->{global}->{'supi_change_last24h'} = int($response->[1]);
 }
 
 1;
@@ -283,7 +325,7 @@ __END__
 
 =head1 MODE
 
-Check unified data management.
+Check unified data repository.
 
 =over 8
 
@@ -306,21 +348,6 @@ You can use the following variables: %{status}, %{repository}, %{node}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /notRunning/i').
 You can use the following variables: %{status}, %{repository}, %{node}
 
-=item B<--unknown-diameter-connection-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{originHost}, %{stack}
-
-=item B<--warning-diameter-connection-status>
-
-Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{originHost}, %{stack}
-
-=item B<--critical-diameter-connection-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{originHost}, %{stack}
-
 =item B<--unknown-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be UNKNOWN.
@@ -341,7 +368,9 @@ You can use the following variables: %{status}, %{host}
 Thresholds.
 Can be: 'clusters-detected',
 'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'sbi-nf-registrations-detected', 'sbi-nf-registrations-registered', 'sbi-nf-registrations-suspended'.
+'sbi-nf-registrations-detected', 'sbi-nf-registrations-registered', 'sbi-nf-registrations-suspended',
+'license-supi-usage', 'license-supi-usage-free', 'license-supi-usage-prct',
+'supi-change-last24h'.
 
 =back
 
