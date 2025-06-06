@@ -3961,7 +3961,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -4044,7 +4044,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -4374,7 +4374,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -6346,7 +6346,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -6429,7 +6429,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -6785,7 +6785,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -6881,7 +6881,7 @@
                 262
             </generation>
             <description>
-                \'[CLIENT]HUBONE-VPNIP-16848602-smartcall\'
+                \'[CLIENT]VPNIP-16848602-smartcall\'
             </description>
             <link-level-type>
                 Ethernet
@@ -7236,7 +7236,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -7319,7 +7319,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -7649,7 +7649,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -7892,7 +7892,7 @@
                 263
             </generation>
             <description>
-                \'[CLIENT]HUBONE-VPNIP-16843185\'
+                \'[CLIENT]VPNIP-16843185\'
             </description>
             <link-level-type>
                 Ethernet
@@ -8247,7 +8247,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -8330,7 +8330,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -8660,7 +8660,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -8903,7 +8903,7 @@
                 264
             </generation>
             <description>
-                HUBONE-INTPRE-16178705 surflink labo Mobility
+                INTPRE-16178705 surflink labo Mobility
             </description>
             <link-level-type>
                 Ethernet
@@ -9258,7 +9258,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -9341,7 +9341,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -9671,7 +9671,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -9914,7 +9914,7 @@
                 265
             </generation>
             <description>
-                \'[CLIENT]HUBONE-VPNIP-16180146_Lien_Secondaire_Bureaux_ORY523\'
+                \'[CLIENT]VPNIP-16180146_Lien_Secondaire_Bureaux_ORY523\'
             </description>
             <link-level-type>
                 Ethernet
@@ -10269,7 +10269,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -10352,7 +10352,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -10705,7 +10705,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -11303,7 +11303,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -11386,7 +11386,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -11739,7 +11739,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -11982,7 +11982,7 @@
                 267
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -12336,7 +12336,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -12419,7 +12419,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -12772,7 +12772,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -12868,7 +12868,7 @@
                 268
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -13222,7 +13222,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -13305,7 +13305,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -13658,7 +13658,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -13754,7 +13754,7 @@
                 269
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -14108,7 +14108,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -14191,7 +14191,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -14544,7 +14544,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -14997,7 +14997,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -15080,7 +15080,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -15410,7 +15410,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -17307,7 +17307,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -17390,7 +17390,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -17720,7 +17720,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -18523,7 +18523,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -18606,7 +18606,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -18936,7 +18936,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -19380,7 +19380,7 @@
                 273
             </generation>
             <description>
-                HUB-PROV-VPNIP-14459127
+                TEST-PROV-VPNIP-14459127
             </description>
             <link-level-type>
                 Ethernet
@@ -19735,7 +19735,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -19818,7 +19818,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -20148,7 +20148,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -20750,7 +20750,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -20833,7 +20833,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -21163,7 +21163,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -21851,7 +21851,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -21934,7 +21934,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -22264,7 +22264,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -22585,7 +22585,7 @@
                 276
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -22939,7 +22939,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -23022,7 +23022,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -23375,7 +23375,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -23471,7 +23471,7 @@
                 277
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -23825,7 +23825,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -23908,7 +23908,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -24261,7 +24261,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -24357,7 +24357,7 @@
                 278
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -24711,7 +24711,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -24794,7 +24794,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -25147,7 +25147,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -25243,7 +25243,7 @@
                 279
             </generation>
             <description>
-                Usage interne HubOne uniquement - pas de clients factures sur ce pop
+                Description interface
             </description>
             <link-level-type>
                 Ethernet
@@ -25597,7 +25597,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -25680,7 +25680,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -26033,7 +26033,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -32964,7 +32964,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -33047,7 +33047,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -33354,7 +33354,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -34004,7 +34004,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -34087,7 +34087,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -34394,7 +34394,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -35027,7 +35027,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -35110,7 +35110,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -35417,7 +35417,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -36126,7 +36126,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -36209,7 +36209,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -36517,7 +36517,7 @@
                             6
                         </cos-queue-number>
                         <cos-queue-forwarding-class>
-                            FC-TR-HUBONE
+                            FC-TR
                         </cos-queue-forwarding-class>
                         <cos-queue-bandwidth>
                             10
@@ -38744,7 +38744,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -38893,7 +38893,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -38976,7 +38976,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>
@@ -39616,7 +39616,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -39765,7 +39765,7 @@
                         6
                     </queue-number>
                     <forwarding-class-name>
-                        FC-TR-HUBONE
+                        FC-TR
                     </forwarding-class-name>
                     <queue-counters-queued-packets>
                         0
@@ -39848,7 +39848,7 @@
                     6
                 </queue-number>
                 <forwarding-class-name>
-                    FC-TR-HUBONE
+                    FC-TR
                 </forwarding-class-name>
             </queue-num-forwarding-class-name-map>
             <queue-num-forwarding-class-name-map>

@@ -106,7 +106,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -116,7 +116,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet.0</name>
+            <name>ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -126,7 +126,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet.0</name>
+            <name>TIP-ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -136,7 +136,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet6.0</name>
+            <name>TIP-ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -226,7 +226,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet.0</name>
+            <name>INTERNET.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -406,7 +406,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet6.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -416,7 +416,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet6.0</name>
+            <name>INTERNET.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -426,7 +426,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet6.0</name>
+            <name>ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -812,7 +812,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -822,7 +822,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet.0</name>
+            <name>ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -832,7 +832,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet.0</name>
+            <name>TIP-ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -842,7 +842,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet6.0</name>
+            <name>TIP-ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -932,7 +932,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet.0</name>
+            <name>INTERNET.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1112,7 +1112,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet6.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1122,7 +1122,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet6.0</name>
+            <name>INTERNET.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1132,7 +1132,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet6.0</name>
+            <name>ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1537,7 +1537,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1547,7 +1547,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet.0</name>
+            <name>ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1557,7 +1557,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet.0</name>
+            <name>TIP-ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1567,7 +1567,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet6.0</name>
+            <name>TIP-ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1657,7 +1657,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet.0</name>
+            <name>INTERNET.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1838,7 +1838,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet6.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1848,7 +1848,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-INTERNET.inet6.0</name>
+            <name>INTERNET.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -1858,7 +1858,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet6.0</name>
+            <name>ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2273,7 +2273,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUB-BUR-VPNIP-034495AC.inet.0</name>
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2283,7 +2283,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet.0</name>
+            <name>ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2293,7 +2293,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet.0</name>
+            <name>TIP-ISP.inet.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2303,7 +2303,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-TIP-ISP.inet6.0</name>
+            <name>TIP-ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2393,7 +2393,7 @@
                 <suppressed-prefix-count>0</suppressed-prefix-count>
             </bgp-rib>
             <bgp-rib junos:style="detail">
-                <name>HUBONE-INTERNET.inet.0</name>
+                <name>INTERNET.inet.0</name>
                 <bgp-rib-state>BGP restart is complete</bgp-rib-state>
                 <vpn-rib-state>VPN restart is complete</vpn-rib-state>
                 <send-state>not advertising</send-state>
@@ -2573,7 +2573,7 @@
                 <suppressed-prefix-count>0</suppressed-prefix-count>
             </bgp-rib>
             <bgp-rib junos:style="detail">
-                <name>HUB-BUR-VPNIP-034495AC.inet6.0</name>
+                <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
                 <bgp-rib-state>BGP restart is complete</bgp-rib-state>
                 <vpn-rib-state>VPN restart is complete</vpn-rib-state>
                 <send-state>not advertising</send-state>
@@ -2583,7 +2583,7 @@
                 <suppressed-prefix-count>0</suppressed-prefix-count>
             </bgp-rib>
             <active-prefix-count>0</active-prefix-count>
-            <name>HUBONE-INTERNET.inet6.0</name>
+            <name>INTERNET.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -2593,7 +2593,7 @@
             <suppressed-prefix-count>0</suppressed-prefix-count>
         </bgp-rib>
         <bgp-rib junos:style="detail">
-            <name>HUBONE-ISP.inet6.0</name>
+            <name>ISP.inet6.0</name>
             <bgp-rib-state>BGP restart is complete</bgp-rib-state>
             <vpn-rib-state>VPN restart is complete</vpn-rib-state>
             <send-state>not advertising</send-state>
@@ -3070,8 +3070,8 @@
         <local-address>unspecified</local-address>
         <local-as>29283</local-as>
         <peer-group>AS65000</peer-group>
-        <peer-cfg-rti>HUBONE-ISP</peer-cfg-rti>
-        <peer-fwd-rti>HUBONE-ISP</peer-fwd-rti>
+        <peer-cfg-rti>ISP</peer-cfg-rti>
+        <peer-fwd-rti>ISP</peer-fwd-rti>
         <peer-type>External</peer-type>
         <peer-state>Active</peer-state>
         <peer-flags></peer-flags>
@@ -3184,8 +3184,8 @@
         <local-address>unspecified</local-address>
         <local-as>29283</local-as>
         <peer-group>AS64614</peer-group>
-        <peer-cfg-rti>HUB-BUR-VPNIP-034495AC</peer-cfg-rti>
-        <peer-fwd-rti>HUB-BUR-VPNIP-034495AC</peer-fwd-rti>
+        <peer-cfg-rti>TEST-BUR-VPNIP-034495AC</peer-cfg-rti>
+        <peer-fwd-rti>TEST-BUR-VPNIP-034495AC</peer-fwd-rti>
         <peer-type>External</peer-type>
         <peer-state>Idle</peer-state>
         <peer-flags>PeerInterfaceUnknown</peer-flags>
@@ -3253,8 +3253,8 @@
         <local-address>unspecified</local-address>
         <local-as>29283</local-as>
         <peer-group>VODAFONE-EBGP-IPV4</peer-group>
-        <peer-cfg-rti>HUBONE-TIP-ISP</peer-cfg-rti>
-        <peer-fwd-rti>HUBONE-TIP-ISP</peer-fwd-rti>
+        <peer-cfg-rti>TIP-ISP</peer-cfg-rti>
+        <peer-fwd-rti>TIP-ISP</peer-fwd-rti>
         <peer-type>External</peer-type>
         <peer-state>Idle</peer-state>
         <peer-flags>PeerInterfaceUnknown</peer-flags>
@@ -3287,7 +3287,7 @@
         <peer-as>29283</peer-as>
         <local-address>unspecified</local-address>
         <local-as>1273</local-as>
-        <peer-group>HUBONE-EBGP-IPV4</peer-group>
+        <peer-group>EBGP-IPV4</peer-group>
         <peer-cfg-rti>VODAFONE</peer-cfg-rti>
         <peer-fwd-rti>VODAFONE</peer-fwd-rti>
         <peer-type>External</peer-type>
@@ -3300,7 +3300,7 @@
         <bgp-option-information
                 xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
             <export-policy>
-                VODAFONE-TO-HUB
+                VODAFONE-TO-TEST
             </export-policy>
             <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
             <bgp-options2>MultipathAs</bgp-options2>
@@ -3392,8 +3392,8 @@
         <local-address>unspecified</local-address>
         <local-as>29283</local-as>
         <peer-group>VODAFONE-EBGP-IPV6</peer-group>
-        <peer-cfg-rti>HUBONE-TIP-ISP</peer-cfg-rti>
-        <peer-fwd-rti>HUBONE-TIP-ISP</peer-fwd-rti>
+        <peer-cfg-rti>TIP-ISP</peer-cfg-rti>
+        <peer-fwd-rti>TIP-ISP</peer-fwd-rti>
         <peer-type>External</peer-type>
         <peer-state>Idle</peer-state>
         <peer-flags>PeerInterfaceUnknown</peer-flags>
@@ -3426,7 +3426,7 @@
         <peer-as>29283</peer-as>
         <local-address>unspecified</local-address>
         <local-as>1273</local-as>
-        <peer-group>HUBONE-EBGP-IPV6</peer-group>
+        <peer-group>EBGP-IPV6</peer-group>
         <peer-cfg-rti>VODAFONE</peer-cfg-rti>
         <peer-fwd-rti>VODAFONE</peer-fwd-rti>
         <peer-type>External</peer-type>
@@ -3439,7 +3439,7 @@
         <bgp-option-information
                 xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
             <export-policy>
-                VODAFONE-TO-HUB
+                VODAFONE-TO-TEST
             </export-policy>
             <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
             <bgp-options2>MultipathAs</bgp-options2>
