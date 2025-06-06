@@ -200,7 +200,7 @@ __END__
 
 =head1 MODE
 
-Check BGP peer prefixes per AFI/SAFI (BGP4-V2-MIB-JUNIPER)
+Check BGP peer prefixes per AFI/SAFI (C<BGP4-V2-MIB-JUNIPER>)
 
 =over 8
 
@@ -208,17 +208,45 @@ Check BGP peer prefixes per AFI/SAFI (BGP4-V2-MIB-JUNIPER)
 
 Filter by peer identifier (can be regexp)
 
-=item B<--warning-*>
+=item B<--warning-prefixes-in>
 
-Specify warning threshold.
-Can be: 'prefixes-in', 'prefixes-in-accepted',
-'prefixes-in-rejected', 'prefixes-in-active', 'prefixes-out'
+Threshold warning for prefixes in.
 
-=item B<--critical-*>
+=item B<--critical-prefixes-in>
 
-Specify critical threshold.
-Can be: 'prefixes-in', 'prefixes-in-accepted',
-'prefixes-in-rejected', 'prefixes-in-active', 'prefixes-out'
+Threshold critical for prefixes in.
+
+=item B<--warning-prefixes-in-accepted>
+
+Threshold warning for prefixes in accepted.
+
+=item B<--critical-prefixes-in-accepted>
+
+Threshold critical for prefixes in accepted.
+
+=item B<--warning-prefixes-in-rejected>
+
+Threshold warning for prefixes in rejected.
+
+=item B<--critical-prefixes-in-rejected>
+
+Threshold critical for prefixes in rejected.
+
+=item B<--warning-prefixes-in-active>
+
+Threshold warning for prefixes in active.
+
+=item B<--critical-prefixes-in-active>
+
+Threshold critical for prefixes in active.
+
+=item B<--warning-prefixes-out>
+
+Threshold warning for prefixes out.
+
+=item B<--critical-prefixes-out>
+
+Threshold critical for prefixes out.
 
 =back
 

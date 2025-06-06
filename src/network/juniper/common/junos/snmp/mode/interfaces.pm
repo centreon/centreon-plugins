@@ -450,11 +450,11 @@ Set critical threshold for speed (in b/s).
 
 =item B<--warning-fcs-errors>
 
-Set warning threshold for FCS errors (in percent).
+Set warning threshold for Frame Check Sum errors (in percent).
 
 =item B<--critical-fcs-errors>
 
-Set critical threshold for FCS errors (in percent).
+Set critical threshold for Frame Check Sum errors (in percent).
 
 =item B<--warning-input-power>
 
@@ -502,7 +502,7 @@ Units of thresholds for communication types (default: C<%{percent_delta}>) (C<%{
 
 =item B<--nagvis-perfdata>
 
-Display traffic performance data to be compatible with nagvis widget.
+Display traffic performance data to be compatible with NagVis widget.
 
 =item B<--interface>
 

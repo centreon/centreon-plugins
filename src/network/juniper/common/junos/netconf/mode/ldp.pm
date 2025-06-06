@@ -262,7 +262,7 @@ Filter LDP session by remote address.
 
 =item B<--custom-perfdata-instances>
 
-Define performance datas instance (default: C<%(remoteAddress) %(messageType)>)
+Define performance data instances (default: C<%(remoteAddress) %(messageType)>)
 
 =item B<--unknown-status>
 

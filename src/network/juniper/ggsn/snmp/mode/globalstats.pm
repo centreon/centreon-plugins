@@ -247,21 +247,109 @@ Check global statistics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-traffic-in>
 
-Warning threshold.
-Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
-'active-pdp', 'attempted-activation-pdp', 'attempted-update-pdp', 'attempted-deactivation-pdp',
-'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-update-pdp',
-'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
+Warning threshold for traffic in (in bps).
 
-=item B<--critical-*>
+=item B<--critical-traffic-in>
 
-Critical threshold.
-Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
-'active-pdp', 'attempted-activation-pdp', 'attempted-update-pdp', 'attempted-deactivation-pdp',
-'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-update-pdp',
-'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
+Critical threshold for traffic in (in bps).
+
+=item B<--warning-traffic-out>
+
+Warning threshold for traffic out (in bps).
+
+=item B<--critical-traffic-out>
+
+Critical threshold for traffic out (in bps).
+
+=item B<--warning-drop-in>
+
+Warning threshold for drop in packets (in %).
+
+=item B<--critical-drop-in>
+
+Critical threshold for drop in packets (in %).
+
+=item B<--warning-drop-out>
+
+Warning threshold for drop out packets (in %).
+
+=item B<--critical-drop-out>
+
+Critical threshold for drop out packets (in %).
+
+=item B<--warning-active-pdp>
+
+Warning threshold for active Packet Data Protocol contexts.
+
+=item B<--critical-active-pdp>
+
+Critical threshold for active Packet Data Protocol contexts.
+
+=item B--warning-attempted-activation-pdp>
+
+Warning threshold for attempted activation of Packet Data Protocol contexts.
+
+=item B<--critical-attempted-activation-pdp>
+
+Critical threshold for attempted activation of Packet Data Protocol contexts.
+
+=item B<--warning-attempted-update-pdp>
+
+Warning threshold for attempted update of Packet Data Protocol contexts.
+
+=item B<--critical-attempted-update-pdp>
+
+Critical threshold for attempted update of Packet Data Protocol contexts.
+
+=item B<--warning-attempted-deactivation-pdp>
+
+Warning threshold for attempted deactivation of Packet Data Protocol contexts.
+
+=item B<--critical-attempted-deactivation-pdp>
+
+Critical threshold for attempted deactivation of Packet Data Protocol contexts.
+
+=item B<--warning-attempted-self-deactivation-pdp>
+
+Warning threshold for attempted self-deactivation of Packet Data Protocol contexts.
+
+=item B<--critical-attempted-self-deactivation-pdp>
+
+Critical threshold for attempted self-deactivation of Packet Data Protocol contexts.
+
+=item B<--warning-completed-activation-pdp>
+
+Warning threshold for completed activation of Packet Data Protocol contexts.
+
+=item B<--critical-completed-activation-pdp>
+
+Critical threshold for completed activation of Packet Data Protocol contexts.
+
+=item B<--warning-completed-update-pdp>
+
+Warning threshold for completed update of Packet Data Protocol contexts.
+
+=item B<--critical-completed-update-pdp>
+
+Critical threshold for completed update of Packet Data Protocol contexts.
+
+=item B<--warning-completed-deactivation-pdp>
+
+Warning threshold for completed deactivation of Packet Data Protocol contexts.
+
+=item B<--critical-completed-deactivation-pdp>
+
+Critical threshold for completed deactivation of Packet Data Protocol contexts.
+
+=item B<--warning-completed-self-deactivation-pdp>
+
+Warning threshold for completed self-deactivation of Packet Data Protocol contexts.
+
+=item B<--critical-completed-self-deactivation-pdp>
+
+Critical threshold for completed self-deactivation of Packet Data Protocol contexts.
 
 =back
 

@@ -200,7 +200,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware (JUNIPER-MIB) (frus, operating).
+Check Hardware (JUNIPER-MIB) (field-replaceable units, operating).
 
 =over 8
 

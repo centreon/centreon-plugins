@@ -57,6 +57,7 @@ CX
 Cyberoam
 Datacore
 datasource
+dBm
 DC4
 dcdiag
 deduplication
@@ -142,12 +143,14 @@ Kubernetes
 ldap
 LDP
 --legacy-api-beta
+libSSH
 license-instances-usage-prct
 Loggly
 LSP
 LTE
 LUN
 LUNs
+mA
 machineaccount
 --map-speed-dsl
 MBean
@@ -180,10 +183,12 @@ MQTT
 --mqtt-timeout
 --mqtt-username
 multiple
+MX
 nagios
 Nagios
 NagVis
 --nagvis-perfdata
+Netconf
 Netscaler
 net-snmp
 NLCapacity
@@ -217,6 +222,7 @@ partiallyActive
 perfdata
 physicaldrive
 PKCS1
+Plink
 Podman
 powershell
 powershell.exe
@@ -256,7 +262,9 @@ snmp
 snmpd.conf
 space-usage-prct
 --sql-errors-exit
+SRX
 SSDCapacity
+SSG
 SSH
 standAlone
 statefile
@@ -284,6 +292,7 @@ TrendMicro
 tsdb-version
 UCD
 UDP
+unicast
 UninterrupibleSleep
 uniq
 uptime

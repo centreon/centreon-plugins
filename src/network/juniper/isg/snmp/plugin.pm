@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check Juniper Integrated Security Gateways series in SNMP.
 
 =cut

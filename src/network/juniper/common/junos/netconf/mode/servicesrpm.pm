@@ -353,7 +353,7 @@ Filter service by type.
 
 =item B<--custom-perfdata-instances>
 
-Define performance datas instance (default: C<%(testName)>)
+Define performance data instances (default: C<%(testName)>)
 
 =item B<--unknown-status>
 
