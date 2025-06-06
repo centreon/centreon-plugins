@@ -279,18 +279,173 @@ You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}
 Define the conditions to match for the status to be CRITICAL (default: '%{lspState} !~ /up/i').
 You can use the following variables: %{id}, %{remoteAddress}, %{connectionState}, %{sessionState}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-ldp-session-messages-address-received>
 
-Thresholds.
-Can be: 'ldp-sessions-detected',
-'ldp-session-messages-initialization-sent', 'ldp-session-messages-keeaplive-sent', 'ldp-session-messages-notification-sent', 
-'ldp-session-messages-address-sent', 'ldp-session-messages-address-withdraw-sent', 
-'ldp-session-messages-label-mapping-sent', 'ldp-session-messages-label-request-sent', 'ldp-session-messages-label-withdraw-sent', 
-'ldp-session-messages-label-release-sent', 'ldp-session-messages-label-abort-sent',
-'ldp-session-messages-initialization-received', 'ldp-session-messages-keeaplive-received', 'ldp-session-messages-notification-received', 
-'ldp-session-messages-address-received', 'ldp-session-messages-address-withdraw-received', 
-'ldp-session-messages-label-mapping-received', 'ldp-session-messages-label-request-received', 'ldp-session-messages-label-withdraw-received', 
-'ldp-session-messages-label-release-received', 'ldp-session-messages-label-abort-received'
+Threshold.
+
+=item B<--critical-ldp-session-messages-address-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-address-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-address-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-address-withdraw-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-address-withdraw-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-address-withdraw-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-address-withdraw-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-initialization-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-initialization-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-initialization-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-initialization-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-keeaplive-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-keeaplive-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-keeaplive-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-keeaplive-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-abort-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-abort-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-abort-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-abort-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-mapping-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-mapping-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-mapping-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-mapping-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-release-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-release-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-release-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-release-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-request-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-request-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-request-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-request-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-withdraw-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-withdraw-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-label-withdraw-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-label-withdraw-sent>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-notification-received>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-notification-received>
+
+Threshold.
+
+=item B<--warning-ldp-session-messages-notification-sent>
+
+Threshold.
+
+=item B<--critical-ldp-session-messages-notification-sent>
+
+Threshold.
+
+=item B<--warning-ldp-sessions-detected>
+
+Threshold.
+
+=item B<--critical-ldp-sessions-detected>
+
+Threshold.
 
 =back
 
