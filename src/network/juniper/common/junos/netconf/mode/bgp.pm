@@ -347,7 +347,7 @@ Filter BGP RIB by RIB name.
 
 =item B<--custom-perfdata-instances-bgp-peer>
 
-Define performance datas instance (default: '%(localAddr) %(peerAddr)')
+Define performance data instances (default: '%(localAddr) %(peerAddr)')
 
 =item B<--unknown-status>
 

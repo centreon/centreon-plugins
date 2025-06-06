@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper GGSN Module in SNMP.
+Check Juniper Gateway General Packet Radio Service Support Node Module in SNMP.
 
 =cut

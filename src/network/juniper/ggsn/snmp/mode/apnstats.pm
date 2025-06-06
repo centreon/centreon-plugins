@@ -259,29 +259,117 @@ __END__
 
 =head1 MODE
 
-Check APN statistics.
+Check Access Point Name statistics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-traffic-in>
 
-Warning threshold.
-Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
-'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
-'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',
-'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
+Warning threshold for traffic in (bps).
 
-=item B<--critical-*>
+=item B<--critical-traffic-in>
 
-Critical threshold.
-Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
-'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
-'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',
-'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
+Critical threshold for traffic in (bps).
+
+=item B<--warning-traffic-out>
+
+Warning threshold for traffic out (bps).
+
+=item B<--critical-traffic-out>
+
+Critical threshold for traffic out (bps).
+
+=item B<--warning-drop-in>
+
+Warning threshold for drop in packets (%).
+
+=item B<--critical-drop-in>
+
+Critical threshold for drop in packets (%).
+
+=item B<--warning-drop-out>
+
+Warning threshold for drop out packets (%).
+
+=item B<--critical-drop-out>
+
+Critical threshold for drop out packets (%).
+
+=item B<--warning-active-pdp>
+
+Warning threshold for active Packet Data Protocol contexts.
+
+=item B<--critical-active-pdp>
+
+Critical threshold for active Packet Data Protocol contexts.
+
+=item B<--warning-attempted-activation-pdp>
+
+Warning threshold for attempted activation Packet Data Protocol contexts.
+
+=item B<--critical-attempted-activation-pdp>
+
+Critical threshold for attempted activation Packet Data Protocol contexts.
+
+=item B<--warning-attempted-dyn-activation-pdp>
+
+Warning threshold for attempted dynamic activation Packet Data Protocol contexts.
+
+=item B<--critical-attempted-dyn-activation-pdp>
+
+Critical threshold for attempted dynamic activation Packet Data Protocol contexts.
+
+=item B<--warning-attempted-deactivation-pdp>
+
+Warning threshold for attempted deactivation Packet Data Protocol contexts.
+
+=item B<--critical-attempted-deactivation-pdp>
+
+Critical threshold for attempted deactivation Packet Data Protocol contexts.
+
+=item B<--warning-attempted-self-deactivation-pdp>
+
+Warning threshold for attempted self-deactivation Packet Data Protocol contexts.
+
+=item B<--critical-attempted-self-deactivation-pdp>
+
+Critical threshold for attempted self-deactivation Packet Data Protocol contexts.
+
+=item B<--warning-completed-activation-pdp>
+
+Warning threshold for completed activation Packet Data Protocol contexts.
+
+=item B<--critical-completed-activation-pdp>
+
+Critical threshold for completed activation Packet Data Protocol contexts.
+
+=item B<--warning-completed-dyn-activation-pdp>
+
+Warning threshold for completed dynamic activation Packet Data Protocol contexts.
+
+=item B<--critical-completed-dyn-activation-pdp>
+
+Critical threshold for completed dynamic activation Packet Data Protocol contexts.
+
+=item B<--warning-completed-deactivation-pdp>
+
+Warning threshold for completed deactivation Packet Data Protocol contexts.
+
+=item B<--critical-completed-deactivation-pdp>
+
+Critical threshold for completed deactivation Packet Data Protocol contexts.
+
+=item B<--warning-completed-self-deactivation-pdp>
+
+Warning threshold for completed self-deactivation Packet Data Protocol contexts.
+
+=item B<--critical-completed-self-deactivation-pdp>
+
+Critical threshold for completed self-deactivation Packet Data Protocol contexts.
 
 =item B<--filter-name>
 
-Filter APN name (can be a regexp).
+Filter Access Point Name name (can be a regexp).
 
 =back
 

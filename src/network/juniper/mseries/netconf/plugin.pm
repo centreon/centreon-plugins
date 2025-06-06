@@ -62,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper MX Series with API (netconf over ssh,...).
+Check Juniper MX Series with API (Netconf over ssh,...).
 
 =cut

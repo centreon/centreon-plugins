@@ -110,7 +110,7 @@ SSH abstraction layer.
 
 =head1 SYNOPSIS
 
-SSH abstraction layer for sscli, plink and libssh backends
+SSH abstraction layer for SSH CLI, Plink and libSSH backends
 
 =head1 SSH GLOBAL OPTIONS
 

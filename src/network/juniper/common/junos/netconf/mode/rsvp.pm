@@ -190,7 +190,7 @@ Filter RSVP session by type.
 
 =item B<--custom-perfdata-instances>
 
-Define performance datas instance (default: C<'%(type) %(name)'>)
+Define performance data instances (default: C<'%(type) %(name)'>)
 
 =item B<--unknown-status>
 

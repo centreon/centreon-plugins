@@ -110,11 +110,11 @@ __END__
 
 =head1 NAME
 
-ssh cli backend.
+SSH CLI backend.
 
 =head1 SYNOPSIS
 
-ssh cli backend.
+SSH CLI backend.
 
 =head1 BACKEND SSH CLI OPTIONS
 
@@ -130,12 +130,12 @@ ssh command path (default: C<none>)
 
 =item B<--sshcli-option>
 
-Specify ssh cli options (example: C<--sshcli-option='-o=StrictHostKeyChecking=no'>).
+Specify SSH CLI options (example: C<--sshcli-option='-o=StrictHostKeyChecking=no'>).
 
 =back
 
 =head1 DESCRIPTION
 
-B<sshcli>.
+B<SSH CLI>.
 
 =cut
