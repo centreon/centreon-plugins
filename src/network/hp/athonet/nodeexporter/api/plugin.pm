@@ -49,6 +49,7 @@ sub new {
         'storage'         => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
         'udm'             => 'network::hp::athonet::nodeexporter::api::mode::udm',
         'udr'             => 'network::hp::athonet::nodeexporter::api::mode::udr',
+        'upf'             => 'network::hp::athonet::nodeexporter::api::mode::upf',
         'uptime'          => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
     };
 
