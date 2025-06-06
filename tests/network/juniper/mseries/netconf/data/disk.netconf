@@ -1,0 +1,103 @@
+<system-storage-information junos:style="detail">
+    <filesystem>
+        <filesystem-name>
+            /dev/gpt/junos
+        </filesystem-name>
+        <total-blocks junos:format="10450965">
+            20901930
+        </total-blocks>
+        <used-blocks junos:format="2298690">
+            4597380
+        </used-blocks>
+        <available-blocks junos:format="7316198">
+            14632396
+        </available-blocks>
+        <used-percent>
+            24
+        </used-percent>
+        <mounted-on>
+            /.mount
+        </mounted-on>
+    </filesystem>
+    <filesystem>
+        <filesystem-name>
+            /dev/gpt/config
+        </filesystem-name>
+        <total-blocks junos:format="456652">
+            913304
+        </total-blocks>
+        <used-blocks junos:format="188">
+            376
+        </used-blocks>
+        <available-blocks junos:format="419932">
+            839864
+        </available-blocks>
+        <used-percent>
+            0
+        </used-percent>
+        <mounted-on>
+            /.mount/config
+        </mounted-on>
+    </filesystem>
+    <filesystem>
+        <filesystem-name>
+            /dev/gpt/var
+        </filesystem-name>
+        <total-blocks junos:format="14773572">
+            29547144
+        </total-blocks>
+        <used-blocks junos:format="7213264">
+            14426528
+        </used-blocks>
+        <available-blocks junos:format="6378424">
+            12756848
+        </available-blocks>
+        <used-percent>
+            53
+        </used-percent>
+        <mounted-on>
+            /.mount/var
+        </mounted-on>
+    </filesystem>
+    <filesystem>
+        <filesystem-name>
+            tmpfs
+        </filesystem-name>
+        <total-blocks junos:format="43713600">
+            87427200
+        </total-blocks>
+        <used-blocks junos:format="268">
+            536
+        </used-blocks>
+        <available-blocks junos:format="43713332">
+            87426664
+        </available-blocks>
+        <used-percent>
+            0
+        </used-percent>
+        <mounted-on>
+            /.mount/tmp
+        </mounted-on>
+    </filesystem>
+    <filesystem>
+        <filesystem-name>
+            tmpfs
+        </filesystem-name>
+        <total-blocks junos:format="8379804">
+            16759608
+        </total-blocks>
+        <used-blocks junos:format="1316">
+            2632
+        </used-blocks>
+        <available-blocks junos:format="8378488">
+            16756976
+        </available-blocks>
+        <used-percent>
+            0
+        </used-percent>
+        <mounted-on>
+            /.mount/mfs
+        </mounted-on>
+    </filesystem>
+</system-storage-information>
+
