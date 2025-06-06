@@ -886,13 +886,213 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-bias-current>
 
-Thresholds.
-Can be: 'in-traffic', 'out-traffic',
-'in-discard', 'in-error', 'in-fcserror', 'in-runts', 'in-giant', 'in-l3-incomplete', 'in-fifo-error', 'in-l2-mismatch-timeout', 'in-drop', 'in-resource-error',
-'out-discard', 'out-error', 'out-drop', 'out-carrier-transition', 'out-collision', 'out-mtu-error', 'out-aged', 'out-hslink-crc-error', 'out-fifo-error', 'out-resource-error',
-'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+Threshold in mA.
+
+=item B<--critical-bias-current>
+
+Threshold in mA.
+
+=item B<--warning-in-discard>
+
+Threshold.
+
+=item B<--critical-in-discard>
+
+Threshold.
+
+=item B<--warning-in-drop>
+
+Threshold.
+
+=item B<--critical-in-drop>
+
+Threshold.
+
+=item B<--warning-in-error>
+
+Threshold.
+
+=item B<--critical-in-error>
+
+Threshold.
+
+=item B<--warning-in-fcserror>
+
+Threshold.
+
+=item B<--critical-in-fcserror>
+
+Threshold.
+
+=item B<--warning-in-fifo-error>
+
+Threshold.
+
+=item B<--critical-in-fifo-error>
+
+Threshold.
+
+=item B<--warning-in-giant>
+
+Threshold.
+
+=item B<--critical-in-giant>
+
+Threshold.
+
+=item B<--warning-in-l2-mismatch-timeout>
+
+Threshold.
+
+=item B<--critical-in-l2-mismatch-timeout>
+
+Threshold.
+
+=item B<--warning-in-l3-incomplete>
+
+Threshold.
+
+=item B<--critical-in-l3-incomplete>
+
+Threshold.
+
+=item B<--warning-in-resource-error>
+
+Threshold.
+
+=item B<--critical-in-resource-error>
+
+Threshold.
+
+=item B<--warning-in-runts>
+
+Threshold.
+
+=item B<--critical-in-runts>
+
+Threshold.
+
+=item B<--warning-in-traffic>
+
+Threshold.
+
+=item B<--critical-in-traffic>
+
+Threshold.
+
+=item B<--warning-input-power>
+
+Threshold in dBm.
+
+=item B<--critical-input-power>
+
+Threshold in dBm.
+
+=item B<--warning-module-temperature>
+
+Threshold in C.
+
+=item B<--critical-module-temperature>
+
+Threshold in C.
+
+=item B<--warning-out-aged>
+
+Threshold.
+
+=item B<--critical-out-aged>
+
+Threshold.
+
+=item B<--warning-out-carrier-transition>
+
+Threshold.
+
+=item B<--critical-out-carrier-transition>
+
+Threshold.
+
+=item B<--warning-out-collision>
+
+Threshold.
+
+=item B<--critical-out-collision>
+
+Threshold.
+
+=item B<--warning-out-discard>
+
+Threshold.
+
+=item B<--critical-out-discard>
+
+Threshold.
+
+=item B<--warning-out-drop>
+
+Threshold.
+
+=item B<--critical-out-drop>
+
+Threshold.
+
+=item B<--warning-out-error>
+
+Threshold.
+
+=item B<--critical-out-error>
+
+Threshold.
+
+=item B<--warning-out-fifo-error>
+
+Threshold.
+
+=item B<--critical-out-fifo-error>
+
+Threshold.
+
+=item B<--warning-out-hslink-crc-error>
+
+Threshold.
+
+=item B<--critical-out-hslink-crc-error>
+
+Threshold.
+
+=item B<--warning-out-mtu-error>
+
+Threshold.
+
+=item B<--critical-out-mtu-error>
+
+Threshold.
+
+=item B<--warning-out-resource-error>
+
+Threshold.
+
+=item B<--critical-out-resource-error>
+
+Threshold.
+
+=item B<--warning-out-traffic>
+
+Threshold.
+
+=item B<--critical-out-traffic>
+
+Threshold.
+
+=item B<--warning-output-power>
+
+Threshold in dBm.
+
+=item B<--critical-output-power>
+
+Threshold in dBm.
 
 =item B<--units-traffic>
 
