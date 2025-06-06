@@ -233,6 +233,8 @@ RRDCached
 rsrp
 rsrq
 rssi
+Rubrik
+µs
 Sansymphony
 SAS
 scenarii
@@ -244,7 +246,6 @@ sinr
 SkyHigh
 SMS
 SnapMirrors
-SnapMirrors
 snmp
 snmpd.conf
 space-usage-prct
@@ -255,8 +256,8 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
-SureBackup
 superseed
+SureBackup
 systemd
 SysVol
 TCP
@@ -281,7 +282,6 @@ UninterrupibleSleep
 uniq
 uptime
 --urlpath
-µs
 usage-prct
 usec
 userpass
@@ -319,4 +319,3 @@ WLC
 WSMAN
 XPath
 ZFS
-Rubrik
