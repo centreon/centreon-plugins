@@ -294,7 +294,7 @@
                 Thu Jun 13 09:41:05 2024
             </probe-time>
             <hardware-timestamp-status>No hardware timestamps</hardware-timestamp-status>
-            <rtt>2329</rtt>
+            <rtt>1329</rtt>
             <round-trip-jitter>1442</round-trip-jitter>
             <round-trip-interarrival-jitter>1278</round-trip-interarrival-jitter>
         </probe-single-results>
@@ -399,14 +399,14 @@
                         <max-delay junos:format="6822 usec">
                             6822
                         </max-delay>
-                        <avg-delay junos:format="2455 usec">
-                            2455
+                        <avg-delay junos:format="4213 usec">
+                            4213
                         </avg-delay>
-                        <jitter-delay junos:format="6004 usec">
-                            6004
+                        <jitter-delay junos:format="3002 usec">
+                            3002
                         </jitter-delay>
-                        <stddev-delay junos:format="2237 usec">
-                            2237
+                        <stddev-delay junos:format="4111 usec">
+                            4111
                         </stddev-delay>
                         <sum-delay junos:format="24546 usec">
                             24546
@@ -423,14 +423,14 @@
                         <max-delay junos:format="4250 usec">
                             4250
                         </max-delay>
-                        <avg-delay junos:format="1097 usec">
-                            1097
+                        <avg-delay junos:format="2003 usec">
+                            2003
                         </avg-delay>
-                        <jitter-delay junos:format="4219 usec">
-                            4219
+                        <jitter-delay junos:format="3215 usec">
+                            3215
                         </jitter-delay>
-                        <stddev-delay junos:format="1501 usec">
-                            1501
+                        <stddev-delay junos:format="2765 usec">
+                            2765
                         </stddev-delay>
                         <sum-delay junos:format="6580 usec">
                             6580
@@ -444,17 +444,17 @@
                         <min-delay junos:format="99 usec">
                             99
                         </min-delay>
-                        <max-delay junos:format="3962 usec">
-                            3962
+                        <max-delay junos:format="5032 usec">
+                            5032
                         </max-delay>
-                        <avg-delay junos:format="1170 usec">
-                            1170
+                        <avg-delay junos:format="984 usec">
+                            984
                         </avg-delay>
-                        <jitter-delay junos:format="3863 usec">
-                            3863
+                        <jitter-delay junos:format="5462 usec">
+                            5462
                         </jitter-delay>
-                        <stddev-delay junos:format="1620 usec">
-                            1620
+                        <stddev-delay junos:format="3056 usec">
+                            3056
                         </stddev-delay>
                         <sum-delay junos:format="4678 usec">
                             4678
