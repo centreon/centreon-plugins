@@ -95,6 +95,7 @@ Fortinet
 FQDN
 FreeBSD
 frsevent
+GCP
 --get-param
 HAProxy
 HashiCorp
@@ -251,6 +252,7 @@ space-usage-prct
 --sql-errors-exit
 SSDCapacity
 SSH
+Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd
