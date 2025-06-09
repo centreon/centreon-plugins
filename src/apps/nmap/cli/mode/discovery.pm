@@ -115,8 +115,9 @@ sub run {
     my ($stdout) = $options{custom}->execute_command(
         command => 'nmap',
         command_options => $self->{option_results}->{nmap_options},
-        command_options_suffix => $self->{option_results}->{subnet} . ' 2> /dev/null',
-        timeout => 120
+        command_options_suffix => $self->{option_results}->{subnet},
+        timeout => 120,
+        no_shell_interpretation => 1
     );
 
     my $results = $self->decode_xml_response(
