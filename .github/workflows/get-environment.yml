@@ -205,7 +205,7 @@ jobs:
           script: |
             const getStability = (branchName) => {
               switch (true) {
-                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
+                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)|(^force-all-plugins-build$)/.test(branchName):
                   return 'unstable';
                 case /(^release.+)|(^hotfix.+)/.test(branchName):
                   return 'testing';
