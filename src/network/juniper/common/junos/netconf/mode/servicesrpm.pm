@@ -276,9 +276,9 @@ sub manage_selection {
     $self->{global} = { detected => 0 };
     $self->{services} = {};
     foreach (@$result) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+        next if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_name}) &&
                  $_->{testName} !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+        next if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_type}) &&
                  $_->{probeType} !~ /$self->{option_results}->{filter_type}/);
 
         $self->{services}->{ $_->{testName} } = {

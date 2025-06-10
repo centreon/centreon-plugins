@@ -108,11 +108,9 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{                                  $self
-                                                                                                                                                                                                         ->{instance} . '_' . $options{extra_options}
-                                                                                                                                                                                                         ->{label_ref}})
-                                                    /
-                                                    $options{delta_time};
+    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}
+                                                    - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}{label_ref}})
+                                                    / $options{delta_time};
     $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
 
     $self->{result_values}->{traffic_per_seconds} = sprintf('%d', $self->{result_values}->{traffic_per_seconds});
