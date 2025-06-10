@@ -26,5 +26,5 @@ List Ldp ${tc}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^List LDP sessions: (\\\\n\\\\[.*\\\\]){4}\\\\Z
-        ...      2     --disco-show              \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){4}\\\\n\\\\<\\\\/data\\\\>
-        ...      3     --disco-format            \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){4}\\\\n\\\\<\\\\/data\\\\>
+        ...      2     --disco-show              ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){4}\\\\n\\\\<\\\\/data\\\\>$
+        ...      3     --disco-format            ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){4}\\\\n\\\\<\\\\/data\\\\>$

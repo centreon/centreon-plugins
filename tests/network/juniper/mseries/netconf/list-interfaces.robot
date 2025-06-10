@@ -26,5 +26,5 @@ List Interface ${tc}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^List interfaces: (\\\\n\\\\[.*\\\\]){6}\\\\Z
-        ...      2     --disco-show              \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){6}\\\\n\\\\<\\\\/data\\\\>
-        ...      3     --disco-format            \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){5}\\\\n\\\\<\\\\/data\\\\>
+        ...      2     --disco-show              ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){6}\\\\n\\\\<\\\\/data\\\\>$
+        ...      3     --disco-format            ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){5}\\\\n\\\\<\\\\/data\\\\>$

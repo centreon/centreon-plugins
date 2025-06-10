@@ -26,5 +26,5 @@ List Lsp ${tc}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^List LSP sessions: (\\\\n\\\\[.*\\\\]){3}\\\\Z
-        ...      2     --disco-show              \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){3}\\\\n\\\\<\\\\/data\\\\>
-        ...      3     --disco-format            \\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){5}\\\\n\\\\<\\\\/data\\\\>
+        ...      2     --disco-show              ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<label .*\\\\/\\\\>){3}\\\\n\\\\<\\\\/data\\\\>$
+        ...      3     --disco-format            ^\\\\<\\\\?xml version="1.0" encoding="utf-8"\\\\?\\\\>\\\\n\\\\<data\\\\>(\\\\n\\\\s*\\\\<element\\\\>.*\\\\<\\\\/element\\\\>){5}\\\\n\\\\<\\\\/data\\\\>$
