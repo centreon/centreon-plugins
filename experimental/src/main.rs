@@ -15,6 +15,7 @@ mod generic;
 mod output;
 mod snmp;
 
+use env_logger::Env;
 use generic::error::*;
 use generic::Command;
 use lalrpop_util::lalrpop_mod;
@@ -41,7 +42,12 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
 }
 
 fn main() -> Result<(), Error> {
-    env_logger::init();
+    env_logger::Builder::from_env(
+        Env::default().default_filter_or("info")
+            .filter("PLUGIN_LOG")
+    ).init();
+
+    //env_logger::init();
 
     use lexopt::prelude::*;
     let mut parser = lexopt::Parser::from_env();
