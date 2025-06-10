@@ -16,7 +16,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plu
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}bgp.netconf"
 
 *** Test Cases ***
-Cpu ${tc}
+List Bgp ${tc}
     [Tags]    network    juniper    mseries    netconf
     ${command}    Catenate
     ...    ${CMD}

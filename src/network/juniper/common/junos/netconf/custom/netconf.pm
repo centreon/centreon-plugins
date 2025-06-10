@@ -76,11 +76,6 @@ sub check_options {
             option_results   => $self->{option_results},
             default_ssh_port => 830
         );
-
-        if ($self->{ssh}->get_ssh_backend() !~ /^sshcli$/) {
-            $self->{output}->add_option_msg(short_msg => 'unsupported ssh backend (sshcli only)');
-            $self->{output}->option_exit();
-        }
     }
 
     centreon::plugins::misc::check_security_command(
@@ -161,11 +156,10 @@ sub execute_command {
     my $content;
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         ($content) = $self->{ssh}->execute(
-            ssh_pipe                  => 1,
-            hostname                  => $self->{option_results}->{hostname},
-            command                   => $self->{ssh_commands},
-            timeout                   => $self->{option_results}->{timeout},
-            default_sshcli_option_eol => [ '-s=netconf' ]
+            ssh_pipe => 1,
+            hostname => $self->{option_results}->{hostname},
+            command  => $self->{ssh_commands},
+            timeout  => $self->{option_results}->{timeout}
         );
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
