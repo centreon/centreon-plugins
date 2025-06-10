@@ -89,7 +89,9 @@ sub execute {
             ssh_command    => $self->{ssh_command},
             ssh_path       => $self->{ssh_path},
             ssh_option     => $self->{ssh_option},
-            timeout        => $options{timeout}
+            timeout        => $options{timeout},
+            ssh_option_eol => $options{default_sshcli_option_eol}
+
         },
         no_quit         => $options{no_quit}
     );
