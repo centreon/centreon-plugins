@@ -338,8 +338,19 @@ impl<'input> Expr<'input> {
                     Func::Average => match v {
                         ExprResult::Number(n) => ExprResult::Number(n),
                         ExprResult::Vector(v) => {
-                            let sum = v.iter().sum::<f64>();
-                            ExprResult::Number(sum / v.len() as f64)
+                            let mut sum = 0.0;
+                            let mut count = 0;
+                            for value in v {
+                                if !value.is_nan() {
+                                sum += value;
+                                count += 1;
+                                }
+                            }
+                            if count > 0 {
+                                return ExprResult::Number(sum / count as f64);
+                            } else {
+                                return ExprResult::Number(f64::NAN);
+                            }
                         }
                         _ => panic!("Invalid operation"),
                     },

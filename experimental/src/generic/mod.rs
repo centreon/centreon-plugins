@@ -99,16 +99,16 @@ pub struct CmdResult {
     pub output: String,
 }
 
-fn compute_status(value: f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
+fn compute_status(value: &f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
     if let Some(c) = crit {
         let crit = Threshold::parse(c)?;
-        if crit.in_alert(value) {
+        if crit.in_alert(*value) {
             return Ok(Status::Critical);
         }
     }
     if let Some(w) = warn {
         let warn = Threshold::parse(w)?;
-        if warn.in_alert(value) {
+        if warn.in_alert(*value) {
             return Ok(Status::Warning);
         }
     }
@@ -247,7 +247,7 @@ impl Command {
                             }
                         };
                         let current_status =
-                            compute_status(*item, &metric.warning, &metric.critical)?;
+                            compute_status(item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
@@ -280,7 +280,7 @@ impl Command {
                             res
                         }
                     };
-                    let current_status = compute_status(*s, &metric.warning, &metric.critical)?;
+                    let current_status = compute_status(s, &metric.warning, &metric.critical)?;
                     status = worst(status, current_status);
                     let w = match metric.warning {
                         Some(ref w) => Some(w.as_str()),
@@ -309,6 +309,7 @@ impl Command {
         }
         collect.push(my_res);
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
+            let mut my_res = SnmpResult::new(HashMap::new());
             for metric in aggregations {
                 let value = &metric.value;
                 let parser = Parser::new(&collect);
@@ -343,7 +344,7 @@ impl Command {
                     None
                 };
                 let value = parser.eval(value).unwrap();
-                match value {
+                match &value {
                     ExprResult::Vector(v) => {
                         for item in v {
                             let name = match &metric.prefix {
@@ -369,7 +370,7 @@ impl Command {
                             };
                             let m = Perfdata {
                                 name,
-                                value: item,
+                                value: *item,
                                 min,
                                 max,
                                 warning: w,
@@ -393,7 +394,7 @@ impl Command {
                         };
                         let m = Perfdata {
                             name: name.to_string(),
-                            value: s,
+                            value: *s,
                             min,
                             max,
                             warning: w,
@@ -404,12 +405,16 @@ impl Command {
                     }
                     _ => panic!("Aggregation must be applied to a vector"),
                 }
+                let key = format!("aggregations.{}", metric.name);
+                debug!("New ID '{}' with content: {:?}", key, value);
+                my_res.items.insert(key, value);
             }
+            collect.push(my_res);
         }
 
-        trace!("collect: {:#?}", collect);
+        debug!("collect: {:#?}", collect);
         trace!("metrics: {:#?}", metrics);
-        let output_formatter = OutputFormatter::new(status, &metrics, &self.output);
+        let output_formatter = OutputFormatter::new(status, &collect, &metrics, &self.output);
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
     }
