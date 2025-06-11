@@ -720,6 +720,28 @@ mod test {
     }
 
     #[test]
+    fn str_to_value_in_str() {
+        init();
+        let items = HashMap::from([
+            ("free".to_string(), ExprResult::Vector(vec![1.1, 2.2, 3.3])),
+            ("total".to_string(), ExprResult::Vector(vec![2.1, 3.2, 4.3])),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect);
+        let res = parser.eval_str("test{free}{total}foo{free}");
+        assert!(res.is_ok());
+        let res = res.unwrap();
+        match res {
+            ExprResult::StrVector(v) => {
+                assert_eq!(v.len(), 3);
+                assert_eq!(v[0], "test1.12.1foo1.1");
+                assert_eq!(v[1], "test2.23.2foo2.2");
+            }
+            _ => panic!("Expected a string vector"),
+        }
+    }
+
+    #[test]
     fn join_str_str_str() {
         let mut a = ExprResult::Str("test".to_string());
         let b = ExprResult::Str("foobar".to_string());
