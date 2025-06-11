@@ -30,8 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'apn-stats'    => 'network::juniper::ggsn::mode::apnstats',
-        'global-stats' => 'network::juniper::ggsn::mode::globalstats'
+        'apn-stats'    => 'network::juniper::ggsn::snmp::mode::apnstats',
+        'global-stats' => 'network::juniper::ggsn::snmp::mode::globalstats'
     };
 
     return $self;
