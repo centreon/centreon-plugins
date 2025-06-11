@@ -281,6 +281,23 @@ impl ExprResult {
                         value.push_str(vv.get(key).unwrap_or(&"".to_string()));
                     }
                 }
+                ExprResult::Vector(vv) => {
+                    if v.len() != vv.len() {
+                        warn!(
+                            "Trying to join arrays of different lengths: {} and {}",
+                            v.len(),
+                            vv.len()
+                        );
+                        if v.len() < vv.len() {
+                            v.resize(vv.len(), "".to_string());
+                        }
+                    }
+                    for (key, value) in v.iter_mut().enumerate() {
+                        if let Some(val) = vv.get(key) {
+                            value.push_str(&val.to_string());
+                        }
+                    }
+                }
                 ExprResult::Str(s) => {
                     *v = v.iter().map(|a| format!("{}{}", a, s)).collect();
                 }
@@ -291,8 +308,15 @@ impl ExprResult {
                     *self =
                         ExprResult::StrVector(vv.iter().map(|a| format!("{}{}", s, a)).collect());
                 }
+                ExprResult::Vector(vv) => {
+                    *self =
+                        ExprResult::StrVector(vv.iter().map(|a| format!("{}{}", s, a)).collect());
+                }
                 ExprResult::Str(ss) => {
                     *s = format!("{}{}", s, ss);
+                }
+                ExprResult::Number(n) => {
+                    *s = format!("{}{}", s, n);
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
@@ -342,8 +366,8 @@ impl<'input> Expr<'input> {
                             let mut count = 0;
                             for value in v {
                                 if !value.is_nan() {
-                                sum += value;
-                                count += 1;
+                                    sum += value;
+                                    count += 1;
                                 }
                             }
                             if count > 0 {
