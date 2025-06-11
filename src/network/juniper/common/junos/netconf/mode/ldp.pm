@@ -276,7 +276,7 @@ You can use the following variables: C<%{id}>, C<%{remoteAddress}>, C<%{connecti
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{lspState} !~ /up/i'>).
+Define the conditions to match for the status to be CRITICAL (default: C<'%{connectionState} !~ /open$/i || %{sessionState} !~ /operational/i'>).
 You can use the following variables: C<%{id}>, C<%{remoteAddress}>, C<%{connectionState}>, C<%{sessionState}>
 
 =item B<--warning-ldp-session-messages-address-received>
