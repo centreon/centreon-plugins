@@ -35,10 +35,10 @@ sub new {
         'cpu-forwarding'    => 'network::juniper::common::junos::snmp::mode::cpuforwarding', # packet forwarding engine
         'memory'            => 'network::juniper::common::junos::snmp::mode::memory',
         'memory-forwarding' => 'network::juniper::common::junos::snmp::mode::memoryforwarding', # packet forwarding engine
-        'cp-sessions'       => 'network::juniper::common::junos::mode::snmp::cpsessions', # CP = 'central point'
-        'flow-sessions'     => 'network::juniper::common::junos::mode::snmp::flowsessions',
-        'interfaces'        => 'network::juniper::common::junos::mode::snmp::interfaces',
-        'ipsec-tunnel'      => 'network::juniper::common::junos::mode::snmp::ipsectunnel',
+        'cp-sessions'       => 'network::juniper::common::junos::snmp::mode::cpsessions', # CP = 'central point'
+        'flow-sessions'     => 'network::juniper::common::junos::snmp::mode::flowsessions',
+        'interfaces'        => 'network::juniper::common::junos::snmp::mode::interfaces',
+        'ipsec-tunnel'      => 'network::juniper::common::junos::snmp::mode::ipsectunnel',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'list-storages'     => 'snmp_standard::mode::liststorages',
         'storage'           => 'snmp_standard::mode::storage'
