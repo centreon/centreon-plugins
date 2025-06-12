@@ -198,7 +198,7 @@ __END__
 
 =head1 MODE
 
-Check cloudwatch metrics (same dimension and namespace).
+Check CloudWatch metrics (same dimension and namespace).
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cloudwatch-get-metrics --region=eu-west-1
@@ -209,15 +209,15 @@ perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cl
 
 =item B<--namespace>
 
-Set cloudwatch namespace (required).
+Set CloudWatch namespace (required).
 
 =item B<--dimension>
 
-Set cloudwatch dimensions.
+Set CloudWatch dimensions.
 
 =item B<--metric>
 
-Set cloudwatch metrics (required).
+Set CloudWatch metrics (required).
 
 =item B<--warning-metric>
 
