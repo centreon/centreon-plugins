@@ -445,7 +445,7 @@ jobs:
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
             revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: "bullseye-amd64","jammy"
+            build_names: "bullseye-amd64,jammy"
           - name: "Net::Curl"
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
