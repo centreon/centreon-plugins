@@ -172,23 +172,17 @@ sub manage_selection {
 
     $self->{metrics} = {};
     foreach my $label (keys %{$metric_results}) {
-        foreach my $statistic (@{$self->{aws_statistics}}) {
-            next if (!defined($metric_results->{$label}->{lc($statistic)}) && 
-                !defined($self->{option_results}->{zeroed}));
+        foreach my $stat (('minimum', 'maximum', 'average', 'sum')) {
+            next if (!defined($metric_results->{$label}->{$stat}));
 
-            my $name = $label . '_' . $statistic;
+            my $name = $label . '_' . $stat;
             $name = $self->{dimension_name} . '_' . $name if ($self->{dimension_name} ne '');
             $self->{metrics}->{$name} = {
                 display => $name,
-                value => defined($metric_results->{$label}->{lc($statistic)}) ? $metric_results->{$label}->{lc($statistic)} : 0,
-                perf_label => $label . '_' . $statistic,
+                value => $metric_results->{$label}->{$stat},
+                perf_label => $label . '_' . $stat,
             };
         }
-    }
-
-    if (scalar(keys %{$self->{metrics}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
     }
 }
 
