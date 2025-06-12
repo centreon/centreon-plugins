@@ -417,7 +417,7 @@ jobs:
             arch: arm64
             runner_name: centreon-collect-arm64
           - name: "Crypt::Argon2"
-            build_names: "bullseye-amd64,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
             use_dh_make_perl: "false"
             no-auto-depends: "true"
@@ -435,6 +435,8 @@ jobs:
             build_names: "bookworm,noble"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
+          - name: "Hash::Ordered"
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Libssh::Session"
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
@@ -443,7 +445,7 @@ jobs:
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
             revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: ["bullseye-amd64", "jammy", "noble"]
+            build_names: "bullseye-amd64","jammy"
           - name: "Net::Curl"
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
@@ -453,6 +455,7 @@ jobs:
             revision: "2"
           - name: "Net::MQTT::Simple"
             version: "1.29"
+            build_names: "bullseye-amd64,bookworm,jammy,bullseye-arm64"
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
