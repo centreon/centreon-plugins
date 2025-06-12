@@ -290,7 +290,7 @@ jobs:
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.head_ref || github.ref_name }}";
-              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
+              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})-tun$/);
               if (matches) {
                 version = matches[1];
               } else {
