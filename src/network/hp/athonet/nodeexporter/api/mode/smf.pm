@@ -26,6 +26,16 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
+sub prefix_blacklist_node_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Peer remote IP '%s' target type '%s' ",
+        $options{instance_value}->{remoteIP},
+        $options{instance_value}->{targetType}
+    );
+}
+
 sub prefix_pfcp_node_output {
     my ($self, %options) = @_;
 
@@ -54,7 +64,8 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
         { name => 'sbi_registration', type => 0, cb_prefix_output => 'prefix_sbi_registration_output', skipped_code => { -10 => 1 } },
-        { name => 'pfcp_nodes', type => 1, cb_prefix_output => 'prefix_pfcp_node_output', message_multiple => 'All PFCP nodes are ok', skipped_code => { -10 => 1 } }
+        { name => 'pfcp_nodes', type => 1, cb_prefix_output => 'prefix_pfcp_node_output', message_multiple => 'All PFCP nodes are ok', skipped_code => { -10 => 1 } },
+        { name => 'blacklist_nodes', type => 1, cb_prefix_output => 'prefix_blacklist_node_output', message_multiple => 'All blacklisted nodes are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -119,6 +130,25 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{blacklist_nodes} = [
+        { label => 'blacklist-node-status', type => 2, critical_default => '%{isBlacklisted} =~ /yes/i', set => {
+                key_values => [ { name => 'isBlacklisted' }, { name => 'blacklisted' }, { name => 'remoteIP' }, { name => 'targetType' } ],
+                output_template => 'is blacklisted: %s',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => 'peer.blacklisted.count',
+                        instances => [$self->{result_values}->{targetType}, $self->{result_values}->{remoteIP}],
+                        value => $self->{result_values}->{blacklisted},
+                        min => 0
+                    );
+                },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
 }
 
 sub new {
@@ -168,8 +198,17 @@ sub manage_selection {
         };
     }
 
-    #TODO
-    #$response = $options{custom}->query(queries => ['pfcp_peer_state_info{type="blacklist", target_type="smf"}']);
+    my $map_pfcp_peer_state_info = { 0 => 'no', 1 => 'yes' };
+    $response = $options{custom}->query(queries => ['pfcp_peer_state_info{type="blacklist", target_type="smf"}']);
+    $self->{blacklist_nodes} = {};
+    foreach (@$response) {
+        $self->{blacklist_nodes}->{ $_->{metric}->{target_type} . ':' . $_->{metric}->{remote} } = {
+            targetType => $_->{metric}->{target_type},
+            remoteIP => $_->{metric}->{remote},
+            isBlacklisted => $map_pfcp_peer_state_info->{ $_->{value}->[1] },
+            blacklisted => $_->{value}->[1]
+        };
+    }
 }
 
 1;
@@ -211,6 +250,21 @@ You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+
+=item B<--unknown-blacklist-node-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+
+=item B<--warning-blacklist-node-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+
+=item B<--critical-blacklist-node-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{isBlacklisted} =~ /yes/i').
+You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
 
 =item B<--warning-*> B<--critical-*>
 
