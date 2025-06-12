@@ -29,15 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
         'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
         'interfaces'        => 'snmp_standard::mode::interfaces', 
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
-    );
+        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions'
+    };
 
     return $self;
 }
@@ -48,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check Juniper Integrated Security Gateways series in SNMP.
 
 =cut

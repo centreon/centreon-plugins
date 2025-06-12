@@ -1,16 +1,16 @@
 {
     "pkg_name": "centreon-plugin-Network-Routers-Juniper-Mseries-Snmp",
     "pkg_summary": "Centreon Plugin",
-    "plugin_name": "centreon_juniper_mseries.pl",
+    "plugin_name": "centreon_juniper_mseries_snmp.pl",
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/resources/",
         "snmp_standard/mode/liststorages.pm",
         "snmp_standard/mode/storage.pm",
-        "network/juniper/common/junos/",
-        "network/juniper/mseries/"
+        "network/juniper/common/junos/snmp/",
+        "network/juniper/mseries/snmp/"
     ]
 }
