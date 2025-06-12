@@ -63,6 +63,9 @@ apt-get install -y nfpm=2.41.0
 
 apt-get clean
 
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
 EOF
 
 COPY .github/patch/fpm-deb.rb.diff /tmp/fpm-deb.rb.diff
