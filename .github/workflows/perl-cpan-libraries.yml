@@ -692,6 +692,7 @@ jobs:
             runner_name: ubuntu-24.04
           - package_extension: deb
             image: ubuntu:noble
+            distrib: noble
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
