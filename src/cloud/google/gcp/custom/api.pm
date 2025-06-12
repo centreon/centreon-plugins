@@ -333,9 +333,14 @@ sub gcp_get_metrics {
         }
 
         my $metric_calc = { points => 0 };
+        my $value;
         foreach my $point (@{$timeserie->{points}}) {
             if (defined($point->{value})) {
-                my $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
+                if (lc($timeserie->{valueType}) eq 'distribution') {
+                    $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' }->{count};
+                } else {
+                    $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
+                }
                 if (defined($aggregations{average})) {
                     $metric_calc->{average} = 0 if (!defined($metric_calc->{average}));
                     $metric_calc->{average} += $value;
