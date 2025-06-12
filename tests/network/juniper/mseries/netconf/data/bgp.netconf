@@ -1,0 +1,3458 @@
+<bgp-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.2+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1+56674</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Established</peer-state>
+        <peer-flags>Sync</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>OpenConfirm</last-state>
+        <last-event>RecvKeepAlive</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+        <peer-id>10.0.0.2</peer-id>
+        <local-id>10.0.0.1</local-id>
+        <active-holdtime>36</active-holdtime>
+        <keepalive-interval>12</keepalive-interval>
+        <group-index>1</group-index>
+        <peer-index>2</peer-index>
+        <snmp-index>1</snmp-index>
+        <bgp-peer-iosession>
+            <iosession-thread-name>bgpio-0</iosession-thread-name>
+            <iosession-state>Enabled</iosession-state>
+        </bgp-peer-iosession>
+        <bgp-bfd>
+            <bfd-configuration-state>disabled</bfd-configuration-state>
+            <bfd-operational-state>down</bfd-operational-state>
+        </bgp-bfd>
+        <peer-restart-nlri-configured>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-configured>
+        <nlri-type-peer>inet-vpn-unicast l2vpn inet6-vpn-unicast</nlri-type-peer>
+        <nlri-type-session>inet-vpn-unicast l2vpn inet6-vpn-unicast</nlri-type-session>
+        <peer-refresh-capability>2</peer-refresh-capability>
+        <peer-stale-route-time-configured>300</peer-stale-route-time-configured>
+        <peer-no-restart/>
+        <peer-restart-flags-received>Notification</peer-restart-flags-received>
+        <peer-restart-nlri-negotiated>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-restart-nlri-negotiated>
+        <peer-end-of-rib-received>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-end-of-rib-received>
+        <peer-end-of-rib-sent>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-end-of-rib-sent>
+        <peer-end-of-rib-scheduled></peer-end-of-rib-scheduled>
+        <peer-no-llgr-restarter/>
+        <peer-4byte-as-capability-advertised>29283</peer-4byte-as-capability-advertised>
+        <peer-addpath-not-supported/>
+        <local-ext-nh-color-nlri>inet-vpn-unicast l2vpn inet6-vpn-unicast</local-ext-nh-color-nlri>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn.0</name>
+            <rib-bit>20000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>46</active-prefix-count>
+            <received-prefix-count>46</received-prefix-count>
+            <accepted-prefix-count>46</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>52</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn-inet6.0</name>
+            <rib-bit>30000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>9</active-prefix-count>
+            <received-prefix-count>9</received-prefix-count>
+            <accepted-prefix-count>9</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>4</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l2vpn.0</name>
+            <rib-bit>40000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>6</active-prefix-count>
+            <received-prefix-count>6</received-prefix-count>
+            <accepted-prefix-count>6</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>26</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>3</received-prefix-count>
+            <accepted-prefix-count>3</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>10</active-prefix-count>
+            <received-prefix-count>17</received-prefix-count>
+            <accepted-prefix-count>17</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>7</active-prefix-count>
+            <received-prefix-count>9</received-prefix-count>
+            <accepted-prefix-count>9</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>3</received-prefix-count>
+            <accepted-prefix-count>3</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DIOR-LANISS-104088.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DSNA-LANISS-129097-VPN22102.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LANISSIMO_IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>MULTICAST-IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPLS.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>xVALIDATION-LANISS-1234-VPN20998.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>OPERATEUR-EXTNNI-123456-PW20123.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <last-received>2</last-received>
+        <last-sent>8</last-sent>
+        <last-checked>3562871</last-checked>
+        <input-messages>330004</input-messages>
+        <input-updates>83</input-updates>
+        <input-refreshes>0</input-refreshes>
+        <input-octets>6275636</input-octets>
+        <output-messages>326794</output-messages>
+        <output-updates>293</output-updates>
+        <output-refreshes>0</output-refreshes>
+        <output-octets>6227858</output-octets>
+        <bgp-output-queue>
+            <number>1</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn.0</table-name>
+            <rib-adv-nlri>inet-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>2</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn-inet6.0</table-name>
+            <rib-adv-nlri>inet6-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>3</number>
+            <count>0</count>
+            <table-name>bgp.l2vpn.0</table-name>
+            <rib-adv-nlri>l2vpn</rib-adv-nlri>
+        </bgp-output-queue>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.3+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group between RR</description>
+        <peer-group>IBGP-RR-TO-RR</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <peer-state>Connect</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Active</last-state>
+        <last-event>ConnectRetry</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.4+58321</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1+179</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Established</peer-state>
+        <peer-flags>Sync</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>OpenConfirm</last-state>
+        <last-event>RecvKeepAlive</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+        <peer-id>10.0.0.4</peer-id>
+        <local-id>10.0.0.1</local-id>
+        <active-holdtime>36</active-holdtime>
+        <keepalive-interval>12</keepalive-interval>
+        <group-index>1</group-index>
+        <peer-index>0</peer-index>
+        <snmp-index>2</snmp-index>
+        <bgp-peer-iosession>
+            <iosession-thread-name>bgpio-0</iosession-thread-name>
+            <iosession-state>Enabled</iosession-state>
+        </bgp-peer-iosession>
+        <bgp-bfd>
+            <bfd-configuration-state>disabled</bfd-configuration-state>
+            <bfd-operational-state>down</bfd-operational-state>
+        </bgp-bfd>
+        <peer-restart-nlri-configured>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-configured>
+        <nlri-type-peer>inet-vpn-unicast l2vpn inet6-vpn-unicast</nlri-type-peer>
+        <nlri-type-session>inet-vpn-unicast l2vpn inet6-vpn-unicast</nlri-type-session>
+        <peer-refresh-capability>2</peer-refresh-capability>
+        <peer-stale-route-time-configured>300</peer-stale-route-time-configured>
+        <peer-no-restart/>
+        <peer-restart-flags-received>Notification</peer-restart-flags-received>
+        <peer-restart-nlri-negotiated>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-restart-nlri-negotiated>
+        <peer-end-of-rib-received>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-end-of-rib-received>
+        <peer-end-of-rib-sent>inet-vpn-unicast l2vpn inet6-vpn-unicast</peer-end-of-rib-sent>
+        <peer-end-of-rib-scheduled></peer-end-of-rib-scheduled>
+        <peer-no-llgr-restarter/>
+        <peer-4byte-as-capability-advertised>29283</peer-4byte-as-capability-advertised>
+        <peer-addpath-not-supported/>
+        <local-ext-nh-color-nlri>inet-vpn-unicast l2vpn inet6-vpn-unicast</local-ext-nh-color-nlri>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn.0</name>
+            <rib-bit>20000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>20</active-prefix-count>
+            <received-prefix-count>20</received-prefix-count>
+            <accepted-prefix-count>20</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>78</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn-inet6.0</name>
+            <rib-bit>30000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>13</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l2vpn.0</name>
+            <rib-bit>40000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>14</active-prefix-count>
+            <received-prefix-count>14</received-prefix-count>
+            <accepted-prefix-count>14</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>18</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>3</received-prefix-count>
+            <accepted-prefix-count>3</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DIOR-LANISS-104088.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DSNA-LANISS-129097-VPN22102.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LANISSIMO_IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>MULTICAST-IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPLS.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>xVALIDATION-LANISS-1234-VPN20998.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>1</active-prefix-count>
+            <received-prefix-count>1</received-prefix-count>
+            <accepted-prefix-count>1</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>OPERATEUR-EXTNNI-123456-PW20123.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>2</active-prefix-count>
+            <received-prefix-count>2</received-prefix-count>
+            <accepted-prefix-count>2</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <last-received>4</last-received>
+        <last-sent>5</last-sent>
+        <last-checked>3562989</last-checked>
+        <input-messages>329909</input-messages>
+        <input-updates>31</input-updates>
+        <input-refreshes>0</input-refreshes>
+        <input-octets>6270457</input-octets>
+        <output-messages>326854</output-messages>
+        <output-updates>342</output-updates>
+        <output-refreshes>0</output-refreshes>
+        <output-octets>6232917</output-octets>
+        <bgp-output-queue>
+            <number>1</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn.0</table-name>
+            <rib-adv-nlri>inet-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>2</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn-inet6.0</table-name>
+            <rib-adv-nlri>inet6-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>3</number>
+            <count>0</count>
+            <table-name>bgp.l2vpn.0</table-name>
+            <rib-adv-nlri>l2vpn</rib-adv-nlri>
+        </bgp-output-queue>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.5+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Connect</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Active</last-state>
+        <last-event>ConnectRetry</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.6+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1+60110</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Established</peer-state>
+        <peer-flags>Sync</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>OpenConfirm</last-state>
+        <last-event>Refresh</last-event>
+        <last-error>Hold Timer Expired Error</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>3</flap-count>
+        <last-flap-event>HoldTime</last-flap-event>
+        <bgp-error>
+            <name>Hold Timer Expired Error</name>
+            <send-count>3</send-count>
+            <receive-count>0</receive-count>
+        </bgp-error>
+        <peer-id>10.0.0.6</peer-id>
+        <local-id>10.0.0.1</local-id>
+        <active-holdtime>36</active-holdtime>
+        <keepalive-interval>12</keepalive-interval>
+        <group-index>1</group-index>
+        <peer-index>3</peer-index>
+        <snmp-index>6</snmp-index>
+        <bgp-peer-iosession>
+            <iosession-thread-name>bgpio-0</iosession-thread-name>
+            <iosession-state>Enabled</iosession-state>
+        </bgp-peer-iosession>
+        <bgp-bfd>
+            <bfd-configuration-state>disabled</bfd-configuration-state>
+            <bfd-operational-state>down</bfd-operational-state>
+        </bgp-bfd>
+        <peer-restart-nlri-configured>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-configured>
+        <nlri-type-peer>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</nlri-type-peer>
+        <nlri-type-session>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</nlri-type-session>
+        <peer-refresh-capability>2</peer-refresh-capability>
+        <peer-stale-route-time-configured>300</peer-stale-route-time-configured>
+        <peer-no-restart/>
+        <peer-restart-flags-received>Notification</peer-restart-flags-received>
+        <peer-restart-nlri-negotiated>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-negotiated>
+        <peer-end-of-rib-received>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-end-of-rib-received>
+        <peer-end-of-rib-sent>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-end-of-rib-sent>
+        <peer-end-of-rib-scheduled></peer-end-of-rib-scheduled>
+        <peer-no-llgr-restarter/>
+        <peer-4byte-as-capability-advertised>29283</peer-4byte-as-capability-advertised>
+        <peer-addpath-not-supported/>
+        <local-ext-nh-color-nlri>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</local-ext-nh-color-nlri>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn.0</name>
+            <rib-bit>20000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>98</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn-inet6.0</name>
+            <rib-bit>30000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>13</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l2vpn.0</name>
+            <rib-bit>40000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>3</active-prefix-count>
+            <received-prefix-count>3</received-prefix-count>
+            <accepted-prefix-count>3</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>29</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.evpn.0</name>
+            <rib-bit>50000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>3</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ACX7024-VRF.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN380.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <send-state>not advertising</send-state>
+        <bgp-rib junos:style="detail">
+            <name>AF-VPNIP-000723AA-VPN381.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ANSIBLE-UPDATE.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EID-TEST.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INTERNET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DIOR-LANISS-104088.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DSNA-LANISS-129097-VPN22102.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LANISSIMO_IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>MULTICAST-IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <active-prefix-count>0</active-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPLS.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>xVALIDATION-LANISS-1234-VPN20998.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>OPERATEUR-EXTNNI-123456-PW20123.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EVPN-VLAN-BASED.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EVPN-VPWS-BNG-1.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>__default_evpn__.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <last-received>2</last-received>
+        <last-sent>7</last-sent>
+        <last-checked>2583845</last-checked>
+        <input-messages>239226</input-messages>
+        <input-updates>8</input-updates>
+        <input-refreshes>1</input-refreshes>
+        <input-octets>4545618</input-octets>
+        <output-messages>236912</output-messages>
+        <output-updates>136</output-updates>
+        <output-refreshes>0</output-refreshes>
+        <output-octets>4512735</output-octets>
+        <bgp-output-queue>
+            <number>1</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn.0</table-name>
+            <rib-adv-nlri>inet-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>2</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn-inet6.0</table-name>
+            <rib-adv-nlri>inet6-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>3</number>
+            <count>0</count>
+            <table-name>bgp.l2vpn.0</table-name>
+            <rib-adv-nlri>l2vpn</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>4</number>
+            <count>0</count>
+            <table-name>bgp.evpn.0</table-name>
+            <rib-adv-nlri>evpn</rib-adv-nlri>
+        </bgp-output-queue>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.7+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1+58984</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Established</peer-state>
+        <peer-flags>Sync</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>OpenConfirm</last-state>
+        <last-event>RecvKeepAlive</last-event>
+        <last-error>Hold Timer Expired Error</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>8</flap-count>
+        <last-flap-event>HoldTime</last-flap-event>
+        <bgp-error>
+            <name>Hold Timer Expired Error</name>
+            <send-count>7</send-count>
+            <receive-count>0</receive-count>
+        </bgp-error>
+        <bgp-error>
+            <name>Cease</name>
+            <send-count>0</send-count>
+            <receive-count>1</receive-count>
+        </bgp-error>
+        <peer-id>10.0.0.7</peer-id>
+        <local-id>10.0.0.1</local-id>
+        <active-holdtime>36</active-holdtime>
+        <keepalive-interval>12</keepalive-interval>
+        <group-index>1</group-index>
+        <peer-index>1</peer-index>
+        <snmp-index>7</snmp-index>
+        <bgp-peer-iosession>
+            <iosession-thread-name>bgpio-0</iosession-thread-name>
+            <iosession-state>Enabled</iosession-state>
+        </bgp-peer-iosession>
+        <bgp-bfd>
+            <bfd-configuration-state>disabled</bfd-configuration-state>
+            <bfd-operational-state>down</bfd-operational-state>
+        </bgp-bfd>
+        <peer-restart-nlri-configured>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-configured>
+        <nlri-type-peer>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</nlri-type-peer>
+        <nlri-type-session>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</nlri-type-session>
+        <peer-refresh-capability>2</peer-refresh-capability>
+        <peer-stale-route-time-configured>300</peer-stale-route-time-configured>
+        <peer-no-restart/>
+        <peer-restart-flags-received>Notification</peer-restart-flags-received>
+        <peer-restart-nlri-negotiated>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-restart-nlri-negotiated>
+        <peer-end-of-rib-received>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-end-of-rib-received>
+        <peer-end-of-rib-sent>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</peer-end-of-rib-sent>
+        <peer-end-of-rib-scheduled></peer-end-of-rib-scheduled>
+        <peer-no-llgr-restarter/>
+        <peer-4byte-as-capability-advertised>29283</peer-4byte-as-capability-advertised>
+        <peer-addpath-not-supported/>
+        <local-ext-nh-color-nlri>inet-vpn-unicast l2vpn inet6-vpn-unicast evpn</local-ext-nh-color-nlri>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn.0</name>
+            <rib-bit>20000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>98</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l3vpn-inet6.0</name>
+            <rib-bit>30000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>13</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.l2vpn.0</name>
+            <rib-bit>40000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>3</active-prefix-count>
+            <received-prefix-count>3</received-prefix-count>
+            <accepted-prefix-count>3</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>29</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>bgp.evpn.0</name>
+            <rib-bit>50000</rib-bit>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>in sync</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+            <advertised-prefix-count>3</advertised-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>AELIA-VPNIP-100268-VPN121.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-BUR-VPNIP-034495AC.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TIP-ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <bgp-rib junos:style="detail">
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>NATIXIS-VPNIP-125980-VPN356.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>VALID-VPN-1234.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>ACX7024-VRF.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>AF-VPNIP-000723AA-VPN380.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>AF-VPNIP-000723AA-VPN381.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>ANSIBLE-UPDATE.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>EID-TEST.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>INTERNET.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>INFRA-MGNT-VPN101.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>JCLOET.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>L3VPN-IXIA.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>LUCIE-POTIER.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>NATIXIS-VPNIP.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>PROD-TEST-1003.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>TEST-REF-RESEAU.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>THE-DHCP-SERVER.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>VPNIP-SOC-VPN1010.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>VPNL3-CLIENT1.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>VPNL3-CLIENT2.inet.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>ACX7024-VRF.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>AELIA-VPNIP-100268-VPN121.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>AF-VPNIP-000723AA-VPN380.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>AF-VPNIP-000723AA-VPN381.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>ANSIBLE-UPDATE.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>EID-TEST.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <bgp-rib junos:style="detail">
+                <name>TEST-BUR-VPNIP-034495AC.inet6.0</name>
+                <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+                <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+                <send-state>not advertising</send-state>
+                <active-prefix-count>0</active-prefix-count>
+                <received-prefix-count>0</received-prefix-count>
+                <accepted-prefix-count>0</accepted-prefix-count>
+                <suppressed-prefix-count>0</suppressed-prefix-count>
+            </bgp-rib>
+            <active-prefix-count>0</active-prefix-count>
+            <name>INTERNET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>INFRA-MGNT-VPN101.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>ISP1-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>JCLOET.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>L3VPN-IXIA.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LUCIE-POTIER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPNIP-125980-VPN356.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>PROD-TEST-1003.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>TEST-REF-RESEAU.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>THE-DHCP-SERVER.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VALID-VPN-1234.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNIP-SOC-VPN1010.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT1.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>VPNL3-CLIENT2.inet6.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <description>IBGP Peer Group for RR Clients (Redback)</description>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DIOR-LANISS-104088.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>DSNA-LANISS-129097-VPN22102.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>LANISSIMO_IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>MULTICAST-IXIA.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>NATIXIS-VPLS.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>xVALIDATION-LANISS-1234-VPN20998.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>OPERATEUR-EXTNNI-123456-PW20123.l2vpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EVPN-VLAN-BASED.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>EVPN-VPWS-BNG-1.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <bgp-rib junos:style="detail">
+            <name>__default_evpn__.evpn.0</name>
+            <bgp-rib-state>BGP restart is complete</bgp-rib-state>
+            <vpn-rib-state>VPN restart is complete</vpn-rib-state>
+            <send-state>not advertising</send-state>
+            <active-prefix-count>0</active-prefix-count>
+            <received-prefix-count>0</received-prefix-count>
+            <accepted-prefix-count>0</accepted-prefix-count>
+            <suppressed-prefix-count>0</suppressed-prefix-count>
+        </bgp-rib>
+        <last-received>8</last-received>
+        <last-sent>1</last-sent>
+        <last-checked>3196542</last-checked>
+        <input-messages>295957</input-messages>
+        <input-updates>9</input-updates>
+        <input-refreshes>0</input-refreshes>
+        <input-octets>5623572</input-octets>
+        <output-messages>293058</output-messages>
+        <output-updates>155</output-updates>
+        <output-refreshes>0</output-refreshes>
+        <output-octets>5580826</output-octets>
+        <bgp-output-queue>
+            <number>1</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn.0</table-name>
+            <rib-adv-nlri>inet-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>2</number>
+            <count>0</count>
+            <table-name>bgp.l3vpn-inet6.0</table-name>
+            <rib-adv-nlri>inet6-vpn-unicast</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>3</number>
+            <count>0</count>
+            <table-name>bgp.l2vpn.0</table-name>
+            <rib-adv-nlri>l2vpn</rib-adv-nlri>
+        </bgp-output-queue>
+        <bgp-output-queue>
+            <number>4</number>
+            <count>0</count>
+            <table-name>bgp.evpn.0</table-name>
+            <rib-adv-nlri>evpn</rib-adv-nlri>
+        </bgp-output-queue>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.13</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.0.0.14</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients</description>
+        <peer-group>IBGP-RR-TO-CLIENT</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast inet6-vpn-unicast evpn l2vpn-signaling</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.201.1.1+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <nlri-type>inet-unicast</nlri-type>
+        <peer-group>IBGP-RR-TO-CLIENT-REDBACK</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Connect</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Active</last-state>
+        <last-event>ConnectRetry</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster NoClientReflect AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.201.2.1+179</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients (Redback)</description>
+        <peer-group>IBGP-RR-TO-CLIENT-REDBACK</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Connect</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Active</last-state>
+        <last-event>ConnectRetry</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster NoClientReflect AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.201.3.1</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients (Redback)</description>
+        <peer-group>IBGP-RR-TO-CLIENT-REDBACK</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster NoClientReflect AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>10.201.4.1</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>10.0.0.1</local-address>
+        <local-as>29283</local-as>
+        <description>IBGP Peer Group for RR Clients (Redback)</description>
+        <peer-group>IBGP-RR-TO-CLIENT-REDBACK</peer-group>
+        <peer-cfg-rti>master</peer-cfg-rti>
+        <peer-fwd-rti>master</peer-fwd-rti>
+        <peer-type>Internal</peer-type>
+        <route-reflector-client/>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress HoldTime LogUpDown Cluster NoClientReflect AddressFamily Rib-group Refresh</bgp-options>
+            <bgp-options2>VpnApplyExport</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-vpn-unicast</address-families>
+            <local-address>10.0.0.1</local-address>
+            <holdtime>36</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>172.16.200.24</peer-address>
+        <peer-as>65000</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>29283</local-as>
+        <peer-group>AS65000</peer-group>
+        <peer-cfg-rti>ISP</peer-cfg-rti>
+        <peer-fwd-rti>ISP</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                LOCAL-BGP-PEER
+            </export-policy>
+            <import-policy>
+                LIEN-NOMINAL
+            </import-policy>
+            <bgp-options>Multihop Ttl LogUpDown AddressFamily PeerAS PrefixLimit Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <nlri-type>inet-unicast</nlri-type>
+                <prefix-count>2000</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>172.16.200.215</peer-address>
+        <peer-as>65001</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>29283</local-as>
+        <peer-group>AS65001</peer-group>
+        <peer-cfg-rti>AELIA-VPNIP-100268-VPN121</peer-cfg-rti>
+        <peer-fwd-rti>AELIA-VPNIP-100268-VPN121</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <import-policy>
+                AELIA-VPNIP-100268-VPN121-BGP-FROM-PANTIN-IMPORT
+            </import-policy>
+            <bgp-options>Multihop HoldTime Ttl LogUpDown AddressFamily PeerAS PrefixLimit Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <holdtime>45</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <prefix-count>2000</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>172.16.202.14</peer-address>
+        <peer-as>64610</peer-as>
+        <local-address>172.16.202.13</local-address>
+        <local-as>29283</local-as>
+        <peer-group>AS64610</peer-group>
+        <peer-cfg-rti>NATIXIS-VPNIP-125980-VPN356</peer-cfg-rti>
+        <peer-fwd-rti>NATIXIS-VPNIP-125980-VPN356</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                LOCAL-BGP-PEER
+            </export-policy>
+            <import-policy>
+                LIEN-SECOURS
+            </import-policy>
+            <bgp-options>LocalAddress LogUpDown AddressFamily PeerAS PrefixLimit Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <local-address>172.16.202.13</local-address>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <nlri-type>inet-unicast</nlri-type>
+                <prefix-count>2000</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>172.16.203.245</peer-address>
+        <peer-as>64614</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>29283</local-as>
+        <peer-group>AS64614</peer-group>
+        <peer-cfg-rti>TEST-BUR-VPNIP-034495AC</peer-cfg-rti>
+        <peer-fwd-rti>TEST-BUR-VPNIP-034495AC</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <import-policy>
+                LIEN-NOMINAL
+            </import-policy>
+            <bgp-options>HoldTime LogUpDown AddressFamily PeerAS PrefixLimit Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <holdtime>15</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <nlri-type>inet-unicast</nlri-type>
+                <prefix-count>2000</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+            <outbound-timer>1</outbound-timer>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>192.168.255.254</peer-address>
+        <peer-as>99999</peer-as>
+        <local-address>192.168.255.253</local-address>
+        <local-as>29283</local-as>
+        <description>EBGP Peer Group with ISP1</description>
+        <peer-group>EBGP-RR-TO-ISP1</peer-group>
+        <peer-cfg-rti>ISP1-IXIA</peer-cfg-rti>
+        <peer-fwd-rti>ISP1-IXIA</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>LocalAddress AddressFamily PeerAS LocalAS Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <local-address>192.168.255.253</local-address>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <local-as>29283</local-as>
+            <local-system-as>29283</local-system-as>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>195.2.22.173</peer-address>
+        <peer-as>1273</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>29283</local-as>
+        <peer-group>VODAFONE-EBGP-IPV4</peer-group>
+        <peer-cfg-rti>TIP-ISP</peer-cfg-rti>
+        <peer-fwd-rti>TIP-ISP</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                TO-INTERNET-ISP
+            </export-policy>
+            <import-policy>
+                ROUTE-VALIDATION FROM-INTERNET-ISP
+            </import-policy>
+            <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
+            <bgp-options2>MultipathAs</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <authentication-configured/>
+            <address-families>inet-unicast</address-families>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>195.2.22.174</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>1273</local-as>
+        <peer-group>EBGP-IPV4</peer-group>
+        <peer-cfg-rti>VODAFONE</peer-cfg-rti>
+        <peer-fwd-rti>VODAFONE</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                VODAFONE-TO-TEST
+            </export-policy>
+            <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
+            <bgp-options2>MultipathAs</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <authentication-configured/>
+            <address-families>inet-unicast</address-families>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>198.18.0.18</peer-address>
+        <peer-as>65533</peer-as>
+        <local-address>213.174.107.246</local-address>
+        <local-as>65001</local-as>
+        <peer-group>65001</peer-group>
+        <peer-cfg-rti>VALID-VPN-1234</peer-cfg-rti>
+        <peer-fwd-rti>VALID-VPN-1234</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>Multihop LocalAddress HoldTime Ttl LogUpDown AddressFamily PeerAS PrefixLimit LocalAS Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <local-address>213.174.107.246</local-address>
+            <holdtime>45</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <nlri-type>inet-unicast</nlri-type>
+                <prefix-count>100</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+            <local-as>65001</local-as>
+            <local-system-as>29283</local-system-as>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>198.18.0.19</peer-address>
+        <peer-as>65533</peer-as>
+        <local-address>213.174.107.246</local-address>
+        <local-as>65001</local-as>
+        <peer-group>65001</peer-group>
+        <peer-cfg-rti>VALID-VPN-1234</peer-cfg-rti>
+        <peer-fwd-rti>VALID-VPN-1234</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Active</peer-state>
+        <peer-flags></peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>Idle</last-state>
+        <last-event>Start</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <bgp-options>Multihop LocalAddress HoldTime Ttl LogUpDown AddressFamily PeerAS PrefixLimit LocalAS Refresh</bgp-options>
+            <bgp-options2></bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <address-families>inet-unicast</address-families>
+            <local-address>213.174.107.246</local-address>
+            <holdtime>45</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+            <prefix-limit>
+                <nlri-type>inet-unicast</nlri-type>
+                <prefix-count>100</prefix-count>
+                <limit-action>Log Only</limit-action>
+            </prefix-limit>
+            <local-as>65001</local-as>
+            <local-system-as>29283</local-system-as>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>2001:5000:1234::1</peer-address>
+        <peer-as>1273</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>29283</local-as>
+        <peer-group>VODAFONE-EBGP-IPV6</peer-group>
+        <peer-cfg-rti>TIP-ISP</peer-cfg-rti>
+        <peer-fwd-rti>TIP-ISP</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                TO-INTERNET-ISP
+            </export-policy>
+            <import-policy>
+                FROM-INTERNET-ISP
+            </import-policy>
+            <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
+            <bgp-options2>MultipathAs</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <authentication-configured/>
+            <address-families>inet6-unicast</address-families>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+    <bgp-peer junos:style="detail">
+        <peer-address>2001:5000:1234::2</peer-address>
+        <peer-as>29283</peer-as>
+        <local-address>unspecified</local-address>
+        <local-as>1273</local-as>
+        <peer-group>EBGP-IPV6</peer-group>
+        <peer-cfg-rti>VODAFONE</peer-cfg-rti>
+        <peer-fwd-rti>VODAFONE</peer-fwd-rti>
+        <peer-type>External</peer-type>
+        <peer-state>Idle</peer-state>
+        <peer-flags>PeerInterfaceUnknown</peer-flags>
+        <rsync-flags></rsync-flags>
+        <last-state>NoState</last-state>
+        <last-event>NoEvent</last-event>
+        <last-error>None</last-error>
+        <bgp-option-information
+                xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+            <export-policy>
+                VODAFONE-TO-TEST
+            </export-policy>
+            <bgp-options>AuthKey RemovePrivateAS AddressFamily PeerAS Multipath Refresh</bgp-options>
+            <bgp-options2>MultipathAs</bgp-options2>
+            <bgp-options-extended>GracefulShutdownRcv</bgp-options-extended>
+            <bgp-options-extended2></bgp-options-extended2>
+            <authentication-configured/>
+            <address-families>inet6-unicast</address-families>
+            <holdtime>90</holdtime>
+            <preference>170</preference>
+            <gshut-recv-local-preference>0</gshut-recv-local-preference>
+        </bgp-option-information>
+        <flap-count>0</flap-count>
+    </bgp-peer>
+</bgp-information>
+
+

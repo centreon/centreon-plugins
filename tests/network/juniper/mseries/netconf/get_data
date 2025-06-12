@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Read the -f option for the file path and ignore the others options
+while getopts "f:" opt; do
+  case $opt in
+    f)
+      file_path="$OPTARG"
+      ;;
+    *)
+      ;;
+  esac
+done
+
+cat $file_path

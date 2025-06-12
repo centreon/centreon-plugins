@@ -134,7 +134,7 @@ jobs:
       - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
         name: Get push changes
         id: get_push_changes
-        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 # v46.0.3
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
         with:
           since_last_remote_commit: true
           json: true
@@ -207,7 +207,7 @@ jobs:
               switch (true) {
                 case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
                   return 'unstable';
-                case /(^release.+)|(^hotfix.+)/.test(branchName):
+                case /(^release.+)|(^hotfix.+)|(^release-20250600-tun$)/.test(branchName):
                   return 'testing';
                 case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
                   return 'stable';
@@ -290,7 +290,7 @@ jobs:
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
               const branchName = "${{ github.head_ref || github.ref_name }}";
-              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
+              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})-tun$/);
               if (matches) {
                 version = matches[1];
               } else {
