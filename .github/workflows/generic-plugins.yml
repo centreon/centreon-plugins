@@ -21,4 +21,3 @@ jobs:
     uses: ./.github/workflows/get-environment.yml
     with:
       version_file: experimental/Cargo.toml
-
