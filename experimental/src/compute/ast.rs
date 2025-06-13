@@ -316,7 +316,7 @@ impl ExprResult {
                     *s = format!("{}{}", s, ss);
                 }
                 ExprResult::Number(n) => {
-                    *s = format!("{}{}", s, n);
+                    *s = format!("{}{:.2}", s, crate::output::float_string(n));
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
