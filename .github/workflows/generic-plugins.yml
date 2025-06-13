@@ -78,7 +78,7 @@ jobs:
       - name: Package
         uses: ./.github/actions/package-nfpm
         with:
-          nfpm_file_pattern: "experimental/packaging/generic-plugins.yaml"
+          nfpm_file_pattern: "experimental/packaging/centreon-generic-plugins.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: ${{ needs.get-environment.outputs.version }}
