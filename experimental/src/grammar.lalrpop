@@ -1,5 +1,5 @@
-use compute::lexer;
-use compute::ast;
+use crate::compute::lexer;
+use crate::compute::ast;
 
 grammar<'input>;
 
