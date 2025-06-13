@@ -152,6 +152,15 @@ sub unix_execute {
             push @$args, $options{options}->{hostname};
         }
 
+        if (defined($options{options}->{ssh_option_eol})) {
+            foreach (@{$options{options}->{ssh_option_eol}}) {
+                if (/^(.*?)(?:=(.*))?$/) {
+                    push @$args, $1 if (defined($1));
+                    push @$args, $2 if (defined($2));
+                }
+            }
+        }
+
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
@@ -177,15 +186,27 @@ sub unix_execute {
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
-        $cmd .= $options{command} . ' ' if (defined($options{command}));
-        $cmd .= $options{command_options} if (defined($options{command_options}));
+        $cmd .= $options{command} if (defined($options{command}));
+        $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
 
-        ($lerror, $stdout, $exit_code) = backtick(
-            command => $cmd,
-            timeout => $options{options}->{timeout},
-            wait_exit => $wait_exit,
-            redirect_stderr => $redirect_stderr
-        );
+        if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
+            my @args = split(' ',$cmd);
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $args[0],
+                arguments       => [@args[1.. $#args]],
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
+        else {
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $cmd,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
     }
 
     if (defined($options{options}->{show_output}) && 
@@ -862,6 +883,15 @@ Executes a command on Unix and returns the output.
 =item * C<command_options> - Options for the command.
 
 =item * C<timeout> - Timeout for the command execution.
+
+=item * C<wait_exit> - bool.
+
+=item * C<redirect_stderr> - bool.
+
+=item * C<sudo> - bool prepend sudo to the command executed.
+
+=item * C<no_shell_interpretation> - bool don't use sh interpolation on command executed
+
 
 =back
 

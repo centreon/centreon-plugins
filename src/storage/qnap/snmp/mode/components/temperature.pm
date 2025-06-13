@@ -32,6 +32,10 @@ my $mapping = {
         cpu_temp    => { oid => '.1.3.6.1.4.1.55062.1.12.10' }, # cpuTemperature
         system_temp => { oid => '.1.3.6.1.4.1.55062.1.12.11' }  # systemTemperature
     },
+    quts => {
+        cpu_temp    => { oid => '.1.3.6.1.4.1.55062.2.12.10' }, # cpuTemperature
+        system_temp => { oid => '.1.3.6.1.4.1.55062.2.12.11' }  # systemTemperature
+    },
     ex => {
         cpu_temp    => { oid => '.1.3.6.1.4.1.24681.1.3.5' }, # cpu-TemperatureEX
         system_temp => { oid => '.1.3.6.1.4.1.24681.1.3.6' }  # systemTemperatureEX
@@ -112,6 +116,16 @@ sub check_temp_qts {
     check_temp_result($self, result => $result);
 }
 
+sub check_temp_quts {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{quts}})) ]
+    );
+    my $result = $self->{snmp}->map_instance(mapping => $mapping->{quts}, results => $snmp_result, instance => 0);
+    check_temp_result($self, result => $result);
+}
+
 sub check_temp_es {
     my ($self, %options) = @_;
 
@@ -146,6 +160,8 @@ sub check {
 
     if ($self->{is_qts} == 1) {
         check_temp_qts($self);
+    } elsif ($self->{is_quts} == 1) {
+        check_temp_quts($self);
     } elsif ($self->{is_es} == 1) {
         check_temp_es($self);
     } else {
