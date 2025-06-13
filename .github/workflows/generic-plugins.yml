@@ -72,7 +72,7 @@ jobs:
       - name: Prepare files for packaging
         run: |
           echo "Current path: $PWD"
-          find / -name env.sh
+          find / -name env -print
           source ~/.cargo/env.sh
         shell: bash
 
