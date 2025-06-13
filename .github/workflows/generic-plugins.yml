@@ -70,7 +70,9 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Building generic plugins using Cargo
-        run: cargo build --release
+        run: |
+          cd experimental
+          cargo build --release
         shell: bash
 
       - name: Package
