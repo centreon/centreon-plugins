@@ -22,8 +22,6 @@ pub struct Metric {
     pub min: Option<f64>,
     pub max_expr: Option<String>,
     pub max: Option<f64>,
-    #[serde(rename = "threshold-suffix")]
-    pub threshold_suffix: Option<String>,
     pub warning: Option<String>,
     pub critical: Option<String>,
 }

@@ -121,10 +121,7 @@ impl Command {
             self.compute
                 .metrics
                 .iter_mut()
-                .find(|metric| match &metric.threshold_suffix {
-                    Some(suffix) => suffix == name,
-                    None => false,
-                })
+                .find(|metric| &metric.name == name)
         {
             debug!("Adding warning to metric {}", metric.name);
             metric.warning = Some(value);
@@ -132,10 +129,7 @@ impl Command {
             if let Some(metric) =
                 aggregations
                     .iter_mut()
-                    .find(|metric| match &metric.threshold_suffix {
-                        Some(suffix) => suffix == name,
-                        None => false,
-                    })
+                    .find(|metric| &metric.name == name)
             {
                 debug!("Adding warning to aggregation metric {}", metric.name);
                 metric.warning = Some(value);
@@ -148,10 +142,7 @@ impl Command {
             self.compute
                 .metrics
                 .iter_mut()
-                .find(|metric| match &metric.threshold_suffix {
-                    Some(suffix) => suffix == name,
-                    None => false,
-                })
+                .find(|metric| &metric.name == name)
         {
             metric.critical = Some(value);
             debug!("Adding critical to metric {}", metric.name);
@@ -159,10 +150,7 @@ impl Command {
             if let Some(metric) =
                 aggregations
                     .iter_mut()
-                    .find(|metric| match &metric.threshold_suffix {
-                        Some(suffix) => suffix == name,
-                        None => false,
-                    })
+                    .find(|metric| &metric.name == name)
             {
                 debug!("Adding critical to aggregation metric {}", metric.name);
                 metric.critical = Some(value);
