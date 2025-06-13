@@ -70,11 +70,15 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Prepare files for packaging
-        run: source .cargo/env.sh
+        run: |
+          echo "Current path: $PWD"
+          find / -name env.sh
+          source ~/.cargo/env.sh
         shell: bash
 
       - name: Build using Cargo
         run: cargo build --release
+        shell: bash
 
       - name: Package
         uses: ./.github/actions/package-nfpm
