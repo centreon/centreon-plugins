@@ -2,6 +2,9 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/almalinux:9
 
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/opt/cargo
+ENV PATH="$CARGO_HOME/bin:$PATH"
 RUN bash -e <<EOF
 
 echo '[goreleaser]
