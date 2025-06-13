@@ -1,5 +1,4 @@
 use crate::generic::error::Error;
-use log::{debug, error, info, trace, warn};
 use std::f64::INFINITY;
 
 pub struct Threshold {
@@ -108,17 +107,14 @@ impl Threshold {
                 return true;
             }
         }
-        if self.negation {
-            true
-        } else {
-            false
-        }
+        if self.negation { true } else { false }
     }
 }
 
 mod test {
-    use super::*;
-
+    use crate::compute::threshold::Threshold;
+    use crate::generic::error::Error;
+    use std::f64::INFINITY;
     #[test]
     fn test_parse_value() {
         let expr = "1.2";
@@ -302,8 +298,10 @@ mod test {
                 panic!("The threshold '{}' should not be valid", expr);
             }
             Err(err) => {
-                assert_eq!(err.to_string(),
-                    "Threshold: This syntax is a shortcut of '0:-12', so -12 must be greater than 0.");
+                assert_eq!(
+                    err.to_string(),
+                    "Threshold: This syntax is a shortcut of '0:-12', so -12 must be greater than 0."
+                );
             }
         }
     }

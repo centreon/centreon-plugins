@@ -10,7 +10,7 @@ use rasn_snmp::v2::BulkPdu;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
-use rasn_snmp::v2::{GetBulkRequest, GetNextRequest, GetRequest};
+use rasn_snmp::v2::GetBulkRequest;
 use rasn_snmp::v2c::Message;
 use std::collections::HashMap;
 use std::convert::TryInto;
@@ -173,7 +173,7 @@ pub fn snmp_bulk_get<'a>(
     oid: &Vec<&str>,
     names: &Vec<&str>,
 ) -> SnmpResult {
-    let mut oids_tab = oid
+    let oids_tab = oid
         .iter()
         .map(|x| {
             x.split('.')
@@ -186,7 +186,7 @@ pub fn snmp_bulk_get<'a>(
         items: HashMap::new(),
         last_oid: Vec::new(),
     };
-    let mut request_id: i32 = 1;
+    let request_id: i32 = 1;
 
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.connect(target).expect("connect function failed");
