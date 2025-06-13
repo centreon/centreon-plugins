@@ -3,7 +3,7 @@ extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
 
-use compute::ast::ExprResult;
+use crate::compute::ast::ExprResult;
 use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_snmp::v2::BulkPdu;
