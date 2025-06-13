@@ -1,5 +1,5 @@
 [package]
-name = "generic-snmp"
+name = "centreon-generic-snmp"
 version = "1.0.0"
 
 [build-dependencies]
