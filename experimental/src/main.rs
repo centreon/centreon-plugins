@@ -16,8 +16,8 @@ mod output;
 mod snmp;
 
 use env_logger::Env;
-use generic::error::*;
 use generic::Command;
+use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::trace;
