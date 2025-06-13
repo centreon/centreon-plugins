@@ -14,7 +14,7 @@ homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "experimental/target/release/centreon-generic-snmp" # VARIABLE VERSION REQUIRED HERE
+  - src: "../target/release/centreon-generic-snmp" # VARIABLE VERSION REQUIRED HERE
     dst: "/usr/bin/" # VARIABLE VERSION REQUIRED HERE
     expand: true
     file_info:
