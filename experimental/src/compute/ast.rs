@@ -1,5 +1,5 @@
-use log::{debug, info, trace, warn};
-use snmp::SnmpResult;
+use crate::snmp::SnmpResult;
+use log::{info, warn};
 use std::str;
 
 #[derive(Debug)]

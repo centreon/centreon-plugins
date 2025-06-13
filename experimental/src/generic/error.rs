@@ -1,5 +1,4 @@
-use serde_json::Error as JsonError;
-use snafu::prelude::*;
+use snafu::prelude::Snafu;
 use std::path::PathBuf;
 
 #[derive(Debug, Snafu)]

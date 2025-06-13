@@ -4,11 +4,11 @@ pub mod threshold;
 
 use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
-use lalrpop_util::{lalrpop_mod, ParseError};
+use crate::snmp::SnmpResult;
+use lalrpop_util::{ParseError, lalrpop_mod};
 use log::debug;
 use regex::Regex;
 use serde::Deserialize;
-use snmp::SnmpResult;
 
 lalrpop_mod!(grammar);
 

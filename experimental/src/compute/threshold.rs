@@ -1,4 +1,4 @@
-use generic::error::Error;
+use crate::generic::error::Error;
 use log::{debug, error, info, trace, warn};
 use std::f64::INFINITY;
 

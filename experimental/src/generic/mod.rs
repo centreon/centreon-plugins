@@ -4,11 +4,11 @@ extern crate serde_json;
 pub mod error;
 
 use self::error::Result;
-use compute::{ast::ExprResult, threshold::Threshold, Compute, Parser};
+use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
+use crate::output::{Output, OutputFormatter};
+use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
-use output::{Output, OutputFormatter};
 use serde::Deserialize;
-use snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use std::collections::HashMap;
 
 use crate::snmp::SnmpResult;
