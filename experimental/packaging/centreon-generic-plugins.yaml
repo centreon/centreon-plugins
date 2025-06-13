@@ -1,0 +1,29 @@
+name: "centreon-generic-plugins"
+arch: "${ARCH}"
+platform: "linux"
+version_schema: "none"
+version: "2.0.6"
+release: "${RELEASE}${DIST}"
+section: "default"
+priority: "optional"
+maintainer: "Centreon <contact@centreon.com>"
+description: |
+  Centreon Generic Plugins is a collection of plugins for Centreon that allows monitoring of various systems and applications.
+vendor: "Centreon"
+homepage: "https://www.centreon.com"
+license: "Apache-2.0"
+
+contents:
+  - src: "target/release/generic-snmp" # VARIABLE VERSION REQUIRED HERE
+    dst: "/usr/bin" # VARIABLE VERSION REQUIRED HERE
+    expand: true
+    file_info:
+      mode: 0755
+      owner: "root"
+      group: "root"
+
+rpm:
+  summary: Centreon Generic Plugins
+  signature:
+    key_file: ${RPM_SIGNING_KEY_FILE}
+    key_id: ${RPM_SIGNING_KEY_ID}
