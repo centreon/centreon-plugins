@@ -125,25 +125,27 @@ impl<'a> OutputFormatter<'a> {
                     let parser = Parser::new(&self.collect);
                     let res = parser.eval_str(&self.output_formatter.ok);
                     let output = match res {
-                        Ok(output) => {
-                            match output {
-                                ExprResult::Str(output) => output,
-                                ExprResult::Number(_) => {
-                                    error!("Output expression evaluated to a number, expected a string");
+                        Ok(output) => match output {
+                            ExprResult::Str(output) => output,
+                            ExprResult::Number(_) => {
+                                error!(
+                                    "Output expression evaluated to a number, expected a string"
+                                );
+                                return "".to_string();
+                            }
+                            ExprResult::StrVector(v) => {
+                                if v.len() == 1 {
+                                    let output = v[0].clone();
+                                    output
+                                } else {
+                                    error!(
+                                        "Output expression evaluated to a vector with more than one element, expected a single string"
+                                    );
                                     return "".to_string();
                                 }
-                                ExprResult::StrVector(v) => {
-                                    if v.len() == 1 {
-                                        let output = v[0].clone();
-                                        output
-                                    } else {
-                                        error!("Output expression evaluated to a vector with more than one element, expected a single string");
-                                        return "".to_string();
-                                    }
-                                }
-                                _ => "".to_string(),
                             }
-                        }
+                            _ => "".to_string(),
+                        },
                         Err(err) => {
                             error!("Error evaluating output expression: {:?}", err);
                             self.output_formatter.ok.clone()

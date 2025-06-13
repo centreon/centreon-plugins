@@ -1,5 +1,4 @@
 use crate::generic::error::Error;
-use log::{debug, error, info, trace, warn};
 use std::f64::INFINITY;
 
 pub struct Threshold {
@@ -117,7 +116,7 @@ impl Threshold {
 }
 
 mod test {
-    use super::*;
+    
 
     #[test]
     fn test_parse_value() {
