@@ -3,6 +3,9 @@ ARG REGISTRY_URL=docker.io
 FROM ${REGISTRY_URL}/ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/opt/cargo
+ENV PATH="$CARGO_HOME/bin:$PATH"
 
 # fix locale
 RUN bash -e <<EOF
