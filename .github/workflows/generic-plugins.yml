@@ -71,9 +71,7 @@ jobs:
 
       - name: Building generic plugins using Cargo
         run: |
-          source /root/.cargo/env
-          echo "Current path: $PATH"
-          ls /root/.cargo/bin
+          export PATH="/opt/bin:$PATH"
           cargo build --release
         shell: bash
 
