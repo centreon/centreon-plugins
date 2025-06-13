@@ -1,7 +1,7 @@
+use crate::compute::Parser;
+use crate::compute::ast::ExprResult;
+use crate::generic::{Perfdata, Status};
 use crate::snmp::SnmpResult;
-use compute::ast::ExprResult;
-use compute::Parser;
-use generic::{Perfdata, Status};
 use log::error;
 use serde::Deserialize;
 
