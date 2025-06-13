@@ -101,17 +101,17 @@ impl<'a> OutputFormatter<'a> {
                 format!(
                     "{}={};{};{};{};{}",
                     m.name,
-                    m.value,
+                    float_string(&m.value),
                     m.warning.unwrap_or(""),
                     m.critical.unwrap_or(""),
                     match m.min {
-                        Some(min) => min.to_string(),
+                        Some(min) => float_string(&min),
                         None => "".to_string(),
                     },
                     match m.max {
-                        Some(max) => max.to_string(),
+                        Some(max) => float_string(&max),
                         None => "".to_string(),
-                    },
+                    }
                 )
             })
             .collect::<Vec<String>>()
@@ -183,5 +183,35 @@ impl<'a> OutputFormatter<'a> {
 
     fn build_detail(&self, prefix: &str) -> String {
         std::format!("{}{}", prefix, "blabla")
+    }
+}
+pub fn float_string(val: &f64) -> String {
+    let mut s = format!("{:.2}", val);
+    while s.ends_with('0') {
+        s.pop();
+    }
+    if s.ends_with('.') {
+        s.pop();
+    }
+    s
+}
+
+mod test {
+
+    #[test]
+    fn test_float_string() {
+        use super::float_string;
+
+        let f = f64::default();
+        assert_eq!(float_string(&40.0), "40");
+        assert_eq!(float_string(&40.00), "40");
+        assert_eq!(float_string(&40.001), "40");
+        assert_eq!(float_string(&40.009), "40.01");
+
+        assert_eq!(float_string(&40.01), "40.01");
+        assert_eq!(float_string(&40.104), "40.1");
+
+        assert_eq!(float_string(&f), "0");
+        assert_eq!(float_string(&9999999.999), "10000000");
     }
 }
