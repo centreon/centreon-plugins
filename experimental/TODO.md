@@ -45,3 +45,8 @@ Dans d'autres cas, les valeurs sont déjà des chaînes de caractères.
 On a besoin sûrement d'un interpréteur pour remplacer tous les `eval` du perl. On va essayer de se restreindre à :
 * calculs arithmétiques
 * calculs booléens
+
+## idée en tout genre
+* snmp : est-ce qu'on gère snmpv1 qui n'implémente pas bulkwalk ?
+* snmp : est-ce qu'on peux décaler le spécifique snmp pour garder la généricité (pour json plus tard) ?
+* filter : est-ce qu'on devrai fusionner les différentes tables renvoyé par snmp pour filtrer plus facilement ?
