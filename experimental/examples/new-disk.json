@@ -2,45 +2,57 @@
   "collect": {
     "snmp": [
       {
-	"name": "disk",
-	"oid": "1.3.6.1.2.1.25.2.3.1",
-	"query": "Walk",
-	"labels": {
-	  ".3": "label",
-	  ".4": "allocationUnits",
-	  ".5": "size",
-	  ".6": "used"
-	}
+        "name": "disk",
+        "oid": "1.3.6.1.2.1.25.2.3.1",
+        "query": "Walk",
+        "filter_in": [
+          {
+            "label": "label",
+            "value": "/|/boot"
+          }
+        ],
+        "filter_out": [
+          {
+            "label": "label",
+            "value": "/run"
+          }
+        ],
+        "labels": {
+          ".3": "label",
+          ".4": "allocationUnits",
+          ".5": "size",
+          ".6": "used"
+        }
       }
     ]
   },
   "compute": {
     "metrics": [
       {
-	"prefix": "{disk.label}",
-	"name": "disk.usage.percent",
-	"value": "100 * {disk.used} / {disk.size}",
-	"uom": "%",
-	"min": 0,
-	"max": 100,
-	"output": "{prefix}: {metrics.value}% used"
+        "prefix": "{disk.label}",
+        "name": "disk.usage.percent",
+        "value": "100 * {disk.used} / {disk.size}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "output": "{prefix}: {metrics.value}% used"
       },
       {
-	"prefix": "{disk.label}",
-	"name": "disk.usage.bytes",
-	"value": "{disk.used} * {disk.allocationUnits}",
-	"uom": "B",
-	"min": 0,
-	"max_expr": "{disk.size} * {disk.allocationUnits}"
+        "prefix": "{disk.label}",
+        "name": "disk.usage.bytes",
+        "value": "{disk.used} * {disk.allocationUnits}",
+        "uom": "B",
+        "min": 0,
+        "max_expr": "{disk.size} * {disk.allocationUnits}"
       }
     ],
     "aggregations": [
       {
         "name": "avg.disk.usage.percent",
-	"value": "Average({metrics.disk.usage.percent})",
-	"uom": "%",
-	"min": 0,
-	"max": 100
+        "value": "Average({metrics.disk.usage.percent})",
+        "uom": "%",
+        "min": 0,
+        "max": 100
       }
     ]
   },
@@ -55,4 +67,3 @@
     "metric_separator": ", "
   }
 }
-

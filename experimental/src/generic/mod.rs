@@ -67,13 +67,61 @@ enum QueryType {
     Get,
     Walk,
 }
-
+#[derive(Deserialize, Debug)]
+pub struct Filter {
+    pub label: String,
+    pub value: String,
+}
 #[derive(Deserialize, Debug)]
 pub struct Snmp {
     name: String,
     oid: String,
     query: QueryType,
+    filter_in: Option<Vec<Filter>>,
+    filter_out: Option<Vec<Filter>>,
     labels: Option<HashMap<String, String>>,
+}
+
+impl Snmp {
+    pub(crate) fn is_included(&self, values: &SnmpResult) -> bool {
+        let mut to_return: Vec<i32> = vec![];
+        match &self.filter_in {
+            Some(f) => {
+                for filter in f {
+                    for (name, data) in &values.items {
+                        debug!("{:?}", name);
+                        if (name.ends_with(filter.label.as_str())) {
+                            debug!("debug data : {:?}", data);
+                            match data {
+                                ExprResult::StrVector(vec) => {
+                                    let mut i = 0;
+                                    for v in vec {
+                                        if (v == &filter.value) {
+                                            to_return.push(i);
+                                        }
+                                        i += 1;
+                                    }
+                                }
+                                ExprResult::Vector(_) => {}
+                                ExprResult::Number(_) => {}
+                                ExprResult::Str(_) => {}
+                                ExprResult::Empty => {}
+                            }
+
+                        }
+                    }
+
+
+                }
+            }
+            _ => {}
+        };
+        match &self.filter_out {
+            Some(f) => return false,
+            _ => {}
+        };
+        true
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -170,6 +218,7 @@ impl Command {
                         let r = snmp_bulk_walk_with_labels(
                             target, version, community, &s.oid, &s.name, &lab,
                         );
+                        if (s.is_included(&r)) {}
                         collect.push(r);
                     } else {
                         let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
