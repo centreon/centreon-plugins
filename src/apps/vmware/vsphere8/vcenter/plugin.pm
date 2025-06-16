@@ -30,8 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $self->{modes} = {
-        'vm-count'         => 'apps::vmware::vsphere8::vcenter::mode::vmcount',
+    $self->{modes}   = {
+        'vm-count'        => 'apps::vmware::vsphere8::vcenter::mode::vmcount',
+        'datastore-usage' => 'apps::vmware::vsphere8::vcenter::mode::datastoreusage',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';

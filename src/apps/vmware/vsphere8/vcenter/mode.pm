@@ -42,6 +42,15 @@ sub get_vms {
     return $options{custom}->request_api('endpoint' => '/vcenter/vm', 'method' => 'GET');
 }
 
+sub get_datastore {
+    my ($self, %options) = @_;
+    # if a datastore option is given, prepare to append it to the endpoint path
+    my $datastore_id = defined($options{datastore_id}) ? '/' . $options{datastore_id} : '';
+
+    # Retrieve the data
+    return $options{custom}->request_api('endpoint' => '/vcenter/datastore' . $datastore_id, 'method' => 'GET');
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
@@ -59,18 +68,11 @@ sub check_options {
 
 __END__
 
-=head1 VMWARE 8 HOST OPTIONS
+=head1 VMWARE 8 VCENTER OPTIONS
 
 =over 4
 
-=item B<--esx-id>
-
-Define which physical server to monitor based on its resource ID (example: C<host-16>).
-
-=item B<--esx-name>
-
-Define which physical server to monitor based on its name (example: C<esx01.mydomain.tld>).
-When possible, it is recommended to use C<--esx-id> instead.
+No specific options for vCenter modes.
 
 =back
 
@@ -78,24 +80,21 @@ When possible, it is recommended to use C<--esx-id> instead.
 
 =head1 NAME
 
-apps::vmware::vsphere8::esx::mode - Template for modes monitoring VMware physical hosts
+apps::vmware::vsphere8::vcenter::mode - Template for modes monitoring VMware vCenter
 
 =head1 SYNOPSIS
 
-    use base apps::vmware::vsphere8::esx::mode;
+    use base apps::vmware::vsphere8::vcenter::mode;
 
     sub set_counters {...}
     sub manage_selection {
         my ($self, %options) = @_;
 
-
-
-    $api->set_options(option_results => $option_results);
-    $api->check_options();
-    my $response = $api->request_api(endpoint => '/vcenter/host');
-    my $host_cpu_capacity = $self->get_esx_stats(
-                                cid     => 'cpu.capacity.provisioned.HOST',
-                                rsrc_id => 'host-18');
+        $self->set_options(option_results => $option_results);
+        $self->check_options();
+        my $vm_data = $self->get_vms(%options);
+        my $datastore_data = $self->get_datastore(%options);
+    }
 
 =head1 DESCRIPTION
 
@@ -103,11 +102,12 @@ This module provides methods to interact with the VMware vSphere 8 REST API. It 
 
 =head1 METHODS
 
-=head2 get_esx_stats
+=head2 get_datastore
 
-    $self->get_esx_stats(%options);
+    my $all_datastores = $self->get_datastore(%options);
+    my $one_datastore = $self->get_datastore(%options, datastore_id => 'datastore-35');
 
-Retrieves the ESX statistics for the given options using package apps::vmware::vsphere8::custom::api::get_stats()
+Retrieves the vCenter's datastores or only one datastore's specifics in case the `datastore_id` option is provided.
 
 =over 4
 
@@ -115,17 +115,47 @@ Retrieves the ESX statistics for the given options using package apps::vmware::v
 
 =over 8
 
-=item * C<cid> - The C<cid> (counter id) of the desired metric.
+=item * C<custom> - The custom_mode object, defined in C<api.pm> and declared in C<plugin.pm> (mandatory).
 
-=item * C<esx_id> - The ESX's C<rsrc_id> (resource ID) for which to retrieve the statistics. This option is optional if C<esx_name> is provided.
-
-=item * C<esx_name> - The ESX's name for which to retrieve the statistics. This option is not used if C<esx_id> is provided, which is the nominal usage of this function.
+=item * C<datastore_id> - The C<datastore_id> of a datastore (optional).
 
 =back
 
 =back
 
-Returns the statistics for the specified ESX.
+=head2 get_vms
+
+    my $all_vms = $self->get_vms(%options);
+
+Retrieves the vCenter's virtual machines list.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<custom> - The custom_mode object, defined in C<api.pm> and declared in C<plugin.pm> (mandatory).
+
+=back
+
+=back
+
+Returns the list of all the virtual machines with the following attributes for each VM:
+
+=over 4
+
+=item * C<vm>: ID of the virtual machine.
+
+=item * C<name>: name of the virtual machine.
+
+=item * C<cpu_count>: number of vCPU.
+
+=item * C<power_state>: state of the VM. Can be POWERED_ON, POWERED_OFF, SUSPENDED.
+
+=item * C<memory_size_MiB>: amount of memory allocated to the virtual machine.
+
+=back
 
 =cut
 
