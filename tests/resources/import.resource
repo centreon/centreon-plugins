@@ -7,3 +7,6 @@ Library             OperatingSystem
 Library             String
 Library             XML
 Resource            resources.resource
+Library             BuiltIn
+Library             connector.py
+Library             Process

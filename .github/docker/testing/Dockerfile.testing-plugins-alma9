@@ -21,6 +21,20 @@ yum install -y nodejs
 npm install -g -D @mockoon/cli
 
 # Add Centreon plugins repositories
+echo -e '[centreon-stable-noarch]\n\
+name=centreon stable noarch\n\
+baseurl=https://packages.centreon.com/ui/native/rpm-standard/24.10/el9/stable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+[centreon-stable]\n\
+name=centreon stable x86_64\n\
+baseurl=https://packages.centreon.com/ui/native/rpm-standard/24.10/el9/stable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
+>> /etc/yum.repos.d/centreon.repo
+
+# Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\
 name=centreon plugins stable x86_64\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/x86_64\n\
@@ -58,6 +72,8 @@ enabled=1\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
+
+dnf install -y centreon-clib centreon-connector-perl centreon-plugins
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

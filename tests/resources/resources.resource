@@ -14,6 +14,7 @@ ${SNMPPORT}             2024
 ${SNMPVERSION}          2c
 ${PERCENT}              %
 ${MOCKOON_LOG_FILE}    /tmp/mockoon.log
+${TIMEOUT}             30
 
 *** Keywords ***
 Start Mockoon
@@ -53,6 +54,8 @@ Ctn Cleanup Cache
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
+   log to console    test started
+   Start Connector
 
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
@@ -85,3 +88,54 @@ Ctn Verify Command Output
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
+
+
+#Clean Connector Output
+#    [Arguments]    ${text}
+#    ${cleaned}=    Replace String Using Regexp    ${text}    ^\d+\s+    # (empty string)
+#    [Return]    ${cleaned}
+
+
+#Ctn Run Command With Connector And Check Result As Strings
+#    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
+#    Send To Connector    ${tc}    ${command}    ${timeout}
+#    ${output}    Wait For Result    ${tc}    ${timeout}
+#    ${cleaned}    Clean Connector Output    ${output}
+#    Should Be Equal As Strings    ${cleaned}    ${expected_result}
+
+#Ctn Run Command With Connector And Check Result As Strings                        #this is the code that works
+#    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
+#    ${output}    Send To Connector    ${tc}    ${command}    ${timeout}
+#    Log    Original output: ${output}
+#    ${cleaned}    Replace String Using Regexp    ${output}    ^\\d+\\s+    ${EMPTY}
+#    Log    Cleaned output: ${cleaned}
+#    Should Be Equal As Strings    ${cleaned}    ${expected_result}
+
+Ctn Run Command With Connector And Check Result As Strings
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
+    Send To Connector    ${tc}    ${command}    ${timeout}
+    # 1. Extract the result from the log and write to /tmp/connector.output
+    Extract Result From Log    ${tc}
+    # 2. Read the file
+    ${output}    Get File    /tmp/connector.output
+    ${output}    Strip String    ${output}
+    # 3. Compare with expected
+    Should Be Equal As Strings    ${output}    ${expected_result}
+
+#Ctn Run Command With Connector And Check Result As Strings
+#    [Arguments]    ${id}    ${command}    ${expected_result}    ${timeout}=5
+#    Send To Connector    ${id}    ${command}    ${timeout}
+#    ${output}=    Wait For Result    ${id}    ${timeout}
+#    Log    [ID: ${id}] Output: ${output}
+#    Should Contain    ${output}    ${expected_result}
+
+    #recupere le resultat du fichier de log en decoupant le resultat en fonction de l'id je doit recevoir le resultat de la commande
+
+Ctn Run Command With Connector And Wait For Result
+    [Arguments]    ${id}    ${command}    ${timeout}
+    Send To Connector    ${id}    ${command}    ${timeout}
+
+    #surveillez le fichier de logs jusqu'a en retrouve le resultat de la commande dont l'id et $id
+    # attendre la reponse dans le logs 
+    #retorner l output propre sans id 'nettoiez la ligne san id sans numero'
+
