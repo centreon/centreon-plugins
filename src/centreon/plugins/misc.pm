@@ -767,12 +767,16 @@ sub check_security_whitelist {
 }
 
 sub json_decode {
-    my ($content) = @_;
+    my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
     my $object;
+
+    my $decoder = JSON::XS->new->utf8;
+    $decoder = $decoder->boolean_values("false", "true") if ($options{booleans_as_strings});
+
     eval {
-        $object = JSON::XS->new->utf8->decode($content);
+        $object = $decoder->decode($content);
     };
     if ($@) {
         print STDERR "Cannot decode JSON string: $@" . "\n";

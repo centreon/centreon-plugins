@@ -338,3 +338,7 @@ WLC
 WSMAN
 XPath
 ZFS
+datastore
+datastores
+VCENTER
+vCenter
