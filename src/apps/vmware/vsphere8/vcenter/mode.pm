@@ -42,6 +42,15 @@ sub get_vms {
     return $options{custom}->request_api('endpoint' => '/vcenter/vm', 'method' => 'GET');
 }
 
+sub get_datastore {
+    my ($self, %options) = @_;
+    # if a datastore option is given, prepare to append it to the endpoint path
+    my $datastore_id = defined($options{datastore_id}) ? '/' . $options{datastore_id} : '';
+
+    # Retrieve the data
+    return $options{custom}->request_api('endpoint' => '/vcenter/datastore' . $datastore_id, 'method' => 'GET');
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
@@ -126,6 +135,30 @@ Retrieves the ESX statistics for the given options using package apps::vmware::v
 =back
 
 Returns the statistics for the specified ESX.
+
+
+=head2 get_datastore
+
+    my $all_datastores = $self->get_datastore(%options);
+    my $one_datastore = $self->get_datastore(%options, datastore_id => 'datastore-35');
+
+Retrieves the vCenter's datastores or only one datastore's specifics in case the `datastore_id` option is provided.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<custom> - The custom_mode object, defined in C<api.pm> and declared in C<plugin.pm> (mandatory).
+
+=item * C<datastore_id> - The C<datastore_id> of a datastore (optional).
+
+=back
+
+=back
+
+Returns the list of all the datastores or the specifics of one datastore.
 
 =cut
 
