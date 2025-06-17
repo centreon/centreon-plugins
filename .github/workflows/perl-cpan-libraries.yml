@@ -351,7 +351,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64, packaging-plugins-bookworm-arm64]
         name:
           [
             "ARGV::Struct",
@@ -386,7 +386,7 @@ jobs:
         include:
           - runner_name: ubuntu-24.04
           - arch: amd64
-          - build_names: "bullseye-amd64,bookworm,jammy,noble"
+          - build_names: "bullseye-amd64,bookworm-amd64,jammy,noble"
           - deb_dependencies: ""
           - deb_provides: ""
           - version: ""
@@ -398,7 +398,7 @@ jobs:
             distrib: bullseye
             package_extension: deb
             image: packaging-plugins-bullseye
-          - build_name: bookworm
+          - build_name: bookworm-amd64
             distrib: bookworm
             package_extension: deb
             image: packaging-plugins-bookworm
@@ -416,6 +416,12 @@ jobs:
             image: packaging-plugins-bullseye-arm64
             arch: arm64
             runner_name: centreon-collect-arm64
+          - build_name: bookworm-arm64
+            distrib: bookworm
+            package_extension: deb
+            image: packaging-plugins-bookworm-arm64
+            arch: arm64
+            runner_name: centreon-collect-arm64
           - name: "Crypt::Argon2"
             build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
@@ -428,18 +434,18 @@ jobs:
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy,noble,bullseye-arm64,bookworm-arm64"
           - name: "Device::Modbus::RTU::Client"
-            build_names: "bookworm,noble"
+            build_names: "bookworm-amd64,noble"
           - name: "Device::Modbus::TCP::Client"
-            build_names: "bookworm,noble"
+            build_names: "bookworm-amd64,noble"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
           - name: "Hash::Ordered"
-            build_names: "bullseye-amd64,bookworm,jammy"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy"
           - name: "Libssh::Session"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy,noble,bullseye-arm64,bookworm-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
@@ -448,14 +454,14 @@ jobs:
             build_names: "bullseye-amd64,jammy"
           - name: "Net::Curl"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy,noble,bullseye-arm64,bookworm-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
             deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
             revision: "2"
           - name: "Net::MQTT::Simple"
             version: "1.29"
-            build_names: "bullseye-amd64,bookworm,jammy"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy"
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
@@ -467,7 +473,7 @@ jobs:
             use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm-amd64,jammy,noble,bullseye-arm64,bookworm-arm64"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -701,6 +707,11 @@ jobs:
           - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
+            arch: arm64
+            runner_name: centreon-collect-arm64
+          - package_extension: deb
+            image: debian:bookworm
+            distrib: bookworm
             arch: arm64
             runner_name: centreon-collect-arm64
 

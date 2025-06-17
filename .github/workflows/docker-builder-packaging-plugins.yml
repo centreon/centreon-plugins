@@ -51,6 +51,9 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
+          - runner: centreon-collect-arm64
+            dockerfile: packaging-plugins-bookworm
+            image: packaging-plugins-bookworm-arm64
           - runner: ubuntu-22.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
