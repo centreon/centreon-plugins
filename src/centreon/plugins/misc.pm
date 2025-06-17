@@ -773,7 +773,16 @@ sub json_decode {
     my $object;
 
     my $decoder = JSON::XS->new->utf8;
-    $decoder = $decoder->boolean_values("false", "true") if ($options{booleans_as_strings});
+    # this option
+    if ($options{booleans_as_strings}) {
+        # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
+        if (JSON::XS->can('boolean_values')) {
+            $decoder = $decoder->boolean_values("false", "true");
+        } else {
+            # if boolean_values is not available, perform a dirty substitution of booleans
+            $content =~ s/"\s*:\s*(true|false)(\s*,?)/": "$1"$2/gm;
+        }
+    }
 
     eval {
         $object = $decoder->decode($content);
