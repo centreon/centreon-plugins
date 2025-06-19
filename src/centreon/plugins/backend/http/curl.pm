@@ -182,7 +182,7 @@ sub set_method {
         return ;
     }
 
-    $self->{curl_log}->log('-X', $options{request}->{method})
+    $self->{curl_log}->log('-X', $options{request}->{method});
 
     if ($options{request}->{method} eq 'POST') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);

@@ -3,8 +3,6 @@ package centreon::plugins::curllogger;
 use strict;
 use warnings;
 
-use String::ShellQuote;
-
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -13,12 +11,21 @@ sub new {
     $self->{log_as_curl} = [];
     $self->{is_log_as_curl} = 0;
 
+    # As this is only used for debugging purposes, we disable it if the ShellQuote
+    # module is missing
+    eval "use String::ShellQuote";
+    if ($@) {
+        $self->{is_log_as_curl} = -1;
+    }
+
     $self;
 }
 
 sub init {
     my ($self, %options) = @_;
+
     $self->{log_as_curl} = [];
+    return if $self->{is_log_as_curl} == -1;
 
     $self->{is_log_as_curl} = $options{enabled} || 0;
 }
@@ -26,13 +33,13 @@ sub init {
 sub is_enabled {
     my ($self) = @_;
 
-    return $self->{is_log_as_curl};
+    return $self->{is_log_as_curl} == 1;
 }
 
 sub log {
     my ($self, @params) = @_;
 
-    return unless $self->{is_log_as_curl} && @params;
+    return unless $self->{is_log_as_curl} == 1 && @params;
 
     push @{$self->{log_as_curl}}, shell_quote(@params);
 }
