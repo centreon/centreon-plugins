@@ -37,7 +37,6 @@ sub new {
         'eir'             => 'network::hp::athonet::nodeexporter::api::mode::eir',
         'interfaces'      => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
         'licenses'        => 'network::hp::athonet::nodeexporter::api::mode::licenses',
-        'list-interfaces' => 'network::hp::athonet::nodeexporter::api::mode::listdra',
         'load'            => 'cloud::prometheus::exporters::nodeexporter::mode::load',
         'memory'          => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
         'mme'             => 'network::hp::athonet::nodeexporter::api::mode::mme',

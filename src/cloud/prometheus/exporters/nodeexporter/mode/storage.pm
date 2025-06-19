@@ -237,6 +237,35 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name', 'instance', 'fstype', 'size']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{size} . '",' .
+                $self->{option_results}->{instance} . ',' .
+                $self->{option_results}->{mountpoint} . ',' .
+                $self->{option_results}->{fstype} .
+                $self->{extra_filter} . '}, "__name__", "size", "", "")'
+        ]
+    );
+
+    foreach my $result (@$results) {
+        $self->{output}->add_disco_entry(
+            instance => $result->{metric}->{instance},
+            name => $result->{metric}->{mountpoint},
+            fstype => $result->{metric}->{fstype},
+            size => $result->{value}->[1]
+        );
+    }
+}
+
 1;
 
 __END__
