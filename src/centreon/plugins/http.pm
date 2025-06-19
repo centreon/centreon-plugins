@@ -264,7 +264,7 @@ Proxy URL. Example: http://my.proxy:3128
 
 =item B<--proxypac>
 
-Proxy pac file (can be a URL or a local file).
+Proxy PAC file (can be a URL or a local file).
 
 =item B<--insecure>
 
