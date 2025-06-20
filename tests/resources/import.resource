@@ -6,4 +6,5 @@ Library             DateTime
 Library             OperatingSystem
 Library             String
 Library             XML
+Library             Collections
 Resource            resources.resource

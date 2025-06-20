@@ -85,3 +85,10 @@ Ctn Verify Command Output
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
+
+Ctn Run Command And Return Parsed XML
+    [Arguments]    ${command}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    ${parsed}=    Parse XML     ${output}
+    RETURN    ${parsed}
