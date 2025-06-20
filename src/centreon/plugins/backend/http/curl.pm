@@ -160,10 +160,13 @@ sub set_method {
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => undef);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPGET'), parameter => 1);
 
+    my $skip_log_post = 0;
+    # POST inferred by CURLOPT_POSTFIELDS
     if ($options{content_type_forced} == 1) {
         if (defined($options{request}->{query_form_post})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post});
             $self->{curl_log}->log("--data-raw", $options{request}->{query_form_post});
+            $skip_log_post = 1;
         }
     } elsif (defined($options{request}->{post_params})) {
         my $uri_post = URI->new();
@@ -175,18 +178,21 @@ sub set_method {
         $self->{curl_log}->log("-H", $urlencodedheader);
 
         $self->{curl_log}->log("--data-raw", $uri_post->query);
+        $skip_log_post = 1;
     }
 
     if ($options{request}->{method} eq 'GET') {
-        # no {curl_log}->log call because GET is the default value
-        return ;
+        # no curl_log call because GET is the default value
+        return;
     }
-
-    $self->{curl_log}->log('-X', $options{request}->{method});
 
     if ($options{request}->{method} eq 'POST') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);
+        $self->{curl_log}->log('-X', $options{request}->{method}) unless $skip_log_post;
+        return;
     }
+
+    $self->{curl_log}->log('-X', $options{request}->{method});
     if ($options{request}->{method} eq 'PUT') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => $options{request}->{method});
     }
@@ -235,7 +241,7 @@ sub set_auth {
         $self->{curl_log}->log('--cert-type', 'p12');
     } else {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "PEM");
-        # no {curl_log}->log call because PEM is the default value
+        # no curl_log call because PEM is the default value
     }
 }
 
@@ -367,7 +373,6 @@ sub request {
     }
 
     my $url;
-    $options{request}->{port} = 3000;
     if (defined($options{request}->{full_url})) {
         $url = $options{request}->{full_url};
     } elsif (defined($options{request}->{port}) && $options{request}->{port} =~ /^[0-9]+$/) {
@@ -465,7 +470,7 @@ sub request {
 
     if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CERTINFO'), parameter => 1);
-        $self->{curl_log}->log('--certinfo');
+        # no curl_log call because there is no equivalent in command line
     }
 
     $self->{response_code} = undef;
