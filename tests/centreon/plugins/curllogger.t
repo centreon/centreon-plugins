@@ -145,15 +145,15 @@ sub test_full
     ok($curl->{sendheader} || $curl->{senddata}, "Retrieved header/data with curl");
 
     # We update boundary lines, which normally changes between requests
-    $backend->{sendheader} =~ s/boundary=----[-a-f0-9]+/boundary=----XXXXXX/;
-    $curl->{sendheader}=~ s/boundary=----[-a-f0-9]+/boundary=----XXXXXX/;
+    $backend->{sendheader} =~ s/boundary=----[-a-zA-Z0-9]+/boundary=----XXXXXX/;
+    $curl->{sendheader}=~ s/boundary=----[-a-zA-Z0-9]+/boundary=----XXXXXX/;
 
     # We update aws signature lines, which normally changes between requests
     $backend->{sendheader} =~ s/(user-agent;)?x-osc-date, Signature=[-a-f0-9]+X-Osc-Date: [\dTZ]+/x-osc-date, Signature=AAAAAAX-Osc-Date: 20250620T140600Z/;
     $curl->{sendheader} =~ s/(user-agent;)?x-osc-date, Signature=[-a-f0-9]+X-Osc-Date: [\dTZ]+/x-osc-date, Signature=AAAAAAX-Osc-Date: 20250620T140600Z/;
 
-    $backend->{senddata} =~ s/-------[-a-f0-9]+/--------XXXXXX/g;
-    $curl->{senddata}=~ s/-------[-a-f0-9]+/--------XXXXXX/g;
+    $backend->{senddata} =~ s/-------[-a-zA-Z0-9]+/--------XXXXXX/g;
+    $curl->{senddata}=~ s/-------[-a-zA-Z0-9]+/--------XXXXXX/g;
 
     # Backend and curl outputs should be the same
     ok($backend->{sendheader} eq $curl->{sendheader}, "Headers part match");
@@ -166,24 +166,24 @@ sub setup_env
 
     # Simulate an HTTP server otherwise curl will not generate any output
     if ($pid == 0) {
-
-	my $client;
+        my $client;
         $SIG{'TERM'} = sub {
             close($client);
             exit(0);
         };
 
         my $server = IO::Socket::INET->new( LocalHost => '127.0.0.1',
-					    LocalPort => $port, Proto => 'TCP',
-					    Reuse => 1, Listen => 50 );
+                                            LocalPort => $port, Proto => 'TCP',
+                                            Reuse => 1, Listen => 50 );
 
-	die unless $server;
-	while (1) {
-	    $client = $server->accept();
-	    next unless $client;
-	    <$client>;
-	    close $client if $client;
-	}
+        die unless $server;
+        while (1) {
+            $client = $server->accept();
+            next unless $client;
+            <$client>;
+            sleep 1;
+            close $client if $client;
+        }
     }
 }
 
@@ -218,7 +218,7 @@ foreach ( { title => "GET with timeout",
           { title => "GET with cert",
             options => { full_url => "http://localhost:$port/fake", insecure => 1, cacert_file => '/tmp/ca-fake.crt',
                          cert_file => '/tmp/cert-fake.crt', key_file => '/tmp/key-fake.pem', cert_pwd => 't@t@' },
-			 contains => [ '--insecure', '--cert', '--cacert' , '--key', '--pass', ] },
+                         contains => [ '--insecure', '--cert', '--cacert' , '--key', '--pass', ] },
           { title => "GET with pkcs12",
             options => { full_url => "http://localhost:$port/fake", cert_pkcs12 => 'P12' },
             contains => [ '--cert-type' ]  },
