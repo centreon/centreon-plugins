@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes}   = {
-        'vm-count'        => 'apps::vmware::vsphere8::vcenter::mode::vmcount',
         'datastore-usage' => 'apps::vmware::vsphere8::vcenter::mode::datastoreusage',
+        'list-datastores' => 'apps::vmware::vsphere8::vcenter::mode::listdatastores',
+        'vm-count'        => 'apps::vmware::vsphere8::vcenter::mode::vmcount',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';
