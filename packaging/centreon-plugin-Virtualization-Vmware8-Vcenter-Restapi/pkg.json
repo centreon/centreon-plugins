@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Vmware8-Vcenter-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor VMware vCenter using vSphere 8 REST API",
+    "plugin_name": "centreon_vmware8_vcenter_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/vmware/vsphere8/vcenter/",
+        "apps/vmware/vsphere8/custom/"
+    ]
+}
