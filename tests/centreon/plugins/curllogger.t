@@ -71,7 +71,6 @@ sub test_backend
     }
 
     $curl->request(%options);
-
     # Retrieve headers and data from centreon curl backend output.
     my @cupscmd = map { /:\s(.+)$/; $1 } grep { defined && /^curl request.*:/ } @output;
     my @sendheader = map { s/^=> Send header: //; s/[\r\n]//g; $_ } grep { defined && /^=> Send header: / } @output;
@@ -100,7 +99,7 @@ sub test_curl
         } elsif ($read =~ /^=> Send data/) {
             $state = 2;
             next;
-        } elsif ($read =~ /^=/) {
+        } elsif ($read =~ /^[=<]/ || $read =~ /^=> R/) {
             $state = 0;
             next;
         }
@@ -150,8 +149,8 @@ sub test_full
     $curl->{sendheader}=~ s/boundary=----[-a-f0-9]+/boundary=----XXXXXX/;
 
     # We update aws signature lines, which normally changes between requests
-    $backend->{sendheader} =~ s/x-osc-date, Signature=[-a-f0-9]+/x-osc-date, Signature=XXXXXX/;
-    $curl->{sendheader} =~ s/x-osc-date, Signature=[-a-f0-9]+/x-osc-date, Signature=XXXXXX/;
+    $backend->{sendheader} =~ s/(user-agent;)?x-osc-date, Signature=[-a-f0-9]+X-Osc-Date: [\dTZ]+/x-osc-date, Signature=AAAAAAX-Osc-Date: 20250620T140600Z/;
+    $curl->{sendheader} =~ s/(user-agent;)?x-osc-date, Signature=[-a-f0-9]+X-Osc-Date: [\dTZ]+/x-osc-date, Signature=AAAAAAX-Osc-Date: 20250620T140600Z/;
 
     $backend->{senddata} =~ s/-------[-a-f0-9]+/--------XXXXXX/g;
     $curl->{senddata}=~ s/-------[-a-f0-9]+/--------XXXXXX/g;
@@ -182,7 +181,7 @@ sub setup_env
 	while (1) {
 	    $client = $server->accept();
 	    next unless $client;
-            print $client "HTTP/1.1 200 OK\r\n";
+	    <$client>;
 	    close $client if $client;
 	}
     }
