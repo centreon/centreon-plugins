@@ -4,7 +4,7 @@ use warnings;
 use Test2::V0;
 use Test2::Plugin::NoWarnings echo => 1;
 
-use Net::Curl::Easy;
+use Net::Curl::Easy qw(:constants);
 use Data::Dumper;
 use File::Copy;
 use IO::Socket::INET;
@@ -245,13 +245,25 @@ foreach ( { title => "GET with timeout",
             options => { full_url => "http://localhost:$port/fake", method => "POST",
                          form => [ { copyname => 'part 1', copycontents => 'content 1' },  { copyname => 'part 2',
                          copycontents => 'content 2' }, ] } },
-          { title => "GET with curl_opt",
-            options => { full_url => "http://fake.execute-api.eu-west-1.amazonaws.com:$port/fake", credentials => 1,
-                         username => 'User', http_peer_addr => "127.0.0.1",
-                         password => 'Pa$$w@rd' , curl_opt => [ "CURLOPT_AWS_SIGV4 => osc" ] } },
 ) {
     test_full($_->{title}, $_->{contains} // '', %{$_->{options}});
 }
+
+# This test is skipped if the platform does not support CURLOPT_AWS_SIGV4 ( libcurl >= 7.75.0 required ).
+SKIP: {
+    my $test = { title => "GET with curl_opt",
+            options => { full_url => "http://fake.execute-api.eu-west-1.amazonaws.com:$port/fake", credentials => 1,
+                         username => 'User', http_peer_addr => "127.0.0.1",
+                         password => 'Pa$$w@rd' , curl_opt => [ "CURLOPT_AWS_SIGV4 => osc" ] } };
+
+    eval "CURLOPT_AWS_SIGV4";
+    if ($@) {
+        print "test ".$test->{title}."\n";
+        skip "CURLOPT_AWS_SIGV4 is unsupported on this platform", 5;
+    }
+
+    test_full($test->{title}, $test->{contains} // '', %{$test->{options}});
+};
 
 unlink $tmpfile;
 
