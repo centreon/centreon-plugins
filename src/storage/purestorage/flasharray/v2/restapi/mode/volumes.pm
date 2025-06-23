@@ -27,8 +27,9 @@ use warnings;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value =>
+        $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
@@ -51,97 +52,218 @@ sub prefix_volume_output {
     return "Volume '" . $options{instance_value}->{name} . "' ";
 }
 
+sub custom_bytes_per_second_perfdata {
+    my ($self) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel    => $self->{nlabel},
+        unit      => 'B/s',
+        instances => [ $self->{result_values}->{name}, $self->{result_values}->{resolution} ],
+        value     => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
+    );
+}
+
+sub custom_packet_perfdata {
+    my ($self) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel    => $self->{nlabel},
+        unit      => 'B',
+        instances => [ $self->{result_values}->{name}, $self->{result_values}->{resolution} ],
+        value     => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
+    );
+}
+
+sub custom_packet_per_seconds {
+    my ($self) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel    => $self->{nlabel},
+        unit      => '/s',
+        instances => [ $self->{result_values}->{name}, $self->{result_values}->{resolution} ],
+        value     => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min       => 0
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         {
-            name => 'volumes', type => 3, cb_prefix_output => 'prefix_volume_output', cb_long_output => 'volume_long_output', indent_long_output => '    ',
-            message_multiple => 'All volumes are ok',
-            group => [
-                { name => 'space', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'reduction', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'perf', type => 0, skipped_code => { -10 => 1 } }
-            ]
+            name               => 'volumes',
+            type               => 3,
+            cb_prefix_output   => 'prefix_volume_output',
+            cb_long_output     => 'volume_long_output',
+            indent_long_output => '    ',
+            message_multiple   => 'All volumes are ok',
+            group              =>
+                [
+                    { name => 'space', type => 0, skipped_code => { -10 => 1 } },
+                    { name => 'reduction', type => 0, skipped_code => { -10 => 1 } },
+                    { name => 'perf', type => 0, skipped_code => { -10 => 1 } }
+                ]
         }
     ];
-    
+
     $self->{maps_counters}->{space} = [
         { label => 'space-usage', nlabel => 'volume.space.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
-                ]
-            }
+            key_values            =>
+                [ { name => 'used' },
+                    { name => 'free' },
+                    { name => 'prct_used' },
+                    { name => 'prct_free' },
+                    { name => 'total' } ],
+            closure_custom_output => $self->can('custom_usage_output'),
+            perfdatas             => [
+                { template               => '%d',
+                    min                  => 0,
+                    max                  => 'total',
+                    unit                 => 'B',
+                    cast_int             => 1,
+                    label_extra_instance => 1
+                }
+            ]
+        }
         },
         { label => 'space-usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
-                ]
-            }
+            key_values            =>
+                [ { name => 'free' },
+                    { name => 'used' },
+                    { name => 'prct_used' },
+                    { name => 'prct_free' },
+                    { name => 'total' } ],
+            closure_custom_output => $self->can('custom_usage_output'),
+            perfdatas             => [
+                {
+                    template             => '%d',
+                    min                  => 0,
+                    max                  => 'total',
+                    unit                 => 'B',
+                    cast_int             => 1,
+                    label_extra_instance => 1
+                }
+            ]
+        }
         },
         { label => 'space-usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
+            key_values            =>
+                [ { name => 'prct_used' },
+                    { name => 'used' },
+                    { name => 'free' },
+                    { name => 'prct_free' },
+                    { name => 'total' } ],
+            closure_custom_output => $self->can('custom_usage_output'),
+            perfdatas             =>
+                [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
-            }
+        }
         }
     ];
 
     $self->{maps_counters}->{reduction} = [
         { label => 'data-reduction', nlabel => 'volume.data.reduction.count', set => {
-                key_values => [ { name => 'data' } ],
-                output_template => 'data reduction: %.3f',
-                perfdatas => [
-                    { template => '%.3f', min => 0, label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'data' } ],
+            output_template => 'data reduction: %.3f',
+            perfdatas       => [
+                { template => '%.3f', min => 0, label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 
     $self->{maps_counters}->{perf} = [
-        { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'read_bytes' }, { name => 'name' }, { name => 'resolution' } ],
-                output_template => 'read: %s %s/s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'B/s',
-                        instances => [$self->{result_values}->{name}, $self->{result_values}->{resolution}],
-                        value => $self->{result_values}->{read_bytes},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
-            }
+        # read performance counters
+        { label => 'read-bytes', nlabel => 'volume.io.read.usage.bytespersecond', set => {
+            key_values              => [ { name => 'read_bytes' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'read bytes: %s %s/s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_bytes_per_second_perfdata')
+        }
         },
-        { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'write_bytes' }, { name => 'name' }, { name => 'resolution' } ],
-                output_template => 'write: %s %s/s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'B/s',
-                        instances => [$self->{result_values}->{name}, $self->{result_values}->{resolution}],
-                        value => $self->{result_values}->{write_bytes},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
-            }
+        { label => 'bytes-per-read', nlabel => 'volume.io.read.usage.bytesperread', set => {
+            key_values              => [ { name => 'bytes_per_read' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'bytes read: %s %s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'reads-per-sec', nlabel => 'volume.io.read.usage.readspersec', set => {
+            key_values              => [ { name => 'reads_per_sec' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'read: %s/s',
+            closure_custom_perfdata => $self->can('custom_packet_per_seconds')
+        }
+        },
+        { label => 'service-usec-per-read-operation', nlabel => 'volume.io.read.usage.serviceusecperreadop', set => {
+            key_values              =>
+                [ { name => 'service_usec_per_read_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'service usec read operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'usec-per-read-operation', nlabel => 'volume.io.read.usage.usecperreadop', set => {
+            key_values              => [ { name => 'usec_per_read_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'usec per read operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'queue-usec-per-read-operation', nlabel => 'volume.io.read.usage.queueusecperreadop', set => {
+            key_values              =>
+                [ { name => 'queue_usec_per_read_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'queue usec per read operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        # write performance counters
+        { label => 'write-bytes', nlabel => 'volume.io.write.usage.bytespersecond', set => {
+            key_values              => [ { name => 'write_bytes' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'write bytes: %s %s/s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_bytes_per_second_perfdata')
+        }
+        },
+        { label => 'bytes-per-write', nlabel => 'volume.io.write.usage.bytesperwrite', set => {
+            key_values              => [ { name => 'bytes_per_write' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'bytes write: %s %s',
+            output_change_bytes     => 1,
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'writes-per-sec', nlabel => 'volume.io.write.usage.writespersec', set => {
+            key_values              => [ { name => 'writes_per_sec' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'write: %s/s',
+            closure_custom_perfdata => $self->can('custom_packet_per_seconds')
+        }
+        },
+        { label => 'service-usec-per-write-operation', nlabel => 'volume.io.write.usage.serviceusecwriteop', set => {
+            key_values              =>
+                [ { name => 'service_usec_per_write_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'service usec read operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'usec-per-write-operation', nlabel => 'volume.io.write.usage.usecperwriteop', set => {
+            key_values              =>
+                [ { name => 'usec_per_write_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'usec per write operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
+        },
+        { label => 'queue-usec-per-write-operation', nlabel => 'volume.io.write.usage.queueusecperwriteop', set => {
+            key_values              =>
+                [ { name => 'queue_usec_per_write_op' }, { name => 'name' }, { name => 'resolution' } ],
+            output_template         => 'queue usec per write operation: %s µs',
+            closure_custom_perfdata => $self->can('custom_packet_perfdata')
+        }
         }
     ];
 }
@@ -150,20 +272,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
+
+    $options{options}->add_options(arguments => {
         'filter-id:s'       => { name => 'filter_id' },
         'filter-name:s'     => { name => 'filter_name' },
-        'perf-resolution:s' => { name => 'perf_resolution' } 
+        'perf-resolution:s' => { name => 'perf_resolution' }
     });
-    
+
     return $self;
 }
 
 my $map_resolution = {
-    '1s' => 1000,  '30s' => 30000, '5m' => 300000,
-    '30m' => 1800000,  '2h' => 7200000, '8h' => 28800000,
-    '24h' => 86400000
+    '1s' => 1000, '30s' => 30000, '5m' => 300000, '30m' => 1800000, '2h' => 7200000, '8h' => 28800000, '24h' => 86400000
 };
 
 sub check_options {
@@ -174,7 +294,8 @@ sub check_options {
         if (!defined($self->{option_results}->{perf_resolution}) || $self->{option_results}->{perf_resolution} eq '');
 
     if (!defined($map_resolution->{ $self->{option_results}->{perf_resolution} })) {
-        $self->{output}->add_option_msg(short_msg => 'Unsupported --perf-resolution value. Can be: 1s, 30s, 5m, 30m, 2h, 8h, 24h');
+        $self->{output}->add_option_msg(short_msg =>
+            'Unsupported --perf-resolution value. Can be: 1s, 30s, 5m, 30m, 2h, 8h, 24h');
         $self->{output}->option_exit();
     }
 }
@@ -183,7 +304,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $items = $options{custom}->request(endpoint => '/volumes');
-    my $perfs = $options{custom}->request(endpoint => '/volumes/performance', get_param => ['resolution=' . $map_resolution->{ $self->{option_results}->{perf_resolution} }]);
+    my $perfs = $options{custom}->request(endpoint =>
+        '/volumes/performance',
+        get_param                                  =>
+            [ 'resolution=' . $map_resolution->{ $self->{option_results}->{perf_resolution} } ]);
 
     $self->{volumes} = {};
     foreach my $item (@$items) {
@@ -193,7 +317,7 @@ sub manage_selection {
             $item->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{volumes}->{ $item->{name} } = {
-            name => $item->{name},
+            name      => $item->{name},
             reduction => {
                 data => $item->{space}->{data_reduction}
             }
@@ -201,23 +325,35 @@ sub manage_selection {
 
         if ($item->{provisioned} > 0) {
             $self->{volumes}->{ $item->{name} }->{space} = {
-                total => $item->{provisioned},
-                used => $item->{space}->{total_physical},
-                free => $item->{provisioned} - $item->{space}->{total_physical},
+                total     => $item->{provisioned},
+                used      => $item->{space}->{total_physical},
+                free      => $item->{provisioned} - $item->{space}->{total_physical},
                 prct_used => $item->{space}->{total_physical} * 100 / $item->{provisioned},
                 prct_free => (100 - ($item->{space}->{total_physical} * 100 / $item->{provisioned}))
             };
         }
     }
-    
+
     foreach my $perf (@$perfs) {
         next if (!defined($self->{volumes}->{ $perf->{name} }));
 
         $self->{volumes}->{ $perf->{name} }->{perf} = {
-            name => $perf->{name},
-            resolution => $self->{option_results}->{perf_resolution},
-            read_bytes => $perf->{read_bytes_per_sec},
-            write_bytes =>  $perf->{write_bytes_per_sec}
+            name                      => $perf->{name},
+            resolution                => $self->{option_results}->{perf_resolution},
+            # read performance counters
+            read_bytes                => $perf->{read_bytes_per_sec},
+            bytes_per_read            => $perf->{bytes_per_read},
+            reads_per_sec             => $perf->{reads_per_sec},
+            service_usec_per_read_op  => $perf->{service_usec_per_read_op},
+            usec_per_read_op          => $perf->{usec_per_read_op},
+            queue_usec_per_read_op    => $perf->{queue_usec_per_read_op},
+            # write performance counters
+            write_bytes               => $perf->{write_bytes_per_sec},
+            bytes_per_write           => $perf->{bytes_per_write},
+            writes_per_sec            => $perf->{writes_per_sec},
+            service_usec_per_write_op => $perf->{service_usec_per_write_op},
+            usec_per_write_op         => $perf->{usec_per_write_op},
+            queue_usec_per_write_op   => $perf->{queue_usec_per_write_op},
         };
     }
 }
@@ -245,16 +381,19 @@ Filter volumes by ID (can be a regexp).
 
 Filter volumes by name (can be a regexp).
 
-=item B<--perf-resolution>
+=item B<--filter-resolution>
 
-Time resolution for volumes performance.
+Time resolution for array performance.
 Can be: C<1s>, C<30s>, C<5m>, C<30m>, C<2h>, C<8h>, C<24h> (default: C<5m>).
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'space-usage' (B), 'space-usage-free' (B), 'space-usage-prct' (%),
-'data-reduction', 'read', 'write'.
+'data-reduction', 'read-bytes' (B/s), 'bytes-per-read' (B), 'reads-per-sec', 'service-usec-per-read-operation' (µs),
+'usec-per-read-operation' (µs), 'queue-usec-per-read-operation' (µs)
+'write-bytes' (B/s), 'bytes-per-write' (B), 'writes-per-sec', 'service-usec-per-write-operation' (µs),
+'usec-per-write-operation' (µs), 'queue-usec-per-write-operation' (µs).
 
 =back
 
