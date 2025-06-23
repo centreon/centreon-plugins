@@ -53,7 +53,7 @@ sub new {
             'sql-errors-exit:s' => { name => 'sql_errors_exit', default => 'unknown' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'MYSQLCMD OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'MYSQL COMMAND OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{sqlmode_name} = $options{sqlmode_name};
