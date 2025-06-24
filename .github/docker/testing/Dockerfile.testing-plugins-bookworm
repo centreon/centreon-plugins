@@ -47,13 +47,11 @@ echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main"
 echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list
 echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-# Ajouter la clé GPG
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 
 # Update
 apt-get update
 
-# Installer dans le bon ordre (centreon-clib en PREMIER)
 apt-get install -y centreon-clib centreon-connector-perl centreon-plugins
 
 rm -f /etc/apt/sources.list.d/centreon.list

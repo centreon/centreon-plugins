@@ -52,7 +52,7 @@ apt-get update
 
 apt-get install -y centreon-clib centreon-connector-perl
 
-#rm -f /etc/apt/sources.list.d/centreon.list
+rm -f /etc/apt/sources.list.d/centreon.list
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

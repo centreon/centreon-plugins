@@ -60,6 +60,6 @@ apt-get clean
 
 EOF
 
-CMD snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='/home/code/tests' & sleep 1 && /bin/bash
+#CMD snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='/home/code/tests' & sleep 1 && /bin/bash
 
-WORKDIR /home/code/
+#WORKDIR /home/code/
