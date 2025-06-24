@@ -58,7 +58,7 @@ jobs:
           github.event_name == 'pull_request' &&
           contains(fromJson('["testing", "unstable", "canary"]'), needs.get-environment.outputs.stability)
         with:
-          base: ${{ github.ref }}
+          base: ${{ github.head_ref || github.ref_name }}
           list-files: shell
           filters: |
             common:
