@@ -185,6 +185,20 @@ impl<'a> OutputFormatter<'a> {
         std::format!("{}{}", prefix, "blabla")
     }
 }
+
+/// Converts a floating point number to a string with two decimal places,
+/// removing trailing zeros and the decimal point if necessary.
+/// This is useful for formatting metrics in a more human-readable way.
+///
+/// For example:
+/// ```
+/// let val = 40.009;
+/// let formatted = float_string(&val);
+/// // assert_eq!(formatted, "40.01");
+/// let val = 40.0;
+/// let formatted = float_string(&val);
+/// // assert_eq!(formatted, "40");
+/// ```
 pub fn float_string(val: &f64) -> String {
     let mut s = format!("{:.2}", val);
     while s.ends_with('0') {
