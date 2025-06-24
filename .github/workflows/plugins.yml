@@ -56,7 +56,7 @@ jobs:
         id: filter
         if: |
           github.event_name == 'pull_request' &&
-          contains(fromJson('["testing", "unstable", "canary"]'), inputs.stability)
+          contains(fromJson('["testing", "unstable", "canary"]'), needs.get-environment.outputs.stability)
         with:
           base: ${{ github.ref }}
           list-files: shell
