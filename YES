@@ -1,9 +1,0 @@
-unrecognized option 'plugin'
-centreon_connector_perl [args]
-  --debug    If this flag is specified, print all logs messages.
-  --help     Print help and exit.
-  --version  Print software version and exit.
-  --code     Argument is some Perl code that will be executed by the embedded interpreter.
-  --log-file Specifies the log file (default: stderr).
-  --test-file Specifies the file used instead of stdin.
-
