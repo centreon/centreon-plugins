@@ -1,0 +1,261 @@
+<ldp-traffic-statistics-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+    <ldp-traffic-statistics>
+        <ldp-prefix>10.0.0.2/32</ldp-prefix>
+        <ldp-traffic-type>Transit</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>907456</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>75821266</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix junos:display="none">10.0.0.2/32</ldp-prefix>
+        <ldp-traffic-type>Ingress</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>0</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>0</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix>10.0.0.4/32</ldp-prefix>
+        <ldp-traffic-type>Transit</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>0</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>0</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix junos:display="none">10.0.0.4/32</ldp-prefix>
+        <ldp-traffic-type>Ingress</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>16216</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>649426</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix>10.0.0.6/32</ldp-prefix>
+        <ldp-traffic-type>Transit</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>434164</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>20975491</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix junos:display="none">10.0.0.6/32</ldp-prefix>
+        <ldp-traffic-type>Ingress</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>24099</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>1007913</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix>10.0.0.7/32</ldp-prefix>
+        <ldp-traffic-type>Transit</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>270325</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>13372701</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+    <ldp-traffic-statistics>
+        <ldp-prefix junos:display="none">10.0.0.7/32</ldp-prefix>
+        <ldp-traffic-type>Ingress</ldp-traffic-type>
+        <ldp-traffic-statistics-packet-count>118606</ldp-traffic-statistics-packet-count>
+        <ldp-traffic-statistics-byte-count>4507894</ldp-traffic-statistics-byte-count>
+        <ldp-traffic-multiple-fec>No</ldp-traffic-multiple-fec>
+    </ldp-traffic-statistics>
+</ldp-traffic-statistics-information>
+<ldp-session-information
+xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing" junos:style="detail">
+<ldp-session>
+    <ldp-neighbor-address>10.0.0.2</ldp-neighbor-address>
+    <ldp-session-state>Operational</ldp-session-state>
+    <ldp-connection-state>Open</ldp-connection-state>
+    <ldp-remaining-time>29</ldp-remaining-time>
+    <ldp-session-adv-mode>DU</ldp-session-adv-mode>
+    <ldp-session-id>10.0.0.1:0--10.0.0.2:0</ldp-session-id>
+    <ldp-keepalive-time>3</ldp-keepalive-time>
+    <ldp-session-role>Passive</ldp-session-role>
+    <ldp-session-max-pdu>4096</ldp-session-max-pdu>
+    <ldp-holdtime>30</ldp-holdtime>
+    <ldp-neighbor-count>1</ldp-neighbor-count>
+    <ldp-neighbor-types>
+        <ldp-neighbor-type>configured-tunneled</ldp-neighbor-type>
+    </ldp-neighbor-types>
+    <ldp-keepalive-interval>10</ldp-keepalive-interval>
+    <ldp-retry-interval>1</ldp-retry-interval>
+    <ldp-local-address>10.0.0.1</ldp-local-address>
+    <ldp-remote-address>10.0.0.2</ldp-remote-address>
+    <ldp-up-time>5w6d 05:47:59</ldp-up-time>
+    <ldp-session-capabilities-advertised>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-advertised>
+    <ldp-session-capabilities-received>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-received>
+    <ldp-session-protection>
+        <ldp-session-protection-state>disabled</ldp-session-protection-state>
+    </ldp-session-protection>
+    <ldp-session-flags>
+        <ldp-session-flag>none</ldp-session-flag>
+    </ldp-session-flags>
+    <ldp-session-authentication>MD5 (10.0.0.0/24)</ldp-session-authentication>
+    <ldp-graceful-restart-local>disabled</ldp-graceful-restart-local>
+    <ldp-local-helper-mode>enabled</ldp-local-helper-mode>
+    <ldp-graceful-restart-remote>disabled</ldp-graceful-restart-remote>
+    <ldp-remote-helper-mode>enabled</ldp-remote-helper-mode>
+    <ldp-local-maximum-reconnect>120000</ldp-local-maximum-reconnect>
+    <ldp-local-maximum-recovery>240000</ldp-local-maximum-recovery>
+    <ldp-local-label-adv-mode>Downstream unsolicited</ldp-local-label-adv-mode>
+    <ldp-remote-label-adv-mode>Downstream unsolicited</ldp-remote-label-adv-mode>
+    <ldp-neg-label-adv-mode>Downstream unsolicited</ldp-neg-label-adv-mode>
+    <ldp-mtu-discovery>disabled</ldp-mtu-discovery>
+    <ldp-session-nsr-state>Not in sync</ldp-session-nsr-state>
+    <ldp-session-address>
+        <interface-address>10.0.0.2</interface-address>
+        <interface-address>10.18.0.217</interface-address>
+    </ldp-session-address>
+</ldp-session>
+<ldp-session>
+    <ldp-neighbor-address>10.0.0.4</ldp-neighbor-address>
+    <ldp-session-state>Operational</ldp-session-state>
+    <ldp-connection-state>Open</ldp-connection-state>
+    <ldp-remaining-time>28</ldp-remaining-time>
+    <ldp-session-adv-mode>DU</ldp-session-adv-mode>
+    <ldp-session-id>10.0.0.1:0--10.0.0.4:0</ldp-session-id>
+    <ldp-keepalive-time>3</ldp-keepalive-time>
+    <ldp-session-role>Passive</ldp-session-role>
+    <ldp-session-max-pdu>4096</ldp-session-max-pdu>
+    <ldp-holdtime>30</ldp-holdtime>
+    <ldp-neighbor-count>2</ldp-neighbor-count>
+    <ldp-neighbor-types>
+        <ldp-neighbor-type>discovered</ldp-neighbor-type>
+        <ldp-neighbor-type>configured-layer2</ldp-neighbor-type>
+    </ldp-neighbor-types>
+    <ldp-keepalive-interval>10</ldp-keepalive-interval>
+    <ldp-retry-interval>1</ldp-retry-interval>
+    <ldp-local-address>10.0.0.1</ldp-local-address>
+    <ldp-remote-address>10.0.0.4</ldp-remote-address>
+    <ldp-up-time>5w6d 05:49:58</ldp-up-time>
+    <ldp-session-capabilities-advertised>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-advertised>
+    <ldp-session-capabilities-received>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-received>
+    <ldp-session-protection>
+        <ldp-session-protection-state>disabled</ldp-session-protection-state>
+    </ldp-session-protection>
+    <ldp-session-flags>
+        <ldp-session-flag>none</ldp-session-flag>
+    </ldp-session-flags>
+    <ldp-session-authentication>MD5 (10.0.0.0/24)</ldp-session-authentication>
+    <ldp-graceful-restart-local>disabled</ldp-graceful-restart-local>
+    <ldp-local-helper-mode>enabled</ldp-local-helper-mode>
+    <ldp-graceful-restart-remote>disabled</ldp-graceful-restart-remote>
+    <ldp-remote-helper-mode>enabled</ldp-remote-helper-mode>
+    <ldp-local-maximum-reconnect>120000</ldp-local-maximum-reconnect>
+    <ldp-local-maximum-recovery>240000</ldp-local-maximum-recovery>
+    <ldp-local-label-adv-mode>Downstream unsolicited</ldp-local-label-adv-mode>
+    <ldp-remote-label-adv-mode>Downstream unsolicited</ldp-remote-label-adv-mode>
+    <ldp-neg-label-adv-mode>Downstream unsolicited</ldp-neg-label-adv-mode>
+    <ldp-mtu-discovery>disabled</ldp-mtu-discovery>
+    <ldp-session-nsr-state>Not in sync</ldp-session-nsr-state>
+    <ldp-session-address>
+        <interface-address>10.0.0.4</interface-address>
+        <interface-address>10.1.1.6</interface-address>
+        <interface-address>10.18.0.215</interface-address>
+    </ldp-session-address>
+</ldp-session>
+<ldp-session>
+    <ldp-neighbor-address>10.0.0.6</ldp-neighbor-address>
+    <ldp-session-state>Operational</ldp-session-state>
+    <ldp-connection-state>Open</ldp-connection-state>
+    <ldp-remaining-time>29</ldp-remaining-time>
+    <ldp-session-adv-mode>DU</ldp-session-adv-mode>
+    <ldp-session-id>10.0.0.1:0--10.0.0.6:0</ldp-session-id>
+    <ldp-keepalive-time>3</ldp-keepalive-time>
+    <ldp-session-role>Passive</ldp-session-role>
+    <ldp-session-max-pdu>4096</ldp-session-max-pdu>
+    <ldp-holdtime>30</ldp-holdtime>
+    <ldp-neighbor-count>2</ldp-neighbor-count>
+    <ldp-neighbor-types>
+        <ldp-neighbor-type>discovered</ldp-neighbor-type>
+        <ldp-neighbor-type>configured-layer2</ldp-neighbor-type>
+    </ldp-neighbor-types>
+    <ldp-keepalive-interval>10</ldp-keepalive-interval>
+    <ldp-retry-interval>1</ldp-retry-interval>
+    <ldp-local-address>10.0.0.1</ldp-local-address>
+    <ldp-remote-address>10.0.0.6</ldp-remote-address>
+    <ldp-up-time>4w1d 21:50:40</ldp-up-time>
+    <ldp-session-capabilities-advertised>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-advertised>
+    <ldp-session-capabilities-received>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-received>
+    <ldp-session-protection>
+        <ldp-session-protection-state>disabled</ldp-session-protection-state>
+    </ldp-session-protection>
+    <ldp-session-flags>
+        <ldp-session-flag>none</ldp-session-flag>
+    </ldp-session-flags>
+    <ldp-session-authentication>MD5 (10.0.0.0/24)</ldp-session-authentication>
+    <ldp-graceful-restart-local>disabled</ldp-graceful-restart-local>
+    <ldp-local-helper-mode>enabled</ldp-local-helper-mode>
+    <ldp-graceful-restart-remote>disabled</ldp-graceful-restart-remote>
+    <ldp-remote-helper-mode>enabled</ldp-remote-helper-mode>
+    <ldp-local-maximum-reconnect>120000</ldp-local-maximum-reconnect>
+    <ldp-local-maximum-recovery>240000</ldp-local-maximum-recovery>
+    <ldp-local-label-adv-mode>Downstream unsolicited</ldp-local-label-adv-mode>
+    <ldp-remote-label-adv-mode>Downstream unsolicited</ldp-remote-label-adv-mode>
+    <ldp-neg-label-adv-mode>Downstream unsolicited</ldp-neg-label-adv-mode>
+    <ldp-mtu-discovery>disabled</ldp-mtu-discovery>
+    <ldp-session-nsr-state>Not in sync</ldp-session-nsr-state>
+    <ldp-session-address>
+        <interface-address>10.0.0.6</interface-address>
+        <interface-address>10.1.1.14</interface-address>
+    </ldp-session-address>
+</ldp-session>
+<ldp-session>
+    <ldp-neighbor-address>10.0.0.7</ldp-neighbor-address>
+    <ldp-session-state>Operational</ldp-session-state>
+    <ldp-connection-state>Open</ldp-connection-state>
+    <ldp-remaining-time>23</ldp-remaining-time>
+    <ldp-session-adv-mode>DU</ldp-session-adv-mode>
+    <ldp-session-id>10.0.0.1:0--10.0.0.7:0</ldp-session-id>
+    <ldp-keepalive-time>3</ldp-keepalive-time>
+    <ldp-session-role>Passive</ldp-session-role>
+    <ldp-session-max-pdu>4096</ldp-session-max-pdu>
+    <ldp-holdtime>30</ldp-holdtime>
+    <ldp-neighbor-count>2</ldp-neighbor-count>
+    <ldp-neighbor-types>
+        <ldp-neighbor-type>discovered</ldp-neighbor-type>
+        <ldp-neighbor-type>configured-layer2</ldp-neighbor-type>
+    </ldp-neighbor-types>
+    <ldp-keepalive-interval>10</ldp-keepalive-interval>
+    <ldp-retry-interval>1</ldp-retry-interval>
+    <ldp-local-address>10.0.0.1</ldp-local-address>
+    <ldp-remote-address>10.0.0.7</ldp-remote-address>
+    <ldp-up-time>5w2d 00:02:06</ldp-up-time>
+    <ldp-session-capabilities-advertised>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-advertised>
+    <ldp-session-capabilities-received>
+        <ldp-capability>none</ldp-capability>
+    </ldp-session-capabilities-received>
+    <ldp-session-protection>
+        <ldp-session-protection-state>disabled</ldp-session-protection-state>
+    </ldp-session-protection>
+    <ldp-session-flags>
+        <ldp-session-flag>none</ldp-session-flag>
+    </ldp-session-flags>
+    <ldp-session-authentication>MD5 (10.0.0.0/24)</ldp-session-authentication>
+    <ldp-graceful-restart-local>disabled</ldp-graceful-restart-local>
+    <ldp-local-helper-mode>enabled</ldp-local-helper-mode>
+    <ldp-graceful-restart-remote>disabled</ldp-graceful-restart-remote>
+    <ldp-remote-helper-mode>enabled</ldp-remote-helper-mode>
+    <ldp-local-maximum-reconnect>120000</ldp-local-maximum-reconnect>
+    <ldp-local-maximum-recovery>240000</ldp-local-maximum-recovery>
+    <ldp-local-label-adv-mode>Downstream unsolicited</ldp-local-label-adv-mode>
+    <ldp-remote-label-adv-mode>Downstream unsolicited</ldp-remote-label-adv-mode>
+    <ldp-neg-label-adv-mode>Downstream unsolicited</ldp-neg-label-adv-mode>
+    <ldp-mtu-discovery>disabled</ldp-mtu-discovery>
+    <ldp-session-nsr-state>Not in sync</ldp-session-nsr-state>
+    <ldp-session-address>
+        <interface-address>10.0.0.7</interface-address>
+        <interface-address>10.1.1.18</interface-address>
+    </ldp-session-address>
+</ldp-session>
+</ldp-session-information>

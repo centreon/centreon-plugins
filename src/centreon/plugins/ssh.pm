@@ -25,7 +25,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
@@ -40,22 +40,22 @@ sub new {
     }
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::sshcli',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::sshcli',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::sshcli'."
     );
     $self->{backend_sshcli} = centreon::plugins::backend::ssh::sshcli->new(%options);
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::plink',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::plink',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::plink'."
     );
     $self->{backend_plink} = centreon::plugins::backend::ssh::plink->new(%options);
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output},
-        module => 'centreon::plugins::backend::ssh::libssh',
+        output    => $options{output},
+        module    => 'centreon::plugins::backend::ssh::libssh',
         error_msg => "Cannot load module 'centreon::plugins::backend::ssh::libssh'."
     );
     $self->{backend_libssh} = centreon::plugins::backend::ssh::libssh->new(%options);
@@ -68,7 +68,11 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{ssh_backend} = $options{option_results}->{ssh_backend};
-    $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : 22;
+    my $default_port = 22;
+    if (defined($options{default_ssh_port}) && $options{default_ssh_port} =~ /\d+/) {
+        $default_port = $options{default_ssh_port};
+    }
+    $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : $default_port;
     $self->{ssh_backend} = 'sshcli'
         if (!defined($options{option_results}->{ssh_backend}) || $options{option_results}->{ssh_backend} eq '');
     if (!defined($self->{'backend_' . $self->{ssh_backend}})) {
@@ -82,6 +86,12 @@ sub get_port {
     my ($self, %options) = @_;
 
     return $self->{ssh_port};
+}
+
+sub get_ssh_backend {
+    my ($self, %options) = @_;
+
+    return $self->{ssh_backend};
 }
 
 sub execute {
@@ -100,7 +110,7 @@ SSH abstraction layer.
 
 =head1 SYNOPSIS
 
-SSH abstraction layer for sscli, plink and libssh backends
+SSH abstraction layer for SSH CLI, Plink and libSSH backends
 
 =head1 SSH GLOBAL OPTIONS
 
@@ -109,7 +119,7 @@ SSH abstraction layer for sscli, plink and libssh backends
 =item B<--ssh-backend>
 
 Define the backend you want to use.
-It can be: sshcli (default), plink and libssh.
+It can be: C<sshcli> (default), C<plink> and C<libssh>.
 
 =item B<--ssh-username>
 
@@ -118,8 +128,8 @@ Define the user name to log in to the host.
 =item B<--ssh-password>
 
 Define the password associated with the user name.
-Cannot be used with the sshcli backend.
-Warning: using a password is not recommended. Use --ssh-priv-key instead.
+Cannot be used with the C<sshcli> backend.
+Warning: using a password is not recommended. Use C<--ssh-priv-key> instead.
 
 =item B<--ssh-port>
 

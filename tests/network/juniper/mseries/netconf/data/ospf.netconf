@@ -1,0 +1,38 @@
+<ospf-neighbor-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+    <ospf-neighbor>
+        <neighbor-address>10.100.25.119</neighbor-address>
+        <interface-name>ae0.0</interface-name>
+        <ospf-neighbor-state>Full</ospf-neighbor-state>
+        <neighbor-id>10.100.24.5</neighbor-id>
+        <neighbor-priority>128</neighbor-priority>
+        <activity-timer>39</activity-timer>
+        <ospf-area>0.0.0.0</ospf-area>
+        <options>0x52</options>
+        <dr-address>0.0.0.0</dr-address>
+        <bdr-address>0.0.0.0</bdr-address>
+        <neighbor-up-time junos:seconds="2700593">
+            4w3d 06:09:53
+        </neighbor-up-time>
+        <neighbor-adjacency-time junos:seconds="2700584">
+            4w3d 06:09:44
+        </neighbor-adjacency-time>
+    </ospf-neighbor>
+    <ospf-neighbor>
+        <neighbor-address>10.100.25.121</neighbor-address>
+        <interface-name>ae1.0</interface-name>
+        <ospf-neighbor-state>Full</ospf-neighbor-state>
+        <neighbor-id>10.100.24.6</neighbor-id>
+        <neighbor-priority>128</neighbor-priority>
+        <activity-timer>32</activity-timer>
+        <ospf-area>0.0.0.0</ospf-area>
+        <options>0x52</options>
+        <dr-address>0.0.0.0</dr-address>
+        <bdr-address>0.0.0.0</bdr-address>
+        <neighbor-up-time junos:seconds="2700593">
+            4w3d 06:09:53
+        </neighbor-up-time>
+        <neighbor-adjacency-time junos:seconds="2700592">
+            4w3d 06:09:52
+        </neighbor-adjacency-time>
+    </ospf-neighbor>
+</ospf-neighbor-information>
