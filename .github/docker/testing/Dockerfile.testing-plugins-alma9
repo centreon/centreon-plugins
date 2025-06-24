@@ -21,20 +21,6 @@ yum install -y nodejs
 npm install -g -D @mockoon/cli
 
 # Add Centreon plugins repositories
-echo -e '[centreon-stable-noarch]\n\
-name=centreon stable noarch\n\
-baseurl=https://packages.centreon.com/ui/native/rpm-standard/24.10/el9/stable/noarch\n\
-enabled=1\n\
-gpgcheck=1\n\
-[centreon-stable]\n\
-name=centreon stable x86_64\n\
-baseurl=https://packages.centreon.com/ui/native/rpm-standard/24.10/el9/stable/x86_64\n\
-enabled=1\n\
-gpgcheck=1\n\
-gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
->> /etc/yum.repos.d/centreon.repo
-
-# Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\
 name=centreon plugins stable x86_64\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/x86_64\n\
@@ -73,7 +59,14 @@ gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
 
-dnf install -y centreon-clib centreon-connector-perl centreon-plugins
+# Add Centreon plugins repositories
+dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el9/centreon-24.10.repo
+dnf update -y
+dnf clean all --enablerepo=*
+dnf install -y centreon-connector-perl
+dnf install -y centreon-clib
+
+dnf update -y
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
@@ -81,3 +74,7 @@ chmod 777 /var/lib/centreon/centplugins/
 dnf clean all
 
 EOF
+
+#CMD snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='/home/code/tests' & sleep 1 && /bin/bash
+
+#WORKDIR /home/code/

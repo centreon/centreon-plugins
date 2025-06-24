@@ -54,7 +54,8 @@ Ctn Cleanup Cache
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
-   log to console    test started
+   Remove Files    /tmp/connector.output.*
+   Remove File     /tmp/connector.log
    Start Connector
 
 Ctn Run Command And Check Result As Regexp
@@ -89,30 +90,10 @@ Ctn Verify Command Output
     ...    values=False
     ...    collapse_spaces=True
 
-
-#Clean Connector Output
-#    [Arguments]    ${text}
-#    ${cleaned}=    Replace String Using Regexp    ${text}    ^\d+\s+    # (empty string)
-#    [Return]    ${cleaned}
-
-
-#Ctn Run Command With Connector And Check Result As Strings
-#    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
-#    Send To Connector    ${tc}    ${command}    ${timeout}
-#    ${output}    Wait For Result    ${tc}    ${timeout}
-#    ${cleaned}    Clean Connector Output    ${output}
-#    Should Be Equal As Strings    ${cleaned}    ${expected_result}
-
-#Ctn Run Command With Connector And Check Result As Strings                        #this is the code that works
-#    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
-#    ${output}    Send To Connector    ${tc}    ${command}    ${timeout}
-#    Log    Original output: ${output}
-#    ${cleaned}    Replace String Using Regexp    ${output}    ^\\d+\\s+    ${EMPTY}
-#    Log    Cleaned output: ${cleaned}
-#    Should Be Equal As Strings    ${cleaned}    ${expected_result}
-
 Ctn Run Command With Connector And Check Result As Strings
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
     Send To Connector    ${tc}    ${command}    ${timeout}
     # 1. Extract the result from the log and write to /tmp/connector.output
     Extract Result From Log    ${tc}
@@ -121,21 +102,3 @@ Ctn Run Command With Connector And Check Result As Strings
     ${output}    Strip String    ${output}
     # 3. Compare with expected
     Should Be Equal As Strings    ${output}    ${expected_result}
-
-#Ctn Run Command With Connector And Check Result As Strings
-#    [Arguments]    ${id}    ${command}    ${expected_result}    ${timeout}=5
-#    Send To Connector    ${id}    ${command}    ${timeout}
-#    ${output}=    Wait For Result    ${id}    ${timeout}
-#    Log    [ID: ${id}] Output: ${output}
-#    Should Contain    ${output}    ${expected_result}
-
-    #recupere le resultat du fichier de log en decoupant le resultat en fonction de l'id je doit recevoir le resultat de la commande
-
-Ctn Run Command With Connector And Wait For Result
-    [Arguments]    ${id}    ${command}    ${timeout}
-    Send To Connector    ${id}    ${command}    ${timeout}
-
-    #surveillez le fichier de logs jusqu'a en retrouve le resultat de la commande dont l'id et $id
-    # attendre la reponse dans le logs 
-    #retorner l output propre sans id 'nettoiez la ligne san id sans numero'
-

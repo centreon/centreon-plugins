@@ -95,12 +95,17 @@ def stop_connector():
     else:
         print("No connector to stop.")
 
-def send_to_connector(idf: int, command: str, timeout: int = 5, output_file="/tmp/connector.output", command_log="/tmp/connector.commands.log"):
+def send_to_connector(idf: int, command: str, timeout: int = 5, output_file=None, command_log="/tmp/connector.commands.log"):
     global connector
     if connector:
         connector.send_to_connector(idf, command, timeout, command_log)
         # Capture the output line after sending command
+        output_file = output_file or f"/tmp/connector.output.{idf}"
         line = connector.write_next_output_to_file(output_file)
+        # Copy per-test file to common output
+        if output_file != "/tmp/connector.output":
+            import shutil
+            shutil.copyfile(output_file, "/tmp/connector.output")
         return line  # Return the actual line written!
     else:
         raise RuntimeError("Connector is not running.")
@@ -130,7 +135,7 @@ def clean_connector_output(line):
     print(f"CLEANED: {repr(cleaned)}")
     return cleaned
 
-def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path="/tmp/connector.output"):
+def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
     """
     Find the line with 'reporting check result' and the right check id.
     Write the 'output:' content to output_path.
@@ -143,14 +148,19 @@ def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path="/tmp
                 found_id, output = m.group(1), m.group(2).strip()
                 if str(found_id) == str(tc):
                     # Write the output to the file
+                    output_path = output_path or f"/tmp/connector.output.{tc}"
                     with open(output_path, 'w') as out:
                         out.write(output + "\n")
+                                # Also copy to shared output
+                    if output_path != "/tmp/connector.output":
+                        import shutil
+                        shutil.copyfile(output_path, "/tmp/connector.output")
                     return output
-    # If not found, raise or return None
-    raise Exception(f"No result found for id {tc} in log {log_path}")
+            # If not found, raise or return None
+        raise Exception(f"No result found for id {tc} in log {log_path}")
 
 @keyword
-def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path="/tmp/connector.output"):
+def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
     """
     Find the line with 'reporting check result' and the right check id.
     Write the 'output:' content to output_path.
@@ -162,7 +172,12 @@ def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path="/tmp
             if m:
                 found_id, output = m.group(1), m.group(2).strip()
                 if str(found_id) == str(tc):
+                    output_path = output_path or f"/tmp/connector.output.{tc}"
                     with open(output_path, 'w') as out:
                         out.write(output + "\n")
+                                # Also copy to shared output
+                    if output_path != "/tmp/connector.output":
+                        import shutil
+                        shutil.copyfile(output_path, "/tmp/connector.output")
                     return output
-    raise Exception(f"No result found for id {tc} in log {log_path}")
+        raise Exception(f"No result found for id {tc} in log {log_path}")
