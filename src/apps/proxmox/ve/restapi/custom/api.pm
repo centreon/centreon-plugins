@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use centreon::plugins::misc;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 
@@ -149,7 +150,7 @@ sub get_ticket {
         my $post_data = 'username=' . $self->{api_username} .
             '&password=' . $self->{api_password} .
             '&realm=' . $self->{realm};
-        
+
         $self->settings();
 
         my $content = $self->{http}->request(
@@ -186,16 +187,17 @@ sub request_api {
     if (!defined($self->{ticket})) {
         $self->{ticket} = $self->get_ticket(statefile => $self->{cache});
     }
-
     $self->settings();
 
     my $content = $self->{http}->request(%options);
-
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
+        # When silently_fail is set we ignore errors
+        return undef if $options{silently_fail};
+
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
@@ -216,7 +218,7 @@ sub get_version {
 
 sub internal_api_list_vms {
     my ($self, %options) = @_;
-    
+
     my $vm = $self->request_api(method => 'GET', url_path =>'/api2/json/cluster/resources?type=vm');
     return $vm;
 }
@@ -242,7 +244,7 @@ sub api_list_vms {
 
 sub internal_api_list_nodes {
     my ($self, %options) = @_;
-    
+
     my $nodes = $self->request_api(method => 'GET', url_path =>'/api2/json/cluster/resources?type=node');
     return $nodes;
 }
@@ -348,6 +350,91 @@ sub cache_storages {
     }
 
     return $storages;
+}
+
+sub internal_api_get_network_interfaces {
+    my ($self, %options) = @_;
+
+    # We use the silently_fail option because when we don't want to crash the module when QEMU agent is not running
+    # In this case we simply ignore the IP retrieval
+    my $vm_network = $self->request_api(method => 'GET',
+                                        url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/network-get-interfaces',
+                                        silently_fail => 1);
+
+    return $vm_network;
+}
+
+sub internal_api_get_osinfo {
+    my ($self, %options) = @_;
+
+    # We use the silently_fail option because when we don't want to crash the module when QEMU agent is not running
+    # In this case we simply ignore the osinfo retrieval
+    my $vm_osinfo = $self->request_api(method => 'GET',
+                                       url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/get-osinfo',
+                                       silently_fail => 1);
+    return $vm_osinfo;
+}
+
+sub api_get_osinfo {
+    my ($self, %options) = @_;
+
+    my $vm_osinfo = $self->internal_api_get_osinfo(node_id => $options{Node}, vm_id => $options{Vmid});
+
+    unless ($vm_osinfo && ref $vm_osinfo eq 'HASH') {
+        return { PrettyName => '', Name => '', Version => '', Machine => '', Kernel => ''}
+    }
+
+    # Defined values depend on the guest OS
+    return { PrettyName => $vm_osinfo->{'pretty-name'} // $vm_osinfo->{name} // '',
+             Name => $vm_osinfo->{name} // '',
+             Version => $vm_osinfo->{'version-id'} // $vm_osinfo->{'version'} // '',
+             Machine => $vm_osinfo->{'machine'} // '',
+             Kernel => $vm_osinfo->{'kernel-release'} // $vm_osinfo->{'build-id'} // '',
+         }
+}
+
+sub api_get_network_interfaces {
+    my ($self, %options) = @_;
+
+    my $vm_network = $self->internal_api_get_network_interfaces(node_id => $options{Node}, vm_id => $options{Vmid});
+    return  unless $vm_network && ref $vm_network eq 'ARRAY';
+
+    # We returns only IPv4 addresses
+    # We also sort IPs to return public IPs first, then local IPs, and loopback addresses last
+    my @ips_loop, @ips_local, @ips_public, @ips_interface;
+    my %hash_ips_by_interface;
+    foreach my $interface (@$vm_network) {
+        next unless $interface->{'ip-addresses'} && ref $interface->{'ip-addresses'} eq 'ARRAY';
+
+        foreach my $ip (@{$interface->{'ip-addresses'}}) {
+            next unless $ip->{'ip-address'};
+            next if $ip->{'ip-address-type'} && $ip->{'ip-address-type'} !~ /ipv4/i;
+            my $name = $interface->{'name'} // '';
+
+            my $ip_loopback = ($ip->{'ip-adress'} =~ /^127\./ || $name =~ /^lo$/i) ? 1 : 0;
+
+            my $ip_local = $ip_loopback || centreon::plugins::misc::is_local_ip($ip->{'ip-address'});
+
+            $hash_ips_by_interface{$name} = { address => $ip->{'ip-address'}, local => $ip_local, loopback => $ip_loopback }
+                unless $hash_ips_by_interface{$name};
+
+            if ($ip_loopback) {
+                push @ips_loop, $ip->{'ip-address'};
+            } elsif ($ip_local) {
+                push @ips_local, $ip->{'ip-address'};
+            } else {
+                push @ips_public, $ip->{'ip-address'};
+            }
+        }
+    }
+
+    @ips_loop = sort centreon::plugins::misc::sort_ips @ips_loop;
+    @ips_local = sort centreon::plugins::misc::sort_ips @ips_local;
+    @ips_public = sort centreon::plugins::misc::sort_ips @ips_public;
+
+    @ips_interface = map { { interface => $_, %{$hash_ips_by_interface{$_}} } } sort keys %hash_ips_by_interface;
+
+    return [ @ips_public, @ips_local, @ips_loop ], \@ips_interface;
 }
 
 sub internal_api_get_vm_stats {
