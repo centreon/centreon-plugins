@@ -106,7 +106,7 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' }}
         run: |
-          PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ needs.changes.outputs.common == 'true' }}')"
+          PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ needs.changes.outputs.changes_common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
           if [ "$PLUGINS" == '' ]; then
