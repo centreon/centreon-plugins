@@ -411,7 +411,7 @@ sub api_get_network_interfaces {
             next if $ip->{'ip-address-type'} && $ip->{'ip-address-type'} !~ /ipv4/i;
             my $name = $interface->{'name'} // '';
 
-            my $ip_loopback = ($ip->{'ip-adress'} =~ /^127\./ || $name =~ /^lo$/i) ? 1 : 0;
+            my $ip_loopback = ($ip->{'ip-address'} =~ /^127\./ || $name =~ /^lo$/i) ? 1 : 0;
 
             my $ip_local = $ip_loopback || centreon::plugins::misc::is_local_ip($ip->{'ip-address'});
 

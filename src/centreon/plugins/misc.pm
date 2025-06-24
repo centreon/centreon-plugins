@@ -1331,7 +1331,7 @@ Encodes an object to a JSON string.
 
     my $is_local = centreon::plugins::misc::is_local_ip($ip);
 
-Returns 1 if an IPv4 ip is within a local address range.
+Returns 1 if an IPv4 IP is within a local address range.
 
 =over 4
 
@@ -1348,7 +1348,7 @@ Returns a sorted array.
 
 =over 4
 
-=item * C<@array> - An array containing ips to be sorted.
+=item * C<@array> - An array containing IPs to be sorted.
 
 =back
 
