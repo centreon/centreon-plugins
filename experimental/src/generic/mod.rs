@@ -170,11 +170,10 @@ impl Command {
         }
     }
 
-    pub fn execute(&self, target: &str, version: &str, community: &str) -> Result<CmdResult> {
+    fn execute_collect(&self, target: &str, version: &str, community: &str) -> Vec<SnmpResult> {
+        let mut collect: Vec<SnmpResult> = Vec::new();
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
-        let mut collect = Vec::new();
-
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
@@ -199,6 +198,11 @@ impl Command {
             let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
             collect.push(r);
         }
+        collect
+    }
+
+    pub fn execute(&self, target: &str, version: &str, community: &str) -> Result<CmdResult> {
+        let mut collect = self.execute_collect(target, version, community);
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
