@@ -17,6 +17,7 @@ use crate::snmp::SnmpResult;
 pub struct Perfdata<'p> {
     pub name: String,
     pub value: f64,
+    pub uom: &'p str,
     pub min: Option<f64>,
     pub max: Option<f64>,
     pub warning: Option<&'p str>,
@@ -170,7 +171,12 @@ impl Command {
         }
     }
 
-    fn execute_collect(&self, target: &str, version: &str, community: &str) -> Vec<SnmpResult> {
+    fn execute_snmp_collect(
+        &self,
+        target: &str,
+        version: &str,
+        community: &str,
+    ) -> Vec<SnmpResult> {
         let mut collect: Vec<SnmpResult> = Vec::new();
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
@@ -202,7 +208,7 @@ impl Command {
     }
 
     pub fn execute(&self, target: &str, version: &str, community: &str) -> Result<CmdResult> {
-        let mut collect = self.execute_collect(target, version, community);
+        let mut collect = self.execute_snmp_collect(target, version, community);
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
@@ -264,6 +270,7 @@ impl Command {
                         let m = Perfdata {
                             name,
                             value: *item,
+                            uom: &metric.uom,
                             min: compute_threshold(i, &min),
                             max: compute_threshold(i, &max),
                             warning: w,
@@ -297,6 +304,7 @@ impl Command {
                     let m = Perfdata {
                         name,
                         value: *s,
+                        uom: &metric.uom,
                         min: compute_threshold(0, &min),
                         max: compute_threshold(0, &max),
                         warning: w,
@@ -375,6 +383,7 @@ impl Command {
                             let m = Perfdata {
                                 name,
                                 value: *item,
+                                uom: &metric.uom,
                                 min,
                                 max,
                                 warning: w,
@@ -399,6 +408,7 @@ impl Command {
                         let m = Perfdata {
                             name: name.to_string(),
                             value: *s,
+                            uom: &metric.uom,
                             min,
                             max,
                             warning: w,
