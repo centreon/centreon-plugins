@@ -1,6 +1,6 @@
 extern crate criterion;
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 
 fn average_for(v: &Vec<f64>) -> f64 {
@@ -14,11 +14,7 @@ fn average_for(v: &Vec<f64>) -> f64 {
         }
     }
 
-    if count == 0 {
-        0.0
-    } else {
-        sum / count as f64
-    }
+    if count == 0 { 0.0 } else { sum / count as f64 }
 }
 
 fn average_fold(v: &Vec<f64>) -> f64 {
@@ -27,11 +23,7 @@ fn average_fold(v: &Vec<f64>) -> f64 {
         .filter(|x| !x.is_nan())
         .fold((0.0, 0), |(s, c), &x| (s + x, c + 1));
 
-    if count == 0 {
-        0.0
-    } else {
-        sum / count as f64
-    }
+    if count == 0 { 0.0 } else { sum / count as f64 }
 }
 
 fn benchmark_averages(c: &mut Criterion) {
