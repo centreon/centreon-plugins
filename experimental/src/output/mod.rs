@@ -99,9 +99,10 @@ impl<'a> OutputFormatter<'a> {
             .iter()
             .map(|m| {
                 format!(
-                    "{}={};{};{};{};{}",
+                    "{}={}{};{};{};{};{}",
                     m.name,
                     float_string(&m.value),
+                    m.uom,
                     m.warning.unwrap_or(""),
                     m.critical.unwrap_or(""),
                     match m.min {

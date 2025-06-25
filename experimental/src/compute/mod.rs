@@ -17,7 +17,8 @@ pub struct Metric {
     pub name: String,
     pub prefix: Option<String>,
     pub value: String,
-    uom: Option<String>,
+    #[serde(default = "empty_string")]
+    pub uom: String,
     pub min_expr: Option<String>,
     pub min: Option<f64>,
     pub max_expr: Option<String>,
@@ -26,6 +27,10 @@ pub struct Metric {
     pub threshold_suffix: Option<String>,
     pub warning: Option<String>,
     pub critical: Option<String>,
+}
+
+fn empty_string() -> String {
+    "".to_string()
 }
 
 #[derive(Deserialize, Debug)]
