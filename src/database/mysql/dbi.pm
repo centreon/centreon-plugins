@@ -36,9 +36,8 @@ sub set_version {
 
     $self->{is_mariadb} = 0;
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
-    # MariaDB: 5.5.5-10.1.36-MariaDB or 10.1.36-MariaDB
-    if ($self->{version} =~ /([0-9\.]*?)-MariaDB/i) {
-        $self->{version} = $1;
+    # MariaDB: 5.5.5-10.1.36-MariaDB, 10.1.36-MariaDB or 11.4.4-2-MariaDB-enterprise-log
+    if ($self->{version} =~ /(?:\d\.\d\.\d-)?(\d+\.\d+\.\d+).*MariaDB/i) {
         $self->{is_mariadb} = 1;
     }
 }
