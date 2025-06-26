@@ -1,0 +1,308 @@
+name: Workflow incident tracking
+description: Create Jira ticket on incident
+
+inputs:
+  jira_base_url:
+    required: true
+    description: jira base url
+  jira_user_email:
+    required: true
+    description: jira user email
+  jira_api_token:
+    required: true
+    description: jira api token
+  module_name:
+    required: true
+    description: module name
+  ticket_labels:
+    required: true
+    description: ticket labels, usually Pipeline + Nightly/Veracode + x
+    default: 'Pipeline'
+  ticket_squad:
+    required: true
+    description: id of the squad to assign the ticket to
+    default: 'DevSecOps'
+
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+    - name: Get ticket elements from context
+      id: get_context
+      run: |
+        # Safely set/unset IFS in order to properly parse the table of labels
+        [ -n "${IFS+set}" ] && saved_IFS=$IFS
+        IFS=', ' read -a ticket_labels <<< $(echo "${{ inputs.ticket_labels }}" | tr -d "[],'")
+        unset IFS
+        [ -n "${saved_IFS+set}" ] && { IFS=$saved_IFS; unset saved_IFS; }
+
+        # Change the context elements (summary, parent epic, etc.) that are checked depending on these ticket labels
+        if [[ "${ticket_labels[@]}" =~ "Nightly" ]]; then
+          parent_epic_id=206242
+          parent_epic_key="MON-151547"
+          ticket_summary="$(date '+%Y-%m-%d') ${{ inputs.module_name }}-${{ github.ref_name }} nightly build failure"
+
+          JSON_TEMPLATE_FILE="./.github/actions/create-jira-ticket/nightly-ticket-template.json"
+          sed -i \
+            -e 's|@MODULE_NAME@|${{ inputs.module_name }}|g' \
+            -e "s|@DATE@|$(date '+%Y-%m-%d')|g" $JSON_TEMPLATE_FILE
+
+        else
+          echo "::error::Cannot find a valid labelling option for the ticket."
+          exit 1
+        fi
+
+        case "${{ inputs.ticket_squad }}" in
+          "DevSecOps")
+            ticket_squad_id=10524
+            ticket_board_id=184
+            squad_name="DEVSECOPS"
+            project_name="MON"
+            ;;
+          "Connectors")
+            ticket_squad_id=10504
+            ticket_board_id=222
+            squad_name="CONNECTORS"
+            project_name="CTOR"
+          *)
+            echo "::error::Cannot find a valid squad for value ${{ inputs.ticket_squad }}."
+            exit 1
+            ;;
+        esac
+
+        echo "Ticket will be assigned to the $squad_name team."
+
+        current_sprint=$(curl --request GET \
+          --url ${{ inputs.jira_base_url }}/rest/agile/1.0/board/$ticket_board_id/sprint?state=active \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header "Accept: application/json" | jq --arg squad_name "$squad_name" '.values[] | select(.name | test($squad_name; "i")) | .id')
+
+        echo "[DEBUG] current_sprint: $current_sprint"
+
+        # General updates on all template files
+        sed -i \
+          -e 's|@GITHUB_BRANCH@|${{ github.base_ref || github.ref_name }}|g' \
+          -e 's|@GITHUB_SERVER_URL@|${{ github.server_url }}|g' \
+          -e 's|@GITHUB_REPOSITORY@|${{ github.repository }}|g' \
+          -e 's|@GITHUB_RUN_ID@|${{ github.run_id }}|g' \
+          -e 's|@GITHUB_RUN_ATTEMPT@|${{ github.run_attempt }}|g' $JSON_TEMPLATE_FILE
+
+        echo "parent_epic_id=$parent_epic_id" >> $GITHUB_OUTPUT
+        echo "parent_epic_key=$parent_epic_key" >> $GITHUB_OUTPUT
+        echo "ticket_summary=$ticket_summary" >> $GITHUB_OUTPUT
+        echo "ticket_board_id=$ticket_board_id" >> $GITHUB_OUTPUT
+        echo "ticket_squad_id=$ticket_squad_id" >> $GITHUB_OUTPUT
+        echo "project_name=$project_name" >> $GITHUB_OUTPUT
+        echo "current_sprint=$current_sprint" >> $GITHUB_OUTPUT
+        echo "json_template_file=$JSON_TEMPLATE_FILE" >> $GITHUB_OUTPUT
+
+        cat $JSON_TEMPLATE_FILE
+        cat $GITHUB_OUTPUT
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Check if the ticket already exists
+      id: check_ticket
+      run: |
+        # Checking if an incident ticket already exists
+        response=$(curl \
+          --write-out "%{http_code}" \
+          --request POST \
+          --url "${{ inputs.jira_base_url }}/rest/api/3/search" \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header "Accept:application/json" \
+          --header "Content-Type:application/json" \
+          --data '{
+              "fields": ["summary"],
+              "jql": "project = ${{ steps.get_context.outputs.project_name }} AND parentEpic = ${{ steps.get_context.outputs.parent_epic_key }} AND issueType = Technical AND summary ~ \"${{ steps.get_context.outputs.ticket_summary }}\" AND component = \"${{ inputs.module_name }}\" AND resolution = unresolved ORDER BY key ASC",
+              "maxResults": 1
+            }'
+          )
+        echo "[DEBUG] $response"
+
+        if [[ $(echo "$response" | tr -d '\n' | tail -c 3) -ne 200 ]]; then
+          echo "::error:: Jira API request was not completed properly."
+        fi
+
+        ticket_key=$(echo "$response" | head -c -4 | jq .issues[0].key | xargs)
+        if [[ "$ticket_key" != "null" ]]; then
+          echo "abort_ticket_creation=true" >> $GITHUB_ENV
+          echo "ticket_key=$ticket_key" >> $GITHUB_ENV
+          echo "::notice::ticket found as $ticket_key aborting ticket creation"
+        fi
+      shell: bash
+
+    - name: Update existing nightly Jira ticket
+      if: |
+        env.abort_ticket_creation == 'true' &&
+        contains(steps.get_context.outputs.parent_epic_key, 'MON-151547')
+      run: |
+        # Adding failed job labels for already existing ticket
+        [ -n "${IFS+set}" ] && saved_IFS=$IFS
+        IFS=', ' read -a ticket_labels <<< $(echo "${{ inputs.ticket_labels }}" | tr -d "[],'")
+        unset IFS
+        [ -n "${saved_IFS+set}" ] && { IFS=$saved_IFS; unset saved_IFS; }
+
+        for label in ${ticket_labels[@]}; do
+          response=$(curl \
+            --request PUT \
+            --url "${{ inputs.jira_base_url }}/rest/api/3/issue/${{ env.ticket_key }}" \
+            --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --data "{ \"update\": { \"labels\": [ { \"add\": \"$label\" } ] } }"
+            )
+        done
+
+        ticket_description=$(curl --request GET \
+          --url "${{ inputs.jira_base_url }}/rest/api/3/issue/${{ env.ticket_key }}" \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header "Accept: application/json" | jq '.fields.description')
+
+        mapfile -t jobs_failed < <(gh run view ${{ github.run_id }} --json jobs -q '.jobs[] | select(.conclusion == "failure") | .name')
+        echo "[DEBUG] - jobs failed for component ${FAILED_COMPONENTS[index]}: $jobs_failed"
+
+        new_list_of_failed_jobs=$(for job in "${jobs_failed[@]}"; do
+          cat <<EOF
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "$job"
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+          done | jq -s '.'
+        )
+
+        updated_ticket_description=$(echo "$ticket_description" | jq --argjson new_list_of_failed_jobs "$new_list_of_failed_jobs" '
+          (.content[] | select(.type == "bulletList") | .content) = $new_list_of_failed_jobs
+        ')
+
+        echo "[DEBUG] - updated_ticket_description = $updated_ticket_description"
+
+        curl --request PUT \
+          --url "${{ inputs.jira_base_url }}/rest/api/3/issue/${{ env.ticket_key }}" \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header "Accept: application/json" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"fields\": {
+              \"description\": $updated_ticket_description
+            }
+          }"
+
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Create Jira Issue
+      if: ${{ env.abort_ticket_creation != 'true' }}
+      run: |
+        # Get the name of the current job and list it
+        failed_job_name=$(gh run view ${{ github.run_id }} --json jobs | jq -r --arg job_name "${{ github.job }}" '.jobs[] | select(.name == $job_name) | .name')
+
+        CONTENT_TO_ADD_TO_TEMPLATE_FILE=$(jq -n --arg job "$failed_job_name" '{
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": $job
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }')
+
+        echo "[DEBUG] - CONTENT_TO_ADD_TO_TEMPLATE_FILE: $CONTENT_TO_ADD_TO_TEMPLATE_FILE"
+
+        TEMPLATE_FILE=$(cat ${{ steps.get_context.outputs.json_template_file }})
+        UPDATED_TEMPLATE_FILE=$(jq --argjson NEW_CONTENT "$CONTENT_TO_ADD_TO_TEMPLATE_FILE" '.content += [$NEW_CONTENT]' <<< "$TEMPLATE_FILE")
+
+        # Creating a new incident ticket on Jira
+        DATA=$( cat <<-EOF
+        {
+          "fields": {
+            "summary": "${{ steps.get_context.outputs.ticket_summary }}",
+            "project": {"key": "${{ steps.get_context.outputs.project_name }}"},
+            "issuetype": {"id": "10209"},
+            "parent": {"id": "${{ steps.get_context.outputs.parent_epic_id }}", "key": "${{ steps.get_context.outputs.parent_epic_key }}"},
+            "labels": ${{ inputs.ticket_labels }},
+            "components":[{"name": "${{ inputs.module_name }}"}],
+            "customfield_10902": {"id": "${{ steps.get_context.outputs.ticket_squad_id }}", "value": "${{ inputs.ticket_squad }}"},
+            "description": $UPDATED_TEMPLATE_FILE
+          }
+        }
+        EOF
+        )
+
+        if [[ ${{ steps.get_context.outputs.current_sprint }} != "null" ]]; then
+          DATA=$(echo "$DATA" | jq '.fields.customfield_10007 = ${{ steps.get_context.outputs.current_sprint }}')
+        fi
+        echo "[DEBUG] - DATA: $DATA"
+
+        response=$(curl \
+          --request POST \
+          --url "${{ inputs.jira_base_url }}/rest/api/3/issue" \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: application/json' \
+          --data "$DATA")
+
+        if [ $? -ne 0 ]; then
+          echo "::error::Failed to create ticket: $response"
+          exit 1
+        fi
+
+        echo $response
+
+        ticket_key=$(echo "$response" | jq -r .key)
+        echo "::notice::Created ticket: $ticket_key"
+
+        # Update priority on newly created ticket since you cannot create a ticket with another priority than medium
+        response=$(curl \
+          --request PUT \
+          --url "${{ inputs.jira_base_url }}/rest/api/3/issue/$ticket_key" \
+          --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: application/json' \
+          --data '{ "fields": { "priority": { "id": "1" } } }'
+        )
+
+        echo $response
+
+        # Update ticket status so that squad members can see it in their respective sprints
+        for transition_id in 11 21; do
+          response=$(curl \
+            --request POST \
+            --url "${{ inputs.jira_base_url }}/rest/api/latest/issue/$ticket_key/transitions" \
+            --user "${{ inputs.jira_user_email }}:${{ inputs.jira_api_token }}" \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --data "{\"transition\": {\"id\": \"$transition_id\"} }"
+          )
+
+          echo $response
+        done
+
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
