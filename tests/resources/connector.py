@@ -10,7 +10,7 @@ class ConnectorLibrary:
     def __init__(self):
         self.process = None
 
-    def start_connector(self, command=["/usr/lib64/centreon-connector/centreon_connector_perl", "--log-file=/tmp/connector.log", "--debug"]):
+    def ctn_start_connector(self, command=["/usr/lib64/centreon-connector/centreon_connector_perl", "--log-file=/tmp/connector.log", "--debug"]):
         if self.process is None or self.process.poll() is not None:
             self.process = subprocess.Popen(
                 command,
@@ -20,7 +20,7 @@ class ConnectorLibrary:
             )
             print("Connector started")
 
-    def send_to_connector(self, idf: int, command: str, timeout: int, command_log="/tmp/connector.commands.log"):
+    def ctn_send_to_connector(self, idf: int, command: str, timeout: int, command_log="/tmp/connector.commands.log"):
         now = int(time.time())
 
         # Log to console
@@ -46,7 +46,7 @@ class ConnectorLibrary:
         else:
             raise RuntimeError("Connector is not running.")
 
-    def write_next_output_to_file(self, output_file="/tmp/connector.output"):
+    def ctn_write_next_output_to_file(self, output_file="/tmp/connector.output"):
         """
         Reads the next line from the connector's stdout and appends it to output_file.
         """
@@ -58,13 +58,13 @@ class ConnectorLibrary:
                 return line
         return None
 
-    def stop_connector(self):
+    def ctn_stop_connector(self):
         if self.process:
             self.process.terminate()
             self.process = None
             print("Connector stopped")
 
-def wait_for_output_file(output_file="/tmp/connector.output", timeout=10, poll_interval=0.2):
+def ctn_wait_for_output_file(output_file="/tmp/connector.output", timeout=10, poll_interval=0.2):
     end_time = time.time() + timeout
     while time.time() < end_time:
         if os.path.exists(output_file):
@@ -72,8 +72,8 @@ def wait_for_output_file(output_file="/tmp/connector.output", timeout=10, poll_i
         time.sleep(poll_interval)
     raise FileNotFoundError(f"Output file {output_file} not found after {timeout} seconds")
 
-def read_from_output_file(idf: int, output_file="/tmp/connector.output", wait_timeout=10):
-    wait_for_output_file(output_file, wait_timeout)
+def ctn_read_from_output_file(idf: int, output_file="/tmp/connector.output", wait_timeout=10):
+    ctn_wait_for_output_file(output_file, wait_timeout)
     with open(output_file, "r") as f:
         lines = f.readlines()
     for line in lines:
@@ -81,27 +81,27 @@ def read_from_output_file(idf: int, output_file="/tmp/connector.output", wait_ti
             return line.strip().split(" ", 1)[1]
     return None
 
-def start_connector():
+def ctn_start_connector():
     global connector
     connector = ConnectorLibrary()
-    connector.start_connector()
+    connector.ctn_start_connector()
     return connector
 
-def stop_connector():
+def ctn_stop_connector():
     global connector
     if connector:
-        connector.stop_connector()
+        connector.ctn_stop_connector()
         connector = None
     else:
         print("No connector to stop.")
 
-def send_to_connector(idf: int, command: str, timeout: int = 5, output_file=None, command_log="/tmp/connector.commands.log"):
+def ctn_send_to_connector(idf: int, command: str, timeout: int = 5, output_file=None, command_log="/tmp/connector.commands.log"):
     global connector
     if connector:
-        connector.send_to_connector(idf, command, timeout, command_log)
+        connector.ctn_send_to_connector(idf, command, timeout, command_log)
         # Capture the output line after sending command
         output_file = output_file or f"/tmp/connector.output.{idf}"
-        line = connector.write_next_output_to_file(output_file)
+        line = connector.ctn_write_next_output_to_file(output_file)
         # Copy per-test file to common output
         if output_file != "/tmp/connector.output":
             import shutil
@@ -111,16 +111,16 @@ def send_to_connector(idf: int, command: str, timeout: int = 5, output_file=None
         raise RuntimeError("Connector is not running.")
 
 
-def wait_for_result(idf: int, timeout: int = 5, poll_interval=0.2):
+def ctn_wait_for_result(idf: int, timeout: int = 5, poll_interval=0.2):
     end_time = time.time() + timeout
     while time.time() < end_time:
-        result = read_from_output_file(idf)
+        result = ctn_read_from_output_file(idf)
         if result:
             return result
         time.sleep(poll_interval)
     raise TimeoutError(f"No result found for id {idf} within {timeout} seconds.")
 
-def clean_connector_output(line):
+def ctn_clean_connector_output(line):
     if not isinstance(line, str):
         line = str(line)
     line = line.strip()
@@ -135,7 +135,7 @@ def clean_connector_output(line):
     print(f"CLEANED: {repr(cleaned)}")
     return cleaned
 
-def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
+def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
     """
     Find the line with 'reporting check result' and the right check id.
     Write the 'output:' content to output_path.
@@ -160,7 +160,7 @@ def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None)
         raise Exception(f"No result found for id {tc} in log {log_path}")
 
 @keyword
-def extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
+def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
     """
     Find the line with 'reporting check result' and the right check id.
     Write the 'output:' content to output_path.

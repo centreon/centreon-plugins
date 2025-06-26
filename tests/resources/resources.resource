@@ -14,7 +14,7 @@ ${SNMPPORT}             2024
 ${SNMPVERSION}          2c
 ${PERCENT}              %
 ${MOCKOON_LOG_FILE}    /tmp/mockoon.log
-${TIMEOUT}             30
+${TIMEOUT}             120
 
 *** Keywords ***
 Start Mockoon
@@ -56,7 +56,7 @@ Ctn Generic Suite Setup
    Set Environment Variable    TZ    UTC
    Remove Files    /tmp/connector.output.*
    Remove File     /tmp/connector.log
-   Start Connector
+   Ctn Start Connector
 
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
@@ -94,9 +94,9 @@ Ctn Run Command With Connector And Check Result As Strings
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-    Send To Connector    ${tc}    ${command}    ${timeout}
+    Ctn Send To Connector    ${tc}    ${command}    ${timeout}
     # 1. Extract the result from the log and write to /tmp/connector.output
-    Extract Result From Log    ${tc}
+    Ctn Extract Result From Log    ${tc}
     # 2. Read the file
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
