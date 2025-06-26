@@ -37,7 +37,9 @@ my %compression_state = (
     1 => 'YES',
     2 => 'NO',
     3 => 'OFF',
-    4 => 'NA'
+    4 => 'NA',
+    5 => 'V1',
+    6 => 'v2'
 );
 
 my %provisioning_type = (
