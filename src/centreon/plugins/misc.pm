@@ -798,6 +798,29 @@ sub json_encode {
     return $encoded;
 }
 
+sub is_local_ip($) {
+    my ($ip) = @_;
+
+    return 0 unless $ip;
+
+    return 1 if $ip =~ /^127\./;
+    return 1 if $ip =~ /^10\./;
+    return 1 if $ip =~ /^192\.168\./;
+    return 1 if $ip =~ /^172\.(1[6-9]|2[0-9]|3[0-1])\./;
+    return 1 if $ip =~ /^169\.254\./;
+    return 1 if $ip eq '0.0.0.0';
+
+    return 0;
+}
+
+# This function is used with "sort", it sorts an array of IP addresses.
+# $_[0] and $_[1] correspond to Perl's special variables $a and $b used by sort.
+# I can't use $a and $b directly here, otherwise Perl generates a warning: "uninitialized value".
+sub sort_ips($$) {
+    my @a = split /\./, $_[0];
+    my @b = split /\./, $_[1];
+    return $a[0] <=> $b[0] || $a[1] <=> $b[1] || $a[2] <=> $b[2] || $a[3] <=> $b[3]
+}
 
 1;
 
@@ -1306,6 +1329,31 @@ Encodes an object to a JSON string.
 =over 4
 
 =item * C<$object> - The object to encode.
+
+=back
+
+=head2 is_local_ip
+
+    my $is_local = centreon::plugins::misc::is_local_ip($ip);
+
+Returns 1 if an IPv4 IP is within a local address range.
+
+=over 4
+
+=item * C<$ip> - IP to test.
+
+=back
+
+=head2 sort_ips
+
+    my @array = ( '192.168.0.3', '127.0.0.1' );
+    @array = sort centreon::plugins::misc::sort_ips @array;
+
+Returns a sorted array.
+
+=over 4
+
+=item * C<@array> - An array containing IPs to be sorted.
 
 =back
 
