@@ -62,11 +62,11 @@ sub manage_selection {
 
         $self->{pods}->{$pod->{metadata}->{uid}} = {
             uid => $pod->{metadata}->{uid},
-            name => $pod->{metadata}->{name},
-            namespace => $pod->{metadata}->{namespace},
-            node => $pod->{spec}->{nodeName},
-            status => $pod->{status}->{phase},
-            ip => $pod->{status}->{podIP},
+            name => $pod->{metadata}->{name} // '',
+            namespace => $pod->{metadata}->{namespace} // '',
+            node => $pod->{spec}->{nodeName} // '',
+            status => $pod->{status}->{phase} // '',
+            ip => $pod->{status}->{podIP} // '',
         }            
     }
 }
@@ -104,11 +104,11 @@ sub disco_show {
     foreach my $pod (sort keys %{$self->{pods}}) {             
         $self->{output}->add_disco_entry(
             uid => $self->{pods}->{$pod}->{uid},
-            name => $self->{pods}->{$pod}->{name} // '',
-            namespace => $self->{pods}->{$pod}->{namespace} // '',
-            node => $self->{pods}->{$pod}->{node} // '',
-            status => $self->{pods}->{$pod}->{status} // '',
-            ip => $self->{pods}->{$pod}->{ip} // '',
+            name => $self->{pods}->{$pod}->{name},
+            namespace => $self->{pods}->{$pod}->{namespace},
+            node => $self->{pods}->{$pod}->{node},
+            status => $self->{pods}->{$pod}->{status},
+            ip => $self->{pods}->{$pod}->{ip},
         );
     }
 }
