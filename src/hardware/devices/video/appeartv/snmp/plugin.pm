@@ -28,10 +28,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'alarms'   => 'hardware::devices::video::appeartv::snmp::mode::alarms',
+        'alarms' => 'hardware::devices::video::appeartv::snmp::mode::alarms',
     );
 
     return $self;
@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check AppeartTV in SNMP.
+Check AppearTV in SNMP.
 
 =cut

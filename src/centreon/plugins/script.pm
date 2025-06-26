@@ -353,7 +353,7 @@ sub check_relaunch {
         }
         if ($uid != $>) {
             if ($> == 0) {
-                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, $rebuild_args);
+                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, @$rebuild_args);
                 $cmd = 'su';
             } else {
                 unshift @$args, '-S', '-u', $self->{runas}, $cmd, @$rebuild_args;

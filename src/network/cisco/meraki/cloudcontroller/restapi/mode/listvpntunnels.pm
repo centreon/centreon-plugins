@@ -31,8 +31,11 @@ my @labels = (
     'network_id',
     'network_name',
     'device_serial',
-    'mode',
-    'status'
+    'device_mode',
+    'device_status',
+    'vpn_type',
+    'vpn_name',
+    'vpn_status'
 );
 
 sub new {
@@ -62,26 +65,46 @@ sub manage_selection {
         orgs => [keys %$organizations]
     );
 
-    my $results = {};
-    foreach (keys %$devices) {
+    my $results = [];
+    foreach my $id (keys %$devices) {
         next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
-            $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
+            $devices->{$id}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $devices->{$_}->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+            $devices->{$id}->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
 
-        my $organization_name = $organizations->{ $devices->{$_}->{organizationId} }->{name};
+        my $organization_name = $organizations->{ $devices->{$id}->{organizationId} }->{name};
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
             $organization_name !~ /$self->{option_results}->{filter_organization_name}/);
 
-        $results->{$_} = {
-            network_id   => $devices->{$_}->{networkId},
-            network_name => $devices->{$_}->{networkName},
-            device_serial => $devices->{$_}->{deviceSerial},
-            organization_id => $devices->{$_}->{organizationId},
-            organization_name => $organization_name,
-            mode => $devices->{$_}->{vpnMode},
-            status => $devices->{$_}->{deviceStatus}
-        };
+        foreach (@{$devices->{$id}->{merakiVpnPeers}}) {
+            push @$results, {
+                network_id   => $devices->{$id}->{networkId},
+                network_name => $devices->{$id}->{networkName},
+                device_serial => $devices->{$id}->{deviceSerial},
+                organization_id => $devices->{$id}->{organizationId},
+                organization_name => $organization_name,
+                device_mode => $devices->{$id}->{vpnMode},
+                device_status => $devices->{$id}->{deviceStatus},
+                vpn_type => 'meraki',
+                vpn_name =>  $_->{networkName},
+                vpn_status => $_->{reachability}
+            };
+        }
+
+        foreach (@{$devices->{$id}->{thirdPartyVpnPeers}}) {
+            push @$results, {
+                network_id   => $devices->{$id}->{networkId},
+                network_name => $devices->{$id}->{networkName},
+                device_serial => $devices->{$id}->{deviceSerial},
+                organization_id => $devices->{$id}->{organizationId},
+                organization_name => $organization_name,
+                device_mode => $devices->{$id}->{vpnMode},
+                device_status => $devices->{$id}->{deviceStatus},
+                vpn_type => 'thirdParty',
+                vpn_name =>  $_->{name},
+                vpn_status => $_->{reachability}
+            };
+        }
     }
 
     return $results;
@@ -91,9 +114,9 @@ sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(custom => $options{custom});
-    foreach my $instance (sort keys %$results) {
+    foreach my $item (@$results) {
         $self->{output}->output_add(long_msg =>
-            join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
+            join('', map("[$_: " . $item->{$_} . ']', @labels))
         );
     }
 
@@ -115,9 +138,9 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(custom => $options{custom});
-    foreach (sort keys %$results) {
+    foreach my $item (@$results) {
         $self->{output}->add_disco_entry(
-            %{$results->{$_}}
+            %$item
         );
     }
 }

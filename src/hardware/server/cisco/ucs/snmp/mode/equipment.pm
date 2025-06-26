@@ -60,14 +60,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power supplies, chassis, io cards, blades, fabric extenders).
+Check Hardware (Fans, Power supplies, chassis, I/O cards, blades, fabric extenders).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'.
+Can be: C<fan>, C<psu>, C<chassis>, C<iocard>, C<blade>, C<fex>, C<cpu>, C<memory>, C<localdisk>.
 
 =item B<--filter>
 
@@ -89,6 +89,9 @@ Use this option to override the status returned by the plugin when the status la
 Example: --threshold-overload='fan.operability,OK,poweredOff|removed' 
 --threshold-overload='presence,OK,missing' 
 --threshold-overload='operability,OK,removed'
+NB: For the memory component you may need to set this option twice if presence status doesn't
+return OK state and you want to override the operability status. Example when memories are missing because of removing.
+--threshold-overload='presence,OK,missing' --threshold-overload='operability,OK,removed'
 
 =back
 

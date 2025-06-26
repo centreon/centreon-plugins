@@ -66,15 +66,21 @@ runs:
       shell: bash
 
     - name: Promote DEB package to stable
-      if: ${{ contains(fromJSON('["bullseye", "bookworm"]'), inputs.distrib) }}
+      if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy", "noble"]'), inputs.distrib) }}
       run: |
         set -eux
 
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
         echo "[DEBUG] - Distrib: ${{ inputs.module }}"
 
+        if [[ "${{ inputs.distrib }}" == "jammy" || "${{ inputs.distrib }}" == "noble" ]]; then
+          repo="ubuntu-plugins"
+        else
+          repo="apt-plugins"
+        fi
+
         echo "[DEBUG] - Get path of testing DEB packages to promote to stable."
-        SRC_PATHS=$(jf rt search --include-dirs apt-plugins-testing/pool/${{ inputs.module }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb | jq -r '.[].path')
+        SRC_PATHS=$(jf rt search --include-dirs $repo-testing/pool/${{ inputs.module }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb | jq -r '.[].path')
 
         if [[ ${SRC_PATHS[@]} ]]; then
           for SRC_PATH in ${SRC_PATHS[@]}; do
@@ -86,7 +92,7 @@ runs:
         fi
 
         echo "[DEBUG] - Build target path."
-        TARGET_PATH="apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module }}/"
+        TARGET_PATH="$repo-${{ inputs.stability }}/pool/${{ inputs.module }}/"
         echo "[DEBUG] - Target path: $TARGET_PATH"
 
         echo "[DEBUG] - Promoting DEB testing artifacts to stable."

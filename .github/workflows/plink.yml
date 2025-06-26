@@ -24,7 +24,9 @@ jobs:
 
   package-rpm:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -37,8 +39,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -55,13 +57,16 @@ jobs:
           cp -r ~/rpmbuild/RPMS/x86_64/*.rpm .
         shell: bash
 
-      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   sign-rpm:
-    needs: [package-rpm]
+    needs: [get-environment, package-rpm]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -86,7 +91,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -97,55 +102,55 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.rpm
           retention-days: 1
 
-  deliver-rpm:
+  deliver-packages:
     needs: [get-environment, sign-rpm]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        distrib: [el8, el9]
+        include:
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
 
+    name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Delivery
-        uses: ./.github/actions/rpm-delivery
+        uses: ./.github/actions/package-delivery
         with:
           module_name: plink
           distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
-
-  promote:
-    needs: [get-environment]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [el8, el9]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Promote ${{ matrix.distrib }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
+          release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: plink
-          distrib: ${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

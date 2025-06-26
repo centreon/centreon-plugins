@@ -1,0 +1,10 @@
+{
+  "name": "hashicorp_vault",
+  "url": "127.0.0.1",
+  "protocol": "http",
+  "salt": "controlhmachashingkeyforcontrols",
+  "port": 3000,
+  "root_path": "",
+  "role_id": "FO7/tbXY90gg+9igMXhLI2BYrGiRxOtmsgY8GlSVO0DHTO0DYGFnExCAuqPyVLoyvvjdba7Crl7TOb73H/QGMlFkfbE4/qAeiTF9ReMS1TnsUoxfTLKqCXERXGApkxOrSIhv/z6+UBKmQwPVhLwD7w==",
+  "secret_id": "odQ16TYwubSSi/m4mo88D8Trupbf+3ehgmfxA7wrEtbCEDciZciBRY2cc9Yb2yD+ivR64WR8RsPVPpGbPj1AFpu1TIwL88ic7zjGZaZiIr5kZenoi6xJquxQZbNW5t2N8JaUb/Qupp2wvQ2rxv9zoQ=="
+}

@@ -69,18 +69,20 @@ contents:
 
   - src: "redhat/centreon_vmware-sysconfig"
     dst: "/etc/sysconfig/centreon_vmware"
+    type: config|noreplace
     packager: rpm
   - src: "debian/centreon_vmware-default"
     dst: "/etc/default/centreon_vmware"
+    type: config|noreplace
     packager: deb
 
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm"
+  - src: "config/logrotate/centreon_vmware"
+    dst: "/etc/logrotate.d/centreon_vmware"
     type: config|noreplace
-    packager: rpm
-  - src: "config/centreon_vmware-conf.pm"
-    dst: "/etc/centreon/centreon_vmware.pm.new"
-    packager: deb
+
+  - src: "config/centreon_vmware-conf.json"
+    dst: "/etc/centreon/centreon_vmware.json"
+    type: config|noreplace
 
 scripts:
   postinstall: ./scripts/postinstall.sh
@@ -88,25 +90,32 @@ scripts:
 overrides:
   rpm:
     depends:
+      - perl(Class::MethodMaker)
       - perl(Crypt::OpenSSL::AES)
+      - perl(Crypt::SSLeay)
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
       - perl(LWP::Protocol::https)
+      - perl(SOAP::Lite)
+      - perl(Text::Template)
+      - perl(UUID)
       - perl(ZMQ::Constants)
       - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
-      - perl-VMware-vSphere >= 5.1
   deb:
     depends:
+      - libclass-methodmaker-perl
       - libcrypt-openssl-aes-perl
+      - libcrypt-ssleay-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
       - liblwp-protocol-https-perl
       - libnet-curl-perl
+      - libsoap-lite-perl
       - libtext-template-perl
+      - libuuid-perl
       - libzmq-constants-perl
       - libzmq-libzmq4-perl
-      - perl-vmware-vsphere
 
 rpm:
   signature:

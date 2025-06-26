@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'dynamic-filters'      => 'network::keysight::nvos::restapi::mode::dynamicfilters',
         'hardware'             => 'network::keysight::nvos::restapi::mode::hardware',
+        'license'              => 'network::keysight::nvos::restapi::mode::license',
         'list-dynamic-filters' => 'network::keysight::nvos::restapi::mode::listdynamicfilters',
         'list-ports'           => 'network::keysight::nvos::restapi::mode::listports',
         'ports'                => 'network::keysight::nvos::restapi::mode::ports',

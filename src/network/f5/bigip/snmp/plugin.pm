@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'apm'                  => 'network::f5::bigip::snmp::mode::apm',
         'connections'          => 'network::f5::bigip::snmp::mode::connections',
@@ -42,8 +41,10 @@ sub new {
         'node-status'          => 'network::f5::bigip::snmp::mode::nodestatus',
         'pool-status'          => 'network::f5::bigip::snmp::mode::poolstatus',
         'tmm-usage'            => 'network::f5::bigip::snmp::mode::tmmusage',
+        'cpu-usage'            => 'network::f5::bigip::snmp::mode::cpuusage',
         'trunks'               => 'network::f5::bigip::snmp::mode::trunks',
-        'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus'
+        'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus',
+        'certificates'         => 'network::f5::bigip::snmp::mode::certificates'
     };
 
     return $self;

@@ -15,7 +15,7 @@ on:
 jobs:
   pod-spell-check:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'do-not-spellcheck') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -30,11 +30,11 @@ jobs:
               - added|modified: 'src/**/*.pm'
 
       - name: Install CPAN Libraries
-        uses: shogo82148/actions-setup-perl@9c1eca9952ccc07f9ca4a2097b63df93d9d138e9 # v1.31.3
+        uses: shogo82148/actions-setup-perl@22423f01bde48fb88785c007e3166fbbbd8e892a # v1.34.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
-          install-modules: Test::More Test::Spelling
+          install-modules: Test::More Test::Spelling List::MoreUtils
 
       - name: Install librairies
         continue-on-error: true

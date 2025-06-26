@@ -1,0 +1,46 @@
+<rsvp-session-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+    <rsvp-session-data>
+        <session-type>Ingress</session-type>
+        <count>1</count>
+        <rsvp-session junos:style="brief">
+            <destination-address>10.0.0.2</destination-address>
+            <source-address>10.0.0.1</source-address>
+            <lsp-state>Up</lsp-state>
+            <route-count>0</route-count>
+            <rsb-count>1</rsb-count>
+            <resv-style>SE</resv-style>
+            <label-in>-</label-in>
+            <label-out>3</label-out>
+            <name>FROM-MX1-TO-MX2</name>
+        </rsvp-session>
+        <display-count>1</display-count>
+        <up-count>1</up-count>
+        <down-count>0</down-count>
+    </rsvp-session-data>
+    <rsvp-session-data>
+        <session-type>Egress</session-type>
+        <count>1</count>
+        <rsvp-session junos:style="brief">
+            <destination-address>10.0.0.1</destination-address>
+            <source-address>10.0.0.2</source-address>
+            <lsp-state>Up</lsp-state>
+            <route-count>0</route-count>
+            <rsb-count>1</rsb-count>
+            <resv-style>SE</resv-style>
+            <label-in>3</label-in>
+            <label-out>-</label-out>
+            <name>FROM-MX2-TO-MX1</name>
+        </rsvp-session>
+        <display-count>1</display-count>
+        <up-count>1</up-count>
+        <down-count>0</down-count>
+    </rsvp-session-data>
+    <rsvp-session-data>
+        <session-type>Transit</session-type>
+        <count>0</count>
+        <display-count>0</display-count>
+        <up-count>0</up-count>
+        <down-count>0</down-count>
+    </rsvp-session-data>
+</rsvp-session-information>
+

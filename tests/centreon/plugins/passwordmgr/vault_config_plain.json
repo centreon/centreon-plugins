@@ -1,0 +1,11 @@
+{
+  "name": "hashicorp_vault",
+  "url": "127.0.0.1",
+  "protocol": "http",
+  "salt": "",
+  "port": 3000,
+  "root_path": "",
+  "role_id": "thisroleidisinplaintext",
+  "secret_id": "thissecretidisinplaintext"
+}
+
