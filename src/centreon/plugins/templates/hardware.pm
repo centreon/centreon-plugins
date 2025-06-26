@@ -351,6 +351,38 @@ sub run {
     $self->{output}->exit();
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['component', 'instance', 'description']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->{loaded} = 0;  
+    $self->call_object_callback(method_name => $self->{cb_hook1}, %options);
+
+    $self->load_components(%options);
+    if ($self->{loaded} == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
+    
+    foreach (@{$self->{components_module}}) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = $self->{components_path} . "::$_";
+            if (my $func = $mod_name->can('disco_show')) {
+                $func->($self);
+            }
+        }
+    }
+
+    $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
+}
+
 sub check_filter {
     my ($self, %options) = @_;
 
