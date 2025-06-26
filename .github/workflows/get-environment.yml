@@ -20,6 +20,9 @@ on:
       target_stability:
         description: "Final target branch stability (stable, testing, unstable, canary or not defined if not a pull request)"
         value: ${{ jobs.get-environment.outputs.target_stability }}
+      is_nightly:
+        description: "if the current workflow run is considered a nightly"
+        value: ${{ jobs.get-environment.outputs.is_nightly }}
       release_type:
         description: "type of release (hotfix, release or not defined if not a release)"
         value: ${{ jobs.get-environment.outputs.release_type }}
@@ -43,6 +46,7 @@ jobs:
       target_stability: ${{ steps.get_stability.outputs.target_stability }}
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
+      is_nightly: ${{ steps.get_nightly_status.outputs.is_nightly }}
       skip_workflow: ${{ steps.skip_workflow.outputs.result }}
       labels: ${{ steps.has_skip_label.outputs.labels }}
 
