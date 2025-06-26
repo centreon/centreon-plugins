@@ -59,6 +59,15 @@ gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
 
+# Add Centreon plugins repositories
+dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el9/centreon-24.10.repo
+dnf update -y
+dnf clean all --enablerepo=*
+dnf install -y centreon-connector-perl
+dnf install -y centreon-clib
+
+dnf update -y
+
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
 
