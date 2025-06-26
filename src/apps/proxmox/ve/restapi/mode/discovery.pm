@@ -81,12 +81,14 @@ sub discovery_vm {
             $vm->{$_} = '' foreach (qw/os_info_name os_info_prettyname os_info_version os_info_machine os_info_kernel/);
         }
 
+        # provide the list of IP addresses if available or else provide the VM's name as only address
         if ($network_ips && ref $network_ips eq 'ARRAY' && @{$network_ips} > 0) {
             $vm->{ip_addresses} = $network_ips;
         } else {
             $vm->{ip_addresses} = [ $vms->{$vm_id}->{Name}];
         }
 
+        # provide the list of interfaces if available or else provide the VM's name as default address
         if ($network_interfaces && ref $network_interfaces eq 'ARRAY' && @{$network_interfaces} > 0) {
             $vm->{iface_addresses} = $network_interfaces;
         } else {
@@ -168,7 +170,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (can be: 'vm', 'node').
+Choose the type of resources to discover (can be: C<vm>, C<node>).
 
 =back
 

@@ -355,7 +355,7 @@ sub cache_storages {
 sub internal_api_get_network_interfaces {
     my ($self, %options) = @_;
 
-    # We use the silently_fail option because when we don't want to crash the module when QEMU agent is not running
+    # We use the silently_fail option because we don't want to crash the module when QEMU agent is not running
     # In this case we simply ignore the IP retrieval
     my $vm_network = $self->request_api(method => 'GET',
                                         url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/network-get-interfaces',
@@ -367,7 +367,7 @@ sub internal_api_get_network_interfaces {
 sub internal_api_get_osinfo {
     my ($self, %options) = @_;
 
-    # We use the silently_fail option because when we don't want to crash the module when QEMU agent is not running
+    # We use the silently_fail option because we don't want to crash the module when QEMU agent is not running
     # In this case we simply ignore the osinfo retrieval
     my $vm_osinfo = $self->request_api(method => 'GET',
                                        url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/get-osinfo',
@@ -588,7 +588,7 @@ Proxmox VE Rest API
 
 =head1 REST API OPTIONS
 
-Proxmox Rest API
+Proxmox VE (Virtual Environment) Rest API
 
 More Info about Proxmox VE API on https://pve.proxmox.com/wiki/Proxmox_VE_API
 
@@ -610,7 +610,7 @@ Specify https if needed (default: 'https').
 
 Set Proxmox VE Username
 API user need to have this privileges
-'VM.Monitor, VM.Audit, Datastore.Audit, Sys.Audit, Sys.Syslog'
+'VM.Monitor, VM.Audit, Datastore.Audit, C<Sys.Audit>, C<Sys.Syslog>'
 
 =item B<--api-password>
 
@@ -618,7 +618,7 @@ Set Proxmox VE Password
 
 =item B<--realm>
 
-Set Proxmox VE Realm (pam, pve or custom) (default: 'pam').
+Set Proxmox VE Realm (pam, C<pve> or custom) (default: 'pam').
 
 =item B<--timeout>
 

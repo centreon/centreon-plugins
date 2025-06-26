@@ -813,8 +813,13 @@ sub is_local_ip($) {
     return 0;
 }
 
+# This function is used with "sort", it sorts an array of IP addresses.
+# $_[0] and $_[1] correspond to Perl's special variables $a and $b used by sort.
+# I can't use $a and $b directly here, otherwise Perl generates a warning: "uninitialized value".
 sub sort_ips($$) {
-    unpack("N", pack("C4", split('.', $_[0]))) <=> unpack("N", pack("C4", split(/\./, $_[1])));
+    my @a = split /\./, $_[0];
+    my @b = split /\./, $_[1];
+    return $a[0] <=> $b[0] || $a[1] <=> $b[1] || $a[2] <=> $b[2] || $a[3] <=> $b[3]
 }
 
 1;
