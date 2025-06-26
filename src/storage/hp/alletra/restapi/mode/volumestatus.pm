@@ -190,8 +190,10 @@ sub manage_selection {
             name              => $volume->{name},
             id                => $volume->{id},
             uuid              => $volume->{uuid},
-            compression_state => $compression_state{$volume->{compressionState}},
-            provisioning_type => $provisioning_type{$volume->{provisioningType}},
+            compression_state => defined($compression_state{$volume->{compressionState}}) ?
+                $compression_state{$volume->{compressionState}} : 'NOT_DOCUMENTED',
+            provisioning_type => defined($provisioning_type{$volume->{provisioningType}}) ?
+                $provisioning_type{$volume->{provisioningType}} : 'NOT_DOCUMENTED',
             readonly          => $volume->{readOnly}
         };
     }
