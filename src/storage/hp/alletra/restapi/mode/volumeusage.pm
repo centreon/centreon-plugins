@@ -54,16 +54,19 @@ sub set_counters {
     $self->{maps_counters}->{volume} = [
         { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
             key_values            =>
-                [ { name => 'total_used' },
+                [
+                    { name => 'used' },
                     { name => 'free' },
                     { name => 'prct_used' },
                     { name => 'prct_free' },
                     { name => 'total' },
                     { name => 'name' },
-                    { name => 'id' } ],
+                    { name => 'id' }
+                ],
             closure_custom_output => $self->can('custom_usage_output'),
             perfdatas             => [
-                { template               => '%d',
+                {
+                    template               => '%d',
                     min                  => 0,
                     max                  => 'total',
                     unit                 => 'B',
@@ -76,13 +79,15 @@ sub set_counters {
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
             key_values            =>
-                [ { name => 'free' },
+                [
+                    { name => 'free' },
                     { name => 'used' },
                     { name => 'prct_used' },
                     { name => 'prct_free' },
                     { name => 'total' },,
                     { name => 'name' },
-                    { name => 'id' } ],
+                    { name => 'id' }
+                ],
             closure_custom_output =>
                 $self->can('custom_usage_output'),
             perfdatas             =>
