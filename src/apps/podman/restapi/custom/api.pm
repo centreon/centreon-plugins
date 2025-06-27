@@ -246,7 +246,7 @@ sub get_container_infos {
     my ($self, %options) = @_;
 
     my $stats = $self->request(
-        endpoint => 'containers/stats?stream=false&amp;containers=' . $options{container_name},
+        endpoint => 'containers/stats?stream=false&containers=' . $options{container_name},
         method   => 'GET'
     );
 
