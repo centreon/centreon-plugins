@@ -153,7 +153,7 @@ __END__
 
 =head1 MODE
 
-Check Hashicorp Vault Health status.
+Check HashiCorp Vault Health status.
 
 Example:
 perl centreon_plugins.pl --plugin=apps::hashicorp::vault::restapi::plugin --mode=health
