@@ -191,7 +191,7 @@ Set warning threshold for standby status (default: none).
 
 =item B<--critical-standby-status>
 
-Set critical threshold for standby status (default: '%{standby} ne "false"').
+Set critical threshold for standby status (default: none).
 
 =back
 
