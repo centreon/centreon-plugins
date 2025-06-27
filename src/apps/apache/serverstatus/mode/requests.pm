@@ -172,26 +172,26 @@ sub run {
                                                      $rPerSec,
                                                      $bPerReq_value . ' ' . $bPerReq_unit
                                                      ));
-    $self->{output}->perfdata_add(label => "avg_RequestPerSec",
+    $self->{output}->perfdata_add(label => "avg_RequestPerSec", nlabel => "apache.requests.requests.average.persecond",
                                   value => sprintf("%.2f", $rPerSec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0
                                   );
-    $self->{output}->perfdata_add(label => "bytesPerSec", unit => 'B',
+    $self->{output}->perfdata_add(label => "bytesPerSec", nlabel => "apache.requests.bytes.persecond", unit => 'B',
                                   value => sprintf("%.2f", $bPerSec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes'),
                                   min => 0);
-    $self->{output}->perfdata_add(label => "avg_bytesPerRequest", unit => 'B',
+    $self->{output}->perfdata_add(label => "avg_bytesPerRequest", nlabel => "apache.requests.request.average.bytes", unit => 'B',
                                   value => $bPerReq,
                                   min => 0
                                   );
-    $self->{output}->perfdata_add(label => "avg_bytesPerSec", unit => 'B',
+    $self->{output}->perfdata_add(label => "avg_bytesPerSec", nlabel => "apache.requests.bytes.average.persecond", unit => 'B',
                                   value => $avg_bPerSec,
                                   min => 0
                                   );
-    $self->{output}->perfdata_add(label => "accessPerSec",
+    $self->{output}->perfdata_add(label => "accessPerSec", nlabel => "apache.requests.accesses.persecond",
                                   value => sprintf("%.2f", $aPerSec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-access'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-access'),
