@@ -129,7 +129,7 @@ sub new {
             'exclude-name:s'  => { name => 'exclude_name', default => '' }
         }
     );
-    $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE 8 VCENTER OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'MODE', once => 1);
 
     return $self;
 }
@@ -211,7 +211,7 @@ C<%{display}>, C<%{thin_provisioning_supported}>, C<%{multiple_host_access}>.
 
 Define the conditions to match for the status to be CRITICAL. You can use the following variables: C<%{accessible}>,
 C<%{display}>, C<%{thin_provisioning_supported}>, C<%{multiple_host_access}>.
-Default: C<%{accessible} !~ /true/i>
+Default: C<%{accessible} ne "true">
 
 =item B<--warning-usage>
 

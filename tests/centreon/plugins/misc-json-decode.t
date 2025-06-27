@@ -7,7 +7,6 @@ use lib "$FindBin::RealBin/../../../src";
 use centreon::plugins::misc;
 use centreon::plugins::output;
 use centreon::plugins::options;
-use Data::Dumper;
 
 sub test {
     my $mock_output = mock 'centreon::plugins::output'; # this is from Test2::Tools::Mock, included by Test2::V0
@@ -61,7 +60,7 @@ sub test {
     );
     for my $test (@tests) {
         my ($object, $exit_code) = centreon::plugins::misc::json_decode($test->{json_string}, booleans_as_strings => $test->{booleans_as_strings});
-        is($object, $test->{expected_object}, $test->{msg} . "\n" . Dumper($object));
+        is($object, $test->{expected_object}, $test->{msg});
 
     }
 

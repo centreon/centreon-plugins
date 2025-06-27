@@ -20,7 +20,7 @@
 
 package apps::vmware::vsphere8::vcenter::mode;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base qw(centreon::plugins::templates::counter);
 
