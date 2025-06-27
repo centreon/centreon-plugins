@@ -137,12 +137,18 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
+    use Data::Dumper;
+    print Dumper("Hardware template check_options start here");
+
+    print Dumper("\$self->{option_results}->{no_component} is defined ? ".defined($self->{option_results}->{no_component}));
+    print Dumper("\$self->{option_results}->{no_component} ne '' ? ".($self->{option_results}->{no_component} ne ''));
+
+    if (defined($self->{option_results}->{no_component}) && ($self->{option_results}->{no_component} ne '')) {
+        $self->{no_components} = $self->{option_results}->{no_component};
+    } else {
+        print Dumper("\$self->{option_results}->{no_component} not defined so set as critical");
+        $self->{no_components} = 'critical';
+        print Dumper("\$self->{no_components} =".$self->{no_components});
     }
 
     if ($self->{filter_exclude} == 1) {
@@ -318,6 +324,10 @@ sub display {
             )
         );
     }
+
+    print Dumper("\$total_components = ".$total_components);
+    print Dumper("(option set by the user) : \$self->{option_results}->{no_component} = ".$self->{option_results}->{no_component});
+        print Dumper("(option in self after check_option function) : \$self->{no_components} = ".$self->{no_components});
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(
