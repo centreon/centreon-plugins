@@ -767,18 +767,30 @@ sub check_security_whitelist {
 }
 
 sub json_decode {
-    my ($content) = @_;
+    my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
     my $object;
+
+    my $decoder = JSON::XS->new->utf8;
+    # this option
+    if ($options{booleans_as_strings}) {
+        # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
+        if (JSON::XS->can('boolean_values')) {
+            $decoder = $decoder->boolean_values("false", "true");
+        } else {
+            # if boolean_values is not available, perform a dirty substitution of booleans
+            $content =~ s/"(\w+)"\s*:\s*(true|false)(\s*,?)/"$1": "$2"$3/gm;
+        }
+    }
+
     eval {
-        $object = JSON::XS->new->utf8->decode($content);
+        $object = $decoder->decode($content);
     };
     if ($@) {
         print STDERR "Cannot decode JSON string: $@" . "\n";
         return undef;
     }
-
     return $object;
 }
 
@@ -1287,13 +1299,22 @@ Checks if a command is in the security whitelist.
 
 =head2 json_decode
 
-    my $decoded = centreon::plugins::misc::json_decode($content);
+    my $decoded = centreon::plugins::misc::json_decode($content, %options);
 
 Decodes a JSON string.
 
 =over 4
 
 =item * C<$content> - The JSON string to decode and transform into an object.
+
+=item * C<%options> - Options passed to the function.
+
+=over 4
+
+=item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
+JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=back
 
 =back
 
