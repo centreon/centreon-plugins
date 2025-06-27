@@ -147,9 +147,8 @@ sub manage_selection {
             }
         }
         # exclude blacklisted VMs
-        if (
-            ($self->{option_results}->{exclude_name} ne '' && $entry->{name} =~ /$self->{option_results}->{exclude_name}/ )
-            || ($self->{option_results}->{include_state} ne '' && $entry->{state} =~ /$self->{option_results}->{include_state}/ )
+        if ( $self->{option_results}->{exclude_name} ne '' && $entry->{name} =~ /$self->{option_results}->{exclude_name}/
+            || ($self->{option_results}->{include_state} ne '' && $entry->{state} =~ /$self->{option_results}->{include_state}/
         ) {
             $self->{output}->output_add(long_msg => "skipping blacklisted " .$entry_desc, debug => 1);
             next;

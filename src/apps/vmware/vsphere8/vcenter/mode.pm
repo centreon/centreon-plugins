@@ -98,7 +98,7 @@ apps::vmware::vsphere8::vcenter::mode - Template for modes monitoring VMware vCe
 
 =head1 DESCRIPTION
 
-This module provides methods to interact with the VMware vSphere 8 REST API. It handles authentication, caching, and API requests.
+This module provides methods to interact with the VMware vSphere 8 REST API. It handles generic API requests and VMs GET requests.
 
 =head1 METHODS
 
