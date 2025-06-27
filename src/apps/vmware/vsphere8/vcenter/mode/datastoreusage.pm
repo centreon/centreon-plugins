@@ -59,7 +59,7 @@ sub set_counters {
         {
             label           => 'status',
             type            => 2,
-            critical_default => '%{accessible} !~ /true/i',
+            critical_default => '%{accessible} ne "true"',
             set => {
                 key_values => [ { name => 'accessible' }, { name => 'display' },
                                 { name => 'thin_provisioning_supported' }, { name => 'multiple_host_access' } ],
