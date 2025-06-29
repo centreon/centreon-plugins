@@ -21,26 +21,18 @@ use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::trace;
-use snafu::ResultExt;
 use std::fs;
 
 lalrpop_mod!(grammar);
 
 fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
-    let contents = fs::read_to_string(file_name).context(JsonReadSnafu { path: file_name })?;
-
-    let content = contents.as_str();
-
-    let module: serde_json::Result<Command> = serde_json::from_str(content);
-    match module {
-        Ok(c) => Ok(c),
-        Err(err) => Err(Error::JsonParse {
-            message: err.to_string(),
-        }),
-    }
+    let configuration = fs::read_to_string(file_name)?;
+    let command = serde_json::from_str(&configuration)?;
+    Ok(command)
 }
 
+#[snafu::report]
 fn main() -> Result<(), Error> {
     env_logger::Builder::from_env(
         Env::default()
@@ -57,6 +49,8 @@ fn main() -> Result<(), Error> {
     let mut port = 161;
     let mut snmp_version = "2c".to_string();
     let mut snmp_community = "public".to_string();
+    let mut filter_in = None;
+    let mut filter_out = None;
     let mut cmd: Option<Command> = None;
     loop {
         let arg = parser.next();
@@ -64,32 +58,43 @@ fn main() -> Result<(), Error> {
             Ok(arg) => match arg {
                 Some(arg) => match arg {
                     Short('H') | Long("hostname") => {
-                        hostname = parser.value().unwrap().into_string().unwrap();
+                        hostname = parser.value()?.into_string()?;
                         trace!("hostname: {:}", hostname);
                     }
                     Short('p') | Long("port") => {
-                        port = parser.value().unwrap().parse::<u16>().unwrap();
+                        port = parser.value()?.parse::<u16>()?;
                         trace!("port: {}", port);
                     }
                     Short('j') | Long("json") => {
-                        let json = Some(parser.value().unwrap().into_string().unwrap());
-                        let json = json.unwrap();
+                        let json = parser.value()?.into_string()?;
                         trace!("json: {:?}", json);
                         cmd = Some(json_to_command(&json)?);
                     }
                     Short('v') | Long("snmp-version") => {
-                        snmp_version = parser.value().unwrap().into_string().unwrap();
+                        snmp_version = parser.value()?.into_string()?;
                         trace!("snmp_version: {}", snmp_version);
                     }
                     Short('c') | Long("snmp-community") => {
-                        snmp_community = parser.value().unwrap().into_string().unwrap();
+                        snmp_community = parser.value()?.into_string()?;
                         trace!("snmp_community: {}", snmp_community);
+                    }
+                    Short('i') | Long("filter-in") => {
+                        filter_in = Some(parser.value()?.into_string()?);
+                        if let Some(ref filter) = filter_in {
+                            trace!("filter_in: {}", filter);
+                        }
+                    }
+                    Short('o') | Long("filter-out") => {
+                        filter_out = Some(parser.value()?.into_string()?);
+                        if let Some(ref filter) = filter_out {
+                            trace!("filter_out: {}", filter);
+                        }
                     }
                     t => {
                         if let Arg::Long(name) = t {
                             if name.starts_with("warning-") {
                                 let wmetric = name[8..].to_string();
-                                let value = parser.value().unwrap().into_string().unwrap();
+                                let value = parser.value()?.into_string()?;
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
                                         if !value.is_empty() {
@@ -105,7 +110,7 @@ fn main() -> Result<(), Error> {
                                 }
                             } else if name.starts_with("critical-") {
                                 let cmetric = name[9..].to_string();
-                                let value = parser.value().unwrap().into_string().unwrap();
+                                let value = parser.value()?.into_string()?;
                                 match cmd.as_mut() {
                                     Some(ref mut cmd) => {
                                         if !value.is_empty() {
@@ -136,7 +141,13 @@ fn main() -> Result<(), Error> {
     let url = format!("{}:{}", hostname, port);
 
     let result = match cmd {
-        Some(ref cmd) => cmd.execute(&url, &snmp_version, &snmp_community)?,
+        Some(ref cmd) => cmd.execute(
+            &url,
+            &snmp_version,
+            &snmp_community,
+            &filter_in,
+            &filter_out,
+        )?,
         None => {
             println!("json is empty");
             std::process::exit(3);
@@ -144,5 +155,5 @@ fn main() -> Result<(), Error> {
     };
 
     println!("{}", result.output);
-    std::process::exit(result.status as i32);
+    Ok(())
 }

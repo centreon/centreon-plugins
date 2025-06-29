@@ -1,5 +1,5 @@
 use snafu::prelude::Snafu;
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub))]
@@ -21,14 +21,22 @@ pub enum Error {
     #[snafu(display("Threshold: The threshold syntax must follow '[@]start:end'"))]
     BadThreshold,
 
-    #[snafu(display("Json: Failed to parse JSON: {}", message))]
-    JsonParse { message: String },
+    #[snafu(transparent)]
+    Io { source: io::Error },
+    #[snafu(transparent)]
+    Lexopt { source: lexopt::Error },
 
-    #[snafu(display("Json: Unable to read the JSON file '{}'", path.display()))]
-    JsonRead {
-        source: std::io::Error,
-        path: PathBuf,
-    },
+    #[snafu(transparent)]
+    SerdeJson { source: serde_json::Error },
+}
+
+impl From<std::ffi::OsString> for Error {
+    fn from(value: std::ffi::OsString) -> Self {
+        //let val = value.into_string().unwrap_or_else(|_| "Invalid UTF-8".to_string());
+        Error::Lexopt {
+            source: lexopt::Error::NonUnicodeValue(value),
+        }
+    }
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
