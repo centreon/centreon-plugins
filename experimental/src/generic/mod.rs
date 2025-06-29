@@ -1,3 +1,4 @@
+extern crate regex;
 extern crate serde;
 extern crate serde_json;
 
@@ -8,6 +9,7 @@ use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
+use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -207,13 +209,33 @@ impl Command {
         collect
     }
 
-    pub fn execute(&self, target: &str, version: &str, community: &str) -> Result<CmdResult> {
+    pub fn execute(
+        &self,
+        target: &str,
+        version: &str,
+        community: &str,
+        filter_in: &Option<String>,
+        filter_out: &Option<String>,
+    ) -> Result<CmdResult> {
         let mut collect = self.execute_snmp_collect(target, version, community);
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
         let mut my_res = SnmpResult::new(HashMap::new());
         let mut status = Status::Ok;
+
+        // Prepare filters
+        let re_in = if let Some(filter_in) = filter_in {
+            Some(Regex::new(filter_in).unwrap())
+        } else {
+            None
+        };
+        let re_out: Option<Regex> = if let Some(filter_out) = filter_out {
+            Some(Regex::new(filter_out).unwrap())
+        } else {
+            None
+        };
+
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
             let parser = Parser::new(&collect);
@@ -256,6 +278,16 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
+                        if let Some(ref re) = re_in {
+                            if !re.is_match(&name) {
+                                continue;
+                            }
+                        }
+                        if let Some(ref re) = re_out {
+                            if re.is_match(&name) {
+                                continue;
+                            }
+                        }
                         let current_status =
                             compute_status(item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
@@ -291,6 +323,16 @@ impl Command {
                             res
                         }
                     };
+                    if let Some(ref re) = re_in {
+                        if !re.is_match(&name) {
+                            continue;
+                        }
+                    }
+                    if let Some(ref re) = re_out {
+                        if re.is_match(&name) {
+                            continue;
+                        }
+                    }
                     let current_status = compute_status(s, &metric.warning, &metric.critical)?;
                     status = worst(status, current_status);
                     let w = match metric.warning {
