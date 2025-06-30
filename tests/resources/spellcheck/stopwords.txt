@@ -98,6 +98,7 @@ Fortinet
 FQDN
 FreeBSD
 frsevent
+GCP
 --get-param
 HAProxy
 HashiCorp
@@ -269,6 +270,7 @@ SRX
 SSDCapacity
 SSG
 SSH
+Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd
