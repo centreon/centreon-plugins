@@ -401,7 +401,7 @@ sub api_get_network_interfaces {
 
     # We returns only IPv4 addresses
     # We also sort IPs to return public IPs first, then local IPs, and loopback addresses last
-    my @ips_loop, @ips_local, @ips_public, @ips_interface;
+    my (@ips_loop, @ips_local, @ips_public, @ips_interface);
     my %hash_ips_by_interface;
     foreach my $interface (@$vm_network) {
         next unless $interface->{'ip-addresses'} && ref $interface->{'ip-addresses'} eq 'ARRAY';
