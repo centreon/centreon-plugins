@@ -34,13 +34,13 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         {
-            label => 'on-count',
+            label  => 'on-count',
             nlabel => 'vm.poweredon.count',
-            type => 1,
-            set => {
-                key_values => [ { name => 'POWERED_ON' }, { name => 'total' } ],
+            type   => 1,
+            set    => {
+                key_values      => [ { name => 'POWERED_ON' }, { name => 'total' } ],
                 output_template => '%s VM(s) powered on',
-                perfdatas => [
+                perfdatas       => [
                     { label => 'POWERED_ON', template => '%s', min => 0, max => 'total' }
                 ]
             }
@@ -48,7 +48,7 @@ sub set_counters {
         {
             label  => 'off-count',
             nlabel => 'vm.poweredoff.count',
-            type => 1,
+            type   => 1,
             set    => {
                 key_values      => [ { name => 'POWERED_OFF' }, { name => 'total' } ],
                 output_template => '%s VM(s) powered off',
@@ -60,7 +60,7 @@ sub set_counters {
         {
             label  => 'suspended-count',
             nlabel => 'vm.suspended.count',
-            type => 1,
+            type   => 1,
             set    => {
                 key_values      => [ { name => 'SUSPENDED' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
@@ -70,11 +70,11 @@ sub set_counters {
             }
         },
         {
-            label  => 'total-count',
-            nlabel => 'vm.total.count',
-            type => 1,
+            label           => 'total-count',
+            nlabel          => 'vm.total.count',
+            type            => 1,
             warning_default => '1:',
-            set    => {
+            set             => {
                 key_values      => [ { name => 'total' } ],
                 output_template => '%s VM(s) in total',
                 perfdatas       => [
@@ -87,7 +87,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
 
     $options{options}->add_options(
         arguments => {
@@ -133,25 +133,12 @@ sub manage_selection {
             $entry->{cpu_count},
             $entry->{memory_size_MiB}
         );
-
-        # include only whitelisted VMs
-        if ($self->{option_results}->{include_name} ne '' || $self->{option_results}->{include_state} ne '' ) {
-            my $whitelist = 0;
-
-            $whitelist = 1 if ($self->{option_results}->{include_name} ne '' && $entry->{name} =~ $self->{option_results}->{include_name});
-            $whitelist = 1 if ($self->{option_results}->{include_state} ne '' && $entry->{state} =~ $self->{option_results}->{include_state});
-
-            if ($whitelist == 0) {
-                $self->{output}->output_add(long_msg => "skipping not whitelisted " .$entry_desc, debug => 1);
-                next;
-            }
-        }
-        # exclude blacklisted VMs
-        if ( $self->{option_results}->{exclude_name} ne '' && $entry->{name} =~ /$self->{option_results}->{exclude_name}/
-            || $self->{option_results}->{include_state} ne '' && $entry->{state} =~ /$self->{option_results}->{include_state}/) {
-            $self->{output}->output_add(long_msg => "skipping blacklisted " .$entry_desc, debug => 1);
+        if ( centreon::plugins::misc::is_excluded($entry->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name})
+            || centreon::plugins::misc::is_excluded($entry->{power_state}, $self->{option_results}->{include_state}, $self->{option_results}->{exclude_state}) ) {
+            $self->{output}->output_add(long_msg => "skipping VM " . $entry_desc . " (excluded)", debug => 1);
             next;
         }
+
         $self->{output}->output_add(long_msg => $entry_desc);
         $self->{global}->{ $entry->{power_state} }++;
         $self->{global}->{total}++;

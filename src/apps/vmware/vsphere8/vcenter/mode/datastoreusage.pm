@@ -137,46 +137,33 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # get the response from /api/vcenter/datastore endpoint
+    # get the list of datastores response from /api/vcenter/datastore endpoint
     my $response = $self->get_datastore(%options);
 
     for my $ds (@{$response}) {
 
-        # include only whitelisted datastores
-        if ($self->{option_results}->{include_name} ne '') {
-            my $whitelist = 0;
-
-            $whitelist = 1 if ($self->{option_results}->{include_name} ne '' && $ds->{name} =~ $self->{option_results}->{include_name});
-
-            if ($whitelist == 0) {
-                $self->{output}->output_add(long_msg => "skipping not whitelisted " . $ds->{name}, debug => 1);
-                next;
-            }
-        }
-        # exclude blacklisted datastores
-        if ($self->{option_results}->{exclude_name} ne '' && $ds->{name} =~ /$self->{option_results}->{exclude_name}/) {
-            $self->{output}->output_add(long_msg => "skipping blacklisted " . $ds->{name}, debug => 1);
+        # exclude datastores not whitelisted
+        if ( centreon::plugins::misc::is_excluded($ds->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}) ) {
+            $self->{output}->output_add(long_msg => "skipping excluded datastore '" . $ds->{name} . "'", debug => 1);
             next;
         }
-        # at this point the datastore must be monitored
+
+        # at this point the current datastore must be monitored
+        # let's get the missing data for the current datastore with a new API request
+        my $detail = $self->get_datastore(%options, datastore_id => $ds->{datastore});
+        # and now we store the information
         $self->{datastore}->{$ds->{datastore}} = {
-            display         => $ds->{name},
-            type            => $ds->{type},
-            free_space      => $ds->{free_space},
-            total_space     => $ds->{capacity},
-            used_space      => $ds->{capacity} - $ds->{free_space},
-            prct_used_space => 100 * ($ds->{capacity} - $ds->{free_space}) / $ds->{capacity},
-            prct_free_space => 100 * $ds->{free_space} / $ds->{capacity}
+            display                     => $ds->{name},
+            type                        => $ds->{type},
+            free_space                  => $ds->{free_space},
+            total_space                 => $ds->{capacity},
+            used_space                  => $ds->{capacity} - $ds->{free_space},
+            prct_used_space             => 100 * ($ds->{capacity} - $ds->{free_space}) / $ds->{capacity},
+            prct_free_space             => 100 * $ds->{free_space} / $ds->{capacity},
+            thin_provisioning_supported => $detail->{thin_provisioning_supported},
+            accessible                  => $detail->{accessible},
+            multiple_host_access        => $detail->{multiple_host_access}
         };
-    }
-    # now let's get the missing data for the current datastore with a new API request
-    for my $ds_id (keys %{$self->{datastore}}) {
-        my $detail = $self->get_datastore(%options, datastore_id => $ds_id);
-
-        $self->{datastore}->{$ds_id}->{thin_provisioning_supported} = $detail->{thin_provisioning_supported};
-        $self->{datastore}->{$ds_id}->{accessible}                  = $detail->{accessible};
-        $self->{datastore}->{$ds_id}->{multiple_host_access}        = $detail->{multiple_host_access};
-
     }
 }
 

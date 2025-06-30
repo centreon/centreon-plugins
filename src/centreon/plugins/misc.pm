@@ -810,6 +810,15 @@ sub json_encode {
     return $encoded;
 }
 
+# function to assess if a string has to be excluded given an include regexp and an exclude regexp
+sub is_excluded {
+    my ($string, $include_regexp, $exclude_regexp) = @_;
+    return 1 unless defined($string);
+    return 1 if (defined($exclude_regexp) && $exclude_regexp ne '' && $string =~ /$exclude_regexp/);
+    return 0 if (!defined($include_regexp) || $include_regexp eq '' || $string =~ /$include_regexp/);
+
+    return 1;
+}
 
 1;
 
@@ -1329,6 +1338,28 @@ Encodes an object to a JSON string.
 =item * C<$object> - The object to encode.
 
 =back
+
+=head2 is_excluded
+
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+
+Determines whether a string should be excluded based on include and exclude regular expressions.
+
+=over 4
+
+=item * C<$string> - The string to evaluate. If undefined, the function returns 1 (excluded).
+
+=item * C<$include_regexp> - A regular expression to include the string.
+
+=item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
+
+=back
+
+Returns 1 if the string is excluded, 0 if it is included.
+The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
+not match the string. The string will also be excluded if it is undefined.
+
+=cut
 
 =head1 AUTHOR
 
