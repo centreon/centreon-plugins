@@ -3,7 +3,7 @@ use warnings;
 use Test2::V0;
 use Test2::Tools::Compare qw{is like match};
 use FindBin;
-use lib "$FindBin::RealBin/../../../src";
+use lib "$FindBin::RealBin/../../../../src";
 use centreon::plugins::misc;
 
 sub test {
