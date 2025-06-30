@@ -180,7 +180,7 @@ sub manage_selection {
             $name = $self->{dimension_name} . '_' . $name if ($self->{dimension_name} ne '');
             $self->{metrics}->{$name} = {
                 display => $name,
-                value => defined($metric_results->{$label}->{lc($statistic)}) ? $metric_results->{$label}->{lc($statistic)} : 0,
+                value => $metric_results->{$label}->{lc($statistic)} // 0,
                 perf_label => $label . '_' . $statistic,
             };
         }
