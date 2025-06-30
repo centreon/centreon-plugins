@@ -44,11 +44,20 @@ sub get_vms {
 
 sub get_datastore {
     my ($self, %options) = @_;
-    # if a datastore option is given, prepare to append it to the endpoint path
-    my $datastore_id = defined($options{datastore_id}) ? '/' . $options{datastore_id} : '';
+    # if a datastore_id option is given, prepare to append it to the endpoint path
+    my $datastore_param = defined($options{datastore_id}) ? '/' . $options{datastore_id} : '';
 
     # Retrieve the data
-    return $options{custom}->request_api('endpoint' => '/vcenter/datastore' . $datastore_id, 'method' => 'GET');
+    return $options{custom}->request_api('endpoint' => '/vcenter/datastore' . $datastore_param, 'method' => 'GET');
+}
+
+sub get_cluster {
+    my ($self, %options) = @_;
+    # if a cluster_id option is given, prepare to append it to the endpoint path
+    my $cluster_param = defined($options{cluster_id}) ? '/' . $options{cluster_id} : '';
+
+    # Retrieve the data
+    return $options{custom}->request_api('endpoint' => '/vcenter/cluster' . $cluster_param, 'method' => 'GET');
 }
 
 sub request_api {

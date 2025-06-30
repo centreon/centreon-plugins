@@ -679,6 +679,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "621ad4eb-05f8-4976-a236-a1e70c7714eb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/cluster",
+      "responses": [
+        {
+          "uuid": "ea14a01e-c806-4110-b444-a80d6267914f",
+          "body": "[\n  {\n    \"drs_enabled\": false,\n    \"cluster\": \"domain-c18\",\n    \"name\": \"AQU-CLU01\",\n    \"ha_enabled\": true\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -729,6 +785,10 @@
     {
       "type": "route",
       "uuid": "f7b2be2f-8055-4619-bee3-c81c12d4ca71"
+    },
+    {
+      "type": "route",
+      "uuid": "621ad4eb-05f8-4976-a236-a1e70c7714eb"
     }
   ],
   "proxyMode": false,

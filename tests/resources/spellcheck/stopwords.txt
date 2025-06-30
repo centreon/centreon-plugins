@@ -57,6 +57,8 @@ CX
 Cyberoam
 Datacore
 datasource
+datastore
+datastores
 dBm
 DC4
 dcdiag
@@ -248,6 +250,7 @@ rsrp
 rsrq
 rssi
 Rubrik
+µs
 Sansymphony
 SAS
 scenarii
@@ -299,7 +302,6 @@ UninterrupibleSleep
 uniq
 uptime
 --urlpath
-µs
 usage-prct
 usec
 userpass
@@ -308,6 +310,9 @@ v1
 v2
 v2c
 v3
+vCenter
+VCENTER
+vCPU
 vdom
 vdomain
 VDSL2
@@ -338,7 +343,3 @@ WLC
 WSMAN
 XPath
 ZFS
-datastore
-datastores
-VCENTER
-vCenter
