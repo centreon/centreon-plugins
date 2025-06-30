@@ -4,9 +4,9 @@ Documentation       Check cpu table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Ctn Generic Suite Setup
+Suite Setup         Start Connector
+Suite Teardown      Stop Connector
 Test Timeout        120s
-
 
 *** Variables ***
 ${CMD}      /usr/lib/centreon/plugins/centreon_linux_snmp.pl --plugin=os::linux::snmp::plugin

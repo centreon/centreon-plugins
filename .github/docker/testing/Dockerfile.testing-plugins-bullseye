@@ -5,7 +5,7 @@ FROM ${REGISTRY_URL}/debian:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 
 # fix locale
-RUN bash -e <<EOF
+RUN bash -ex <<EOF
 
 useradd snmp
 mkdir -p /var/lib/snmp/cert_indexes/
