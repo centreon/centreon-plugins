@@ -618,7 +618,7 @@ Set Proxmox VE Password
 
 =item B<--realm>
 
-Set Proxmox VE Realm (pam, C<pve> or custom) (default: 'pam').
+Set Proxmox VE Realm (C<pam>, C<pve> or C<custom>) (default: C<pam>).
 
 =item B<--timeout>
 
