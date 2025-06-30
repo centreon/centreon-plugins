@@ -14,7 +14,7 @@ ${SNMPPORT}             2024
 ${SNMPVERSION}          2c
 ${PERCENT}              %
 ${MOCKOON_LOG_FILE}    /tmp/mockoon.log
-${TIMEOUT}             120
+${TIMEOUT}             30
 
 *** Keywords ***
 Start Mockoon
@@ -54,9 +54,19 @@ Ctn Cleanup Cache
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
+
+Start connector
+   Ctn Cleanup Cache
+   Set Environment Variable    TZ    UTC
    Remove Files    /tmp/connector.output.*
    Remove File     /tmp/connector.log
    Ctn Start Connector
+
+Stop Connector
+   Terminate All Processes
+   Remove Files    /tmp/connector.output.*
+   Remove File     /tmp/connector.log
+   Ctn Stop Connector
 
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
@@ -91,9 +101,10 @@ Ctn Verify Command Output
     ...    collapse_spaces=True
 
 Ctn Run Command With Connector And Check Result As Strings
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=5
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
+#    Ctn Start Connector
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
     # 1. Extract the result from the log and write to /tmp/connector.output
     Ctn Extract Result From Log    ${tc}
