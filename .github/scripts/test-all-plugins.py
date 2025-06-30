@@ -135,7 +135,7 @@ if __name__ == '__main__':
         print("plugin : ", plugin)
         folders_list = get_tests_folders(plugin)
         if len(folders_list) == 0:
-            print(f"we don't test {plugin} as it don't have any robots tests.")
+            print(f"we don't test {plugin} as it doesn't have any robot tests.")
             continue
 
         nb_plugins += 1
