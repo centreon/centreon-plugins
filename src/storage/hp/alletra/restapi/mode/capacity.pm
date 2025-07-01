@@ -28,7 +28,8 @@ use warnings;
 sub custom_space_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value =>
+        $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
@@ -62,99 +63,214 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         {
-            name => 'storages', type => 3, cb_prefix_output => 'prefix_storage_output', cb_long_output => 'storage_long_output', indent_long_output => '    ', message_multiple => 'All storage capacities are ok',
-            group => [
-                { name => 'space', type => 0 },
-                { name => 'efficiency', type => 0, skipped_code => { -10 => 1 } }
-            ]
+            name               => 'storages',
+            type               => 3,
+            cb_prefix_output   => 'prefix_storage_output',
+            cb_long_output     => 'storage_long_output',
+            indent_long_output => '    ',
+            message_multiple   => 'All storage capacities are ok',
+            group              =>
+                [
+                    { name => 'space', type => 0 },
+                    { name => 'provisioning', type => 0 },
+                    { name => 'efficiency', type => 0, skipped_code => { -10 => 1 } }
+                ]
         }
     ];
 
     $self->{maps_counters}->{space} = [
-        { label => 'space-usage', nlabel => 'storage.space.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+        {
+            label => 'space-usage', nlabel => 'storage.space.usage.bytes', set => {
+            key_values            =>
+                [
+                    { name => 'used' },
+                    { name => 'free' },
+                    { name => 'prct_used' },
+                    { name => 'prct_free' },
+                    { name => 'total' }
+                ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             =>
+                [
+                    {
+                        template             => '%d',
+                        min                  => 0,
+                        max                  => 'total',
+                        unit                 => 'B',
+                        cast_int             => 1,
+                        label_extra_instance => 1
+                    }
                 ]
-            }
+        }
         },
-        { label => 'space-usage-free', nlabel => 'storage.space.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+        {
+            label => 'space-usage-free', nlabel => 'storage.space.free.bytes', display_ok => 0, set => {
+            key_values            =>
+                [
+                    { name => 'free' },
+                    { name => 'used' },
+                    { name => 'prct_used' },
+                    { name => 'prct_free' },
+                    { name => 'total' }
+                ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             =>
+                [
+                    {
+                        template             => '%d',
+                        min                  => 0,
+                        max                  => 'total',
+                        unit                 => 'B',
+                        cast_int             => 1,
+                        label_extra_instance => 1
+                    }
                 ]
-            }
+        }
         },
-        { label => 'space-usage-prct', nlabel => 'storage.space.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+        {
+            label => 'space-usage-prct', nlabel => 'storage.space.usage.percentage', display_ok => 0, set => {
+            key_values            =>
+                [
+                    { name => 'prct_used' },
+                    { name => 'used' },
+                    { name => 'free' },
+                    { name => 'prct_free' },
+                    { name => 'total' }
+                ],
+            closure_custom_output => $self->can('custom_space_usage_output'),
+            perfdatas             =>
+                [
+                    {
+                        template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1
+                    }
                 ]
-            }
+        }
         },
-        { label => 'space-unavailable', nlabel => 'storage.space.unavailable.bytes', set => {
-                key_values => [ { name => 'unavailable' } ],
-                output_template => 'unavailable: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'space-unavailable', nlabel => 'storage.space.unavailable.bytes', set => {
+            key_values          =>
+                [
+                    { name => 'unavailable' }
+                ],
+            output_template     => 'unavailable: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
         },
-        { label => 'space-failed', nlabel => 'storage.space.failed.bytes', set => {
-                key_values => [ { name => 'failed' } ],
-                output_template => 'failed: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'space-failed', nlabel => 'storage.space.failed.bytes', set => {
+            key_values          => [ { name => 'failed' } ],
+            output_template     => 'failed: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
+        }
+    ];
+
+    $self->{maps_counters}->{provisioning} = [
+        {
+            label => 'provisioning-virtual-size', nlabel => 'storage.provisioning.virtualsize.bytes', set => {
+            key_values          => [ { name => 'virtual_size' } ],
+            output_template     => 'provisioning virtual size: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
+        },
+        {
+            label => 'provisioning-used', nlabel => 'storage.provisioning.used.bytes', set => {
+            key_values          => [ { name => 'used' } ],
+            output_template     => 'provisioning used: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
+        },
+        {
+            label => 'provisioning-allocated', nlabel => 'storage.provisioning.allocated.bytes', set => {
+            key_values          => [ { name => 'allocated' } ],
+            output_template     => 'provisioning allocated: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
+        },
+        {
+            label => 'provisioning-free', nlabel => 'storage.provisioning.free.bytes', set => {
+            key_values          => [ { name => 'free' } ],
+            output_template     => 'provisioning free: %s %s',
+            output_change_bytes => 1,
+            perfdatas           => [
+                {
+                    template => '%s', unit => 'B', min => 0, label_extra_instance => 1
+                }
+            ]
+        }
         }
     ];
 
     $self->{maps_counters}->{efficiency} = [
-        { label => 'compaction', nlabel => 'storage.space.compaction.ratio.count', set => {
-                key_values => [ { name => 'compaction' } ],
-                output_template => 'compaction: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'compaction', nlabel => 'storage.space.compaction.ratio.count', set => {
+            key_values      => [ { name => 'compaction' } ],
+            output_template => 'compaction: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1 }
+            ]
+        }
         },
-        { label => 'deduplication', nlabel => 'storage.space.deduplication.ratio.count', set => {
-                key_values => [ { name => 'deduplication' } ],
-                output_template => 'deduplication: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'deduplication', nlabel => 'storage.space.deduplication.ratio.count', set => {
+            key_values      => [ { name => 'deduplication' } ],
+            output_template => 'deduplication: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1 }
+            ]
+        }
         },
-        { label => 'compression', nlabel => 'storage.space.compression.ratio.count', set => {
-                key_values => [ { name => 'compression' } ],
-                output_template => 'compression: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'compression', nlabel => 'storage.space.compression.ratio.count', set => {
+            key_values      => [ { name => 'compression' } ],
+            output_template => 'compression: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1 }
+            ]
+        }
         },
-        { label => 'data-reduction', nlabel => 'storage.space.data_reduction.ratio.count', set => {
-                key_values => [ { name => 'data_reduction' } ],
-                output_template => 'data reduction: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'data-reduction', nlabel => 'storage.space.data_reduction.ratio.count', set => {
+            key_values      => [ { name => 'data_reduction' } ],
+            output_template => 'data reduction: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1 }
+            ]
+        }
         },
-        { label => 'overprovisioning', nlabel => 'storage.space.overprovisioning.ratio.count', set => {
-                key_values => [ { name => 'overprovisioning' } ],
-                output_template => 'overprovisioning: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
+        {
+            label => 'overprovisioning', nlabel => 'storage.space.overprovisioning.ratio.count', set => {
+            key_values      => [ { name => 'overprovisioning' } ],
+            output_template => 'overprovisioning: %s',
+            perfdatas       => [
+                { template => '%s', min => 0, label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 }
@@ -164,7 +280,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'filter-type:s' => { name => 'filter_type' }
     });
 
@@ -180,16 +296,16 @@ sub manage_selection {
 
     for my $type (keys %{$response}) {
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
-                && $type !~ /$self->{option_results}->{filter_type}/);
+            && $type !~ /$self->{option_results}->{filter_type}/);
 
-        my $total       = $response->{$type}->{totalMiB} * 1024 * 1024;
-        my $free        = $response->{$type}->{freeMiB} * 1024 * 1024;
+        my $total = $response->{$type}->{totalMiB} * 1024 * 1024;
+        my $free = $response->{$type}->{freeMiB} * 1024 * 1024;
         my $unavailable = $response->{$type}->{unavailableCapacityMiB} * 1024 * 1024;
-        my $failed      = $response->{$type}->{failedCapacityMiB} * 1024 * 1024;
+        my $failed = $response->{$type}->{failedCapacityMiB} * 1024 * 1024;
 
         $self->{storages}->{$type} = {
-            type  => $type,
-            space => {
+            type         => $type,
+            space        => {
                 total       => $total,
                 free        => $free,
                 used        => $total - $free,
@@ -197,16 +313,23 @@ sub manage_selection {
                 prct_used   => $total > 0 ? ($total - $free) * 100 / $total : 0,
                 prct_free   => $total > 0 ? $free * 100 / $total : 0,
                 failed      => $failed
+            },
+            provisioning => {
+                virtual_size => $response->{$type}->{overProvisionedVirtualSizeMiB} * 1024 * 1024,
+                used         => $response->{$type}->{overProvisionedUsedMiB} * 1024 * 1024,
+                allocated    => $response->{$type}->{overProvisionedAllocatedMiB} * 1024 * 1024,
+                free         => $response->{$type}->{overProvisionedFreeMiB} * 1024 * 1024,
             }
         };
 
         my $shortcut = $response->{$type}->{allocated}->{volumes}->{capacityEfficiency};
 
-        $self->{storages}->{$type}->{efficiency}->{compaction}          = $shortcut->{compaction}         if defined($shortcut->{compaction});
-        $self->{storages}->{$type}->{efficiency}->{deduplication}       = $shortcut->{deduplication}      if defined($shortcut->{deduplication});
-        $self->{storages}->{$type}->{efficiency}->{compression}         = $shortcut->{compression}        if defined($shortcut->{compression});
-        $self->{storages}->{$type}->{efficiency}->{data_reduction}      = $shortcut->{dataReduction}      if defined($shortcut->{dataReduction});
-        $self->{storages}->{$type}->{efficiency}->{overprovisioning}    = $shortcut->{overProvisioning}   if defined($shortcut->{overProvisioning});
+        $self->{storages}->{$type}->{efficiency}->{compaction} = $shortcut->{compaction} if defined($shortcut->{compaction});
+        $self->{storages}->{$type}->{efficiency}->{deduplication} = $shortcut->{deduplication} if defined($shortcut->{deduplication});
+        $self->{storages}->{$type}->{efficiency}->{compression} = $shortcut->{compression} if defined($shortcut->{compression});
+        $self->{storages}->{$type}->{efficiency}->{data_reduction} = $shortcut->{dataReduction} if defined($shortcut->{dataReduction});
+        $self->{storages}->{$type}->{efficiency}->{overprovisioning} = $shortcut->{overProvisioning} if defined($shortcut->{overProvisioning});
+
     }
 
     if (scalar(keys %{$self->{storages}}) <= 0) {
@@ -234,6 +357,7 @@ The known types are: allCapacity, FCCapacity, SSDCapacity and NLCapacity.
 
 Thresholds that can apply to:
 - Space oriented metrics: 'space-usage', 'space-usage-free', 'space-usage-prct', 'space-unavailable', 'space-failed',
+- Provisioning metrics: 'provisioning-virtual-size', 'provisioning-used', 'provisioning-allocated', 'provisioning-free'
 - Storage optimization metrics: 'compaction', 'deduplication', 'compression', 'data-reduction', 'overprovisioning'.
 
 =back
