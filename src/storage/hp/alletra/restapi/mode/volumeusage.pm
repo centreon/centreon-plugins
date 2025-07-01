@@ -28,16 +28,27 @@ use warnings;
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value =>
-        $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value =>
-        $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(
+        value => $self->{result_values}->{total}
+    );
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(
+        value => $self->{result_values}->{used}
+    );
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(
+        value => $self->{result_values}->{free}
+    );
+    my ($reserved_value, $reserved_unit) = $self->{perfdata}->change_bytes(
+        value => $self->{result_values}->{reserved}
+    );
+
     return sprintf(
-        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        "Total: %s Reserved: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        $used_value . " " . $used_unit,
+        $self->{result_values}->{prct_used},
+        $free_value . " " . $free_unit,
+        $self->{result_values}->{prct_free},
+        $reserved_value . " " . $reserved_unit,
     );
 }
 
@@ -45,53 +56,32 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name               => 'volume',
+        {
+            name             => 'volume',
             type             => 1,
             cb_prefix_output => 'prefix_volume_output',
-            message_multiple => 'All volumes are ok' },
+            message_multiple => 'All volumes are ok'
+        },
     ];
 
     $self->{maps_counters}->{volume} = [
-        { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
-            key_values            =>
-                [
-                    { name => 'used' },
-                    { name => 'free' },
-                    { name => 'prct_used' },
-                    { name => 'prct_free' },
-                    { name => 'total' },
-                    { name => 'name' },
-                    { name => 'id' }
-                ],
-            closure_custom_output => $self->can('custom_usage_output'),
-            perfdatas             => [
-                {
-                    template               => '%d',
-                    min                  => 0,
-                    max                  => 'total',
-                    unit                 => 'B',
-                    cast_int             => 1,
-                    label_extra_instance => 1,
-                    instance_use         => 'name'
-                }
-            ]
-        }
-        },
-        { label => 'usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
-            key_values            =>
-                [
-                    { name => 'free' },
-                    { name => 'used' },
-                    { name => 'prct_used' },
-                    { name => 'prct_free' },
-                    { name => 'total' },,
-                    { name => 'name' },
-                    { name => 'id' }
-                ],
-            closure_custom_output =>
-                $self->can('custom_usage_output'),
-            perfdatas             =>
-                [
+        {
+            label  => 'usage',
+            nlabel => 'volume.space.usage.bytes',
+            set    => {
+                key_values            =>
+                    [
+                        { name => 'used' },
+                        { name => 'free' },
+                        { name => 'prct_used' },
+                        { name => 'prct_free' },
+                        { name => 'total' },
+                        { name => 'reserved' },
+                        { name => 'name' },
+                        { name => 'id' }
+                    ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas             => [
                     {
                         template             => '%d',
                         min                  => 0,
@@ -102,22 +92,57 @@ sub set_counters {
                         instance_use         => 'name'
                     }
                 ]
-        }
+            }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
-            key_values      => [ { name => 'prct_used' }, { name => 'name' }, { name => 'id' } ],
-            output_template => 'Used : %.2f %%',
-            perfdatas       => [
-                {
-                    template             => '%.2f',
-                    min                  => 0,
-                    max                  => 100,
-                    unit                 => '%',
-                    label_extra_instance => 1,
-                    instance_use         => 'name'
-                }
-            ]
-        }
+        {
+            label      => 'usage-free',
+            display_ok => 0,
+            nlabel     => 'volume.space.free.bytes',
+            set        => {
+                key_values            =>
+                    [
+                        { name => 'free' },
+                        { name => 'used' },
+                        { name => 'prct_used' },
+                        { name => 'prct_free' },
+                        { name => 'total' },
+                        { name => 'reserved' },
+                        { name => 'name' },
+                        { name => 'id' }
+                    ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas             =>
+                    [
+                        {
+                            template             => '%d',
+                            min                  => 0,
+                            max                  => 'total',
+                            unit                 => 'B',
+                            cast_int             => 1,
+                            label_extra_instance => 1,
+                            instance_use         => 'name'
+                        }
+                    ]
+            }
+        },
+        {
+            label      => 'usage-prct',
+            display_ok => 0,
+            nlabel     => 'volume.space.usage.percentage',
+            set        => {
+                key_values      => [ { name => 'prct_used' }, { name => 'name' }, { name => 'id' } ],
+                output_template => 'Used : %.2f %%',
+                perfdatas       => [
+                    {
+                        template             => '%.2f',
+                        min                  => 0,
+                        max                  => 100,
+                        unit                 => '%',
+                        label_extra_instance => 1,
+                        instance_use         => 'name'
+                    }
+                ]
+            }
         }
     ];
 }
@@ -127,10 +152,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'filter-id:s'   => { name => 'filter_id' },
-        'filter-name:s' => { name => 'filter_name' }
-    });
+    $options{options}->add_options(
+        arguments => {
+            'filter-id:s'   => { name => 'filter_id' },
+            'filter-name:s' => { name => 'filter_name' }
+        });
 
     return $self;
 }
@@ -154,32 +180,38 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_name}) and $self->{option_results}->{filter_name} ne '' and
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg =>
-                "Skipping volume named '" . $name . "': not matching filter /" . $self->{option_results}->{filter_name} . "/.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg =>
+                    "Skipping volume named '" . $name . "': not matching filter /" . $self->{option_results}->{filter_name} . "/.",
+                debug    =>
+                    1
+            );
             next;
         }
         if (defined($self->{option_results}->{filter_id}) and $self->{option_results}->{filter_id} ne '' and
             $id !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg =>
-                "Skipping volume #" . $id . ": not matching filter /" . $self->{option_results}->{filter_id} . "/.",
-                debug                            =>
-                    1);
+            $self->{output}->output_add(
+                long_msg =>
+                    "Skipping volume #" . $id . ": not matching filter /" . $self->{option_results}->{filter_id} . "/.",
+                debug    => 1
+            );
             next;
         }
 
         my $total = $volume->{sizeMiB} * 1024 * 1024;
-        my $used = $volume->{totalReservedMiB} * 1024 * 1024;
+        my $reserved = $volume->{totalReservedMiB} * 1024 * 1024;
+        my $used = $volume->{totalUsedMiB} * 1024 * 1024;
+        my $free = ($total - $used) >= 0 ? ($total - $used) : 0;
 
         $self->{volume}->{$name} = {
             id        => $id,
             name      => $name,
             total     => $total,
+            reserved  => $reserved,
             used      => $used,
-            free      => ($total - $used) >= 0 ? ($total - $used) : 0,
+            free      => $free,
             prct_used => $used * 100 / $total,
-            prct_free => (100 - ($used * 100 / $total) >= 0) ? (100 - ($used * 100 / $total)) : 0,
+            prct_free => $free * 100 / $total
         };
     }
 
