@@ -103,25 +103,22 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     foreach my $param (@code_parameters) {
-	next unless $param->{'type'};
-	my $value = lc $self->{option_results}->{$param->{'code'}};
-	next if $value eq '';
+        my $value = lc $self->{option_results}->{$param->{'code'}};
+        next if $value eq '';
 
-	my $valid = 0;
-	if ($param->{'type'} eq 'status') {
-	    $valid = $value =~ /^\d{1,3}$/;
-	} elsif ($param->{'type'} eq 'bool') {
-	    $valid = $value eq 'true' || $value eq 'false';
+        my $valid = 0;
+        if ($param->{'type'} eq 'status') {
+            $valid = $value =~ /^\d{1,3}$/;
+        } elsif ($param->{'type'} eq 'bool') {
+            $valid = $value eq 'true' || $value eq 'false';
 
-	    $self->{option_results}->{$param->{code}} = lc $value;
-	}
+            $self->{option_results}->{$param->{code}} = lc $value;
+        }
 
-	unless ($valid) {
-	    $self->{output}->add_option_msg(short_msg => "Invalid value for ".$param->{'code'}.".");
-	    $self->{output}->option_exit();
-	}
-
-	$self->{option_results}->{$param->{'code'}} = $value;
+        unless ($valid) {
+            $self->{output}->add_option_msg(short_msg => "Invalid value for ".$param->{'code'}.".");
+            $self->{output}->option_exit();
+        }
     }
 }
 
@@ -131,9 +128,9 @@ sub manage_selection {
     my @code_arr;
 
     foreach my $param (@code_parameters) {
-	next if $self->{option_results}->{$param->{'code'}} eq '';
+        next if $self->{option_results}->{$param->{'code'}} eq '';
 
-	push @code_arr, $param->{'code'} .'='. $self->{option_results}->{$param->{'code'}};
+        push @code_arr, $param->{'code'} .'='. $self->{option_results}->{$param->{'code'}};
     }
 
     my $result = $options{custom}->request_api(url_path => 'health' . (@code_arr ? '?'.join('&', @code_arr) : ''));
