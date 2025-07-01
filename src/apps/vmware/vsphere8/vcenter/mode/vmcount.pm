@@ -112,7 +112,8 @@ sub manage_selection {
         'POWERED_ON'  => 0,
         'POWERED_OFF' => 0,
         'SUSPENDED'   => 0,
-        'total'       => 0
+        'total'       => 0,
+        'UNKNOWN'     => 0
     };
 
     for my $vm (@{$response}) {
@@ -120,9 +121,9 @@ sub manage_selection {
         my $entry = {
             vm              => $vm->{vm},
             name            => $vm->{name},
-            cpu_count       => defined($vm->{cpu_count}) ? $vm->{cpu_count} : '',
-            power_state     => defined($vm->{power_state}) ? $vm->{power_state} : '',
-            memory_size_MiB => defined($vm->{memory_size_MiB}) ? $vm->{memory_size_MiB} : ''
+            cpu_count       => $vm->{cpu_count} // 0,
+            power_state     => $vm->{power_state} // 'UNKNOWN',
+            memory_size_MiB => $vm->{memory_size_MiB} // 0
         };
 
         my $entry_desc = sprintf(
