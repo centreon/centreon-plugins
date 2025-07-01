@@ -47,7 +47,7 @@ List-Datastores
     Lists Should Be Equal	${found_clusters}    ${expected_clusters}
     
 Disco-format
-    ${command}    Catenate    ${CMD} --http-backend=curl --disco-format
+    ${command}    Catenate    ${CMD} --disco-format
     ${root}=           Ctn Run Command And Return Parsed XML    ${command}
 
 # expected disco-format

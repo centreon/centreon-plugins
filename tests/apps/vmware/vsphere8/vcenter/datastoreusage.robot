@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vcenter
 
 *** Test Cases ***
 Datastore-Usage ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware   vsphere8    vcenter
     ${command_curl}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
     ${command_lwp}     Catenate    ${CMD} --http-backend=lwp ${extraoptions}
 

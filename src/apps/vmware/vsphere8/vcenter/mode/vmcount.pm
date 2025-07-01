@@ -118,8 +118,8 @@ sub manage_selection {
     for my $vm (@{$response}) {
         # avoid undef values
         my $entry = {
-            vm              => defined($vm->{vm}) ? $vm->{vm} : '',
-            name            => defined($vm->{name}) ? $vm->{name} : '',
+            vm              => $vm->{vm},
+            name            => $vm->{name},
             cpu_count       => defined($vm->{cpu_count}) ? $vm->{cpu_count} : '',
             power_state     => defined($vm->{power_state}) ? $vm->{power_state} : '',
             memory_size_MiB => defined($vm->{memory_size_MiB}) ? $vm->{memory_size_MiB} : ''

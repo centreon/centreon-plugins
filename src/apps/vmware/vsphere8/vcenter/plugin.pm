@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes}   = {
-        'cluster-usage'   => 'apps::vmware::vsphere8::vcenter::mode::clusterusage',
+        'cluster-status'   => 'apps::vmware::vsphere8::vcenter::mode::clusterstatus',
         'datastore-usage' => 'apps::vmware::vsphere8::vcenter::mode::datastoreusage',
         'list-clusters'   => 'apps::vmware::vsphere8::vcenter::mode::listclusters',
         'list-datastores' => 'apps::vmware::vsphere8::vcenter::mode::listdatastores',
