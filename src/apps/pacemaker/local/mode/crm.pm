@@ -100,14 +100,61 @@ sub custom_resource_status_output {
 
 sub custom_clone_resource_status_output {
     my ($self, %options) = @_;
+    my $msg = 'status: ' . $self->{result_values}->{status};
 
-    return sprintf(
-        'status: %s [masters: %s] [slaves: %s] [unmanaged: %s]',
-        $self->{result_values}->{status},
-        $self->{result_values}->{masters_nodes_name},
-        $self->{result_values}->{slaves_nodes_name},
-        $self->{result_values}->{is_unmanaged}
-    );
+    if (defined($self->{result_values}->{masters_nodes_name}) && $self->{result_values}->{masters_nodes_name} ne '') {
+        $msg .= ' [masters: ' . $self->{masters_nodes_name}->{masters_nodes_name} . ']';
+    }
+
+    if (defined($self->{result_values}->{slaves_nodes_name}) && $self->{result_values}->{slaves_nodes_name} ne '') {
+        $msg .= ' [slaves: ' . $self->{result_values}->{slaves_nodes_name} . ']';
+    }
+
+    if (defined($self->{result_values}->{started_nodes_name}) && $self->{result_values}->{started_nodes_name} ne '') {
+        $msg .= ' [started nodes: ' . $self->{result_values}->{started_nodes_name} . ']';
+    }
+
+    if (defined($self->{result_values}->{stopped_nodes_name}) && $self->{result_values}->{stopped_nodes_name} ne '') {
+        $msg .= ' [stopped nodes: ' . $self->{result_values}->{stopped_nodes_name} . ']';
+    }
+
+        if (defined($self->{result_values}->{failed_nodes_name}) && $self->{result_values}->{failed_nodes_name} ne '') {
+        $msg .= ' [failed nodes: ' . $self->{result_values}->{failed_nodes_name} . ']';
+    }
+
+    if (defined($self->{result_values}->{promoted_nodes_name}) && $self->{result_values}->{promoted_nodes_name} ne '') {
+        $msg .= ' [promoted nodes: ' . $self->{result_values}->{promoted_nodes_name} . ']';
+    }
+
+    if (defined($self->{result_values}->{unpromoted_nodes_name}) && $self->{result_values}->{unpromoted_nodes_name} ne '') {
+        $msg .= ' [unpromoted nodes: ' . $self->{result_values}->{unpromoted_nodes_name} . ']';
+    }
+
+
+    if (defined($self->{result_values}->{is_unmanaged}) && $self->{result_values}->{is_unmanaged} ne '') {
+        $msg .= ' [unmanaged: ' . $self->{result_values}->{is_unmanaged} . ']';
+    }
+
+    return $msg;
+    # if ((defined($self->{result_values}->{started_nodes}) && $self->{result_values}->{started_nodes} ne '')
+    #      || defined($self->{result_values}->{started_nodes}) && $self->{result_values}->{started_nodes} ne '') {
+    #     return sprintf(
+    #         'status: %s [nodes: %s] [stopped nodes: %s] [unmanaged: %s]',
+    #         $self->{result_values}->{status},
+    #         $self->{result_values}->{nodes},
+    #         $self->{result_values}->{stopped_nodes},
+    #         $self->{result_values}->{is_unmanaged}
+    #     );
+
+    # } else {
+    #     return sprintf(
+    #         'status: %s [masters: %s] [slaves: %s] [unmanaged: %s]',
+    #         $self->{result_values}->{status},
+    #         $self->{result_values}->{masters_nodes_name},
+    #         $self->{result_values}->{slaves_nodes_name},
+    #         $self->{result_values}->{is_unmanaged}
+    #     );
+    # }
 }
 
 sub prefix_rsc_output {
@@ -238,7 +285,12 @@ sub set_counters {
         { label => 'clone-resource-status', type => 2, critical_default => '%{status} =~ /failed/i', set => {
                 key_values => [
                     { name => 'name' }, { name => 'status' }, { name => 'is_unmanaged' },
-                    { name => 'masters_nodes_name' }, { name => 'slaves_nodes_name' }
+                    { name => 'masters_nodes_name' }, { name => 'slaves_nodes_name' },
+                    { name => 'started_nodes_name' }, { name => 'stopped_nodes_name' },
+                    { name => 'promoted_nodes_name' }, { name => 'unpromoted_nodes_name' },
+                    { name => 'failed_nodes_name' }
+                    
+
                 ],
                 closure_custom_output => $self->can('custom_clone_resource_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -333,9 +385,22 @@ sub parse_crm {
                 $self->{cluster}->{global}->{quorum}->{quorum_status} = 'noQuorum';
             }
         } elsif ($lines[$i] =~ /^(?:(?:\s*\*\s*)?(offline|online)):\s*\[\s*(.*?)\s*\]/i) {
+            #Node List:
+            #  * Online: [ node1 node2 ]
             my @nodes = split(/\s+/, $2);
             $self->{cluster}->{global}->{nodes}->{lc($1)} = scalar(@nodes);
             $self->{cluster}->{global}->{nodes}->{lc($1) . '_names'} = join(' ',  @nodes);
+        } elsif ($lines[$i] =~ /^\s*\*\s*Node\s*(.*)\s*\(\d+\):\s*(online|offline),/i) {
+            #Node List:
+            #  * Node node1 (1): online, feature set X.X.X
+            #  * Node node2 (1): online, feature set X.X.X
+            if (defined($self->{cluster}->{global}->{nodes}->{lc($2)})) {
+                $self->{cluster}->{global}->{nodes}->{lc($2)} += 1;
+                $self->{cluster}->{global}->{nodes}->{lc($2) . '_names'} .= ' ' . $1;
+            } else {
+                $self->{cluster}->{global}->{nodes}->{lc($2)} = 1;
+                $self->{cluster}->{global}->{nodes}->{lc($2) . '_names'} = $1;
+            }
         } elsif ($lines[$i] =~ /^node\s+(\S+?):\s*standby/i) {
             $self->{cluster}->{global}->{nodes}->{standby}++;
             $self->{cluster}->{global}->{nodes}->{standby_names} .= ' ' . $1;
@@ -359,7 +424,7 @@ sub parse_crm {
             $self->{resources}->{$name} = { name => $name, failed_actions => 0, failed_migration => 0, status => 'stopped', node => '-', is_unmanaged => 'no' };
             $self->{resources}->{$name}->{is_unmanaged} = 'yes' if ($lines[$i] =~ /unmanaged/);
             $self->{resources}->{$name}->{status} = 'failed' if ($lines[$i] =~ /FAILED/i);
-        } elsif ($lines[$i] =~ /Master\/Slave.*\[(.*)\]/i) {
+        } elsif ($lines[$i] =~ /(?:Master\/Slave|Clone).*\[(.*)\]/i) {
             #Master/Slave Set: ms_mysql-master [ms_mysql]
             #    ms_mysql	(ocf::heartbeat:mysql-centreon):	FAILED node-db-passive
             #    Masters: [ node-db-active ]
@@ -374,6 +439,24 @@ sub parse_crm {
             #   ms_mysql	(ocf::heartbeat:mysql-centreon):	Master node-db-active (unmanaged)
             #   ms_mysql	(ocf::heartbeat:mysql-centreon):	Slave node-db-passive (unmanaged)
             #   Stopped: [ cps-map-active cps-map-passive ]
+
+            
+            #* Clone Set: php-clone [php]:
+            #  * php       (systemd:php-fpm):       Started node1
+            #  * php       (systemd:php-fpm):       Started node2
+            
+            #* Clone Set: php-clone [php]:
+            #  * php       (systemd:php-fpm):       FAILED node1
+            #  * Started: [ node2 ]
+
+            #* Clone Set: ms_mysql-clone [ms_mysql] (promotable):
+            #  * ms_mysql  (ocf:heartbeat:mariadb-centreon):        Promoted node1 (unmanaged)
+            #  * ms_mysql  (ocf:heartbeat:mariadb-centreon):        Unpromoted node2 (unmanaged)
+
+            #* Clone Set: ms_mysql-clone [ms_mysql] (promotable):
+            #  * Masters: [ node3 ]
+            #  * Slaves: [ node4 ]
+            #  * Stopped: [ node1 node2 ]
             my $name = $1;
             if (defined($self->{option_results}->{filter_resource_name}) && $self->{option_results}->{filter_resource_name} ne '' &&
                 $name !~ /$self->{option_results}->{filter_resource_name}/) {
@@ -390,15 +473,30 @@ sub parse_crm {
                 masters_nodes_name => '',
                 slaves_nodes => 0,
                 slaves_nodes_name => '',
+                started_nodes => 0,
+                started_nodes_name => '',
                 stopped_nodes => 0,
-                stopped_nodes_name => ''
+                stopped_nodes_name => '',
+                promoted_nodes => 0,
+                promoted_nodes_name => '',
+                unpromoted_nodes => 0,
+                unpromoted_nodes_name => '',
+                failed_nodes => 0,
+                failed_nodes_name => ''
             };
             for (; $i < $num_lines; $i++) {
-                if ($lines[$i + 1] =~ /^\s+(masters|slaves|stopped):\s*\[\s*(.*?)\s*\]/i) {
+                if ($lines[$i + 1] =~ /^\s+(masters|slaves|started|stopped):\s*\[\s*(.*?)\s*\]/i) {
                     my $type = lc($1);
                     my @nodes = split(/\s+/, $2);
                     $self->{clone_resources}->{$name}->{$type . '_nodes'} = scalar(@nodes);
                     $self->{clone_resources}->{$name}->{$type . '_nodes_name'} = join(' ', @nodes);
+                } elsif ($lines[$i + 1] =~ /^\s*\*\s*$name.*(Started|Promoted|Unpromoted|Stopped|Failed)\s+([\w\-\.]+)/i) {
+                    my $type = lc($1);
+                    my $node_name = lc($2);
+                    $self->{clone_resources}->{$name}->{$type . '_nodes'} += 1;
+                    $self->{clone_resources}->{$name}->{$type . '_nodes_name'} .= ' ' . $node_name;
+                    $self->{clone_resources}->{$name}->{is_unmanaged} = 'yes' if ($lines[$i + 1] =~ /^\s*\*\s*$name.*unmanaged/);
+                    $self->{clone_resources}->{$name}->{status} = 'failed' if ($lines[$i + 1] =~ /^\s*\*\s*$name.*FAILED/i);
                 } elsif ($lines[$i + 1] =~ /^\s+$name\s+.*unmanaged/) {
                     $self->{clone_resources}->{$name}->{is_unmanaged} = 'yes';
                 } elsif ($lines[$i + 1] =~ /^\s+$name\s+.*FAILED/i) {
