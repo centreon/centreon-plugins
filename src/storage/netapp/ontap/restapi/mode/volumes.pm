@@ -36,13 +36,25 @@ sub custom_usage_output {
     my ($self, %options) = @_;
     
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($provisioned_size_value, $provisioned_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_provisioned_space});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
     return sprintf(
-        'space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        'space usage total: %s provisioned: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
+        $provisioned_size_value . " " . $provisioned_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
+    );
+}
+
+sub custom_virtual_usage_output {
+    my ($self, %options) = @_;
+    
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{virtual_used_space});
+    return sprintf(
+        'virtual space usage used: %s (%.2f%%)',
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{virtual_prct_used_space},
     );
 }
 
@@ -83,13 +95,19 @@ sub prefix_volume_output {
 sub skip_logical {
     my ($self, %options) = @_;
 
-    return (defined($self->{logical}) ? 0 : 1);
+    return (defined($self->{add_logical}) ? 0 : 1);
 }
 
 sub skip_snapshot {
     my ($self, %options) = @_;
 
-    return (defined($self->{snapshot}) ? 0 : 1);
+    return (defined($self->{add_snapshot}) ? 0 : 1);
+}
+
+sub skip_virtual {
+    my ($self, %options) = @_;
+
+    return (defined($self->{add_virtual}) ? 0 : 1);
 }
 
 sub set_counters {
@@ -98,7 +116,8 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok' },
         { name => 'logical', type => 1, cb_prefix_output => 'prefix_volume_output', cb_init => 'skip_logical' },
-        { name => 'snapshots', type => 1, cb_init => 'skip_snapshot' }
+        { name => 'snapshots', type => 1, cb_init => 'skip_snapshot' },
+        { name => 'virtual', type => 1, cb_init => 'skip_virtual' }
 
     ];
     
@@ -111,7 +130,9 @@ sub set_counters {
             }
         },
         { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
-                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, 
+                                { name => 'total_space' }, { name => 'total_provisioned_space' }, { name => 'display' } 
+                ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total_space',
@@ -120,7 +141,9 @@ sub set_counters {
             }
         },
         { label => 'usage-free', nlabel => 'volume.space.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, 
+                                { name => 'total_provisioned_space' }, { name => 'total_space' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total_space',
@@ -129,7 +152,9 @@ sub set_counters {
             }
         },
         { label => 'usage-prct', nlabel => 'volume.space.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, 
+                                { name => 'total_space' }, { name => 'total_provisioned_space' },{ name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100,
@@ -239,8 +264,25 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{afs} = [
-
+    $self->{maps_counters}->{virtual} = [
+        { label => 'virtual-usage', nlabel => 'volume.virtualspace.usage.bytes', set => {
+                key_values => [ { name => 'virtual_used_space' }, { name => 'virtual_prct_used_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_virtual_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'virtual-usage-prct', nlabel => 'volume.virtualspace.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'virtual_prct_used_space' }, { name => 'virtual_used_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_virtual_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{logical} = [
@@ -313,10 +355,9 @@ sub new {
         'filter-volume-name:s'  => { name => 'filter_volume_name' },
         'filter-name:s'         => { name => 'filter_name' },
         'filter-vserver-name:s' => { name => 'filter_vserver_name' },
-        'add-snapshot'          => { name => 'add_snapshot' }
+        'add-snapshot'          => { name => 'add_snapshot' },
+        'add-virtual'           => { name => 'add_virtual' },
     });
-
-    # $options{options}->add_options(arguments => { 'add-logical' => { name => 'add_logical' } });
 
     return $self;
 }
@@ -326,11 +367,15 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '') {
-        $self->{logical} = 1;
+        $self->{add_logical} = 1;
     }
 
     if (defined($self->{option_results}->{add_snapshot})) {
-        $self->{snapshot} = 1;
+        $self->{add_snapshot} = 1;
+    }
+
+    if (defined($self->{option_results}->{add_virtual})) {
+        $self->{add_virtual} = 1;
     }
 }
 
@@ -348,6 +393,7 @@ sub manage_selection {
     $self->{volumes} = {};
     $self->{snapshot} = {};
     $self->{logical} = {};
+    $self->{virtual} = {};
     foreach (@{$volumes->{records}}) {
         my $name = defined($_->{svm}) && $_->{svm}->{name} ne '' ?
             $_->{svm}->{name} . ':' . $_->{name} :
@@ -367,11 +413,12 @@ sub manage_selection {
             display => $name,
             state => $_->{state},
 
-            total_space => $_->{space}->{afs_total},
-            used_space => $_->{space}->{used_by_afs},
-            free_space => $_->{space}->{available},
-            prct_used_space => (defined($_->{space}->{afs_total}) && $_->{space}->{afs_total} > 0) ? (($_->{space}->{afs_total} - $_->{space}->{available}) * 100 / $_->{space}->{afs_total}) : undef,
-            prct_free_space => (defined($_->{space}->{afs_total}) && $_->{space}->{afs_total} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{afs_total} : undef,
+            total_space             => $_->{space}->{afs_total},
+            total_provisioned_space => $_->{space}->{size},
+            used_space              => $_->{space}->{used_by_afs},
+            free_space              => $_->{space}->{available},
+            prct_used_space         => (defined($_->{space}->{afs_total}) && $_->{space}->{afs_total} > 0) ? (($_->{space}->{afs_total} - $_->{space}->{available}) * 100 / $_->{space}->{afs_total}) : undef,
+            prct_free_space         => $_->{space}->{available_percent},
 
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
@@ -387,7 +434,15 @@ sub manage_selection {
             total_latency => (defined($_->{metric}->{latency}->{total})) ? ($_->{metric}->{latency}->{total} / 1000) : undef,
         };
 
-        if (defined($self->{snapshot}) && defined($_->{space}->{snapshot})) {
+        if (defined($self->{add_virtual})) {
+            $self->{virtual}->{$name} = {
+                display                  => $name,
+                virtual_used_space      => $_->{space}->{used},
+                virtual_prct_used_space => $_->{space}->{percent_used}
+            };
+        }
+
+        if (defined($self->{add_snapshot}) && defined($_->{space}->{snapshot})) {
             $self->{snapshots}->{$name} = {
                 display                  => $name,
                 total_snapshot_space     => $_->{space}->{snapshot}->{reserve_size},
@@ -398,7 +453,7 @@ sub manage_selection {
             };
         }
 
-        if (defined($self->{logical}) && defined($_->{space}->{logical_space})) {
+        if (defined($self->{add_logical}) && defined($_->{space}->{logical_space})) {
             $self->{logical}->{$name} = {
                 display                 => $name,
                 total_logical_space     => $_->{space}->{logical_space}->{used} + $_->{space}->{logical_space}->{available},
@@ -444,6 +499,16 @@ Filter the API request result by volume name (can be a regexp).
 
 Filter volumes by Vserver name (can be a regexp).
 
+
+=item B<--add-virtual>
+
+Add virtual usage information.
+
+=item B<--add-snapshot>
+
+Add snapshot information.
+
+
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
@@ -463,7 +528,9 @@ You can use the following variables: %{state}, %{display}.
 
 Thresholds.
 Can be: usage' (B), usage-free (B), usage-prct (%),
+virtual-usage' (B), virtual-usage-prct (%),
 logical-usage (B), logical-usage-free (B), logical-usage-prct (%),
+snapshot-usage (B), snapshot-usage-free (B), snapshot-usage-prct (%),
 read (B/s), read-iops, write (B/s), write-iops,
 read-latency (ms), write-latency (ms), total-latency (ms),
 other-latency (ms), other (B/s), total (B/s),
