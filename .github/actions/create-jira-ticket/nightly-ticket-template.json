@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "This ticket was automatically created by the nightly workflow run. Feel free to update it as you need to. If you have any feedback about it, please contact the Delivery team.",
+          "marks": [
+            {
+              "type": "em"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "This incident ticket relates to the @MODULE_NAME@ nightly on the @GITHUB_BRANCH@ branch which failed on @DATE@."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Link to the failed nightly",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "@GITHUB_SERVER_URL@/@GITHUB_REPOSITORY@/actions/runs/@GITHUB_RUN_ID@/attempts/@GITHUB_RUN_ATTEMPT@"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "List of jobs that failed on the @MODULE_NAME@ nightly:"
+        }
+      ]
+    }
+  ]
+}
