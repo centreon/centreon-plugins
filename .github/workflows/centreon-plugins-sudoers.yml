@@ -18,7 +18,6 @@ on:
 
 env:
   module_name: centreon-plugins-sudoers
-
 jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
@@ -72,8 +71,8 @@ jobs:
           nfpm_file_pattern: "dependencies/centreon-plugins-sudoers/centreon-plugins-sudoers.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
-          version: "24.10.0"
-          release: "1"
+          version: ${{ needs.get-environment.outputs.version }}
+          release: ${{ needs.get-environment.outputs.release }}
           arch: all
           commit_hash: ${{ github.sha }}
           cache_key: cache-${{ github.run_id }}-${{ matrix.package_extension }}-${{ env.module_name }}-${{ matrix.distrib }}
