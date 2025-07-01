@@ -22,7 +22,7 @@ EOF
 
 ENV LANG=en_US.utf8
 
-RUN bash -ex <<EOF
+RUN bash -e <<EOF
 
 # Avoid apt to clean packages cache directory
 rm -f /etc/apt/apt.conf.d/docker-clean
@@ -59,8 +59,6 @@ rm -f /etc/apt/sources.list.d/centreon.list
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
 
-apt-get update -y
-
-apt-get clean -y
+apt-get clean
 
 EOF

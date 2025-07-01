@@ -4,7 +4,12 @@ FROM ${REGISTRY_URL}/almalinux:9
 
 RUN bash -e <<EOF
 
-dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+useradd snmp
+mkdir -p /var/lib/snmp/cert_indexes/
+chown snmp:snmp -R /var/lib/snmp/cert_indexes/
+mkdir -p /tmp/cache/
+
+dnf install -y dnf-plugins-core epel-release zstd jq
 dnf config-manager --set-enabled crb
 dnf clean all
 
@@ -61,8 +66,10 @@ gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 
 # Add Centreon plugins repositories
 dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el9/centreon-24.10.repo
-dnf update -y
 dnf install -y centreon-connector-perl centreon-clib
+dnf update -y
+
+rm -f /etc/yum.repos.d/centreon-plugins.repo
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
