@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,6 +189,12 @@ __END__
 Check storage capacities.
 
 =over 8
+
+=item B<--filter-counters>
+
+Define which counters (filtered by regular expression) should be monitored.
+Can be : license-expiration total expired
+Example: --filter-counters='^total$'
 
 =item B<--filter-name>
 

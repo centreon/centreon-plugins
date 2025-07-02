@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,11 +44,11 @@ sub custom_usage_output {
     return sprintf(
         "Total: %s Reserved: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
+        $reserved_value . " " . $reserved_unit,
         $used_value . " " . $used_unit,
         $self->{result_values}->{prct_used},
         $free_value . " " . $free_unit,
         $self->{result_values}->{prct_free},
-        $reserved_value . " " . $reserved_unit,
     );
 }
 
@@ -234,6 +234,7 @@ Check volume usage.
 =item B<--filter-counters>
 
 Define which counters (filtered by regular expression) should be monitored.
+Can be : usage usage-free usage-prct
 Example: --filter-counters='^usage$'
 
 =item B<--filter-id>

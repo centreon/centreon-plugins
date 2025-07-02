@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -347,6 +347,12 @@ __END__
 Check storage capacity per storage type.
 
 =over 8
+
+=item B<--filter-counters>
+
+Define which counters (filtered by regular expression) should be monitored.
+Can be : compaction deduplication compression data-reduction overprovisioning provisioning-virtual-size provisioning-used provisioning-allocated provisioning-free space-usage space-usage-free space-usage-prct space-unavailable space-failed
+Example: --filter-counters='^compaction$'
 
 =item B<--filter-type>
 
