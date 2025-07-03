@@ -97,6 +97,7 @@ Fortinet
 FQDN
 FreeBSD
 frsevent
+GCP
 --get-param
 HAProxy
 HashiCorp
@@ -202,6 +203,7 @@ NTLMv2
 NTP
 NVOS
 --oid
+OAuth
 OID
 --oid-display
 --oid-extra-display
@@ -266,6 +268,7 @@ SRX
 SSDCapacity
 SSG
 SSH
+Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd

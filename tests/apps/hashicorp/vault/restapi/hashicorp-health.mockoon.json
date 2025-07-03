@@ -1,0 +1,312 @@
+{
+  "uuid": "83005144-3d67-4049-be7e-e57a474c9ee2",
+  "lastMigration": 33,
+  "name": "Hshicorp",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3004,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "60154517-befe-43d0-a9cd-5f5d1afffde9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/sys/health",
+      "responses": [
+        {
+          "uuid": "a97e1d68-09ff-4940-89b0-982bb9f78e83",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": false,\n  \"standby\": false,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-master\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "417f537a-6375-44ad-961f-cbe9f599b624",
+          "body": "{\n  \"initialized\": false,\n  \"sealed\": false,\n  \"standby\": false,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-uninit\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "2",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "66a60ca3-f290-4f89-9ffe-e276994c0ae9",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": false,\n  \"standby\": true,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-standby\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "3",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f5cb8784-dc3f-4e4d-9eda-f5d0963febe0",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": true,\n  \"standby\": false,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-sealed\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "4",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "cd88bf44-148c-45d0-95a0-d7a635030bb7",
+          "body": "{\n  \"initialized\": false,\n  \"sealed\": false,\n  \"standby\": true,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-uninitstandby\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "5",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0199facc-b9f6-4565-b73a-cddd52c37f75",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": false,\n  \"standby\": true,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-standby-508\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 508,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "6",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "standbycode",
+              "value": "508",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "standbyok",
+              "value": "true",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8f8d93f7-d426-4cbc-b975-7e9d4e970bd8",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": false,\n  \"standby\": false,\n  \"performance_standby\": true,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-perfstandby-524,\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 524,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "7",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "performancestandbycode",
+              "value": "524",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "aca7de42-6586-4f3d-83ba-dc6eebdd014c",
+          "body": "{\n  \"initialized\": true,\n  \"sealed\": false,\n  \"standby\": true,\n  \"performance_standby\": false,\n  \"replication_dr_mode\": \"disabled\",\n  \"replication_performance_mode\": \"disabled\",\n  \"server_time_utc\": 1720000000,\n  \"version\": \"1.0.3\",\n  \"cluster_name\": \"test-cluster-standby2\",\n  \"cluster_id\": \"abab-0101-bcbd-12345abcde\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "8",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "60154517-befe-43d0-a9cd-5f5d1afffde9"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -85,3 +85,13 @@ Ctn Verify Command Output
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
+
+Ctn Run Command And Check Result As Json
+    [Arguments]    ${command}    ${expected}
+    Log To Console    ${command}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    ${json_output}=    evaluate    json.loads('''${output}''')    json
+    ${json_expected}=    evaluate    json.loads('''${expected}''')    json
+    Dictionaries Should Be Equal    ${json_output}    ${json_expected}    ignore_keys=['end_time', 'start_time', 'duration']
+    Log Dictionary    ${json_output}
