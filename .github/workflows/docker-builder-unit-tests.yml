@@ -45,6 +45,9 @@ jobs:
           - runner: ubuntu-22.04
             dockerfile: bookworm
             image: bookworm
+          - runner: centreon-collect-arm64
+            dockerfile: bookworm
+            image: bookworm-arm64
           - runner: ubuntu-22.04
             dockerfile: jammy
             image: jammy
