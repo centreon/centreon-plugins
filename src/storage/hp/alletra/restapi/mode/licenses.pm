@@ -29,8 +29,8 @@ sub custom_license_output {
     my ($self, %options) = @_;
 
     my $message;
-    if (!defined($self->{result_values}->{expires_seconds})) {
-        $message = $self->{result_values}->{name} . ' has permanent license';
+    if ($self->{result_values}->{expiration_human} eq 'never') {
+        $message = $self->{result_values}->{name} . ' has permanent license.';
     } elsif ($self->{result_values}->{expires_seconds} == 0) {
         $message = sprintf(
             "%s license has expired.",
@@ -50,7 +50,7 @@ sub custom_license_output {
 sub custom_license_perfdata {
     my ($self, %options) = @_;
 
-    return if ($self->{result_values}->{expires_seconds} eq 'permanent');
+    return if $self->{result_values}->{expiration_human} eq 'never';
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
@@ -86,13 +86,14 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'license_expiration', type => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'All licenses are ok'} #, cb_prefix_output => 'prefix_license_output'
+        { name => 'license_expiration', type => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'All licenses are ok'}
     ];
 
     $self->{maps_counters}->{global} = [
         {
             label => 'total',
             nlabel => 'licenses.total.count',
+            critical_default => '1:',
             set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of licenses: %s',
@@ -104,6 +105,7 @@ sub set_counters {
         {
             label => 'expired',
             nlabel => 'licenses.expired.count',
+            critical_default => ':0',
             set => {
                 key_values => [ { name => 'expired' }, { name => 'total' } ],
                 output_template => 'Number of expired licenses: %s',
@@ -154,7 +156,8 @@ sub manage_selection {
         $total_licenses = $total_licenses + 1;
         $self->{license_expiration}->{$license_item->{name}} = {
             name             => $license_item->{name},
-            expiration_human => defined($license_item->{expiryTime8601}) ? $license_item->{expiryTime8601} : 'never'
+            expiration_human => defined($license_item->{expiryTime8601}) ? $license_item->{expiryTime8601} : 'never',
+            expires_seconds  => 0,
         };
 
         my $license_status = 'valid';
@@ -162,7 +165,6 @@ sub manage_selection {
             if ($license_item->{expiryTimeSec} > time()) {
                 $self->{license_expiration}->{$license_item->{name}}->{expires_seconds} = $license_item->{expiryTimeSec} - time();
             } else {
-                $self->{license_expiration}->{$license_item->{name}}->{expires_seconds} = 0;
                 $license_status = 'expired';
                 $expired_licenses = $expired_licenses + 1;
             }

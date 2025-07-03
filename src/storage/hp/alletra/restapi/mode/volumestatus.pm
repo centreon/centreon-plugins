@@ -178,6 +178,25 @@ sub manage_selection {
     };
 
     for my $volume (@{$volumes}) {
+        # skip if filtered by name
+        if (defined($self->{option_results}->{filter_name})
+            and $self->{option_results}->{filter_name} ne '' and $volume->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(
+                long_msg => "Skipping $volume->{name} because the name does not match the name filter.",
+                debug    => 1
+            );
+            next;
+        }
+
+        # skip if filtered by name
+        if (defined($self->{option_results}->{filter_id})
+            and $self->{option_results}->{filter_id} ne '' and $volume->{id} !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(
+                long_msg => "Skipping $volume->{name} because the id does not match the id filter.",
+                debug    => 1
+            );
+            next;
+        }
         my $state = defined($map_state{$volume->{state}}) ? $map_state{$volume->{state}} : 'NOT_DOCUMENTED';
 
         # increment adequate global counters
